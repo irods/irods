@@ -14,6 +14,6 @@ rcGetMiscSvrInfo( rcComm_t *conn, miscSvrInfo_t **outSvrInfo ) {
     status = procApiRequest( conn, GET_MISC_SVR_INFO_AN, NULL, NULL,
                              ( void ** ) outSvrInfo, NULL );
 
-    return ( status );
+    return status;
 }
 

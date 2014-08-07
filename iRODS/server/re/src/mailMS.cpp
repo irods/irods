@@ -62,11 +62,11 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
 
     status = checkStringForEmailAddress( toAddr );
     if ( status ) {
-        return( status );
+        return status;
     }
     status = checkStringForSystem( subjectLine );
     if ( status ) {
-        return( status );
+        return status;
     }
 
     if ( reTestFlag > 0 ) {
@@ -85,13 +85,13 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
             rodsLog( LOG_NOTICE, "   Calling msiSendMail To:%s Subject %s\n",
                      toAddr, subjectLine );
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     sprintf( fName, "mailFile%d.ml", getpid() );
     fd = fopen( fName, "w" );
     if ( fd == NULL ) {
-        return( FILE_CREATE_ERROR );
+        return FILE_CREATE_ERROR;
     }
     t1 = body;
 #ifdef solaris_platform
@@ -139,7 +139,7 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
         irods::log( ERROR( ret, "mailStr command returned non-zero status" ) );
     }
     free( mailStr );
-    return( 0 );
+    return 0;
 }
 
 
@@ -183,7 +183,7 @@ int msiSendStdoutAsEmail( msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecI
     char tmpVarName[MAX_ACTION_SIZE];
     execCmdOut_t *myExecCmdOut;
     if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
-        return( NO_VALUES_FOUND );
+        return NO_VALUES_FOUND;
     }
     myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
     getNewVarName( tmpVarName, rei->msParamArray );
@@ -191,6 +191,6 @@ int msiSendStdoutAsEmail( msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecI
     mP = getMsParamByLabel( rei->msParamArray, tmpVarName );
     i = msiSendMail( xtoAddr, xsubjectLine, mP, rei );
     rmMsParamByLabel( rei->msParamArray, tmpVarName, 1 );
-    return( i );
+    return i;
 
 }

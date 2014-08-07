@@ -9,5 +9,5 @@ rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp ) {
     status = procApiRequest( conn, GENERAL_ROW_PURGE_AN,  generalRowPurgeInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

@@ -12,5 +12,5 @@ rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
     status = procApiRequest( conn, FILE_CHKSUM_AN,  fileChksumInp, NULL,
                              ( void ** ) chksumStr, NULL );
 
-    return ( status );
+    return status;
 }

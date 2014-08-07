@@ -16,7 +16,7 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     if ( execMyRuleInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsExecMyRule error. NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = resolveHost( &execMyRuleInp->addr, &rodsServerHost );
@@ -64,10 +64,10 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
         rodsLog( LOG_ERROR,
                  "rsExecMyRule : execMyRule error for %s, status = %d",
                  execMyRuleInp->myRule, status );
-        return ( status );
+        return status;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -87,6 +87,6 @@ remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
 
     status = rcExecMyRule( rodsServerHost->conn, execMyRuleInp, outParamArray );
 
-    return ( status );
+    return status;
 }
 

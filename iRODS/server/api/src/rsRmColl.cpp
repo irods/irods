@@ -35,7 +35,7 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                                  rmCollInp->collName, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
         int retval;
@@ -126,7 +126,7 @@ _rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         rstrcpy( ( *collOprStat )->lastObjPath, rmCollInp->collName,
                  MAX_NAME_LEN );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -181,7 +181,7 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
     if ( dataObjInfo != NULL ) {
         freeDataObjInfo( dataObjInfo );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -211,7 +211,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         rodsLog( LOG_ERROR,
                  "_rsPhyRmColl: rsOpenCollection of %s error. status = %d",
                  openCollInp.collName, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -252,10 +252,10 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
 
     if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) != NULL ) {
         if ( isTrashPath( rmCollInp->collName ) == False ) {
-            return ( SYS_INVALID_FILE_PATH );
+            return SYS_INVALID_FILE_PATH;
         }
         if ( rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
         addKeyVal( &tmpCollInp.condInput, ADMIN_RMTRASH_KW, "" );
         addKeyVal( &dataObjInp.condInput, ADMIN_RMTRASH_KW, "" );
@@ -263,7 +263,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     }
     else if ( getValByKey( &rmCollInp->condInput, RMTRASH_KW ) != NULL ) {
         if ( isTrashPath( rmCollInp->collName ) == False ) {
-            return ( SYS_INVALID_FILE_PATH );
+            return SYS_INVALID_FILE_PATH;
         }
         addKeyVal( &tmpCollInp.condInput, RMTRASH_KW, "" );
         addKeyVal( &dataObjInp.condInput, RMTRASH_KW, "" );
@@ -281,7 +281,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
             entCnt ++;
             /* cannot rm non-empty home collection */
             if ( isHomeColl( rmCollInp->collName ) ) {
-                return ( CANT_RM_NON_EMPTY_HOME_COLL );
+                return CANT_RM_NON_EMPTY_HOME_COLL;
             }
         }
         if ( collEnt->objType == DATA_OBJ_T ) {
@@ -382,7 +382,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     clearKeyVal( &tmpCollInp.condInput );
     clearKeyVal( &dataObjInp.condInput );
 
-    return ( savedStatus );
+    return savedStatus;
 }
 
 int
@@ -396,7 +396,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, rmCollInp->collName,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -456,7 +456,7 @@ rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath ) {
     if ( *tmpStr == '\0' ) {
         rodsLog( LOG_ERROR,
                  "rsMkTrashPath: input path %s too short", objPath );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     /* skip "home/userName/"  or "home/userName#" */
@@ -493,7 +493,7 @@ rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath ) {
     if ( ( status = splitPathByKey( trashPath, destTrashColl, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsMkTrashPath: splitPathByKey error for %s ", trashPath );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     status = rsMkCollR( rsComm, startTrashPath, destTrashColl );
@@ -504,7 +504,7 @@ rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath ) {
                  startTrashPath, destTrashColl );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -536,7 +536,7 @@ l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         rstrcpy( fileRmdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
         status = rsFileRmdir( rsComm, &fileRmdirInp );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -566,21 +566,21 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_COLL_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_DATA_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_D_RESC_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
@@ -597,14 +597,14 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             rodsLog( LOG_NOTICE,
                      "rsMvCollToTrash: acDataDeletePolicy error for %s. status = %d",
                      dataObjInfo.objPath, status );
-            return ( status );
+            return status;
         }
 
         if ( rei.status == SYS_DELETE_DISALLOWED ) {
             rodsLog( LOG_NOTICE,
                      "rsMvCollToTrash:disallowed for %s via DataDeletePolicy,status=%d",
                      dataObjInfo.objPath, rei.status );
-            return ( rei.status );
+            return rei.status;
         }
 
         continueInx = genQueryOut->continueInx;
@@ -625,7 +625,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         rodsLog( LOG_ERROR,
                  "rsMvCollToTrash: rsQueryDataObjInCollReCur error for %s, stat=%d",
                  rmCollInp->collName, status );
-        return ( status );
+        return status;
     }
 
     status = rsMkTrashPath( rsComm, rmCollInp->collName, trashPath );
@@ -634,7 +634,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         appendRandomToPath( trashPath );
         status = rsMkTrashPath( rsComm, rmCollInp->collName, trashPath );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
 
@@ -658,8 +658,8 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         rodsLog( LOG_ERROR,
                  "mvCollToTrash: rcDataObjRename error for %s, status = %d",
                  dataObjRenameInp.destDataObjInp.objPath, status );
-        return ( status );
+        return status;
     }
 
-    return ( status );
+    return status;
 }

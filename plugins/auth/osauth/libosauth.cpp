@@ -56,7 +56,7 @@ int check_proxy_user_privileges(
                  rsComm->proxyUser.userName,
                  proxyUserPriv,
                  rsComm->clientUser.userName );
-        return ( SYS_PROXYUSER_NO_PRIV );
+        return SYS_PROXYUSER_NO_PRIV;
     }
 }
 

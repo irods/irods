@@ -28,12 +28,12 @@ rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {
     }
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else {
         status = rsChkNVPathPermByHost( rsComm, chkNVPathPermInp,
                                         rodsServerHost );
-        return ( status );
+        return status;
     }
 }
 
@@ -46,7 +46,7 @@ rsChkNVPathPermByHost( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsChkNVPathPermByHost: Input NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = rodsServerHost->localFlag;
@@ -59,17 +59,17 @@ rsChkNVPathPermByHost( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsChkNVPathPerm: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -119,7 +119,7 @@ _rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {
     sysUid = rsComm->clientUser.sysUid;
     if ( sysUid < 0 ) {
         /* have tried before */
-        return ( SYS_NO_PATH_PERMISSION );
+        return SYS_NO_PATH_PERMISSION;
     }
     else if ( sysUid == 0 ) {
         sysUid = rsComm->clientUser.sysUid =
@@ -127,7 +127,7 @@ _rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {
 
         if ( sysUid < 0 ) {
             rsComm->clientUser.sysUid = sysUid;
-            return ( SYS_NO_PATH_PERMISSION );
+            return SYS_NO_PATH_PERMISSION;
         }
     }
 
@@ -177,14 +177,14 @@ _rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {
     }
 
     if ( stat_err.code() < 0 ) {
-        return ( SYS_NO_PATH_PERMISSION );
+        return SYS_NO_PATH_PERMISSION;
     }
 
     if ( sysUid != ( int ) myFileStat.st_uid &&
             ( myFileStat.st_mode & S_IWOTH ) == 0 ) {
-        return ( SYS_NO_PATH_PERMISSION );
+        return SYS_NO_PATH_PERMISSION;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }

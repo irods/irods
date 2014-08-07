@@ -9,5 +9,5 @@ rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** 
     status = procApiRequest( conn, FILE_RENAME_AN,  fileRenameInp, NULL,
                              ( void ** ) _out, NULL );
 
-    return ( status );
+    return status;
 }

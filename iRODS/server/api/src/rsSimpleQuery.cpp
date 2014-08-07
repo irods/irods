@@ -14,7 +14,7 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -33,7 +33,7 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
         rodsLog( LOG_NOTICE,
                  "rsSimpleQuery: rcSimpleQuery failed, status = %d", status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -68,7 +68,7 @@ _rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
                      "_rsSimpleQuery: simpleQuery for %s, status = %d",
                      simpleQueryInp->sql, status );
         }
-        return ( status );
+        return status;
     }
 
     myQueryOut = ( simpleQueryOut_t* )malloc( sizeof( simpleQueryOut_t ) );
@@ -77,6 +77,6 @@ _rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
 
     *simpleQueryOut = myQueryOut;
 
-    return ( status );
+    return status;
 }
 #endif

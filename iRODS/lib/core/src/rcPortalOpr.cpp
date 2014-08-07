@@ -46,14 +46,14 @@ sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
                  "sendTranHeader: toWrite = %d, written = %d",
                  sizeof( myHeader ), retVal );
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -70,10 +70,10 @@ rcvTranHeader( int sock, transferHeader_t *myHeader ) {
                  "rcvTranHeader: toread = %d, read = %d",
                  sizeof( tmpHeader ), retVal );
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
     }
 
@@ -82,7 +82,7 @@ rcvTranHeader( int sock, transferHeader_t *myHeader ) {
     myNtohll( tmpHeader.offset, &myHeader->offset );
     myNtohll( tmpHeader.length, &myHeader->length );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -93,7 +93,7 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
     if ( dataSize > 10 * MAX_SZ_FOR_SINGLE_BUF ) {
         rodsLog( LOG_ERROR,
                  "fillBBufWithFile: dataSize %lld too large", dataSize );
-        return ( USER_FILE_TOO_LARGE );
+        return USER_FILE_TOO_LARGE;
     }
     else if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
         rodsLog( LOG_NOTICE,
@@ -109,7 +109,7 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError( LOG_ERROR, status,
                       "cannot open file %s, status = %d", locFilePath, status );
-        return ( status );
+        return status;
     }
 
 
@@ -122,7 +122,7 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
 
     close( in_fd );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -140,7 +140,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
         rodsLog( LOG_ERROR,
                  "putFileToPortal: invalid portalOprOut" );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     numThreads = portalOprOut->numThreads;
@@ -158,7 +158,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         rodsLog( LOG_ERROR,
                  "putFileToPortal: numThreads %d too large",
                  portalOprOut->numThreads );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     initFileRestart( conn, locFilePath, objPath, dataSize,
@@ -172,7 +172,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         sock = connectToRhostPortal( myPortList->hostAddr,
                                      myPortList->portNum, myPortList->cookie, myPortList->windowSize );
         if ( sock < 0 ) {
-            return ( sock );
+            return sock;
         }
 #ifdef windows_platform
         in_fd = iRODSNt_bopen( locFilePath, O_RDONLY, 0 );
@@ -183,24 +183,24 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             retVal = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError( LOG_ERROR, retVal,
                           "cannot open file %s, status = %d", locFilePath, retVal );
-            return ( retVal );
+            return retVal;
         }
 
         fillRcPortalTransferInp( conn, &myInput[0], sock, in_fd, 0 );
 
         rcPartialDataPut( &myInput[0] );
         if ( myInput[0].status < 0 ) {
-            return ( myInput[0].status );
+            return myInput[0].status;
         }
         else {
             if ( dataSize <= 0 || myInput[0].bytesWritten == dataSize ) {
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_ERROR,
                          "putFileToPortal: bytesWritten %lld dataSize %lld mismatch",
                          myInput[0].bytesWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
     }
@@ -212,7 +212,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             sock = connectToRhostPortal( myPortList->hostAddr,
                                          myPortList->portNum, myPortList->cookie, myPortList->windowSize );
             if ( sock < 0 ) {
-                return ( sock );
+                return sock;
             }
             in_fd = open( locFilePath, O_RDONLY, 0 );
             if ( in_fd < 0 ) { 	/* error */
@@ -225,7 +225,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
         }
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -239,24 +239,24 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             }
         }
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
                 if ( gGuiProgressCB != NULL ) {
                     gGuiProgressCB( &conn->operProgress );
                 }
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_ERROR,
                          "putFileToPortal: totalWritten %lld dataSize %lld mismatch",
                          totalWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
 #else   /* PARA_OPR */
-        return ( SYS_PARA_OPR_NO_SUPPORT );
+        return SYS_PARA_OPR_NO_SUPPORT;
 #endif  /* PARA_OPR */
     }
 }
@@ -265,7 +265,7 @@ int
 fillRcPortalTransferInp( rcComm_t *conn, rcPortalTransferInp_t *myInput,
                          int destFd, int srcFd, int threadNum ) {
     if ( myInput == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     myInput->conn = conn;
@@ -274,7 +274,7 @@ fillRcPortalTransferInp( rcComm_t *conn, rcPortalTransferInp_t *myInput,
     myInput->threadNum = threadNum;
     memcpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -546,7 +546,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError( LOG_ERROR, status,
                       "cannot open file %s, status = %d", locFilePath, status );
-        return ( status );
+        return status;
     }
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
@@ -573,7 +573,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                      dataObjWriteInp.len, bytesWritten );
             free( dataObjWriteInpBBuf.buf );
             close( in_fd );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             totalWritten += bytesWritten;
@@ -617,13 +617,13 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
         }
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "putFile: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
 }
 
@@ -633,7 +633,7 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath ) 
 
     if ( strcmp( locFilePath, STDOUT_FILE_NAME ) == 0 ) {
         if ( dataObjOutBBuf->len <= 0 ) {
-            return ( 0 );
+            return 0;
         }
         bytesWritten = fwrite( dataObjOutBBuf->buf, dataObjOutBBuf->len,
                                1, stdout );
@@ -651,7 +651,7 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath ) 
             status = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError( LOG_ERROR, status,
                           "cannot open file %s, status = %d", locFilePath, status );
-            return ( status );
+            return status;
         }
 
         if ( dataObjOutBBuf->len <= 0 ) {
@@ -668,11 +668,11 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath ) 
         rodsLog( LOG_ERROR,
                  "getIncludeFile: Read %d bytes, Wrote %d bytes. errno = %d\n ",
                  dataObjOutBBuf->len, bytesWritten, errno );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
     else {
         conn->transStat.bytesWritten = bytesWritten;
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -704,7 +704,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError( LOG_ERROR, status,
                       "cannot open file %s, status = %d", locFilePath, status );
-        return ( status );
+        return status;
     }
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
@@ -740,7 +740,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             if ( out_fd != 1 ) {
                 close( out_fd );
             }
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             totalWritten += bytesWritten;
@@ -788,7 +788,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
         }
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
@@ -812,7 +812,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
         rodsLog( LOG_ERROR,
                  "getFileFromPortal: invalid portalOprOut" );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     numThreads = portalOprOut->numThreads;
@@ -830,7 +830,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         rodsLog( LOG_ERROR,
                  "getFileFromPortal: numThreads %d too large", numThreads );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
 #ifdef PARA_OPR
@@ -845,7 +845,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         sock = connectToRhostPortal( myPortList->hostAddr,
                                      myPortList->portNum, myPortList->cookie, myPortList->windowSize );
         if ( sock < 0 ) {
-            return ( sock );
+            return sock;
         }
 #ifdef windows_platform
         out_fd = iRODSNt_bopen( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
@@ -856,22 +856,22 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             retVal = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError( LOG_ERROR, retVal,
                           "cannot open file %s, status = %d", locFilePath, retVal );
-            return ( retVal );
+            return retVal;
         }
         fillRcPortalTransferInp( conn, &myInput[0], out_fd, sock, 0640 );
         rcPartialDataGet( &myInput[0] );
         if ( myInput[0].status < 0 ) {
-            return ( myInput[0].status );
+            return myInput[0].status;
         }
         else {
             if ( dataSize <= 0 || myInput[0].bytesWritten == dataSize ) {
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_ERROR,
                          "getFileFromPortal:bytesWritten %lld dataSize %lld mismatch",
                          myInput[0].bytesWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
     }
@@ -883,7 +883,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             sock = connectToRhostPortal( myPortList->hostAddr,
                                          myPortList->portNum, myPortList->cookie, myPortList->windowSize );
             if ( sock < 0 ) {
-                return ( sock );
+                return sock;
             }
             if ( i == 0 ) {
                 out_fd = open( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
@@ -903,7 +903,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
 
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -916,24 +916,24 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             }
         }
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
                 if ( gGuiProgressCB != NULL ) {
                     gGuiProgressCB( &conn->operProgress );
                 }
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_ERROR,
                          "getFileFromPortal: totalWritten %lld dataSize %lld mismatch",
                          totalWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
 #else   /* PARA_OPR */
-        return ( SYS_PARA_OPR_NO_SUPPORT );
+        return SYS_PARA_OPR_NO_SUPPORT;
 #endif  /* PARA_OPR */
     }
 }
@@ -1203,7 +1203,7 @@ int putFileToPortalRbudp(
     if ( portalOprOut == NULL || portalOprOut->numThreads != 1 ) {
         rodsLog( LOG_ERROR,
                  "putFileToPortal: invalid portalOprOut" );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     myPortList = &portalOprOut->portList;
@@ -1214,7 +1214,7 @@ int putFileToPortalRbudp(
         rodsLog( LOG_ERROR,
                  "putFileToPortalRbudp: initRbudpClient error for %s",
                  myPortList->hostAddr );
-        return ( status );
+        return status;
     }
     rbudpSender.rbudpBase.verbose = veryVerbose;
     if ( sendRate <= 0 ) {
@@ -1259,9 +1259,9 @@ int putFileToPortalRbudp(
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "putFileToPortalRbudp: sendfile error for %s:%d", // JMC - backport 4590
                  myPortList->hostAddr, myPortList->portNum & 0xffff0000 );
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 
 /* getFileToPortalRbudp - The client side of getting a file using
@@ -1287,7 +1287,7 @@ int getFileToPortalRbudp(
     if ( portalOprOut == NULL || portalOprOut->numThreads != 1 ) {
         rodsLog( LOG_ERROR,
                  "getFileToPortalRbudp: invalid portalOprOut" );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     myPortList = &portalOprOut->portList;
@@ -1298,7 +1298,7 @@ int getFileToPortalRbudp(
         rodsLog( LOG_ERROR,
                  "getFileToPortalRbudp: initRbudpClient error for %s",
                  myPortList->hostAddr );
-        return ( status );
+        return status;
     }
 
     rbudpReceiver.rbudpBase.verbose = veryVerbose;
@@ -1341,9 +1341,9 @@ int getFileToPortalRbudp(
         rodsLog( LOG_ERROR,
                  "getFileToPortalRbudp: getfile error for %s",
                  myPortList->hostAddr );
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -1357,7 +1357,7 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
     if ( ( udpPort = getUdpPortFromPortList( myPortList ) ) == 0 ) {
         rodsLog( LOG_ERROR,
                  "putFileToPortalRbudp: udpPort == 0" );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
     tcpPort = getTcpPortFromPortList( myPortList );
@@ -1365,7 +1365,7 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
     tcpSock = connectToRhostPortal( myPortList->hostAddr,
                                     tcpPort, myPortList->cookie, myPortList->windowSize );
     if ( tcpSock < 0 ) {
-        return ( tcpSock );
+        return tcpSock;
     }
 
     rbudpBase->udpSockBufSize = UDPSOCKBUF;
@@ -1381,7 +1381,7 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
         rodsLog( LOG_ERROR,
                  "initRbudpClient: passiveUDP connect to %s error. status = %d",
                  myPortList->hostAddr, status );
-        return ( SYS_UDP_CONNECT_ERR + status );
+        return SYS_UDP_CONNECT_ERR + status;
     }
 
     /* inform the server of the UDP port */
@@ -1397,7 +1397,7 @@ initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList ) {
         rodsLog( LOG_ERROR,
                  "initRbudpClient: writen error. towrite %d, bytes written %d ",
                  sizeof( udpLocalPort ), status );
-        return ( SYS_UDP_CONNECT_ERR );
+        return SYS_UDP_CONNECT_ERR;
     }
 
     return 0;
@@ -1456,7 +1456,7 @@ writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: open failed for %s, status = %d",
                  infoFile, status );
-        return ( status );
+        return status;
     }
 
     status = write( fd, packedBBuf->buf, packedBBuf->len );
@@ -1471,7 +1471,7 @@ writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: write failed for %s, status = %d",
                  infoFile, status );
-        return ( status );
+        return status;
     }
     return status;
 }
@@ -1486,14 +1486,14 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
     path p( infoFile );
     if ( !exists( p ) || !is_regular_file( p ) ) {
         status = UNIX_FILE_STAT_ERR - errno;
-        return ( status );
+        return status;
     }
     else if ( ( mySize = file_size( p ) ) <= 0 ) {
         status = UNIX_FILE_STAT_ERR - errno;
         rodsLog( LOG_ERROR,
                  "readLfRestartFile restart infoFile size is 0 for %s",
                  infoFile );
-        return ( status );
+        return status;
     }
 
     /* read the restart infoFile */
@@ -1503,7 +1503,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
         rodsLog( LOG_ERROR,
                  "readLfRestartFile open failed for %s, status = %d",
                  infoFile, status );
-        return ( status );
+        return status;
     }
 
     buf = ( char * ) calloc( 1, 2 * mySize );
@@ -1519,7 +1519,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
         status = UNIX_FILE_READ_ERR - errno;
         close( fd );
         free( buf );
-        return ( status );
+        return status;
     }
 
     close( fd );
@@ -1532,7 +1532,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
                  infoFile, status );
     }
     free( buf );
-    return ( status );
+    return status;
 }
 
 
@@ -1567,7 +1567,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError( LOG_ERROR, status,
                       "cannot open file %s, status = %d", info->fileName, status );
-        return ( status );
+        return status;
     }
 
     bzero( &dataObjOpenInp, sizeof( dataObjOpenInp ) );
@@ -1580,7 +1580,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         rodsLogError( LOG_ERROR, irodsFd,
                       "cannot open target file %s, status = %d", info->objPath, irodsFd );
         close( localFd );
-        return ( irodsFd );
+        return irodsFd;
     }
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
@@ -1683,7 +1683,7 @@ putSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
             rodsLog( LOG_ERROR,
                      "putFile: Read %d bytes, Wrote %d bytes.\n ",
                      dataObjWriteInp->len, bytesWritten );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             gap -= toRead;
@@ -1727,7 +1727,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError( LOG_ERROR, status,
                       "cannot open local file %s, status = %d", info->fileName, status );
-        return ( status );
+        return status;
     }
 
     bzero( &dataObjOpenInp, sizeof( dataObjOpenInp ) );
@@ -1738,7 +1738,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         rodsLogError( LOG_ERROR, irodsFd,
                       "cannot open iRODS src file %s, status = %d", info->objPath, irodsFd );
         close( localFd );
-        return ( irodsFd );
+        return irodsFd;
     }
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
@@ -1852,7 +1852,7 @@ getSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
             rodsLog( LOG_ERROR,
                      "getSeg: Read %d bytes, Wrote %d bytes.\n ",
                      bytesRead, bytesWritten );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             gap -= bytesWritten;

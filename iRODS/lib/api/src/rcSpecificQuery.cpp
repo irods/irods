@@ -53,5 +53,5 @@ rcSpecificQuery( rcComm_t *conn, specificQueryInp_t *specificQueryInp,
     status = procApiRequest( conn, SPECIFIC_QUERY_AN,  specificQueryInp, NULL,
                              ( void ** )genQueryOut, NULL );
 
-    return ( status );
+    return status;
 }

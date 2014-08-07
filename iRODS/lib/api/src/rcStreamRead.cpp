@@ -10,5 +10,5 @@ rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
     status = procApiRequest( conn, STREAM_READ_AN, streamReadInp, NULL,
                              ( void ** ) NULL, streamReadOutBBuf );
 
-    return ( status );
+    return status;
 }

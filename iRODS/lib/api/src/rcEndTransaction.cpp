@@ -9,5 +9,5 @@ rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp ) {
     status = procApiRequest( conn, END_TRANSACTION_AN,  endTransactionInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

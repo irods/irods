@@ -49,7 +49,7 @@ rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
     conn = _rcConnect( rodsHost, rodsPort, userName, rodsZone, NULL, NULL,
                        errMsg, 0, reconnFlag );
 
-    return ( conn );
+    return conn;
 }
 
 rcComm_t *
@@ -151,7 +151,7 @@ _rcConnect( char *rodsHost, int rodsPort,
     }
 #endif
 
-    return ( conn );
+    return conn;
 }
 
 
@@ -185,7 +185,7 @@ setUserInfo(
         rstrcpy( clientUser->rodsZone, proxyRodsZone, NAME_LEN );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -193,7 +193,7 @@ setRhostInfo( rcComm_t *conn, char *rodsHost, int rodsPort ) {
     int status;
 
     if ( rodsHost == NULL || strlen( rodsHost ) == 0 ) {
-        return ( USER_RODS_HOST_EMPTY );
+        return USER_RODS_HOST_EMPTY;
     }
 
     rstrcpy( conn->host, rodsHost, NAME_LEN );
@@ -201,7 +201,7 @@ setRhostInfo( rcComm_t *conn, char *rodsHost, int rodsPort ) {
 
     status = setSockAddr( &conn->remoteAddr, rodsHost, rodsPort );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -215,7 +215,7 @@ setSockAddr( struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort ) {
         st.dump();
 
         rodsLog( LOG_ERROR, "unknown hostname: [%s]", rodsHost );
-        return ( USER_RODS_HOSTNAME_ERR - errno );
+        return USER_RODS_HOSTNAME_ERR - errno;
     }
 
     memcpy( &remoteAddr->sin_addr, myHostent->h_addr,
@@ -223,7 +223,7 @@ setSockAddr( struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort ) {
     remoteAddr->sin_family = AF_INET;
     remoteAddr->sin_port = htons( ( unsigned short )( rodsPort ) );
 
-    return ( 0 );
+    return 0;
 }
 
 // =-=-=-=-=-=-=-
@@ -233,7 +233,7 @@ int rcDisconnect(
     // =-=-=-=-=-=-=-
     // check for invalid param
     if ( _conn == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     // =-=-=-=-=-=-=-
@@ -283,7 +283,7 @@ int rcDisconnect(
     delete  _conn->thread_ctx->cond;
 
     status = freeRcComm( _conn );
-    return ( status );
+    return status;
 
 } // rcDisconnect
 
@@ -292,7 +292,7 @@ freeRcComm( rcComm_t *conn ) {
     int status;
 
     if ( conn == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     status = cleanRcComm( conn );
@@ -305,7 +305,7 @@ int
 cleanRcComm( rcComm_t *conn ) {
 
     if ( conn == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     freeRError( conn->rError );
@@ -316,7 +316,7 @@ cleanRcComm( rcComm_t *conn ) {
         conn->svrVersion = NULL;
     }
 
-    return ( 0 );
+    return 0;
 }
 void rcPipSigHandler() {
     fprintf( stderr,
@@ -329,13 +329,13 @@ rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg ) {
 
     if ( myRodsEnv == NULL ) {
         fprintf( stderr, "rcConnectXmsg: NULL myRodsEnv input\n" );
-        return ( NULL );
+        return NULL;
     }
 
     conn = rcConnect( myRodsEnv->xmsgHost, myRodsEnv->xmsgPort,
                       myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 0, errMsg );
 
-    return ( conn );
+    return conn;
 }
 
 

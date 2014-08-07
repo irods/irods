@@ -11,5 +11,5 @@ rcGetLimitedPassword( rcComm_t *conn,
     status = procApiRequest( conn, GET_LIMITED_PASSWORD_AN,
                              getLimitedPasswordInp, NULL,
                              ( void ** ) getLimitedPasswordOut, NULL );
-    return ( status );
+    return status;
 }

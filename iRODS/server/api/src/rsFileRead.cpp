@@ -31,7 +31,7 @@ rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
         }
     }
     else {
-        return ( 0 );
+        return 0;
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
@@ -43,17 +43,17 @@ rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileRead: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( retVal );
+    return retVal;
 }
 
 int

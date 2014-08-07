@@ -24,7 +24,7 @@ rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
                                  getRescQuotaInp->zoneHint, &rodsServerHost );
 
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -132,7 +132,7 @@ getQuotaByResc( rsComm_t *rsComm, char *userName, char *rescName,
 
     clearGenQueryInp( &genQueryInp );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -148,33 +148,33 @@ queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut,
             NULL ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaOver = getSqlResultByInx( genQueryOut, COL_QUOTA_OVER ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescName = getSqlResultByInx( genQueryOut, COL_R_RESC_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaRescId = getSqlResultByInx( genQueryOut, COL_QUOTA_RESC_ID ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaUserId = getSqlResultByInx( genQueryOut, COL_QUOTA_USER_ID ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {

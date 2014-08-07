@@ -49,7 +49,7 @@ phyPathRegNoChkPerm( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     addKeyVal( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW, "" );
 
     status = irsPhyPathReg( rsComm, phyPathRegInp );
-    return ( status );
+    return status;
 }
 
 int
@@ -62,7 +62,7 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     status = irsPhyPathReg( rsComm, phyPathRegInp );
-    return ( status );
+    return status;
 }
 
 int
@@ -87,12 +87,12 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 
     if ( coll_type && strcmp( coll_type, UNMOUNT_STR ) == 0 ) {
         status = unmountFileDir( rsComm, phyPathRegInp );
-        return ( status );
+        return status;
 
     }
     else  if ( coll_type != NULL && strcmp( coll_type, LINK_POINT_STR ) == 0 ) {
         status = linkCollReg( rsComm, phyPathRegInp );
-        return ( status );
+        return status;
 
     }
 
@@ -238,7 +238,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                         strcmp( coll_type, TAR_STRUCT_FILE_STR ) == 0 ||
                         strcmp( coll_type, MSSO_STRUCT_FILE_STR ) == 0 ) ) {
         status = structFileReg( rsComm, phyPathRegInp );
-        return ( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
@@ -290,7 +290,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         if ( remoteFlag < 0 ) {
             delete rescGrpInfo->rescInfo;
             delete rescGrpInfo;
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_ERROR,
@@ -298,13 +298,13 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                      remoteFlag );
             delete rescGrpInfo->rescInfo;
             delete rescGrpInfo;
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     delete rescGrpInfo->rescInfo;
     delete rescGrpInfo;
-    return ( status );
+    return status;
 }
 
 int
@@ -330,7 +330,7 @@ remotePhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                  phyPathRegInp->objPath );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -348,7 +348,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     if ( ( tmpFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) ) == NULL ) {
         rodsLog( LOG_ERROR, "_rsPhyPathReg: No filePath input for %s",
                  phyPathRegInp->objPath );
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
     else {
         /* have to do this since it will be over written later */
@@ -396,7 +396,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
             rodsLog( LOG_ERROR,
                      "_rsPhyPathReg: chkFilePathPerm error for %s",
                      phyPathRegInp->objPath );
-            return ( status );
+            return status;
         }
     }
     else {
@@ -433,7 +433,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -449,7 +449,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "filePathRegRepl: getDataObjInfo for %s", phyPathRegInp->objPath );
-        return ( status );
+        return status;
     }
 
     status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &phyPathRegInp->condInput, 0 );
@@ -523,7 +523,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rodsLog( LOG_ERROR,
                  "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
                  dataObjInfo.objPath, status );
-        return ( status );
+        return status;
     }
     addKeyVal( &dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath );
 
@@ -539,7 +539,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             rodsLog( LOG_ERROR,
                      "rodsPathReg: _dataObjChksum for %s failed, status = %d",
                      dataObjInfo.objPath, status );
-            return ( status );
+            return status;
         }
         rstrcpy( dataObjInfo.chksum, chksum, NAME_LEN );
     }
@@ -559,7 +559,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                                 NO_SAVE_REI );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -615,7 +615,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             rodsLog( LOG_ERROR,
                      "dirPathReg: rsFileStat failed for %s, status = %d",
                      filePath, status );
-            return ( status );
+            return status;
         }
         getFileMetaFromStat( myStat, &collCreateInp.condInput );
         addKeyVal( &collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath );
@@ -632,7 +632,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "mountFileDir: %s already mounted", phyPathRegInp->objPath );
-        return ( SYS_MOUNT_MOUNTED_COLL_ERR );
+        return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
 
@@ -648,7 +648,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rodsLog( LOG_ERROR,
                  "dirPathReg: rsFileOpendir for %s error, status = %d",
                  filePath, dirFd );
-        return ( dirFd );
+        return dirFd;
     }
 
     fileReaddirInp.fileInx = dirFd;
@@ -698,7 +698,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                      "dirPathReg: rsFileStat failed for %s, status = %d",
                      fileStatInp.fileName, status );
             free( rodsDirent ); // JMC - backport 4835
-            return ( status );
+            return status;
         }
 
         if ( ( myStat->st_mode & S_IFREG ) != 0 ) { /* a file */
@@ -737,7 +737,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     fileClosedirInp.fileInx = dirFd;
     rsFileClosedir( rsComm, &fileClosedirInp );
 
-    return ( status );
+    return status;
 }
 
 int mountFileDir( rsComm_t*     rsComm,
@@ -767,7 +767,7 @@ int mountFileDir( rsComm_t*     rsComm,
 
     if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4832
         rodsLog( LOG_NOTICE, "mountFileDir - insufficient privilege" );
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
@@ -780,14 +780,14 @@ int mountFileDir( rsComm_t*     rsComm,
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "mountFileDir: %s already mounted", phyPathRegInp->objPath );
-        return ( SYS_MOUNT_MOUNTED_COLL_ERR );
+        return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
                  "mountFileDir: collection %s not empty", phyPathRegInp->objPath );
-        return ( SYS_COLLECTION_NOT_EMPTY );
+        return SYS_COLLECTION_NOT_EMPTY;
     }
 
     memset( &fileStatInp, 0, sizeof( fileStatInp ) );
@@ -813,7 +813,7 @@ int mountFileDir( rsComm_t*     rsComm,
         rstrcpy( fileMkdirInp.addr.hostAddr,  location.c_str(), NAME_LEN );
         status = rsFileMkdir( rsComm, &fileMkdirInp );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
     else if ( ( myStat->st_mode & S_IFDIR ) == 0 ) {
@@ -821,7 +821,7 @@ int mountFileDir( rsComm_t*     rsComm,
                  "mountFileDir: phyPath %s is not a directory",
                  fileStatInp.fileName );
         free( myStat );
-        return ( USER_FILE_DOES_NOT_EXIST );
+        return USER_FILE_DOES_NOT_EXIST;
     }
 
     free( myStat );
@@ -873,7 +873,7 @@ int mountFileDir( rsComm_t*     rsComm,
     }
 
     rodsLog( LOG_NOTICE, "mountFileDir return status." );
-    return ( status );
+    return status;
 }
 
 int
@@ -890,7 +890,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "unmountFileDir: %s not mounted", phyPathRegInp->objPath );
-        return ( SYS_COLL_NOT_MOUNTED_ERR );
+        return SYS_COLL_NOT_MOUNTED_ERR;
     }
 
     if ( getStructFileType( rodsObjStatOut->specColl ) >= 0 ) {
@@ -912,7 +912,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 
     status = rsModColl( rsComm, &modCollInp );
 
-    return ( status );
+    return status;
 }
 
 int structFileReg(
@@ -935,7 +935,7 @@ int structFileReg(
         rodsLog( LOG_ERROR,
                  "structFileReg: No structFilePath input for %s",
                  phyPathRegInp->objPath );
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
 
     collType = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW );
@@ -943,7 +943,7 @@ int structFileReg(
         rodsLog( LOG_ERROR,
                  "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
                  dataObjInp.objPath );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     len = strlen( phyPathRegInp->objPath );
@@ -952,7 +952,7 @@ int structFileReg(
         rodsLog( LOG_ERROR,
                  "structFileReg: structFilePath %s inside collection %s",
                  structFilePath, phyPathRegInp->objPath );
-        return ( SYS_STRUCT_FILE_INMOUNTED_COLL );
+        return SYS_STRUCT_FILE_INMOUNTED_COLL;
     }
 
     /* see if the struct file is in spec coll */
@@ -961,7 +961,7 @@ int structFileReg(
         rodsLog( LOG_ERROR,
                  "structFileReg: structFilePath %s is in a mounted path",
                  structFilePath );
-        return ( SYS_STRUCT_FILE_INMOUNTED_COLL );
+        return SYS_STRUCT_FILE_INMOUNTED_COLL;
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
@@ -973,7 +973,7 @@ int structFileReg(
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "structFileReg: %s already mounted", phyPathRegInp->objPath );
-        return ( SYS_MOUNT_MOUNTED_COLL_ERR );
+        return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
 
     freeRodsObjStat( rodsObjStatOut );
@@ -981,7 +981,7 @@ int structFileReg(
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
                  "structFileReg: collection %s not empty", phyPathRegInp->objPath );
-        return ( SYS_COLLECTION_NOT_EMPTY );
+        return SYS_COLLECTION_NOT_EMPTY;
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -1000,7 +1000,7 @@ int structFileReg(
             rodsLog( LOG_ERROR,
                      "structFileReg: Problem with open/create structFilePath %s, status = %d",
                      dataObjInp.objPath, status );
-            return ( status );
+            return status;
         }
         else {
             openedDataObjInp_t dataObjCloseInp;
@@ -1035,7 +1035,7 @@ int structFileReg(
         status = rsRegColl( rsComm, &collCreateInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -1067,7 +1067,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
         specColl.type = MSSO_STRUCT_FILE_T;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 
     // =-=-=-=-=-=-=-
@@ -1094,10 +1094,10 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     status = rsSubStructFileStat( rsComm, &subFile, &myStat );
 
     if ( status == SYS_NOT_SUPPORTED ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( 1 );
+        return 1;
     }
 }
 
@@ -1116,7 +1116,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: No linkPath input for %s",
                  phyPathRegInp->objPath );
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
 
     collType = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW );
@@ -1124,14 +1124,14 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: Bad COLLECTION_TYPE_KW for linkPath %s",
                  phyPathRegInp->objPath );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( phyPathRegInp->objPath[0] != '/' || linkPath[0] != '/' ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: linkPath %s or collection %s not absolute path",
                  linkPath, phyPathRegInp->objPath );
-        return ( SYS_COLL_LINK_PATH_ERR );
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
     len = strlen( phyPathRegInp->objPath );
@@ -1140,7 +1140,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: linkPath %s inside collection %s",
                  linkPath, phyPathRegInp->objPath );
-        return ( SYS_COLL_LINK_PATH_ERR );
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
     len = strlen( linkPath );
@@ -1149,7 +1149,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: collection %s inside linkPath %s",
                  linkPath, phyPathRegInp->objPath );
-        return ( SYS_COLL_LINK_PATH_ERR );
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
     if ( getSpecCollCache( rsComm, linkPath, 0,  &specCollCache ) >= 0 &&
@@ -1157,7 +1157,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: linkPath %s is in a spec coll path",
                  linkPath );
-        return ( SYS_COLL_LINK_PATH_ERR );
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
@@ -1187,7 +1187,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: link collection %s in a spec coll path",
                  phyPathRegInp->objPath );
-        return ( SYS_COLL_LINK_PATH_ERR );
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
     freeRodsObjStat( rodsObjStatOut );
@@ -1195,7 +1195,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: collection %s not empty", phyPathRegInp->objPath );
-        return ( SYS_COLLECTION_NOT_EMPTY );
+        return SYS_COLLECTION_NOT_EMPTY;
     }
 
     /* mk the collection */
@@ -1215,7 +1215,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         status = rsRegColl( rsComm, &collCreateInp );
     }
 
-    return ( status );
+    return status;
 }
 
 pathnamePatterns_t *

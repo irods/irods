@@ -18,7 +18,7 @@ int
 initPathCache() {
     NonExistPathTable = newHashTable( NUM_PATH_HASH_SLOT );
     PathArrayTable = newHashTable( NUM_PATH_HASH_SLOT );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -59,7 +59,7 @@ _addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray, 
     if ( outPathCache != NULL ) {
         *outPathCache = tmpPathCache;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -101,7 +101,7 @@ int _updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache ) {
         status = stat( tmpPathCache->fileCache->fileCachePath, &stbuf );
         if ( status < 0 ) {
             UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-            return ( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
         else {
             /* update the size */

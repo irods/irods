@@ -37,11 +37,11 @@ int rsFileSyncToArch(
     }
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else {
         status = rsFileSyncToArchByHost( rsComm, fileSyncToArchInp, sync_out, rodsServerHost );
-        return ( status );
+        return status;
     }
 }
 
@@ -53,7 +53,7 @@ rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsFileSyncToArchByHost: Input NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = rodsServerHost->localFlag;
@@ -66,17 +66,17 @@ rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileSyncToArchByHost: resolveHost returned value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -203,7 +203,7 @@ int _rsFileSyncToArch(
         rstrcpy( ( *_sync_out )->file_name, file_obj->physical_path().c_str(), MAX_NAME_LEN );
     }
 
-    return ( sync_err.code() );
+    return sync_err.code();
 
 } // _rsFileSyncToArch
 

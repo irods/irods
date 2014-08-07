@@ -61,7 +61,7 @@ char x2c( char *what ) {
     digit = ( what[0] >= 'A' ? ( ( what[0] & 0xdf ) - 'A' ) + 10 : ( what[0] - '0' ) );
     digit *= 16;
     digit += ( what[1] >= 'A' ? ( ( what[1] & 0xdf ) - 'A' ) + 10 : ( what[1] - '0' ) );
-    return( digit );
+    return digit;
 }
 
 void unescape_url( char *url ) {
@@ -127,7 +127,7 @@ getmultipartword( entry *iEntry, char **stquery, char *boundary, int length ) {
     int i, j, k;
 
     if ( strlen( *stquery ) < ( 2 * strlen( boundary ) ) ) {
-        return( 1 );
+        return 1;
     }
 
     if ( ( tmp1 = strstr( ( char * ) * stquery, boundary ) ) == NULL ) {
@@ -326,7 +326,7 @@ int getline( char *s, int n, FILE *f ) {
 
         if ( ( s[i] == 0x4 ) || ( s[i] == LF ) || ( i == ( n - 1 ) ) ) {
             s[i] = '\0';
-            return ( feof( f ) ? 1 : 0 );
+            return feof( f ) ? 1 : 0;
         }
         ++i;
     }
@@ -386,7 +386,7 @@ int getEntries( inStruct Sentries ) {
             strstr( Sentries->cookieStr, "\\" ) != NULL ) {
 
         Sentries->op = -1;
-        return ( 1 );
+        return 1;
 
 
     }
@@ -601,7 +601,7 @@ showRules( inStruct Sentries ) {
     }
     fprintf( stdout, "</TABLE>\n" );
     fprintf( stdout, "</BODY>\n</HTML>\n" );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -802,10 +802,10 @@ performAction( inStruct Sentries ) {
     if ( i != 0 ) {
         rodsLogError( LOG_ERROR, i, "<BR>Rule Application Failed:" );
         /*    fprintf(stdout,"</PRE>\n</body>\n</HTML>\n");*/
-        return( -1 );
+        return -1;
     }
     /*    fprintf(stdout,"</PRE>\n</body>\n</HTML>\n");*/
 
-    return( 0 );
+    return 0;
 }
 

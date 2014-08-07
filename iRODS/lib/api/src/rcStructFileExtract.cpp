@@ -9,5 +9,5 @@ rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp ) {
     status = procApiRequest( conn, STRUCT_FILE_EXTRACT_AN,
                              structFileOprInp, NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

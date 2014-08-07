@@ -115,7 +115,7 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
         result->serverResponse = ( char* )digest;
     }
 
-    return ( status );
+    return status;
 #else
     /* this may be a gateway to the rcat host */
     rodsServerHost_t *rodsServerHost;
@@ -127,11 +127,11 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsAuthCheck:getAndConnRcatHostNoLogin() failed. erro=%d", status );
-        return ( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        return ( SYS_NO_ICAT_SERVER_ERR );
+        return SYS_NO_ICAT_SERVER_ERR;
     }
     else {
         status = rcAuthCheck( rodsServerHost->conn, authCheckInp, authCheckOut );

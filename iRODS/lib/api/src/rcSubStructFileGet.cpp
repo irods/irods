@@ -10,5 +10,5 @@ rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile,
     status = procApiRequest( conn, SUB_STRUCT_FILE_GET_AN, subFile, NULL,
                              ( void ** ) NULL, subFileGetOutBBuf );
 
-    return ( status );
+    return status;
 }

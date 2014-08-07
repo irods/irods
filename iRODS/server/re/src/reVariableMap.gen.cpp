@@ -13,15 +13,15 @@ int getValFromRescInfo( char *varMap, rescInfo_t *rei, Res **varValue, Region *r
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RescInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -210,7 +210,7 @@ int getValFromRescInfo( char *varMap, rescInfo_t *rei, Res **varValue, Region *r
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromRescInfo( char *varMap, rescInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -222,15 +222,15 @@ int setValFromRescInfo( char *varMap, rescInfo_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -396,7 +396,7 @@ int setValFromRescInfo( char *varMap, rescInfo_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromRescInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -586,15 +586,15 @@ int getValFromRescGrpInfo( char *varMap, rescGrpInfo_t *rei, Res **varValue, Reg
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RescGrpInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -647,7 +647,7 @@ int getValFromRescGrpInfo( char *varMap, rescGrpInfo_t *rei, Res **varValue, Reg
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -659,15 +659,15 @@ int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -714,7 +714,7 @@ int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromRescGrpInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -785,15 +785,15 @@ int getValFromKeyValPair( char *varMap, keyValPair_t *rei, Res **varValue, Regio
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, KeyValPair_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -822,7 +822,7 @@ int getValFromKeyValPair( char *varMap, keyValPair_t *rei, Res **varValue, Regio
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromKeyValPair( char *varMap, keyValPair_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -834,15 +834,15 @@ int setValFromKeyValPair( char *varMap, keyValPair_t **inrei, Res *newVarValue )
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -868,7 +868,7 @@ int setValFromKeyValPair( char *varMap, keyValPair_t **inrei, Res *newVarValue )
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromKeyValPair( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -918,15 +918,15 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataObjInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -1203,7 +1203,7 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -1215,15 +1215,15 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -1466,7 +1466,7 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromDataObjInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -1733,15 +1733,15 @@ int getValFromCollInfo( char *varMap, collInfo_t *rei, Res **varValue, Region *r
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, CollInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -1890,7 +1890,7 @@ int getValFromCollInfo( char *varMap, collInfo_t *rei, Res **varValue, Region *r
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromCollInfo( char *varMap, collInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -1902,15 +1902,15 @@ int setValFromCollInfo( char *varMap, collInfo_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -2041,7 +2041,7 @@ int setValFromCollInfo( char *varMap, collInfo_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromCollInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -2196,15 +2196,15 @@ int getValFromRuleExecInfo( char *varMap, ruleExecInfo_t *rei, Res **varValue, R
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RuleExecInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
     if ( strcmp( varName, "pluginInstanceName" ) == 0 ) {
@@ -2348,7 +2348,7 @@ int getValFromRuleExecInfo( char *varMap, ruleExecInfo_t *rei, Res **varValue, R
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -2360,15 +2360,15 @@ int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarVal
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
     if ( strcmp( varName, "pluginInstanceName" ) == 0 ) {
         i = setStrLeafValue( rei->pluginInstanceName, MAX_NAME_LEN, newVarValue );
@@ -2495,7 +2495,7 @@ int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarVal
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromRuleExecInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -2645,15 +2645,15 @@ int getValFromRsComm( char *varMap, rsComm_t *rei, Res **varValue, Region *r ) {
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RsComm_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -2906,7 +2906,7 @@ int getValFromRsComm( char *varMap, rsComm_t *rei, Res **varValue, Region *r ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromRsComm( char *varMap, rsComm_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -2918,15 +2918,15 @@ int setValFromRsComm( char *varMap, rsComm_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3148,7 +3148,7 @@ int setValFromRsComm( char *varMap, rsComm_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromRsComm( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -3394,15 +3394,15 @@ int getValFromDataObjInp( char *varMap, dataObjInp_t *rei, Res **varValue, Regio
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataObjInp_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3479,7 +3479,7 @@ int getValFromDataObjInp( char *varMap, dataObjInp_t *rei, Res **varValue, Regio
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromDataObjInp( char *varMap, dataObjInp_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -3491,15 +3491,15 @@ int setValFromDataObjInp( char *varMap, dataObjInp_t **inrei, Res *newVarValue )
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3567,7 +3567,7 @@ int setValFromDataObjInp( char *varMap, dataObjInp_t **inrei, Res *newVarValue )
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromDataObjInp( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -3659,15 +3659,15 @@ int getValFromDataOprInp( char *varMap, dataOprInp_t *rei, Res **varValue, Regio
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataOprInp_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3744,7 +3744,7 @@ int getValFromDataOprInp( char *varMap, dataOprInp_t *rei, Res **varValue, Regio
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromDataOprInp( char *varMap, dataOprInp_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -3756,15 +3756,15 @@ int setValFromDataOprInp( char *varMap, dataOprInp_t **inrei, Res *newVarValue )
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3832,7 +3832,7 @@ int setValFromDataOprInp( char *varMap, dataOprInp_t **inrei, Res *newVarValue )
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromDataOprInp( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -3924,15 +3924,15 @@ int getValFromAuthInfo( char *varMap, authInfo_t *rei, Res **varValue, Region *r
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, AuthInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -3985,7 +3985,7 @@ int getValFromAuthInfo( char *varMap, authInfo_t *rei, Res **varValue, Region *r
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromAuthInfo( char *varMap, authInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -3997,15 +3997,15 @@ int setValFromAuthInfo( char *varMap, authInfo_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4052,7 +4052,7 @@ int setValFromAuthInfo( char *varMap, authInfo_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromAuthInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -4123,15 +4123,15 @@ int getValFromUserOtherInfo( char *varMap, userOtherInfo_t *rei, Res **varValue,
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, UserOtherInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4168,7 +4168,7 @@ int getValFromUserOtherInfo( char *varMap, userOtherInfo_t *rei, Res **varValue,
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromUserOtherInfo( char *varMap, userOtherInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -4180,15 +4180,15 @@ int setValFromUserOtherInfo( char *varMap, userOtherInfo_t **inrei, Res *newVarV
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4221,7 +4221,7 @@ int setValFromUserOtherInfo( char *varMap, userOtherInfo_t **inrei, Res *newVarV
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromUserOtherInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -4278,15 +4278,15 @@ int getValFromUserInfo( char *varMap, userInfo_t *rei, Res **varValue, Region *r
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, UserInfo_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4339,7 +4339,7 @@ int getValFromUserInfo( char *varMap, userInfo_t *rei, Res **varValue, Region *r
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromUserInfo( char *varMap, userInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -4351,15 +4351,15 @@ int setValFromUserInfo( char *varMap, userInfo_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4406,7 +4406,7 @@ int setValFromUserInfo( char *varMap, userInfo_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromUserInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -4477,15 +4477,15 @@ int getValFromVersion( char *varMap, version_t *rei, Res **varValue, Region *r )
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, Version_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4538,7 +4538,7 @@ int getValFromVersion( char *varMap, version_t *rei, Res **varValue, Region *r )
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromVersion( char *varMap, version_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -4550,15 +4550,15 @@ int setValFromVersion( char *varMap, version_t **inrei, Res *newVarValue ) {
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4605,7 +4605,7 @@ int setValFromVersion( char *varMap, version_t **inrei, Res *newVarValue ) {
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromVersion( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -4676,15 +4676,15 @@ int getValFromRodsHostAddr( char *varMap, rodsHostAddr_t *rei, Res **varValue, R
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RodsHostAddr_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4721,7 +4721,7 @@ int getValFromRodsHostAddr( char *varMap, rodsHostAddr_t *rei, Res **varValue, R
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromRodsHostAddr( char *varMap, rodsHostAddr_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -4733,15 +4733,15 @@ int setValFromRodsHostAddr( char *varMap, rodsHostAddr_t **inrei, Res *newVarVal
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4774,7 +4774,7 @@ int setValFromRodsHostAddr( char *varMap, rodsHostAddr_t **inrei, Res *newVarVal
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromRodsHostAddr( char *varMap, Region *r ) {
     char varName[NAME_LEN];
@@ -4831,15 +4831,15 @@ int getValFromFileOpenInp( char *varMap, fileOpenInp_t *rei, Res **varValue, Reg
 
     if ( varMap == NULL ) {
         i = getPtrLeafValue( varValue, ( void * ) rei, NULL, FileOpenInp_MS_T, r );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4908,7 +4908,7 @@ int getValFromFileOpenInp( char *varMap, fileOpenInp_t *rei, Res **varValue, Reg
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 int setValFromFileOpenInp( char *varMap, fileOpenInp_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
@@ -4920,15 +4920,15 @@ int setValFromFileOpenInp( char *varMap, fileOpenInp_t **inrei, Res *newVarValue
 
     if ( varMap == NULL ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
-        return( i );
+        return i;
     }
     if ( rei == NULL ) {
-        return( NULL_VALUE_ERR );
+        return NULL_VALUE_ERR;
     }
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -4989,7 +4989,7 @@ int setValFromFileOpenInp( char *varMap, fileOpenInp_t **inrei, Res *newVarValue
     }
 
 
-    return( UNDEFINED_VARIABLE_MAP_ERR );
+    return UNDEFINED_VARIABLE_MAP_ERR;
 }
 ExprType *getVarTypeFromFileOpenInp( char *varMap, Region *r ) {
     char varName[NAME_LEN];

@@ -95,7 +95,7 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
                  ( struct sockaddr * )&rbudpBase->udpServerAddr,
                  sizeof( rbudpBase->udpServerAddr ) ) ) < 0 ) {
         perror( "UDP bind error" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     // Use connected UDP to receive only from a specific host and port.
@@ -105,7 +105,7 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
     }
     else if ( ( int )( cliaddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
         perror( "can't get host entry" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     cliaddr.sin_family = AF_INET;
@@ -113,7 +113,7 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
     if ( connect( rbudpBase->udpSockfd, ( struct sockaddr * ) &cliaddr,
                   sizeof( cliaddr ) ) < 0 ) {
         perror( "connect() error" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     checkbuf( rbudpBase->udpSockfd, rbudpBase->udpSockBufSize,
@@ -135,13 +135,13 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
     }
     else if ( ( int )( tcpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
         perror( "can't get host entry" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
     tcpServerAddr.sin_port = htons( rbudpBase->tcpPort );
 
     if ( ( rbudpBase->tcpSockfd = socket( AF_INET, SOCK_STREAM, 0 ) ) < 0 ) {
         perror( "socket error" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     printf( "try to conn.\n" );
@@ -167,21 +167,21 @@ int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     }
     else if ( ( int )( rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
         perror( "can't get host entry" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
     rbudpBase->udpServerAddr.sin_port = htons( rbudpBase->udpRemotePort );
 
     /* Open a UDP socket */
     if ( ( rbudpBase->udpSockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ) {
         perror( "socket error" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     // Allow the port to be reused.
     int yes = 1;
     if ( setsockopt( rbudpBase->udpSockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) == -1 ) {
         perror( "setsockopt" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     /* Bind any local address for us */
@@ -192,7 +192,7 @@ int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     if ( ( bind( rbudpBase->udpSockfd, ( struct sockaddr * )&udpClientAddr,
                  sizeof( udpClientAddr ) ) ) < 0 ) {
         perror( "UDP client bind error" );
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     checkbuf( rbudpBase->udpSockfd, rbudpBase->udpSockBufSize,
@@ -261,7 +261,7 @@ int readn( register int fd, register char *ptr, register int nbytes ) {
         nleft -= nread;
         ptr += nread;
     }
-    return ( nbytes - nleft );
+    return nbytes - nleft;
 }
 
 int writen( register int fd, register char *ptr, register int nbytes ) {
@@ -276,7 +276,7 @@ int writen( register int fd, register char *ptr, register int nbytes ) {
         nleft -= nwritten;
         ptr += nwritten;
     }
-    return ( nbytes - nleft );
+    return nbytes - nleft;
 }
 
 int reportTime( struct timeval *start ) {

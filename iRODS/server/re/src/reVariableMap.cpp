@@ -61,16 +61,16 @@ mapExternalFuncToInternalProc( char *funcName ) {
     for ( i = 0; i < appRuleFuncMapDef.MaxNumOfFMaps; i++ ) {
         if ( strstr( appRuleFuncMapDef.funcName[i], funcName ) != NULL ) {
             strcpy( funcName, appRuleFuncMapDef.func2CMap[i] );
-            return( 1 );
+            return 1;
         }
     }
     for ( i = 0; i < coreRuleFuncMapDef.MaxNumOfFMaps; i++ ) {
         if ( strstr( coreRuleFuncMapDef.funcName[i], funcName ) != NULL ) {
             strcpy( funcName, coreRuleFuncMapDef.func2CMap[i] );
-            return( 1 );
+            return 1;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -90,7 +90,7 @@ getVarMap( char *action, char *inVarName, char **varMap, int index ) {
                 if ( strlen( appRuleVarDef.action[i] ) == 0 ||
                         strstr( appRuleVarDef.action[i], action ) != NULL ) {
                     *varMap = strdup( appRuleVarDef.var2CMap[i] );
-                    return( i );
+                    return i;
                 }
             }
         }
@@ -102,11 +102,11 @@ getVarMap( char *action, char *inVarName, char **varMap, int index ) {
             if ( strlen( coreRuleVarDef.action[i] ) == 0 ||
                     strstr( coreRuleVarDef.action[i], action ) != NULL ) {
                 *varMap = strdup( coreRuleVarDef.var2CMap[i] );
-                return( i + 1000 );
+                return i + 1000;
             }
         }
     }
-    return( UNKNOWN_VARIABLE_MAP_ERR );
+    return UNKNOWN_VARIABLE_MAP_ERR;
 }
 
 
@@ -129,7 +129,7 @@ getVarNameFromVarMap( char *varMap, char *varName, char **varMapCPtr ) {
         *varMapCPtr = p;
     }
     trimWS( varName );
-    return( 0 );
+    return 0;
 
 }
 
@@ -160,15 +160,15 @@ getVarValue( char *varMap, ruleExecInfo_t *rei, Res **varValue, Region *r ) {
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
     if ( !strcmp( varName, "rei" ) ) {
         i = getValFromRuleExecInfo( varMapCPtr, rei, varValue, r );
-        return( i );
+        return i;
     }
     else {
-        return( UNDEFINED_VARIABLE_MAP_ERR );
+        return UNDEFINED_VARIABLE_MAP_ERR;
     }
 }
 
@@ -181,17 +181,17 @@ setVarValue( char *varMap, ruleExecInfo_t *rei, Res *newVarValue ) {
 
     i = getVarNameFromVarMap( varMap, varName, &varMapCPtr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
     if ( !strcmp( varName, "rei" ) ) {
         i = setValFromRuleExecInfo( varMapCPtr, &rei, newVarValue );
         if ( varValue != NULL ) {
             free( varValue );
         }
-        return( i );
+        return i;
     }
     else {
-        return( UNDEFINED_VARIABLE_MAP_ERR );
+        return UNDEFINED_VARIABLE_MAP_ERR;
     }
 }
 
@@ -211,14 +211,14 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 
   if (varMap == NULL) {
     i = getSetLeafValue(varValue,inptr, (void *) inptr, newVarValue, RE_PTR);
-    return(i);
+    return i;
   }
 
   if (ptr == NULL)
-    return(NULL_VALUE_ERR);
+    return NULL_VALUE_ERR;
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
-    return(i);
+    return i;
   if (!strcmp(varName, "") )
       g;
   else  if (!strcmp(varName, "") )
@@ -252,8 +252,8 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
   else  if (!strcmp(varName, "") )
       g;
   else
-    return(UNDEFINED_VARIABLE_MAP_ERR);
-  return(i);
+    return UNDEFINED_VARIABLE_MAP_ERR;
+  return i;
 
 }
 
@@ -270,21 +270,21 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 
   if (varMap == NULL) {
     i = getSetLeafValue(varValue,inptr, (void *) inptr, newVarValue, RE_PTR);
-    return(i);
+    return i;
   }
 
   if (ptr == NULL)
-    return(NULL_VALUE_ERR);
+    return NULL_VALUE_ERR;
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
-    return(i);
+    return i;
   if (!strcmp(varName, "") )
       g;
   else  if (!strcmp(varName, "") )
       g;
   else
-    return(UNDEFINED_VARIABLE_MAP_ERR);
-  return(i);
+    return UNDEFINED_VARIABLE_MAP_ERR;
+  return i;
 
 }
 
@@ -301,21 +301,21 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 
   if (varMap == NULL) {
     i = getSetLeafValue(varValue,inptr, (void *) inptr, newVarValue, RE_PTR);
-    return(i);
+    return i;
   }
 
   if (ptr == NULL)
-    return(NULL_VALUE_ERR);
+    return NULL_VALUE_ERR;
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
-    return(i);
+    return i;
   if (!strcmp(varName, "") )
       g;
   else  if (!strcmp(varName, "") )
       g;
   else
-    return(UNDEFINED_VARIABLE_MAP_ERR);
-  return(i);
+    return UNDEFINED_VARIABLE_MAP_ERR;
+  return i;
 
 }
 
@@ -332,21 +332,21 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 
   if (varMap == NULL) {
     i = getSetLeafValue(varValue,inptr, (void *) inptr, newVarValue, RE_PTR);
-    return(i);
+    return i;
   }
 
   if (ptr == NULL)
-    return(NULL_VALUE_ERR);
+    return NULL_VALUE_ERR;
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
-    return(i);
+    return i;
   if (!strcmp(varName, "") )
       g;
   else  if (!strcmp(varName, "") )
       g;
   else
-    return(UNDEFINED_VARIABLE_MAP_ERR);
-  return(i);
+    return UNDEFINED_VARIABLE_MAP_ERR;
+  return i;
 
 }
 
@@ -363,21 +363,21 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 
   if (varMap == NULL) {
     i = getSetLeafValue(varValue,inptr, (void *) inptr, newVarValue, RE_PTR);
-    return(i);
+    return i;
   }
 
   if (ptr == NULL)
-    return(NULL_VALUE_ERR);
+    return NULL_VALUE_ERR;
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
-    return(i);
+    return i;
   if (!strcmp(varName, "") )
       g;
   else  if (!strcmp(varName, "") )
       g;
   else
-    return(UNDEFINED_VARIABLE_MAP_ERR);
-  return(i);
+    return UNDEFINED_VARIABLE_MAP_ERR;
+  return i;
 
 }
 *****************/

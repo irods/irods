@@ -37,7 +37,7 @@ ticketHashQue_t XmsgHashQue[NUM_HASH_SLOT];
 
 int
 initThreadEnv() {
-    return ( 0 );
+    return 0;
 }
 
 
@@ -53,7 +53,7 @@ addXmsgToQues( irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct ) {
 
     MessQueCondMutex.unlock();
 
-    return( status );
+    return status;
 
 }
 
@@ -63,7 +63,7 @@ addXmsgToXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
     if ( xmsg == NULL || xmsgQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "addXmsgToQue: input xmsg or xmsgQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     xmsg->next = xmsg->prev = NULL;
@@ -78,7 +78,7 @@ addXmsgToXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
         xmsgQue->head = xmsg;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -86,7 +86,7 @@ rmXmsgFromXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
     if ( xmsg == NULL || xmsgQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "addXmsgToQue: input xmsg or xmsgQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( xmsg->prev == NULL ) {
@@ -107,7 +107,7 @@ rmXmsgFromXmsgQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
 
     xmsg->prev = xmsg->next = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -115,7 +115,7 @@ rmXmsgFromXmsgTcketQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
     if ( xmsg == NULL || xmsgQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "addXmsgToQue: input xmsg or xmsgQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( xmsg->tprev == NULL ) {
@@ -136,7 +136,7 @@ rmXmsgFromXmsgTcketQue( irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue ) {
 
     xmsg->tprev = xmsg->tnext = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -145,7 +145,7 @@ addXmsgToTicketMsgStruct( irodsXmsg_t *xmsg,
     if ( xmsg == NULL || ticketMsgStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "addXmsgToTicketMsgStruct: input xmsg or ticketMsgStruct is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* up the expire time */
@@ -177,16 +177,16 @@ addXmsgToTicketMsgStruct( irodsXmsg_t *xmsg,
          xmsg->sendAddr);
     ***/
     /* changed by RAJA April 15, 20111
-    return (0);
+    return 0;
     ******************************/
-    return ( xmsg->seqNumber );
+    return xmsg->seqNumber;
 }
 
 int checkMsgCondition( irodsXmsg_t *irodsXmsg, char *msgCond ) {
     char condStr[MAX_NAME_LEN * 2], res[MAX_NAME_LEN * 2];
 
     if ( msgCond == NULL || strlen( msgCond ) == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     strcpy( condStr, msgCond );
@@ -228,7 +228,7 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
     if ( outIrodsXmsg == NULL ) {
         rodsLog( LOG_ERROR,
                  "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* locate the ticketMsgStruct_t */
@@ -284,7 +284,7 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
     if ( outIrodsXmsg == NULL ) {
         rodsLog( LOG_ERROR,
                  "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* locate the ticketMsgStruct_t */
@@ -357,7 +357,7 @@ getIrodsXmsgByMsgNum( int rcvTicket, int msgNumber,
     if ( outIrodsXmsg == NULL ) {
         rodsLog( LOG_ERROR,
                  "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* locate the ticketMsgStruct_t */
@@ -398,7 +398,7 @@ addTicketToHQue( xmsgTicketInfo_t *ticket, ticketHashQue_t *ticketHQue ) {
     if ( ticket == NULL || ticketHQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "addTicketToHQue: input ticket or ticketHQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     tmpTicketMsgStruct = ( ticketMsgStruct_t* )calloc( 1, sizeof( ticketMsgStruct_t ) );
@@ -412,7 +412,7 @@ addTicketToHQue( xmsgTicketInfo_t *ticket, ticketHashQue_t *ticketHQue ) {
         free( tmpTicketMsgStruct );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -423,7 +423,7 @@ addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
     if ( ticketMsgStruct == NULL || ticketHQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "addTicketMsgStructToHQue: ticketMsgStruct or ticketHQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     ticketMsgStruct->hnext = ticketMsgStruct->hprev = NULL;
@@ -432,7 +432,7 @@ addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
 
     if ( ticketHQue->head == NULL ) {
         ticketHQue->head = ticketHQue->tail = ticketMsgStruct;
-        return ( 0 );
+        return 0;
     }
 
 
@@ -441,7 +441,7 @@ addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
     while ( tmpTicketMsgStruct != NULL ) {
         if ( ticketMsgStruct->ticket.rcvTicket ==
                 tmpTicketMsgStruct->ticket.rcvTicket ) {
-            return ( SYS_DUPLICATE_XMSG_TICKET );
+            return SYS_DUPLICATE_XMSG_TICKET;
         }
         else if ( ticketMsgStruct->ticket.rcvTicket >
                   tmpTicketMsgStruct->ticket.rcvTicket ) {
@@ -471,7 +471,7 @@ addTicketMsgStructToHQue( ticketMsgStruct_t *ticketMsgStruct,
         tmpTicketMsgStruct->hprev = tmpTicketMsgStruct;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -480,7 +480,7 @@ rmTicketMsgStructFromHQue( ticketMsgStruct_t *ticketMsgStruct,
     if ( ticketMsgStruct == NULL || ticketHQue == NULL ) {
         rodsLog( LOG_ERROR,
                  "rmTicketMsgStructFromHQue: ticketMsgStruct or ticketHQue is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ticketMsgStruct->hprev == NULL ) {
@@ -501,7 +501,7 @@ rmTicketMsgStructFromHQue( ticketMsgStruct_t *ticketMsgStruct,
 
     ticketMsgStruct->hprev = ticketMsgStruct->hnext = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 /* add incoming request to the bottom of the link list */
@@ -536,7 +536,7 @@ addReqToQue( int sock ) {
 
     ReqQueCond.notify_all();
 
-    return ( 0 );
+    return 0;
 }
 
 xmsgReq_t *
@@ -573,7 +573,7 @@ getReqFromQue() {
         }
     }
 
-    return ( myXmsgReq );
+    return myXmsgReq;
 }
 
 int
@@ -584,7 +584,7 @@ startXmsgThreads() {
         ProcReqThread[i] = new boost::thread( procReqRoutine );
     }
 
-    return ( status );
+    return status;
 }
 
 void
@@ -675,7 +675,7 @@ int
 ticketHashFunc( uint rcvTicket ) {
     int mySlot = rcvTicket % NUM_HASH_SLOT;
 
-    return ( mySlot );
+    return mySlot;
 }
 
 int
@@ -748,7 +748,7 @@ initXmsgHashQue() {
 
     /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3,4,5***/
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -789,7 +789,7 @@ _rsRcvXmsg( irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut ) {
         rodsLog( LOG_ERROR,
                  "_rsRcvXmsg: input irodsXmsg or rcvXmsgOut is NULL" );
         MessQueCondMutex.unlock();
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     sendXmsgInfo = irodsXmsg->sendXmsgInfo;
@@ -840,7 +840,7 @@ _rsRcvXmsg( irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut ) {
                  NAME_LEN );
     }
     MessQueCondMutex.unlock();
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -857,13 +857,13 @@ clearOneXMessage( ticketMsgStruct_t *ticketMsgStruct, int seqNum ) {
             clearSendXmsgInfo( tmpIrodsXmsg->sendXmsgInfo );
             free( tmpIrodsXmsg->sendXmsgInfo );
             free( tmpIrodsXmsg );
-            return( 0 );
+            return 0;
         }
         tmpIrodsXmsg = tmpIrodsXmsg->tnext;
     }
 
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -885,6 +885,6 @@ clearAllXMessages( ticketMsgStruct_t *ticketMsgStruct ) {
 
     ticketMsgStruct->xmsgQue.head = NULL;
     ticketMsgStruct->xmsgQue.tail = NULL;
-    return( 0 );
+    return 0;
 }
 

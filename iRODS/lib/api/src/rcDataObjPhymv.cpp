@@ -96,7 +96,7 @@ rcDataObjPhymv( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     if ( transferStat != NULL ) {
         free( transferStat );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -106,7 +106,7 @@ _rcDataObjPhymv( rcComm_t *conn, dataObjInp_t *dataObjInp,
 
     status = procApiRequest( conn, DATA_OBJ_PHYMV_AN,  dataObjInp, NULL,
                              ( void ** ) transferStat, NULL );
-    return ( status );
+    return status;
 }
 
 int
@@ -116,6 +116,6 @@ _rcDataObjPhymv250( rcComm_t *conn, dataObjInp_t *dataObjInp,
 
     status = procApiRequest( conn, DATA_OBJ_PHYMV250_AN,  dataObjInp, NULL,
                              ( void ** ) transStat, NULL );
-    return ( status );
+    return status;
 }
 

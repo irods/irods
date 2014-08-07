@@ -83,46 +83,46 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
 
     if ( strcmp( bufParam->type, BUF_LEN_MS_T ) != 0 ||
             bufParam->inpOutBuf == NULL ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     tmplObjBuf = ( bytesBuf_t * ) bufParam->inpOutBuf;
     /*
     preg[0] =  regcmp("<PRETAG>", (char *)0);
     if (preg[0] == NULL)
-      return(INVALID_REGEXP);
+      return INVALID_REGEXP;
     preg[1] =  regcmp("</PRETAG>", (char *)0);
     if (preg[1] == NULL)
-      return(INVALID_REGEXP);
+      return INVALID_REGEXP;
     preg[2] =  regcmp("<POSTTAG>", (char *)0);
     if (preg[0] == NULL)
-      return(INVALID_REGEXP);
+      return INVALID_REGEXP;
     preg[3] =  regcmp("</POSTTAG>", (char *)0);
     if (preg[1] == NULL)
-      return(INVALID_REGEXP);
+      return INVALID_REGEXP;
     */
     j = regcomp( &preg[0], "<PRETAG>", REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[0], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiReadMDTemplateIntoTagStruct: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
     j = regcomp( &preg[1], "</PRETAG>", REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[1], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiReadMDTemplateIntoTagStruct: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
     j = regcomp( &preg[2], "<POSTTAG>", REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[2], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiReadMDTemplateIntoTagStruct: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
     j = regcomp( &preg[3], "</POSTTAG>", REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[3], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiReadMDTemplateIntoTagStruct: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
 
     t = ( char* )malloc( tmplObjBuf->len + 1 );
@@ -149,7 +149,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
 
       i = addTagStruct (tagValues, t2, t5, t3);
       if (i != 0)
-        return(i);
+        return i;
       t1 = t7;
       if (*t1 == '\0')
         break;
@@ -179,7 +179,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
         /***    rodsLog(LOG_NOTICE,"msiReadMDTemplateIntoTagStruct:TAGS:%s::%s::%s::\n",t2, t5, t3);***/
         i = addTagStruct( tagValues, t2, t5, t3 );
         if ( i != 0 ) {
-            return( i );
+            return i;
         }
         t1 = t7;
         if ( *t1 == '\0' ) {
@@ -200,13 +200,13 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     free( t );
 
     if ( tagValues->len == 0 ) {
-        return( NO_VALUES_FOUND );
+        return NO_VALUES_FOUND;
     }
 
     tagParam->inOutStruct = ( void * ) tagValues;
     tagParam->type = ( char * ) strdup( TagStruct_MS_T );
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -267,14 +267,14 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
     if ( j != 0 ) {
         regerror( j, &preg[0], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiGetTaggedValueFromString: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
     sprintf( pstr[1], "</%s>", ( char * ) inTagParam->inOutStruct );
     j = regcomp( &preg[1], pstr[1], REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[1], errbuff, sizeof( errbuff ) );
         rodsLog( LOG_NOTICE, "msiGetTaggedValueFromString: Error in regcomp: %s\n", errbuff );
-        return( INVALID_REGEXP );
+        return INVALID_REGEXP;
     }
     /*    rodsLog (LOG_NOTICE,"TTTTT:%s",t1);*/
     if ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
@@ -297,7 +297,7 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
     regfree( &preg[1] );
     free( pstr[0] );
     free( pstr[1] );
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -366,10 +366,10 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
 
     if ( strcmp( bufParam->type, BUF_LEN_MS_T ) != 0 ||
             bufParam->inpOutBuf == NULL ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( tagParam->type, TagStruct_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     tagValues = ( tagStruct_t * ) tagParam->inOutStruct;
     metaObjBuf = ( bytesBuf_t * )  bufParam->inpOutBuf;
@@ -384,10 +384,10 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
         /*
         preg[0] = regcmp(tagValues->preTag[i], (char *)0);
         if (preg[0] == NULL)
-          return(INVALID_REGEXP);
+          return INVALID_REGEXP;
         preg[1] =  regcmp(tagValues->postTag[i], (char *)0);
         if (preg[1] == NULL)
-          return(INVALID_REGEXP);
+          return INVALID_REGEXP;
         while ((t2 = regex(preg[0], t1)) != NULL) { / * t2 starts value * /
           if ((t3 = regex(preg[1], t2)) == NULL) {
         free(preg[0]);
@@ -400,7 +400,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
           j = addKeyVal(metaDataPairs, tagValues->keyWord[i], t2);
           *t4 = c;
           if (j != 0)
-        return(j);
+        return j;
           t1 = t3;
           if (*t1 == '\0')
         break;
@@ -413,13 +413,13 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
         if ( j != 0 ) {
             regerror( j, &preg[0], errbuff, sizeof( errbuff ) );
             rodsLog( LOG_NOTICE, "msiExtractTemplateMDFromBuf: Error in regcomp: %s\n", errbuff );
-            return( INVALID_REGEXP );
+            return INVALID_REGEXP;
         }
         j = regcomp( &preg[1], tagValues->postTag[i], REG_EXTENDED );
         if ( j != 0 ) {
             regerror( j, &preg[1], errbuff, sizeof( errbuff ) );
             rodsLog( LOG_NOTICE, "msiExtractTemplateMDFromBuf: Error in regcomp: %s\n", errbuff );
-            return( INVALID_REGEXP );
+            return INVALID_REGEXP;
         }
         while ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
             t2 = t1 + pm[0].rm_eo ;                     /* t2 starts value */
@@ -434,7 +434,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
             j = addKeyVal( metaDataPairs, tagValues->keyWord[i], t2 );
             *t4 = c;
             if ( j != 0 ) {
-                return( j );
+                return j;
             }
             t1 = t3;
             if ( *t1 == '\0' ) {
@@ -451,7 +451,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     metadataParam->inOutStruct = ( void * ) metaDataPairs;
     metadataParam->type = ( char * ) strdup( KeyValPair_MS_T );
 
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -511,19 +511,19 @@ msiAssociateKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
     RE_TEST_MACRO( "Loopback on msiAssociateKeyValuePairsToObj" );
 
     if ( strcmp( metadataParam->type, KeyValPair_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( objParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( typeParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     objName = ( char * ) objParam->inOutStruct;
     objType = ( char * ) typeParam->inOutStruct;
     i = addAVUMetadataFromKVPairs( rei->rsComm,  objName, objType,
                                    ( keyValPair_t * ) metadataParam->inOutStruct );
-    return( i );
+    return i;
 
 }
 
@@ -583,13 +583,13 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
     RE_TEST_MACRO( "Loopback on msiSetKeyValuePairsToObj" );
 
     if ( strcmp( metadataParam->type, KeyValPair_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( objParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( typeParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     objName = ( char * ) objParam->inOutStruct;
     objType = ( char * ) typeParam->inOutStruct;
@@ -646,17 +646,17 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
     RE_TEST_MACRO( "Loopback on msiGetObjType" );
 
     if ( strcmp( objParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     objName = ( char * ) objParam->inOutStruct;
 
     i = getObjType( rei->rsComm, objName, objType );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     typeParam->inOutStruct = ( char * ) strdup( objType );
     typeParam->type = ( char * ) strdup( STR_MS_T );
-    return( 0 );
+    return 0;
 }
 
 
@@ -718,19 +718,19 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
     RE_TEST_MACRO( "Loopback on msiRemoveKeyValuePairsFromObj" );
 
     if ( strcmp( metadataParam->type, KeyValPair_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( objParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( typeParam->type, STR_MS_T ) != 0 ) {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     objName = ( char * ) objParam->inOutStruct;
     objType = ( char * ) typeParam->inOutStruct;
     i = removeAVUMetadataFromKVPairs( rei->rsComm,  objName, objType,
                                       ( keyValPair_t * ) metadataParam->inOutStruct );
-    return( i );
+    return i;
 
 }
 

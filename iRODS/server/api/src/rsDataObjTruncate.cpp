@@ -36,7 +36,7 @@ rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
                                        &rodsServerHost, REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcDataObjTruncate( rodsServerHost->conn, dataObjTruncateInp );
@@ -48,12 +48,12 @@ rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
                                         &dataObjInfoHead );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     status = _rsDataObjTruncate( rsComm, dataObjTruncateInp, dataObjInfoHead );
 
-    return ( status );
+    return status;
 
 }
 
@@ -80,7 +80,7 @@ _rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 
     freeAllDataObjInfo( dataObjInfoHead );
 
-    return ( retVal );
+    return retVal;
 }
 
 int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
@@ -108,7 +108,7 @@ int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
                  dataObjTruncateInp->objPath, status );
         /* allow ENOENT to go on and unregister */
         if ( myError != ENOENT && myError != EACCES ) {
-            return ( status );
+            return status;
         }
     }
 
@@ -132,7 +132,7 @@ int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
                      dataObjTruncateInp->objPath, status );
         }
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -168,6 +168,6 @@ l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
         fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
         status = rsFileTruncate( rsComm, &fileTruncateInp );
     }
-    return ( status );
+    return status;
 }
 

@@ -16,7 +16,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     dataObjInp_t dataObjOprInp;
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
@@ -77,13 +77,13 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForReg: NULL dataObjOprInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->collection == True ) {
@@ -140,14 +140,14 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     else if ( rodsArgs->syncCacheDir != True ) {
         /* should not be here */
         rodsLog( LOG_ERROR, "initCondForMcoll: -U or -m must be used. " );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->resource == True ) {
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForReg: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjOprInp->condInput, DEST_RESC_NAME_KW,
@@ -159,6 +159,6 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-    return ( 0 );
+    return 0;
 }
 

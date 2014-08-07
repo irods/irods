@@ -30,12 +30,12 @@ rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     }
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else {
         status = rsFileStatByHost( rsComm, fileStatInp, fileStatOut,
                                    rodsServerHost );
-        return ( status );
+        return status;
     }
 }
 
@@ -48,7 +48,7 @@ rsFileStatByHost( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsFileStatByHost: Input NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = rodsServerHost->localFlag;
@@ -62,19 +62,19 @@ rsFileStatByHost( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileStat: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int

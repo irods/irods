@@ -30,14 +30,14 @@ extern "C" {
         str = strdup( inStr );
         if ( ( t = strstr( str, "/" ) ) == NULL ) {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
         else {
             *t = '\0';
         }
         if ( ( t = strstr( str, ":" ) ) == NULL ) {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
         s = t + 1;
         port = -1;
@@ -78,7 +78,7 @@ extern "C" {
         *rcComm = rcConnect( host, port, user, zone, 0, &errMsg );
         if ( *rcComm == NULL ) {
             free( str );
-            return( REMOTE_IRODS_CONNECT_ERR );
+            return REMOTE_IRODS_CONNECT_ERR;
         }
         i = clientLogin( *rcComm );
         if ( i != 0 ) {
@@ -86,7 +86,7 @@ extern "C" {
         }
 
         free( str );
-        return( i );
+        return i;
     }
 
     /**
@@ -153,25 +153,25 @@ extern "C" {
         if ( inRequestPath ==  NULL ||
                 strcmp( inRequestPath->type , STR_MS_T ) != 0 ||
                 inRequestPath->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileMode ==  NULL ||
                 strcmp( inFileMode->type , STR_MS_T ) != 0 ||
                 inFileMode->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileFlags ==  NULL ||
                 strcmp( inFileFlags->type , STR_MS_T ) != 0 ||
                 inFileFlags->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inCacheFilename ==  NULL ||
                 strcmp( inCacheFilename->type , STR_MS_T ) != 0 ||
                 inCacheFilename->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         /*  coerce input to local variables */
@@ -183,13 +183,13 @@ extern "C" {
             }
             else {
                 free( str );
-                return( USER_INPUT_FORMAT_ERR );
+                return USER_INPUT_FORMAT_ERR;
             }
         }
 
         else {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
 
 
@@ -203,7 +203,7 @@ extern "C" {
             printf( "msiputobj_irods: error connecting to remote iRODS: %s:%i\n",
                     ( char * ) inRequestPath->inOutStruct, i );
             free( str );
-            return( i );
+            return i;
         }
 
 
@@ -220,7 +220,7 @@ extern "C" {
         if ( objFD < 0 ) {
             printf( "msigetobj_irods: Unable to open file %s:%i\n", dataObjInp.objPath, objFD );
             rcDisconnect( rcComm );
-            return( objFD );
+            return objFD;
         }
 
         destFd = open( cacheFilename, O_WRONLY | O_CREAT | O_TRUNC, mode );
@@ -257,7 +257,7 @@ extern "C" {
         close( destFd );
         i = rcDataObjClose( rcComm, &dataObjCloseInp );
         rcDisconnect( rcComm );
-        return( i );
+        return i;
 
     }
 

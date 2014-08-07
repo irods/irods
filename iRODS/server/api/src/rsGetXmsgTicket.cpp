@@ -52,6 +52,6 @@ rsGetXmsgTicket( rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
         *outXmsgTicketInfo = NULL;
     }
 
-    return ( status );
+    return status;
 }
 

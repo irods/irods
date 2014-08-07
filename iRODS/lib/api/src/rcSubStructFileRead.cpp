@@ -10,5 +10,5 @@ rcSubStructFileRead( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadI
     status = procApiRequest( conn, SUB_STRUCT_FILE_READ_AN, subStructFileReadInp, NULL,
                              ( void ** ) NULL, subStructFileReadOutBBuf );
 
-    return ( status );
+    return status;
 }

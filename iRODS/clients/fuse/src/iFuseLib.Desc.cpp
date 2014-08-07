@@ -37,7 +37,7 @@ initIFuseDesc() {
     }
 #endif
     // JMC - overwrites objects construction? -  memset (IFuseDesc, 0, sizeof (iFuseDesc_t) * MAX_IFUSE_DESC);
-    return ( 0 );
+    return 0;
 }
 
 int _lockDesc( iFuseDesc_t *desc ) {
@@ -64,7 +64,7 @@ lockDesc( int descInx ) {
     if ( descInx < 3 || descInx >= MAX_IFUSE_DESC ) {
         rodsLog( LOG_ERROR,
                  "lockDesc: descInx %d out of range", descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
     status = _lockDesc( &IFuseDesc[descInx] );
     return status;
@@ -91,7 +91,7 @@ int unlockDesc( int descInx ) {
     if ( descInx < 3 || descInx >= MAX_IFUSE_DESC ) {
         rodsLog( LOG_ERROR,
                  "unlockDesc: descInx %d out of range", descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
     status = _unlockDesc( &IFuseDesc[descInx] );
     return status;
@@ -102,10 +102,10 @@ checkFuseDesc( int descInx ) {
     if ( descInx < 3 || descInx >= MAX_IFUSE_DESC ) {
         rodsLog( LOG_ERROR,
                  "checkFuseDesc: descInx %d out of range", descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /* close a iFuse file */
@@ -210,5 +210,5 @@ _ifuseLseek( iFuseDesc_t *desc, off_t offset ) {
         }
 
     }
-    return ( 0 );
+    return 0;
 }

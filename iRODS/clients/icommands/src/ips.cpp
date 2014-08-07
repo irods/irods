@@ -122,51 +122,51 @@ printProcStat( rodsArguments_t *myRodsArgs, genQueryOut_t *procStatOut ) {
     if ( ( pid = getSqlResultByInx( procStatOut, PID_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for PID_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( startTime = getSqlResultByInx( procStatOut, STARTTIME_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for STARTTIME_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( clientName = getSqlResultByInx( procStatOut, CLIENT_NAME_INX ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for CLIENT_NAME_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( clientZone = getSqlResultByInx( procStatOut, CLIENT_ZONE_INX ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for CLIENT_ZONE_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( proxyName = getSqlResultByInx( procStatOut, PROXY_NAME_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for PROXY_NAME_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( proxyZone = getSqlResultByInx( procStatOut, PROXY_ZONE_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for PROXY_ZONE_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( remoteAddr = getSqlResultByInx( procStatOut, REMOTE_ADDR_INX ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for REMOTE_ADDR_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( serverAddr = getSqlResultByInx( procStatOut, SERVER_ADDR_INX ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for SERVER_ADDR_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( progName = getSqlResultByInx( procStatOut, PROG_NAME_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printProcStat: getSqlResultByInx for PROG_NAME_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     rowCnt = procStatOut->rowCnt;
 
@@ -242,13 +242,13 @@ initCondForProcStat( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( procStatInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForProcStat: NULL procStatInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     bzero( procStatInp, sizeof( procStatInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->all == True ) {
@@ -259,7 +259,7 @@ initCondForProcStat( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForProcStat: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &procStatInp->condInput, RESC_NAME_KW,

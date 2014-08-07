@@ -60,7 +60,7 @@ main( int argc, char **argv ) {
                  "test_rda: rdaopen Error. Status = %d",
                  status );
         free( Comm ); // JMC cppcheck - leak
-        return ( status );
+        return status;
     }
 
     didOne = 0;
@@ -122,5 +122,5 @@ main( int argc, char **argv ) {
    the rule-engine is not needed in this ICAT test. */
 int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
-    return( 0 );
+    return 0;
 }

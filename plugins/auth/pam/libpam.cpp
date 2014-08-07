@@ -271,11 +271,11 @@ extern "C" {
         int status;
 
         if ( pipe( p2cp ) < 0 ) {
-            return( SYS_PIPE_ERROR );
+            return SYS_PIPE_ERROR;
         }
         pid = fork();
         if ( pid == -1 ) {
-            return( SYS_FORK_ERROR );
+            return SYS_FORK_ERROR;
         }
 
         if ( pid )  {

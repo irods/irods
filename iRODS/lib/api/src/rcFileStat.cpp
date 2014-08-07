@@ -12,5 +12,5 @@ rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp,
     status = procApiRequest( conn, FILE_STAT_AN,  fileStatInp, NULL,
                              ( void ** ) fileStatOut, NULL );
 
-    return ( status );
+    return status;
 }

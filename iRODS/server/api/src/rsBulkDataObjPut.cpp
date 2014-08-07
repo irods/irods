@@ -76,7 +76,7 @@ rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                                        REMOTE_CREATE );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == LOCAL_HOST ) {
         int               local = LOCAL_HOST;
@@ -138,19 +138,19 @@ unbunBulkBuf(
     if ( ( objPath = getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( offset = getSqlResultByInx( attriArray, OFFSET_INX ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES ) {
         rodsLog( LOG_NOTICE,
                  "unbunBulkBuf: rowCnt %d too large",
                  attriArray->rowCnt );
-        return ( SYS_REQUESTED_BUF_TOO_LARGE );
+        return SYS_REQUESTED_BUF_TOO_LARGE;
     }
 
     for ( i = 0; i < attriArray->rowCnt; i++ ) {
@@ -227,7 +227,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           rodsLog( LOG_ERROR,"_rsBulkDataObjPut: resolveResc error for %s, status = %d",
           myRodsObjStat->specColl->resource, status);
           freeRodsObjStat (myRodsObjStat);
-          return (status);
+          return status;
           }*/
         irods::resource_ptr resc;
         myRescGrpInfo = new rescGrpInfo_t;
@@ -336,7 +336,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "createBunDirForBulkPut: getFilePathName err for %s. status = %d",
                  dataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
     do {
         snprintf( phyBunDir, MAX_NAME_LEN, "%s/%s.%d", dataObjInfo.filePath,
@@ -366,7 +366,7 @@ initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp ) 
     rstrcpy( dataObjInp->objPath, bulkOprInp->objPath, MAX_NAME_LEN );
     dataObjInp->condInput = bulkOprInp->condInput;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -425,7 +425,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         rodsLog( LOG_ERROR,
                  "regUnbunphySubfiles: opendir error for %s, errno = %d",
                  phyBunDir, errno );
-        return ( UNIX_FILE_OPENDIR_ERR - errno );
+        return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     directory_iterator end_itr; // default construction yields past-the-end
@@ -515,7 +515,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         rodsLog( LOG_ERROR,
                  "regSubFile: getFilePathName err for %s. status = %d",
                  dataObjInp.objPath, status );
-        return ( status );
+        return status;
     }
 
     path p( dataObjInfo.filePath );
@@ -536,7 +536,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
                 rodsLog( LOG_ERROR,
                          "bulkProcAndRegSubfile: phypath %s is already in use. status = %d",
                          dataObjInfo.filePath, status );
-                return ( status );
+                return status;
             }
         }
         /* rename it to the orphan dir */
@@ -551,7 +551,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
             rodsLog( LOG_ERROR,
                      "bulkProcAndRegSubfile: renameFilePathToNewDir err for %s. status = %d",
                      fileRenameInp.oldFileName, status );
-            return ( status );
+            return status;
         }
         if ( modFlag > 0 ) {
             status = addRenamedPhyFile( subObjPath, fileRenameInp.oldFileName,
@@ -577,7 +577,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         rodsLog( LOG_ERROR,
                  "bulkProcAndRegSubfile: link error %s to %s. errno = %d",
                  subfilePath, dataObjInfo.filePath, errno );
-        return ( UNIX_FILE_LINK_ERR - errno );
+        return UNIX_FILE_LINK_ERR - errno;
     }
 #endif
 
@@ -600,13 +600,13 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
                     rodsLog( LOG_ERROR,
                              "bulkProcAndRegSubfile: chksumLocFile error for %s ",
                              dataObjInfo.filePath );
-                    return ( status );
+                    return status;
                 }
                 if ( strcmp( myChksum, chksumStr ) != 0 ) {
                     rodsLog( LOG_ERROR,
                              "bulkProcAndRegSubfile: chksum of %s %s != input %s",
                              dataObjInfo.filePath, chksumStr, myChksum );
-                    return ( USER_CHKSUM_MISMATCH );
+                    return USER_CHKSUM_MISMATCH;
                 }
             }
         }
@@ -667,7 +667,7 @@ addRenamedPhyFile( char *subObjPath, char *oldFileName, char *newFileName,
         rodsLog( LOG_ERROR,
                  "addRenamedPhyFile: count >= %d for %s", MAX_NUM_BULK_OPR_FILES,
                  subObjPath );
-        return ( SYS_RENAME_STRUCT_COUNT_EXCEEDED );
+        return SYS_RENAME_STRUCT_COUNT_EXCEEDED;
     }
     rstrcpy( &renamedPhyFiles->objPath[renamedPhyFiles->count][0],
              subObjPath, MAX_NAME_LEN );
@@ -728,13 +728,13 @@ cleanupBulkRegFiles( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp ) {
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "cleanupBulkRegFiles: getSqlResultByInx for COL_D_DATA_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( rescName =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = 0; i < bulkDataObjRegInp->rowCnt; i++ ) {
@@ -783,61 +783,61 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataType =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_TYPE_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( dataSize =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_SIZE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_DATA_SIZE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( rescName =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_D_RESC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( filePath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_PATH ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_D_DATA_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_DATA_MODE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( oprType =
                 getSqlResultByInx( bulkDataObjRegInp, OPR_TYPE_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for OPR_TYPE_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescGroupName =
                 getSqlResultByInx( bulkDataObjRegInp, COL_RESC_GROUP_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_RESC_GROUP_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_REPL_NUM ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     chksum = getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_CHECKSUM );
 
@@ -846,7 +846,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 getSqlResultByInx( bulkDataObjRegOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: getSqlResultByInx for COL_D_DATA_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     /* create a template */
@@ -858,7 +858,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
       if (status < 0) {
       rodsLog( LOG_ERROR,"postProcBulkPut: resolveResc error for %s, status = %d",
       rescName->value, status);
-      return (status);
+      return status;
       }*/
 
     dataObjInfo.rescInfo = new rescInfo_t;

@@ -67,7 +67,7 @@ sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp ) {
         fprintf( stderr, "rsSendXmsg error. status = %d\n", status );
         exit( 9 );
     }
-    return( status );
+    return status;
 }
 
 int

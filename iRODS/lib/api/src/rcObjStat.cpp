@@ -70,6 +70,6 @@ rcObjStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
     status = procApiRequest( conn, OBJ_STAT_AN,  dataObjInp, NULL,
                              ( void ** ) rodsObjStatOut, NULL );
 
-    return ( status );
+    return status;
 }
 

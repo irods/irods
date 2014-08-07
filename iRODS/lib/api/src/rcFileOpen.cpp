@@ -18,6 +18,6 @@ rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp ) {
     status = procApiRequest( conn, FILE_OPEN_AN, fileOpenInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }
 

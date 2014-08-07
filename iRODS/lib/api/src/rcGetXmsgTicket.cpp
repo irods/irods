@@ -10,5 +10,5 @@ rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
     status = procApiRequest( conn, GET_XMSG_TICKET_AN, getXmsgTicketInp, NULL,
                              ( void ** ) outXmsgTicketInfo, NULL );
 
-    return ( status );
+    return status;
 }

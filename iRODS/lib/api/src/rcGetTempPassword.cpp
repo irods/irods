@@ -9,5 +9,5 @@ rcGetTempPassword( rcComm_t *conn, getTempPasswordOut_t **getTempPasswordOut ) {
     status = procApiRequest( conn, GET_TEMP_PASSWORD_AN, NULL, NULL,
                              ( void ** ) getTempPasswordOut, NULL );
 
-    return ( status );
+    return status;
 }

@@ -21,7 +21,7 @@ rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -34,7 +34,7 @@ rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
         status = rcUnregDataObj( rodsServerHost->conn, unregDataObjInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -78,9 +78,9 @@ _rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
             status = ret.code();
         }
     }
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 }

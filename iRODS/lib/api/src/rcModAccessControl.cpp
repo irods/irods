@@ -9,5 +9,5 @@ rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp )
     status = procApiRequest( conn, MOD_ACCESS_CONTROL_AN,  modAccessControlInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

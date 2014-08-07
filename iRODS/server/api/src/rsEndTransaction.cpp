@@ -16,7 +16,7 @@ rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -35,7 +35,7 @@ rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
         rodsLog( LOG_NOTICE,
                  "rsEndTransaction: rcEndTransaction failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -49,14 +49,14 @@ _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
 
     if ( strcmp( endTransactionInp->arg0, "commit" ) == 0 ) {
         status = chlCommit( rsComm );
-        return( status );
+        return status;
     }
 
     if ( strcmp( endTransactionInp->arg0, "rollback" ) == 0 ) {
         status = chlRollback( rsComm );
-        return( status );
+        return status;
     }
 
-    return( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 #endif

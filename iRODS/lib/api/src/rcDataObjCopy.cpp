@@ -115,7 +115,7 @@ rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp ) {
         free( transferStat );
     }
 
-    return ( status );
+    return status;
 }
 
 int

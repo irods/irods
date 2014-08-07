@@ -188,13 +188,13 @@ showDataObj( char *name, char *attrName, int wild ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "Dataobject %s does not exist\n", fullName );
             printf( "or, if 'strict' access control is enabled, you may not have access.\n" );
-            return( 0 );
+            return 0;
         }
         printGenQueryResults( Conn, status, genQueryOut, columnNames );
     }
@@ -212,7 +212,7 @@ showDataObj( char *name, char *attrName, int wild ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -309,12 +309,12 @@ showColl( char *name, char *attrName, int wild ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "Collection %s does not exist.\n", fullName );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -330,7 +330,7 @@ showColl( char *name, char *attrName, int wild ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -406,12 +406,12 @@ showResc( char *name, char *attrName, int wild ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "Resource %s does not exist.\n", name );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -427,7 +427,7 @@ showResc( char *name, char *attrName, int wild ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -453,7 +453,7 @@ showUser( char *name, char *attrName, int wild ) {
     status = parseUserName( name, userName, userZone );
     if ( status ) {
         printf( "Invalid username format\n" );
-        return( 0 );
+        return 0;
     }
     if ( userZone[0] == '\0' ) {
         strncpy( userZone, myEnv.rodsZone, NAME_LEN );
@@ -520,12 +520,12 @@ showUser( char *name, char *attrName, int wild ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "User %s does not exist.\n", name );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -541,7 +541,7 @@ showUser( char *name, char *attrName, int wild ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -619,7 +619,7 @@ int queryDataObj( char *cmdToken[] ) {
 
     if ( *cmdToken[cmdIx] != '\0' ) {
         printf( "Unrecognized input\n" );
-        return( -2 );
+        return -2;
     }
 
     genQueryInp.maxRows = 10;
@@ -644,7 +644,7 @@ int queryDataObj( char *cmdToken[] ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -719,7 +719,7 @@ int queryCollection( char *cmdToken[] ) {
 
     if ( *cmdToken[cmdIx] != '\0' ) {
         printf( "Unrecognized input\n" );
-        return( -2 );
+        return -2;
     }
 
     genQueryInp.maxRows = 10;
@@ -744,7 +744,7 @@ int queryCollection( char *cmdToken[] ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -809,7 +809,7 @@ int queryResc( char *attribute, char *op, char *value ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -879,7 +879,7 @@ int queryUser( char *attribute, char *op, char *value ) {
                               columnNames );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -979,7 +979,7 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
             printf( "not implemented.\n" );
         }
     }
-    return( status );
+    return status;
 }
 
 /*
@@ -1039,7 +1039,7 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
         rodsLog( LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
                  status, myName, mySubName );
     }
-    return( status );
+    return status;
 }
 
 /*
@@ -1076,7 +1076,7 @@ getInput( char *cmdToken[], int maxTokens ) {
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
             cmdToken[nTokens++] = cpTokenStart;
-            return( 0 );
+            return 0;
         }
         if ( tokenFlag == 0 ) {
             if ( ttybuf[i] == '\'' ) {
@@ -1120,10 +1120,10 @@ getInput( char *cmdToken[], int maxTokens ) {
         }
         if ( nTokens >= maxTokens ) {
             printf( "Limit reached (too many tokens, unrecognized input\n" );
-            return( -1 );
+            return -1;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1160,11 +1160,11 @@ doCommand( char *cmdToken[] ) {
     if ( strcmp( cmdToken[0], "help" ) == 0 ||
             strcmp( cmdToken[0], "h" ) == 0 ) {
         usage( cmdToken[1] );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "quit" ) == 0 ||
             strcmp( cmdToken[0], "q" ) == 0 ) {
-        return( -1 );
+        return -1;
     }
 
     handleMinusL( cmdToken[1] );
@@ -1193,13 +1193,13 @@ doCommand( char *cmdToken[] ) {
         modAVUMetadata( "adda", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], "" );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "add" ) == 0 ) {
         modAVUMetadata( "add", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], "" );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "addw" ) == 0 ) {
         int myStat;
@@ -1210,39 +1210,39 @@ doCommand( char *cmdToken[] ) {
             printf( "AVU added to %d data-objects\n", myStat );
             lastCommandStatus = 0;
         }
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rmw" ) == 0 ) {
         modAVUMetadata( "rmw", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], "" );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rm" ) == 0 ) {
         modAVUMetadata( "rm", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], "" );
-        return( 0 );
+        return 0;
     }
     if ( testMode ) {
         if ( strcmp( cmdToken[0], "rmi" ) == 0 ) {
             modAVUMetadata( "rmi", cmdToken[1], cmdToken[2],
                             cmdToken[3], cmdToken[4], cmdToken[5],
                             cmdToken[6], cmdToken[7], "" );
-            return( 0 );
+            return 0;
         }
     }
     if ( strcmp( cmdToken[0], "mod" ) == 0 ) {
         modAVUMetadata( "mod", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], cmdToken[8] );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "set" ) == 0 ) { // JMC - backport 4836
         modAVUMetadata( "set", cmdToken[1], cmdToken[2],
                         cmdToken[3], cmdToken[4], cmdToken[5],
                         cmdToken[6], cmdToken[7], "" );
-        return( 0 );
+        return 0;
     }
 
     doLs = 0;
@@ -1257,19 +1257,19 @@ doCommand( char *cmdToken[] ) {
     if ( doLs ) {
         if ( strcmp( cmdToken[1], "-d" ) == 0 ) {
             showDataObj( cmdToken[2], cmdToken[3], wild );
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-C" ) == 0 || strcmp( cmdToken[1], "-c" ) == 0 ) {
             showColl( cmdToken[2], cmdToken[3], wild );
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-R" ) == 0 || strcmp( cmdToken[1], "-r" ) == 0 ) {
             showResc( cmdToken[2], cmdToken[3], wild );
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-u" ) == 0 ) {
             showUser( cmdToken[2], cmdToken[3], wild );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -1278,28 +1278,28 @@ doCommand( char *cmdToken[] ) {
         if ( strcmp( cmdToken[1], "-d" ) == 0 ) {
             status = queryDataObj( cmdToken );
             if ( status < 0 ) {
-                return( -2 );
+                return -2;
             }
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-C" ) == 0 || strcmp( cmdToken[1], "-c" ) == 0 ) {
             status = queryCollection( cmdToken );
             if ( status < 0 ) {
-                return( -2 );
+                return -2;
             }
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-R" ) == 0 || strcmp( cmdToken[1], "-r" ) == 0 ) {
             if ( *cmdToken[5] != '\0' ) {
                 printf( "Unrecognized input\n" );
-                return( -2 );
+                return -2;
             }
             queryResc( cmdToken[2], cmdToken[3], cmdToken[4] );
-            return( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "-u" ) == 0 ) {
             queryUser( cmdToken[2], cmdToken[3], cmdToken[4] );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -1307,7 +1307,7 @@ doCommand( char *cmdToken[] ) {
         modCopyAVUMetadata( "cp", cmdToken[1], cmdToken[2],
                             cmdToken[3], cmdToken[4], cmdToken[5],
                             cmdToken[6], cmdToken[7] );
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "upper" ) == 0 ) {
@@ -1319,7 +1319,7 @@ doCommand( char *cmdToken[] ) {
             upperCaseFlag = 1;
             printf( "upper case mode for 'qu' command enabled\n" );
         }
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "test" ) == 0 ) {
@@ -1331,14 +1331,14 @@ doCommand( char *cmdToken[] ) {
             testMode = 1;
             printf( "testMode is now on\n" );
         }
-        return( 0 );
+        return 0;
     }
 
     if ( *cmdToken[0] != '\0' ) {
         printf( "unrecognized command, try 'help'\n" );
-        return( -2 );
+        return -2;
     }
-    return( -3 );
+    return -3;
 }
 
 int
@@ -1638,7 +1638,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1663,7 +1663,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1680,7 +1680,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1706,7 +1706,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1725,7 +1725,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1745,7 +1745,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1766,7 +1766,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1789,7 +1789,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1824,7 +1824,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1837,7 +1837,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1856,7 +1856,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1864,5 +1864,5 @@ usage( char *subOpt ) {
         printf( "Sorry, either %s is an invalid command or the help has not been written yet\n",
                 subOpt );
     }
-    return( 0 );
+    return 0;
 }

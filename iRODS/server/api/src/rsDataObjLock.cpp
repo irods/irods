@@ -29,12 +29,12 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     remoteFlag = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInp->objPath,
                                      &rodsServerHost );
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         if ( rodsServerHost != NULL ) { // JMC - cppcheck null ref
             status = rcDataObjLock( rodsServerHost->conn, dataObjInp );
-            return ( status );
+            return status;
         }
         else {
             status = SYS_NO_RCAT_SERVER_ERR;
@@ -47,7 +47,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -89,7 +89,7 @@ getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
         *cmd  = F_SETLK; // JMC - backport 4604
         lockFd = getValByKey( condInput, LOCK_FD_KW );
         if ( lockFd  != NULL ) {
-            return ( atoi( lockFd ) );
+            return atoi( lockFd );
         }
         else {
             status = SYS_LOCK_TYPE_INP_ERR;

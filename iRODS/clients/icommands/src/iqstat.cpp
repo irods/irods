@@ -71,7 +71,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
             }
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -160,10 +160,10 @@ showRuleExec( char *name, char *ruleName, int allFlag ) {
                 else {
                     printf( "No delayed rules pending for user %s\n", name );
                 }
-                return( 0 );
+                return 0;
             }
             printf( "User %s does not exist.\n", name );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -185,7 +185,7 @@ showRuleExec( char *name, char *ruleName, int allFlag ) {
                                             columnNames, 0 );
     }
 
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -241,11 +241,11 @@ showRuleExecBrief( char *name, int allFlag ) {
             else {
                 printf( "No delayed rules pending for user %s\n", name );
             }
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             printf( "User %s does not exist.\n", name );
-            return( 0 );
+            return 0;
         }
     }
     printf( "id     name\n" );
@@ -257,7 +257,7 @@ showRuleExecBrief( char *name, int allFlag ) {
         printCount += printGenQueryResults( Conn, status, genQueryOut,
                                             NULL, 1 );
     }
-    return ( 0 );
+    return 0;
 }
 
 int

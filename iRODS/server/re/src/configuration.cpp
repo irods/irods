@@ -482,7 +482,7 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
          "readRuleStructFromFile() could not open rules file %s\n",
          rulesFileName);
     #endif
-      return(RULES_FILE_READ_ERROR);
+      return RULES_FILE_READ_ERROR;
     }
     buf[MAX_RULE_LENGTH-1]='\0';
     while (fgets (buf, MAX_RULE_LENGTH-1, file) != NULL) {

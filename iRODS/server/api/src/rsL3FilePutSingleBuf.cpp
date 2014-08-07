@@ -33,6 +33,6 @@ rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
         bytesWritten = 0;
     }
 
-    return ( bytesWritten );
+    return bytesWritten;
 }
 

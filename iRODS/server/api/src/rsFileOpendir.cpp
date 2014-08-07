@@ -38,18 +38,18 @@ rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileOpendir: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->objPath, fileOpendirInp->dirName, fileOpendirInp->resc_hier_,
@@ -60,7 +60,7 @@ rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {
     }
     FileDesc[fileInx].driverDep = dirPtr;
 
-    return ( fileInx );
+    return fileInx;
 }
 
 int
@@ -122,7 +122,7 @@ int _rsFileOpendir(
 
     ( *_dir_ptr ) = coll_obj->directory_pointer(); // JMC -- TEMPORARY
 
-    return ( opendir_err.code() );
+    return opendir_err.code();
 
 } // _rsFileOpendir
 

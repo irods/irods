@@ -30,6 +30,6 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         myOutSvrInfo->serverBootTime = atoi( tmpStr );
     }
 
-    return ( 0 );
+    return 0;
 }
 

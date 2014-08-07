@@ -299,7 +299,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         status = SYS_SOCK_OPEN_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
                       "sockOpenForInConn: open socket error. status = %d", status );
-        return ( status );
+        return status;
     }
 
     /* For SOCK_DGRAM, done in checkbuf */
@@ -363,7 +363,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         rodsLog( LOG_NOTICE,
                  "sockOpenForInConn: bind socket error. portNum = %d, errno = %d",
                  *portNum, errno );
-        return ( status );
+        return status;
     }
 
     if ( addr != NULL ) {
@@ -384,7 +384,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         *addr =  strdup( rods_inet_ntoa( sin.sin_addr ) );
     }
 
-    return ( sock );
+    return sock;
 }
 
 /* rsAcceptConn - Server accept connection */
@@ -407,7 +407,7 @@ rsAcceptConn( rsComm_t *svrComm ) {
     }
     rodsSetSockOpt( newSock, svrComm->windowSize );
 
-    return ( newSock );
+    return newSock;
 }
 
 // =-=-=-=-=-=-=-
@@ -495,7 +495,7 @@ myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             if ( status == 0 ) {
                 /* timedout */
                 if ( len - toRead > 0 ) {
-                    return ( len - toRead );
+                    return len - toRead;
                 }
                 else {
                     return SYS_SOCK_READ_TIMEDOUT;
@@ -529,7 +529,7 @@ myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             *bytesRead += nbytes;
         }
     }
-    return ( len - toRead );
+    return len - toRead;
 }
 
 int
@@ -573,7 +573,7 @@ myWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             *bytesWritten += nbytes;
         }
     }
-    return ( len - toWrite );
+    return len - toWrite;
 }
 
 // =-=-=-=-=-=-=-
@@ -763,7 +763,7 @@ rodsSetSockOpt( int sock, int windowSize ) {
     }
 #endif
 
-    return ( savedStatus );
+    return savedStatus;
 }
 
 int
@@ -778,7 +778,7 @@ connectToRhostPortal( char *rodsHost, int rodsPort,
         rodsLog( LOG_NOTICE,
                  "connectToRhostPortal: setSockAddr error for %s, errno = %d",
                  rodsHost, errno );
-        return ( status );
+        return status;
     }
     /* set timeout 11/13/2009 */
     sock = connectToRhostWithRaddr( &remoteAddr, windowSize, 1 );
@@ -787,7 +787,7 @@ connectToRhostPortal( char *rodsHost, int rodsPort,
         rodsLog( LOG_ERROR,
                  "connectToRhostPortal: connectTo Rhost %s port %d error, status = %d",
                  rodsHost, rodsPort, sock );
-        return ( sock );
+        return sock;
     }
 
     myCookie = htonl( cookie );
@@ -795,10 +795,10 @@ connectToRhostPortal( char *rodsHost, int rodsPort,
 
     if ( nbytes != sizeof( myCookie ) ) {
         CLOSE_SOCK( sock );
-        return ( SYS_PORT_COOKIE_ERR );
+        return SYS_PORT_COOKIE_ERR;
     }
 
-    return ( sock );
+    return sock;
 }
 
 int
@@ -923,7 +923,7 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
         rodsLog( LOG_NOTICE,
                  "connectToRhostWithRaddr() - socket() failed: errno=%d",
                  errno );
-        return ( USER_SOCK_OPEN_ERR - errno );
+        return USER_SOCK_OPEN_ERR - errno;
     }
 
     if ( timeoutFlag > 0 ) {
@@ -943,7 +943,7 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
 #else
         close( sock );
 #endif /* WIN32 */
-        return ( status );
+        return status;
     }
 
     rodsSetSockOpt( sock, windowSize );
@@ -955,7 +955,7 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
     }
 #endif
 
-    return ( sock );
+    return sock;
 
 }
 
@@ -996,13 +996,13 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     if ( arg < 0 ) {
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_GETFL error, errno = %d", errno );
-        return ( USER_SOCK_CONNECT_ERR );
+        return USER_SOCK_CONNECT_ERR;
     }
     arg |= O_NONBLOCK;
     if ( fcntl( sock, F_SETFL, arg ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno );
-        return ( USER_SOCK_CONNECT_ERR );
+        return USER_SOCK_CONNECT_ERR;
     }
 
     int status = 0;
@@ -1045,7 +1045,7 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
                     rodsLog( LOG_ERROR,
                              "connectToRhostWithTout: getsockopt error, errno = %d",
                              errno );
-                    return ( USER_SOCK_CONNECT_ERR - errno );
+                    return USER_SOCK_CONNECT_ERR - errno;
                 }
                 /* Check the returned value */
                 if ( myval ) {
@@ -1088,14 +1088,14 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     if ( ( arg = fcntl( sock, F_GETFL, NULL ) ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_GETFL error, errno = %d", errno );
-        return ( USER_SOCK_CONNECT_ERR );
+        return USER_SOCK_CONNECT_ERR;
     }
 
     arg &= ( ~O_NONBLOCK );
     if ( fcntl( sock, F_SETFL, arg ) < 0 ) {
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno );
-        return ( USER_SOCK_CONNECT_ERR );
+        return USER_SOCK_CONNECT_ERR;
     }
     return status;
 
@@ -1138,10 +1138,10 @@ setRemoteAddr( int sock, struct sockaddr_in *remoteAddr ) {
                       &laddrlen ) < 0 ) {
         rodsLog( LOG_NOTICE,
                  "setLocalAddr() -- getpeername() failed: errno=%d", errno );
-        return ( USER_RODS_HOSTNAME_ERR );
+        return USER_RODS_HOSTNAME_ERR;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1365,15 +1365,15 @@ rods_inet_ntoa( struct in_addr in ) {
         struct hostent *phe;
 
         if ( gethostname( sb, sizeof( sb ) ) != 0 ) {
-            return( clHostAddr );
+            return clHostAddr;
         }
         if ( ( phe = gethostbyname( sb ) ) == NULL ) {
-            return( clHostAddr );
+            return clHostAddr;
         }
         clHostAddr = inet_ntoa( *( struct in_addr* ) phe->h_addr );
     }
 
-    return ( clHostAddr );
+    return clHostAddr;
 }
 
 // =-=-=-=-=-=-=-
@@ -1587,12 +1587,12 @@ int
 getUdpPortFromPortList( portList_t *thisPortList ) {
     int udpport = 0;
     udpport = ( thisPortList->portNum & 0xffff0000 ) >> 16;
-    return ( udpport );
+    return udpport;
 }
 
 int
 getTcpPortFromPortList( portList_t *thisPortList ) {
-    return ( thisPortList->portNum & 0xffff );
+    return thisPortList->portNum & 0xffff;
 }
 
 int
@@ -1606,12 +1606,12 @@ int
 getUdpSockFromPortList( portList_t *thisPortList ) {
     int udpsock = 0;
     udpsock = ( thisPortList->sock & 0xffff0000 ) >> 16;
-    return ( udpsock );
+    return udpsock;
 }
 
 int
 getTcpSockFromPortList( portList_t *thisPortList ) {
-    return ( thisPortList->sock & 0xffff );
+    return thisPortList->sock & 0xffff;
 }
 
 int

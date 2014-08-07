@@ -47,7 +47,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
                                  dataObjUnlinkInp->objPath, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
         rcDataObjUnlink( rodsServerHost->conn, dataObjUnlinkInp );
@@ -85,7 +85,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             getValByKey(
                 &dataObjUnlinkInp->condInput, RMTRASH_KW ) != NULL ) {
         if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
-            return ( SYS_INVALID_FILE_PATH );
+            return SYS_INVALID_FILE_PATH;
         }
         rmTrashFlag = 1;
     }
@@ -103,7 +103,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         msg << " - " << rods_error << " " << sys_error;
         irods::error result = ERROR( status, msg.str() );
         irods::log( result );
-        return ( status );
+        return status;
     }
 
     if ( rmTrashFlag == 1 ) {
@@ -158,7 +158,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     /* dataObjInfoHead may be outdated */
     freeAllDataObjInfo( dataObjInfoHead );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -200,7 +200,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                     if ( getErrno( status ) != EEXIST && getIrodsErrno( status ) != SYS_TAR_STRUCT_FILE_EXTRACT_ERR ) {
                         rodsLogError( LOG_ERROR, status, "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s",
                                       myDataObjInfoHead->objPath );
-                        return ( status );
+                        return status;
                     }
                 } // status < 0
                 /* dataObjInfoHead may be outdated */
@@ -208,7 +208,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp, dataObjInfoHead );
 
                 if ( status < 0 ) {
-                    return ( status );
+                    return status;
                 }
             } // else
         } // if numSubfiles
@@ -233,7 +233,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         resolveDataObjReplStatus( rsComm, dataObjUnlinkInp );
     }
 
-    return ( retVal );
+    return retVal;
 }
 
 /* resolveDataObjReplStatus - a dirty copy may be deleted leaving no
@@ -293,7 +293,7 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         clearKeyVal( &regParam );
     }
     freeAllDataObjInfo( dataObjInfoHead );
-    return ( status );
+    return status;
 }
 
 int
@@ -405,7 +405,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                     }
                     break;
                 }
-                return ( status );
+                return status;
             }
             else {
                 status = 0;
@@ -413,7 +413,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -474,7 +474,7 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         rstrcpy( fileUnlinkInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
         status = rsFileUnlink( rsComm, &fileUnlinkInp );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -499,7 +499,7 @@ rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_NOTICE,
                  "rsMvDataObjToTrash: getDataObjInfo error for %s. status = %d",
                  dataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
 
     status = chkPreProcDeleteRule( rsComm, dataObjInp, *dataObjInfoHead );
@@ -511,7 +511,7 @@ rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = rsMkTrashPath( rsComm, dataObjInp->objPath, trashPath );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     memset( &dataObjRenameInp, 0, sizeof( dataObjRenameInp ) );
@@ -536,9 +536,9 @@ rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "rsMvDataObjToTrash: rcDataObjRename error for %s, status = %d",
                  dataObjRenameInp.destDataObjInp.objPath, status );
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -561,14 +561,14 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             rodsLog( LOG_ERROR,
                      "chkPreProcDeleteRule: acDataDeletePolicy err for %s. stat = %d",
                      dataObjUnlinkInp->objPath, status );
-            return ( status );
+            return status;
         }
 
         if ( rei.status == SYS_DELETE_DISALLOWED ) {
             rodsLog( LOG_ERROR,
                      "chkPreProcDeleteRule:acDataDeletePolicy disallowed delete of %s",
                      dataObjUnlinkInp->objPath );
-            return ( rei.status );
+            return rei.status;
         }
         tmpDataObjInfo = tmpDataObjInfo->next;
     }

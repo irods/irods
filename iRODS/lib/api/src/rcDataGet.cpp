@@ -12,5 +12,5 @@ rcDataGet( rcComm_t *conn, dataOprInp_t *dataGetInp,
     status = procApiRequest( conn, DATA_GET_AN, dataGetInp, NULL,
                              ( void ** ) portalOprOut, NULL );
 
-    return ( status );
+    return status;
 }

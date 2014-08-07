@@ -23,7 +23,7 @@
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
 int initExecCmdMutex() {
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -41,7 +41,7 @@ rsExecCmd241( rsComm_t *rsComm, execCmd241_t *execCmd241Inp,
     bzero( &execCmdInp.condInput, sizeof( keyValPair_t ) );
 
     status = rsExecCmd( rsComm, &execCmdInp, execCmdOut );
-    return ( status );
+    return status;
 }
 
 int
@@ -56,7 +56,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
     if ( strchr( execCmdInp->cmd, '/' ) != NULL ) {
         rodsLog( LOG_ERROR,
                  "rsExecCmd: bad cmd path %s", execCmdInp->cmd );
-        return ( BAD_EXEC_CMD_PATH );
+        return BAD_EXEC_CMD_PATH;
     }
 
     /* Also check for anonymous.  As an additional safety precaution,
@@ -66,7 +66,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
        following check.
     */
     if ( strncmp( ANONYMOUS_USER, rsComm->clientUser.userName, NAME_LEN ) == 0 ) {
-        return( USER_NOT_ALLOWED_TO_EXEC_CMD );
+        return USER_NOT_ALLOWED_TO_EXEC_CMD;
     }
 
     memset( &addr, 0, sizeof( addr ) );
@@ -106,7 +106,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
             rodsLog( LOG_ERROR,
                      "rsExecCmd: getDataObjInfo error for hintPath %s",
                      execCmdInp->hintPath );
-            return ( status );
+            return status;
         }
 
         status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &execCmdInp->condInput, 0 );
@@ -164,7 +164,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         status = SYS_UNRECOGNIZED_REMOTE_FLAG;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -232,7 +232,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
-        return ( SYS_PIPE_ERROR - errno );
+        return SYS_PIPE_ERROR - errno;
     }
 
 #ifndef windows_platform    /* UNIX */
@@ -243,7 +243,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
-        return ( SYS_PIPE_ERROR - errno );
+        return SYS_PIPE_ERROR - errno;
     }
 
 #ifndef windows_platform    /* UNIX */
@@ -254,7 +254,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
-        return ( SYS_PIPE_ERROR - errno );
+        return SYS_PIPE_ERROR - errno;
     }
 
 #ifndef windows_platform   /* UNIX */
@@ -290,7 +290,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
     else if ( childPid < 0 ) {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: RODS_FORK failed. errno = %d", errno );
-        return ( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
 #else  /* Windows */
     status = execCmd( execCmdInp, stdoutFd[1], stderrFd[1] );
@@ -299,7 +299,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
     }
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "_rsExecCmd: RODS_FORK failed. errno = %d", errno );
-        return ( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
 #endif
 
@@ -352,7 +352,7 @@ _rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut )
         }
 #endif
     } // else
-    return ( myExecCmdOut->status );
+    return myExecCmdOut->status;
 }
 
 int
@@ -387,7 +387,7 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     status = _spawnv( _P_NOWAIT, av[0], av );
 #endif
 
-    return ( status );
+    return status;
 }
 
 int
@@ -470,6 +470,6 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
     }
     /**  Added by Raja to take care of escaped quotes Oct 28 09 */
 
-    return ( 0 );
+    return 0;
 }
 

@@ -59,10 +59,10 @@ querySpecColl( rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut ) {
     if ( status < 0 ) {
         rstrcpy( FailedSpecCollPath, objPath, MAX_NAME_LEN );
         HaveFailedSpecCollPath = 1;
-        return ( status );
+        return status;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /* queueSpecCollCache - queue the specColl given in genQueryOut.
@@ -94,55 +94,55 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
     if ( ( dataId = getSqlResultByInx( genQueryOut, COL_COLL_ID ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache: getSqlResultByInx for COL_COLL_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( ownerName = getSqlResultByInx( genQueryOut,
                             COL_COLL_OWNER_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_OWNER_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
                             COL_COLL_OWNER_ZONE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_OWNER_ZONE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( createTime = getSqlResultByInx( genQueryOut,
                              COL_COLL_CREATE_TIME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_CREATE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
                              COL_COLL_MODIFY_TIME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_MODIFY_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collType = getSqlResultByInx( genQueryOut,
                            COL_COLL_TYPE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_TYPE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collection = getSqlResultByInx( genQueryOut,
                              COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collInfo1 = getSqlResultByInx( genQueryOut,
                             COL_COLL_INFO1 ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_INFO1 failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collInfo2 = getSqlResultByInx( genQueryOut,
                             COL_COLL_INFO2 ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_INFO2 failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = 0; i <= genQueryOut->rowCnt; i++ ) {
@@ -235,12 +235,12 @@ matchSpecCollCache( char *objPath ) {
             char *tmpPtr = objPath + len;
 
             if ( *tmpPtr == '\0' || *tmpPtr == '/' ) {
-                return ( tmpSpecCollCache );
+                return tmpSpecCollCache;
             }
         }
         tmpSpecCollCache = tmpSpecCollCache->next;
     }
-    return ( NULL );
+    return NULL;
 }
 
 int
@@ -250,26 +250,26 @@ getSpecCollCache( rsComm_t *rsComm, char *objPath,
     genQueryOut_t *genQueryOut = NULL;
 
     if ( ( *specCollCache = matchSpecCollCache( objPath ) ) != NULL ) {
-        return ( 0 );
+        return 0;
     }
     else if ( inCachOnly > 0 ) {
-        return ( SYS_SPEC_COLL_NOT_IN_CACHE );
+        return SYS_SPEC_COLL_NOT_IN_CACHE;
     }
 
     status = querySpecColl( rsComm, objPath, &genQueryOut );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     status = queueSpecCollCache( rsComm, genQueryOut, objPath ); // JMC - backport 4680
     freeGenQueryOut( &genQueryOut );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
     *specCollCache = SpecCollCacheHead;  /* queued at top */
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -322,7 +322,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
                      "statPathInSpecColl: getSpecCollCache for %s, status = %d",
                      objPath, status );
         }
-        return ( status );
+        return status;
     }
 
     if ( *rodsObjStatOut == NULL ) {
@@ -361,7 +361,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
                  TIME_LEN );
         freeAllDataObjInfo( dataObjInfo );
         /* XXXXX 0 return is creating a problem for fuse */
-        return ( 0 );
+        return 0;
     }
     else {
         ( *rodsObjStatOut )->specColl = dataObjInfo->specColl;
@@ -387,7 +387,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
         freeAllDataObjInfo( dataObjInfo );
     }
 
-    return ( status );
+    return status;
 }
 
 /* specCollSubStat - Given specColl and the object path (subPath),
@@ -421,7 +421,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                      specColl->resource, status);
             freeDataObjInfo (myDataObjInfo);
             *dataObjInfo = NULL;
-            return (status);
+            return status;
         }*/
 
         myDataObjInfo->rescInfo = new rescInfo_t;
@@ -450,7 +450,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         if ( status < 0 ) {
             freeDataObjInfo( myDataObjInfo );
             *dataObjInfo = NULL;
-            return ( status );
+            return status;
         }
         replSpecColl( specColl, &myDataObjInfo->specColl );
     }
@@ -470,7 +470,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         status = getMountedSubPhyPath( curSpecColl->collection,
                                        curSpecColl->phyPath, subPath, newPath );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
 
         status = resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
@@ -525,7 +525,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             rodsLog( LOG_DEBUG,
                      "specCollSubStat: getDataObjInfo error for %s, status = %d",
                      newPath, status );
-            return ( status );
+            return status;
         }
         else {
             replSpecColl( curSpecColl, &( *dataObjInfo )->specColl );
@@ -548,7 +548,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                      "specCollSubStat: getDataObjInfo error for %s, status = %d",
                      myDataObjInp.objPath, status );
             *dataObjInfo = NULL;
-            return ( status );
+            return status;
         }
 
         /* screen out any stale copies */
@@ -572,7 +572,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                              specColl->resource );
                     freeAllDataObjInfo( *dataObjInfo );
                     *dataObjInfo = NULL;
-                    return ( SYS_CACHE_STRUCT_FILE_RESC_ERR );
+                    return SYS_CACHE_STRUCT_FILE_RESC_ERR;
                 }
             }
             else {
@@ -581,7 +581,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                          myDataObjInp.objPath, specColl->resource );
                 freeAllDataObjInfo( *dataObjInfo );
                 *dataObjInfo = NULL;
-                return ( SYS_CACHE_STRUCT_FILE_RESC_ERR );
+                return SYS_CACHE_STRUCT_FILE_RESC_ERR;
             }
         }
 
@@ -602,14 +602,14 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
 
         if ( strcmp( ( *dataObjInfo )->subPath, specColl->collection ) == 0 ) {
             /* no need to go down */
-            return ( COLL_OBJ_T );
+            return COLL_OBJ_T;
         }
     }
     else {
         rodsLog( LOG_ERROR,
                  "specCollSubStat: Unknown specColl collClass = %d",
                  specColl->collClass );
-        return ( SYS_UNKNOWN_SPEC_COLL_CLASS );
+        return SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
     status = l3Stat( rsComm, *dataObjInfo, &rodsStat );
 
@@ -631,7 +631,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
     }
     free( rodsStat );
 
-    return ( objType );
+    return objType;
 }
 
 /* resolvePathInSpecColl - given the object path in dataObjInp->objPath, see if
@@ -651,12 +651,12 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
     char *accessStr;
 
     if ( objPath == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     if ( ( status = getSpecCollCache( rsComm, objPath, inCachOnly,
                                       &specCollCache ) ) < 0 ) {
 
-        return ( status );
+        return status;
     }
     else {
         cachedSpecColl = &specCollCache->specColl;
@@ -677,7 +677,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
                 rodsLog( LOG_ERROR,
                          "resolvePathInSpecColl:checkCollAccessPerm err for %s,stat=%d",
                          cachedSpecColl->collection, status );
-                return ( status );
+                return status;
             }
             else {
                 specCollCache->perm = specCollPerm;
@@ -691,12 +691,12 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
     if ( status < 0 ) {
         if ( *dataObjInfo != NULL ) {
             /* does not exist. return the dataObjInfo anyway */
-            return ( SYS_SPEC_COLL_OBJ_NOT_EXIST );
+            return SYS_SPEC_COLL_OBJ_NOT_EXIST;
         }
         rodsLog( LOG_ERROR,
                  "resolvePathInSpecColl: specCollSubStat error for %s, status = %d",
                  objPath, status );
-        return ( status );
+        return status;
     }
     else {
         if ( *dataObjInfo != NULL ) {
@@ -706,7 +706,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -744,7 +744,7 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
         status = getMountedSubPhyPath( curSpecColl->collection,
                                        curSpecColl->phyPath, prevNewPath, objPath );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
     if ( *specCollCache == NULL ) {

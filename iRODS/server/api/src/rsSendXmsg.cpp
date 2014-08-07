@@ -31,7 +31,7 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
         rodsLog( LOG_ERROR,
                  "rsSendXmsg: sendTicket mismatch, input %d, in cache %d",
                  sendXmsgInp->ticket.sendTicket, ticketMsgStruct->ticket.sendTicket );
-        return ( SYS_UNMATCHED_XMSG_TICKET );
+        return SYS_UNMATCHED_XMSG_TICKET;
     }
 
     /* added by Raja Jun 30, 2010 for dropping and clearing a messageStream */
@@ -39,23 +39,23 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     if ( miscInfo != NULL && strlen( miscInfo ) > 0 ) {
         if ( !strcmp( miscInfo, "CLEAR_STREAM" ) ) {
             i = clearAllXMessages( ticketMsgStruct );
-            return( i );
+            return i;
         }
         else if ( !strcmp( miscInfo, "DROP_STREAM" ) ) {
             if ( sendXmsgInp->ticket.rcvTicket > 5 ) {
                 i = clearAllXMessages( ticketMsgStruct );
                 if ( i < 0 ) {
-                    return ( i );
+                    return i;
                 }
                 i = rmTicketMsgStructFromHQue( ticketMsgStruct,
                                                ( ticketHashQue_t * ) ticketMsgStruct->ticketHashQue );
-                return( i );
+                return i;
             }
         }
         else if ( !strcmp( miscInfo, "ERASE_MESSAGE" ) ) {
             /* msgNumber actually is the sequence Number in the queue*/
             i = clearOneXMessage( ticketMsgStruct, sendXmsgInp->sendXmsgInfo.msgNumber );
-            return( i );
+            return i;
         }
     }
 
@@ -73,7 +73,7 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     status = addXmsgToTicketMsgStruct (irodsXmsg, ticketMsgStruct);
     ***  moved to xmsgLib.c RAJA Nov 29 2010 ***/
     status = addXmsgToQues( irodsXmsg,  ticketMsgStruct );
-    return ( status );
+    return status;
 }
 
 

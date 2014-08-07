@@ -23,7 +23,7 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                  rsComm->clientUser.rodsZone, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -41,7 +41,7 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
         if ( status ) {
             rodsLog( LOG_NOTICE, "rsPamAuthRequest: could not establish SSL connection, status %d",
                      status );
-            return( status );
+            return status;
         }
 
         status = rcPamAuthRequest( rodsServerHost->conn, pamAuthRequestInp,
@@ -54,7 +54,7 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                      status );
         }
     }
-    return ( status );
+    return status;
 }
 
 
@@ -74,11 +74,11 @@ runPamAuthCheck( char *username, char *password ) {
     int status;
 
     if ( pipe( p2cp ) < 0 ) {
-        return( SYS_PIPE_ERROR );
+        return SYS_PIPE_ERROR;
     }
     pid = fork();
     if ( pid == -1 ) {
-        return( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
 
     if ( pid )  {
@@ -92,7 +92,7 @@ runPamAuthCheck( char *username, char *password ) {
         }
         close( p2cp[1] );
         waitpid( pid, &status, 0 );
-        return( status );
+        return status;
     }
     else {
         /* This is the child */
@@ -131,7 +131,7 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
         /* uid == euid is needed for some plugins e.g. libpam-sss */
         status = changeToRootUser();
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
     /* Normal mode, fork/exec setuid program to do the Pam check */
@@ -151,21 +151,21 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     }
 
     if ( status ) {
-        return( status );
+        return status;
     }
     result->irodsPamPassword = ( char* )malloc( 100 );
     if ( result->irodsPamPassword == 0 ) {
-        return ( SYS_MALLOC_ERR );
+        return SYS_MALLOC_ERR;
     }
     status = chlUpdateIrodsPamPassword( rsComm,
                                         pamAuthRequestInp->pamUser,
                                         pamAuthRequestInp->timeToLive,
                                         NULL,
                                         &result->irodsPamPassword );
-    return( status );
+    return status;
 #else
     status = PAM_AUTH_NOT_BUILT_INTO_SERVER;
-    return ( status );
+    return status;
 #endif
 }
 #endif /* RODS_CAT */

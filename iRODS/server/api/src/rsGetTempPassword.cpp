@@ -15,7 +15,7 @@ rsGetTempPassword( rsComm_t *rsComm,
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
 
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -35,7 +35,7 @@ rsGetTempPassword( rsComm_t *rsComm,
                  "rsGetTempPassword: rcGetTempPassword failed, status = %d",
                  status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -57,6 +57,6 @@ _rsGetTempPassword( rsComm_t *rsComm,
 
     *getTempPasswordOut = myGetTempPasswordOut;
 
-    return ( status );
+    return status;
 }
 #endif

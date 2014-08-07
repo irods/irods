@@ -105,10 +105,10 @@ char *rstrcat( char *dest, const char *src, int maxLen ) {
         rodsLog( LOG_ERROR,
                  "rstrcat not enough space in dest, slen:%d, dlen:%d, maxLen:%d",
                  slen, dlen, maxLen );
-        return( NULL );
+        return NULL;
     }
 
-    return( strncat( dest, src, slen ) );
+    return strncat( dest, src, slen );
 }
 
 /*  rods strncat: like strncat but make sure the dest doesn't overflow.
@@ -130,10 +130,10 @@ char *rstrncat( char *dest, const char *src, int srcLen, int maxLen ) {
         rodsLog( LOG_ERROR,
                  "rstrncat not enough space in dest, slen:%d, dlen:%d, maxLen:%d",
                  slen, dlen, maxLen );
-        return( NULL );
+        return NULL;
     }
 
-    return( strncat( dest, src, slen ) );
+    return strncat( dest, src, slen );
 }
 
 int
@@ -155,9 +155,9 @@ rSplitStr( const char *inStr, char* outStr1, size_t maxOutLen1,
     /* copy the second str */
     size_t copy_start = base_string.size() == index_of_first_key ? base_string.size() : index_of_first_key + 1;
     if ( rstrcpy( outStr2, base_string.substr( copy_start ).c_str(), maxOutLen2 ) == NULL ) {
-        return ( USER_STRLEN_TOOLONG );
+        return USER_STRLEN_TOOLONG;
     }
-    return ( 0 );
+    return 0;
 }
 /* copyStrFromBuf - copy a string from buf to outStr, skipping white space
  * and comment. also advance buf pointer
@@ -213,7 +213,7 @@ copyStrFromBuf( char **buf, char *outStr, int maxOutLen ) {
     *outPtr = '\0';
     *buf = bufPtr;
 
-    return ( len );
+    return len;
 }
 
 int
@@ -222,11 +222,11 @@ isAllDigit( const char * myStr ) {
 
     while ( ( c = *myStr ) != '\0' ) {
         if ( isdigit( c ) == 0 ) {
-            return ( 0 );
+            return 0;
         }
         myStr++;
     }
-    return ( 1 );
+    return 1;
 }
 
 int
@@ -242,14 +242,14 @@ splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
     if ( srcPathString.size() == 0 ) {
         *dir = '\0';
         *file = '\0';
-        return ( 0 );
+        return 0;
     }
 
     size_t index_of_last_key = srcPathString.rfind( key );
     if( std::string::npos == index_of_last_key ) {
         *dir = '\0';
         rstrcpy( file, srcPathString.c_str(), maxFileLen );
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
 
     // If dir is the root directory, we want to return the single-character
@@ -286,7 +286,7 @@ trimWS( char * s ) {
     *( t + 1 ) = '\0';
 
     /*TODO Please return appropriate value*/
-    return ( 0 );
+    return 0;
 }
 int
 trimQuotes( char * s ) {
@@ -301,14 +301,14 @@ trimQuotes( char * s ) {
     }
     /* made it so that end quotes are removed only if quoted initially */
     /*TODO Please return appropriate value*/
-    return ( 0 );
+    return 0;
 }
 
 int
 checkStringForSystem( char * inString ) {
     // .zZZZz. :: TODO - Make this do something. Sanitize strings to be
     // passed as arguments to system calls, I think?
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -321,7 +321,7 @@ int
 checkStringForEmailAddress( char * inString ) {
     char c;
     if ( inString == NULL ) {
-        return( 0 );
+        return 0;
     }
     c = *inString;
     while ( c != '\0' ) {
@@ -330,9 +330,9 @@ checkStringForEmailAddress( char * inString ) {
                 c == '/' || c == '-' || c == '+' || c == '*' || c == '_' || c == '@' ) {
         }
         else {
-            return ( USER_INPUT_STRING_ERR );
+            return USER_INPUT_STRING_ERR;
         }
         c = *inString++;
     }
-    return( 0 );
+    return 0;
 }

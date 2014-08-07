@@ -50,7 +50,7 @@ isSpecialPath( char *inPath ) {
     if ( inPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "isSpecialPath: input inPath is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     len = strlen( inPath );
@@ -60,7 +60,7 @@ isSpecialPath( char *inPath ) {
             continue;
         }
         if ( strcmp( SpecialPath[i].path, endPtr - SpecialPath[i].len ) == 0 ) {
-            return ( 1 );
+            return 1;
         }
     }
     return 0;
@@ -91,7 +91,7 @@ ifusePut( rcComm_t *conn, char *objPath, char *cachePath, int mode,
     }
 
     status = rcDataObjPut( conn, &dataObjInp, cachePath );
-    return ( status );
+    return status;
 }
 
 
@@ -110,7 +110,7 @@ closeIrodsFd( rcComm_t *conn, int fd ) {
     bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = fd;
     status = rcDataObjClose( conn, &dataObjCloseInp );
-    return ( status );
+    return status;
 }
 
 
@@ -171,7 +171,7 @@ irodsMknodWithCache( char *path, mode_t mode, char *cachePath ) {
         rodsLog( LOG_ERROR,
                  "irodsMknodWithCache: local cache creat error for %s, errno = %d",
                  cachePath, errno );
-        return( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
     else {
         return fd;

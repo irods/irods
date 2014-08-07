@@ -33,6 +33,6 @@ rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
         bytesRead = 0;
         bzero( dataObjOutBBuf, sizeof( bytesBuf_t ) );
     }
-    return ( bytesRead );
+    return bytesRead;
 }
 

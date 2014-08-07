@@ -28,11 +28,11 @@ struct irods_char_str_hash {
             hashval = 31 * hashval + ( *p++ );    // or whatever
         }
 
-        return ( hashval );
+        return hashval;
     }
 
     bool operator()( const char* s1, const char* s2 ) const {
-        return ( strcmp( s1, s2 ) < 0 );
+        return strcmp( s1, s2 ) < 0;
     }
 
 }; // struct irods_char_str_hash
@@ -54,11 +54,11 @@ struct irods_string_hash {
             hashval = 31 * hashval + ( *p++ );    // or whatever
         }
 
-        return ( hashval );
+        return hashval;
     }
 
     bool operator()( const std::string s1, const std::string s2 ) const {
-        return ( s1 < s2 );
+        return s1 < s2;
     }
 
 }; // struct irods_string_hash

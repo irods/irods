@@ -81,63 +81,63 @@ getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_OBJ_ID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileUid = getSqlResultByInx( genQueryOut,
                                             COL_DATA_FILEMETA_UID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_UID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileGid = getSqlResultByInx( genQueryOut,
                                             COL_DATA_FILEMETA_GID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_GID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileOwner = getSqlResultByInx( genQueryOut,
                                               COL_DATA_FILEMETA_OWNER ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_OWNER failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileGroup = getSqlResultByInx( genQueryOut,
                                               COL_DATA_FILEMETA_GROUP ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_GROUP failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileMode = getSqlResultByInx( genQueryOut,
                                              COL_DATA_FILEMETA_MODE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_MODE failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileCtime = getSqlResultByInx( genQueryOut,
                                               COL_DATA_FILEMETA_CTIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_CTIME failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileMtime = getSqlResultByInx( genQueryOut,
                                               COL_DATA_FILEMETA_MTIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_MTIME failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileSourcePath = getSqlResultByInx( genQueryOut,
                                 COL_DATA_FILEMETA_SOURCE_PATH ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_DATA_FILEMETA_SOURCE_PATH failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         addKeyVal( condInput, FILE_UID_KW, fileUid->value );
@@ -192,7 +192,7 @@ getDataObjInfo(
                                      ignoreCondInput );
 
     if ( qcondCnt < 0 ) {
-        return ( qcondCnt );
+        return qcondCnt;
     }
 
     /* need to do RESC_NAME_KW here because not all query need this */
@@ -261,171 +261,171 @@ getDataObjInfo(
                      "getDataObjInfo: rsGenQuery error, status = %d",
                      status );
         }
-        return ( status );
+        return status;
     }
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: NULL genQueryOut" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( dataOwnerName =
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataName =
                 getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collName =
                 getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_COLL_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collId = getSqlResultByInx( genQueryOut, COL_D_COLL_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_COLL_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( version = getSqlResultByInx( genQueryOut, COL_DATA_VERSION ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_VERSION failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_SIZE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescGroupName =
                 getSqlResultByInx( genQueryOut, COL_D_RESC_GROUP_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo:getSqlResultByInx for COL_D_RESC_GROUP_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_RESC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( hierString = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_RESC_HIER failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( filePath = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataOwnerZone =
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_ZONE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_ZONE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replStatus =
                 getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_REPL_STATUS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( statusString =
                 getSqlResultByInx( genQueryOut, COL_D_DATA_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_STATUS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( chksum =
                 getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataExpiry =
                 getSqlResultByInx( genQueryOut, COL_D_EXPIRY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_EXPIRY failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMapId =
                 getSqlResultByInx( genQueryOut, COL_D_MAP_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_MAP_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataComments =
                 getSqlResultByInx( genQueryOut, COL_D_COMMENTS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_COMMENTS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataCreate =
                 getSqlResultByInx( genQueryOut, COL_D_CREATE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_CREATE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataModify =
                 getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_MODIFY_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
                 getSqlResultByInx( genQueryOut, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_MODE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     writeFlag = getWriteFlag( dataObjInp->openFlags );
@@ -506,7 +506,7 @@ getDataObjInfo(
 
     freeGenQueryOut( &genQueryOut );
 
-    return ( qcondCnt );
+    return qcondCnt;
 }
 
 int
@@ -637,7 +637,7 @@ sortObjInfo(
     queDataObjInfo( oldArchInfo, oldBundleInfo, 0, 0 );
     //queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
     queDataObjInfo( currentArchInfo, currentBundleInfo, 0, 0 );
-    return ( 0 );
+    return 0;
 }
 
 /* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
@@ -719,7 +719,7 @@ getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
         numInfo++;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
-    return ( numInfo );
+    return numInfo;
 }
 
 int
@@ -730,7 +730,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
     int numInfo = getNumDataObjInfo( *dataObjInfoHead );
 
     if ( numInfo <= 1 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( numInfo > 50 ) {
@@ -771,7 +771,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
         queDataObjInfo( dataObjInfoHead, myDataObjInfo[i], 1, 1 );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /* requeDataObjInfoByResc - requeue the dataObjInfo in the
@@ -789,7 +789,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     int status = -1;
 
     if ( preferredResc == NULL || *dataObjInfoHead == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
@@ -797,10 +797,10 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
         /* just one */
         if ( strcmp( preferredResc, tmpDataObjInfo->rescInfo->rescName ) == 0 || // JMC - backport 4543
                 strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
-            return ( 0 );
+            return 0;
         }
         else {
-            return ( -1 );
+            return -1;
         }
     }
     prevDataObjInfo = NULL;
@@ -815,7 +815,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
                                         topFlag );
                     }
                     if ( topFlag > 0 ) {
-                        return ( 0 );
+                        return 0;
                     }
                     else {
                         status = 0;
@@ -827,7 +827,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -836,17 +836,17 @@ requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
     int status = -1;
 
     if ( dataObjInfoHead == NULL || *dataObjInfoHead == NULL ) {
-        return ( -1 );
+        return -1;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
     if ( tmpDataObjInfo->next == NULL ) {
         /* just one */
         if ( replNum == tmpDataObjInfo->replNum ) {
-            return ( 0 );
+            return 0;
         }
         else {
-            return ( -1 );
+            return -1;
         }
     }
     prevDataObjInfo = NULL;
@@ -863,7 +863,7 @@ requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    return ( status );
+    return status;
 }
 
 dataObjInfo_t *
@@ -889,14 +889,14 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, co
                     dataObjInfoHead = tmpDataObjInfo->next;
                 }
                 tmpDataObjInfo->next = NULL;
-                return ( tmpDataObjInfo );
+                return tmpDataObjInfo;
             }
             tmpRescGrpInfo = tmpRescGrpInfo->next;
         }
         prev = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
-    return ( NULL );
+    return NULL;
 }
 
 /* matchAndTrimRescGrp - check for matching rescName in dataObjInfoHead
@@ -1034,7 +1034,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
 
     } // while
 
-    return ( 0 );
+    return 0;
 }
 
 /* sortObjInfoForRepl - sort the data object given in dataObjInfoHead.
@@ -1133,7 +1133,7 @@ sortObjInfoForRepl(
         return SYS_RESC_IS_DOWN;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -1163,7 +1163,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
             rodsLog( LOG_NOTICE,
                      "initDataObjInfoQuery: splitPathByKey for %s error, status = %d",
                      dataObjInp->objPath, status );
-            return ( status );
+            return status;
         }
         snprintf( condStr, MAX_NAME_LEN, "='%s'", myColl );
         addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, condStr );
@@ -1182,7 +1182,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
         qcondCnt++;
     }
 
-    return ( qcondCnt );
+    return qcondCnt;
 }
 
 /* chkOrphanFile - check whether a filePath is a orphan file.
@@ -1260,7 +1260,7 @@ chkOrphanFile(
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             rsComm->perfStat.orphanCnt ++;
-            return ( 1 );
+            return 1;
         }
         else {
             rodsLog( LOG_ERROR,
@@ -1268,7 +1268,7 @@ chkOrphanFile(
                      filePath, status );
             /* we have unexpected query error. Assume the file is not
              * orphan */
-            return ( status );
+            return status;
         }
     }
     else {
@@ -1279,27 +1279,27 @@ chkOrphanFile(
                     getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_COLL_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
                 == NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_DATA_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_D_DATA_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
                 NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
@@ -1307,7 +1307,7 @@ chkOrphanFile(
                 NULL ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_D_RESC_HIER failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( dataObjInfo != NULL ) {
@@ -1320,7 +1320,7 @@ chkOrphanFile(
 
         freeGenQueryOut( &genQueryOut );
 
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -1342,7 +1342,7 @@ chkOrphanDir( rsComm_t *rsComm, char *dirPath, char *rescName ) {
         rodsLog( LOG_ERROR,
                  "chkOrphanDir: opendir error for %s, errno = %d",
                  dirPath, errno );
-        return ( UNIX_FILE_OPENDIR_ERR - errno );
+        return UNIX_FILE_OPENDIR_ERR - errno;
     }
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
@@ -1425,7 +1425,7 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                                   destRescHier ) ) != NULL ) {
             /* have a good copy already */
             *destDataObjInfo = NULL; // JMC - backport 4594
-            return ( HAVE_GOOD_COPY );
+            return HAVE_GOOD_COPY;
         }
     }
     else {
@@ -1434,7 +1434,7 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                              TRIM_MATCHED_RESC_INFO, NULL );
         if ( *destRescGrpInfo == NULL ) {
             /* have a good copy in all resc in resc group */
-            return ( HAVE_GOOD_COPY );
+            return HAVE_GOOD_COPY;
         }
     }
     /* handle the old dataObj */
@@ -1463,7 +1463,7 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
             }
         }
     }
-    return ( NO_GOOD_COPY );
+    return NO_GOOD_COPY;
 }
 
 int
@@ -1506,18 +1506,18 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
 
     if ( *destRescGrpInfo == NULL ) {
         if ( *dataObjInfoHead == NULL ) {
-            return ( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
         else {
             /* have a good copy in all resc in resc group */
             rodsLog( LOG_ERROR,
                      "resolveInfoForPhymv: %s already have copy in the resc",
                      ( *dataObjInfoHead )->objPath );
-            return ( SYS_COPY_ALREADY_IN_RESC );
+            return SYS_COPY_ALREADY_IN_RESC;
         }
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -1548,7 +1548,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             matchedOldDataObjInfo == NULL ) {
         rodsLog( LOG_ERROR,
                  "requeDataObjInfoByCondInput: NULL dataObjInfo input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( ( tmpStr = getValByKey( condInput, REPL_NUM_KW ) ) != NULL ) {
@@ -1574,7 +1574,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     }
 
     if ( replNumCond + rescCond == 0 && !destHierCond ) {
-        return ( 0 );
+        return 0;
     }
     *matchedDataObjInfo = NULL;
     *matchedOldDataObjInfo = NULL;
@@ -1665,10 +1665,10 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     }
 
     if ( *matchedDataObjInfo == NULL && *matchedOldDataObjInfo == NULL ) {
-        return ( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
     else {
-        return ( replNumCond + rescCond );
+        return replNumCond + rescCond;
     }
 }
 
@@ -1724,7 +1724,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
                 *dataObjInfoHead = NULL; // JMC cppcheck - nullptr
             }
             freeAllDataObjInfo( oldDataObjInfoHead );
-            return ( 0 );
+            return 0;
         }
     }
 
@@ -1817,7 +1817,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( dataObjInfoHead, matchedOldDataObjInfo, 0, 1 );
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1833,7 +1833,7 @@ requeDataObjInfoByDestResc( dataObjInfo_t **dataObjInfoHead,
         status = requeDataObjInfoByResc( dataObjInfoHead, rescName,
                                          writeFlag, topFlag );
     }
-    return ( status );
+    return status;
 }
 int
 getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -1847,7 +1847,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rodsLog( LOG_NOTICE,
                      "getDataObjInfoIncSpecColl:open for write not allowed for user %s",
                      rsComm->clientUser.userName );
-            return ( SYS_NO_API_PRIV );
+            return SYS_NO_API_PRIV;
         }
     }
     else {
@@ -1914,7 +1914,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         }
     }
-    return ( status );
+    return status;
 }
 
 int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
@@ -1947,6 +1947,6 @@ int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
                  objPath, status );
     }
 
-    return ( status );
+    return status;
 }
 

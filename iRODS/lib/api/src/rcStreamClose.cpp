@@ -9,5 +9,5 @@ rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp ) {
     status = procApiRequest( conn, STREAM_CLOSE_AN, fileCloseInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

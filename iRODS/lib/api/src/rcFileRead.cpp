@@ -13,6 +13,6 @@ rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
     status = procApiRequest( conn, FILE_READ_AN, fileReadInp,
                              NULL, ( void ** ) NULL, fileReadOutBBuf );
 
-    return ( status );
+    return status;
 }
 

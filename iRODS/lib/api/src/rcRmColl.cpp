@@ -15,7 +15,7 @@ _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
     status = procApiRequest( conn, RM_COLL_AN, rmCollInp, NULL,
                              ( void ** ) collOprStat, NULL );
 
-    return ( status );
+    return status;
 }
 
 /**
@@ -85,6 +85,6 @@ rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag ) {
 
     status = cliGetCollOprStat( conn, collOprStat, vFlag, retval );
 
-    return ( status );
+    return status;
 }
 

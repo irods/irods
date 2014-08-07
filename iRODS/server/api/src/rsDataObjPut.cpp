@@ -45,7 +45,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                        REMOTE_CREATE );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == LOCAL_HOST ) {
         // =-=-=-=-=-=-=-
@@ -92,7 +92,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                 dataObjInpBBuf, portalOprOut );
         if ( status < 0 ||
                 getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
-            return ( status );
+            return status;
         }
         else {
             /* have to allocate a local l1descInx to keep track of things
@@ -109,7 +109,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 /* _rsDataObjPut - process put request
@@ -163,7 +163,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /** since the object is written here, we apply pre procesing RAJA
              * Dec 2 2010 **/
         }
-        return ( status );
+        return status;
     }
 
     /* get down here. will do parallel I/O */
@@ -193,7 +193,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjCloseInp.l1descInx = l1descInx;
         L1desc[l1descInx].oprStatus = status;
         rsDataObjClose( rsComm, &dataObjCloseInp );
-        return ( status );
+        return status;
     }
 
     if ( allFlag == 1 ) {
@@ -226,7 +226,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* already send the client the status */
-    return ( SYS_NO_HANDLER_REPLY_MSG );
+    return SYS_NO_HANDLER_REPLY_MSG;
 
 }
 
@@ -261,7 +261,7 @@ preProcParaPut( rsComm_t *rsComm, int l1descInx,
         L1desc[l1descInx].bytesWritten = dataOprInp.dataSize;
     }
     clearKeyVal( &dataOprInp.condInput );
-    return ( status );
+    return status;
 }
 
 int
@@ -407,7 +407,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                 if ( status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
                     l3Unlink( rsComm, myDataObjInfo );
                 }
-                return ( status );
+                return status;
             }
             else {
                 myDataObjInfo->replNum = status;
@@ -424,7 +424,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
     }
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
 
-    return ( bytesWritten );
+    return bytesWritten;
 }
 
 int
@@ -464,7 +464,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         }
 
         bytesWritten = rsSubStructFilePut( rsComm, &subFile, dataObjInpBBuf );
-        return ( bytesWritten );
+        return bytesWritten;
 
 
     } // struct file type >= 0
@@ -534,7 +534,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         retryCnt ++;
     } // while
     clearKeyVal( &filePutInp.condInput );
-    return ( bytesWritten );
+    return bytesWritten;
 
 } // l3FilePutSingleBuf
 

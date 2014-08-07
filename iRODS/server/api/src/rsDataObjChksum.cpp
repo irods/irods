@@ -27,7 +27,7 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjChksumInp, &rodsServerHost, REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcDataObjChksum( rodsServerHost->conn, dataObjChksumInp,
@@ -61,7 +61,7 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
     }
     freeAllDataObjInfo( dataObjInfoHead );
     rodsLog( LOG_NOTICE, "rsDataObjChksum - returning status %d", status );
-    return ( status );
+    return status;
 }
 
 int
@@ -114,7 +114,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             if ( strlen( tmpDataObjInfo->chksum ) > 0 ) {
                 if ( verifyFlag == 0 && forceFlag == 0 ) {
                     *outChksumStr = strdup( tmpDataObjInfo->chksum );
-                    return ( 0 );
+                    return 0;
                 }
             }
         }
@@ -123,7 +123,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 if ( tmpDataObjInfo->replStatus > 0 && strlen( tmpDataObjInfo->chksum ) > 0 ) {
                     if ( verifyFlag == 0 && forceFlag == 0 ) {
                         *outChksumStr = strdup( tmpDataObjInfo->chksum );
-                        return ( 0 );
+                        return 0;
                     }
                     else {
                         break;
@@ -145,7 +145,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo, outChksumStr );
         }
 
-        return ( status );
+        return status;
 
     }
 
@@ -188,7 +188,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
 
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
         if ( tmpDataObjInfo->replStatus > 0 && *outChksumStr == NULL ) {
             *outChksumStr = tmpChksumStr;
@@ -206,7 +206,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         *outChksumStr = strdup( ( *dataObjInfoHead )->chksum );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -225,7 +225,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if ( dataObjInfo->specColl != NULL ) {
-        return ( status );
+        return status;
     }
 
     memset( &regParam, 0, sizeof( regParam ) );
@@ -238,7 +238,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     rodsLog( LOG_NOTICE, "dataObjChksumAndRegInfo - rsModDataObjMeta status %d", status );
     clearKeyVal( &regParam );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -254,14 +254,14 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         rodsLog( LOG_ERROR,
                  "verifyDatObjChksum:_dataObjChksum error for %s, stat=%d",
                  dataObjInfo->objPath, status );
-        return ( status );
+        return status;
     }
 
     if ( strcmp( *outChksumStr, dataObjInfo->chksum ) != 0 ) {
         rodsLog( LOG_ERROR,
                  "verifyDatObjChksum: computed chksum %s != icat value %s for %s",
                  *outChksumStr, dataObjInfo->chksum, dataObjInfo->objPath );
-        return ( USER_CHKSUM_MISMATCH );
+        return USER_CHKSUM_MISMATCH;
     }
     else {
         return status;

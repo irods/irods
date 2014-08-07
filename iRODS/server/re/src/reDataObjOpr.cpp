@@ -69,7 +69,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjCreate: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -81,7 +81,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjCreate: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = DEST_RESC_NAME_FLAG | CREATE_MODE_FLAG | DATA_TYPE_FLAG |
@@ -101,7 +101,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
                                 "msiDataObjCreate: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjCreate( rsComm, myDataObjInp );
@@ -120,7 +120,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -184,7 +184,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjOpen: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -215,7 +215,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
                                 "msiDataObjOpen: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjOpen( rsComm, myDataObjInp );
@@ -229,7 +229,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -276,7 +276,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjClose: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -285,7 +285,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjClose: input inpParam is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam->type, DataObjCloseInp_MS_T ) == 0 ) {
@@ -304,7 +304,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
             rei->status = myInt;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjClose: parseMspForPosInt error for param1." );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -318,7 +318,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -370,7 +370,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjLseek: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -379,7 +379,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjLseek: input inpParam1 is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
@@ -401,7 +401,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjLseek: Unsupported input Param type %s",
                             inpParam1->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam2 != NULL ) {
@@ -423,7 +423,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjLseek: Unsupported input Param type %s",
                                 inpParam2->type );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -453,7 +453,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjLseek: Unsupported input Param type %s",
                                 inpParam3->type );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -464,7 +464,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjLseek: Unsupported input whence value %d",
                             myDataObjLseekInp->whence );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjLseek( rsComm, myDataObjLseekInp, &dataObjLseekOut );
@@ -483,7 +483,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -533,7 +533,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRead: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -542,7 +542,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRead: input inpParam1 is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, DataObjReadInp_MS_T ) == 0 ) {
@@ -559,7 +559,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
             rei->status = myInt;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjRead: parseMspForPosInt error for param1." );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -571,7 +571,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
                 rei->status = myInt;
                 rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                     "msiDataObjRead: parseMspForPosInt error for param2." );
-                return ( rei->status );
+                return rei->status;
             }
         }
         else {
@@ -593,7 +593,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -646,7 +646,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiDataObjWrite: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -657,7 +657,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, DataObjWriteInp_MS_T ) == 0 ) {
@@ -674,7 +674,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
             rei->status = myInt;
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjWrite: parseMspForPosInt error for param1." );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -682,7 +682,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
         if ( ( strcmp( ( char * )inpParam2->inOutStruct, "stdout" ) == 0 ) ||
                 ( strcmp( ( char * ) inpParam2->inOutStruct, "stderr" ) == 0 ) ) {
             if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
-                return( NO_VALUES_FOUND );
+                return NO_VALUES_FOUND;
             }
             myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
             if ( strcmp( ( char * ) inpParam2->inOutStruct, "stdout" ) == 0 ) {
@@ -719,7 +719,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
                     rei->status = myInt;
                     rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                         "msiDataObjWrite: parseMspForPosInt error for param2." );
-                    return ( rei->status );
+                    return rei->status;
                 }
             }
             else {
@@ -740,7 +740,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -805,7 +805,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjUnlink: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -836,7 +836,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
                                 "msiDataObjUnlink: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjUnlink( rsComm, myDataObjInp );
@@ -850,7 +850,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -934,7 +934,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRepl: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -946,7 +946,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRepl: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
@@ -968,7 +968,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                                 "msiDataObjRepl: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjRepl( rsComm, myDataObjInp, &transStat );
@@ -991,7 +991,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1063,7 +1063,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjCopy: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1074,7 +1074,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjCopy: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2 */
@@ -1084,7 +1084,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjCopy: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = OBJ_PATH_FLAG   | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
@@ -1105,13 +1105,13 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
                                 "msiDataObjCopy: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjCopy: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjCopy( rsComm, myDataObjCopyInp, &transStat );
@@ -1133,7 +1133,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1210,7 +1210,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjPut: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1225,7 +1225,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
@@ -1234,7 +1234,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
@@ -1255,7 +1255,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                                 "msiDataObjPut: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
@@ -1267,7 +1267,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: addMsParam error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* tell the client to do the put */
@@ -1284,7 +1284,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1356,7 +1356,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjGet: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1370,7 +1370,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGet: input inpParam1 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG |
@@ -1390,7 +1390,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
                                 "msiDataObjGet: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
@@ -1403,7 +1403,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGet: addMsParam error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* tell the client to do the get */
@@ -1419,7 +1419,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
                             dataObjInp->objPath, rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1478,7 +1478,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjGetWithOptions: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1492,7 +1492,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: input inpParam1 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
@@ -1502,7 +1502,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: input inpParam2 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( srcrescParam, &dataObjInp->condInput,
@@ -1512,7 +1512,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: input srcrescParam error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
@@ -1525,7 +1525,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: addMsParam error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* tell the client to do the get */
@@ -1541,7 +1541,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1602,7 +1602,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjChksum: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1614,7 +1614,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjChksum: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG |
@@ -1632,7 +1632,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                                 "msiDataObjChksum: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjChksum( rsComm, myDataObjInp, &chksum );
@@ -1652,7 +1652,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1707,7 +1707,7 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjPhymv: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1718,35 +1718,35 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
                          &myDataObjInp, 0 ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
                          DEST_RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &myDataObjInp->condInput,
                          RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam4, &myDataObjInp->condInput,
                          REPL_NUM_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam4 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam5, &myDataObjInp->condInput,
                          ADMIN_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam5 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjPhymv( rsComm, myDataObjInp, &transStat );
@@ -1769,7 +1769,7 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1822,7 +1822,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRename: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1834,7 +1834,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRename: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2 */
@@ -1844,7 +1844,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRename: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam3 != NULL ) {
@@ -1870,7 +1870,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1924,7 +1924,7 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjTrim: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1935,34 +1935,34 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
                          &myDataObjInp, 0 ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjTrim: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,      RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjTrim: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &myDataObjInp->condInput,
                          REPL_NUM_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjTrim: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam4, &myDataObjInp->condInput,
                          COPIES_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjTrim: input inpParam4 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam5, &myDataObjInp->condInput,
                          ADMIN_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjTrim: input inpParam5 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjTrim( rsComm, myDataObjInp );
@@ -1981,7 +1981,7 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -2031,7 +2031,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiCollCreate: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2043,7 +2043,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollCreate: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     flags = parseMspForPosInt( inpParam2 );
@@ -2067,7 +2067,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
         clearKeyVal( &myCollCreateInp->condInput );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -2127,7 +2127,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiRmColl: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2139,7 +2139,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiRmColl: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     validKwFlags = RMTRASH_FLAG | ADMIN_RMTRASH_FLAG |
@@ -2157,7 +2157,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
                                 "msiRmColl: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     addKeyVal( &myRmCollInp->condInput, RECURSIVE_OPR__KW, "" );
@@ -2178,7 +2178,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
         clearKeyVal( &myRmCollInp->condInput );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -2247,7 +2247,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiReplColl: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2258,7 +2258,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiReplColl: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2: destRescName, and assign the destination
@@ -2269,7 +2269,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiReplColl: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam3: options, and assign the then to conditional
@@ -2311,7 +2311,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
                             "msiReplColl: msiReplColl error for %s, stat=%d",
                             myCollInp->collName, status );
         rei->status = status;
-        return ( rei->status );
+        return rei->status;
     }
     while ( rei->status >= 0 ) {
         sqlResult_t *subColl, *dataObj;
@@ -2321,7 +2321,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
             rodsLog( LOG_ERROR,
                      "msiReplColl: msiReplColl for COL_COLL_NAME failed" );
             rei->status = UNMATCHED_KEY_OR_INDEX;
-            return ( rei->status );
+            return rei->status;
         }
         /* get data names in the batch */
         if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
@@ -2329,7 +2329,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
             rodsLog( LOG_ERROR,
                      "msiReplColl: msiReplColl for COL_DATA_NAME failed" );
             rei->status = UNMATCHED_KEY_OR_INDEX;
-            return ( rei->status );
+            return rei->status;
         }
 
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -2380,7 +2380,7 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
                             ( &dataObjInp )->objPath,
                             rei->status );
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -2439,7 +2439,7 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiPhyPathReg: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2451,28 +2451,28 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiPhyPathReg: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
                          DEST_RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &myDataObjInp->condInput,
                          FILE_PATH_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPhymv: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForPhyPathReg( inpParam4,
                          &myDataObjInp->condInput ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiPhyPathReg: input inpParam4 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsPhyPathReg( rsComm, myDataObjInp );
@@ -2491,7 +2491,7 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -2538,7 +2538,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiObjStat: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2550,7 +2550,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiObjStat: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsObjStat( rsComm, myDataObjInp, &rodsObjStatOut );
@@ -2565,7 +2565,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -2633,7 +2633,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRsync: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2645,14 +2645,14 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRsync: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
                          RSYNC_MODE_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRsync: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
 
@@ -2664,7 +2664,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                          RSYNC_DEST_PATH_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRsync: input inpParam4 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* just call rsDataObjRsync for now. client must supply the chksum of
@@ -2675,7 +2675,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLog( LOG_ERROR,
                  "msiDataObjRsync: RSYNC_MODE_KW input is missing" );
         rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( rsyncMode, IRODS_TO_LOCAL ) == 0 ||
@@ -2684,7 +2684,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                  "msiDataObjRsync: local/iRODS rsync not supported for %s",
                  myDataObjInp->objPath );
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
-        return ( rei->status );
+        return rei->status;
     }
     else if ( strcmp( rsyncMode, IRODS_TO_COLLECTION ) == 0 ) {
         targCollection = getValByKey( &myDataObjInp->condInput,
@@ -2694,14 +2694,14 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                      "msiDataObjRsync:  RSYNC_DEST_PATH_KW input for %s is missing",
                      myDataObjInp->objPath );
             rei->status = USER_INPUT_PATH_ERR;
-            return ( rei->status );
+            return rei->status;
         }
         tmpPtr = strchr( myDataObjInp->objPath + 1, '/' );
         if ( tmpPtr == NULL ) {
             rodsLog( LOG_ERROR,
                      "msiDataObjRsync:  problem parsing %s", myDataObjInp->objPath );
             rei->status = USER_INPUT_PATH_ERR;
-            return ( rei->status );
+            return rei->status;
         }
         snprintf( targPath, MAX_NAME_LEN, "%s%s", targCollection, tmpPtr );
         addKeyVal( &myDataObjInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS );
@@ -2728,7 +2728,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -2786,7 +2786,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiCollRsync: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -2800,7 +2800,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         rei->status = SYS_INVALID_FILE_PATH;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2 */
@@ -2810,21 +2810,21 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         rei->status = SYS_INVALID_FILE_PATH;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &dataObjInp.condInput,
                          DEST_RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam4, &dataObjInp.condInput,
                          RSYNC_MODE_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam4 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* just call rsDataObjRsync for now. client must supply the chksum of
@@ -2835,7 +2835,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLog( LOG_ERROR,
                  "msiCollRsync: RSYNC_MODE_KW input is missing" );
         rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( rsyncMode, IRODS_TO_LOCAL ) == 0 ||
@@ -2844,7 +2844,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                  "msiCollRsync: local/iRODS rsync not supported for %s",
                  srcColl );
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = _rsCollRsync( rsComm, &dataObjInp, srcColl, destColl );
@@ -2861,7 +2861,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 int
@@ -2884,7 +2884,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "_rsCollRsync: rsOpenCollection of %s error. status = %d",
                  openCollInp.collName, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
 
     rsMkCollR( rsComm, "/", destColl );
@@ -2908,7 +2908,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 rodsLogError( LOG_ERROR, status,
                               "_rsCollRsync:: splitPathByKey for %s error, status = %d",
                               collEnt->collName, status );
-                return ( status );
+                return status;
             }
             snprintf( destChildPath, MAX_NAME_LEN, "%s/%s",
                       destColl, childPath );
@@ -2994,7 +2994,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiExecCmd: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -3006,7 +3006,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExecCmd: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( tmpPtr = parseMspForStr( inpParam2 ) ) != NULL ) {
@@ -3047,7 +3047,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -3130,7 +3130,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     /* Sanity checks */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiCollRepl: inp rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -3144,7 +3144,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     if ( rei->status < 0 ) {
         rodsLog( LOG_ERROR,
                  "msiCollRepl: input collection error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
 
@@ -3167,7 +3167,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
                                 "msiCollRepl: input msKeyValStr error. status = %d",
                                 rei->status );
         }
-        return ( rei->status );
+        return rei->status;
     }
 
     /************************ API SERVER CALL **************************/
@@ -3180,7 +3180,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     /* Send out op status */
     fillIntInMsParam( status, rei->status );
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -3243,7 +3243,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjPut: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -3256,7 +3256,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
@@ -3265,7 +3265,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam2 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
 
@@ -3275,7 +3275,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam3 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpOverwriteParam != NULL &&
@@ -3297,7 +3297,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: addMsParam error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* tell the client to do the put */
@@ -3314,7 +3314,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -3369,7 +3369,7 @@ msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjReplWithOptions: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -3382,7 +3382,7 @@ msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjReplWithOptions: input inpParam1 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
@@ -3392,7 +3392,7 @@ msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjReplWithOptions: input inpParam2 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondKw( inpParam3, &myDataObjInp->condInput ) )
@@ -3400,7 +3400,7 @@ msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjReplWithOptions: input inpParam3 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = rsDataObjRepl( rsComm, myDataObjInp, &transStat );
@@ -3422,7 +3422,7 @@ msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             myDataObjInp->objPath, rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -3479,7 +3479,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjChksumRepl: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -3492,7 +3492,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjChksumWithOptions: input inpParam1 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondKw( inpParam2,
@@ -3500,7 +3500,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjChksumWithOptions: input inpParam2 error. status = %d",
                             rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 ) {
@@ -3510,7 +3510,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                 rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                     "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
                                     rei->status );
-                return ( rei->status );
+                return rei->status;
             }
         }
         else {
@@ -3520,7 +3520,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                 rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                     "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
                                     rei->status );
-                return ( rei->status );
+                return rei->status;
             }
         }
     }
@@ -3540,7 +3540,7 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             myDataObjInp->objPath, rei->status );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -3598,7 +3598,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         rodsLog( LOG_ERROR,
                  "msiTarFileExtract: input rei or rsComm is NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     rsComm = rei->rsComm;
@@ -3611,7 +3611,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiTarFileExtract: input Param1 and/or Param2 are NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
@@ -3626,7 +3626,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     }
     else {
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
@@ -3640,7 +3640,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
                             "msiTarFileExtract: Unsupported input Param2 type %s",
                             inpParam2->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
@@ -3683,7 +3683,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 
     fillIntInMsParam( outParam, rei->status );
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -3737,7 +3737,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
         rodsLog( LOG_ERROR,
                  "msiTarFileCreate: input rei or rsComm is NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     rsComm = rei->rsComm;
@@ -3750,7 +3750,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiTarFileCreate: input Param1 and/or Param2 are NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
@@ -3765,7 +3765,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     }
     else {
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
@@ -3779,7 +3779,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
                             "msiTarFileExtract: Unsupported input Param2 type %s",
                             inpParam2->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
@@ -3796,7 +3796,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     /* tar file extraction */
     rei->status = rsStructFileBundle( rsComm, myStructFileExtAndRegInp );
 
-    return ( rei->status );
+    return rei->status;
 
 }
 
@@ -3861,7 +3861,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         rodsLog( LOG_ERROR,
                  "msiPhyBundleColl: input rei or rsComm is NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     delim[0] = '\0';
@@ -3876,7 +3876,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiPhyBundleColl: input Param1 is NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     // For consistency with iphybun
@@ -3884,7 +3884,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         rei->status = SYS_NO_API_PRIV;
         rodsLog( LOG_ERROR, "msiPhyBundleColl: User %s does not have sufficient privilege, status = %d",
                  rei->uoic->userName, rei->status );
-        return( rei->status );
+        return rei->status;
     }
 
 
@@ -3903,7 +3903,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     else {
 
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam2 != NULL && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
@@ -3965,7 +3965,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     fillIntInMsParam( outParam, rei->status );
 
 
-    return ( rei->status );
+    return rei->status;
 
 }
 

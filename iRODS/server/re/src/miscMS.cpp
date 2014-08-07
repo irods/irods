@@ -66,7 +66,7 @@ msiRegisterData( ruleExecInfo_t *rei ) {
             print_doi( rei->doi );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -77,11 +77,11 @@ msiRegisterData( ruleExecInfo_t *rei ) {
         rodsLog( LOG_NOTICE,
                  "msiRegisterData: rsRegDataObj for %s failed, status = %d",
                  myDataObjInfo->objPath, status );
-        return ( status );
+        return status;
     }
     else {
         myDataObjInfo->replNum = status;
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -95,27 +95,27 @@ recover_msiRegisterData( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_chlRegDataObj\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
     msiRollback( rei ); /* rolling back */
-    return( 0 );
+    return 0;
 
 }
 int
 print_bye( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "Bye\n" );
     fprintf( stdout, "Bye\n" );
-    return( 0 );
+    return 0;
 }
 
 int
 print_eol( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "\n" );
     fprintf( stdout, "\n" );
-    return( 0 );
+    return 0;
 }
 int
 print_hello_arg( msParam_t* xs, ruleExecInfo_t *rei ) {
@@ -124,21 +124,21 @@ print_hello_arg( msParam_t* xs, ruleExecInfo_t *rei ) {
     s = ( char * ) xs->inOutStruct;
     RE_TEST_MACRO( s );
     fprintf( stdout, "%s\n", s );
-    return( 0 );
+    return 0;
 }
 
 int
 recover_print_bye( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "\b\b\b   \b\b\b" );
     fprintf( stdout, "\b\b\b   \b\b\b" );
-    return( 0 );
+    return 0;
 }
 
 int
 recover_print_eol( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "*\b" );
     fprintf( stdout, "*\b" );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -150,7 +150,7 @@ recover_print_hello_arg( msParam_t* xs, ruleExecInfo_t *rei ) {
     for ( i = 0; i < strlen( s ); i++ ) {
         fprintf( stdout, "\b \b" );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -172,7 +172,7 @@ msitest1( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
     printf( "%s\n", tmpStr );
     RE_TEST_MACRO( tmpStr );
 
-    return( 0 );
+    return 0;
 }
 int
 msitest2( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
@@ -193,7 +193,7 @@ msitest2( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
     printf( "%s\n", tmpStr );
     RE_TEST_MACRO( tmpStr );
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -211,7 +211,7 @@ msitest3( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
     printf( "%s\n", tmpStr );
     RE_TEST_MACRO( tmpStr );
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -266,14 +266,14 @@ msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecIn
     /* microservice check */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiApplyDCMetadataTemplate: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* Check for proper input */
     if ( ( objPath = parseMspForStr( inpParam ) ) == NULL ) {
         rodsLog( LOG_ERROR, "msiApplyDCMetadataTemplate: input parameter is NULL" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
 
@@ -301,6 +301,6 @@ msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecIn
     fillIntInMsParam( outParam, status );
 
 
-    return( status );
+    return status;
 }
 

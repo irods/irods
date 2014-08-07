@@ -74,7 +74,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcStructFileExtAndReg( rodsServerHost->conn,
@@ -115,7 +115,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         rodsLog( LOG_ERROR,
                  "rsStructFileExtAndReg: _rsDataObjOpen of %s error. status = %d",
                  dataObjInp.objPath, l1descInx );
-        return ( l1descInx );
+        return l1descInx;
     }
 
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
@@ -213,7 +213,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
             rodsLog( LOG_ERROR,
                      "chkCollForExtAndReg: rsMkCollR of %s error. status = %d",
                      collection, status );
-            return ( status );
+            return status;
         }
         else {
             status = collStatAllKinds( rsComm, &dataObjInp, &myRodsObjStat );
@@ -224,7 +224,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
         rodsLog( LOG_ERROR,
                  "chkCollForExtAndReg: collStat of %s error. status = %d",
                  dataObjInp.objPath, status );
-        return ( status );
+        return status;
     }
     else if ( myRodsObjStat->specColl != NULL &&
               myRodsObjStat->specColl->collClass != MOUNTED_COLL ) {
@@ -233,7 +233,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
         rodsLog( LOG_ERROR,
                  "chkCollForExtAndReg: %s is a struct file collection",
                  dataObjInp.objPath );
-        return ( SYS_STRUCT_FILE_INMOUNTED_COLL );
+        return SYS_STRUCT_FILE_INMOUNTED_COLL;
     }
 
     if ( myRodsObjStat->specColl == NULL ) {
@@ -258,7 +258,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
             freeRodsObjStat( myRodsObjStat );
         }
     }
-    return ( status );
+    return status;
 }
 
 /* regUnbunSubfiles - non bulk version of registering all files in phyBunDir
@@ -281,7 +281,7 @@ regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, 
         rodsLog( LOG_ERROR,
                  "regUnbunphySubfiles: opendir error for %s, errno = %d",
                  phyBunDir, errno );
-        return ( UNIX_FILE_OPENDIR_ERR - errno );
+        return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     directory_iterator end_itr; // default construction yields past-the-end
@@ -374,7 +374,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
         rodsLog( LOG_ERROR,
                  "regSubFile: getFilePathName err for %s. status = %d",
                  dataObjInp.objPath, status );
-        return ( status );
+        return status;
     }
 
     path p( dataObjInfo.filePath );
@@ -397,7 +397,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
                 rodsLog( LOG_ERROR,
                          "regSubFile: renameFilePathToNewDir err for %s. status = %d",
                          fileRenameInp.oldFileName, status );
-                return ( status );
+                return status;
             }
         }
         else {
@@ -413,7 +413,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
                 rodsLog( LOG_ERROR,
                          "regSubFile: phypath %s is already in use. status = %d",
                          dataObjInfo.filePath, status );
-                return ( status );
+                return status;
             }
         }
     }
@@ -432,7 +432,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
         rodsLog( LOG_ERROR,
                  "regSubFile: link error %s to %s. errno = %d",
                  subfilePath, dataObjInfo.filePath, errno );
-        return ( UNIX_FILE_LINK_ERR - errno );
+        return UNIX_FILE_LINK_ERR - errno;
     }
 #endif
 

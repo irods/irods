@@ -29,7 +29,7 @@ rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         rodsServerHost = FileDesc[l3descInx].rodsServerHost;
         if ( rodsServerHost == NULL ) {
             rodsLog( LOG_NOTICE, "rsDataGet: NULL rodsServerHost" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         remoteFlag = rodsServerHost->localFlag;
     }
@@ -45,7 +45,7 @@ rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     }
 
 
-    return ( status );
+    return status;
 }
 
 int
@@ -77,6 +77,6 @@ remoteDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     dataOprInp->srcL3descInx = convL3descInx( dataOprInp->srcL3descInx );
     status = rcDataGet( rodsServerHost->conn, dataOprInp, portalOprOut );
 
-    return ( status );
+    return status;
 }
 

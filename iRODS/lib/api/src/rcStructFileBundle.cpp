@@ -10,5 +10,5 @@ rcStructFileBundle( rcComm_t *conn,
     status = procApiRequest( conn, STRUCT_FILE_BUNDLE_AN, structFileBundleInp,
                              NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

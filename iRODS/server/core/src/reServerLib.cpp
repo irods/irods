@@ -64,7 +64,7 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
             svrCloseQueryOut( rsComm, *genQueryOut );
         }
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -97,7 +97,7 @@ getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
 
     clearGenQueryInp( &genQueryInp );
 
-    return ( status );
+    return status;
 }
 
 /* getNextQueuedRuleExec - get the next RuleExec in queue to run
@@ -120,7 +120,7 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
             queuedRuleExec->packedReiAndArgBBuf->buf == NULL ) {
         rodsLog( LOG_ERROR,
                  "getNextQueuedRuleExec: NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     genQueryOut = *inGenQueryOut;
@@ -128,73 +128,73 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
                                            COL_RULE_EXEC_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for EXEC_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( ruleName = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for EXEC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
                                             COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for REI_FILE_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( userName = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for USER_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeAddress = getSqlResultByInx( genQueryOut,
                                            COL_RULE_EXEC_ADDRESS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for EXEC_ADDRESS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeTime = getSqlResultByInx( genQueryOut,
                                         COL_RULE_EXEC_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for EXEC_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeFrequency = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_FREQUENCY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec:getResultByInx for RULE_EXEC_FREQUENCY failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( priority = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_PRIORITY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for PRIORITY failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( lastExecTime = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_LAST_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for LAST_EXE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeStatus = getSqlResultByInx( genQueryOut,
                                           COL_RULE_EXEC_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getSqlResultByInx for EXEC_STATUS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( estimateExeTime = getSqlResultByInx( genQueryOut,
                              COL_RULE_EXEC_ESTIMATED_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec: getResultByInx for ESTIMATED_EXE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( notificationAddr = getSqlResultByInx( genQueryOut,
                               COL_RULE_EXEC_NOTIFICATION_ADDR ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getNextQueuedRuleExec:getResultByInx for NOTIFICATION_ADDR failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = startInx; i < genQueryOut->rowCnt; i++ ) {
@@ -240,9 +240,9 @@ getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
         if ( status < 0 ) {
             continue;
         }
-        return ( i );
+        return i;
     }
-    return ( -1 );
+    return -1;
 }
 
 int
@@ -266,7 +266,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 
     /***
     if (status != 0)
-      return(status);
+      return status;
     rDelay = (atol(delay) * 60)  + atol(myTimeNow);
     sprintf(myTimeNext,"%lld", rDelay);
     ***/
@@ -335,7 +335,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
                      ruleExecId, myTimeNext, delay );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -359,7 +359,7 @@ regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
                  ruleExecId, status );
     }
 
-    return ( status );
+    return status;
 }
 
 /* runQueuedRuleExec - given the job queue given in genQueryOut (from
@@ -454,7 +454,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
         }
     }
 
-    return ( runCnt );
+    return runCnt;
 }
 
 int
@@ -487,7 +487,7 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
     rodsLog( LOG_NOTICE,
              "runQueuedRuleExec: process %d exiting", getpid() );
 #endif
-    return ( reExecProc->status );
+    return reExecProc->status;
 }
 
 int
@@ -609,7 +609,7 @@ allocReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 4695
     //    reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
     //}
 
-    return ( thrInx );
+    return thrInx;
 }
 
 int
@@ -725,7 +725,7 @@ freeReThr( reExec_t * reExec, int thrInx ) {
     //if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR; // JMC cppcheck - redundant nullptr test
     if ( thrInx < 0 || thrInx >= reExec->maxRunCnt ) {
         rodsLog( LOG_ERROR, "freeReThr: Bad input thrInx %d", thrInx );
-        return ( SYS_BAD_RE_THREAD_INX );
+        return SYS_BAD_RE_THREAD_INX;
     }
     reExec->runCnt--;
     reExec->reExecProc[thrInx].procExecState = RE_PROC_IDLE;
@@ -924,7 +924,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
         rodsLog( LOG_ERROR,
                  "fillExecSubmitInp: open error for rei file %s, status = %d",
                  ruleExecSubmitInp->reiFilePath, status );
-        return ( status );
+        return status;
     }
 
     status = read( fd, ruleExecSubmitInp->packedReiAndArgBBuf->buf,
@@ -943,7 +943,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
                      "fillExecSubmitInp:read error for %s,toRead %d, read %d",
                      ruleExecSubmitInp->reiFilePath,
                      ruleExecSubmitInp->packedReiAndArgBBuf->len, status );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
     }
 
@@ -1001,67 +1001,67 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
                                          COL_RULE_EXEC_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
                                             COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for REI_FILE_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( userName = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for USER_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeAddress = getSqlResultByInx( genQueryOut,
                                            COL_RULE_EXEC_ADDRESS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_ADDRESS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeTime = getSqlResultByInx( genQueryOut,
                                         COL_RULE_EXEC_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeFrequency = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_FREQUENCY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for RULE_EXEC_FREQUENCY failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( priority = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_PRIORITY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for PRIORITY failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( lastExecTime = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_LAST_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for LAST_EXE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeStatus = getSqlResultByInx( genQueryOut,
                                           COL_RULE_EXEC_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_STATUS failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( estimateExeTime = getSqlResultByInx( genQueryOut,
                              COL_RULE_EXEC_ESTIMATED_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getResultByInx for ESTIMATED_EXE_TIME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( notificationAddr = getSqlResultByInx( genQueryOut,
                               COL_RULE_EXEC_NOTIFICATION_ADDR ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for NOTIFICATION_ADDR failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     status = fillExecSubmitInp( &reExecProc.ruleExecSubmitInp,
@@ -1078,6 +1078,6 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
 
     freeGenQueryOut( &genQueryOut ); // JMC - backport 4695
 
-    return ( reExecProc.status );
+    return reExecProc.status;
 }
 

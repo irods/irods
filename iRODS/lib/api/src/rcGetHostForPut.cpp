@@ -12,6 +12,6 @@ rcGetHostForPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
     status = procApiRequest( conn, GET_HOST_FOR_PUT_AN,  dataObjInp, NULL,
                              ( void ** ) outHost, NULL );
 
-    return ( status );
+    return status;
 }
 

@@ -53,7 +53,7 @@ logOraError( int level, OCIError *errhp, sword status ) {
     sb4 errcode;
     int errorVal = -1;
     if ( status == OCI_SUCCESS ) {
-        return( 0 );
+        return 0;
     }
     switch ( status )  {
     case OCI_SUCCESS_WITH_INFO:
@@ -93,13 +93,13 @@ logOraError( int level, OCIError *errhp, sword status ) {
         rodsLog( level, "Unknown OCI status - %d", status );
         break;
     }
-    return( errorVal );
+    return errorVal;
 }
 
 int
 cllGetLastErrorMessage( char *msg, int maxChars ) {
     strncpy( msg, ( char * )&oraErrorMsg, maxChars );
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -120,7 +120,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
                          ( size_t )0, ( dvoid ** )0 );
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllOpenEnv: OCIEnvCreate failed" );
-        return( CAT_ENV_ERR );
+        return CAT_ENV_ERR;
     }
 
     /* Initialize handles */
@@ -129,7 +129,7 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllOpenEnv: OCIHandleAlloc failed" );
-        return( CAT_ENV_ERR );
+        return CAT_ENV_ERR;
     }
 
     stat = OCIHandleAlloc( ( dvoid * ) p_env, ( dvoid ** ) &p_svc, OCI_HTYPE_SVCCTX,
@@ -137,13 +137,13 @@ cllOpenEnv( icatSessionStruct *icss ) {
 
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllOpenEnv: OCIHandleAlloc failed" );
-        return( CAT_ENV_ERR );
+        return CAT_ENV_ERR;
     }
 
     icss->connectPtr = p_svc;
     icss->environPtr = p_env;
 
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -166,7 +166,7 @@ cllCloseEnv( icatSessionStruct *icss ) {
     stat = OCIHandleFree( ( dvoid * ) p_err, OCI_HTYPE_ERROR );
 
     icss->connectPtr = 0;
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -209,7 +209,7 @@ cllConnect( icatSessionStruct *icss ) {
     }
     if ( atFound == 0 ) {
         rodsLog( LOG_ERROR, "no @ in the database user name" );
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     stat = OCILogon( p_env,
@@ -226,11 +226,11 @@ cllConnect( icatSessionStruct *icss ) {
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: OCILogon failed: %d", stat );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_CONNECT_ERR );
+        return CAT_CONNECT_ERR;
     }
 
     icss->connectPtr = p_svc;
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -274,7 +274,7 @@ cllConnectRda( icatSessionStruct *icss ) {
     }
     if ( atFound == 0 ) {
         rodsLog( LOG_ERROR, "no @ in the database user name" );
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     stat = OCILogon( p_env, p_err, &p_svc, ( OraText * )userName,
@@ -286,11 +286,11 @@ cllConnectRda( icatSessionStruct *icss ) {
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnectRda: OCILogon failed: %d", stat );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_CONNECT_ERR );
+        return CAT_CONNECT_ERR;
     }
 
     icss->connectPtr = p_svc;
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -334,7 +334,7 @@ cllConnectDbr( icatSessionStruct *icss, char *unused ) {
     }
     if ( atFound == 0 ) {
         rodsLog( LOG_ERROR, "no @ in the database user name" );
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     stat = OCILogon( p_env, p_err, &p_svc, ( OraText * )userName,
@@ -346,11 +346,11 @@ cllConnectDbr( icatSessionStruct *icss, char *unused ) {
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnectRda: OCILogon failed: %d", stat );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_CONNECT_ERR );
+        return CAT_CONNECT_ERR;
     }
 
     icss->connectPtr = p_svc;
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -366,10 +366,10 @@ cllDisconnect( icatSessionStruct *icss ) {
     stat = OCILogoff( p_svc, p_err );                         /* Disconnect */
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllDisconnect: OCILogoff failed: %d", stat );
-        return( CAT_DISCONNECT_ERR );
+        return CAT_DISCONNECT_ERR;
     }
 
-    return( 0 );
+    return 0;
 }
 
 /* Convert postgres style Bind Variable sql statements into
@@ -404,11 +404,11 @@ convertSqlToOra( char *sql, char *sqlOut ) {
             i++;
         }
         if ( cp2 > cpEnd ) {
-            return( -1 );
+            return -1;
         }
     }
     *cp2 = '\0';
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -456,7 +456,7 @@ bindTheVariables( OCIStmt *p_statement, const char *sql ) {
 
     if ( myBindVarCount > 0 ) {
         if ( myBindVarCount > MAX_BIND_VARS ) {
-            return( CAT_INVALID_ARGUMENT );
+            return CAT_INVALID_ARGUMENT;
         }
         for ( i = 0; i < myBindVarCount; i++ ) {
             int len, len2;
@@ -476,11 +476,11 @@ bindTheVariables( OCIStmt *p_statement, const char *sql ) {
                          stat );
                 rodsLog( LOG_ERROR, "sql:%s", sql );
                 logOraError( LOG_ERROR, p_err, stat );
-                return( CAT_OCI_ERROR );
+                return CAT_OCI_ERROR;
             }
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -508,7 +508,7 @@ logExecuteStatus( int stat, char *sql, char *funcName ) {
     if ( stat == OCI_SUCCESS ||
             stat == OCI_SUCCESS_WITH_INFO ||
             stat == OCI_NO_DATA ) {
-        return( 0 );
+        return 0;
     }
     else {
         logTheBindVariables( LOG_ERROR );
@@ -516,7 +516,7 @@ logExecuteStatus( int stat, char *sql, char *funcName ) {
                  "%s OCIStmtExecute error: %d, sql:%s",
                  funcName, stat, sql );
         stat2 = logOraError( LOG_ERROR, p_err, stat );
-        return( stat2 );
+        return stat2;
     }
 }
 
@@ -539,7 +539,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
     stat = convertSqlToOra( ( char* )sqlInput, sql );
     if ( stat != 0 ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: SQL too long" );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     p_svc = ( OCISvcCtx * )icss->connectPtr;
@@ -553,9 +553,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
             rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCITransCommit failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( sql, "rollback" ) == 0 ) {
@@ -566,9 +566,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
             rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCITransRollback failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
-        return( 0 );
+        return 0;
     }
 
 
@@ -578,7 +578,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCIHandleAlloc failed: %d", stat );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     /* Prepare SQL statement */
@@ -589,12 +589,12 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCIStmtPrepare failed: %d", stat );
         rodsLog( LOG_ERROR, sql );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     if ( bindTheVariables( p_statement, sql ) != 0 ) {
         logTheBindVariables( LOG_ERROR );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
     logTheBindVariables( 0 );
     rodsLogSql( sql );
@@ -605,7 +605,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
                            OCI_DEFAULT );
     stat2 = logExecuteStatus( stat, sql, "cllExecSqlNoResult" );
     if ( stat == OCI_NO_DATA ) { /* Don't think this ever happens, but... */
-        return( CAT_SUCCESS_BUT_WITH_NO_INFO );
+        return CAT_SUCCESS_BUT_WITH_NO_INFO;
     }
 
     /* malloc it so that it's aligned properly, else can get
@@ -619,9 +619,9 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
         logOraError( LOG_ERROR, p_err, stat );
         free( pUb4 );
         if ( stat2 == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
-            return( stat2 );
+            return stat2;
         }
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     stat3 = OCIAttrGet( ( dvoid * )p_statement, OCI_HTYPE_STMT, pUb4, 0,
@@ -634,15 +634,15 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
 
     if ( stat3 != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCIAttrGet failed: %d", stat );
-        return( stat3 );
+        return stat3;
     }
     /* rodsLog(LOG_NOTICE, "cllExecSqlNoResult: OCIAttrGet, rows_affected: %d",
        rows_affected); */
     if ( rows_affected == 0 ) {
-        return( CAT_SUCCESS_BUT_WITH_NO_INFO );
+        return CAT_SUCCESS_BUT_WITH_NO_INFO;
     }
 
-    return( stat2 );
+    return stat2;
 
 }
 
@@ -668,14 +668,14 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
         _cllFreeStatementColumns( icss, statementNumber );
         myStatement->numOfCols = 0;
         rodsLog( LOG_ERROR, "cllGetRow: Fetch failed: %d", stat );
-        return( -1 );
+        return -1;
     }
     if ( stat == OCI_SUCCESS ) {
-        return( 0 );
+        return 0;
     }
     _cllFreeStatementColumns( icss, statementNumber );
     myStatement->numOfCols = 0;
-    return( 0 );
+    return 0;
 }
 
 
@@ -713,7 +713,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     i = convertSqlToOra( sql, sqlConverted );
     if ( i != 0 ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQL too long" );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     /* Allocate SQL statement */
@@ -723,7 +723,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIHandleAlloc failed: %d",
                  stat );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     /* set up our statement */
@@ -736,7 +736,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     if ( statementNumber < 0 ) {
         rodsLog( LOG_ERROR,
                  "cllExecSqlWithResult: too many concurrent statements" );
-        return( -2 );
+        return -2;
     }
 
     myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
@@ -753,12 +753,12 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIStmtPrepare failed: %d", stat );
         rodsLog( LOG_ERROR, sqlConverted );
         logOraError( LOG_ERROR, p_err, stat );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     if ( bindTheVariables( p_statement, sqlConverted ) != 0 ) {
         logTheBindVariables( LOG_ERROR );
-        return( CAT_OCI_ERROR );
+        return CAT_OCI_ERROR;
     }
 
     logTheBindVariables( 0 );
@@ -772,7 +772,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     stat2 = logExecuteStatus( stat, sqlConverted, "cllExecSqlWithResult" );
 
     if ( stat2 ) {
-        return( stat2 );
+        return stat2;
     }
 
     *stmtNum = statementNumber; /* return index to statement handle */
@@ -796,7 +796,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIAttrGet failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
 
         /* Retrieve the length semantics for the column */
@@ -809,7 +809,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIAttrGet failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
 
         /* Retrieve the column width in characters */
@@ -830,7 +830,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIAttrGet failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
 
         /* get the col name */
@@ -842,7 +842,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIAttrGet failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
 
         columnLength[counter] = col_width;
@@ -899,7 +899,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         if ( stat != OCI_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIDefineByPos failed: %d", stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
 
 
@@ -913,11 +913,11 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     if ( counter == 1 ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLNumResultCols failed: %d",
                  stat );
-        return( -2 );
+        return -2;
     }
     myStatement->numOfCols = counter - 1;
 
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -981,7 +981,7 @@ cllExecSqlWithResultBV(
     else {
         done = 1;
     }
-    return( cllExecSqlWithResult( icss, stmtNum, sql ) );
+    return cllExecSqlWithResult( icss, stmtNum, sql );
 }
 
 /*
@@ -1033,7 +1033,7 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
             rodsLog( LOG_ERROR, "cllGetRowCount: OCIAttrGet failed: %d", stat );
             logOraError( LOG_ERROR, p_err, stat );
             free( pUb4 );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
     }
     else {   // JMC - catch failure
@@ -1044,7 +1044,7 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
     rowCount = *pUb4;
     i = rowCount;
     free( pUb4 );
-    return( rowCount );
+    return rowCount;
 }
 
 /*
@@ -1064,7 +1064,7 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
 
     myStatement = icss->stmtPtr[statementNumber];
     if ( myStatement == NULL ) { /* already freed */
-        return( 0 );
+        return 0;
     }
     p_statement = ( OCIStmt * )myStatement->stmtPtr;
 
@@ -1082,14 +1082,14 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
             rodsLog( LOG_ERROR, "cllFreeStatement: OCIHandleFree failed: %d",
                      stat );
             logOraError( LOG_ERROR, p_err, stat );
-            return( CAT_OCI_ERROR );
+            return CAT_OCI_ERROR;
         }
     }
 
     free( myStatement );
     icss->stmtPtr[statementNumber] = 0; /* indicate that the statement is free */
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -1108,7 +1108,7 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
         free( myStatement->resultValue[i] );
         free( myStatement->resultColName[i] );
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -1289,10 +1289,10 @@ int cllTest( char *userArg, char *pwArg ) {
 
     if ( OK ) {
         printf( "The tests all completed normally\n" );
-        return( 0 );
+        return 0;
     }
     else {
         printf( "One or more tests DID NOT complete normally\n" );
-        return( -1 );
+        return -1;
     }
 }

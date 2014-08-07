@@ -69,6 +69,6 @@ rcDataObjOpen( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     status = procApiRequest( conn, DATA_OBJ_OPEN_AN,  dataObjInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }
 

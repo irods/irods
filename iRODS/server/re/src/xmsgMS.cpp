@@ -64,24 +64,24 @@ int msiXmsgServerConnect( msParam_t* outConnParam, ruleExecInfo_t *rei ) {
     status = getRodsEnv( &myRodsEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "msiXmsgServerConnect: getRodsEnv failed:%i", status );
-        return( status );
+        return status;
     }
     conn = rcConnectXmsg( &myRodsEnv, &errMsg );
     if ( conn == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiXmsgServerConnect: rcConnectXmsg failed:%i :%s\n", errMsg.status, errMsg.msg );
-        return( errMsg.status );
+        return errMsg.status;
     }
     status = clientLogin( conn );
     if ( status != 0 ) {
         rodsLog( LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", status );
-        return( status );
+        return status;
     }
 
     outConnParam->inOutStruct = ( void * ) conn;
     outConnParam->type = ( char * ) strdup( "RcComm_MS_T" );
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -134,7 +134,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
     if ( inConnParam->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiXmsgCreateStream: input inConnParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     conn = ( rcComm_t * ) inConnParam->inOutStruct;
 
@@ -150,7 +150,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
     status = rcGetXmsgTicket( conn, getXmsgTicketInp, &outXmsgTicketInfo );
     if ( status != 0 ) {
         rodsLog( LOG_ERROR, "msiXmsgCreateStream: rcGetXmsgTicket failed:%i", status );
-        return( status );
+        return status;
     }
 
     outXmsgTicketInfoParam->inOutStruct = ( void * ) outXmsgTicketInfo;
@@ -158,7 +158,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
     if ( allocFlag == 1 ) {
         free( getXmsgTicketInp );
     }
-    return( 0 );
+    return 0;
 
 }
 
@@ -222,7 +222,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
 
     if ( inXmsgTicketInfoParam == NULL ) {
         rodsLog( LOG_ERROR, "msiSendXmsg: input inXmsgTicketInfoParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     xmsgTicketInfo = ( xmsgTicketInfo_t * ) inXmsgTicketInfoParam->inOutStruct;
 
@@ -265,7 +265,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
 
     outSendXmsgInpParam->inOutStruct = ( void * ) sendXmsgInp;
     outSendXmsgInpParam->type = ( char * ) strdup( SendXmsgInp_MS_T );
-    return( 0 );
+    return 0;
 
 
 }
@@ -319,13 +319,13 @@ int msiSendXmsg( msParam_t* inConnParam,
 
     if ( inConnParam->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiSendXmsg: input inConnParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     conn = ( rcComm_t * ) inConnParam->inOutStruct;
 
     if ( inSendXmsgInpParam == NULL ) {
         rodsLog( LOG_ERROR, "msiSendXmsg: input inSendXmsgInpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     sendXmsgInp = ( sendXmsgInp_t * ) inSendXmsgInpParam->inOutStruct;
 
@@ -333,9 +333,9 @@ int msiSendXmsg( msParam_t* inConnParam,
     status = rcSendXmsg( conn, sendXmsgInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "msiSendXmsg: rcSendXmsg failed:%i", status );
-        return( status );
+        return status;
     }
-    return( status );
+    return status;
 }
 
 
@@ -398,7 +398,7 @@ int msiRcvXmsg( msParam_t* inConnParam,
 
     if ( inConnParam->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiRcvXmsg: input inConnParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     conn = ( rcComm_t * ) inConnParam->inOutStruct;
 
@@ -423,7 +423,7 @@ int msiRcvXmsg( msParam_t* inConnParam,
     status = rcRcvXmsg( conn, &rcvXmsgInp, &rcvXmsgOut );
     if ( status < 0 || rcvXmsgOut == NULL ) { // JMC cppcheck
         rodsLog( LOG_ERROR, "msiRcvXmsg: rcRcvXmsg failed:%i", status );
-        return( status );
+        return status;
     }
 
     outMsgType->inOutStruct = ( void * ) strdup( rcvXmsgOut->msgType );
@@ -432,7 +432,7 @@ int msiRcvXmsg( msParam_t* inConnParam,
     outMsg->type = strdup( STR_MS_T );
     outSendUser->inOutStruct = ( void * ) strdup( rcvXmsgOut->sendUserName );
     outSendUser->type = strdup( STR_MS_T );
-    return( status );
+    return status;
 }
 
 /**
@@ -475,14 +475,14 @@ int msiXmsgServerDisConnect( msParam_t* inConnParam, ruleExecInfo_t *rei ) {
 
     if ( inConnParam->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiSendXmsg: input inConnParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     conn = ( rcComm_t * ) inConnParam->inOutStruct;
     status = rcDisconnect( conn );
     if ( status == 0 ) {
         inConnParam->inOutStruct = NULL;
     }
-    return( status );
+    return status;
 
 }
 
@@ -500,18 +500,18 @@ int _writeXMsg( int streamId, char *hdr, char *msg ) {
         i = getRodsEnv( &myRodsXmsgEnv );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i", i );
-            return( i );
+            return i;
         }
         conn = rcConnectXmsg( &myRodsXmsgEnv, &errMsg );
         if ( conn == NULL ) {
             rodsLog( LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s", errMsg.status, errMsg.msg );
-            return( errMsg.status );
+            return errMsg.status;
         }
         i = clientLogin( conn );
         if ( i != 0 ) {
             rodsLog( LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i );
             rcDisconnect( conn );
-            return( i );
+            return i;
         }
         xmsgServerConn = conn;
     }
@@ -537,7 +537,7 @@ int _writeXMsg( int streamId, char *hdr, char *msg ) {
         rodsLog( LOG_NOTICE, "_writeXmsg: Unable to send message to stream  %i\n", streamId );
     }
     /*   rcDisconnect(conn); */
-    return( i );
+    return i;
 }
 
 int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum,
@@ -552,18 +552,18 @@ int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum,
         i = getRodsEnv( &myRodsXmsgEnv );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_readXMsg: getRodsEnv failed:%i", i );
-            return( i );
+            return i;
         }
         conn = rcConnectXmsg( &myRodsXmsgEnv, &errMsg );
         if ( conn == NULL ) {
             rodsLog( LOG_ERROR, "_readXMsg: rcConnectXmsg failed:%i:%s", errMsg.status, errMsg.msg );
-            return( errMsg.status );
+            return errMsg.status;
         }
         i = clientLogin( conn );
         if ( i != 0 ) {
             rodsLog( LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i );
             rcDisconnect( conn );
-            return( i );
+            return i;
         }
         xmsgServerConn = conn;
     }
@@ -578,7 +578,7 @@ int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum,
     if ( i < 0 || rcvXmsgOut == NULL ) { // JMC cppcheck
         /*  rcDisconnect(conn); */
         rodsLog( LOG_NOTICE, "_readXmsg: Unable to receive message from stream  %i\n", streamId );
-        return( i );
+        return i;
     }
     *msgNum = rcvXmsgOut->msgNumber;
     *seqNum = rcvXmsgOut->seqNumber;
@@ -587,5 +587,5 @@ int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum,
     *user = strdup( rcvXmsgOut->sendUserName );
     *addr = strdup( rcvXmsgOut->sendAddr );
     /*  rcDisconnect(conn);*/
-    return( i );
+    return i;
 }

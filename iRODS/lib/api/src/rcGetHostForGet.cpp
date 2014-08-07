@@ -12,6 +12,6 @@ rcGetHostForGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
     status = procApiRequest( conn, GET_HOST_FOR_GET_AN,  dataObjInp, NULL,
                              ( void ** ) outHost, NULL );
 
-    return ( status );
+    return status;
 }
 

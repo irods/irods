@@ -9,5 +9,5 @@ rcSubStructFileClosedir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileC
     status = procApiRequest( conn, SUB_STRUCT_FILE_CLOSEDIR_AN, subStructFileClosedirInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

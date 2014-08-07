@@ -47,13 +47,13 @@ int doGetTempPw( rcComm_t *Conn, char *userPassword ) {
 
     if ( strlen( userPassword ) <= 0 ) {
         printf( "You need to include the user password\n" );
-        return( -1 );
+        return -1;
     }
 
     status = rcGetTempPassword( Conn, &getTempPasswordOut );
     if ( status ) {
         printError( Conn, status, "rcGetTempPassword" );
-        return( status );
+        return status;
     }
     printf( "stringToHashWith: %s\n", getTempPasswordOut->stringToHashWith );
 
@@ -70,7 +70,7 @@ int doGetTempPw( rcComm_t *Conn, char *userPassword ) {
 
     md5ToStr( digest, tempPw );
     printf( "tempPw=%s\n", tempPw );
-    return( 0 );
+    return 0;
 }
 
 int doCheck( char *buf ) {
@@ -130,7 +130,7 @@ int doAuth2( rcComm_t *Conn, char *userName ) {
     status = rcAuthRequest( Conn, &authReqOut );
     if ( status ) {
         printError( Conn, status, "rcAuthRequest" );
-        return( status );
+        return status;
     }
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
@@ -156,10 +156,10 @@ int doAuth2( rcComm_t *Conn, char *userName ) {
     status = rcAuthResponse( Conn, &authRespIn );
     if ( status ) {
         printError( Conn, status, "rcAuthResponse" );
-        return( status );
+        return status;
     }
 
-    return( 0 );
+    return 0;
 }
 
 /* test the encoding/decoding routines */
@@ -206,7 +206,7 @@ int doAuthT( rcComm_t *Conn, char *userName ) {
 						  buffer */
     if ( status ) {
         printError( Conn, status, "rcAuthRequest" );
-        return( status );
+        return status;
     }
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
@@ -234,10 +234,10 @@ int doAuthT( rcComm_t *Conn, char *userName ) {
     status = rcAuthCheck( Conn, &authCheckIn, &authCheckOut );
     if ( status ) {
         printError( Conn, status, "rcAuthCheck" );
-        return( status );
+        return status;
     }
     printf( "priv=%d\n", authCheckOut->privLevel );
-    return( 0 );
+    return 0;
 }
 
 int doRm( rcComm_t *Conn, char *file ) {
@@ -257,9 +257,9 @@ int doRm( rcComm_t *Conn, char *file ) {
     status = rcDataObjUnlink( Conn, &dataObjOprInp );
     if ( status < 0 ) {
         printError( Conn, status, "rcDataObjUnlink" );
-        return( status );
+        return status;
     }
-    return( 0 );
+    return 0;
 }
 
 int doPut( rcComm_t *Conn, char *file, char *rescName ) {
@@ -272,7 +272,7 @@ int doPut( rcComm_t *Conn, char *file, char *rescName ) {
     status = stat( file, &statbuf );
     if ( status < 0 ) {
         fprintf( stderr, "stat of %s failed\n", file );
-        return( -1 );
+        return -1;
     }
     else {
         printf( "input file %s size = %d\n",
@@ -297,20 +297,20 @@ int doPut( rcComm_t *Conn, char *file, char *rescName ) {
                               &dataObjOprInp.condInput );
     if ( status < 0 ) {
         printError( Conn, status, "rcChksumLocFile" );
-        return( status );
+        return status;
     }
 
     status = rcDataObjPut( Conn, &dataObjOprInp, file );
 
     if ( status < 0 ) {
         printError( Conn, status, "rcDataObjPut" );
-        return( status );
+        return status;
     }
     else {
         printf( "rcDataObjPut: status = %d\n", status );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -425,7 +425,7 @@ int doLs( rcComm_t *Conn ) {
     if ( debug == 0 && printCount == 0 ) {
         printf( "no subcollections or files found\n" );
     }
-    return ( 0 );
+    return 0;
 }
 
 int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
@@ -511,13 +511,13 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
                     printf( "%s: %s\n", colNames[colNameIx++], tResult );
                 }
             }
-            return( 0 );
+            return 0;
         }
     }
 
     if ( strlen( inStr ) == 0 ) {
         printf( "%s is not a collection\n", comboStr );
-        return( 0 );
+        return 0;
     }
 
     /* now try as a file */
@@ -568,7 +568,7 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
         printf( "%s does not exist (neither a collection or a file)\n", comboStr );
-        return ( 0 );
+        return 0;
     }
     else {
         if ( status != CAT_NO_ROWS_FOUND ) {
@@ -617,11 +617,11 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "No ACL)\n", comboStr );
-        return( 0 );
+        return 0;
     }
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
-        return ( 0 );
+        return 0;
     }
     else {
         int j;
@@ -638,7 +638,7 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
             printf( "\n" );
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -664,7 +664,7 @@ doInsert( rcComm_t *Conn, char *tok1, char *tok2, char *tok3, char *tok4,
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "rcGeneralRowInsert failure" );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -681,7 +681,7 @@ doPurge( rcComm_t *Conn, char *tok1, char *tok2 ) {
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "rcGeneralRowPurge failure" );
     }
-    return( status );
+    return status;
 }
 
 /* Check to see if the user has read or better access to a dataObj */
@@ -735,7 +735,7 @@ doAccCheck( rcComm_t *Conn, char *user, char *zone, char *coll,
     if ( printCount > 0 ) {
         printf( "Yes, access allowed\n" );
     }
-    return ( 0 );
+    return 0;
 }
 
 main( int argc, char **argv ) {

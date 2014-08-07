@@ -206,7 +206,7 @@ writePackedRes( bytesBuf_t *packedResult, char *outFile ) {
         rodsLog( LOG_ERROR,
                  "Cannot open input file %s. errno = %d\n",
                  outFile, errno );
-        return ( -1 );
+        return -1;
     }
 
     len = fwrite( packedResult->buf, packedResult->len, 1, fptr );
@@ -214,7 +214,7 @@ writePackedRes( bytesBuf_t *packedResult, char *outFile ) {
     printf( "\n\n" );
     fclose( fptr );
 
-    return ( len );
+    return len;
 }
 
 

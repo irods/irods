@@ -10,5 +10,5 @@ rcProcStat( rcComm_t *conn, procStatInp_t *procStatInp,
     status = procApiRequest( conn, PROC_STAT_AN, procStatInp,
                              NULL, ( void ** ) procStatOut, NULL );
 
-    return ( status );
+    return status;
 }

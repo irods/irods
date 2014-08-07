@@ -10,7 +10,7 @@ rcGetRemoteZoneResc( rcComm_t *conn, dataObjInp_t *dataObjInp,
     status = procApiRequest( conn, GET_REMOTE_ZONE_RESC_AN, dataObjInp, NULL,
                              ( void ** ) rescAddr, NULL );
 
-    return ( status );
+    return status;
 }
 
 

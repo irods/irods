@@ -2622,7 +2622,7 @@ int lookAhead( Pointer *p, unsigned int n ) {
                 return -1;
             }
         }
-        return ( int )( p->buf[p->p + n] );
+        return ( int )p->buf[p->p + n];
     }
     else {
         if ( n + p->strp >= p->strlen ) {

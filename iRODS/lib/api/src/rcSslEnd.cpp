@@ -9,5 +9,5 @@ rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp ) {
     status = procApiRequest( conn, SSL_END_AN,  sslEndInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

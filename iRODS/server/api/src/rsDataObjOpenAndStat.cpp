@@ -33,6 +33,6 @@ rsDataObjOpenAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         *openStat = NULL;
     }
 
-    return ( status );
+    return status;
 }
 

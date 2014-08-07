@@ -10,5 +10,5 @@ rcPhyBundleColl( rcComm_t *conn,
     status = procApiRequest( conn, PHY_BUNDLE_COLL_AN, phyBundleCollInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

@@ -77,7 +77,7 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
     }
     else {
         status = chkObjConsistency( conn, myRodsArgs, inpPath, hostname );
-        return ( status );
+        return status;
     }
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
@@ -97,7 +97,7 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
             status = chkObjConsistency( conn, myRodsArgs, fullPath, hostname );
         }
     }
-    return ( status );
+    return status;
 
 }
 
@@ -163,6 +163,6 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 
 }

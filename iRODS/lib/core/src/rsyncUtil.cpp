@@ -127,7 +127,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "rsyncUtil: invalid srcType %d and targType %d combination for %s",
                      srcType, targType, targPath->outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -155,7 +155,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncDataToFileUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     /* check the age */
     if ( myRodsArgs->age == True ) {
@@ -192,7 +192,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
                           targPath->outPath, status );
-            return ( status );
+            return status;
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
@@ -210,7 +210,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
                           targPath->outPath, status );
-            return ( status );
+            return status;
         }
         else {
             syncFlag = 1;
@@ -264,7 +264,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -280,7 +280,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncFileToDataUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     /* check the age */
     if ( myRodsArgs->age == True ) {
@@ -295,7 +295,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLog( LOG_ERROR,
                      "rsyncFileToDataUtil: stat error for %s, errno = %d\n",
                      srcPath->outPath, errno );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         if ( ageExceeded( myRodsArgs->agevalue, statbuf.st_mtime,
                           myRodsArgs->verbose, srcPath->outPath, srcPath->size ) ) {
@@ -326,7 +326,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
                           srcPath->outPath, status );
-            return ( status );
+            return status;
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
@@ -349,7 +349,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
                           srcPath->outPath, status );
-            return ( status );
+            return status;
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
@@ -407,7 +407,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -422,7 +422,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncDataToDataUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     /* check the age */
     if ( myRodsArgs->age == True ) {
@@ -524,7 +524,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -544,7 +544,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncCollToDirUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     srcColl = srcPath->outPath;
@@ -554,7 +554,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLog( LOG_ERROR,
                  "rsyncCollToDirUtil: -r option must be used for collection %s",
                  targDir );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     status = rclOpenCollection( conn, srcColl,
@@ -613,7 +613,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 rodsLogError( LOG_ERROR, status,
                               "rsyncCollToDirUtil:: splitPathByKey for %s error, stat=%d",
                               collEnt.collName, status );
-                return ( status );
+                return status;
             }
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targDir, childPath );
@@ -638,21 +638,21 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
                                          &myTargPath, myRodsEnv, rodsArgs, &childDataObjInp );
 
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                return ( status );
+                return status;
             }
         }
     }
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ||
               status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -666,7 +666,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     srcDir = srcPath->outPath;
@@ -680,7 +680,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: -r option must be used for putting %s directory",
                  srcDir );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     path srcDirPath( srcDir );
@@ -688,7 +688,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
                  srcDir, errno );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -716,7 +716,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rodsLog( LOG_ERROR,
                      "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
                      mySrcPath.outPath, errno );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
 
         if ( ( is_regular_file( p ) && rodsArgs->age == True ) &&
@@ -799,7 +799,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    return ( savedStatus );
+    return savedStatus;
 
 }
 
@@ -823,7 +823,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsyncCollToCollUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     srcColl = srcPath->outPath;
@@ -833,7 +833,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLog( LOG_ERROR,
                  "rsyncCollToCollUtil: -r option must be used for collection %s",
                  targColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     status = rclOpenCollection( conn, srcColl,
@@ -912,7 +912,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 rodsLogError( LOG_ERROR, status,
                               "rsyncCollToCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );
-                return ( status );
+                return status;
             }
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, childPath );
@@ -933,7 +933,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                return ( status );
+                return status;
             }
 
 
@@ -943,14 +943,14 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ||
               status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -963,13 +963,13 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForRsync: NULL dataObjOprInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     /* always turn on the force flag */
@@ -1000,7 +1000,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
@@ -1016,7 +1016,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, AGE_KW, tmpStr );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1027,13 +1027,13 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForCp: NULL dataObjCopyInp incp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     /* always turn on the force flag */
@@ -1052,7 +1052,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
@@ -1088,7 +1088,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    VERIFY_CHKSUM_KW, "" );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int

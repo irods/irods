@@ -109,7 +109,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     {
         /* local file exists */
         if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) == NULL ) {
-            return ( OVERWRITE_WITHOUT_FORCE_FLAG );
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
         }
     }
 
@@ -119,7 +119,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( portalOprOut != NULL ) {
             free( portalOprOut );
         }
-        return ( status );
+        return status;
     }
 
     if ( status == 0 || dataObjOutBBuf.len > 0 ) {
@@ -130,7 +130,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
               rodsLog (LOG_NOTICE,
               "putFile: totalWritten %lld dataSize %lld mismatch",
               dataObjOutBBuf.len, dataObjInp->dataSize);
-              return (SYS_COPY_LEN_ERR);
+              return SYS_COPY_LEN_ERR;
               }
         ****/
         status = getIncludeFile( conn, &dataObjOutBBuf, locFilePath );
@@ -143,7 +143,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( portalOprOut->numThreads != 1 ) {
             rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
             free( portalOprOut );
-            return ( SYS_INVALID_PORTAL_OPR );
+            return SYS_INVALID_PORTAL_OPR;
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
         if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
@@ -199,7 +199,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             if ( portalOprOut->numThreads >= 20 * DEF_NUM_TRAN_THR ) {
                 rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
                 free( portalOprOut );
-                return ( SYS_INVALID_PORTAL_OPR );
+                return SYS_INVALID_PORTAL_OPR;
             }
 
             conn->transStat.numThreads = portalOprOut->numThreads;
@@ -234,7 +234,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                 if ( portalOprOut != NULL ) {
                     free( portalOprOut );
                 }
-                return ( status );
+                return status;
             }
             else if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -243,7 +243,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                 if ( portalOprOut != NULL ) {
                     free( portalOprOut );
                 }
-                return ( status );
+                return status;
             }
 
         }
@@ -252,7 +252,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         free( portalOprOut );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -279,6 +279,6 @@ _rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
         status = ( *portalOprOut )->l1descInx;
     }
 
-    return ( status );
+    return status;
 }
 

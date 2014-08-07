@@ -38,7 +38,7 @@ rmDelayedRule( char *ruleId ) {
     if ( status < 0 ) {
         printError( Conn, status, "rcRuleExecDel" );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -161,7 +161,7 @@ qdelUtil( rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "qdelUtil: getSqlResultByInx for COL_RULE_EXEC_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
             execIdStr = &execId->value[execId->len * i];

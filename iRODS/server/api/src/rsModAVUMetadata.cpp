@@ -49,7 +49,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, myHint, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -68,7 +68,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         rodsLog( LOG_NOTICE,
                  "rsModAVUMetadata: rcModAVUMetadata failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -209,7 +209,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
                                     modAVUMetadataInp->arg5 );
     }
     else {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( status >= 0 ) {
@@ -228,7 +228,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         }
     }
 
-    return( status );
+    return status;
 
 }
 #endif

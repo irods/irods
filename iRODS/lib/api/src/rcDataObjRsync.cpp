@@ -212,7 +212,7 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -223,5 +223,5 @@ _rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp,
     status = procApiRequest( conn, DATA_OBJ_RSYNC_AN, dataObjInp, NULL,
                              ( void ** )outParamArray, NULL );
 
-    return ( status );
+    return status;
 }

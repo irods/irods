@@ -15,7 +15,7 @@ rsGetLimitedPassword( rsComm_t *rsComm,
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -37,7 +37,7 @@ rsGetLimitedPassword( rsComm_t *rsComm,
                  "rsGetLimitedPassword: rcGetLimitedPassword failed, status = %d",
                  status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -60,6 +60,6 @@ _rsGetLimitedPassword( rsComm_t *rsComm,
 
     *getLimitedPasswordOut = myGetLimitedPasswordOut;
 
-    return ( status );
+    return status;
 }
 #endif

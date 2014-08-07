@@ -69,19 +69,19 @@ extern "C" {
         if ( inMSOPath ==  NULL ||
                 strcmp( inMSOPath->type , STR_MS_T ) != 0 ||
                 inMSOPath->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inCacheFilename ==  NULL ||
                 strcmp( inCacheFilename->type , STR_MS_T ) != 0 ||
                 inCacheFilename->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileSize ==  NULL ||
                 strcmp( inFileSize->type , STR_MS_T ) != 0 ||
                 inFileSize->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
 
@@ -92,7 +92,7 @@ extern "C" {
         }
         else {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
 
         cacheFilename = ( char * ) inCacheFilename->inOutStruct;
@@ -120,7 +120,7 @@ extern "C" {
         outDesc = rsDataObjCreate( rsComm, &dataObjInp );
         if ( outDesc < 0 ) {
             printf( "msiputobj_slink: Unable to open file %s:%i\n", dataObjInp.objPath, outDesc );
-            return( outDesc );
+            return outDesc;
         }
 
         dataObjWriteInp.l1descInx = outDesc;
@@ -153,7 +153,7 @@ extern "C" {
         close( srcFd );
         i = rsDataObjClose( rsComm, &dataObjCloseInp );
 
-        return( i );
+        return i;
     }
 
 

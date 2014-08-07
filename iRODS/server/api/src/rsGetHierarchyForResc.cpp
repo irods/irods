@@ -36,9 +36,9 @@ int _rsGetHierarchyForResc(
                      hier );
     strncpy( ( *_out )->resc_hier_, hier.c_str(), MAX_NAME_LEN );
 
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 } // _rsGetHierarchyForResc
@@ -66,7 +66,7 @@ int rsGetHierarchyForResc(
                      zone_name,
                      &svr_host );
     if ( status < 0 || NULL == svr_host ) {
-        return( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
@@ -83,7 +83,7 @@ int rsGetHierarchyForResc(
         status = rcGetHierarchyForResc( svr_host->conn, _inp, _out );
     }
 
-    return ( status );
+    return status;
 
 } // rsGetHierarchyForResc
 

@@ -11,5 +11,5 @@ rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp ) {
     status = procApiRequest( conn, FILE_RMDIR_AN,  fileRmdirInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

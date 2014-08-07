@@ -32,19 +32,19 @@ rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileReaddir: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int

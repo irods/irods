@@ -75,5 +75,5 @@ rcReadCollection( rcComm_t *conn, int handleInxInp,
     status = procApiRequest( conn, READ_COLLECTION_AN, &handleInxInp, NULL,
                              ( void ** ) collEnt, NULL );
 
-    return ( status );
+    return status;
 }

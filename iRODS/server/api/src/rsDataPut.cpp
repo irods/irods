@@ -30,7 +30,7 @@ rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         rodsServerHost = FileDesc[l3descInx].rodsServerHost;
         if ( rodsServerHost == NULL ) {
             rodsLog( LOG_NOTICE, "rsDataPut: NULL rodsServerHost" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         remoteFlag = rodsServerHost->localFlag;
     }
@@ -46,7 +46,7 @@ rsDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
     }
 
 
-    return ( status );
+    return status;
 }
 
 int
@@ -80,6 +80,6 @@ remoteDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     status = rcDataPut( rodsServerHost->conn, dataOprInp, portalOprOut );
 
-    return ( status );
+    return status;
 }
 

@@ -301,7 +301,7 @@ chkAndResetRule( rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "chkAndResetRule: unable to read rule config file %s, status = %d",
                  re_full_path.c_str(), status );
-        return ( status );
+        return status;
     }
 
     mtime = ( uint ) last_write_time( p );
@@ -309,7 +309,7 @@ chkAndResetRule( rsComm_t *rsComm ) {
     if ( CoreIrbTimeStamp == 0 ) {
         /* first time */
         CoreIrbTimeStamp = mtime;
-        return ( 0 );
+        return 0;
     }
 
     if ( mtime > CoreIrbTimeStamp ) {

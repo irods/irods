@@ -9,5 +9,5 @@ rcKrbAuthRequest( rcComm_t *conn, krbAuthRequestOut_t **krbAuthRequestOut ) {
     status = procApiRequest( conn, KRB_AUTH_REQUEST_AN, NULL, NULL,
                              ( void ** ) krbAuthRequestOut, NULL );
 
-    return ( status );
+    return status;
 }

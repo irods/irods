@@ -23,7 +23,7 @@ extern icatSessionStruct *chlGetRcs();
 /*
   int testCml(rsComm_t *rsComm)
   {
-  return(cmlTest(rsComm));
+  return cmlTest(rsComm);
   }
 */
 
@@ -39,7 +39,7 @@ int testRegUser( rsComm_t *rsComm, char *name,
     strncpy( userInfo.authInfo.authStr, dn, sizeof userInfo.authInfo.authStr );
 
     /* no longer used   return(chlRegUser(rsComm, &userInfo)); */
-    return( 0 );
+    return 0;
 }
 
 int testRegRule( rsComm_t *rsComm, char *name ) {
@@ -59,7 +59,7 @@ int testRegRule( rsComm_t *rsComm, char *name ) {
     strncpy( ruleInfo.estimateExeTime, "2 hours", sizeof ruleInfo.estimateExeTime );
     strncpy( ruleInfo.notificationAddr, "noone@nowhere.com",
              sizeof ruleInfo.notificationAddr );
-    return( chlRegRuleExec( rsComm, &ruleInfo ) );
+    return chlRegRuleExec( rsComm, &ruleInfo );
 }
 
 int testRename( rsComm_t *rsComm, char *id, char *newName ) {
@@ -70,9 +70,9 @@ int testRename( rsComm_t *rsComm, char *id, char *newName ) {
     intId = strtoll( id, 0, 0 );
     status = chlRenameObject( rsComm, intId, newName );
     if ( status ) {
-        return( status );
+        return status;
     }
-    return( chlCommit( rsComm ) );
+    return chlCommit( rsComm );
 }
 
 int testLogin( rsComm_t *rsComm, char *User, char *pw, char *pw1 ) {
@@ -98,7 +98,7 @@ int testLogin( rsComm_t *rsComm, char *User, char *pw, char *pw1 ) {
 
     rcDisconnect( Conn );
 
-    return( status );
+    return status;
 }
 
 int testMove( rsComm_t *rsComm, char *id, char *destId ) {
@@ -110,9 +110,9 @@ int testMove( rsComm_t *rsComm, char *id, char *destId ) {
     intDestId = strtoll( destId, 0, 0 );
     status = chlMoveObject( rsComm, intId, intDestId );
     if ( status ) {
-        return( status );
+        return status;
     }
-    return( chlCommit( rsComm ) );
+    return chlCommit( rsComm );
 }
 
 int testTempPw( rsComm_t *rsComm ) {
@@ -121,7 +121,7 @@ int testTempPw( rsComm_t *rsComm ) {
     status = chlMakeTempPw( rsComm, pwValueToHash, "" );
     printf( "pwValueToHash: %s\n", pwValueToHash );
 
-    return( status );
+    return status;
 }
 
 int testTempPwConvert( char *s1, char *s2 ) {
@@ -144,7 +144,7 @@ int testTempPwConvert( char *s1, char *s2 ) {
     hashToStr( digest, digestStr );
     printf( "digestStr (derived temp pw)=%s\n", digestStr );
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -153,9 +153,9 @@ testGetLocalZone( rsComm_t *rsComm, char *expectedZone ) {
     chlGetLocalZone( zone );
     printf( "Zone is %s\n", zone.c_str() );
     if ( zone != expectedZone ) {
-        return( -1 );
+        return -1;
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -173,7 +173,7 @@ testGetPamPw( rsComm_t *rsComm, char *username, char *testTime ) {
     else {
         printf( "status=%d\n", status );
     }
-    return( 0 );
+    return 0;
 }
 
 int testTempPwCombined( rsComm_t *rsComm, char *s1 ) {
@@ -185,7 +185,7 @@ int testTempPwCombined( rsComm_t *rsComm, char *s1 ) {
 
     status = chlMakeTempPw( rsComm, pwValueToHash, "" );
     if ( status ) {
-        return( status );
+        return status;
     }
 
     printf( "pwValueToHash: %s\n", pwValueToHash );
@@ -205,7 +205,7 @@ int testTempPwCombined( rsComm_t *rsComm, char *s1 ) {
     hashToStr( digest, digestStr );
     printf( "digestStr (derived temp pw)=%s\n", digestStr );
 
-    return( 0 );
+    return 0;
 }
 
 int testTempPwForOther( rsComm_t *rsComm, char *s1, char *otherUser ) {
@@ -220,7 +220,7 @@ int testTempPwForOther( rsComm_t *rsComm, char *s1, char *otherUser ) {
 
     status = chlMakeTempPw( rsComm, pwValueToHash, otherUser );
     if ( status ) {
-        return( status );
+        return status;
     }
 
     printf( "pwValueToHash: %s\n", pwValueToHash );
@@ -240,7 +240,7 @@ int testTempPwForOther( rsComm_t *rsComm, char *s1, char *otherUser ) {
     hashToStr( digest, digestStr );
     printf( "digestStr (derived temp pw)=%s\n", digestStr );
 
-    return( 0 );
+    return 0;
 }
 
 int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
@@ -294,7 +294,7 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
     if ( status == 0 ) {
         printf( "clientPrivLevel=%d\n", clientPrivLevel );
     }
-    return( status );
+    return status;
 
 }
 
@@ -305,7 +305,7 @@ int testDelUser( rsComm_t *rsComm, char *name, char *zone ) {
     strncpy( userInfo.rodsZone, zone, sizeof userInfo.rodsZone );
 
     /* no more  return(chlDelUser(rsComm, &userInfo)); */
-    return( 0 );
+    return 0;
 }
 
 int testDelFile( rsComm_t *rsComm, char *name, char *replica ) {
@@ -327,7 +327,7 @@ int testDelFile( rsComm_t *rsComm, char *name, char *replica ) {
 
     memset( &condInput, 0, sizeof( condInput ) );
 
-    return( chlUnregDataObj( rsComm, &dataObjInfo, condInput ) );
+    return chlUnregDataObj( rsComm, &dataObjInfo, condInput );
 }
 
 int testDelFilePriv( rsComm_t *rsComm, char *name, char *dataId,
@@ -358,7 +358,7 @@ int testDelFilePriv( rsComm_t *rsComm, char *name, char *dataId,
     }
     strncpy( dataObjInfo.objPath, name, sizeof dataObjInfo.objPath );
 
-    return( chlUnregDataObj( rsComm, &dataObjInfo, &condInput ) );
+    return chlUnregDataObj( rsComm, &dataObjInfo, &condInput );
 }
 
 int testDelFileTrash( rsComm_t *rsComm, char *name, char *dataId ) {
@@ -390,7 +390,7 @@ int testDelFileTrash( rsComm_t *rsComm, char *name, char *dataId ) {
     }
     strncpy( dataObjInfo.objPath, name, sizeof dataObjInfo.objPath );
 
-    return( chlUnregDataObj( rsComm, &dataObjInfo, &condInput ) );
+    return chlUnregDataObj( rsComm, &dataObjInfo, &condInput );
 }
 
 int testRegColl( rsComm_t *rsComm, char *name ) {
@@ -399,7 +399,7 @@ int testRegColl( rsComm_t *rsComm, char *name ) {
 
     strncpy( collInp.collName, name, sizeof collInp.collName );
 
-    return( chlRegColl( rsComm, &collInp ) );
+    return chlRegColl( rsComm, &collInp );
 }
 
 int testDelColl( rsComm_t *rsComm, char *name ) {
@@ -408,7 +408,7 @@ int testDelColl( rsComm_t *rsComm, char *name ) {
 
     strncpy( collInp.collName, name, sizeof collInp.collName );
 
-    return( chlDelColl( rsComm, &collInp ) );
+    return chlDelColl( rsComm, &collInp );
 }
 
 int testDelRule( rsComm_t *rsComm, char *ruleName, char *userName ) {
@@ -422,7 +422,7 @@ int testDelRule( rsComm_t *rsComm, char *ruleName, char *userName ) {
         rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
         rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     }
-    return( chlDelRuleExec( rsComm, ruleName ) );
+    return chlDelRuleExec( rsComm, ruleName );
 }
 
 int testRegDataObj( rsComm_t *rsComm, char *name,
@@ -441,7 +441,7 @@ int testRegDataObj( rsComm_t *rsComm, char *name,
 
     dataObjInfo.replStatus = 5;
 
-    return ( chlRegDataObj( rsComm, &dataObjInfo ) );
+    return chlRegDataObj( rsComm, &dataObjInfo );
 }
 
 /*
@@ -471,19 +471,19 @@ int testRegDataMulti( rsComm_t *rsComm, char *count,
     myCount = atoi( count );
     if ( myCount <= 0 ) {
         printf( "Invalid input: count\n" );
-        return( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     for ( i = 0; i < myCount; i++ ) {
         snprintf( myName, sizeof myName, "%s.%d", nameBase, i );
         status = testRegDataObj( rsComm, myName, dataType, filePath );
         if ( status ) {
-            return( status );
+            return status;
         }
     }
 
     status = chlCommit( rsComm );
-    return( status );
+    return status;
 }
 
 int testModDataObjMeta( rsComm_t *rsComm, char *name,
@@ -526,7 +526,7 @@ int testModDataObjMeta( rsComm_t *rsComm, char *name,
     status = chlModDataObjMeta( rsComm, &dataObjInfo, &regParam );
 
 
-    return( status );
+    return status;
 }
 
 int testModDataObjMeta2( rsComm_t *rsComm, char *name,
@@ -561,7 +561,7 @@ int testModDataObjMeta2( rsComm_t *rsComm, char *name,
     status = chlModDataObjMeta( rsComm, &dataObjInfo, &regParam );
 
 
-    return( status );
+    return status;
 }
 
 int testModColl( rsComm_t *rsComm, char *name, char *type,
@@ -590,11 +590,11 @@ int testModColl( rsComm_t *rsComm, char *name, char *type,
     status = chlModColl( rsComm, &collInp );
 
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     status = chlCommit( rsComm );
-    return( status );
+    return status;
 }
 
 int testModRuleMeta( rsComm_t *rsComm, char *id,
@@ -617,7 +617,7 @@ int testModRuleMeta( rsComm_t *rsComm, char *id,
 
     status = chlModRuleExec( rsComm, ruleId, &regParam );
 
-    return( status );
+    return status;
 }
 
 int testModResourceFreeSpace( rsComm_t *rsComm, char *rescName,
@@ -631,17 +631,17 @@ int testModResourceFreeSpace( rsComm_t *rsComm, char *rescName,
     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     status = chlModRescFreeSpace( rsComm, rescName, number );
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
     if ( option != NULL && strcmp( option, "rollback" ) == 0 ) {
         status = chlRollback( rsComm );
     }
     if ( option != NULL && strcmp( option, "close" ) == 0 ) {
         status = chlClose();
-        return( status );
+        return status;
     }
     status = chlCommit( rsComm );
-    return( status );
+    return status;
 }
 
 int testRegReplica( rsComm_t *rsComm, char *srcPath, char *srcDataId,
@@ -668,7 +668,7 @@ int testRegReplica( rsComm_t *rsComm, char *srcPath, char *srcDataId,
 
     status = chlRegReplica( rsComm, &srcDataObjInfo, &dstDataObjInfo,
                             &condInput );
-    return( status );
+    return status;
 }
 
 int testSimpleQ( rsComm_t *rsComm, char *sql, char *arg1, char *format ) {
@@ -699,7 +699,7 @@ int testSimpleQ( rsComm_t *rsComm, char *sql, char *arg1, char *format ) {
             printf( "%s", bigBuf );
         }
     }
-    return( status );
+    return status;
 }
 
 int testChmod( rsComm_t *rsComm, char *user, char *zone,
@@ -707,7 +707,7 @@ int testChmod( rsComm_t *rsComm, char *user, char *zone,
     int status;
     status = chlModAccessControl( rsComm, 0, user, zone, access, path );
 
-    return( status );
+    return status;
 }
 
 int testServerLoad( rsComm_t *rsComm, char *option ) {
@@ -717,7 +717,7 @@ int testServerLoad( rsComm_t *rsComm, char *option ) {
 
     status = chlRegServerLoad( rsComm, "host", "resc", option, "2", "3",
                                "4", "5", "6", "7" );
-    return( status );
+    return status;
 }
 
 int testPurgeServerLoad( rsComm_t *rsComm, char *option ) {
@@ -732,7 +732,7 @@ int testPurgeServerLoad( rsComm_t *rsComm, char *option ) {
         status = chlPurgeServerLoad( rsComm, option );
     }
 
-    return( status );
+    return status;
 }
 
 int testServerLoadDigest( rsComm_t *rsComm, char *option ) {
@@ -741,7 +741,7 @@ int testServerLoadDigest( rsComm_t *rsComm, char *option ) {
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
     status = chlRegServerLoadDigest( rsComm, "resc", option );
-    return( status );
+    return status;
 }
 
 int testPurgeServerLoadDigest( rsComm_t *rsComm, char *option ) {
@@ -756,7 +756,7 @@ int testPurgeServerLoadDigest( rsComm_t *rsComm, char *option ) {
         status = chlPurgeServerLoadDigest( rsComm, option );
     }
 
-    return( status );
+    return status;
 }
 
 int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
@@ -795,7 +795,7 @@ int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
             }
         }
     }
-    return( status );
+    return status;
 }
 
 rodsLong_t
@@ -806,7 +806,7 @@ testCurrent( rsComm_t *rsComm ) {
     chlGetRcs( &icss );
 
 // JMC    status = cmlGetCurrentSeqVal( icss );
-    return( status );
+    return status;
 }
 
 int
@@ -826,7 +826,7 @@ testAddRule( rsComm_t *rsComm, char *baseName, char *ruleName,
     if ( status == 0 ) {
         printf( "ruleIdStr: %s\n", ruleIdStr );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -837,7 +837,7 @@ testVersionRuleBase( rsComm_t *rsComm, char *baseName ) {
 
     status = chlVersionRuleBase( rsComm, baseName, ( char * )&myTime );
 
-    return( status );
+    return status;
 }
 
 int
@@ -848,7 +848,7 @@ testVersionDvmBase( rsComm_t *rsComm, char *baseName ) {
 
     status = chlVersionDvmBase( rsComm, baseName, ( char * )&myTime );
 
-    return( status );
+    return status;
 }
 
 int
@@ -859,7 +859,7 @@ testInsFnmTable( rsComm_t *rsComm, char *arg1, char *arg2, char *arg3,
 
     status = chlInsFnmTable( rsComm, arg1, arg2, arg3, arg4 );
 
-    return( status );
+    return status;
 }
 
 int
@@ -872,7 +872,7 @@ testInsMsrvcTable( rsComm_t *rsComm, char *arg1, char *arg2, char *arg3,
     status = chlInsMsrvcTable( rsComm, arg1, arg2, arg3, arg4,
                                arg5, arg6, arg7, arg8, arg9, "0" );
 
-    return( status );
+    return status;
 }
 
 int
@@ -883,7 +883,7 @@ testInsDvmTable( rsComm_t *rsComm,  char *arg1, char *arg2, char *arg3,
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
     status = chlInsDvmTable( rsComm, arg1, arg2, arg3, arg4, myTime );
-    return( status );
+    return status;
 }
 
 int
@@ -894,7 +894,7 @@ testVersionFnmBase( rsComm_t *rsComm, char *arg1 ) {
 
     status = chlVersionFnmBase( rsComm, arg1, myTime );
 
-    return( status );
+    return status;
 }
 
 
@@ -960,7 +960,7 @@ main( int argc, char **argv ) {
                  "initInfoWithRcat: chlopen Error. Status = %d",
                  status );
         free( Comm ); // JMC cppcheck - leak
-        return ( status );
+        return status;
     }
 
     didOne = 0;
@@ -1152,7 +1152,7 @@ main( int argc, char **argv ) {
                 rodsLog( LOG_SYS_FATAL,
                          "initInfoWithRcat: chlopen %d Error. Status = %d",
                          i, status );
-                return ( status );
+                return status;
             }
         }
         didOne = 1;
@@ -1246,5 +1246,5 @@ main( int argc, char **argv ) {
 -   the rule-engine is not needed in this ICAT test. */
 int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
-    return( 0 );
+    return 0;
 }

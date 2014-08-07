@@ -16,8 +16,8 @@ getServerConfigDir() {
     char *myDir;
 
     if ( ( myDir = ( char * ) getenv( "irodsConfigDir" ) ) != ( char * ) NULL ) {
-        return ( myDir );
+        return myDir;
     }
-    return ( DEF_CONFIG_DIR );
+    return DEF_CONFIG_DIR;
 }
 

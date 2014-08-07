@@ -59,7 +59,7 @@ rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             status = _rsDataCopy( rsComm, dataCopyInp );
         }
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -98,7 +98,7 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "_rsDataCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     dataOprInp = &dataCopyInp->dataOprInp;
@@ -113,9 +113,9 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     else {
         rodsLog( LOG_NOTICE,
                  "_rsDataCopy: Invalid oprType %d", dataOprInp->oprType );
-        return ( SYS_INVALID_OPR_TYPE );
+        return SYS_INVALID_OPR_TYPE;
     }
 
-    return ( retVal );
+    return retVal;
 }
 

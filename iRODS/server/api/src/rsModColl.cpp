@@ -15,7 +15,7 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, modCollInp->collName,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -28,7 +28,7 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         status = rcModColl( rodsServerHost->conn, modCollInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -103,8 +103,8 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         chlRollback( rsComm );
     }
 
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }

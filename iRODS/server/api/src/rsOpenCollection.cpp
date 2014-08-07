@@ -20,7 +20,7 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
     handleInx = allocCollHandle();
 
     if ( handleInx < 0 ) {
-        return ( handleInx );
+        return handleInx;
     }
 
     collHandle = &CollHandle[handleInx];
@@ -61,5 +61,5 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
     collHandle->state = COLL_OPENED;
     collHandle->flags = openCollInp->flags;
     /* the collection exist. now query the data in it */
-    return ( handleInx );
+    return handleInx;
 }

@@ -32,12 +32,12 @@ rsFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp ) 
     }
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else {
         status = rsFileStageToCacheByHost( rsComm, fileStageToCacheInp,
                                            rodsServerHost );
-        return ( status );
+        return status;
     }
 }
 
@@ -50,7 +50,7 @@ rsFileStageToCacheByHost( rsComm_t *rsComm,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsFileStageToCacheByHost: Input NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = rodsServerHost->localFlag;
@@ -64,17 +64,17 @@ rsFileStageToCacheByHost( rsComm_t *rsComm,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileStageToCacheByHost: resolveHost returned value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -198,7 +198,7 @@ int _rsFileStageToCache(
 
     } // if ! stage_err.ok
 
-    return ( stage_err.code() );
+    return stage_err.code();
 
 } // _rsFileStageToCache
 

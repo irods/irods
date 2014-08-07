@@ -9,5 +9,5 @@ rcSubStructFileRename( rcComm_t *conn, subStructFileRenameInp_t *subStructFileRe
     status = procApiRequest( conn, SUB_STRUCT_FILE_RENAME_AN, subStructFileRenameInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

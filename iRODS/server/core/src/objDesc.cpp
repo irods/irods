@@ -34,7 +34,7 @@
 int
 initL1desc() {
     memset( L1desc, 0, sizeof( L1desc ) );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -44,14 +44,14 @@ allocL1desc() {
     for ( i = 3; i < NUM_L1_DESC; i++ ) {
         if ( L1desc[i].inuseFlag <= FD_FREE ) {
             L1desc[i].inuseFlag = FD_INUSE;
-            return ( i );
+            return i;
         };
     }
 
     rodsLog( LOG_NOTICE,
              "allocL1desc: out of L1desc" );
 
-    return ( SYS_OUT_OF_FILE_DESC );
+    return SYS_OUT_OF_FILE_DESC;
 }
 
 int
@@ -69,7 +69,7 @@ isL1descInuse() {
 int
 initSpecCollDesc() {
     memset( SpecCollDesc, 0, sizeof( SpecCollDesc ) );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -79,14 +79,14 @@ allocSpecCollDesc() {
     for ( i = 1; i < NUM_SPEC_COLL_DESC; i++ ) {
         if ( SpecCollDesc[i].inuseFlag <= FD_FREE ) {
             SpecCollDesc[i].inuseFlag = FD_INUSE;
-            return ( i );
+            return i;
         };
     }
 
     rodsLog( LOG_NOTICE,
              "allocSpecCollDesc: out of SpecCollDesc" );
 
-    return ( SYS_OUT_OF_FILE_DESC );
+    return SYS_OUT_OF_FILE_DESC;
 }
 
 int
@@ -94,7 +94,7 @@ freeSpecCollDesc( int specCollInx ) {
     if ( specCollInx < 1 || specCollInx >= NUM_SPEC_COLL_DESC ) {
         rodsLog( LOG_NOTICE,
                  "freeSpecCollDesc: specCollInx %d out of range", specCollInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     if ( SpecCollDesc[specCollInx].dataObjInfo != NULL ) {
@@ -103,7 +103,7 @@ freeSpecCollDesc( int specCollInx ) {
 
     memset( &SpecCollDesc[specCollInx], 0, sizeof( specCollDesc_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -119,7 +119,7 @@ closeAllL1desc( rsComm_t *rsComm ) {
             l3Close( rsComm, i );
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -127,7 +127,7 @@ freeL1desc( int l1descInx ) {
     if ( l1descInx < 3 || l1descInx >= NUM_L1_DESC ) {
         rodsLog( LOG_NOTICE,
                  "freeL1desc: l1descInx %d out of range", l1descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     if ( L1desc[l1descInx].dataObjInfo != NULL ) {
@@ -149,7 +149,7 @@ freeL1desc( int l1descInx ) {
     }
     memset( &L1desc[l1descInx], 0, sizeof( l1desc_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -206,7 +206,7 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
     ( void )gettimeofday( &L1desc[l1descInx].openStartTime,
                           ( struct timezone * )0 );
 #endif
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -249,7 +249,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
     /* copy over the source file metadata if provided */
     copyFilesystemMetadata( condInput, &dataObjInfo->condInput );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -302,11 +302,11 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
     if ( getValByKey( condInput, NO_PARA_OP_KW ) != NULL ) {
         /* client specify no para opr */
-        return ( 1 );
+        return 1;
     }
 
 #ifndef PARA_OPR
-    return ( 1 );
+    return 1;
 #endif
 
     memset( &doinp, 0, sizeof( doinp ) );
@@ -533,7 +533,7 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
         addKeyVal( &dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -576,7 +576,7 @@ initDataObjInfoForRepl(
         //}
     } // else
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -587,17 +587,17 @@ convL3descInx( int l3descInx ) {
     }
 
     if ( FileDesc[l3descInx].rodsServerHost->localFlag == LOCAL_HOST ) {
-        return ( l3descInx );
+        return l3descInx;
     }
     else {
-        return ( FileDesc[l3descInx].fd );
+        return FileDesc[l3descInx].fd;
     }
 }
 
 int
 initCollHandle() {
     memset( CollHandle, 0, sizeof( CollHandle ) );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -607,14 +607,14 @@ allocCollHandle() {
     for ( i = 0; i < NUM_COLL_HANDLE; i++ ) {
         if ( CollHandle[i].inuseFlag <= FD_FREE ) {
             CollHandle[i].inuseFlag = FD_INUSE;
-            return ( i );
+            return i;
         };
     }
 
     rodsLog( LOG_NOTICE,
              "allocCollHandle: out of CollHandle" );
 
-    return ( SYS_OUT_OF_FILE_DESC );
+    return SYS_OUT_OF_FILE_DESC;
 }
 
 int
@@ -622,20 +622,20 @@ freeCollHandle( int handleInx ) {
     if ( handleInx < 0 || handleInx >= NUM_COLL_HANDLE ) {
         rodsLog( LOG_NOTICE,
                  "freeCollHandle: handleInx %d out of range", handleInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     /* don't free specColl. It is in cache */
     clearCollHandle( &CollHandle[handleInx], 1 );
     memset( &CollHandle[handleInx], 0, sizeof( collHandle_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 int
 rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm ) {
     if ( queryHandle == NULL || rsComm == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     queryHandle->conn = rsComm;
@@ -643,7 +643,7 @@ rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm ) {
     queryHandle->querySpecColl = ( funcPtr ) rsQuerySpecColl;
     queryHandle->genQuery = ( funcPtr ) rsGenQuery;
 
-    return ( 0 );
+    return 0;
 }
 
 int

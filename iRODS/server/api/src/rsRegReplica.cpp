@@ -24,7 +24,7 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, srcDataObjInfo->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -45,7 +45,7 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
         status = _call_file_modified_for_replica( rsComm, regReplicaInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -89,9 +89,9 @@ _rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
         }
     }
     // =-=-=-=-=-=-=-
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }
 
@@ -124,7 +124,7 @@ int _call_file_modified_for_replica(
         status = ret.code();
     }
 
-    return ( status );
+    return status;
 
 } // _call_file_modified_for_replica
 

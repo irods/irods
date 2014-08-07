@@ -16,7 +16,7 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -35,7 +35,7 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
         rodsLog( LOG_NOTICE,
                  "rsGeneralRowPurge: rcGeneralRowPurge failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -50,13 +50,13 @@ _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp )
     if ( strcmp( generalRowPurgeInp->tableName, "serverload" ) == 0 ) {
         status = chlPurgeServerLoad( rsComm,
                                      generalRowPurgeInp->secondsAgo );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowPurgeInp->tableName, "serverloaddigest" ) == 0 ) {
         status = chlPurgeServerLoadDigest( rsComm,
                                            generalRowPurgeInp->secondsAgo );
-        return( status );
+        return status;
     }
-    return( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 #endif

@@ -9,5 +9,5 @@ rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp )
     status = procApiRequest( conn, GENERAL_ROW_INSERT_AN,  generalRowInsertInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

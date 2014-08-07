@@ -16,7 +16,7 @@ mkdirUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &collCreateInp, 0, sizeof( collCreateInp ) );
@@ -38,10 +38,10 @@ mkdirUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

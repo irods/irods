@@ -12,5 +12,5 @@ rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
     status = procApiRequest( conn, DATA_PUT_AN,  dataPutInp, NULL,
                              ( void ** ) portalOprOut, NULL );
 
-    return ( status );
+    return status;
 }

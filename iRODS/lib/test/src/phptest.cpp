@@ -74,7 +74,7 @@ execPhpScript( char *scrFile, int scrArgc, char **scrArgv ) {
             < 0 ) {
         rodsLog( LOG_ERROR,
                  "execPhpScript: php_seek_file_begin error for %s", scrFile );
-        return ( status );
+        return status;
     }
 
     file_handle.type = ZEND_HANDLE_FP;
@@ -89,7 +89,7 @@ execPhpScript( char *scrFile, int scrArgc, char **scrArgv ) {
         rodsLog( LOG_ERROR,
                  "execPhpScript: php_request_startup error for %s", scrFile );
         fclose( file_handle.handle.fp );
-        return ( PHP_REQUEST_STARTUP_ERR );
+        return PHP_REQUEST_STARTUP_ERR;
     }
     CG( start_lineno ) = lineno;
     zend_is_auto_global( "_SERVER", sizeof( "_SERVER" ) - 1 TSRMLS_CC );
@@ -105,7 +105,7 @@ execPhpScript( char *scrFile, int scrArgc, char **scrArgv ) {
 
     php_request_shutdown( ( void * ) 0 );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -121,7 +121,7 @@ phpShutdown() {
     php_module_shutdown( TSRMLS_C );
     sapi_shutdown();
 
-    return ( 0 );
+    return 0;
 }
 
 /* {{{ php_seek_file_begin

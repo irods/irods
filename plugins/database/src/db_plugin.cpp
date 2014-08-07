@@ -164,7 +164,7 @@ int _rollback( const char *functionName ) {
                  functionName, status );
     }
 
-    return( status );
+    return status;
 
 } // _rollback
 
@@ -778,7 +778,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     }
 
     if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
+        return CATALOG_NOT_CONNECTED;
     }
 
     status = splitPathByKey( collInfo->collName,
@@ -805,10 +805,10 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
             snprintf( errMsg, 100, "collection '%s' is unknown",
                       logicalParentDirName );
             addRErrorMsg( &rsComm->rError, 0, errMsg );
-            return( status );
+            return status;
         }
         _rollback( "_delColl" );
-        return( status );
+        return status;
     }
     snprintf( parentCollIdNum, MAX_NAME_LEN, "%lld", status );
 
@@ -823,7 +823,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                           ACCESS_DELETE_OBJECT,
                           &icss );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", status );
 
@@ -835,7 +835,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
                  &iVal, collInfo->collName, collInfo->collName, 0, 0, 0, &icss );
     if ( status != CAT_NO_ROWS_FOUND ) {
-        return( CAT_COLLECTION_NOT_EMPTY );
+        return CAT_COLLECTION_NOT_EMPTY;
     }
 
     /* delete the row if it exists */
@@ -855,7 +855,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "_delColl cmlExecuteNoAnswerSql delete failure %d",
                  status );
         _rollback( "_delColl" );
-        return( status );
+        return status;
     }
 
     /* remove any access rows */
@@ -904,10 +904,10 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                  "chlModColl cmlAudit3 failure %d",
                  status );
         _rollback( "_delColl" );
-        return( status );
+        return status;
     }
 
-    return( status );
+    return status;
 
 } // _delColl
 
@@ -1174,7 +1174,7 @@ int decodePw( rsComm_t *rsComm, char *in, char *out ) {
         else {
             _rollback( "decodePw" );
         }
-        return( status );
+        return status;
     }
 
     icatDescramble( password );
@@ -1198,12 +1198,12 @@ int decodePw( rsComm_t *rsComm, char *in, char *out ) {
         snprintf( errMsg, 250,
                   "Error with password encoding.  This can be caused by not connecting directly to the ICAT host, not using password authentication (using GSI or Kerberos instead), or entering your password incorrectly (if prompted)." );
         addRErrorMsg( &rsComm->rError, 0, errMsg );
-        return( CAT_PASSWORD_ENCODING_ERROR );
+        return CAT_PASSWORD_ENCODING_ERROR;
     }
     strcpy( out, upassword );
     memset( upassword, 0, MAX_PASSWORD_LEN );
 
-    return( 0 );
+    return 0;
 }
 
 /// =-=-=-=-=-=-=-
@@ -1256,7 +1256,7 @@ convertTypeOption( char *typeStr ) {
     if ( strcmp( typeStr, "-U" ) == 0 ) {
         return( 4 );    /* user */
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -1283,30 +1283,30 @@ rodsLong_t checkAndGetObjectId(
     }
 
     if ( !icss.status ) {
-        return( CATALOG_NOT_CONNECTED );
+        return CATALOG_NOT_CONNECTED;
     }
 
     if ( type == NULL ) {
-        return ( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( *type == '\0' ) {
-        return ( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
 
     if ( name == NULL ) {
-        return ( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( *name == '\0' ) {
-        return ( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
 
     itype = convertTypeOption( type );
     if ( itype == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( itype == 1 ) {
@@ -1325,7 +1325,7 @@ rodsLong_t checkAndGetObjectId(
                                       access, &icss );
         if ( status < 0 ) {
             _rollback( "checkAndGetObjectId" );
-            return( status );
+            return status;
         }
         objId = status;
     }
@@ -1347,14 +1347,14 @@ rodsLong_t checkAndGetObjectId(
                           name );
                 addRErrorMsg( &rsComm->rError, 0, errMsg );
             }
-            return( status );
+            return status;
         }
         objId = status;
     }
 
     if ( itype == 3 ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
 
         std::string zone;
@@ -1372,16 +1372,16 @@ rodsLong_t checkAndGetObjectId(
                      &objId, name, zone.c_str(), 0, 0, 0, &icss );
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_RESOURCE );
+                return CAT_INVALID_RESOURCE;
             }
             _rollback( "checkAndGetObjectId" );
-            return( status );
+            return status;
         }
     }
 
     if ( itype == 4 ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
 
         status = parseUserName( name, userName, userZone );
@@ -1403,14 +1403,14 @@ rodsLong_t checkAndGetObjectId(
                      &objId, userName, userZone, 0, 0, 0, &icss );
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
-                return( CAT_INVALID_USER );
+                return CAT_INVALID_USER;
             }
             _rollback( "checkAndGetObjectId" );
-            return( status );
+            return status;
         }
     }
 
-    return( objId );
+    return objId;
 }
 
 /*
@@ -1444,7 +1444,7 @@ findAVU( char *attribute, char *value, char *units ) {
     }
     if ( status == 0 ) {
         status = iVal; /* use existing R_META_MAIN row */
-        return( status );
+        return status;
     }
 // =-=-=-=-=-=-=-
 // JMC - backport 4836
@@ -1473,7 +1473,7 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "findOrInsertAVU cmlGetNextSeqVal failure %d",
                  status );
-        return( status );
+        return status;
     }
     seqNum = status; /* the returned status is the next sequence value */
 
@@ -1496,9 +1496,9 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
                   &icss );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "findOrInsertAVU insert failure %d", status );
-        return( status );
+        return status;
     }
-    return( seqNum );
+    return seqNum;
 }
 
 
@@ -1579,7 +1579,7 @@ int _modInheritance( int inheritFlag, int recursiveFlag, char *collIdStr, char *
     }
     if ( status != 0 ) {
         _rollback( "_modInheritance" );
-        return( status );
+        return status;
     }
 
     /* Audit */
@@ -1593,11 +1593,11 @@ int _modInheritance( int inheritFlag, int recursiveFlag, char *collIdStr, char *
                  "_modInheritance cmlAudit5 failure %d",
                  status );
         _rollback( "_modInheritance" );
-        return( status );
+        return status;
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
-    return( status );
+    return status;
 }
 
 /*
@@ -1638,7 +1638,7 @@ int setOverQuota( rsComm_t *rsComm ) {
         return( 0 );    /* no quotas, done */
     }
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     /* Set the over_quota values for per-resource, if any */
@@ -1658,7 +1658,7 @@ int setOverQuota( rsComm_t *rsComm ) {
         status = 0;    /* none */
     }
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     /* Set the over_quota values for irods-total, if any, and only if
@@ -1694,7 +1694,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
-            return( status2 );
+            return status2;
         }
     }
 
@@ -1728,14 +1728,14 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
-            return( status2 );
+            return status2;
         }
     }
     if ( status == CAT_NO_ROWS_FOUND ) {
         status = 0;
     }
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     /* Handle group quotas on total usage */
@@ -1785,14 +1785,14 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
-            return( status2 );
+            return status2;
         }
     }
     if ( status == CAT_NO_ROWS_FOUND ) {
         status = 0;
     }
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     /* To simplify the query, if either of the above group operations
@@ -1800,7 +1800,7 @@ int setOverQuota( rsComm_t *rsComm ) {
        for each user into R_QUOTA_MAIN.  For now tho, this is not done and
        perhaps shouldn't be, to keep it a little less complicated. */
 
-    return( status );
+    return status;
 }
 
 int
@@ -1833,12 +1833,12 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char
                  userId, NAME_LEN, userName2, zoneToUse, 0, &icss );
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_USER );
+            return CAT_INVALID_USER;
         }
-        return( status );
+        return status;
     }
     strncpy( userIdStr, userId, NAME_LEN );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1870,12 +1870,12 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
                  groupId, NAME_LEN, groupName2, zoneToUse, 0, &icss );
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return( CAT_INVALID_GROUP );
+            return CAT_INVALID_GROUP;
         }
-        return( status );
+        return status;
     }
     strncpy( groupIdStr, groupId, NAME_LEN );
-    return( 0 );
+    return 0;
 }
 
 char *
@@ -1885,11 +1885,11 @@ convertHostToIp( char *inputName ) {
     myHostent = gethostbyname( inputName );
     if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
         printf( "unknown hostname: %s\n", inputName );
-        return( NULL );
+        return NULL;
     }
     snprintf( ipAddr, sizeof( ipAddr ), "%s",
               ( char * )inet_ntoa( *( struct in_addr* )( myHostent->h_addr_list[0] ) ) );
-    return( ipAddr );
+    return ipAddr;
 }
 
 

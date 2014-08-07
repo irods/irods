@@ -13,7 +13,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     structFileExtAndRegInp_t structFileExtAndRegInp;
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     int savedStatus = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
@@ -79,13 +79,13 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( structFileExtAndRegInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForBunOpr: NULL structFileExtAndRegInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( structFileExtAndRegInp, 0, sizeof( structFileExtAndRegInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->dataType == True ) {
@@ -132,7 +132,7 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForBunOpr: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &structFileExtAndRegInp->condInput,
@@ -168,6 +168,6 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &structFileExtAndRegInp->condInput, BULK_OPR_KW, "" );
     }
 
-    return ( 0 );
+    return 0;
 }
 

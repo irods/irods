@@ -190,7 +190,7 @@ char *getDBHomeDir() {
     fclose( configFile );
 
     if ( dbPath != NULL ) {
-        return ( strdup( dbPath ) );
+        return strdup( dbPath );
     }
     else {
         return NULL;
@@ -330,7 +330,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
     /* Sanity checks */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiServerBackup: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
@@ -339,7 +339,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
         status = CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         rodsLog( LOG_ERROR, "msiServerBackup: User %s is not local admin. Status = %d",
                  rei->uoic->userName, status );
-        return( status );
+        return status;
     }
 
 
@@ -355,7 +355,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
         if ( dbPath ) {
             free( dbPath );
         }
-        return ( status );
+        return status;
     }
 
 
@@ -365,7 +365,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
         if ( dbPath ) {
             free( dbPath );
         }
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
 
@@ -430,7 +430,7 @@ msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei )
         rodsLog( LOG_ERROR, "msiServerBackup: rsCollCreate failed for %s, status = %d",
                  collInp.collName, rei->status );
         free( myKeyVal );
-        return ( rei->status );
+        return rei->status;
     }
 
 

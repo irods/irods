@@ -213,7 +213,7 @@ serverize( char *logDir ) {
     if ( LogFd < 0 ) {
         rodsLog( LOG_NOTICE, "logFileOpen: Unable to open %s. errno = %d",
                  logFile, errno );
-        return ( -1 );
+        return -1;
     }
 
     free( logFile );
@@ -245,9 +245,9 @@ serverize( char *logDir ) {
 #endif
 
 #ifdef SYSLOG
-    return ( 0 );
+    return 0;
 #else
-    return ( LogFd );
+    return LogFd;
 #endif
 }
 
@@ -294,7 +294,7 @@ serverMain( char *logDir ) {
             else {
                 rodsLog( LOG_NOTICE, "serverMain: select() error, errno = %d",
                          errno );
-                return ( -1 );
+                return -1;
             }
         }
 
@@ -424,7 +424,7 @@ procChildren( agentProc_t **agentProcHead ) {
     }
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -454,7 +454,7 @@ getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
 #ifndef SINGLE_SVR_THR
     con_agent_lock.unlock();
 #endif
-    return ( tmpAgentProc );
+    return tmpAgentProc;
 }
 
 
@@ -521,7 +521,7 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     queConnectedAgentProc( childPid, connReq, agentProcHead );
 #endif
 
-    return ( childPid );
+    return childPid;
 }
 
 int
@@ -591,7 +591,7 @@ execAgent( int newSock, startupPack_t *startupPack ) {
         rodsLog( LOG_ERROR, "execAgent: execv error errno=%d", errno );
         exit( 1 );
     }
-    return ( 0 );
+    return 0;
 #endif
 }
 
@@ -613,7 +613,7 @@ queConnectedAgentProc( int childPid, agentProc_t *connReq,
     con_agent_lock.unlock();
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -720,7 +720,7 @@ initServer( rsComm_t *svrComm ) {
         rodsLog( LOG_NOTICE,
                  "initServer: initServerInfo error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
     // JMC - legcay resources - printLocalResc ();
@@ -731,7 +731,7 @@ initServer( rsComm_t *svrComm ) {
     status = getRcatHost( MASTER_RCAT, NULL, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -751,7 +751,7 @@ initServer( rsComm_t *svrComm ) {
     purgeLockFileDir( 0 );
 #endif
 
-    return ( status );
+    return status;
 }
 
 /* record the server process number and other information into
@@ -905,12 +905,12 @@ addConnReqToQue( rsComm_t *rsComm, int sock ) {
     read_req_lock.unlock();
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 int
 initConnThreadEnv() {
-    return ( 0 );
+    return 0;
 }
 
 agentProc_t *
@@ -949,7 +949,7 @@ getConnReqFromQue() {
         }
     }
 
-    return ( myConnReq );
+    return myConnReq;
 }
 
 int

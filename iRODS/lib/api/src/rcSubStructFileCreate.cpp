@@ -9,5 +9,5 @@ rcSubStructFileCreate( rcComm_t *conn, subFile_t *subFile ) {
     status = procApiRequest( conn, SUB_STRUCT_FILE_CREATE_AN, subFile, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

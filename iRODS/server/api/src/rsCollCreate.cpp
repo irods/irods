@@ -86,7 +86,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, collCreateInp->collName,
                                  &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -107,7 +107,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         if ( getValByKey( &collCreateInp->condInput, RECURSIVE_OPR__KW ) !=
                 NULL ) {
             status = rsMkCollR( rsComm, "/", collCreateInp->collName );
-            return ( status );
+            return status;
         }
 #ifdef RODS_CAT
 
@@ -119,10 +119,10 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         if ( status >= 0 ) {
             freeDataObjInfo( dataObjInfo );
             if ( status == COLL_OBJ_T ) {
-                return ( 0 );
+                return 0;
             }
             else if ( status == DATA_OBJ_T ) {
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
         }
         else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
@@ -137,7 +137,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
                 status = l3Mkdir( rsComm, dataObjInfo );
             }
             freeDataObjInfo( dataObjInfo );
-            return ( status );
+            return status;
         }
         else {
             if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
@@ -165,7 +165,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         status = rcCollCreate( rodsServerHost->conn, collCreateInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -201,5 +201,5 @@ l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         fileMkdirInp.mode = getDefDirMode();
         status = rsFileMkdir( rsComm, &fileMkdirInp );
     }
-    return ( status );
+    return status;
 }

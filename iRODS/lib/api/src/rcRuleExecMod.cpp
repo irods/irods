@@ -9,5 +9,5 @@ rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp ) {
     status = procApiRequest( conn, RULE_EXEC_MOD_AN, ruleExecModInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

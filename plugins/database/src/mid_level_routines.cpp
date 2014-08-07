@@ -61,7 +61,7 @@ char *cmlArraysToStrWithBind( char *str,
         cllBindVars[cllBindVarCount++] = arr2[i];
     }
 
-    return( str );
+    return str;
 
 }
 
@@ -79,7 +79,7 @@ int cmlDebug( int mode ) {
             auditEnabled = 0;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int cmlOpen( icatSessionStruct *icss ) {
@@ -107,16 +107,16 @@ int cmlOpen( icatSessionStruct *icss ) {
     /* Open Environment */
     i = cllOpenEnv( icss );
     if ( i != 0 ) {
-        return( CAT_ENV_ERR );
+        return CAT_ENV_ERR;
     }
 
     /* Connect to the DBMS */
     i = cllConnect( icss );
     if ( i != 0 ) {
-        return( CAT_CONNECT_ERR );
+        return CAT_CONNECT_ERR;
     }
 
-    return( 0 );
+    return 0;
 }
 
 int cmlClose( icatSessionStruct *icss ) {
@@ -134,12 +134,12 @@ int cmlClose( icatSessionStruct *icss ) {
 
     pending = 0;
     if ( status ) {
-        return( CAT_DISCONNECT_ERR );
+        return CAT_DISCONNECT_ERR;
     }
     if ( stat2 ) {
-        return( CAT_CLOSE_ENV_ERR );
+        return CAT_CLOSE_ENV_ERR;
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -151,9 +151,9 @@ int cmlExecuteNoAnswerSql( const char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
-    return( 0 );
+    return 0;
 
 }
 
@@ -241,23 +241,23 @@ int cmlGetOneRowFromSql( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
     for ( j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) {
         rstrcpy( cVal[j], icss->stmtPtr[stmtNum]->resultValue[j], cValSize[j] );
     }
 
     i = cllFreeStatement( icss, stmtNum );
-    return( j );
+    return j;
 
 }
 
@@ -295,15 +295,15 @@ int cmlGetOneRowFromSqlV2( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
     for ( j = 0; j < maxCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) {
         cVal[j] = icss->stmtPtr[stmtNum]->resultValue[j];
@@ -346,23 +346,23 @@ int cmlGetOneRowFromSqlV3( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
     for ( j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) {
         rstrcpy( cVal[j], icss->stmtPtr[stmtNum]->resultValue[j], cValSize[j] );
     }
 
     i = cllFreeStatement( icss, stmtNum );
-    return( j );
+    return j;
 
 }
 
@@ -370,7 +370,7 @@ int cmlGetOneRowFromSqlV3( char *sql,
 int cmlFreeStatement( int statementNumber, icatSessionStruct *icss ) {
     int i;
     i = cllFreeStatement( icss, statementNumber );
-    return( i );
+    return i;
 }
 
 
@@ -390,7 +390,7 @@ int cmlGetFirstRowFromSql( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
 
 #ifdef ORA_ICAT
@@ -399,11 +399,11 @@ int cmlGetFirstRowFromSql( char *sql,
             i = cllGetRow( icss, stmtNum );
             if ( i != 0 )  {
                 cllFreeStatement( icss, stmtNum );
-                return( CAT_GET_ROW_ERR );
+                return CAT_GET_ROW_ERR;
             }
             if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
                 i = cllFreeStatement( icss, stmtNum );
-                return( CAT_NO_ROWS_FOUND );
+                return CAT_NO_ROWS_FOUND;
             }
         }
     }
@@ -412,15 +412,15 @@ int cmlGetFirstRowFromSql( char *sql,
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         i = cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
 
     *statement = stmtNum;
-    return( 0 );
+    return 0;
 }
 
 /* with bind-variables */
@@ -439,20 +439,20 @@ int cmlGetFirstRowFromSqlBV( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         i = cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
 
     *statement = stmtNum;
-    return( 0 );
+    return 0;
 }
 
 int cmlGetNextRowFromStatement( int stmtNum,
@@ -462,13 +462,13 @@ int cmlGetNextRowFromStatement( int stmtNum,
     i = cllGetRow( icss, stmtNum );
     if ( i != 0 )  {
         cllFreeStatement( icss, stmtNum );
-        return( CAT_GET_ROW_ERR );
+        return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
         i = cllFreeStatement( icss, stmtNum );
-        return( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
-    return( 0 );
+    return 0;
 }
 
 int cmlGetStringValueFromSql( char *sql,
@@ -509,10 +509,10 @@ int cmlGetStringValuesFromSql( char *sql,
     i = cmlGetOneRowFromSqlBV( sql, cVal, cValSize, numberOfStringsToGet,
                                bindVar1, bindVar2, bindVar3, 0, 0, icss );
     if ( i == numberOfStringsToGet ) {
-        return( 0 );
+        return 0;
     }
     else {
-        return( i );
+        return i;
     }
 
 }
@@ -531,7 +531,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
     char *pString;
 
     if ( maxNumberOfStringsToGet <= 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     i = cllExecSqlWithResultBV( icss, &stmtNum, sql,
@@ -540,7 +540,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
-        return ( CAT_SQL_ERR );
+        return CAT_SQL_ERR;
     }
     tsg = 0;
     pString = returnedStrings;
@@ -549,16 +549,16 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
         if ( i != 0 )  {
             cllFreeStatement( icss, stmtNum );
             if ( tsg > 0 ) {
-                return( tsg );
+                return tsg;
             }
-            return( CAT_GET_ROW_ERR );
+            return CAT_GET_ROW_ERR;
         }
         if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
             cllFreeStatement( icss, stmtNum );
             if ( tsg > 0 ) {
-                return( tsg );
+                return tsg;
             }
-            return( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
         for ( j = 0; j < icss->stmtPtr[stmtNum]->numOfCols; j++ ) {
             rstrcpy( pString, icss->stmtPtr[stmtNum]->resultValue[j],
@@ -567,7 +567,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
             pString += maxStringLen;
             if ( tsg >= maxNumberOfStringsToGet ) {
                 i = cllFreeStatement( icss, stmtNum );
-                return( tsg );
+                return tsg;
             }
         }
     }
@@ -595,12 +595,12 @@ int cmlGetIntegerValueFromSql( char *sql,
                                bindVar5, icss );
     if ( i == 1 ) {
         if ( *cVal[0] == '\0' ) {
-            return( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
         *iVal = strtoll( *cVal, NULL, 0 );
-        return( 0 );
+        return 0;
     }
-    return( i );
+    return i;
 }
 
 /* Like cmlGetIntegerValueFromSql but uses bind-variable array */
@@ -617,12 +617,12 @@ int cmlGetIntegerValueFromSqlV3( char *sql,
     i = cmlGetOneRowFromSqlV3( sql, cVal, &cValSize, 1, icss );
     if ( i == 1 ) {
         if ( *cVal[0] == '\0' ) {
-            return( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
         *iVal = strtoll( *cVal, NULL, 0 );
-        return( 0 );
+        return 0;
     }
-    return( i );
+    return i;
 }
 
 int cmlCheckNameToken( char *nameSpace, char *tokenName, icatSessionStruct *icss ) {
@@ -636,7 +636,7 @@ int cmlCheckNameToken( char *nameSpace, char *tokenName, icatSessionStruct *icss
     status = cmlGetIntegerValueFromSql(
                  "select token_id from  R_TOKN_MAIN where token_namespace=? and token_name=?",
                  &iVal, nameSpace, tokenName, 0, 0, 0, icss );
-    return( status );
+    return status;
 
 }
 
@@ -667,7 +667,7 @@ int cmlModifySingleTable( char *tableName,
     cmlArraysToStrWithBind( rsql, " where ", whereColsAndConds, whereValues, numOfConds, "", " and ", MAX_SQL_SIZE - l );
 
     i = cmlExecuteNoAnswerSql( tsql, icss );
-    return( i );
+    return i;
 
 }
 
@@ -701,9 +701,9 @@ cmlGetNextSeqVal( icatSessionStruct *icss ) {
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetNextSeqVal cmlGetIntegerValueFromSql failure %d", status );
-        return( status );
+        return status;
     }
-    return( iVal );
+    return iVal;
 }
 
 rodsLong_t
@@ -736,9 +736,9 @@ cmlGetCurrentSeqVal( icatSessionStruct *icss ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetCurrentSeqVal cmlGetIntegerValueFromSql failure %d",
                  status );
-        return( status );
+        return status;
     }
-    return( iVal );
+    return iVal;
 }
 
 int
@@ -767,7 +767,7 @@ cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetNextSeqStr cmlGetStringValueFromSql failure %d", status );
     }
-    return( status );
+    return status;
 }
 
 /* modifed for various tests */
@@ -781,7 +781,7 @@ int cmlTest( icatSessionStruct *icss ) {
     strncpy( icss->databasePassword, "", DB_PASSWORD_LEN );
     i = cmlOpen( icss );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
     cVal[0] = cValStr;
@@ -795,7 +795,7 @@ int cmlTest( icatSessionStruct *icss ) {
         i = 0;
     }
     else {
-        return( i );
+        return i;
     }
 
     snprintf( sql, sizeof sql,
@@ -808,7 +808,7 @@ int cmlTest( icatSessionStruct *icss ) {
 
     cmlGetCurrentSeqVal( icss );
 
-    return( i );
+    return i;
 
 }
 
@@ -841,12 +841,12 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
                      "select resc_id from R_RESC_MAIN where resc_name=?",
                      &iVal, rescName, 0, 0, 0, 0, icss );
         if ( status ) {
-            return( CAT_UNKNOWN_RESOURCE );
+            return CAT_UNKNOWN_RESOURCE;
         }
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
 
-    return( iVal );
+    return iVal;
 
 }
 
@@ -880,12 +880,12 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
                      "select coll_id from R_COLL_MAIN where coll_name=?",
                      &iVal, dirName, 0, 0, 0, 0, icss );
         if ( status ) {
-            return( CAT_UNKNOWN_COLLECTION );
+            return CAT_UNKNOWN_COLLECTION;
         }
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
 
-    return( iVal );
+    return iVal;
 
 }
 
@@ -929,7 +929,7 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
     }
     if ( status == 2 ) {
         if ( *cVal[0] == '\0' ) {
-            return( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
         iVal = strtoll( *cVal, NULL, 0 );
         if ( cValStr2[0] == '1' ) {
@@ -950,9 +950,9 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
                      "select coll_id from R_COLL_MAIN where coll_name=?",
                      &iVal, dirName, 0, 0, 0, 0, icss );
         if ( status ) {
-            return( CAT_UNKNOWN_COLLECTION );
+            return CAT_UNKNOWN_COLLECTION;
         }
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
 
     /*
@@ -963,11 +963,11 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
                                      ticketHost, userName, userZone,
                                      icss );
         if ( status != 0 ) {
-            return ( status );
+            return status;
         }
     }
 
-    return( iVal );
+    return iVal;
 
 }
 
@@ -1001,12 +1001,12 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
                      "select coll_id from R_COLL_MAIN where coll_id=?",
                      &iVal, dirId, 0, 0, 0, 0, icss );
         if ( status ) {
-            return( CAT_UNKNOWN_COLLECTION );
+            return CAT_UNKNOWN_COLLECTION;
         }
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
 
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1026,9 +1026,9 @@ cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
                  "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=? and coll_owner_zone=?",
                  &iVal, dirName, userName, userZone, 0, 0, icss );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
-    return( iVal );
+    return iVal;
 }
 
 
@@ -1064,12 +1064,12 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
                      "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
                      &iVal, dataName, dirName, 0, 0, 0, icss );
         if ( status ) {
-            return( CAT_UNKNOWN_FILE );
+            return CAT_UNKNOWN_FILE;
         }
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
 
-    return( iVal );
+    return iVal;
 
 }
 
@@ -1090,7 +1090,7 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
                  "select coll_id from R_COLL_MAIN where coll_name=?",
                  &iVal, dirName, 0, 0, 0, 0, icss );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     collId = iVal;
     snprintf( collIdStr, MAX_NAME_LEN, "%lld", collId );
@@ -1103,9 +1103,9 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
                  &iVal, dataName, collIdStr, userName, userZone, 0, icss );
 
     if ( status ) {
-        return ( status );
+        return status;
     }
-    return( iVal );
+    return iVal;
 }
 
 
@@ -1123,10 +1123,10 @@ int cmlCheckUserInGroup( char *userName, char *userZone,
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
                  sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( CAT_INVALID_USER );
+        return CAT_INVALID_USER;
     }
     if ( status ) {
-        return( status );
+        return status;
     }
 
     if ( logSQL_CML != 0 ) {
@@ -1137,9 +1137,9 @@ int cmlCheckUserInGroup( char *userName, char *userZone,
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
                  &iVal, sVal,  groupName, 0, 0, 0, icss );
     if ( status ) {
-        return( status );
+        return status;
     }
-    return( 0 );
+    return 0;
 }
 
 /* check on additional restrictions on a ticket, return error if not
@@ -1173,7 +1173,7 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     }
     else {
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
@@ -1184,11 +1184,11 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
-            return( status );
+            return status;
         }
     }
     if ( hostOK == 0 ) {
-        return( CAT_TICKET_HOST_EXCLUDED );
+        return CAT_TICKET_HOST_EXCLUDED;
     }
 
     /* Now check on user restrictions */
@@ -1203,7 +1203,7 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     }
     else {
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
@@ -1222,11 +1222,11 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
-            return( status );
+            return status;
         }
     }
     if ( userOK == 0 ) {
-        return( CAT_TICKET_USER_EXCLUDED );
+        return CAT_TICKET_USER_EXCLUDED;
     }
 
     /* Now check on group restrictions */
@@ -1241,7 +1241,7 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     }
     else {
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
     }
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
@@ -1254,13 +1254,13 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
-            return( status );
+            return status;
         }
     }
     if ( groupOK == 0 ) {
-        return( CAT_TICKET_GROUP_EXCLUDED );
+        return CAT_TICKET_GROUP_EXCLUDED;
     }
-    return( 0 );
+    return 0;
 }
 
 /* Check access via a Ticket to a data-object or collection */
@@ -1331,7 +1331,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     }
 
     if ( status != 0 ) {
-        return ( CAT_TICKET_INVALID );
+        return CAT_TICKET_INVALID;
     }
 
     if ( strncmp( ticketId, prevTicketId, sizeof( prevTicketId ) ) != 0 ) {
@@ -1339,7 +1339,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         status = cmlAudit3( AU_USE_TICKET, ticketId, userName, userZone,
                             ticketStr, icss );
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
     }
 
@@ -1352,7 +1352,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
             getNowStr( myTime );
             now = atoll( myTime );
             if ( now > ticketExp ) {
-                return( CAT_TICKET_EXPIRED );
+                return CAT_TICKET_EXPIRED;
             }
         }
     }
@@ -1360,7 +1360,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     status = cmlCheckTicketRestrictions( ticketId, ticketHost,
                                          userName, userZone, icss );
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 
     if ( strncmp( accessLevel, "modify", 6 ) == 0 ) {
@@ -1368,7 +1368,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         if ( iWriteByteLimit > 0 ) {
             iWriteByteCount = atoi( writeByteCount );
             if ( iWriteByteCount > iWriteByteLimit ) {
-                return( CAT_TICKET_WRITE_BYTES_EXCEEDED );
+                return CAT_TICKET_WRITE_BYTES_EXCEEDED;
             }
         }
 
@@ -1376,7 +1376,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         if ( iWriteFileLimit > 0 ) {
             iWriteFileCount = atoi( writeFileCount );
             if ( iWriteFileCount >= iWriteFileLimit ) {
-                return( CAT_TICKET_WRITE_USES_EXCEEDED );
+                return CAT_TICKET_WRITE_USES_EXCEEDED;
             }
             intDataId = atoll( dataId );
             /* Don't update a second time if this id matches the last one */
@@ -1393,7 +1393,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
                               "update R_TICKET_MAIN set write_file_count=? where ticket_id=?",
                               icss );
                 if ( status != 0 ) {
-                    return( status );
+                    return status;
                 }
 #ifndef ORA_ICAT
                 /* as with auditing, do a commit on disconnect if needed */
@@ -1408,7 +1408,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
     if ( iUsesLimit > 0 ) {
         iUsesCount = atoi( usesCount );
         if ( iUsesCount >= iUsesLimit ) {
-            return( CAT_TICKET_USES_EXCEEDED );
+            return CAT_TICKET_USES_EXCEEDED;
         }
         intDataId = atoll( dataId );
         /* Don't update a second time if this id matches the last one */
@@ -1423,7 +1423,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
             status =  cmlExecuteNoAnswerSql(
                           "update R_TICKET_MAIN set uses_count=? where ticket_id=?", icss );
             if ( status != 0 ) {
-                return( status );
+                return status;
             }
 #ifndef ORA_ICAT
             /* as with auditing, do a commit on disconnect if needed*/
@@ -1432,7 +1432,7 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         }
         previousDataId2 = intDataId;
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1453,7 +1453,7 @@ cmlTicketUpdateWriteBytes( char *ticketStr,
 
     iDataSize = atoll( dataSize );
     if ( iDataSize == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     for ( i = 0; i < 10; i++ ) {
@@ -1472,13 +1472,13 @@ cmlTicketUpdateWriteBytes( char *ticketStr,
                  cVal, iVal, 3,
                  ticketStr, objectId, objectId, icss );
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
     iWriteByteLimit = atoll( writeByteLimit );
     iWriteByteCount = atoll( writeByteCount );
 
     if ( iWriteByteLimit == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     iNewByteCount = iWriteByteCount + iDataSize;
@@ -1491,13 +1491,13 @@ cmlTicketUpdateWriteBytes( char *ticketStr,
     status =  cmlExecuteNoAnswerSql(
                   "update R_TICKET_MAIN set write_byte_count=? where ticket_id=?", icss );
     if ( status != 0 ) {
-        return( status );
+        return status;
     }
 #ifndef ORA_ICAT
     /* as with auditing, do a commit on disconnect if needed */
     cllCheckPending( "", 2, icss->databaseType );
 #endif
-    return( 0 );
+    return 0;
 }
 
 
@@ -1519,7 +1519,7 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
                                      ticketHost, userName, zoneName,
                                      icss );
         if ( status != 0 ) {
-            return ( status );
+            return status;
         }
     }
     else {
@@ -1536,14 +1536,14 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
                      0,
                      icss );
         if ( iVal == 0 ) {
-            return ( CAT_NO_ACCESS_PERMISSION );
+            return CAT_NO_ACCESS_PERMISSION;
         }
     }
     if ( status != 0 ) {
-        return ( CAT_NO_ACCESS_PERMISSION );
+        return CAT_NO_ACCESS_PERMISSION;
     }
     cmlAudit2( AU_ACCESS_GRANTED, dataId, userName, zoneName, accessLevel, icss );
-    return( status );
+    return status;
 }
 
 /*
@@ -1564,16 +1564,16 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='groupadmin'",
                  sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( status ) {
-        return( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
     if ( groupName == NULL ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( *groupName == '\0' ) {
         return( 0 );  /* caller is requesting no check for a particular group,
@@ -1588,12 +1588,12 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
                  &iVal, sVal,  groupName, 0, 0, 0, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( status ) {
-        return( status );
+        return status;
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1610,7 +1610,7 @@ int cmlGetGroupMemberCount( char *groupName, icatSessionStruct *icss ) {
     if ( status == 0 ) {
         status = iVal;
     }
-    return( status );
+    return status;
 }
 
 
@@ -1632,7 +1632,7 @@ cmlAudit1( int actionId, char *clientUser, char *zone, char *targetUser,
     int status;
 
     if ( auditEnabled == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     if ( logSQL_CML != 0 ) {
@@ -1666,7 +1666,7 @@ cmlAudit1( int actionId, char *clientUser, char *zone, char *targetUser,
         committed on disconnect if still pending. */
     }
 #endif
-    return( status );
+    return status;
 }
 
 int
@@ -1677,7 +1677,7 @@ cmlAudit2( int actionId, char *dataId, char *userName, char *zoneName,
     int status;
 
     if ( auditEnabled == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     if ( logSQL_CML != 0 ) {
@@ -1711,7 +1711,7 @@ cmlAudit2( int actionId, char *dataId, char *userName, char *zoneName,
     }
 #endif
 
-    return( status );
+    return status;
 }
 
 
@@ -1724,7 +1724,7 @@ cmlAudit3( int actionId, char *dataId, char *userName, char *zoneName,
     char myComment[AUDIT_COMMENT_MAX_SIZE + 10];
 
     if ( auditEnabled == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     getNowStr( myTime );
@@ -1779,7 +1779,7 @@ cmlAudit3( int actionId, char *dataId, char *userName, char *zoneName,
     }
 #endif
 
-    return( status );
+    return status;
 }
 
 
@@ -1794,7 +1794,7 @@ cmlAudit4( int actionId, char *sql, char *sqlParm, char *userName,
     int i;
 
     if ( auditEnabled == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     getNowStr( myTime );
@@ -1861,7 +1861,7 @@ cmlAudit4( int actionId, char *sql, char *sqlParm, char *userName,
     }
 #endif
 
-    return( status );
+    return status;
 }
 
 
@@ -1876,7 +1876,7 @@ cmlAudit5( int actionId, char *objId, char *userId, char *comment,
     int status;
 
     if ( auditEnabled == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     getNowStr( myTime );
@@ -1905,5 +1905,5 @@ cmlAudit5( int actionId, char *objId, char *userId, char *comment,
         committed on disconnect if still pending. */
     }
 #endif
-    return( status );
+    return status;
 }

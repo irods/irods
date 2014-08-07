@@ -34,7 +34,7 @@ setSessionTicket( rcComm_t *myConn, char *ticket ) {
     if ( status != 0 ) {
         printf( "set ticket error %d \n", status );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -50,14 +50,14 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     rcComm_t *conn = *myConn;
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( myRodsArgs->ticket == True ) {
         if ( myRodsArgs->ticketString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             setSessionTicket( conn, myRodsArgs->ticketString );
@@ -76,7 +76,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putUtil: resolveRodsTarget error, status = %d", status );
-            return ( status );
+            return status;
         }
         rodsPathInp->resolved = True;
     }
@@ -152,7 +152,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
             rodsLog( LOG_ERROR,
                      "putUtil: invalid put dest objType %d for %s",
                      targPath->objType, targPath->outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 ) {
@@ -218,7 +218,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "putFileUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( conn->fileRestart.info.status == FILE_RESTARTED &&
@@ -250,7 +250,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",
                           srcPath, status );
-            return ( status );
+            return status;
         }
     }
     else if ( rodsArgs->verifyChecksum == True ) {
@@ -262,11 +262,11 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",
                           srcPath, status );
-            return ( status );
+            return status;
         }
     }
     if ( strlen( targPath ) >= MAX_PATH_ALLOWED - 1 ) {
-        return( USER_PATH_EXCEEDS_MAX );
+        return USER_PATH_EXCEEDS_MAX;
     }
     rstrcpy( dataObjOprInp->objPath, targPath, MAX_NAME_LEN );
     dataObjOprInp->dataSize = srcSize;
@@ -284,7 +284,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -295,13 +295,13 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     if ( rodsArgs == NULL ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "initCondForPut :: NULL rodsArgs" );
-        return ( -1 );
+        return -1;
     }
 
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForPut: NULL dataObjOprInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
@@ -310,7 +310,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( bulkOprInp == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL bulkOprInp input" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         bzero( bulkOprInp, sizeof( bulkOprInp_t ) );
         if ( rodsArgs->checksum == True ) {
@@ -372,7 +372,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->physicalPathString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL physicalPathString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             boost::filesystem::path slash( "/" );
@@ -382,7 +382,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                     LOG_ERROR,
                     "initCondForPut: physical path [%s] must be absolute, not relative",
                     rodsArgs->physicalPathString );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
 
             addKeyVal( &dataObjOprInp->condInput, FILE_PATH_KW,
@@ -394,7 +394,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjOprInp->condInput, DEST_RESC_NAME_KW,
@@ -454,7 +454,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             rodsLogError( LOG_ERROR, status,
                           "initCondForPut: openRestartFile of %s error",
                           rodsArgs->restartFileString );
-            return ( status );
+            return status;
         }
         if ( rodsRestart->doneCnt == 0 ) {
             /* brand new */
@@ -519,7 +519,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -532,7 +532,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     if ( srcDir == NULL || targColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "putDirUtil: NULL srcDir or targColl input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
@@ -543,7 +543,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         rodsLog( LOG_ERROR,
                  "putDirUtil: -r option must be used for putting %s directory",
                  srcDir );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->redirectConn == True && rodsArgs->force != True ) {
@@ -566,7 +566,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         rodsLog( LOG_ERROR,
                  "putDirUtil: opendir local dir error for %s, errno = %d\n",
                  srcDir, errno );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -834,7 +834,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
         rodsLogError( LOG_ERROR, status,
                       "bulkPutFileUtil: splitPathByKey for %s error",
                       phyBunPath );
-        return ( status );
+        return status;
     }
 
     if ( strcmp( subPhyBunDir, bulkOprInfo->cachedSubPhyBunDir ) != 0 &&
@@ -908,7 +908,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "bulkPutFileUtil: chksumLocFile error for %s ", srcPath );
-            return ( status );
+            return status;
         }
         status = fillAttriArrayOfBulkOprInp( targPath, createMode, chksumStr,
                                              bulkOprInfo->size, bulkOprInp );
@@ -1010,7 +1010,7 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int

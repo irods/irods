@@ -12,12 +12,12 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     if ( ruleExecDelInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsRuleExecDel error. NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     status = getAndConnReHost( rsComm, &rodsServerHost );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -26,7 +26,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
 #else
         rodsLog( LOG_NOTICE,
                  "rsRuleExecDel error. ICAT is not configured on this host" );
-        return ( SYS_NO_RCAT_SERVER_ERR );
+        return SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
@@ -37,7 +37,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                  "rsRuleExecDel: rcRuleExecDel failed, status = %d",
                  status );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -69,7 +69,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
 #else
         rodsLog( LOG_ERROR,
                  "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-        return ( SYS_NO_RCAT_SERVER_ERR );
+        return SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
 
@@ -77,7 +77,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                                             COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "_rsRuleExecDel: getSqlResultByInx for REI_FILE_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     /* First check permission (now that API is allowed for non-admin users) */
@@ -87,15 +87,15 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                                   COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
                 rodsLog( LOG_NOTICE,
                          "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed" );
-                return ( UNMATCHED_KEY_OR_INDEX );
+                return UNMATCHED_KEY_OR_INDEX;
             }
             if ( strncmp( ruleUserName->value,
                           rsComm->clientUser.userName, MAX_NAME_LEN ) != 0 ) {
-                return ( USER_ACCESS_DENIED );
+                return USER_ACCESS_DENIED;
             }
         }
         else {
-            return ( USER_ACCESS_DENIED );
+            return USER_ACCESS_DENIED;
         }
     }
 
@@ -128,11 +128,11 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
         }
         freeGenQueryOut( &genQueryOut );
 
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
 #else
         rodsLog( LOG_ERROR,
                  "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-        return ( SYS_NO_RCAT_SERVER_ERR );
+        return SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
 
@@ -144,7 +144,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                  reiFilePath->value, status );
         if ( errno != ENOENT ) {
             freeGenQueryOut( &genQueryOut );
-            return ( status );
+            return status;
         }
     }
 #ifdef RODS_CAT
@@ -180,11 +180,11 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     }
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 #else
     rodsLog( LOG_ERROR,
              "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 }

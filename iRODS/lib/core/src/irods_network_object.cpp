@@ -53,7 +53,7 @@ network_object& network_object::operator=(
 // public - equivalence operator
 bool network_object::operator==(
     const network_object& _rhs ) const {
-    return ( socket_handle_ == _rhs.socket_handle_ );
+    return socket_handle_ == _rhs.socket_handle_;
 
 } // operator==
 

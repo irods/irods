@@ -85,7 +85,7 @@ printMsParamNew( msParamArray_t *outParamArray, int output ) {
     tagStruct_t *tagValues;
 
     if ( outParamArray == NULL ) {
-        return ( 0 );
+        return 0;
     }
     for ( i = 0; i < outParamArray->len; i++ ) {
         msParam_t *msParam;
@@ -144,7 +144,7 @@ printMsParamNew( msParamArray_t *outParamArray, int output ) {
         }
 
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -535,7 +535,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
     int labelF = 0;
     if ( inBuf == NULL || strcmp( inBuf, "null" ) == 0 ) {
         execMyRuleInp->inpParamArray = NULL;
-        return ( 0 );
+        return 0;
     }
 
     nInput = argc - optInd;
@@ -546,7 +546,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
         rodsLog( LOG_ERROR,
                  "parseMsInputParam: parseMultiStr error, status = %d", status );
         execMyRuleInp->inpParamArray = NULL;
-        return ( status );
+        return status;
     }
 
     resizeStrArray( &strArray, MAX_NAME_LEN );
@@ -565,11 +565,11 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
         else if ( *argv[optInd + i] == '*' ) {
             char *tmpPtr;
             if ( i > 0 && labelF == 0 ) {
-                return( CAT_INVALID_ARGUMENT );
+                return CAT_INVALID_ARGUMENT;
             }
             labelF = 1;
             if ( ( tmpPtr = strstr( argv[optInd + i], "=" ) ) == NULL ) {
-                return( CAT_INVALID_ARGUMENT );
+                return CAT_INVALID_ARGUMENT;
             }
             *tmpPtr = '\0';
             for ( j = 0; j < strArray.len; j++ ) {
@@ -589,7 +589,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
             char *valPtr = &value[i * strArray.size];
             char *tmpPtr;
             if ( labelF == 1 ) {
-                return( CAT_INVALID_ARGUMENT );
+                return CAT_INVALID_ARGUMENT;
             }
             if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
                 tmpPtr++;
@@ -620,7 +620,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                  */
                 printf( "Default %s=%s\n    New %s=", valPtr, tmpPtr + 1, valPtr );
                 if ( fgets( line, MAX_NAME_LEN, stdin ) == NULL ) {
-                    return( CAT_INVALID_ARGUMENT );
+                    return CAT_INVALID_ARGUMENT;
                 }
                 size_t line_len = strlen( line );
                 if( line_len > 0 && '\n' == line[line_len - 1] ) {
@@ -637,7 +637,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                 /* the user has asked for prompting */
                 printf( "Current %s=%s\n    New %s=", valPtr, tmpPtr, valPtr );
                 if ( fgets( line, MAX_NAME_LEN, stdin ) == NULL ) {
-                    return( CAT_INVALID_ARGUMENT );
+                    return CAT_INVALID_ARGUMENT;
                 }
                 size_t line_len = strlen( line );
                 if( line_len > 0 && '\n' == line[line_len - 1] ) {
@@ -680,7 +680,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 

@@ -131,16 +131,16 @@ static int _igsiWriteAll( int fd, char *buf, unsigned int nbyte ) {
             if ( errno == EINTR ) {
                 continue;
             }
-            return ( ret );
+            return ret;
         }
         else if ( ret == 0 ) {
-            return ( ptr - buf );
+            return ptr - buf;
         }
     }
     if ( igsiDebugFlag > 0 ) {
         fprintf( stderr, "_igsiWriteAll, wrote=%d\n", ptr - buf );
     }
-    return ( ptr - buf );
+    return ptr - buf;
 }
 #endif
 
@@ -157,14 +157,14 @@ static int _igsiReadAll( int fd, char *buf, unsigned int nbyte ) {
             if ( errno == EINTR ) {
                 continue;
             }
-            return ( GSI_SOCKET_READ_ERROR );
+            return GSI_SOCKET_READ_ERROR;
         }
         else if ( ret == 0 ) {
-            return ( ptr - buf );
+            return ptr - buf;
         }
     }
 
-    return ( ptr - buf );
+    return ptr - buf;
 }
 
 /*
@@ -340,7 +340,7 @@ int _igsiRcvToken( int fd, gss_buffer_t tok ) {
             return length;
         }
 
-        return ( _igsiRcvTokenBody( fd, tok, length ) );
+        return _igsiRcvTokenBody( fd, tok, length );
     }
     else {
         i = read( fd, ( char * ) tok->value, tok->length );
@@ -348,7 +348,7 @@ int _igsiRcvToken( int fd, gss_buffer_t tok ) {
             fprintf( stderr, "rcved token, length = %d\n", i );
         }
         if ( i <= 0 ) {
-            return ( i );
+            return i;
         }
         tok->length = i;        /* Assume all of token is rcv'ed */
         return 1;               /* success */
@@ -576,10 +576,10 @@ int igsiSetupCreds( rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( GSI_NOT_BUILT_INTO_CLIENT );
+        return GSI_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( GSI_NOT_BUILT_INTO_SERVER );
+        return GSI_NOT_BUILT_INTO_SERVER;
     }
 #endif
 }
@@ -723,10 +723,10 @@ int igsiEstablishContextServerside( rsComm_t *rsComm, char *clientName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( GSI_NOT_BUILT_INTO_CLIENT );
+        return GSI_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( GSI_NOT_BUILT_INTO_SERVER );
+        return GSI_NOT_BUILT_INTO_SERVER;
     }
 #endif
 }
@@ -753,7 +753,7 @@ int _NoUsed_igsiReturnCachedData( int fd, char *buffer, int length ) {
     }
     return mv;
 #else
-    return( 0 );
+    return 0;
 #endif
 }
 
@@ -982,10 +982,10 @@ int igsiEstablishContextClientside( rcComm_t *Comm, char *serviceName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( GSI_NOT_BUILT_INTO_CLIENT );
+        return GSI_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( GSI_NOT_BUILT_INTO_SERVER );
+        return GSI_NOT_BUILT_INTO_SERVER;
     }
 #endif
 
@@ -999,7 +999,7 @@ int igsiEstablishContextClientside( rcComm_t *Comm, char *serviceName,
  */
 int igsi_debug( int val ) {
     igsiDebugFlag = val;
-    return( 0 );
+    return 0;
 }
 
 
@@ -1020,7 +1020,7 @@ int EVP_read_pw_string(char *buf,int len,char *prompt,int verify)
     else {
        if ((prompt == NULL) && (prompt_string[0] != '\0'))
            prompt=prompt_string;
-       return(des_read_pw_string(buf,len,prompt,verify));
+       return des_read_pw_string(buf,len,prompt,verify);
     }
 }
 
@@ -1199,10 +1199,10 @@ int igsiEstablishContextClientsideWithoutServerDN( int fd, char *serverName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( GSI_NOT_BUILT_INTO_CLIENT );
+        return GSI_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( GSI_NOT_BUILT_INTO_SERVER );
+        return GSI_NOT_BUILT_INTO_SERVER;
     }
 #endif
 }

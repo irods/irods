@@ -12,5 +12,5 @@ rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
     status = procApiRequest( conn, FILE_GET_AN, fileGetInp, NULL,
                              ( void ** ) NULL, fileGetOutBBuf );
 
-    return ( status );
+    return status;
 }

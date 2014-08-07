@@ -288,7 +288,7 @@ main( int argc, char *argv[] ) {
 
     free( rsComm.thread_ctx );
 
-    return ( status );
+    return status;
 }
 
 int agentMain(
@@ -394,7 +394,7 @@ int agentMain(
     // call post disconnect maintenance operations before exit
     status = resc_mgr.call_maintenance_operations( rodsServerHost->conn );
 
-    return ( status );
+    return status;
 }
 
 

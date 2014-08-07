@@ -23,5 +23,5 @@ int rcFilePut(
     status = procApiRequest( conn, FILE_PUT_AN, filePutInp, filePutInpBBuf,
                              ( void ** ) put_out, NULL );
 
-    return ( status );
+    return status;
 }

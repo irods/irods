@@ -10,7 +10,7 @@ int
 phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     rodsPath_t *collPath;
@@ -56,20 +56,20 @@ initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( phyBundleCollInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForPhybunOpr: NULL phyBundleCollInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( phyBundleCollInp, 0, sizeof( structFileExtAndRegInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->resource == True ) {
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPhybunOpr: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &phyBundleCollInp->condInput,
@@ -79,7 +79,7 @@ initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     else {
         rodsLog( LOG_ERROR,
                  "initCondForPhybunOpr: A -Rresource must be input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->srcResc == True ) {
@@ -133,6 +133,6 @@ initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW, tmpStr1 );
     }
 
-    return ( 0 );
+    return 0;
 }
 

@@ -24,17 +24,17 @@ rsSubStructFileCreate( rsComm_t *rsComm, subFile_t *subFile ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsSubStructFileCreate: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( fd );
+    return fd;
 }
 
 int

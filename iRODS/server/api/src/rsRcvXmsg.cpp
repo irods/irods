@@ -30,6 +30,6 @@ rsRcvXmsg( rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
 
     status = _rsRcvXmsg( irodsXmsg, *rcvXmsgOut );
 
-    return ( status );
+    return status;
 }
 

@@ -9,5 +9,5 @@ rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp ) {
     status = procApiRequest( conn, STRUCT_FILE_SYNC_AN, structFileOprInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

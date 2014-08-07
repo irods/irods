@@ -46,7 +46,7 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcDataObjTrim( rodsServerHost->conn, dataObjInp );
@@ -83,7 +83,7 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
         accessPerm = NULL;
     }
@@ -97,12 +97,12 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsDataObjTrim: getDataObjInfo for %s", dataObjInp->objPath );
-        return ( status );
+        return status;
     }
     status = resolveInfoForTrim( &dataObjInfoHead, &dataObjInp->condInput );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, AGE_KW ) ) != NULL ) {
@@ -136,7 +136,7 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     freeAllDataObjInfo( dataObjInfoHead );
 
-    return ( retVal );
+    return retVal;
 }
 
 

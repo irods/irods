@@ -72,7 +72,7 @@ phymvDataObjUtil( rcComm_t *conn, char *srcPath,
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "phymvDataObjUtil: NULL srcPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -89,7 +89,7 @@ phymvDataObjUtil( rcComm_t *conn, char *srcPath,
                      NULL, &startTime, &endTime );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -99,13 +99,13 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForPhymv: NULL dataObjInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->admin == True ) {
@@ -126,7 +126,7 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPhymv: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
@@ -138,7 +138,7 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -153,14 +153,14 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     if ( srcColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "phymvCollUtil: NULL srcColl input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "phymvCollUtil: -r option must be used for getting %s collection",
                  srcColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -212,13 +212,13 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

@@ -12,5 +12,5 @@ rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,
     status = procApiRequest( conn, AUTH_CHECK_AN,  authCheckInp, NULL,
                              ( void ** ) authCheckOut, NULL );
 
-    return ( status );
+    return status;
 }

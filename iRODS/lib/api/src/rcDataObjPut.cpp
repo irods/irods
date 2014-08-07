@@ -105,7 +105,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     if ( dataObjInp->dataSize <= 0 ) {
         dataObjInp->dataSize = getFileSize( locFilePath );
         if ( dataObjInp->dataSize < 0 ) {
-            return ( USER_FILE_DOES_NOT_EXIST );
+            return USER_FILE_DOES_NOT_EXIST;
         }
     }
 
@@ -122,7 +122,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             if ( status < 0 ) {
                 rodsLog( LOG_NOTICE,
                          "rcDataObjPut: fileBBufWithFile error for %s", locFilePath );
-                return ( status );
+                return status;
             }
         }
     }
@@ -133,7 +133,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "rcDataObjPut: fileBBufWithFile error for %s", locFilePath );
-            return ( status );
+            return status;
         }
     }
 
@@ -152,7 +152,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( portalOprOut != NULL ) {
             free( portalOprOut );
         }
-        return ( status );
+        return status;
     }
 
     if ( portalOprOut->numThreads <= 0 ) {
@@ -166,7 +166,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( portalOprOut->numThreads != 1 ) {
             rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
             free( portalOprOut );
-            return ( SYS_INVALID_PORTAL_OPR );
+            return SYS_INVALID_PORTAL_OPR;
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
         if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
@@ -210,7 +210,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         if ( portalOprOut->numThreads >= 20 * DEF_NUM_TRAN_THR ) {
             rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
             free( portalOprOut );
-            return ( SYS_INVALID_PORTAL_OPR );
+            return SYS_INVALID_PORTAL_OPR;
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
         status = putFileToPortal( conn, portalOprOut, locFilePath,
@@ -230,7 +230,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         clearLfRestartFile( &conn->fileRestart );
     }
 
-    return ( status );
+    return status;
 }
 
 int

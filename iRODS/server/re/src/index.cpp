@@ -343,22 +343,22 @@ int mapExternalFuncToInternalProc2( char *funcName ) {
 
     if ( appRuleFuncMapDefIndex != NULL && ( i = ( int * )lookupFromHashTable( appRuleFuncMapDefIndex, funcName ) ) != NULL ) {
         strcpy( funcName, appRuleFuncMapDef.func2CMap[*i] );
-        return( 1 );
+        return 1;
     }
     if ( coreRuleFuncMapDefIndex != NULL && ( i = ( int * )lookupFromHashTable( coreRuleFuncMapDefIndex, funcName ) ) != NULL ) {
         strcpy( funcName, coreRuleFuncMapDef.func2CMap[*i] );
-        return( 1 );
+        return 1;
     }
-    return( 0 );
+    return 0;
 }
 int actionTableLookUp2( char *action ) {
     int *i;
 
     if ( ( i = ( int * )lookupFromHashTable( microsTableIndex, action ) ) != NULL ) {
-        return ( *i );
+        return *i;
     }
 
-    return ( UNMATCHED_ACTION_ERR );
+    return UNMATCHED_ACTION_ERR;
 }
 void deleteCondIndexVal( CondIndexVal *h ) {
     deleteHashTable( h->valIndex, nop );

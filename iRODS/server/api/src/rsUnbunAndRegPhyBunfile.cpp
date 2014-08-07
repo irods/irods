@@ -46,7 +46,7 @@ rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
     status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -92,7 +92,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "_rsUnbunAndRegPhyBunfile: No filePath input for %s",
                  dataObjInp->objPath );
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
 
     createPhyBundleDir( rsComm, bunFilePath, phyBunDir, resc_hier );
@@ -145,7 +145,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
         rodsLog( LOG_ERROR,
                  "regUnbunphySubfiles: opendir error for %s, errno = %d",
                  phyBunDir, errno );
-        return ( UNIX_FILE_OPENDIR_ERR - errno );
+        return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     if ( rmBunCopyFlag > 0 ) {
@@ -163,7 +163,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
             rodsLog( LOG_ERROR,
                      "regUnbunphySubfiles: stat error for %s, errno = %d",
                      subfilePath, errno );
-            return ( UNIX_FILE_STAT_ERR - errno );
+            return UNIX_FILE_STAT_ERR - errno;
         }
 
         if ( !is_regular_file( p ) ) {
@@ -260,7 +260,7 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
                  "regPhySubFile: getFilePathName err for %s. status = %d",
                  dataObjInp.objPath, status );
         delete stageDataObjInfo.rescInfo;
-        return ( status );
+        return status;
     }
 
     path p( stageDataObjInfo.filePath );
@@ -271,7 +271,7 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
                      "regPhySubFile: resolveDupFilePath err for %s. status = %d",
                      stageDataObjInfo.filePath, status );
             delete stageDataObjInfo.rescInfo;
-            return ( status );
+            return status;
         }
     }
 
@@ -290,7 +290,7 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
                  "regPhySubFile: link error %s to %s. errno = %d",
                  subfilePath, stageDataObjInfo.filePath, errno );
         delete stageDataObjInfo.rescInfo;
-        return ( UNIX_FILE_LINK_ERR - errno );
+        return UNIX_FILE_LINK_ERR - errno;
     }
 
     bzero( &regReplicaInp, sizeof( regReplicaInp ) );
@@ -394,7 +394,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     }
     free( structFileOprInp.specColl );
 
-    return ( status );
+    return status;
 }
 
 int

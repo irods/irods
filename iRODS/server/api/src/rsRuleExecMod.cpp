@@ -13,7 +13,7 @@ rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -32,7 +32,7 @@ rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
         rodsLog( LOG_NOTICE,
                  "rsRuleExecMod: rcRuleExecMod failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -44,6 +44,6 @@ _rsRuleExecMod( rsComm_t *rsComm,
     status = chlModRuleExec( rsComm,
                              ruleExecModInp->ruleId,
                              &ruleExecModInp->condInput );
-    return( status );
+    return status;
 }
 #endif

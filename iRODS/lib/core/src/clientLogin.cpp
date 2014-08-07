@@ -27,7 +27,7 @@
 static char prevChallengeSignatureClient[200];
 
 char *getSessionSignatureClientside() {
-    return( prevChallengeSignatureClient );
+    return prevChallengeSignatureClient;
 }
 
 void setSessionSignatureClientside( char* _sig ) {
@@ -76,7 +76,7 @@ int printError( rcComm_t *Conn, int status, char *routineName ) {
     fprintf( stderr, "%s failed with error %d %s %s\n", routineName,
              status, myName, mySubName );
 
-    return ( 0 );
+    return 0;
 }
 
 #ifdef GSI_AUTH
@@ -90,7 +90,7 @@ int clientLoginGsi( rcComm_t *Conn ) {
 
     if ( status ) {
         printError( Conn, status, "igsiSetupCreds" );
-        return( status );
+        return status;
     }
 
     /*   printf("Client-side DN is:%s\n",myName); */
@@ -98,7 +98,7 @@ int clientLoginGsi( rcComm_t *Conn ) {
     status = rcGsiAuthRequest( Conn, &gsiAuthReqOut );
     if ( status ) {
         printError( Conn, status, "rcGsiAuthRequest" );
-        return( status );
+        return status;
     }
 
     /*   printf("Server-side DN is:%s\n", gsiAuthReqOut->serverDN); */
@@ -111,7 +111,7 @@ int clientLoginGsi( rcComm_t *Conn ) {
     status = igsiEstablishContextClientside( Conn, serverDN, 0 );
     if ( status ) {
         printError( Conn, status, "igsiEstablishContextClientside" );
-        return( status );
+        return status;
     }
 
     /* Now, check if it actually succeeded */
@@ -119,12 +119,12 @@ int clientLoginGsi( rcComm_t *Conn ) {
     if ( status ) {
         printf( "Error from iRODS Server:\n" );
         printError( Conn, status, "GSI Authentication" );
-        return( status );
+        return status;
     }
 
     Conn->loggedIn = 1;
 
-    return( 0 );
+    return 0;
 }
 #endif
 
@@ -139,7 +139,7 @@ int clientLoginKrb( rcComm_t *Conn ) {
     status = ikrbSetupCreds( Conn, NULL, NULL, &myName );
     if ( status || NULL == myName ) { // JMC cppcheck - nullptr
         printError( Conn, status, "ikrbSetupCreds" );
-        return( status );
+        return status;
     }
 
     if ( KRB_debug ) {
@@ -152,7 +152,7 @@ int clientLoginKrb( rcComm_t *Conn ) {
     status = rcKrbAuthRequest( Conn, &krbAuthReqOut );
     if ( status ) {
         printError( Conn, status, "rcKrbAuthRequest" );
-        return( status );
+        return status;
     }
 
     if ( KRB_debug ) {
@@ -175,7 +175,7 @@ int clientLoginKrb( rcComm_t *Conn ) {
     status = ikrbEstablishContextClientside( Conn, serverName, 0 );
     if ( status ) {
         printError( Conn, status, "ikrbEstablishContextClientside" );
-        return( status );
+        return status;
     }
 
     /* Now, check if it actually succeeded */
@@ -183,12 +183,12 @@ int clientLoginKrb( rcComm_t *Conn ) {
     if ( status ) {
         printf( "Error from iRODS Server:\n" );
         printError( Conn, status, "KRB Authentication" );
-        return( status );
+        return status;
     }
 
     Conn->loggedIn = 1;
 
-    return( 0 );
+    return 0;
 }
 #endif
 
@@ -238,7 +238,7 @@ int clientLoginPam( rcComm_t* Conn,
     status = sslStart( Conn );
     if ( status ) {
         printError( Conn, status, "sslStart" );
-        return( status );
+        return status;
     }
 
     memset( &pamAuthReqInp, 0, sizeof( pamAuthReqInp ) );
@@ -249,7 +249,7 @@ int clientLoginPam( rcComm_t* Conn,
     if ( status ) {
         printError( Conn, status, "rcPamAuthRequest" );
         sslEnd( Conn );
-        return( status );
+        return status;
     }
     memset( myPassword, 0, sizeof( myPassword ) );
     rodsLog( LOG_NOTICE, "iRODS password set up for i-command use: %s\n",
@@ -261,9 +261,9 @@ int clientLoginPam( rcComm_t* Conn,
     sslEnd( Conn );
 
     status = obfSavePw( 0, 0, 0,  pamAuthReqOut->irodsPamPassword );
-    return( status );
+    return status;
 #else
-    return( PAM_AUTH_NOT_BUILT_INTO_CLIENT );
+    return PAM_AUTH_NOT_BUILT_INTO_CLIENT;
 #endif
 
 }
@@ -285,7 +285,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     status = obfGetPw( userPassword );
     if ( status ) {
         memset( userPassword, 0, sizeof( userPassword ) );
-        return( status );
+        return status;
     }
 
     status = obfSavePw( 0, 0, 0,  "   " ); /* clear out the permanent password */
@@ -299,7 +299,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     if ( status ) {
         printError( Conn, status, "rcGetLimitedPassword" );
         memset( userPassword, 0, sizeof( userPassword ) );
-        return( status );
+        return status;
     }
 
     /* calcuate the limited password, which is a hash of the user's main pw and
@@ -321,7 +321,7 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     memset( hashBuf, 0, sizeof( hashBuf ) );
     memset( userPassword, 0, sizeof( userPassword ) );
 
-    return( 0 );
+    return 0;
 }
 
 /// =-=-=-=-=-=-=-
@@ -472,12 +472,12 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
 
     if ( Conn->loggedIn == 1 ) {
         /* already logged in */
-        return ( 0 );
+        return 0;
     }
     status = rcAuthRequest( Conn, &authReqOut );
     if ( status || NULL == authReqOut ) { // JMC cppcheck - nullptr
         printError( Conn, status, "rcAuthRequest" );
-        return( status );
+        return status;
     }
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
@@ -518,9 +518,9 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
 
     if ( status ) {
         printError( Conn, status, "rcAuthResponse" );
-        return( status );
+        return status;
     }
     Conn->loggedIn = 1;
 
-    return( 0 );
+    return 0;
 }

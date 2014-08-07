@@ -57,7 +57,7 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
             while ( tmpName != NULL ) {
                 if ( strcasecmp( tmpName->name, myHostAddr ) == 0 ) {
                     *rodsServerHost = tmpRodsServerHost;
-                    return ( tmpRodsServerHost->localFlag );
+                    return tmpRodsServerHost->localFlag;
                 }
                 tmpName = tmpName->next;
             }
@@ -72,7 +72,7 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
     if ( tmpRodsServerHost == NULL ) {
         rodsLog( LOG_ERROR,
                  "resolveHost: mkServerHost error" );
-        return ( SYS_INVALID_SERVER_HOST );
+        return SYS_INVALID_SERVER_HOST;
     }
 
     /* assume it is remote */
@@ -86,7 +86,7 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
     }
     *rodsServerHost = tmpRodsServerHost;
 
-    return ( tmpRodsServerHost->localFlag );
+    return tmpRodsServerHost->localFlag;
 }
 
 int
@@ -98,7 +98,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if ( dataObjInfo == NULL ) {
         rodsLog( LOG_NOTICE,
                  "resolveHostByDataObjInfo: NULL dataObjInfo" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -124,7 +124,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                      ( *rodsServerHost )->hostName->name );
         }
     }
-    return ( remoteFlag );
+    return remoteFlag;
 }
 
 rodsServerHost_t *
@@ -139,7 +139,7 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     status = queHostName( tmpRodsServerHost, myHostAddr, 0 );
     if ( status < 0 ) {
         free( tmpRodsServerHost );
-        return ( NULL );
+        return NULL;
     }
 
     tmpRodsServerHost->localFlag = UNKNOWN_HOST_LOC;
@@ -153,10 +153,10 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
 
     if ( status < 0 ) {
         free( tmpRodsServerHost );
-        return ( NULL );
+        return NULL;
     }
     else {
-        return ( tmpRodsServerHost );
+        return tmpRodsServerHost;
     }
 }
 
@@ -173,7 +173,7 @@ initServerInfo( rsComm_t *rsComm ) {
         rodsLog( LOG_NOTICE,
                  "initServerInfo: initHostConfigByFile error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
     status = initLocalServerHost( rsComm );
@@ -181,20 +181,20 @@ initServerInfo( rsComm_t *rsComm ) {
         rodsLog( LOG_NOTICE,
                  "initServerInfo: initLocalServerHost error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
     status = initRcatServerHostByFile( rsComm );
     if ( status < 0 ) {
         rodsLog( LOG_SYS_FATAL,
                  "initServerInfo: initRcatServerHostByFile error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
 #ifdef RODS_CAT
     status = connectRcat( rsComm );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 #endif
     status = initZone( rsComm );
@@ -202,7 +202,7 @@ initServerInfo( rsComm_t *rsComm ) {
         rodsLog( LOG_SYS_FATAL,
                  "initServerInfo: initZone error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
     /*status = initResc (rsComm);
@@ -215,7 +215,7 @@ initServerInfo( rsComm_t *rsComm ) {
       rodsLog (LOG_SYS_FATAL,
       "initServerInfo: initResc error, status = %d",
       status);
-      return (status);
+      return status;
       }
       }*/
 
@@ -225,7 +225,7 @@ initServerInfo( rsComm_t *rsComm ) {
         irods::log( log_err );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -248,11 +248,11 @@ initLocalServerHost( rsComm_t *rsComm ) {
         rodsLog( LOG_NOTICE,
                  "initLocalServerHost: gethostname error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
     status = queHostName( ServerHostHead, myHostName, 0 );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     status = queAddr( ServerHostHead, myHostName );
@@ -269,7 +269,7 @@ initLocalServerHost( rsComm_t *rsComm ) {
         printServerHost( LocalServerHost );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -325,7 +325,7 @@ printServerHost( rodsServerHost_t *myServerHost ) {
     rodsLog( LOG_NOTICE, " Port Num: %d.\n\n", ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -452,7 +452,7 @@ printZoneInfo() {
 #endif
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -490,7 +490,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
         rodsLog( LOG_SYS_FATAL,
                  "Cannot open RCAT_HOST_FILE  file %s. errno = %d\n",
                  cfg_file.c_str(), errno );
-        return ( SYS_CONFIG_FILE_ERR );
+        return SYS_CONFIG_FILE_ERR;
     }
 
     memset( &addr, 0, sizeof( addr ) );
@@ -505,7 +505,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, RE_FUNCMAPSET_KW ) == 0 ) {
@@ -514,7 +514,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, RE_VARIABLEMAPSET_KW ) == 0 ) {
@@ -523,7 +523,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, KERBEROS_NAME_KW ) == 0 ) {
@@ -532,7 +532,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, ICAT_HOST_KW ) == 0 ) {
@@ -543,7 +543,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
-                        return ( remoteFlag );
+                        return remoteFlag;
                     }
                     tmpRodsServerHost->rcatEnabled = LOCAL_ICAT;
                     gptRcatFlag = 1;
@@ -552,7 +552,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, RE_HOST_KW ) == 0 ) {
@@ -563,7 +563,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
-                        return ( remoteFlag );
+                        return remoteFlag;
                     }
                     tmpRodsServerHost->reHostFlag = 1;
                 }
@@ -571,7 +571,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, XMSG_HOST_KW ) == 0 ) {
@@ -582,7 +582,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
-                        return ( remoteFlag );
+                        return remoteFlag;
                     }
                     tmpRodsServerHost->xmsgHostFlag = 1;
                 }
@@ -590,7 +590,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, SLAVE_ICAT_HOST_KW ) == 0 ) {
@@ -601,7 +601,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
-                        return ( remoteFlag );
+                        return remoteFlag;
                     }
                     tmpRodsServerHost->rcatEnabled = LOCAL_SLAVE_ICAT;
                 }
@@ -609,7 +609,7 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
-                    return ( SYS_CONFIG_FILE_ERR );
+                    return SYS_CONFIG_FILE_ERR;
                 }
             }
             else if ( strcmp( keyWdName, LOCAL_ZONE_SID_KW ) == 0 ) {
@@ -654,10 +654,10 @@ initRcatServerHostByFile( rsComm_t *rsComm ) {
         rodsLog( LOG_SYS_FATAL,
                  "initRcatServerHostByFile: icatHost entry missing in %s.\n",
                  RCAT_HOST_FILE );
-        return ( SYS_CONFIG_FILE_ERR );
+        return SYS_CONFIG_FILE_ERR;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -667,7 +667,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
     int status;
 
     if ( rodsServerHost == NULL || myHostName == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     /* gethostbyname could hang for some address */
@@ -682,7 +682,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
                          "queAddr: gethostbyname error for %s ,errno = %d\n",
                          myHostName, errno );
             }
-            return ( status );
+            return status;
         }
         afterTime = time( 0 );
         if ( afterTime - beforeTime >= 2 ) {
@@ -696,7 +696,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -708,7 +708,7 @@ queHostName( rodsServerHost_t *rodsServerHost, char *myName, int topFlag ) {
 
     while ( myHostName != NULL ) {
         if ( strcmp( myName, myHostName->name ) == 0 ) {
-            return ( 0 );
+            return 0;
         }
         lastHostName = myHostName;
         myHostName = myHostName->next;
@@ -731,7 +731,7 @@ queHostName( rodsServerHost_t *rodsServerHost, char *myName, int topFlag ) {
         tmpHostName->next = NULL;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -753,7 +753,7 @@ queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
     }
     myRodsServerHost->next = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 char *
@@ -762,9 +762,9 @@ getConfigDir() {
     char *myDir;
 
     if ( ( myDir = ( char * ) getenv( "irodsConfigDir" ) ) != ( char * ) NULL ) {
-        return ( myDir );
+        return myDir;
     }
-    return ( DEF_CONFIG_DIR );
+    return DEF_CONFIG_DIR;
 #else
     return iRODSNtGetServerConfigPath();
 #endif
@@ -776,9 +776,9 @@ getLogDir() {
     char *myDir;
 
     if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
-        return ( myDir );
+        return myDir;
     }
-    return ( DEF_LOG_DIR );
+    return DEF_LOG_DIR;
 #else
     return iRODSNtServerGetLogDir;
 #endif
@@ -804,11 +804,11 @@ getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "getAndConnRcatHost:getRcatHost() failed. erro=%d", status );
-        return ( status );
+        return status;
     }
 
     if ( ( *rodsServerHost )->localFlag == LOCAL_HOST ) {
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
     status = svrToSvrConnect( rsComm, *rodsServerHost );
 
@@ -821,10 +821,10 @@ getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
         }
     }
     if ( status >= 0 ) {
-        return ( REMOTE_HOST );
+        return REMOTE_HOST;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -836,11 +836,11 @@ getAndConnRcatHostNoLogin( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
     status = getRcatHost( rcatType, rcatZoneHint, rodsServerHost );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     if ( ( *rodsServerHost )->localFlag == LOCAL_HOST ) {
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     status = svrToSvrConnectNoLogin( rsComm, *rodsServerHost );
@@ -853,14 +853,14 @@ getAndConnRcatHostNoLogin( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
             status = convZoneSockError( status );
         }
     }
-    return ( status );
+    return status;
 }
 
 int
 convZoneSockError( int inStatus ) {
     int unixErr = getErrno( inStatus );
     if ( inStatus + unixErr == USER_SOCK_CONNECT_ERR ) {
-        return ( CROSS_ZONE_SOCK_CONNECT_ERR - unixErr );
+        return CROSS_ZONE_SOCK_CONNECT_ERR - unixErr;
     }
     else {
         return inStatus;
@@ -911,17 +911,17 @@ getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     if ( zoneInput == 0 ) {
         rodsLog( LOG_ERROR,
                  "getRcatHost: No local Rcat" );
-        return ( SYS_INVALID_ZONE_NAME );
+        return SYS_INVALID_ZONE_NAME;
     }
     else {
         rodsLog( LOG_DEBUG,
                  "getZoneInfo: Invalid zone name from hint %s", rcatZoneHint );
         status = getZoneInfo( NULL, myZoneInfo );
         if ( status < 0 ) {
-            return ( SYS_INVALID_ZONE_NAME );
+            return SYS_INVALID_ZONE_NAME;
         }
         else {
-            return ( 0 );
+            return 0;
         }
     }
 }
@@ -940,11 +940,11 @@ getRcatHost( int rcatType, char *rcatZoneHint,
     if ( rcatType == MASTER_RCAT ||
             myZoneInfo->slaveServerHost == NULL ) {
         *rodsServerHost = myZoneInfo->masterServerHost;
-        return ( myZoneInfo->masterServerHost->localFlag );
+        return myZoneInfo->masterServerHost->localFlag;
     }
     else {
         *rodsServerHost = myZoneInfo->slaveServerHost;
-        return ( myZoneInfo->slaveServerHost->localFlag );
+        return myZoneInfo->slaveServerHost->localFlag;
     }
 }
 
@@ -956,7 +956,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
     while ( tmpZoneInfo != NULL ) {
         if ( tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT ) {
             *outZoneInfo = tmpZoneInfo;
-            return ( 0 );
+            return 0;
         }
         tmpZoneInfo = tmpZoneInfo->next;
     }
@@ -964,7 +964,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
              "getLocalZoneInfo: Local Zone does not exist" );
 
     *outZoneInfo = NULL;
-    return ( SYS_INVALID_ZONE_NAME );
+    return SYS_INVALID_ZONE_NAME;
 }
 
 char*
@@ -972,7 +972,7 @@ getLocalZoneName() {
     zoneInfo_t *tmpZoneInfo;
 
     if ( getLocalZoneInfo( &tmpZoneInfo ) >= 0 ) {
-        return ( tmpZoneInfo->zoneName );
+        return tmpZoneInfo->zoneName;
     }
     else {
         return NULL;
@@ -988,14 +988,14 @@ getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
     status = getRcatHost( rcatType, rcatZoneHint, rodsServerHost );
 
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( ( *rodsServerHost )->conn != NULL ) { /* a connection exists */
         status = rcDisconnect( ( *rodsServerHost )->conn );
-        return( status );
+        return status;
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1006,11 +1006,11 @@ disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
     status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
 
     if ( ( rodsServerHost )->localFlag == LOCAL_HOST ) {
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     if ( rodsServerHost->conn != NULL ) { /* a connection exists */
@@ -1018,10 +1018,10 @@ disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
         rodsServerHost->conn = NULL;
     }
     if ( status >= 0 ) {
-        return ( REMOTE_HOST );
+        return REMOTE_HOST;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -1088,34 +1088,34 @@ initZone( rsComm_t *rsComm ) {
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "initZone: rsGenQuery error, status = %d", status );
-        return ( status );
+        return status;
     }
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: NULL genQueryOut" );
-        return ( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
 
     if ( ( zoneName = getSqlResultByInx( genQueryOut, COL_ZONE_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_TYPE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( zoneConn = getSqlResultByInx( genQueryOut, COL_ZONE_CONNECTION ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_CONNECTION failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( zoneComment = getSqlResultByInx( genQueryOut, COL_ZONE_COMMENT ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_COMMENT failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -1177,7 +1177,7 @@ initZone( rsComm_t *rsComm ) {
 
     freeGenQueryOut( &genQueryOut );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1208,7 +1208,7 @@ queZone( char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
             rodsLog( LOG_ERROR,
                      "queZone:  Bad input portNum %d for %s", portNum, zoneName );
             free( myZoneInfo );
-            return ( SYS_INVALID_SERVER_HOST );
+            return SYS_INVALID_SERVER_HOST;
         }
     }
     else {
@@ -1234,10 +1234,10 @@ queZone( char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
     if ( masterServerHost == NULL ) {
         rodsLog( LOG_DEBUG,
                  "queZone:  masterServerHost for %s is NULL", zoneName );
-        return ( SYS_INVALID_SERVER_HOST );
+        return SYS_INVALID_SERVER_HOST;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -1290,7 +1290,7 @@ setExecArg( char *commandArgv, char *av[] ) {
 
     av[inx] = NULL;     /* terminate with a NULL */
 
-    return ( 0 );
+    return 0;
 }
 int
 initAgent( int processType, rsComm_t *rsComm ) {
@@ -1305,7 +1305,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initServerInfo error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
     initL1desc();
@@ -1316,7 +1316,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initFileDesc error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 #ifdef TAR_STRUCT_FILE
 //    initStructFileDesc ();
@@ -1327,7 +1327,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initRuleEngine error, status = %d", status );
-        return( status );
+        return status;
     }
 
     memset( &rei, 0, sizeof( rei ) );
@@ -1341,7 +1341,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
             rodsLog( LOG_ERROR,
                      "initAgent: acChkHostAccessControl error, status = %d",
                      status );
-            return ( status );
+            return status;
         }
     }
 
@@ -1385,10 +1385,10 @@ initAgent( int processType, rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "initAgent: acSetPublicUserPolicy error, status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
-    return ( status );
+    return status;
 }
 
 void
@@ -1482,7 +1482,7 @@ initHostConfigByFile( rsComm_t *rsComm ) {
         rodsLog( LOG_NOTICE,
                  "Cannot open HOST_CONFIG_FILE  file %s. errno = %d\n",
                  cfg_file.c_str(), errno );
-        return ( SYS_CONFIG_FILE_ERR );
+        return SYS_CONFIG_FILE_ERR;
     }
 
     while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
@@ -1511,7 +1511,7 @@ initHostConfigByFile( rsComm_t *rsComm ) {
         }
     }
     fclose( fptr );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1520,7 +1520,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
     int status;
 
     if ( myRodsServerHost == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( myRodsServerHost->localFlag == LOCAL_HOST ) {
@@ -1528,7 +1528,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
         while ( tmpRodsServerHost != NULL ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
                 status = queConfigName( tmpRodsServerHost, myRodsServerHost );
-                return ( status );
+                return status;
             }
             tmpRodsServerHost = tmpRodsServerHost->next;
         }
@@ -1553,7 +1553,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
                             tmpRodsServerHost->localFlag;
                         status = queConfigName( tmpRodsServerHost,
                                                 myRodsServerHost );
-                        return ( 0 );
+                        return 0;
                     }
                     tmpHostName = tmpHostName->next;
                 }
@@ -1563,7 +1563,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1584,7 +1584,7 @@ queConfigName( rodsServerHost_t *configServerHost,
         tmpHostName = tmpHostName->next;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1601,7 +1601,7 @@ disconnectAllSvrToSvrConn() {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1615,7 +1615,7 @@ initRsComm( rsComm_t *rsComm ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "initRsComm: getRodsEnv serror, status = %d", status );
-        return ( status );
+        return status;
     }
 
     /* fill in the proxyUser info from myEnv. clientUser has to come from
@@ -1633,7 +1633,7 @@ initRsComm( rsComm_t *rsComm ) {
     rsComm->clientUser.authInfo.authFlag =
         rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
-    return ( 0 );
+    return 0;
 }
 
 void
@@ -1682,7 +1682,7 @@ logFileOpen( int runMode, char *logDir, char *logFileName ) {
 #endif
 
     if ( runMode == SINGLE_PASS && logDir == NULL ) {
-        return ( 1 );
+        return 1;
     }
 
     if ( logFileName == NULL ) {
@@ -1702,11 +1702,11 @@ logFileOpen( int runMode, char *logDir, char *logFileName ) {
     if ( logFd < 0 ) {
         fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
                  logFile, errno );
-        return ( -1 * errno );
+        return -1 * errno;
     }
 
 
-    return ( logFd );
+    return logFd;
 }
 
 int
@@ -1748,7 +1748,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_NEW_SOCK );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rsComm->sock = atoi( tmpStr );
 
@@ -1757,7 +1757,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_CONNECT_CNT );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rsComm->connectCnt = atoi( tmpStr ) + 1;
 
@@ -1766,7 +1766,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_PROTOCOL );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rsComm->irodsProt = ( irodsProt_t )atoi( tmpStr );
 
@@ -1775,7 +1775,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_RECONN_FLAG );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rsComm->reconnFlag = atoi( tmpStr );
 
@@ -1784,7 +1784,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_PROXY_USER );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->proxyUser.userName, tmpStr, NAME_LEN );
         if ( strcmp( tmpStr, PUBLIC_USER_NAME ) == 0 ) {
@@ -1796,7 +1796,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_PROXY_RODS_ZONE );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->proxyUser.rodsZone, tmpStr, NAME_LEN );
 
@@ -1805,7 +1805,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_CLIENT_USER );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->clientUser.userName, tmpStr, NAME_LEN );
         if ( strcmp( tmpStr, PUBLIC_USER_NAME ) == 0 ) {
@@ -1817,7 +1817,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_CLIENT_RODS_ZONE );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->clientUser.rodsZone, tmpStr, NAME_LEN );
 
@@ -1826,7 +1826,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "getstartupPackFromEnv: env %s does not exist",
                      SP_REL_VERSION );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->cliVersion.relVersion, tmpStr, NAME_LEN );
 
@@ -1835,7 +1835,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
             rodsLog( LOG_NOTICE,
                      "initRsCommWithStartupPack: env %s does not exist",
                      SP_API_VERSION );
-            return ( SYS_GETSTARTUP_PACK_ERR );
+            return SYS_GETSTARTUP_PACK_ERR;
         }
         rstrcpy( rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN );
 
@@ -1869,7 +1869,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     }
     rstrcpy( rsComm->clientAddr, tmpStr, NAME_LEN );
 
-    return ( 0 );
+    return 0;
 }
 
 /* getAndConnRemoteZone - get the remote zone host (result given in
@@ -1900,10 +1900,10 @@ getAndConnRemoteZone( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  ( *rodsServerHost )->hostName->name );
     }
     if ( status >= 0 ) {
-        return ( REMOTE_HOST );
+        return REMOTE_HOST;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -1925,12 +1925,12 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         rodsLog( LOG_ERROR,
                  "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
                  srcDataObjInp->objPath );
-        return ( status );
+        return status;
     }
 
     if ( srcIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
         /* local zone. nothing to do */
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     status = getRcatHost( MASTER_RCAT, destDataObjInp->objPath,
@@ -1940,18 +1940,18 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         rodsLog( LOG_ERROR,
                  "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
                  destDataObjInp->objPath );
-        return ( status );
+        return status;
     }
 
     if ( destIcatServerHost->rcatEnabled != REMOTE_ICAT ) {
         /* local zone. nothing to do */
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     /* remote zone to different remote zone copy. Have to handle it
      * locally because of proxy admin user privilege issue */
     if ( srcIcatServerHost != destIcatServerHost ) {
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     /* from the same remote zone. do it in the remote zone */
@@ -1970,7 +1970,7 @@ isLocalZone( char *zoneHint ) {
     status = getRcatHost( MASTER_RCAT, zoneHint, &icatServerHost );
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
-        return ( 0 );
+        return 0;
     }
 
     if ( icatServerHost->rcatEnabled != REMOTE_ICAT ) {
@@ -2013,12 +2013,12 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = getRcatHost( MASTER_RCAT, dataObjInp->objPath, &icatServerHost );
 
     if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
-        return ( status );
+        return status;
     }
 
     if ( icatServerHost->rcatEnabled != REMOTE_ICAT ) {
         /* local zone. nothing to do */
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     status = svrToSvrConnect( rsComm, icatServerHost );
@@ -2045,7 +2045,7 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     free( rescAddr );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -2117,11 +2117,11 @@ getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost ) {
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "getAndConnReHost:getReHost() failed. erro=%d", status );
-        return ( status );
+        return status;
     }
 
     if ( ( *rodsServerHost )->localFlag == LOCAL_HOST ) {
-        return ( LOCAL_HOST );
+        return LOCAL_HOST;
     }
 
     status = svrToSvrConnect( rsComm, *rodsServerHost );
@@ -2132,10 +2132,10 @@ getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost ) {
                  ( *rodsServerHost )->hostName->name );
     }
     if ( status >= 0 ) {
-        return ( REMOTE_HOST );
+        return REMOTE_HOST;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -2167,7 +2167,7 @@ initConnectControl() {
                  conFile );
 #endif
         free( conFile );
-        return ( 0 );
+        return 0;
     }
 
     free( conFile );
@@ -2260,7 +2260,7 @@ initConnectControl() {
     }
 
     fclose( file );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2268,7 +2268,7 @@ chkAllowedUser( char *userName, char *rodsZone ) {
     int status;
 
     if ( userName == NULL || rodsZone == 0 ) {
-        return ( SYS_USER_NOT_ALLOWED_TO_CONN );
+        return SYS_USER_NOT_ALLOWED_TO_CONN;
     }
 
     if ( strlen( userName ) == 0 ) {
@@ -2320,10 +2320,10 @@ matchAllowedUser( char *userName, char *rodsZone,
     }
     if ( tmpAllowedUser == NULL ) {
         /* no match */
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( 1 );
+        return 1;
     }
 }
 
@@ -2353,7 +2353,7 @@ freeAllAllowedUser( struct allowedUser *allowedUserHead ) {
         free( tmpAllowedUser );
         tmpAllowedUser = nextAllowedUser;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2426,7 +2426,7 @@ logAgentProc( rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "logAgentProc: Cannot open input file %s. errno = %d",
                  procPath, errno );
-        return ( UNIX_FILE_OPEN_ERR - errno );
+        return UNIX_FILE_OPEN_ERR - errno;
     }
 
     fprintf( fptr, "%s %s %s %s %s %s %u\n",
@@ -2466,7 +2466,7 @@ readProcLog( int pid, procLog_t *procLog ) {
         rodsLog( LOG_ERROR,
                  "readProcLog: Cannot open input file %s. errno = %d",
                  procPath, errno );
-        return ( UNIX_FILE_OPEN_ERR - errno );
+        return UNIX_FILE_OPEN_ERR - errno;
     }
 
     procLog->pid = pid;
@@ -2499,7 +2499,7 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
     rstrcpy( rsComm->proxyUser.rodsZone, myEnv->rodsZone, NAME_LEN );
     rstrcpy( rsComm->clientUser.rodsZone, myEnv->rodsZone, NAME_LEN );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2552,7 +2552,7 @@ purgeLockFileDir( int chkLockFlag ) {
         rodsLog( LOG_ERROR,
                  "purgeLockFileDir: opendir error for %s, errno = %d",
                  lockFileDir, errno );
-        return ( UNIX_FILE_OPENDIR_ERR - errno );
+        return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &myflock, sizeof( myflock ) );
     myflock.l_whence = SEEK_SET;

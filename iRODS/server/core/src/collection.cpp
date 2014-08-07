@@ -51,7 +51,7 @@ checkCollAccessPerm( rsComm_t *rsComm, char *collection, char *accessPerm ) {
         freeGenQueryOut( &genQueryOut );
     }
 
-    return ( status );
+    return status;
 }
 
 /*
@@ -107,7 +107,7 @@ int trySpecificQueryDataObjInCollReCur(
             result->sqlResult[6].attriInx = COL_D_RESC_HIER;
         }
     }
-    return( status );
+    return status;
 }
 
 
@@ -123,7 +123,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
     if ( genQueryInp == NULL ||
             collection  == NULL ||
             genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -181,7 +181,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
 
     }
 
-    return ( status );
+    return status;
 
 }
 
@@ -192,7 +192,7 @@ rsQueryCollInColl( rsComm_t *rsComm, char *collection,
     int status;
 
     if ( collection == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -207,7 +207,7 @@ rsQueryCollInColl( rsComm_t *rsComm, char *collection,
 
     status =  rsGenQuery( rsComm, genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -232,7 +232,7 @@ isCollEmpty( rsComm_t *rsComm, char *collection ) {
         rodsLog( LOG_ERROR,
                  "isCollEmpty: rsOpenCollection of %s error. status = %d",
                  openCollInp.collName, handleInx );
-        return ( True );
+        return True;
     }
 
     while ( rsReadCollection( rsComm, &handleInx, &collEnt ) >= 0 ) {
@@ -298,49 +298,49 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                            COL_COLL_ID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_COLL_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerName = getSqlResultByInx( genQueryOut,
                                 COL_COLL_OWNER_NAME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
                                 COL_COLL_OWNER_ZONE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_ZONE failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( createTime = getSqlResultByInx( genQueryOut,
                                  COL_COLL_CREATE_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_CREATE_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
                                  COL_COLL_MODIFY_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_MODIFY_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collType = getSqlResultByInx( genQueryOut,
                                COL_COLL_TYPE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_TYPE failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo1 = getSqlResultByInx( genQueryOut,
                                 COL_COLL_INFO1 ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO1 failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo2 = getSqlResultByInx( genQueryOut,
                                 COL_COLL_INFO2 ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO2 failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             rstrcpy( ( *rodsObjStatOut )->dataId, dataId->value, NAME_LEN );
@@ -365,7 +365,7 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     status = queueSpecCollCache( rsComm, genQueryOut, // JMC - backport 4680?
                                                  dataObjInp->objPath );
                     if ( status < 0 ) {
-                        return ( status );
+                        return status;
                     }
                     replSpecColl( &SpecCollCacheHead->specColl,
                                   &( *rodsObjStatOut )->specColl );
@@ -379,7 +379,7 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 }
 
 /* collStatAllKinds - Stat of a collection. The path can be part of a
@@ -536,63 +536,63 @@ rsQueryDirectoryMeta( rsComm_t *rsComm, const char *collection, keyValPair_t *co
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_OBJ_ID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileUid = getSqlResultByInx( genQueryOut,
                                             COL_COLL_FILEMETA_UID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_UID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileGid = getSqlResultByInx( genQueryOut,
                                             COL_COLL_FILEMETA_GID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_GID failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileOwner = getSqlResultByInx( genQueryOut,
                                               COL_COLL_FILEMETA_OWNER ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_OWNER failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileGroup = getSqlResultByInx( genQueryOut,
                                               COL_COLL_FILEMETA_GROUP ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_GROUP failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileMode = getSqlResultByInx( genQueryOut,
                                              COL_COLL_FILEMETA_MODE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_MODE failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileCtime = getSqlResultByInx( genQueryOut,
                                               COL_COLL_FILEMETA_CTIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_CTIME failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileMtime = getSqlResultByInx( genQueryOut,
                                               COL_COLL_FILEMETA_MTIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_MTIME failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( fileSourcePath = getSqlResultByInx( genQueryOut,
                                 COL_COLL_FILEMETA_SOURCE_PATH ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: getSqlResultByInx for COL_COLL_FILEMETA_SOURCE_PATH failed",
                      fname );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         addKeyVal( condInput, FILE_UID_KW, fileUid->value );

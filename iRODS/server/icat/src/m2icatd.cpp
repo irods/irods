@@ -134,7 +134,7 @@ findIndex( char *inLine, char *inItem ) {
     if ( ix > g_max_ix ) {
         g_max_ix = ix;
     }
-    return( ix );
+    return ix;
 }
 
 void
@@ -190,7 +190,7 @@ checkDoCollection( char *inColl ) {
         cp3 = inColl + strlen( testColl );
         if ( cp2 < cp3 ) {
             /* and there are no additional subdirectories */
-            return( 0 );
+            return 0;
         }
     }
     testColl[0] = '/';
@@ -201,7 +201,7 @@ checkDoCollection( char *inColl ) {
         /* if it doesn't start w /zone/ */
         return( 0 );     /* skip it */
     }
-    return( 1 );
+    return 1;
 }
 
 char *
@@ -210,13 +210,13 @@ convertUser( char *inUser, char *inDomain ) {
     static char newUserName[100];
     for ( i = 0; i < nUserNames; i++ ) {
         if ( strcmp( cv_srb_usernames[i], inUser ) == 0 ) {
-            return( cv_irods_usernames[i] );
+            return cv_irods_usernames[i];
         }
     }
     strcpy( newUserName, inUser );
     strcat( newUserName, "#" );
     strcat( newUserName, inDomain );
-    return( newUserName );
+    return newUserName;
 }
 
 char *
@@ -240,7 +240,7 @@ convertTime( char *inTime ) {
         printf( "convertTime checkDateFormat error" );
     }
     /*   printf("Converted to local iRODS integer time: %s\n", myTime); */
-    return( myTime );
+    return myTime;
 }
 
 char *
@@ -293,7 +293,7 @@ convertCollection( char *inColl ) {
         }
     }
     /*   printf("inColl=%s outColl=%s\n",inColl,outColl); */
-    return( outColl );
+    return outColl;
 }
 
 int
@@ -323,20 +323,20 @@ char **argv;
 
     if ( argc < 3 ) {
         printf( "a.out file-in file-out\n" );
-        return( -1 );
+        return -1;
     }
 
     FI = fopen( argv[1], "r" );
     if ( FI == 0 ) {
         fprintf( stderr, "can't open input file %s\n", argv[1] );
-        return( -2 );
+        return -2;
     }
 
     FO = fopen( argv[2], "w" );
     if ( FO == 0 ) {
         fprintf( stderr, "can't open output file %s\n", argv[2] );
         fclose( FI ); // JMC cppcheck - resource
-        return( -3 );
+        return -3;
     }
 
     memset( &buf, 0, ( size_t )sizeof( buf ) );
@@ -352,7 +352,7 @@ char **argv;
                 printf( "This program only handles Spull.log.data type files.\n" );
                 fclose( FO );
                 fclose( FI );
-                return( -4 );
+                return -4;
             }
         }
         if ( nInLines == 2 ) {
@@ -454,7 +454,7 @@ char **argv;
     printf( "Wrote output lines for %d items\n", nOutItems );
     fclose( FI );
     fclose( FO );
-    return( 0 );
+    return 0;
 }
 
 
@@ -489,10 +489,10 @@ isInteger( char *inStr ) {
     /* see if it is all digit */
     for ( i = 0; i < len; i++ ) {
         if ( !isdigit( inStr[i] ) ) {
-            return ( 0 );
+            return 0;
         }
     }
-    return ( 1 );
+    return 1;
 }
 
 int
@@ -527,7 +527,7 @@ localToUnixTime( char *localTime, char *unixTime ) {
     else {
         snprintf( unixTime, TIME_LEN, "%d", ( uint ) newTime );
     }
-    return ( 0 );
+    return 0;
 }
 
 
@@ -559,7 +559,7 @@ checkDateFormat( char *s ) {
     int offset = 0;
 
     if ( isInteger( s ) ) {
-        return ( 0 );
+        return 0;
     }
 
     len = strlen( s );
@@ -616,7 +616,7 @@ checkDateFormat( char *s ) {
                     offset += s[mypos] - 48;
                 }
                 else {
-                    return ( DATE_FORMAT_ERR );
+                    return DATE_FORMAT_ERR;
                 }
 
                 mypos--;
@@ -625,7 +625,7 @@ checkDateFormat( char *s ) {
                         offset += 10 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -634,7 +634,7 @@ checkDateFormat( char *s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != ':' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* min */
@@ -644,7 +644,7 @@ checkDateFormat( char *s ) {
                         offset += 60 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -656,7 +656,7 @@ checkDateFormat( char *s ) {
                         offset += 10 * 60 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -665,7 +665,7 @@ checkDateFormat( char *s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != ':' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* hour */
@@ -675,7 +675,7 @@ checkDateFormat( char *s ) {
                         offset += 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -687,7 +687,7 @@ checkDateFormat( char *s ) {
                         offset += 10 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -696,7 +696,7 @@ checkDateFormat( char *s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != '.' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* day */
@@ -707,7 +707,7 @@ checkDateFormat( char *s ) {
                         offset += 24 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -719,14 +719,14 @@ checkDateFormat( char *s ) {
                         offset += 10 * 24 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
                 }
             }
             snprintf( s, 19, "%d", offset );
-            return ( 0 );
+            return 0;
         }
     }
 
@@ -740,9 +740,9 @@ checkDateFormat( char *s ) {
         if ( status >= 0 ) {
             strncpy( s, outUnixTime, TIME_LEN );
         }
-        return( status );
+        return status;
     }
     else {
-        return( DATE_FORMAT_ERR );
+        return DATE_FORMAT_ERR;
     }
 }

@@ -2209,11 +2209,11 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
 
     switch ( typ ) {
     case BRAC:
-        return( arg1 );
+        return arg1;
         break;
     case STLIST:
         if ( arg2 == NULL ) {
-            return( arg1 );
+            return arg1;
         }
         else {
             if ( ( t = strstr( arg1, ":::" ) ) != NULL ) {
@@ -2401,7 +2401,7 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
         break;
     case RLLIST:
         if ( arg2 == NULL ) {
-            return( arg1 );
+            return arg1;
         }
         else {
             sprintf( tmpStr, "%s\n%s", arg1, arg2 );
@@ -2424,7 +2424,7 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
             }
             if ( arg3 == NULL ) {
                 if ( !strcmp( u, " " ) ) {
-                    return( arg1 );
+                    return arg1;
                 }
                 else {
                     if ( ( t = strstr( u, ":::" ) ) != NULL ) {
@@ -2495,7 +2495,7 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
         break;
     case MICSER:
         if ( arg2 == NULL ) {
-            return( arg1 );
+            return arg1;
         }
         else {
             sprintf( tmpStr, "%s(%s)", arg1, arg2 );
@@ -2503,7 +2503,7 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
         break;
     case ARGVAL:
         if ( arg2 == NULL ) {
-            return( arg1 );
+            return arg1;
         }
         else {
             sprintf( tmpStr, "%s,%s", arg1, arg2 );
@@ -2562,7 +2562,7 @@ void *stitch( int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4
     if ( yydebug == 1 ) {
         printf( "AAA:%i: %s\n", typ, tmpStr );
     }
-    return( s );
+    return s;
 
 }
 
@@ -2580,7 +2580,7 @@ print_final( char *out, char* input, char *output ) {
     }
     fprintf( outf, "%s\n", s );
     fprintf( outf, "%s\n%s\n", input, output );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -2595,7 +2595,7 @@ stripEndQuotes( char *s ) {
         }
     }
     /* made it so that end quotes are removed only if quoted initially */
-    return ( 0 );
+    return 0;
 }
 
 int

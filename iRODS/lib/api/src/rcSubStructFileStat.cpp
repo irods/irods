@@ -10,5 +10,5 @@ rcSubStructFileStat( rcComm_t *conn, subFile_t *subFile,
     status = procApiRequest( conn, SUB_STRUCT_FILE_STAT_AN, subFile, NULL,
                              ( void ** ) subStructFileStatOut, NULL );
 
-    return ( status );
+    return status;
 }

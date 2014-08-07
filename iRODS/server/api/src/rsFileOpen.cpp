@@ -31,11 +31,11 @@ rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp ) {
 
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else {
         fileInx = rsFileOpenByHost( rsComm, fileOpenInp, rodsServerHost );
-        return ( fileInx );
+        return fileInx;
     }
 }
 
@@ -49,7 +49,7 @@ rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsFileOpenByHost: Input NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remoteFlag = rodsServerHost->localFlag;
@@ -62,23 +62,23 @@ rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileOpenByHost: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     if ( fd < 0 ) {
-        return ( fd );
+        return fd;
     }
     fileInx = allocAndFillFileDesc( rodsServerHost, fileOpenInp->objPath, fileOpenInp->fileName, fileOpenInp->resc_hier_,
                                     fd, fileOpenInp->mode );
 
-    return ( fileInx );
+    return fileInx;
 }
 
 int

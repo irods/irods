@@ -16,7 +16,7 @@ rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -35,7 +35,7 @@ rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
         rodsLog( LOG_NOTICE,
                  "rsGeneralRowInsert: rcGeneralRowInsert failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -58,13 +58,13 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
                                    generalRowInsertInp->arg7,
                                    generalRowInsertInp->arg8,
                                    generalRowInsertInp->arg9 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "serverloaddigest" ) == 0 ) {
         status = chlRegServerLoadDigest( rsComm,
                                          generalRowInsertInp->arg1,
                                          generalRowInsertInp->arg2 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "ruleTable" ) == 0 ) {
         status = chlInsRuleTable( rsComm,
@@ -77,13 +77,13 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
                                   generalRowInsertInp->arg7,
                                   generalRowInsertInp->arg8,
                                   generalRowInsertInp->arg9 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "versionRuleBase" ) == 0 ) {
         status = chlVersionRuleBase( rsComm,
                                      generalRowInsertInp->arg1,
                                      generalRowInsertInp->arg2 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "dvmTable" ) == 0 ) {
         status = chlInsDvmTable( rsComm,
@@ -92,13 +92,13 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
                                  generalRowInsertInp->arg3,
                                  generalRowInsertInp->arg4,
                                  generalRowInsertInp->arg5 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "versionDVMBase" ) == 0 ) {
         status = chlVersionDvmBase( rsComm,
                                     generalRowInsertInp->arg1,
                                     generalRowInsertInp->arg2 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "fnmTable" ) == 0 ) {
         status = chlInsFnmTable( rsComm,
@@ -106,13 +106,13 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
                                  generalRowInsertInp->arg2,
                                  generalRowInsertInp->arg3,
                                  generalRowInsertInp->arg4 );
-        return( status );
+        return status;
     }
     if ( strcmp( generalRowInsertInp->tableName, "versionFNMBase" ) == 0 ) {
         status = chlVersionFnmBase( rsComm,
                                     generalRowInsertInp->arg1,
                                     generalRowInsertInp->arg2 );
-        return( status );
+        return status;
     }
 
     if ( strcmp( generalRowInsertInp->tableName, "msrvcTable" ) == 0 ) {
@@ -127,8 +127,8 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
                                    generalRowInsertInp->arg8,
                                    generalRowInsertInp->arg9,
                                    generalRowInsertInp->arg10 );
-        return( status );
+        return status;
     }
-    return( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 #endif

@@ -10,5 +10,5 @@ rcStructFileExtAndReg( rcComm_t *conn,
     status = procApiRequest( conn, STRUCT_FILE_EXT_AND_REG_AN,
                              structFileExtAndRegInp, NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

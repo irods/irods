@@ -11,5 +11,5 @@ rcChkNVPathPerm( rcComm_t *conn, fileOpenInp_t *chkNVPathPermInp ) {
     status = procApiRequest( conn, CHK_N_V_PATH_PERM_AN,
                              chkNVPathPermInp, NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

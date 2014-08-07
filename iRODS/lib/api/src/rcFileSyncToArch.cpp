@@ -9,5 +9,5 @@ rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyn
     status = procApiRequest( conn, FILE_SYNC_TO_ARCH_AN,
                              fileSyncToArchInp, NULL, ( void** )_fn, NULL );
 
-    return ( status );
+    return status;
 }

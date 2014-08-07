@@ -102,7 +102,7 @@ main( int argc, char **argv ) {
         exit( 6 );
     }
 
-    return( 0 );
+    return 0;
 }
 
 /* Check to see if a collection exists */
@@ -135,7 +135,7 @@ checkColl( rcComm_t *Conn, char *path ) {
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-    return( status );
+    return status;
 }
 
 void usage( char *prog ) {

@@ -27,19 +27,19 @@ rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileMkdir: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int
@@ -103,7 +103,7 @@ int _rsFileMkdir(
         }
     }
 
-    return ( mkdir_err.code() );
+    return mkdir_err.code();
 
 } // _rsFileMkdir
 

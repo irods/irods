@@ -43,7 +43,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_OPEN );
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         openStat_t *openStat = NULL;
@@ -57,7 +57,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         if ( openStat != NULL ) {
             free( openStat );
         }
-        return ( l1descInx );
+        return l1descInx;
     }
     else {
         // =-=-=-=-=-=-=-
@@ -84,7 +84,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     }
 
-    return ( l1descInx );
+    return l1descInx;
 }
 
 /* _rsDataObjOpen - handle internal server dataObj open request.
@@ -153,7 +153,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 rsDataObjUnlock( rsComm, dataObjInp, lockFd );
             }
         }
-        return ( status );
+        return status;
         // =-=-=-=-=-=-=-
     }
     else {
@@ -269,7 +269,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 }
             }
             // =-=-=-=-=-=-=-
-            return ( l1descInx );
+            return l1descInx;
 
         } // if status >= 0
 
@@ -278,7 +278,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     freeAllDataObjInfo( otherDataObjInfo );
 
-    return ( status );
+    return status;
 } // BAD
 
 /* _rsDataObjOpenWithObjInfo - given a dataObjInfo, open a single copy
@@ -333,10 +333,10 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( status < 0 ) {
         freeL1desc( l1descInx );
-        return ( status );
+        return status;
     }
     else {
-        return ( l1descInx );
+        return l1descInx;
     }
 }
 
@@ -352,11 +352,11 @@ dataOpen( rsComm_t *rsComm, int l1descInx ) {
         rodsLog( LOG_NOTICE,
                  "dataOpen: l3Open of %s failed, status = %d",
                  myDataObjInfo->filePath, status );
-        return ( status );
+        return status;
     }
     else {
         L1desc[l1descInx].l3descInx = status;
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -390,7 +390,7 @@ l3Open( rsComm_t *rsComm, int l1descInx ) {
         flags = getFileFlags( l1descInx );
         l3descInx = _l3Open( rsComm, dataObjInfo, mode, flags );
     }
-    return ( l3descInx );
+    return l3descInx;
 }
 
 int
@@ -418,7 +418,7 @@ _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags ) {
     rstrcpy( fileOpenInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
     l3descInx = rsFileOpen( rsComm, &fileOpenInp );
 
-    return ( l3descInx );
+    return l3descInx;
 }
 
 /* l3OpenByHost - call level3 open - this differs from l3Open in that
@@ -439,7 +439,7 @@ l3OpenByHost( rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags ) {
     newL3descInx = rsFileOpenByHost( rsComm, &fileOpenInp,
                                      FileDesc[l3descInx].rodsServerHost );
 
-    return ( newL3descInx );
+    return newL3descInx;
 }
 
 int
@@ -464,7 +464,7 @@ applyPreprocRuleForOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     else {
         *dataObjInfoHead = rei.doi;
     }
-    return ( status );
+    return status;
 }
 
 /* createEmptyRepl - Physically create a zero length file and register

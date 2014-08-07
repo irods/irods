@@ -15,7 +15,7 @@ void *mallocAndZero( int s ) {
     void *t;
     t = malloc( s );
     memset( t, 0, s );
-    return( t );
+    return t;
 }
 
 int
@@ -102,14 +102,14 @@ copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to ) {
     else {
         to->next = NULL;
     }
-    return( 0 );
+    return 0;
 }
 
 int
 freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
     freeRuleExecInfoInternals( rs, freeSpeialStructFlag );
     free( rs );
-    return( 0 );
+    return 0;
 }
 int
 freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
@@ -147,7 +147,7 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
     if ( rs->next != NULL ) {
         freeRuleExecInfoStruct( rs->next, freeSpeialStructFlag );
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -160,7 +160,7 @@ copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to ) {
     else {
         to->next = NULL;
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -174,7 +174,7 @@ copyCollInfo( collInfo_t *from, collInfo_t *to ) {
     else {
         to->next = NULL;
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -188,7 +188,7 @@ copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to ) {
     else {
         to->next = NULL;
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -199,7 +199,7 @@ freeCollInfo( collInfo_t *rs ) {
         freeCollInfo( rs->next );
     }
     free( rs );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -211,7 +211,7 @@ freeRescGrpInfo( rescGrpInfo_t *rs ) {
         delete rs->rescInfo;
     }
     free( rs );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -219,14 +219,14 @@ copyUserInfo( userInfo_t *from, userInfo_t *to ) {
     *to = *from;
     to->authInfo = from->authInfo;
     to->userOtherInfo = from->userOtherInfo;
-    return( 0 );
+    return 0;
 }
 
 
 int
 freeUserInfo( userInfo_t *rs ) {
     free( rs );
-    return( 0 );
+    return 0;
 }
 
 
@@ -234,14 +234,14 @@ freeUserInfo( userInfo_t *rs ) {
 int
 copyRescInfo( rescInfo_t *from, rescInfo_t *to ) {
     *to = *from;
-    return( 0 );
+    return 0;
 }
 
 
 int
 freeRescInfo( rescInfo_t *rs ) {
     free( rs );
-    return( 0 );
+    return 0;
 }
 
 
@@ -249,13 +249,13 @@ freeRescInfo( rescInfo_t *rs ) {
 int
 copyKeyValPairStruct( keyValPair_t *from, keyValPair_t *to ) {
     *to = *from;
-    return( 0 );
+    return 0;
 }
 
 int
 freeKeyValPairStruct( keyValPair_t *rs ) {
     free( rs );
-    return( 0 );
+    return 0;
 }
 
 
@@ -264,7 +264,7 @@ int
 zeroRuleExecInfoStruct( ruleExecInfo_t *rei ) {
 
     memset( rei, 0, sizeof( ruleExecInfo_t ) );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -278,7 +278,7 @@ initReiWithDataObjInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
         rei->uoip = &rsComm->proxyUser;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -306,7 +306,7 @@ initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
         rei->uoip = &rsComm->proxyUser;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -315,7 +315,7 @@ packRei( rsComm_t *rsComm, ruleExecInfo_t *rei,
     int status;
 
     if ( packedReiBBuf == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* pack the rei */
@@ -326,10 +326,10 @@ packRei( rsComm_t *rsComm, ruleExecInfo_t *rei,
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "packRei: packStruct error. status = %d", status );
-        return ( status );
+        return status;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -338,7 +338,7 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
     int status;
 
     if ( packedReiBBuf == NULL || rei == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* unpack the rei */
@@ -350,14 +350,14 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "unpackRei: unpackStruct error. status = %d", status );
-        return ( status );
+        return status;
     }
 
     /* try to touch up the unpacked rei */
 
     status = touchupPackedRei( rsComm, *rei );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -369,13 +369,13 @@ packReiAndArg( rsComm_t *rsComm, ruleExecInfo_t *rei, char *myArgv[],
     if ( packedReiAndArgBBuf == NULL ) {
         rodsLog( LOG_ERROR,
                  "packReiAndArg: NULL packedReiAndArgBBuf input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( myArgc > 0 && ( myArgv == NULL || *myArgv == NULL ) ) {
         rodsLog( LOG_ERROR,
                  "packReiAndArg: NULL myArgv input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     memset( &reiAndArg, 0, sizeof( reiAndArg ) );
@@ -393,10 +393,10 @@ packReiAndArg( rsComm_t *rsComm, ruleExecInfo_t *rei, char *myArgv[],
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "packReiAndArg: packStruct error. status = %d", status );
-        return ( status );
+        return status;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -406,7 +406,7 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
     /*ruleExecInfo_t *myRei;*/
 
     if ( packedReiAndArgBBuf == NULL || reiAndArg == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* unpack the reiAndArg */
@@ -417,14 +417,14 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "unpackReiAndArg: unpackStruct error. status = %d", status );
-        return ( status );
+        return status;
     }
 
     /* try to touch up the unpacked rei */
 
     status = touchupPackedRei( rsComm, ( *reiAndArg )->rei );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -433,7 +433,7 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
     rescInfo_t *rescInfo = NULL;
 
     if ( myRei == NULL || rsComm == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( myRei->rsComm != NULL ) {
@@ -501,7 +501,7 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
             myRei->next = NULL;
         }
     }
-    return ( savedStatus );
+    return savedStatus;
 }
 
 
@@ -514,19 +514,19 @@ copyTaggedValue( char *str, char *tag, char *buf, int bufLen ) {
     snprintf( tVal, NAME_LEN, "<%s>", tag );
     if ( ( t = strstr( str, tVal ) ) == NULL ) {
         if ( strcmp( tag, "KVALPR" ) ) {
-            return( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             while ( ( t = strstr( str, "<_____X>" ) ) != NULL ) {
                 memcpy( t + 1, tag, 6 );
             }
         }
-        return( -1 );
+        return -1;
     }
     s = t + strlen( tVal );
     snprintf( tVal, NAME_LEN, "</%s>", tag );
     if ( ( u = strstr( str, tVal ) ) == NULL ) {
-        return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
     *u = '\0';
     strncpy( buf, s, bufLen );
@@ -534,7 +534,7 @@ copyTaggedValue( char *str, char *tag, char *buf, int bufLen ) {
     if ( !strcmp( tag, "KVALPR" ) ) {
         memcpy( t + 1, "_____X", 6 );
     }
-    return( 0 );
+    return 0;
 
 }
 int
@@ -556,50 +556,50 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     i = copyTaggedValue( delayCondition, "EA", ruleSubmitInfo->exeAddress, NAME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX )  {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     i = copyTaggedValue( delayCondition, "ET", ruleSubmitInfo->exeTime, TIME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     else if ( i == 0 ) {
         i  = checkDateFormat( ruleSubmitInfo->exeTime );
         if ( i != 0 ) {
             free( delayCondition ); // JMC cppcheck - leak
-            return( i );
+            return i;
         }
 
     }
     i = copyTaggedValue( delayCondition, "EF", ruleSubmitInfo->exeFrequency, NAME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     i = copyTaggedValue( delayCondition, "PRI", ruleSubmitInfo->priority, NAME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     i = copyTaggedValue( delayCondition, "EET", ruleSubmitInfo->estimateExeTime, NAME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     i = copyTaggedValue( delayCondition, "NA", ruleSubmitInfo->notificationAddr, NAME_LEN );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     i = copyTaggedValue( delayCondition, "PLUSET", kwp, NAME_LEN * 2 );
     if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
         free( delayCondition ); // JMC cppcheck - leak
-        return( i );
+        return i;
     }
     else if ( i == 0 ) {
         i  = checkDateFormat( kwp );
         if ( i != 0 ) {
-            return( i );
+            return i;
         }
         getOffsetTimeStr( ruleSubmitInfo->exeTime, kwp );
     }
@@ -607,7 +607,7 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     while ( i >= 0 ) {
         if ( ( t = strstr( kwp, "=" ) ) == NULL ) {
             free( delayCondition );
-            return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+            return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
         *t = '\0';
         s = t - 1;
@@ -635,14 +635,14 @@ fillSubmitConditions( char *action, char *inDelayCondition,
         }
     }
     free( delayCondition );
-    return( 0 );
+    return 0;
 }
 
 
 int
 pushStack( strArray_t *strArray, char *value ) {
 
-    return( addStrArray( strArray, value ) );
+    return addStrArray( strArray, value );
 
 }
 
@@ -653,18 +653,18 @@ popStack( strArray_t *strArray, char *value ) {
         rodsLog( LOG_ERROR,
                  "popStack: Stack is empty: invalid size %d, len %d",
                  strArray->size, strArray->len );
-        return( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     rstrcpy( value, &strArray->value[( strArray->len - 1 ) * strArray->size], strArray->size );
     strArray->len--;
-    return( 0 );
+    return 0;
 
 }
 
 int
 clearMsparamInRei( ruleExecInfo_t *rei ) {
     if ( rei == NULL || rei->msParamArray == NULL ) {
-        return ( 0 );
+        return 0;
     }
     /* need to use 0 on delStruct flag or core dump in when called by
      * finalizeMsParamNew */
@@ -673,6 +673,6 @@ clearMsparamInRei( ruleExecInfo_t *rei ) {
 
     rei->msParamArray = NULL;
 
-    return ( 0 );
+    return 0;
 }
 

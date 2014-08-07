@@ -20,23 +20,23 @@ msiGetClosestResourceToClient( ruleExecInfo_t *rei ) {
         if ( strlen( rei->uoic->authInfo.host ) != 0 && strcmp( rei->uoic->authInfo.host, "null" ) ) {
             sprintf( rei->doi->rescName, "closest-resource-to-%s", rei->uoic->authInfo.host );
             if ( reLoopBackFlag > 0 ) {
-                return( 0 );
+                return 0;
             }
         }
         else {
             if ( reLoopBackFlag > 0 ) {
-                return( ACTION_FAILED_ERR );
+                return ACTION_FAILED_ERR;
             }
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( ACTION_FAILED_ERR );
+    return ACTION_FAILED_ERR;
 }
 
 
 int
 msiNullAction( ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 
 
@@ -54,12 +54,12 @@ msiDeleteData( ruleExecInfo_t *rei ) {
             print_doi( rei->doi );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -72,12 +72,12 @@ recover_msiDeleteData( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_chlDelDataObj\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -96,12 +96,12 @@ msiInheritCollACL( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     From Coll = %s\n", logicalDirName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -114,12 +114,12 @@ recover_msiInheritCollACL( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiInheritCollACL\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -138,12 +138,12 @@ msiInheritDescriptiveMetadataFromColl( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     From Coll = %s\n", logicalDirName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -156,11 +156,11 @@ recover_msiInheritDescriptiveMetadataFromColl( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiInheritDescriptiveMetadataFromColl\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 
 }
 int
@@ -172,12 +172,12 @@ msiComputeChecksum( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiComputeChecksum\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -190,12 +190,12 @@ recover_msiComputeChecksum( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiComputeChecksum\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -214,12 +214,12 @@ msiAddACLForDataToUser( msParam_t* xuser, msParam_t* xaccess, ruleExecInfo_t *re
             rodsLog( LOG_NOTICE, "     To     User = %s With Access = %s\n", user, access );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -236,12 +236,12 @@ recover_msiAddACLForDataToUser( msParam_t* xuser, msParam_t* xaccess, ruleExecIn
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiAddACLForDataToUser\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -256,12 +256,12 @@ msiTurnAuditTrailOn( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling TurnAuditTrailOn\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -274,12 +274,12 @@ recover_msiTurnAuditTrailOn( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiTurnAuditTrailOn\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -290,12 +290,12 @@ msiTurnAuditTrailOff( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling TurnAuditTrailOff\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -308,12 +308,12 @@ recover_msiTurnAuditTrailOff( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiTurnAuditTrailOff\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -325,12 +325,12 @@ msiGetDefaultResourceForData( ruleExecInfo_t *rei ) {
         }
         strcpy( rei->doi->rescName, "default-resource" );
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
     strcpy( rei->doi->rescName, "default-resource" );
-    return( 0 );
+    return 0;
 }
 
 int msiExtractMetadataForFitsImage( ruleExecInfo_t *rei ) {
@@ -340,11 +340,11 @@ int msiExtractMetadataForFitsImage( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling ExtractMetadataForFitsImage\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiExtractMetadataForDicomData( ruleExecInfo_t *rei ) {
@@ -354,11 +354,11 @@ int msiExtractMetadataForDicomData( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling ExtractMetadataForDicomData\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiExtractMetadataForEmail( ruleExecInfo_t *rei ) {
@@ -368,11 +368,11 @@ int msiExtractMetadataForEmail( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling ExtractMetadataForEmail\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiExtractMetadataForCongressionalRecords( ruleExecInfo_t *rei ) {
@@ -382,11 +382,11 @@ int msiExtractMetadataForCongressionalRecords( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling ExtractMetadataForCongressionalRecords\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiCheckQuota( ruleExecInfo_t *rei ) {
@@ -396,11 +396,11 @@ int msiCheckQuota( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling CheckQuota\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiReplicateData( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -415,11 +415,11 @@ int msiReplicateData( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     in Resc = %\n", rescName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiNotifyByEmail( msParam_t* xemail, msParam_t* xmessage, ruleExecInfo_t *rei ) {
@@ -437,11 +437,11 @@ int msiNotifyByEmail( msParam_t* xemail, msParam_t* xmessage, ruleExecInfo_t *re
             rodsLog( LOG_NOTICE, "     To Email=%s With Message =%s", email, message );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiLinkObjectToCollection( msParam_t* xcollName, ruleExecInfo_t *rei ) {
@@ -455,11 +455,11 @@ int msiLinkObjectToCollection( msParam_t* xcollName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     To Collection=%s", collName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiCreateThumbNail( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -473,11 +473,11 @@ int msiCreateThumbNail( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     To Resc = %\n", rescName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiCreateAbstract( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -491,11 +491,11 @@ int msiCreateAbstract( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     To Resc = %\n", rescName );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -520,11 +520,11 @@ int msiOutSource( msParam_t* xremoteHostInfo, msParam_t* xactionList, ruleExecIn
             rodsLog( LOG_NOTICE, "     To  Host = %s\n", remoteHostInfo );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiAsynchExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) {
@@ -545,11 +545,11 @@ int msiAsynchExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     For Actions = %s\n", actionList );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int msiParallelExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) {
@@ -570,11 +570,11 @@ int msiParallelExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     For Actions = %s\n", actionList );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int orExec( msParam_t* xactionList, msParam_t *orSuccNum, ruleExecInfo_t *rei ) {
@@ -595,11 +595,11 @@ int orExec( msParam_t* xactionList, msParam_t *orSuccNum, ruleExecInfo_t *rei ) 
             rodsLog( LOG_NOTICE, "     For Actions = %s\n", actionList );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -622,11 +622,11 @@ int notExec( msParam_t* xactionList, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "     For Actions = %s\n", actionList );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -637,11 +637,11 @@ int recover_msiExtractMetadataForFitsImage( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiExtractMetadataForFitsImage\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiExtractMetadataForDicomData( ruleExecInfo_t *rei ) {
@@ -651,11 +651,11 @@ int recover_msiExtractMetadataForDicomData( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiExtractMetadataForDicomData\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiExtractMetadataForEmail( ruleExecInfo_t *rei ) {
@@ -665,11 +665,11 @@ int recover_msiExtractMetadataForEmail( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiExtractMetadataForEmail\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiExtractMetadataForCongressionalRecords( ruleExecInfo_t *rei ) {
@@ -679,11 +679,11 @@ int recover_msiExtractMetadataForCongressionalRecords( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiExtractMetadataForCongressionalRecords\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiCheckQuota( ruleExecInfo_t *rei ) {
@@ -693,11 +693,11 @@ int recover_msiCheckQuota( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiCheckQuota\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiReplicateData( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -710,11 +710,11 @@ int recover_msiReplicateData( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiReplicateData\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiNotifyByEmail( msParam_t* xemail, msParam_t* xmessage, ruleExecInfo_t *rei ) {
@@ -729,11 +729,11 @@ int recover_msiNotifyByEmail( msParam_t* xemail, msParam_t* xmessage, ruleExecIn
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiNotifyByEmail\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiLinkObjectToCollection( msParam_t* xcollName, ruleExecInfo_t *rei ) {
@@ -746,11 +746,11 @@ int recover_msiLinkObjectToCollection( msParam_t* xcollName, ruleExecInfo_t *rei
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiLinkObjectToCollection\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiCreateThumbNail( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -763,11 +763,11 @@ int recover_msiCreateThumbNail( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiCreateThumbNail\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiCreateAbstract( msParam_t* xrescName, ruleExecInfo_t *rei ) {
@@ -780,11 +780,11 @@ int recover_msiCreateAbstract( msParam_t* xrescName, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiCreateAbstract\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei ) {
@@ -801,11 +801,11 @@ int recover_msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t*
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiSendMailCollByAdmin\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -822,11 +822,11 @@ int recover_msiOutSource( msParam_t* xremoteHostInfo, msParam_t* xactionList, ru
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiOutSource\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -840,11 +840,11 @@ int recover_msiAsynchExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiAsynchExecution\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -858,11 +858,11 @@ int recover_msiParallelExecution( msParam_t* xactionList, ruleExecInfo_t *rei ) 
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiParallelExecution\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_orExec( msParam_t* xactionList, msParam_t *orSuccNum, ruleExecInfo_t *rei ) {
@@ -875,11 +875,11 @@ int recover_orExec( msParam_t* xactionList, msParam_t *orSuccNum, ruleExecInfo_t
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_orExec\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 int recover_notExec( msParam_t* xactionList, ruleExecInfo_t *rei ) {
@@ -892,34 +892,34 @@ int recover_notExec( msParam_t* xactionList, ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_notExec\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 int writeExec( msParam_t* where, msParam_t* format, msParam_t* argsList, ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 
 int remoteExec( msParam_t* where, msParam_t* workflow,
                 msParam_t* recoverWorkFlow, ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 int parallelExec( msParam_t* condition, msParam_t* workflow,
                   msParam_t* recoverWorkFlow, ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 int oneOfExec( msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
                ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 int someOfExec( msParam_t* number, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
                 ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 int readExec( msParam_t* where, msParam_t* format, msParam_t* argsList, ruleExecInfo_t *rei ) {
-    return( 0 );
+    return 0;
 }
 
 
@@ -930,11 +930,11 @@ int recover_msiCreateUser( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiCreateUser\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 
 
@@ -950,11 +950,11 @@ int recover_msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ru
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiCreateCollByAdmin\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
-    return( 0 );
+    return 0;
 }
 int msiGetNewObjDescriptor( ruleExecInfo_t *rei ) {
 
@@ -966,20 +966,20 @@ int msiGetNewObjDescriptor( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiGetNewObjDescriptor\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
     i = allocL1desc();
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     rei->l1descInx = i;
     i = fillL1desc( i, rei->doinp, rei->doi, NEWLY_CREATED_COPY, rei->doinp->dataSize );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
-    return( 0 );
+    return 0;
 }
 
 int msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
@@ -994,7 +994,7 @@ int msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiPhyDataObjCreate\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -1003,19 +1003,19 @@ int msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
 
     status = getFilePathName( rei->rsComm, rei->doi, L1desc[rei->l1descInx].dataObjInp );
     if ( status < 0 ) {
-        return( 0 );
+        return 0;
     }
     status = l3Create( rei->rsComm, rei->l1descInx );
     if ( status <= 0 ) {
         rodsLog( LOG_NOTICE,
                  "msiPhyDataObjCreate: l3Create of %s failed, status = %d",
                  myDataObjInfo->filePath, status );
-        return ( status );
+        return status;
     }
     else {
         L1desc[rei->l1descInx].l3descInx = status;
     }
-    return( 0 );
+    return 0;
 }
 
 int msiSetResourceList( ruleExecInfo_t *rei ) {
@@ -1028,7 +1028,7 @@ int msiSetResourceList( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiSetResourceList\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -1039,12 +1039,12 @@ int msiSetResourceList( ruleExecInfo_t *rei ) {
     status = getRescInfo( rei->rsComm,
                           NULL, &rei->doinp->condInput, &myRescGrpInfo );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     sortResc( &myRescGrpInfo, &rei->doinp->condInput, NULL );
     rstrcpy( rei->doi->rescName, myRescGrpInfo->rescInfo->rescName, NAME_LEN );
     rei->rgi = myRescGrpInfo;
-    return( 0 );
+    return 0;
 }
 
 
@@ -1055,14 +1055,14 @@ int recover_msiGetNewObjDescriptor( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiGetNewObjDescriptor\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
 
     freeL1desc( rei->l1descInx ); /* free the  obj descriptor */
-    return( 0 );
+    return 0;
 }
 
 int recover_msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
@@ -1073,7 +1073,7 @@ int recover_msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiPhyDataObjCreate\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -1082,7 +1082,7 @@ int recover_msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
     /*WHAT SHOULD THIS DO:  remove the physical file from device***/
 
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -1094,11 +1094,11 @@ int recover_msiSetResourceList( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   ROLLBACK:Calling recover_msiSetResourceList\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
 
     /* WHAT SHOULD THIS DO:  ????  */
-    return( 0 );
+    return 0;
 }

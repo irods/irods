@@ -137,7 +137,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( 0 );
+    return 0;
 }
 
 int strSplit( char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN] ) {
@@ -233,9 +233,9 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
         ( *nlist ) = l;
         clearGenQueryInp( &genQueryInp );
         freeGenQueryOut( &genQueryOut );
-        return ( 0 );
+        return 0;
     }
-    return ( -1 );
+    return -1;
 }
 
 void *startMonScript( void *arg ) {
@@ -335,7 +335,7 @@ int checkIPaddress( char *IP, unsigned char IPcomp[IPV4] ) {
     if ( ( nelt + 1 ) != IPV4 ) {
         return -1;
     }
-    return ( 0 );
+    return 0;
 
 }
 
@@ -365,7 +365,7 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
     if ( fp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "hostAuthCheck: can't open HostControlAccess file %s", cfg_file.c_str() );
-        return ( UNIX_FILE_OPEN_ERR - errno );
+        return UNIX_FILE_OPEN_ERR - errno;
     }
     /* parse the list of groups for the user from the groupsname char */
     nelt = 0;
@@ -409,7 +409,7 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
                             }
                             if ( iok == 1 ) {
                                 fclose( fp );    // JMC cppcheck - resource
-                                return ( 0 );
+                                return 0;
                             }
                         }
                     }
@@ -418,7 +418,7 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
         }
     }
     fclose( fp ); // JMC cppcheck - resource
-    return ( -1 );
+    return -1;
 }
 
 /**
@@ -502,7 +502,7 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
         rei->status = rc;
     }
 
-    return ( rei->status );
+    return rei->status;
 
 }
 
@@ -719,7 +719,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
 #endif
     free( thrInput );
 
-    return ( rei->status );
+    return rei->status;
 
 }
 
@@ -773,7 +773,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiFlushMonStat: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -781,7 +781,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     if ( inpParam1 == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: input Param1 is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
@@ -791,13 +791,13 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: Unsupported input Param1 type %s",
                             inpParam1->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam2 == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: input Param2 is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
@@ -807,7 +807,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: Unsupported input Param2 type %s",
                             inpParam2->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( atoi( timespan ) > 0 ) {
@@ -821,7 +821,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
             strcmp( tablename, "serverloaddigest" ) != 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: table %s does not exist", tablename );
-        return ( rei->status );
+        return rei->status;
     }
 
     generalRowPurgeInp.tableName = tablename;
@@ -833,7 +833,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         rodsLog( LOG_ERROR, "msiFlushMonStat failed, error %i", rc );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -908,7 +908,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiDigestMonStat: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -917,7 +917,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
             || disk_wght == NULL || netin_wght == NULL || netout_wght == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: at least one of the input param is NULL" );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( cpu_wght->type, STR_MS_T ) == 0 ) {
@@ -927,7 +927,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input cpu_wght type %s",
                             cpu_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( mem_wght->type, STR_MS_T ) == 0 ) {
@@ -937,7 +937,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input mem_wght type %s",
                             mem_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( swap_wght->type, STR_MS_T ) == 0 ) {
@@ -947,7 +947,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input swap_wght type %s",
                             swap_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( runq_wght->type, STR_MS_T ) == 0 ) {
@@ -957,7 +957,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input runq_wght type %s",
                             runq_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( disk_wght->type, STR_MS_T ) == 0 ) {
@@ -967,7 +967,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input disk_wght type %s",
                             disk_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( netin_wght->type, STR_MS_T ) == 0 ) {
@@ -977,7 +977,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input netin_wght type %s",
                             netin_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( netout_wght->type, STR_MS_T ) == 0 ) {
@@ -987,7 +987,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: Unsupported input netout_wght type %s",
                             netout_wght->type );
-        return ( rei->status );
+        return rei->status;
     }
 
     totalWeight = 0;
@@ -1022,7 +1022,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
     else {
         rodsLog( LOG_ERROR, "msiDigestMonStat: Unable to retrieve information \
                         from R_SERVER_LOAD" );
-        return( rei->status );
+        return rei->status;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -1063,5 +1063,5 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return( rei->status );
+    return rei->status;
 }

@@ -36,7 +36,7 @@ rsStructFileBundle( rsComm_t *rsComm,
                                        REMOTE_CREATE );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcStructFileBundle( rodsServerHost->conn,
@@ -282,7 +282,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                              collEnt->phyPath, tmpPath, errno );
                     rmLinkedFilesInUnixDir( phyBunDir );
                     rmdir( phyBunDir );
-                    return ( UNIX_FILE_LINK_ERR - errno );
+                    return UNIX_FILE_LINK_ERR - errno;
                 }
                 else {
                     //rodsLog( LOG_NOTICE, "_rsStructFileBundle - LINK  [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
@@ -343,7 +343,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         return savedStatus;
     }
 
-    return ( status );
+    return status;
 }
 
 int

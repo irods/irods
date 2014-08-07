@@ -51,7 +51,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
             }
         }
     }
-    return( printCount );
+    return printCount;
 }
 
 
@@ -142,11 +142,11 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             printf( "DataObject %s does not exist.\n", objPath );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -162,7 +162,7 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
                                             columnNames, longOption );
     }
 
-    return ( 1 );
+    return 1;
 }
 
 /* perform the list data-types command */
@@ -202,7 +202,7 @@ doListDataTypes( rcComm_t *Conn ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "None exist.\n" );
-        return( 0 );
+        return 0;
     }
 
     printCount += printGenQueryResults( Conn, status, genQueryOut, 0,
@@ -214,7 +214,7 @@ doListDataTypes( rcComm_t *Conn ) {
                                             0, 0 );
     }
 
-    return ( 1 );
+    return 1;
 }
 
 
@@ -240,7 +240,7 @@ doMod( rcComm_t *Conn, char *objPath, char *time ) {
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
     }
-    return( status );
+    return status;
 }
 
 /* perform the modify command to change the data_type*/
@@ -265,7 +265,7 @@ doModDatatype( rcComm_t *Conn, char *objPath, char *dataType ) {
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
     }
-    return( status );
+    return status;
 }
 
 /* perform the modify command to change the comment*/
@@ -297,7 +297,7 @@ doModComment( rcComm_t *Conn, char *objPath, int numRepl, char *theComment ) {
     if ( status ) {
         rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
     }
-    return( status );
+    return status;
 }
 
 int

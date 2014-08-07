@@ -13,7 +13,7 @@ int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
@@ -72,7 +72,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                                  &rodsRestart );
             if ( rodsRestart.fd > 0 && status < 0 ) {
                 close( rodsRestart.fd );
-                return ( status );
+                return status;
             }
             if ( dataObjCopyInp.srcDataObjInp.specColl != NULL &&
                     dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL ) {
@@ -87,7 +87,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "cpUtil: invalid cp dest objType %d for %s",
                      targPath->objType, targPath->outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -115,7 +115,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "cpFileUtil: NULL srcPath or targPath in cp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -148,7 +148,7 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -159,13 +159,13 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjCopyInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForCp: NULL dataObjCopyInp in cp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->dataType == True ) {
@@ -201,7 +201,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->physicalPathString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForCp: NULL physicalPathString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, FILE_PATH_KW,
@@ -213,7 +213,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForCp: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
@@ -261,14 +261,14 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             rodsLogError( LOG_ERROR, status,
                           "initCondForCp: openRestartFile of %s errno",
                           rodsArgs->restartFileString );
-            return ( status );
+            return status;
         }
     }
 
     //dataObjCopyInp->destDataObjInp.createMode = 0600;		// seems unused, and caused https://github.com/irods/irods/issues/2085
     dataObjCopyInp->destDataObjInp.openFlags = O_WRONLY;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -286,14 +286,14 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
     if ( srcColl == NULL || targColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "cpCollUtil: NULL srcColl or targColl in cp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "cpCollUtil: -r option must be used for copying %s directory",
                  srcColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
@@ -346,7 +346,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                 rodsLogError( LOG_ERROR, status,
                               "cpCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );
-                return ( status );
+                return status;
             }
 
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
@@ -375,14 +375,14 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ||
               status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

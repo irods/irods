@@ -13,7 +13,7 @@ int
 mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     dataObjCopyInp_t dataObjRenameInp;
@@ -55,7 +55,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "mvFileUtil: NULL srcPath or targPath incp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( objType == DATA_OBJ_T ) {
@@ -71,7 +71,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
         rodsLog( LOG_ERROR,
                  "mvObjUtil: invalid cp dest objType %d for %s",
                  objType, targPath );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
 
@@ -90,7 +90,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
                      0, NULL, &startTime, &endTime );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -99,15 +99,15 @@ initCondForMv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjRenameInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForMv: NULL dataObjRenameInp incp" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjRenameInp, 0, sizeof( dataObjCopyInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
-    return ( 0 );
+    return 0;
 }
 

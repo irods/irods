@@ -32,19 +32,19 @@ rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileUnlink: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int
@@ -112,7 +112,7 @@ int _rsFileUnlink(
         irods::log( ret_err );
     }
 
-    return ( unlink_err.code() );
+    return unlink_err.code();
 
 } // _rsFileUnlink
 

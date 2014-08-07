@@ -9,5 +9,5 @@ rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp ) {
     status = procApiRequest( conn, MOD_AVU_METADATA_AN, modAVUMetadataInp,
                              NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

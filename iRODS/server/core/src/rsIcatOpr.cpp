@@ -22,7 +22,7 @@ connectRcat( rsComm_t *rsComm ) {
 
 
     if ( IcatConnState == INITIAL_DONE ) {
-        return ( 0 );
+        return 0;
     }
 
     /* zone has not been initialized yet. can't use getRcatHost */
@@ -69,7 +69,7 @@ connectRcat( rsComm_t *rsComm ) {
         status = 0;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -87,7 +87,7 @@ disconnectRcat( rsComm_t *rsComm ) {
     else {
         status = 0;
     }
-    return ( status );
+    return status;
 }
 
 int

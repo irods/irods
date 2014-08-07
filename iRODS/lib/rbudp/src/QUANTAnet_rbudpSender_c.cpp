@@ -120,7 +120,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
                        rbudpSender->rbudpBase.sizeofErrorBitmap );
         if ( n < 0 ) {
             perror( "read" );
-            return ( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
 
         if ( ( unsigned char )rbudpSender->rbudpBase.errorBitmap[0] == 1 ) {
@@ -137,7 +137,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
                     lastRemainNumberOfPackets ) {
                 noProgressCnt++;
                 if ( noProgressCnt >= MAX_NO_PROGRESS_CNT ) {
-                    return ( SYS_UDP_TRANSFER_ERR - errno );
+                    return SYS_UDP_TRANSFER_ERR - errno;
                 }
             }
             else {
@@ -168,7 +168,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
     }
     free( rbudpSender->rbudpBase.errorBitmap );
     free( rbudpSender->rbudpBase.hashTable );
-    return ( 0 );
+    return 0;
 }
 
 /* XXXXX need to handle status */
@@ -220,7 +220,7 @@ udpSend( rbudpSender_t *rbudpSender ) {
                     perror( "send" );
                     sendErrCnt++;
                     if ( sendErrCnt > MAX_SEND_ERR_CNT ) {
-                        return ( SYS_UDP_TRANSFER_ERR - errno );
+                        return SYS_UDP_TRANSFER_ERR - errno;
                     }
                 }
             }
@@ -235,7 +235,7 @@ udpSend( rbudpSender_t *rbudpSender ) {
                     perror( "sendto" );
                     sendErrCnt++;
                     if ( sendErrCnt > MAX_SEND_ERR_CNT ) {
-                        return ( SYS_UDP_TRANSFER_ERR - errno );
+                        return SYS_UDP_TRANSFER_ERR - errno;
                     }
                 }
             }
@@ -259,7 +259,7 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
     int n = readn( tcpSockfd, ack, 1 );
     if ( n < 0 ) {
         fprintf( stderr, "stream ack read error.\n" );
-        return( FAILED );
+        return FAILED;
     }
 
 
@@ -267,7 +267,7 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
     char *buf = ( char * )malloc( bufSize );
     if ( buf == 0 ) {
         fprintf( stderr, " sendstream: Couldn't malloc %d bytes for buffer\n", bufSize );
-        return( FAILED );
+        return FAILED;
     }
 
     long long bytesread;
@@ -278,7 +278,7 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
             {
                 fprintf( stderr, "tcp send failed.\n" );
                 free( buf );
-                return( FAILED );
+                return FAILED;
             }
         }
         if ( verbose > 1 ) {
@@ -288,7 +288,7 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
     }
     close( fromfd );
     free( buf );
-    return ( ( bytesread == 0 ) ? RB_SUCCESS /*clean EOF*/ : FAILED /*error*/ );
+    return ( bytesread == 0 ) ? RB_SUCCESS /*clean EOF*/ : FAILED /*error*/;
 }
 
 int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
@@ -303,7 +303,7 @@ int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
         int n = readn( tcpSockfd, fnameRead, SIZEOFFILENAME );
         if ( n < 0 ) {
             fprintf( stderr, "read error.\n" );
-            return( FAILED );
+            return FAILED;
         }
         else {
             fname = fnameRead;
@@ -317,7 +317,7 @@ int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
     int fd = open( fname, O_RDONLY );
     if ( fd < 0 ) {
         fprintf( stderr, "open file failed.\n" );
-        return( FAILED );
+        return FAILED;
     }
     status = sendfileByFd( rbudpSender, sendRate, packetSize, fd );
     close( fd );
@@ -336,7 +336,7 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
     struct stat filestat;
     if ( fstat( fd, &filestat ) < 0 ) {
         fprintf( stderr, "stat error.\n" );
-        return( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     long long filesize = filestat.st_size;
@@ -353,7 +353,7 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
     if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
         {
             fprintf( stderr, "tcp send failed.\n" );
-            return( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
     }
 
@@ -376,7 +376,7 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
         if ( buf == MAP_FAILED ) {
             fprintf( stderr, "mmap failed. toSend = %d, offset = %lld, errno = %d\n",
                      toSend, offset, errno );
-            return ( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
 
         status = sendBuf( rbudpSender, buf, toSend, sendRate, packetSize );
@@ -390,7 +390,7 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
         offset += toSend;
     }
 
-    return ( status );
+    return status;
 }
 
 int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
@@ -405,7 +405,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
         int n = readn( tcpSockfd, fname, SIZEOFFILENAME );
         if ( n <= 0 ) {
             fprintf( stderr, "read error.\n" );
-            return( FAILED );
+            return FAILED;
         }
 
         // If not "finish" signal (All zero), continue to send.
@@ -420,7 +420,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             struct stat filestat;
             if ( stat( fname, &filestat ) < 0 ) {
                 fprintf( stderr, "stat error.\n" );
-                return( FAILED );
+                return FAILED;
             }
 
             long long filesize = filestat.st_size;
@@ -434,14 +434,14 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
                 {
                     fprintf( stderr, "tcp send failed.\n" );
-                    return( FAILED );
+                    return FAILED;
                 }
             }
 
             int fd = open( fname, O_RDONLY );
             if ( fd < 0 ) {
                 fprintf( stderr, "open file failed.\n" );
-                return( FAILED );
+                return FAILED;
             }
             char *buf = ( char * )mmap( NULL, filesize, PROT_READ, MAP_SHARED, fd, 0 );
 
@@ -454,7 +454,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             isFinished = 1;
         }
     }
-    return( RB_SUCCESS );
+    return RB_SUCCESS;
 }
 
 /* sendRate: Kbps */
@@ -514,11 +514,11 @@ int  initSendRudp( rbudpSender_t *rbudpSender, void* buffer, int bufSize,
 
     if ( rbudpSender->rbudpBase.errorBitmap == NULL ) {
         fprintf( stderr, "malloc errorBitmap failed\n" );
-        return ( -1 );
+        return -1;
     }
     if ( rbudpSender->rbudpBase.hashTable == NULL ) {
         fprintf( stderr, "malloc hashTable failed\n" );
-        return ( -1 );
+        return -1;
     }
 
     /* Initialize the hash table */

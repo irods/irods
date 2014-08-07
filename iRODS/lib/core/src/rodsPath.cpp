@@ -36,7 +36,7 @@ parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
 
     rstrcpy( outPath, rodsPath.outPath, MAX_NAME_LEN );
 
-    return ( status );
+    return status;
 }
 
 /* parseRodsPath - Parase a rods path into full rods path taking care of
@@ -55,7 +55,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     if ( rodsPath == NULL ) {
         fprintf( stderr, "parseRodsPath: NULL rodsPath input\n" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     rodsPath->objType = UNKNOWN_OBJ_T;
@@ -63,7 +63,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     if ( myRodsEnv == NULL && rodsPath->inPath[0] != '/' ) {
         fprintf( stderr, "parseRodsPath: NULL myRodsEnv input\n" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     len = strlen( rodsPath->inPath );
@@ -72,14 +72,14 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
         /* just copy rodsCwd */
         rstrcpy( rodsPath->outPath, myRodsEnv->rodsCwd, MAX_NAME_LEN );
         rodsPath->objType = COLL_OBJ_T;
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( rodsPath->inPath, "." ) == 0 ||
               strcmp( rodsPath->inPath, "./" ) == 0 ) {
         /* '.' or './' */
         rstrcpy( rodsPath->outPath, myRodsEnv->rodsCwd, MAX_NAME_LEN );
         rodsPath->objType = COLL_OBJ_T;
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( rodsPath->inPath, "~" ) == 0 ||
               strcmp( rodsPath->inPath, "~/" ) == 0 ||
@@ -88,7 +88,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
         /* ~ or ~/ */
         rstrcpy( rodsPath->outPath, myRodsEnv->rodsHome, MAX_NAME_LEN );
         rodsPath->objType = COLL_OBJ_T;
-        return ( 0 );
+        return 0;
     }
     else if ( rodsPath->inPath[0] == '~' || rodsPath->inPath[0] == '^' ) {
         if ( rodsPath->inPath[1] == '/' ) {
@@ -138,7 +138,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
                 rodsLog( LOG_ERROR,
                          "parseRodsPath: parsing error for %s",
                          rodsPath->outPath );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
         }
         //    rstrcpy (tmpPtr2 + 1, tmpPtr1 + 4, MAX_NAME_LEN);
@@ -161,7 +161,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
                 rodsLog( LOG_ERROR,
                          "parseRodsPath: parsing error for %s",
                          rodsPath->outPath );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
         }
         *tmpPtr2 = '\0';
@@ -171,9 +171,9 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
         }
         rodsPath->objType = COLL_OBJ_T;
         if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
-            return ( USER_PATH_EXCEEDS_MAX );
+            return USER_PATH_EXCEEDS_MAX;
         }
-        return ( 0 );
+        return 0;
     }
 
     /* take out "/." */
@@ -182,23 +182,23 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
         *tmpPtr2 = '\0';
         rodsPath->objType = COLL_OBJ_T;
         if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
-            return ( USER_PATH_EXCEEDS_MAX );
+            return USER_PATH_EXCEEDS_MAX;
         }
-        return ( 0 );
+        return 0;
     }
 
     if ( *( tmpPtr1 - 1 ) == '/' && len > 1 ) {
         *( tmpPtr1 - 1 ) = '\0';
         rodsPath->objType = COLL_OBJ_T;
         if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
-            return ( USER_PATH_EXCEEDS_MAX );
+            return USER_PATH_EXCEEDS_MAX;
         }
-        return ( 0 );
+        return 0;
     }
     if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
-        return ( USER_PATH_EXCEEDS_MAX );
+        return USER_PATH_EXCEEDS_MAX;
     }
-    return ( 0 );
+    return 0;
 }
 
 /* parseLocalPath - Parse a local path into full path taking care of
@@ -213,7 +213,7 @@ int
 parseLocalPath( rodsPath_t *rodsPath ) {
     if ( rodsPath == NULL ) {
         fprintf( stderr, "parseLocalPath: NULL rodsPath input\n" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( strlen( rodsPath->inPath ) == 0 ) {
@@ -233,7 +233,7 @@ getFileType( rodsPath_t *rodsPath ) {
     if ( !exists( p ) ) {
         rodsPath->objType = UNKNOWN_FILE_T;
         rodsPath->objState = NOT_EXIST_ST;
-        return ( NOT_EXIST_ST );
+        return NOT_EXIST_ST;
     }
     else if ( is_regular_file( p ) ) {
         rodsPath->objType = LOCAL_FILE_T;
@@ -245,7 +245,7 @@ getFileType( rodsPath_t *rodsPath ) {
         rodsPath->objState = EXIST_ST;
     }
 
-    return ( rodsPath->objType );
+    return rodsPath->objType;
 }
 
 int
@@ -256,7 +256,7 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, char *inPath ) {
     if ( rodsPathInp == NULL || inPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "addSrcInPath: NULL input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( ( rodsPathInp->numSrc % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
@@ -282,7 +282,7 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, char *inPath ) {
     rstrcpy( newSrcPath[rodsPathInp->numSrc].inPath, inPath, MAX_NAME_LEN );
     rodsPathInp->numSrc++;
 
-    return ( 0 );
+    return 0;
 }
 
 /* parseCmdLinePath - parse the iCommand line path input. It can parse
@@ -337,14 +337,14 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
 
     if ( rodsPathInp == NULL ) {
         rodsLog( LOG_ERROR, "parseCmdLinePath: NULL rodsPathInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( rodsPathInp, 0, sizeof( rodsPathInp_t ) );
 
     if ( nInput <= 0 ) {
         if ( ( flag & ALLOW_NO_SRC_FLAG ) == 0 ) {
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             numSrc = 1;
@@ -375,7 +375,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
             status = parseLocalPath( &rodsPathInp->srcPath[i] );
         }
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
 
@@ -398,7 +398,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 /* resolveRodsTarget - based on srcPath and destPath, fill in targPath.
@@ -421,7 +421,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
     if ( rodsPathInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "resolveRodsTarget: NULL rodsPathInp or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     destPath = rodsPathInp->destPath;
@@ -441,7 +441,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                 rodsLog( LOG_ERROR,
                          "resolveRodsTarget: srcPath %s does not exist",
                          srcPath->outPath );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
         }
 
@@ -452,7 +452,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                 rodsLog( LOG_ERROR,
                          "resolveRodsTarget: src %s is the wrong type for dest -",
                          srcPath->outPath );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
             *targPath = *destPath;
             targPath->objType = LOCAL_FILE_T;
@@ -499,7 +499,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                 rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
                               "resolveRodsTarget: target %s does not exist",
                               destPath->outPath );
-                return ( USER_FILE_DOES_NOT_EXIST );
+                return USER_FILE_DOES_NOT_EXIST;
             }
         }
         else if ( srcPath->objType == COLL_OBJ_T ||
@@ -518,7 +518,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                 rodsLog( LOG_ERROR,
                          "resolveRodsTarget: input destPath %s is a datapath",
                          destPath->outPath );
-                return ( USER_INPUT_PATH_ERR );
+                return USER_INPUT_PATH_ERR;
             }
             else if ( ( destPath->objType == COLL_OBJ_T ||
                         destPath->objType == LOCAL_DIR_T ) &&
@@ -566,7 +566,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                             rodsLogError( LOG_ERROR, status,
                                           "resolveRodsTarget: mkColl/mkdir for %s,status=%d",
                                           targPath->outPath, status );
-                            return ( status );
+                            return status;
                         }
                     }
                 }
@@ -601,7 +601,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
 #endif
                 }
                 if ( status < 0 ) {
-                    return ( status );
+                    return status;
                 }
 
                 if ( rodsPathInp->numSrc == 1 ) {
@@ -612,7 +612,7 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                     rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
                                   "resolveRodsTarget: target %s does not exist",
                                   destPath->outPath );
-                    return ( USER_FILE_DOES_NOT_EXIST );
+                    return USER_FILE_DOES_NOT_EXIST;
                 }
             }
             targPath->objState = EXIST_ST;
@@ -628,10 +628,10 @@ resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
                          "resolveRodsTarget: cannot handle objType %d for srcPath %s",
                          srcPath->objType, srcPath->outPath );
             }
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -643,7 +643,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
 
     if ( inInPath == NULL ) {
         *lastElement = '\0';
-        return ( 0 );
+        return 0;
     }
     strcpy( inPath, inInPath );
 #ifdef windows_platform
@@ -659,7 +659,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
         len = strlen( inPath );
         if ( len == 0 ) {
             *lastElement = '\0';
-            return ( 0 );
+            return 0;
         }
         else {
             rstrcpy( lastElement, inPath, MAX_NAME_LEN );
@@ -685,7 +685,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 void

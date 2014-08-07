@@ -9,5 +9,5 @@ rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp ) {
     status = procApiRequest( conn, SSL_START_AN,  sslStartInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

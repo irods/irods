@@ -259,10 +259,10 @@ ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv ) {
                 rodsLogError( LOG_ERROR, errMsg.status,
                               "ifuseConnect: rcConnect failure %s", errMsg.msg );
                 if ( errMsg.status < 0 ) {
-                    return ( errMsg.status );
+                    return errMsg.status;
                 }
                 else {
-                    return ( -1 );
+                    return -1;
                 }
             }
         }
@@ -274,7 +274,7 @@ ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv ) {
         }
     }
     UNLOCK_STRUCT( *iFuseConn );
-    return ( status );
+    return status;
 }
 
 void _ifuseDisconnect( iFuseConn_t *tmpIFuseConn ) {

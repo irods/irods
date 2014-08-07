@@ -56,7 +56,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 
     remoteFlag = getAndConnRemoteZoneForCopy( rsComm, dataObjCopyInp, &rodsServerHost );
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = _rcDataObjCopy( rodsServerHost->conn, dataObjCopyInp,
@@ -68,7 +68,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         rodsLog( LOG_ERROR,
                  "rsDataObjCopy: same src and dest objPath %s not allowed",
                  srcDataObjInp->objPath );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     addKeyVal( &srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "" );
@@ -128,7 +128,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
         irods::log( LOG_ERROR, msg.str() );
-        return ( destL1descInx );
+        return destL1descInx;
     }
 
     if ( L1desc[destL1descInx].replStatus == NEWLY_CREATED_COPY ) {
@@ -154,7 +154,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 
     clearKeyVal( &destDataObjInp->condInput );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -214,7 +214,7 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
                 rodsLog( LOG_NOTICE,
                          "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
                          destDataObjInfo->objPath, status );
-                return ( status );
+                return status;
             }
         }
 
@@ -244,8 +244,8 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
     status2 = rsDataObjClose( rsComm, &dataObjCloseInp );
 
     if ( status ) {
-        return ( status );
+        return status;
     }
-    return( status2 );
+    return status2;
 }
 

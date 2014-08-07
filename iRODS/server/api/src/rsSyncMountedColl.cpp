@@ -38,7 +38,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
         rodsLog( LOG_ERROR,
                  "rsSyncMountedColl: %s not a mounted collection",
                  syncMountedCollInp->objPath );
-        return ( SYS_COLL_NOT_MOUNTED_ERR );
+        return SYS_COLL_NOT_MOUNTED_ERR;
     }
 
     bzero( &myDataObjInp, sizeof( myDataObjInp ) );
@@ -48,7 +48,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcSyncMountedColl( rodsServerHost->conn,
@@ -63,7 +63,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
 
     rodsLog( LOG_NOTICE, "rsSyncMountedColl - done" );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -76,7 +76,7 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
 
         if ( strlen( specColl->resource ) == 0 ) {
             /* nothing to sync */
-            return ( 0 );
+            return 0;
         }
 
         memset( &structFileOprInp, 0, sizeof( structFileOprInp ) );
@@ -84,7 +84,7 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
         if (status < 0) {
             rodsLog( LOG_NOTICE,"_rsSyncMountedColl: resolveResc error for %s, status = %d",
                      specColl->resource, status);
-            return (status);
+            return status;
         }*/
 
         irods::error err = irods::get_resc_info( specColl->resource, rescInfo );
@@ -118,6 +118,6 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
         status = SYS_COLL_NOT_MOUNTED_ERR;
     }
 
-    return ( status );
+    return status;
 }
 

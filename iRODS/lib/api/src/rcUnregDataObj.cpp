@@ -9,5 +9,5 @@ rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp ) {
     status = procApiRequest( conn, UNREG_DATA_OBJ_AN, unregDataObjInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

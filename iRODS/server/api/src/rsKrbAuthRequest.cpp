@@ -40,13 +40,13 @@ rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut ) {
         }
         rsComm->auth_scheme = strdup( "krb" );
     }
-    return( status );
+    return status;
 #else
     status = KRB_NOT_BUILT_INTO_SERVER;
     rodsLog( LOG_ERROR,
              "rsKrbAuthRequest failed KRB_NOT_BUILT_INTO_SERVER, status = %d",
              status );
-    return ( status );
+    return status;
 #endif
 
 }
@@ -75,7 +75,7 @@ int ikrbServersideAuth( rsComm_t *rsComm ) {
 
     if ( status ) {
         krbAuthReqError = KRB_QUERY_INTERNAL_ERROR;
-        return( status );
+        return status;
     }
 
 
@@ -104,12 +104,12 @@ int ikrbServersideAuth( rsComm_t *rsComm ) {
     }
     else {
         krbAuthReqError = KRB_QUERY_INTERNAL_ERROR;
-        return( KRB_QUERY_INTERNAL_ERROR );
+        return KRB_QUERY_INTERNAL_ERROR;
     }
 
     if ( status == CAT_NO_ROWS_FOUND ) {
         krbAuthReqError = KRB_USER_DN_NOT_FOUND;
-        return( KRB_USER_DN_NOT_FOUND );
+        return KRB_USER_DN_NOT_FOUND;
     }
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -117,12 +117,12 @@ int ikrbServersideAuth( rsComm_t *rsComm ) {
         snprintf( krbAuthReqErrorMsg, 1000,
                   "ikrbServersideAuth: rsGenQuery failed, status = %d", status );
         krbAuthReqError = status;
-        return ( status );
+        return status;
     }
 
     if ( genQueryOut->rowCnt != 1 || genQueryOut->attriCnt != 2 ) {
         krbAuthReqError = KRB_NAME_MATCHES_MULTIPLE_USERS;
-        return( KRB_NAME_MATCHES_MULTIPLE_USERS );
+        return KRB_NAME_MATCHES_MULTIPLE_USERS;
     }
 
 #ifdef KRB_DEBUG
@@ -161,7 +161,7 @@ int ikrbServersideAuth( rsComm_t *rsComm ) {
     rodsLog( LOG_ERROR,
              "ikrbServersideAuth failed KRB_NOT_BUILT_INTO_SERVER, status = %d",
              status );
-    return ( status );
+    return status;
 #endif
 }
 

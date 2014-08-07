@@ -28,13 +28,13 @@ rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileClosedir: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
@@ -42,7 +42,7 @@ rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {
 
     freeFileDesc( fileClosedirInp->fileInx );
 
-    return ( retVal );
+    return retVal;
 }
 
 int

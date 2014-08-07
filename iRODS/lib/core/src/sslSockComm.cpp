@@ -50,7 +50,7 @@ sslStart( rcComm_t *rcComm ) {
     status = rcSslStart( rcComm, &sslStartInp );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "sslStart: server refused our request to start SSL" );
-        return ( status );
+        return status;
     }
 
     /* we have the go-ahead ... set up SSL on our side of the socket */
@@ -111,7 +111,7 @@ sslEnd( rcComm_t *rcComm ) {
     status = rcSslEnd( rcComm, &sslEndInp );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "sslEnd: server refused our request to stop SSL" );
-        return ( status );
+        return status;
     }
 
     /* shut down the SSL connection. First SSL_shutdown() sends "close notify" */
@@ -244,7 +244,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         rodsLog( LOG_ERROR,
                  "sslReadMsgHeader:header read- read %d bytes, expect %d, status = %d",
                  nbytes, sizeof( myLen ), status );
-        return ( status );
+        return status;
     }
 
     myLen =  ntohl( myLen );
@@ -252,7 +252,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         rodsLog( LOG_ERROR,
                  "sslReadMsgHeader: header length %d out of range",
                  myLen );
-        return ( SYS_HEADER_READ_LEN_ERR );
+        return SYS_HEADER_READ_LEN_ERR;
     }
 
     nbytes = sslRead( sock, ( void * ) tmpBuf, myLen, SOCK_TYPE, NULL, tv, ssl );
@@ -267,7 +267,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         rodsLog( LOG_ERROR,
                  "sslReadMsgHeader:header read- read %d bytes, expect %d, status = %d",
                  nbytes, myLen, status );
-        return ( status );
+        return status;
     }
 
     if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
@@ -282,14 +282,14 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         rodsLogError( LOG_ERROR,  status,
                       "sslReadMsgHeader:unpackStruct error. status = %d",
                       status );
-        return ( status );
+        return status;
     }
 
     *myHeader = *outHeader;
 
     free( outHeader );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -300,7 +300,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
     int bytesRead;
 
     if ( myHeader == NULL ) {
-        return ( SYS_READ_MSG_BODY_INPUT_ERR );
+        return SYS_READ_MSG_BODY_INPUT_ERR;
     }
     if ( inputStructBBuf != NULL ) {
         memset( inputStructBBuf, 0, sizeof( bytesBuf_t ) );
@@ -314,7 +314,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
 
     if ( myHeader->msgLen > 0 ) {
         if ( inputStructBBuf == NULL ) {
-            return ( SYS_READ_MSG_BODY_INPUT_ERR );
+            return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
         inputStructBBuf->buf = malloc( myHeader->msgLen );
@@ -331,14 +331,14 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
                      "sslReadMsgBody: inputStruct read error, read %d bytes, expect %d",
                      nbytes, myHeader->msgLen );
             free( inputStructBBuf->buf );
-            return ( SYS_HEADER_READ_LEN_ERR );
+            return SYS_HEADER_READ_LEN_ERR;
         }
         inputStructBBuf->len = myHeader->msgLen;
     }
 
     if ( myHeader->errorLen > 0 ) {
         if ( errorBBuf == NULL ) {
-            return ( SYS_READ_MSG_BODY_INPUT_ERR );
+            return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
         errorBBuf->buf = malloc( myHeader->errorLen );
@@ -355,14 +355,14 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
                      "sslReadMsgBody: errorBbuf read error, read %d bytes, expect %d, errno = %d",
                      nbytes, myHeader->msgLen, errno );
             free( errorBBuf->buf );
-            return ( SYS_READ_MSG_BODY_LEN_ERR - errno );
+            return SYS_READ_MSG_BODY_LEN_ERR - errno;
         }
         errorBBuf->len = myHeader->errorLen;
     }
 
     if ( myHeader->bsLen > 0 ) {
         if ( bsBBuf == NULL ) {
-            return ( SYS_READ_MSG_BODY_INPUT_ERR );
+            return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
         if ( bsBBuf->buf == NULL ) {
@@ -381,12 +381,12 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
                      "sslReadMsgBody: bsBBuf read error, read %d bytes, expect %d, errno = %d",
                      nbytes, myHeader->bsLen, errno );
             free( bsBBuf->buf );
-            return ( SYS_READ_MSG_BODY_INPUT_ERR - errno );
+            return SYS_READ_MSG_BODY_INPUT_ERR - errno;
         }
         bsBBuf->len = myHeader->bsLen;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -419,7 +419,7 @@ sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
         rodsLog( LOG_ERROR,
                  "sslWriteMsgHeader: wrote %d bytes for myLen , expect %d, status = %d",
                  nbytes, sizeof( myLen ), SYS_HEADER_WRITE_LEN_ERR - errno );
-        return ( SYS_HEADER_WRITE_LEN_ERR - errno );
+        return SYS_HEADER_WRITE_LEN_ERR - errno;
     }
 
     /* now send the header */
@@ -431,12 +431,12 @@ sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
                  "sslWriteMsgHeader: wrote %d bytes, expect %d, status = %d",
                  nbytes, headerBBuf->len, SYS_HEADER_WRITE_LEN_ERR - errno );
         freeBBuf( headerBBuf );
-        return ( SYS_HEADER_WRITE_LEN_ERR - errno );
+        return SYS_HEADER_WRITE_LEN_ERR - errno;
     }
 
     freeBBuf( headerBBuf );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -477,7 +477,7 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
     status = sslWriteMsgHeader( sock, &msgHeader, ssl );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     /* send the rest */
@@ -488,7 +488,7 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
         }
         status = sslWrite( sock, msgBBuf->buf, msgBBuf->len, SOCK_TYPE, NULL, ssl );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
 
@@ -499,18 +499,18 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
         status = sslWrite( sock, errorBBuf->buf, errorBBuf->len, SOCK_TYPE,
                            NULL, ssl );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
     if ( msgHeader.bsLen > 0 ) {
         status = sslWrite( sock, byteStreamBBuf->buf,
                            byteStreamBBuf->len, SOCK_TYPE, &bytesWritten, ssl );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -543,7 +543,7 @@ sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             if ( status == 0 ) {
                 /* timedout */
                 if ( len - toRead > 0 ) {
-                    return ( len - toRead );
+                    return len - toRead;
                 }
                 else {
                     return SYS_SOCK_READ_TIMEDOUT;
@@ -576,7 +576,7 @@ sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             *bytesRead += nbytes;
         }
     }
-    return ( len - toRead );
+    return len - toRead;
 }
 
 int
@@ -611,7 +611,7 @@ sslWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
             *bytesWritten += nbytes;
         }
     }
-    return ( len - toWrite );
+    return len - toWrite;
 }
 
 /* Module internal support functions */
@@ -764,15 +764,15 @@ get_dh2048() {
     DH *dh;
 
     if ( ( dh = DH_new() ) == NULL ) {
-        return( NULL );
+        return NULL;
     }
     dh->p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
     dh->g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
     if ( ( dh->p == NULL ) || ( dh->g == NULL ) ) {
         DH_free( dh );
-        return( NULL );
+        return NULL;
     }
-    return( dh );
+    return dh;
 }
 
 static int

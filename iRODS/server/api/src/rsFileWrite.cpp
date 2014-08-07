@@ -34,13 +34,13 @@ rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileWrite: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
@@ -48,7 +48,7 @@ rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
         FileDesc[fileWriteInp->fileInx].writtenFlag = 1;
     }
 
-    return ( retVal );
+    return retVal;
 }
 
 int

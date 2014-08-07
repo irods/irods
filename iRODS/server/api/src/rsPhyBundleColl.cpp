@@ -150,7 +150,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
         rodsLog( LOG_ERROR,
                  "_rsPhyBundleColl: rsOpenCollection of %s error. status = %d",
                  collInp.collName, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
 
     if ( CollHandle[handleInx].rodsObjStat->specColl != NULL ) {
@@ -158,7 +158,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  "_rsPhyBundleColl: unable to bundle special collection %s",
                  collInp.collName );
         rsCloseCollection( rsComm, &handleInx );
-        return ( 0 );
+        return 0;
     }
 
     /* create the bundle file */
@@ -248,7 +248,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                             rodsLog( LOG_ERROR,
                                      "_rsPhyBundleColl:createPhyBundleDataObj err for %s,stat=%d",
                                      phyBundleCollInp->collection, l1descInx );
-                            return ( l1descInx );
+                            return l1descInx;
                         }
 
                         createPhyBundleDir( rsComm,
@@ -595,7 +595,7 @@ addSubFileToDir( curSubFileCond_t *curSubFileCond,
         rodsLog( LOG_ERROR,
                  "addSubFileToDir: link error %s to %s. errno = %d",
                  curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno );
-        return ( UNIX_FILE_LINK_ERR - errno );
+        return UNIX_FILE_LINK_ERR - errno;
     }
     bunReplCache = ( bunReplCache_t* )malloc( sizeof( bunReplCache_t ) );
     bzero( bunReplCache, sizeof( bunReplCache_t ) );
@@ -671,7 +671,7 @@ createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
     /* the dir where we put the files to bundle is in phyPath.dir */
     snprintf( outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath );
     mkFileDirR( rsComm, 0, outPhyBundleDir, hier, getDefDirMode() );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -791,7 +791,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *bundlePath,
     if ( *tmpStr == '\0' ) {
         rodsLog( LOG_ERROR,
                  "rsMkBundlePath: input path %s too short", collection );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     /* cannot bundle trash and bundle */
@@ -799,7 +799,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *bundlePath,
             strncmp( tmpStr, "bundle/", 7 ) == 0 ) {
         rodsLog( LOG_ERROR,
                  "rsMkBundlePath: cannot bundle trash or bundle path %s", collection );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
 
@@ -813,7 +813,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *bundlePath,
             < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsMkBundlePath: splitPathByKey error for %s ", bundlePath );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     status = rsMkCollR( rsComm, startBundlePath, destBundleColl );
@@ -824,7 +824,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *bundlePath,
                  startBundlePath, destBundleColl );
     }
 
-    return ( status );
+    return status;
 }
 
 int

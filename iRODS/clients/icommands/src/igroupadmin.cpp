@@ -235,7 +235,7 @@ userAdmin( char *arg0, char *arg1, char *arg2, char *arg3,
             printf( "See 'lt user_type' for a list of valid user types.\n" );
         }
     }
-    return( status );
+    return status;
 }
 
 char *
@@ -263,7 +263,7 @@ setScrambledPw( char *inPass ) {
     }
     obfEncodeByKey( buf0, buf1, buf2 );
 
-    return( buf2 );
+    return buf2;
 }
 
 
@@ -278,46 +278,46 @@ doCommand( char *cmdToken[] ) {
     if ( strcmp( cmdToken[0], "help" ) == 0 ||
             strcmp( cmdToken[0], "h" ) == 0 ) {
         usage( cmdToken[1] );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "quit" ) == 0 ||
             strcmp( cmdToken[0], "q" ) == 0 ) {
-        return( -1 );
+        return -1;
     }
 
     if ( strcmp( cmdToken[0], "lg" ) == 0 ) {
         showGroup( cmdToken[1] );
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
         userAdmin( "mkuser", cmdToken[1], setScrambledPw( cmdToken[2] ),
                    cmdToken[3], "", "", "", "" );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "atg" ) == 0 ) {
         userAdmin( "modify", "group", cmdToken[1], "add", cmdToken[2],
                    cmdToken[3], "", "" );
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "mkgroup" ) == 0 ) {
         userAdmin( "mkgroup", cmdToken[1], "rodsgroup",
                    myZone, "", "", "", "" );
 
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "rfg" ) == 0 ) {
         userAdmin( "modify", "group", cmdToken[1], "remove", cmdToken[2],
                    cmdToken[3], "", "" );
-        return( 0 );
+        return 0;
     }
     if ( *cmdToken[0] != '\0' ) {
         printf( "unrecognized command, try 'help'\n" );
-        return( -2 );
+        return -2;
     }
-    return( -3 );
+    return -3;
 }
 
 int

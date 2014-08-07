@@ -25,6 +25,6 @@ rcCollRepl( rcComm_t *conn, collInp_t *collReplInp, int vFlag ) {
 
     status = cliGetCollOprStat( conn, collOprStat, vFlag, retval );
 
-    return ( status );
+    return status;
 }
 

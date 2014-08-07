@@ -160,7 +160,7 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiWriteRodsLog: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -169,7 +169,7 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiWriteRodsLog: input Param1 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
@@ -181,14 +181,14 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
                             "msiWriteRodsLog: Unsupported input Param1 types %s",
                             inpParam1->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     rei->status = 0;
 
     fillIntInMsParam( outParam, rei->status );
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -295,7 +295,7 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
         rodsLog( LOG_ERROR,
                  "msiSplitPath: input inpPath is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpPath->type, STR_MS_T ) == 0 ) {
@@ -316,7 +316,7 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
                  inpPath->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -376,7 +376,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
         rodsLog( LOG_ERROR,
                  "msiGetSessionVarValue: input inpVar or outputMode is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpVar->type, STR_MS_T ) != 0 ||
@@ -384,7 +384,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
         rodsLog( LOG_ERROR,
                  "msiGetSessionVarValue: Unsupported *inpVar or outputMode type" );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
     rsComm = rei->rsComm;
     inpVarStr = ( char * ) inpVar->inOutStruct;
@@ -394,7 +394,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
         rodsLog( LOG_ERROR,
                  "msiGetSessionVarValue: input inpVar or outputMode is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpVarStr, "all" ) == 0 ) {
@@ -443,7 +443,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
             free( outStr );
         }
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -495,7 +495,7 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
         rodsLog( LOG_ERROR,
                  "msiStrlen: input stringIn is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( stringIn->type, STR_MS_T ) == 0 ) {
@@ -514,7 +514,7 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
     }
     snprintf( len, NAME_LEN, "%d", rei->status );
     fillStrInMsParam( lengthOut, len );
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -564,7 +564,7 @@ msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
         rodsLog( LOG_ERROR,
                  "msiStrchop: input stringIn is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( stringIn->type, STR_MS_T ) == 0 ) {
@@ -587,7 +587,7 @@ msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
                  stringIn->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -651,7 +651,7 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
         rodsLog( LOG_ERROR,
                  "msiSubstr: input stringIn or offset is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( stringIn->type, STR_MS_T ) != 0 ) {
@@ -768,7 +768,7 @@ msiExit( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei ) {
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiExit: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -777,28 +777,28 @@ msiExit( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExit: input Param1 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( inpParam2 == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExit: input Param2 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 && strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
         snprintf( errMsg, ERR_MSG_LEN, "%s\n", ( char * ) inpParam2->inOutStruct );
         status = atoi( ( char * ) inpParam1->inOutStruct );
         addRErrorMsg( &rsComm->rError, status, errMsg );
-        return ( status );
+        return status;
     }
     else {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExit: Unsupported input Param1 types %s",
                             inpParam1->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     /* return (rei->status); */
@@ -820,7 +820,7 @@ msiStrCat( msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei ) {
         rodsLog( LOG_ERROR,
                  "msiStrCat: targParam and srcParam must be STR_MS_T. targ %s, src %s",
                  targParam->type, srcParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     else {
         targ = ( char* ) targParam->inOutStruct;
@@ -851,14 +851,14 @@ msiSplitPathByKey( msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentC
     if ( rei == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPathByKey: input rei is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( inpPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPathByKey: input inpPath is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( inpPath->type, STR_MS_T ) == 0 ) {
@@ -879,7 +879,7 @@ msiSplitPathByKey( msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentC
                  inpPath->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 

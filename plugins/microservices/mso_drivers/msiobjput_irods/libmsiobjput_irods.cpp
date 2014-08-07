@@ -30,14 +30,14 @@ extern "C" {
         str = strdup( inStr );
         if ( ( t = strstr( str, "/" ) ) == NULL ) {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
         else {
             *t = '\0';
         }
         if ( ( t = strstr( str, ":" ) ) == NULL ) {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
         s = t + 1;
         port = -1;
@@ -78,7 +78,7 @@ extern "C" {
         *rcComm = rcConnect( host, port, user, zone, 0, &errMsg );
         if ( *rcComm == NULL ) {
             free( str );
-            return( REMOTE_IRODS_CONNECT_ERR );
+            return REMOTE_IRODS_CONNECT_ERR;
         }
         i = clientLogin( *rcComm );
         if ( i != 0 ) {
@@ -86,7 +86,7 @@ extern "C" {
         }
 
         free( str );
-        return( i );
+        return i;
 
     }
 
@@ -153,19 +153,19 @@ extern "C" {
         if ( inMSOPath ==  NULL ||
                 strcmp( inMSOPath->type , STR_MS_T ) != 0 ||
                 inMSOPath->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inCacheFilename ==  NULL ||
                 strcmp( inCacheFilename->type , STR_MS_T ) != 0 ||
                 inCacheFilename->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileSize ==  NULL ||
                 strcmp( inFileSize->type , STR_MS_T ) != 0 ||
                 inFileSize->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
 
@@ -178,12 +178,12 @@ extern "C" {
             }
             else {
                 free( str );
-                return( USER_INPUT_FORMAT_ERR );
+                return USER_INPUT_FORMAT_ERR;
             }
         }
         else {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
 
         cacheFilename = ( char * ) inCacheFilename->inOutStruct;
@@ -194,7 +194,7 @@ extern "C" {
             printf( "msiputobj_irods: error connecting to remote iRODS: %s:%i\n",
                     ( char * ) inMSOPath->inOutStruct, i );
             free( str );
-            return( i );
+            return i;
         }
 
         /* Read the cache and Do the upload*/
@@ -221,7 +221,7 @@ extern "C" {
             printf( "msiputobj_irods: Unable to open file %s:%i\n", dataObjInp.objPath, outDesc );
             rcDisconnect( rcComm );
             close( srcFd );
-            return( outDesc );
+            return outDesc;
         }
 
         dataObjWriteInp.l1descInx = outDesc;
@@ -256,7 +256,7 @@ extern "C" {
         i = rcDataObjClose( rcComm, &dataObjCloseInp );
         rcDisconnect( rcComm );
 
-        return( i );
+        return i;
     }
 
 

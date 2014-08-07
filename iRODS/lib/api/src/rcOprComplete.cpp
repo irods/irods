@@ -9,5 +9,5 @@ rcOprComplete( rcComm_t *conn, int retval ) {
     status = procApiRequest( conn, OPR_COMPLETE_AN, ( void ** )( static_cast< void * >( &retval ) ), NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

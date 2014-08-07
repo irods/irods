@@ -91,11 +91,11 @@ extern "C" {
         for ( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
             if ( MssoStructFileDesc[i].inuseFlag == FD_FREE ) {
                 MssoStructFileDesc[i].inuseFlag = FD_INUSE;
-                return ( i );
+                return i;
             };
         } // for i
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
 
     } // alloc_struct_file_desc
 
@@ -103,12 +103,12 @@ extern "C" {
         if ( _idx  < 0 || _idx  >= NUM_STRUCT_FILE_DESC ) {
             rodsLog( LOG_NOTICE,
                      "free_struct_file_desc: index %d out of range", _idx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         memset( &MssoStructFileDesc[ _idx ], 0, sizeof( structFileDesc_t ) );
 
-        return ( 0 );
+        return 0;
 
     } // free_struct_file_desc
 
@@ -121,11 +121,11 @@ extern "C" {
         if ( fd == NULL )  {
             rodsLog( LOG_ERROR,
                      "Cannot open rule file %s. ernro = %d\n", fName, errno );
-            return( FILE_OPEN_ERR );
+            return FILE_OPEN_ERR;
         }
         fprintf( fd, "%s", buf );
         fclose( fd );
-        return( 0 );
+        return 0;
 
     }
 
@@ -134,7 +134,7 @@ extern "C" {
     checkPhySafety( char *file ) {
         /*  need to see if path is good. it should be only  a logical file */
         /* it may be file in another zone also!!! */
-        return( 0 );
+        return 0;
     }
 
 
@@ -169,7 +169,7 @@ extern "C" {
             free( cleanOut[clnoutCnt] );
         }
         clnoutCnt = jj;
-        return( 0 );
+        return 0;
 
     }
 
@@ -177,7 +177,7 @@ extern "C" {
     int checkSafety( char *file ) {
         /*  need to see if path is good. it should be only  a logical file */
         /* it may be file in another zone also!!! */
-        return( 0 );
+        return 0;
     }
 
 
@@ -186,7 +186,7 @@ extern "C" {
 
         if ( MssoSubFileStackTop == 0 ) {
             MssoSubFileStackTop++;
-            return( 0 );
+            return 0;
         }
         k = MssoSubFileStackTop - 1;
         MssoSubFileStackTop++;
@@ -218,14 +218,14 @@ extern "C" {
             MssoSubFileStack[k].checkForChange[i] = checkForChange[i];
         }
 
-        return( 0 );
+        return 0;
     }
 
     int popOutStackInfo() {
         int i, k;
         MssoSubFileStackTop--;
         if ( MssoSubFileStackTop == 0 ) {
-            return( 0 );
+            return 0;
         }
         k = MssoSubFileStackTop - 1;
 
@@ -257,7 +257,7 @@ extern "C" {
         }
 
 
-        return( 0 );
+        return 0;
 
 
     }
@@ -272,11 +272,11 @@ extern "C" {
                     strcmp( MssoStructFileDesc[i].specColl->collection, specColl->collection )	    == 0 &&
                     strcmp( MssoStructFileDesc[i].specColl->objPath, specColl->objPath )
                     == 0 ) {
-                return ( i );
+                return i;
             };
         }
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
 
     }
 
@@ -287,10 +287,10 @@ extern "C" {
 
         sprintf( s, "%s/myFakeFile", coll );
         if ( !strcmp( objPath, s ) ) {
-            return( 1 );
+            return 1;
         }
         else {
-            return( 0 );
+            return 0;
         }
     }
 
@@ -305,7 +305,7 @@ extern "C" {
 
         if ( specColl == NULL ) {
             rodsLog( LOG_NOTICE, "mkMssoCacheDir: NULL specColl input" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
@@ -328,14 +328,14 @@ extern "C" {
                     continue;
                 }
                 else {
-                    return ( status );
+                    return status;
                 }
             }
         }
 
         rstrcpy( specColl->cacheDir, fileMkdirInp.dirName, MAX_NAME_LEN );
 
-        return( 0 );
+        return 0;
     }
 
     int getMpfFileName(
@@ -349,7 +349,7 @@ extern "C" {
         if ( ( t = strstr( p, ".mpf" ) ) == NULL && ( t = strstr( p, ".run" ) ) == NULL ) {
             rodsLog( LOG_NOTICE,
                      "getMpfFileName: path name of different type:%s", p );
-            return( SYS_STRUCT_FILE_PATH_ERR );
+            return SYS_STRUCT_FILE_PATH_ERR;
         }
         c = *t;
         *t = '\0';
@@ -363,7 +363,7 @@ extern "C" {
         s++;
         rstrcpy( mpfFileName, s, NAME_LEN );
         *t = c;
-        return( 0 );
+        return 0;
     }
 
     int mkMssoMpfRunFile(
@@ -382,7 +382,7 @@ extern "C" {
 
         if ( specColl == NULL ) {
             rodsLog( LOG_NOTICE, "mkMssoMpfRunFile: NULL specColl input" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         memset( &fileCreateInp, 0, sizeof( fileCreateInp ) );
@@ -394,7 +394,7 @@ extern "C" {
 
         status = getMpfFileName( _fco, mpfFileName );
         if ( status < 0 ) {
-            return( status );
+            return status;
         }
 
         snprintf( fileCreateInp.fileName, MAX_NAME_LEN, "%s/%s.%s",
@@ -418,7 +418,7 @@ extern "C" {
         rsFileClose( rsComm, &fileCloseInp );
 
 
-        return( 0 );
+        return 0;
     }
 
     int
@@ -440,7 +440,7 @@ extern "C" {
 
         if ( specColl == NULL ) {
             rodsLog( LOG_NOTICE, "mkMssoMpfRunDir: NULL specColl input" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         fileMkdirInp_t fileMkdirInp;
@@ -452,7 +452,7 @@ extern "C" {
 
         status = getMpfFileName( _fco, mpfFileName );
         if ( status < 0 ) {
-            return( status );
+            return status;
         }
 
         snprintf( runDir, MAX_NAME_LEN, "%s/%s.%s",
@@ -463,10 +463,10 @@ extern "C" {
         strncpy( fileMkdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
         status = rsFileMkdir( rsComm, &fileMkdirInp );
         if ( status >= 0 ) {
-            return( 0 );
+            return 0;
         }
         if ( getErrno( status ) != EEXIST ) {
-            return( status );
+            return status;
         }
         /* runDir exists */
         /* first get the time stamp for oldRunDir */
@@ -474,7 +474,7 @@ extern "C" {
         if ( status != 0 ) {
             rodsLog( LOG_ERROR,
                      "mkMssoMpfRunDir: stat error for %s, errno = %d", runDir, errno );
-            return( UNIX_FILE_STAT_ERR );
+            return UNIX_FILE_STAT_ERR;
         }
         oldRunDirTime = ( int ) statbuf.st_mtime;
         if ( noVersions == 0 ) {
@@ -492,7 +492,7 @@ extern "C" {
                         continue;
                     }
                     else {
-                        return ( status );
+                        return status;
                     }
                 }
             }
@@ -509,7 +509,7 @@ extern "C" {
           system(mvStr);
           }
          ***/
-        return( 0 );
+        return 0;
     }
 
     int
@@ -526,7 +526,7 @@ extern "C" {
         int status = pushOnStackInfo();
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "PushOnStackInfo Error:%i\n", status );
-            return( status );
+            return status;
         }
 
 
@@ -539,7 +539,7 @@ extern "C" {
         if ( fptr == NULL ) {
             rodsLog( LOG_ERROR,
                      "Cannot open rule file %s. ernro = %d\n", inRuleFile, errno );
-            return( FILE_OPEN_ERR );
+            return FILE_OPEN_ERR;
         }
         size_t len;
         char buf[META_STR_LEN * 3];
@@ -552,7 +552,7 @@ extern "C" {
                 if ( convertListToMultiString( buf, 1 ) != 0 ) {
                     rodsLog( LOG_ERROR,
                              "Input parameter list format error for %s\n", buf );
-                    return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+                    return INPUT_ARG_NOT_WELL_FORMED_ERR;
                 }
                 parseMsParamFromIRFile( msParamArray, buf );
             }
@@ -561,7 +561,7 @@ extern "C" {
                 /*      if(convertListToMultiString(buf, 0)!=0) {
                         rodsLog (LOG_ERROR,
                         "Output parameter list format error for %s\n", myRodsArgs.fileString);
-                        return(INPUT_ARG_NOT_WELL_FORMED_ERR);
+                        return INPUT_ARG_NOT_WELL_FORMED_ERR;
                         }
                         if (strcmp (buf, "null") != 0) {
                         rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
@@ -586,7 +586,7 @@ extern "C" {
         if ( fptr == NULL ) {
             rodsLog( LOG_ERROR,
                      "Cannot open param file %s. ernro = %d\n", inParamFile, errno );
-            return( FILE_OPEN_ERR );
+            return FILE_OPEN_ERR;
         }
 
         size_t paramCount = 0;
@@ -735,12 +735,12 @@ extern "C" {
 #endif /* MSSO_DEBUG */
 
         if ( runDir == NULL ) {
-            return( SYS_MSSO_STRUCT_FILE_EXTRACT_ERR );
+            return SYS_MSSO_STRUCT_FILE_EXTRACT_ERR;
         }
 
         status = getMpfFileName( _fco, mpfFileName );
         if ( status < 0 ) {
-            return( status );
+            return status;
         }
         snprintf( mpfFilePath, MAX_NAME_LEN,  "%s/%s.mpf", specColl->cacheDir, mpfFileName );
         showFiles[0] = '\0';
@@ -749,7 +749,7 @@ extern "C" {
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE, "Failure in extractMssoFile at prepareForExecution: %d\n",
                      status );
-            return( status );
+            return status;
         }
         /*** Checking to see if one needs to really do run or use old files  ***/
         if ( cfcCnt > 0 ) {
@@ -768,7 +768,7 @@ extern "C" {
                         rodsLog( LOG_NOTICE,
                                  "Failure in extractMssoFile at rsDataObjStat when stating files checking execution: %d\n",
                                  status );
-                        return ( status );
+                        return status;
                     }
                     localTime = atoi( rodsObjStatOut->modifyTime );
                     rodsLog( LOG_NOTICE, "Timings for %s:rodsTime=%d and oldRunDirTime= %d",
@@ -785,7 +785,7 @@ extern "C" {
                     if ( status != 0 ) {
                         rodsLog( LOG_ERROR,
                                  "Failure in extractMssoFile at stat for %s, errno = %d", mvstr, errno );
-                        return( UNIX_FILE_STAT_ERR );
+                        return UNIX_FILE_STAT_ERR;
                     }
                     localTime = ( int ) statbuf.st_mtime;
                     rodsLog( LOG_NOTICE, "Timings for %s:fileTime=%d and oldRunDirTime= %d",
@@ -847,7 +847,7 @@ extern "C" {
                     }
                 }
             }
-            return( 0 );
+            return 0;
         }
         else { /* input has changed or new */
             /* do the moves if needed */
@@ -904,7 +904,7 @@ extern "C" {
                     rodsLog( LOG_NOTICE,
                              "Failure in extractMssoFile at rsDataObjGet when copying files from iRODS into execution area: %d\n",
                              status );
-                    return ( status );
+                    return status;
                 }
                 if ( status == 0 || dataObjOutBBuf.len > 0 ) {
                     /* the buffer contains the file */
@@ -917,7 +917,7 @@ extern "C" {
                             free( dataObjOutBBuf.buf );
                         }
                         fclose( fd );
-                        return( FILE_OPEN_ERR );
+                        return FILE_OPEN_ERR;
                     }
                     status = fwrite( dataObjOutBBuf.buf, 1, dataObjOutBBuf.len, fd );
                     if ( status != dataObjOutBBuf.len ) {
@@ -928,7 +928,7 @@ extern "C" {
                             free( dataObjOutBBuf.buf );
                         }
                         fclose( fd );
-                        return ( SYS_COPY_LEN_ERR );
+                        return SYS_COPY_LEN_ERR;
                     }
                     fclose( fd );
                     if ( dataObjOutBBuf.buf != NULL ) {
@@ -938,7 +938,7 @@ extern "C" {
                 else { /* file is too large!!! */
                     rodsLog( LOG_NOTICE,
                              "extractMssoFile:  copy file  too large to get into stage area %s for writing:%d\n", mvstr );
-                    return( USER_FILE_TOO_LARGE );
+                    return USER_FILE_TOO_LARGE;
                 }
             }
             else { /* local directory or file */
@@ -960,7 +960,7 @@ extern "C" {
             rodsLog( LOG_NOTICE, "Failure in extractMssoFile at rsExecMyRule: %d\n",
                      status );
             cleanOutStageArea( stageArea );
-            return( status );
+            return status;
         }
 #ifdef MSSO_DEBUG
         rodsLog( LOG_NOTICE, "Extracted Rule Finished: \nOut Parameters:" );
@@ -1085,7 +1085,7 @@ extern "C" {
         i = popOutStackInfo();
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "PopOutStackInfo Error:%i\n", i );
-            return( i );
+            return i;
         }
 
 
@@ -1110,7 +1110,7 @@ extern "C" {
         if ( specColl == NULL ) {
             rodsLog( LOG_NOTICE,
                      "stageMssoStructFile: NULL specColl input" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         if ( isFakeFile( specColl->collection, specColl->objPath ) == 1 ) {
@@ -1121,7 +1121,7 @@ extern "C" {
         else {
             if ( ( t = strstr( ( char* )_fco->sub_file_path().c_str(),
                                MssoStructFileDesc[ _struct_inx ].specColl->collection ) ) == NULL ) {
-                return( SYS_STRUCT_FILE_PATH_ERR );
+                return SYS_STRUCT_FILE_PATH_ERR;
             }
 
             t = t + strlen( MssoStructFileDesc[ _struct_inx ].specColl->collection );
@@ -1136,7 +1136,7 @@ extern "C" {
                     /***	  rodsLog (LOG_NOTICE,
                       "stageMssoStructFile: File seems to have no extension: %s", t);
                       return(SYS_STRUCT_FILE_PATH_ERR); ***/
-                    return( 0 );
+                    return 0;
                 }
                 s++;
                 if ( !strcmp( s, MSSO_MPF_FILE_STR ) ) {
@@ -1154,7 +1154,7 @@ extern "C" {
             }
         }
         else {
-            return( SYS_STRUCT_FILE_PATH_ERR );
+            return SYS_STRUCT_FILE_PATH_ERR;
         }
 
         if ( fileType == 1 ) {
@@ -1196,14 +1196,14 @@ extern "C" {
 
             /* create a run file */
             status = mkMssoMpfRunFile( _struct_inx , _fco );
-            return( status );
+            return status;
         }
         else if ( fileType == 3 ) { /* run */
             /* craete a run dir */
             /*** moved into prepareForExecution ****
               status = mkMssoMpfRunDir( _struct_inx , subFile, runDir);
               if (status < 0)
-              return(status);
+              return status;
              ***** RAJA Aug 16,2012 ****/
             /* perform the run */
             status = extractMssoFile( _struct_inx , _fco, runDir, showFiles );
@@ -1218,12 +1218,12 @@ extern "C" {
                 _fco->sub_file_path( showFiles );
                 //rstrcpy( subFile->subFilePath, showFiles, MAX_NAME_LEN );
             }
-            return( status );
+            return status;
         }
         else { /* fileType == 4   looking at run results*/
 
         }
-        return ( 0 );
+        return 0;
     }
 
     int rsMssoStructFileOpen(
@@ -1239,7 +1239,7 @@ extern "C" {
         if ( spec_coll == NULL ) {
             rodsLog( LOG_NOTICE,
                      "rsMssoStructFileOpen: NULL specColl input" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         /* look for opened MssoStructFileDesc */
@@ -1252,7 +1252,7 @@ extern "C" {
 
         if ( structFileInx < 0 ) {
             if ( ( structFileInx = alloc_struct_file_desc() ) < 0 ) {
-                return ( structFileInx );
+                return structFileInx;
             }
 
             /* Have to do this because specColl could come from a remote host */
@@ -1281,7 +1281,7 @@ extern "C" {
         if ( isFakeFile( spec_coll->collection, spec_coll->objPath ) == 0 ) {
             /* not a fake file */
             if ( _stage != 1 ) {
-                return ( structFileInx );
+                return structFileInx;
             }
         }
         status = stageMssoStructFile( structFileInx, _fco );
@@ -1291,7 +1291,7 @@ extern "C" {
             return status;
         }
 
-        return ( structFileInx );
+        return structFileInx;
     }
 
 
@@ -1326,7 +1326,7 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "syncCacheDirToMssofile: rsFileStat error for %s, status = %d",
                      specColl->phyPath, status );
-            return ( status );
+            return status;
         }
 
         if ( ( oprType & NO_REG_COLL_INFO ) == 0 ) {
@@ -1337,7 +1337,7 @@ extern "C" {
 
         free( fileStatOut );
 
-        return ( status );
+        return status;
     }
 
 
@@ -1345,7 +1345,7 @@ extern "C" {
     initMssoSubFileDesc() {
         memset( MssoSubFileDesc, 0,
                 sizeof( mssoSubFileDesc_t ) * NUM_MSSO_SUB_FILE_DESC );
-        return ( 0 );
+        return 0;
     }
 
     int
@@ -1355,14 +1355,14 @@ extern "C" {
         for ( i = 1; i < NUM_MSSO_SUB_FILE_DESC; i++ ) {
             if ( MssoSubFileDesc[i].inuseFlag == FD_FREE ) {
                 MssoSubFileDesc[i].inuseFlag = FD_INUSE;
-                return ( i );
+                return i;
             };
         }
 
         rodsLog( LOG_NOTICE,
                  "allocMssoSubFileDesc: out of MssoSubFileDesc" );
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
     }
 
     int
@@ -1370,12 +1370,12 @@ extern "C" {
         if ( mssoSubFileInx < 0 || mssoSubFileInx >= NUM_MSSO_SUB_FILE_DESC ) {
             rodsLog( LOG_NOTICE,
                      "freeMssoSubFileDesc: mssoSubFileInx %d out of range", mssoSubFileInx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         memset( &MssoSubFileDesc[mssoSubFileInx], 0, sizeof( mssoSubFileDesc_t ) );
 
-        return ( 0 );
+        return 0;
     }
 
 
@@ -1399,7 +1399,7 @@ extern "C" {
                 rodsLog( LOG_NOTICE,
                          "getMssoSubStructFilePhyPath: collection %s subFilePath %s mismatch",
                          specColl->collection, subFilePath );
-                return ( SYS_STRUCT_FILE_PATH_ERR );
+                return SYS_STRUCT_FILE_PATH_ERR;
             }
 
             snprintf( phyPath, MAX_NAME_LEN, "%s%s", specColl->cacheDir,
@@ -1411,7 +1411,7 @@ extern "C" {
             return SYS_STRUCT_FILE_PATH_ERR;
         }
 
-        return ( 0 );
+        return 0;
     }
 
     // =-=-=-=-=-=-=-

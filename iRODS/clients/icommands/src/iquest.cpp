@@ -166,7 +166,7 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     i = fillGenQueryInpFromStrCond( selectConditionString, &genQueryInp );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     if ( noDistinctFlag ) {
@@ -185,12 +185,12 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
     genQueryInp.continueInx = 0;
     i = rcGenQuery( conn, &genQueryInp, &genQueryOut );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = printGenQueryOut( stdout, format, hint,  genQueryOut );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
 
@@ -208,15 +208,15 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
         genQueryInp.continueInx = genQueryOut->continueInx;
         i = rcGenQuery( conn, &genQueryInp, &genQueryOut );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
         i = printGenQueryOut( stdout, format, hint,  genQueryOut );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
     }
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -270,11 +270,11 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
     status = rcSpecificQuery( conn, &specificQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "No rows found\n" );
-        return( 0 );
+        return 0;
     }
     if ( status < 0 ) {
         printError( conn, status, "rcSpecificQuery" );
-        return( status );
+        return status;
     }
 
     printBasicGenQueryOut( genQueryOut, myFormat );
@@ -294,12 +294,12 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
         status = rcSpecificQuery( conn, &specificQueryInp, &genQueryOut );
         if ( status < 0 ) {
             printError( conn, status, "rcSpecificQuery" );
-            return( status );
+            return status;
         }
         printBasicGenQueryOut( genQueryOut, myFormat );
     }
 
-    return( 0 );
+    return 0;
 
 }
 

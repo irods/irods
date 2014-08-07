@@ -110,7 +110,7 @@ chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv ) {
                  rsComm->proxyUser.userName,
                  proxyUserPriv,
                  rsComm->clientUser.userName );
-        return ( SYS_PROXYUSER_NO_PRIV );
+        return SYS_PROXYUSER_NO_PRIV;
     }
 }
 

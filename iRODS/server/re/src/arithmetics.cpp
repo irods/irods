@@ -41,7 +41,7 @@ int initializeEnv( Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
     for ( i = 0; i < argc ; i++ ) {
         insertIntoHashTable( env, args2[i]->text, args[i] );
     }
-    return ( 0 );
+    return 0;
 }
 
 char* getVariableName( Node *node ) {

@@ -10,5 +10,5 @@ rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp,
     status = procApiRequest( conn, RCV_XMSG_AN, rcvXmsgInp, NULL,
                              ( void ** ) rcvXmsgOut, NULL );
 
-    return ( status );
+    return status;
 }

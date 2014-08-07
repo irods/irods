@@ -66,5 +66,5 @@ rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp ) {
     status = procApiRequest( conn, DATA_OBJ_CLOSE_AN,  dataObjCloseInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

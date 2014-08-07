@@ -13,7 +13,7 @@ int
 rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     collInp_t collInp;
@@ -47,7 +47,7 @@ rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "rmUtil: invalid rm objType %d for %s",
                      rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -71,7 +71,7 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "rmDataObjUtil: NULL srcPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -88,7 +88,7 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
                      &startTime, &endTime );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -102,14 +102,14 @@ initCondForRm( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForRm: NULL dataObjInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( collInp, 0, sizeof( collInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->unmount == True ) {
@@ -148,7 +148,7 @@ initCondForRm( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     seedRandom();
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -159,18 +159,18 @@ rmCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     if ( srcColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "rmCollUtil: NULL srcColl input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "rmCollUtil: -r option must be used for collection %s",
                  srcColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     rstrcpy( collInp->collName, srcColl, MAX_NAME_LEN );
     status = rcRmColl( conn, collInp, rodsArgs->verbose );
 
-    return ( status );
+    return status;
 }

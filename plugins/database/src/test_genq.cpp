@@ -64,7 +64,7 @@ int doLs() {
             }
         }
     }
-    return( status );
+    return status;
 }
 
 /* revised version of test that is similar to ls */
@@ -116,7 +116,7 @@ int doLs2() {
             }
         }
     }
-    return( i );
+    return i;
 }
 
 
@@ -162,7 +162,7 @@ int doLs3a()
         status2  = chlGenQuery( genQueryInp, &genQueryOut );
         printf( "chlGenQuery second call to close out status=%d\n", status2 );
     }
-    return( i );
+    return i;
 }
 
 /* similar to ls2 but will do it repeatedly */
@@ -176,7 +176,7 @@ int doLs3( char *repCount ) {
             break;
         }
     }
-    return( status );
+    return status;
 }
 
 
@@ -205,7 +205,7 @@ doTest2() {
 
     status  = chlGenQuery( genQueryInp, &genQueryOut );
     printf( "chlGenQuery status=%d\n", status );
-    return( status );
+    return status;
 }
 
 int
@@ -228,7 +228,7 @@ printGenQOut( genQueryOut_t *genQueryOut ) {
         }
         printf( "genQueryOut->continueInx=%d\n", genQueryOut->continueInx );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -262,7 +262,7 @@ doTest3() {
     if ( status == 0 ) {
         printGenQOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -291,7 +291,7 @@ doTest4() {
     if ( status == 0 ) {
         printGenQOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -328,7 +328,7 @@ doTest5() {
     if ( status == 0 ) {
         printGenQOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -362,7 +362,7 @@ doTest6( char *testString ) {
     if ( status == 0 ) {
         printGenQOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -413,7 +413,7 @@ doTest7( char *testString, char *testString2, char *testString3,
         if ( genQueryOut.totalRowCount < minTotalRowsInt ) {
             rodsLog( LOG_ERROR, "doTest7 chlGenQuery totalRowCount(%d) is less than minimum expected (%d)\n",
                      genQueryOut.totalRowCount, minTotalRowsInt );
-            return( -1 );
+            return -1;
         }
     }
 
@@ -426,7 +426,7 @@ doTest7( char *testString, char *testString2, char *testString3,
             printGenQOut( &genQueryOut );
         }
     }
-    return( status );
+    return status;
 }
 
 int
@@ -478,7 +478,7 @@ doTest8( char *testString, char *testString2, char *testString3 ) {
             printGenQOut( &genQueryOut );
         }
     }
-    return( status );
+    return status;
 }
 
 int
@@ -556,7 +556,7 @@ doTest9( char *testString, char *testString2 ) {
             printGenQOut( &genQueryOut );
         }
     }
-    return( status );
+    return status;
 }
 
 int
@@ -599,7 +599,7 @@ doTest10( char *userName, char *rodsZone, char *accessPerm, char *collection ) {
         printGenQOut( &genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -644,7 +644,7 @@ doTest11( char *userName, char *rodsZone, char *accessPerm, char *collection,
         printGenQOut( &genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -698,7 +698,7 @@ doTest12( char *userName, char *rodsZone, char *accessPerm, char *collection ) {
         printGenQOut( &genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -756,7 +756,7 @@ doTest13( char *userName, char *rodsZone, char *accessPerm, char *collection,
         printGenQOut( &genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 /* Based on doTest7, but tests AUTO_CLOSE */
@@ -798,7 +798,7 @@ doTest15( char *testString, char *testString2, char *testString3 ) {
     if ( status == 0 ) {
         printGenQOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 
@@ -970,7 +970,7 @@ main( int argc, char **argv ) {
             rodsLog( LOG_SYS_FATAL,
                      "chlopen Error. Status = %d",
                      status );
-            return ( status );
+            return status;
         }
 
 
@@ -1098,5 +1098,5 @@ main( int argc, char **argv ) {
    the rule-engine is not needed in this ICAT test. */
 int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
-    return( 0 );
+    return 0;
 }

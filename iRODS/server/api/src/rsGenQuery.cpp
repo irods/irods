@@ -110,7 +110,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                                  &rodsServerHost );
 
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
@@ -128,7 +128,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 #else
         rodsLog( LOG_NOTICE,
                  "rsGenQuery error. RCAT is not configured on this host" );
-        return ( SYS_NO_RCAT_SERVER_ERR );
+        return SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
@@ -155,7 +155,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         rodsLog( LOG_NOTICE,
                  "rsGenQuery: rcGenQuery failed, status = %d", status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -320,8 +320,8 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             rodsLog( LOG_NOTICE,
                      "_rsGenQuery: genQuery status = %d", status );
         }
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 #endif

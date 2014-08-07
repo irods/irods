@@ -87,10 +87,10 @@ extern "C" {
 
 #else /* defined OS_AUTH */
         if ( ProcessType == CLIENT_PT ) {
-            return( OSAUTH_NOT_BUILT_INTO_CLIENT );
+            return OSAUTH_NOT_BUILT_INTO_CLIENT;
         }
         else {
-            return( OSAUTH_NOT_BUILT_INTO_SERVER );
+            return OSAUTH_NOT_BUILT_INTO_SERVER;
         }
 #endif
     }
@@ -159,10 +159,10 @@ extern "C" {
 
 #else /* defined OS_AUTH */
         if ( ProcessType == CLIENT_PT ) {
-            return( OSAUTH_NOT_BUILT_INTO_CLIENT );
+            return OSAUTH_NOT_BUILT_INTO_CLIENT;
         }
         else {
-            return( OSAUTH_NOT_BUILT_INTO_SERVER );
+            return OSAUTH_NOT_BUILT_INTO_SERVER;
         }
 #endif
     }
@@ -230,10 +230,10 @@ extern "C" {
         return 0;
 #else /* defined OS_AUTH */
         if ( ProcessType == CLIENT_PT ) {
-            return( OSAUTH_NOT_BUILT_INTO_CLIENT );
+            return OSAUTH_NOT_BUILT_INTO_CLIENT;
         }
         else {
-            return( OSAUTH_NOT_BUILT_INTO_SERVER );
+            return OSAUTH_NOT_BUILT_INTO_SERVER;
         }
 #endif
     }
@@ -263,14 +263,14 @@ extern "C" {
         if ( pipe( pipe1 ) < 0 ) {
             rodsLog( LOG_ERROR, "%s: pipe1 create failed. errno = %d",
                      fname, errno );
-            return ( SYS_PIPE_ERROR - errno );
+            return SYS_PIPE_ERROR - errno;
         }
         if ( pipe( pipe2 ) < 0 ) {
             rodsLog( LOG_ERROR, "%s: pipe2 create failed. errno = %d",
                      fname, errno );
             close( pipe1[0] );
             close( pipe1[1] );
-            return ( SYS_PIPE_ERROR - errno );
+            return SYS_PIPE_ERROR - errno;
         }
 
         childPid = RODS_FORK();
@@ -317,7 +317,7 @@ extern "C" {
                          fname, OS_AUTH_CMD, errno );
                 close( child_stdin );
                 close( child_stdout );
-                return ( SYS_PIPE_ERROR - errno );
+                return SYS_PIPE_ERROR - errno;
             }
             nb = write( child_stdin, challenge, challenge_len );
             if ( nb < 0 ) {
@@ -326,7 +326,7 @@ extern "C" {
                          fname, OS_AUTH_CMD, errno );
                 close( child_stdin );
                 close( child_stdout );
-                return ( SYS_PIPE_ERROR - errno );
+                return SYS_PIPE_ERROR - errno;
             }
 
             /* read the response */
@@ -336,7 +336,7 @@ extern "C" {
                          fname, OS_AUTH_CMD, errno );
                 close( child_stdin );
                 close( child_stdout );
-                return ( SYS_PIPE_ERROR - errno );
+                return SYS_PIPE_ERROR - errno;
             }
 
             close( child_stdin );
@@ -373,10 +373,10 @@ extern "C" {
 
 #else /* defined OS_AUTH */
         if ( ProcessType == CLIENT_PT ) {
-            return( OSAUTH_NOT_BUILT_INTO_CLIENT );
+            return OSAUTH_NOT_BUILT_INTO_CLIENT;
         }
         else {
-            return( OSAUTH_NOT_BUILT_INTO_SERVER );
+            return OSAUTH_NOT_BUILT_INTO_SERVER;
         }
 #endif
     }

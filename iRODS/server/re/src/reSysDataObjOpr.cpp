@@ -89,7 +89,7 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
         delete myRescGrpInfo;
         rei->rgi = NULL;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -186,12 +186,12 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
     rei->status = 0;
 
     if ( rescList == NULL || strcmp( rescList, "null" ) == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rei->rsComm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
         /* have enough privilege */
-        return ( 0 );
+        return 0;
     }
 
     condInput = &rei->doinp->condInput;
@@ -200,7 +200,7 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
             ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) == NULL &&
             ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) == NULL &&
             ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     memset( &strArray, 0, sizeof( strArray ) );
@@ -208,7 +208,7 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
     status = parseMultiStr( rescList, &strArray );
 
     if ( status <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     value = strArray.value;
@@ -217,13 +217,13 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
             /* a match */
             rei->status = USER_DIRECT_RESC_INPUT_ERR;
             free( value );
-            return ( USER_DIRECT_RESC_INPUT_ERR );
+            return USER_DIRECT_RESC_INPUT_ERR;
         }
     }
     if ( value != NULL ) {
         free( value );
     }
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -277,7 +277,7 @@ msiSetDataObjPreferredResc( msParam_t *xpreferredRescList, ruleExecInfo_t *rei )
     rei->status = 0;
 
     if ( preferredRescList == NULL || strcmp( preferredRescList, "null" ) == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     writeFlag = getWriteFlag( rei->doinp->openFlags );
@@ -287,11 +287,11 @@ msiSetDataObjPreferredResc( msParam_t *xpreferredRescList, ruleExecInfo_t *rei )
     status = parseMultiStr( preferredRescList, &strArray );
 
     if ( status <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rei->doi == NULL || rei->doi->next == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     value = strArray.value;
@@ -299,10 +299,10 @@ msiSetDataObjPreferredResc( msParam_t *xpreferredRescList, ruleExecInfo_t *rei )
         if ( requeDataObjInfoByResc( &rei->doi, &value[i * strArray.size],
                                      writeFlag, 1 ) >= 0 ) {
             rei->status = 1;
-            return ( rei->status );
+            return rei->status;
         }
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -355,7 +355,7 @@ msiSetDataObjAvoidResc( msParam_t *xavoidResc, ruleExecInfo_t *rei ) {
             rei->status = 1;
         }
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -404,7 +404,7 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
             //    rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
         }
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -452,7 +452,7 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
     dataObjInfoHead = rei->doi;
 
     if ( dataObjInfoHead == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( strlen( dataObjInfoHead->chksum ) == 0 ) {
@@ -465,7 +465,7 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -525,19 +525,19 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     dataObjInfoHead = rei->doi;
 
     if ( dataObjInfoHead == NULL ) { /* Weirdness */
-        return ( 0 );
+        return 0;
     }
 
     status = splitPathByKey( dataObjInfoHead->objPath,
                              logicalCollName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
     if ( strlen( logicalFileName ) <= 0 ) {
-        return( 0 );
+        return 0;
     }
 
     status = splitPathByKey( logicalFileName,
                              logicalFileName1, MAX_NAME_LEN, logicalFileNameExt, MAX_NAME_LEN, '.' );
     if ( strlen( logicalFileNameExt ) <= 0 ) {
-        return( 0 );
+        return 0;
     }
 
     /* see if there's an entry in the catalog for this extension */
@@ -556,14 +556,14 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     if ( status != 0 || genQueryOut == NULL ) {
-        return( 0 );
+        return 0;
     }
 
     rodsLog( LOG_NOTICE,
              "query status %d rowCnt=%d", status, genQueryOut->rowCnt );
 
     if ( genQueryOut->rowCnt != 1 ) {
-        return( 0 );
+        return 0;
     }
 
     status = svrCloseQueryOut( rei->rsComm, genQueryOut );
@@ -577,7 +577,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     status = rsModDataObjMeta( rei->rsComm, &modDataObjMetaInp );
 
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -625,25 +625,25 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
     rei->status = 0;
 
     if ( cacheResc == NULL || strcmp( cacheResc, "null" ) == 0 ) {
-        return ( rei->status );
+        return rei->status;
     }
 
     /* preProcessing */
     if ( rei->doinp->oprType == REPLICATE_OPR ||
             rei->doinp->oprType == COPY_DEST ||
             rei->doinp->oprType == COPY_SRC ) {
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( getValByKey( &rei->doinp->condInput, RESC_NAME_KW ) != NULL ||
             getValByKey( &rei->doinp->condInput, REPL_NUM_KW ) != NULL ) {
         /* a specific replNum or resource is specified. Don't cache */
-        return ( rei->status );
+        return rei->status;
     }
 
     status = msiSysReplDataObj( xcacheResc, NULL, rei );
 
-    return ( status );
+    return status;
 }
 
 /**
@@ -705,13 +705,13 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
 
     if ( cacheResc == NULL || strcmp( cacheResc, "null" ) == 0 ||
             strlen( cacheResc ) == 0 ) {
-        return ( rei->status );
+        return rei->status;
     }
 
     dataObjInfoHead = rei->doi;
 
     if ( dataObjInfoHead == NULL ) {
-        return ( rei->status );
+        return rei->status;
     }
 
 //    writeFlag = getWriteFlag( rei->doinp->openFlags );
@@ -728,7 +728,7 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
     if ( rei->status >= 0 ) {
         rei->doi = dataObjInfoHead;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -853,7 +853,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     }
 
     rei->status = numThr;
-    return ( rei->status );
+    return rei->status;
 
 }
 
@@ -893,7 +893,7 @@ msiDeleteDisallowed( ruleExecInfo_t *rei ) {
 
     rei->status = SYS_DELETE_DISALLOWED;
 
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -932,7 +932,7 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
 
     rei->status = MSI_OPERATION_NOT_ALLOWED;
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -969,7 +969,7 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
 int
 msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
     rstrcpy( rei->statusStr, MULTI_COPIES_PER_RESC, MAX_NAME_LEN );
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -1007,7 +1007,7 @@ msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
 int
 msiNoChkFilePathPerm( ruleExecInfo_t *rei ) {
     rei->status = NO_CHK_PATH_PERM;
-    return ( NO_CHK_PATH_PERM );
+    return NO_CHK_PATH_PERM;
 }
 /**
  * \fn msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei)
@@ -1065,7 +1065,7 @@ msiSetChkFilePathPerm( msParam_t *xchkType, ruleExecInfo_t *rei ) {
                  "msiNoChkFilePathPerm:invalid check type %s,set to DISALLOW_PATH_REG" );
         rei->status = DISALLOW_PATH_REG;
     }
-    return ( rei->status );
+    return rei->status;
 }
 // =-=-=-=-=-=-=-
 
@@ -1102,7 +1102,7 @@ msiSetChkFilePathPerm( msParam_t *xchkType, ruleExecInfo_t *rei ) {
 int
 msiNoTrashCan( ruleExecInfo_t *rei ) {
     rei->status = NO_TRASH_CAN;
-    return ( NO_TRASH_CAN );
+    return NO_TRASH_CAN;
 }
 
 /**
@@ -1154,12 +1154,12 @@ msiSetPublicUserOpr( msParam_t *xoprList, ruleExecInfo_t *rei ) {
     rei->status = 0;
 
     if ( oprList == NULL || strcmp( oprList, "null" ) == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rei->rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         /* not enough privilege */
-        return ( SYS_NO_API_PRIV );
+        return SYS_NO_API_PRIV;
     }
 
     memset( &strArray, 0, sizeof( strArray ) );
@@ -1167,7 +1167,7 @@ msiSetPublicUserOpr( msParam_t *xoprList, ruleExecInfo_t *rei ) {
     status = parseMultiStr( oprList, &strArray );
 
     if ( status <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     value = strArray.value;
@@ -1206,7 +1206,7 @@ msiSetPublicUserOpr( msParam_t *xoprList, ruleExecInfo_t *rei ) {
         free( value );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1216,26 +1216,26 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
     if ( proxyPerm < NO_USER_AUTH || proxyPerm > LOCAL_PRIV_USER_AUTH ) {
         rodsLog( LOG_ERROR,
                  "setApiPerm: input proxyPerm %d out of range", proxyPerm );
-        return ( SYS_INPUT_PERM_OUT_OF_RANGE );
+        return SYS_INPUT_PERM_OUT_OF_RANGE;
     }
 
     if ( clientPerm < NO_USER_AUTH || clientPerm > LOCAL_PRIV_USER_AUTH ) {
         rodsLog( LOG_ERROR,
                  "setApiPerm: input clientPerm %d out of range", clientPerm );
-        return ( SYS_INPUT_PERM_OUT_OF_RANGE );
+        return SYS_INPUT_PERM_OUT_OF_RANGE;
     }
 
     apiInx = apiTableLookup( apiNumber );
 
     if ( apiInx < 0 ) {
-        return ( apiInx );
+        return apiInx;
     }
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     RsApiTable[apiInx]->proxyUserAuth = proxyPerm;
     RsApiTable[apiInx]->clientUserAuth = clientPerm;
 
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -1303,14 +1303,14 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
         rodsLog( LOG_ERROR,
                  "msiSetGraftPathScheme: invalid input addUserName %s", addUserNameStr );
         rei->status = SYS_INPUT_PERM_OUT_OF_RANGE;
-        return ( SYS_INPUT_PERM_OUT_OF_RANGE );
+        return SYS_INPUT_PERM_OUT_OF_RANGE;
     }
 
     if ( !isdigit( trimDirCntStr[0] ) ) {
         rodsLog( LOG_ERROR,
                  "msiSetGraftPathScheme: input trimDirCnt %s", trimDirCntStr );
         rei->status = SYS_INPUT_PERM_OUT_OF_RANGE;
-        return ( SYS_INPUT_PERM_OUT_OF_RANGE );
+        return SYS_INPUT_PERM_OUT_OF_RANGE;
     }
     else {
         trimDirCnt = atoi( trimDirCntStr );
@@ -1328,7 +1328,7 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
         vaultPathPolicy->scheme = GRAFT_PATH_S;
         vaultPathPolicy->addUserName = addUserName;
         vaultPathPolicy->trimDirCnt = trimDirCnt;
-        return ( 0 );
+        return 0;
     }
     else {
         vaultPathPolicy = ( vaultPathPolicy_t * ) malloc(
@@ -1339,7 +1339,7 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
         addMsParam( &rei->inOutMsParamArray, VAULT_PATH_POLICY,
                     VaultPathPolicy_MS_T, ( void * ) vaultPathPolicy, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -1392,7 +1392,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
         }
         memset( vaultPathPolicy, 0, sizeof( vaultPathPolicy_t ) );
         vaultPathPolicy->scheme = RANDOM_S;
-        return ( 0 );
+        return 0;
     }
     else {
         vaultPathPolicy = ( vaultPathPolicy_t * ) malloc(
@@ -1402,7 +1402,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
         addMsParam( &rei->inOutMsParamArray, VAULT_PATH_POLICY,
                     VaultPathPolicy_MS_T, ( void * ) vaultPathPolicy, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 
@@ -1459,7 +1459,7 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
     }
     rei->status = numProc;
 
-    return ( numProc );
+    return numProc;
 }
 
 /**
@@ -1509,7 +1509,7 @@ msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
     else {
         rei->status = RescQuotaPolicy = RESC_QUOTA_OFF;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1564,7 +1564,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiSetReplComment: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     rsComm = rei->rsComm ;
 
@@ -1585,7 +1585,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
     /* make sure to have at least data ID or path */
     if ( !( dataIdStr || strlen( dataObjInfo.objPath) > 0 ) ) {
         rodsLog( LOG_ERROR, "msiSetReplComment: No data object ID or path provided." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( inpParam3 != NULL ) {
@@ -1595,7 +1595,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
     /* parse inpParam3: data type string */
     if ( ( dataCommentStr = parseMspForStr( inpParam4 ) ) == NULL ) {
         rodsLog( LOG_ERROR, "msiSetReplComment: parseMspForStr error for param 4." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_COMMENTS_KW, dataCommentStr );
@@ -1624,7 +1624,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLog( LOG_NOTICE, "msiSetReplComment: OK mod %s (%d) with %s",
                  dataObjInfo.objPath, dataObjInfo.replNum, dataCommentStr );
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1676,7 +1676,7 @@ msiSetBulkPutPostProcPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
     else {
         rei->status = POLICY_OFF;
     }
-    return ( rei->status );
+    return rei->status;
 }
 
 /**
@@ -1741,7 +1741,7 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiSysMetaModify: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -1750,14 +1750,14 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSysMetaModify: input Param1 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( value == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSysMetaModify: input Param2 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
     if ( strcmp( sysMetadata->type, STR_MS_T ) == 0 && strcmp( value->type, STR_MS_T ) == 0 ) {
@@ -1824,7 +1824,7 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
                 rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                     "msiSysMetaModify: bad format for the input time: %s. Please refer to isysmeta help.",
                                     ( char * ) value->inOutStruct );
-                return ( rei->status );
+                return rei->status;
             }
             else {
                 addKeyVal( &regParam, DATA_EXPIRY_KW, theTime );
@@ -1851,8 +1851,8 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
                             "msiSysMetaModify: Unsupported input Param1 type %s or Param2 type %s",
                             sysMetadata->type, value->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-        return ( rei->status );
+        return rei->status;
     }
 
-    return ( rei->status );
+    return rei->status;
 }

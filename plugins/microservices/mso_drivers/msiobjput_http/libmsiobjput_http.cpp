@@ -69,19 +69,19 @@ extern "C" {
         if ( inMSOPath ==  NULL ||
                 strcmp( inMSOPath->type , STR_MS_T ) != 0 ||
                 inMSOPath->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inCacheFilename ==  NULL ||
                 strcmp( inCacheFilename->type , STR_MS_T ) != 0 ||
                 inCacheFilename->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileSize ==  NULL ||
                 strcmp( inFileSize->type , STR_MS_T ) != 0 ||
                 inFileSize->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
 
@@ -109,7 +109,7 @@ extern "C" {
             printf( "Curl Error: msiputobj_http: Initialization failed\n" );
             free( reqStr );
             fclose( srcFd );
-            return( MSO_OBJ_PUT_FAILED );
+            return MSO_OBJ_PUT_FAILED;
         }
 
         curl_easy_setopt( curl, CURLOPT_ERRORBUFFER, curlErrBuf );
@@ -127,7 +127,7 @@ extern "C" {
             printf( "msiputobj_http: Curl Error for %s:ErrNum=%i, Msg=%s\n", reqStr, res, curlErrBuf );
             curl_easy_cleanup( curl );
             free( reqStr );
-            return( MSO_OBJ_PUT_FAILED );
+            return MSO_OBJ_PUT_FAILED;
         }
         curl_easy_cleanup( curl );
 
@@ -136,7 +136,7 @@ extern "C" {
         /* clean up */
         free( reqStr );
 
-        return( 0 );
+        return 0;
 
     } // msiobjput_http
 

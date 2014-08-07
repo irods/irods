@@ -25,5 +25,5 @@ rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     regReplicaInp->srcDataObjInfo->next = srcNext;
     regReplicaInp->destDataObjInfo->next = destNext;
 
-    return ( status );
+    return status;
 }

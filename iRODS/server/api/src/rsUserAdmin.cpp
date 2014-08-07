@@ -17,7 +17,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -36,7 +36,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rodsLog( LOG_NOTICE,
                  "rsUserAdmin: rcUserAdmin failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -99,7 +99,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                      userAdminInp->arg1, userAdminInp->arg2, status2 );
             return status2;
         }
-        return( status );
+        return status;
     }
     if ( strcmp( userAdminInp->arg0, "modify" ) == 0 ) {
         if ( strcmp( userAdminInp->arg1, "group" ) == 0 ) {
@@ -132,7 +132,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                     return status2;
                 }
             }
-            return( status );
+            return status;
         }
     }
     // =-=-=-=-=-=-=-
@@ -155,7 +155,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
         if ( status != 0 ) {
             chlRollback( rsComm );
-            return( status );
+            return status;
         }
         /* And then the chlModUser function to set the initial password */
         status = chlModUser( rsComm,
@@ -165,7 +165,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         if ( status != 0 ) {
             chlRollback( rsComm );
         }
-        return( status );
+        return status;
     }
     if ( strcmp( userAdminInp->arg0, "mkgroup" ) == 0 ) {
         /* run the acCreateUser rule */
@@ -189,11 +189,11 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         if ( status != 0 ) {
             chlRollback( rsComm );
         }
-        return( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
-    return( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 #endif
 
@@ -219,5 +219,5 @@ icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
     rei.uoip = &rsComm->proxyUser;
     status =  applyRuleArg( ruleName,
                             args, 1, &rei, NO_SAVE_REI );
-    return( status );
+    return status;
 }

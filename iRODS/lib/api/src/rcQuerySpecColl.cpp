@@ -10,5 +10,5 @@ rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
     status = procApiRequest( conn, QUERY_SPEC_COLL_AN, querySpecCollInp, NULL,
                              ( void ** ) genQueryOut, NULL );
 
-    return ( status );
+    return status;
 }

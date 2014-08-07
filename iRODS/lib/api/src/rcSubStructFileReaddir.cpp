@@ -10,5 +10,5 @@ rcSubStructFileReaddir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileRe
     status = procApiRequest( conn, SUB_STRUCT_FILE_READDIR_AN, subStructFileReaddirInp, NULL,
                              ( void ** ) rodsDirent, NULL );
 
-    return ( status );
+    return status;
 }

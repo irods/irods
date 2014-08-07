@@ -23,7 +23,7 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     status = getAndConnRcatHost( rsComm, SLAVE_RCAT, zoneHint,
                                  &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -32,7 +32,7 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
 #else
         rodsLog( LOG_NOTICE,
                  "rsSpecificQuery error. RCAT is not configured on this host" );
-        return ( SYS_NO_RCAT_SERVER_ERR );
+        return SYS_NO_RCAT_SERVER_ERR;
 #endif
     }
     else {
@@ -43,7 +43,7 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
         rodsLog( LOG_NOTICE,
                  "rsSpecificQuery: rcSpecificQuery failed, status = %d", status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -73,8 +73,8 @@ _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
             rodsLog( LOG_NOTICE,
                      "_rsSpecificQuery: specificQuery status = %d", status );
         }
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 #endif

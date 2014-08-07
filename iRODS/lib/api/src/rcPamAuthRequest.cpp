@@ -10,5 +10,5 @@ rcPamAuthRequest( rcComm_t *conn, pamAuthRequestInp_t *pamAuthRequestInp,
     status = procApiRequest( conn, PAM_AUTH_REQUEST_AN,  pamAuthRequestInp, NULL,
                              ( void ** ) pamAuthRequestOut, NULL );
 
-    return ( status );
+    return status;
 }

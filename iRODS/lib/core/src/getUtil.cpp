@@ -27,7 +27,7 @@ setSessionTicket( rcComm_t *myConn, char *ticket ) {
     if ( status != 0 ) {
         printf( "set ticket error %d \n", status );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -42,14 +42,14 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     rcComm_t *conn = *myConn;
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( myRodsArgs->ticket == True ) {
         if ( myRodsArgs->ticketString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             setSessionTicket( conn, myRodsArgs->ticketString );
@@ -63,7 +63,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "getUtil: resolveRodsTarget" );
-            return ( status );
+            return status;
         }
         rodsPathInp->resolved = True;
     }
@@ -140,7 +140,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "getUtil: invalid get dest objType %d for %s",
                      targPath->objType, targPath->outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 ) {
@@ -207,7 +207,7 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "getDataObjUtil: NULL srcPath or targPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( conn->fileRestart.info.status == FILE_RESTARTED &&
@@ -257,7 +257,7 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -268,13 +268,13 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForGet: NULL dataObjOprInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     dataObjOprInp->oprType = GET_OPR;
@@ -309,7 +309,7 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjOprInp->condInput, RESC_NAME_KW,
@@ -321,7 +321,7 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->ticketString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             addKeyVal( &dataObjOprInp->condInput, TICKET_KW,
@@ -360,7 +360,7 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             rodsLogError( LOG_ERROR, status,
                           "initCondForPut: openRestartFile of %s errno",
                           rodsArgs->restartFileString );
-            return ( status );
+            return status;
         }
     }
 
@@ -397,7 +397,7 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     // =-=-=-=-=-=-=-
     dataObjOprInp->openFlags = O_RDONLY;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -416,14 +416,14 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
     if ( srcColl == NULL || targDir == NULL ) {
         rodsLog( LOG_ERROR,
                  "getCollUtil: NULL srcColl or targDir input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "getCollUtil: -r option must be used for getting %s collection",
                  targDir );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->redirectConn == True ) {
@@ -494,7 +494,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                 rodsLogError( LOG_ERROR, status,
                               "getCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );
-                return ( status );
+                return status;
             }
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targDir, childPath );
@@ -525,14 +525,14 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ||
               status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

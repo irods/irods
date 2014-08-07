@@ -26,13 +26,13 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, objPath->value,
                                  &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -48,7 +48,7 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                                    bulkDataObjRegOut );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -68,69 +68,69 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_HIER ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_HIER failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( objPath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataType =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_TYPE_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( dataSize =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_SIZE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_SIZE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescName =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( filePath =
                 getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_D_DATA_PATH failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_MODE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( oprType =
                 getSqlResultByInx( bulkDataObjRegInp, OPR_TYPE_INX ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsBulkDataObjReg: getSqlResultByInx for OPR_TYPE_INX failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescGroupName =
                 getSqlResultByInx( bulkDataObjRegInp, COL_RESC_GROUP_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_RESC_GROUP_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_REPL_NUM ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     chksum = getSqlResultByInx( bulkDataObjRegInp, COL_D_DATA_CHECKSUM );
@@ -141,7 +141,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 getSqlResultByInx( *bulkDataObjRegOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsBulkDataObjReg: getSqlResultByInx for COL_D_DATA_ID failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     ( *bulkDataObjRegOut )->rowCnt = bulkDataObjRegInp->rowCnt;
@@ -227,7 +227,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     }
     return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 }

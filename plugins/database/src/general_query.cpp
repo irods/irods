@@ -114,11 +114,11 @@ int fkFindName( char *tableName ) {
     int i;
     for ( i = 0; i < nTables; i++ ) {
         if ( strcmp( Tables[i].tableName, tableName ) == 0 ) {
-            return( i );
+            return i;
         }
     }
     rodsLog( LOG_ERROR, "fkFindName table %s unknown", tableName );
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -130,7 +130,7 @@ int
 sFklink( char *table1, char *table2, char *connectingSQL ) {
     if ( nLinks >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "fklink table full %d", CAT_TOO_MANY_TABLES );
-        return( CAT_TOO_MANY_TABLES );
+        return CAT_TOO_MANY_TABLES;
     }
     Links[nLinks].table1 = fkFindName( table1 );
     Links[nLinks].table2 = fkFindName( table2 );
@@ -142,7 +142,7 @@ sFklink( char *table1, char *table2, char *connectingSQL ) {
                               Links[nLinks].table1,  nLinks,
                               Links[nLinks].table2 );
     nLinks++;
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -156,7 +156,7 @@ sTableInit() {
     memset( Links, 0, sizeof( Links ) );
     memset( Tables, 0, sizeof( Tables ) );
     memset( Columns, 0, sizeof( Columns ) );
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -175,7 +175,7 @@ int
 sTable( char *tableName, char *tableAlias, int cycler ) {
     if ( nTables >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
-        return( CAT_TOO_MANY_TABLES );
+        return CAT_TOO_MANY_TABLES;
     }
     strncpy( Tables[nTables].tableName, tableName, NAME_LEN );
     strncpy( Tables[nTables].tableAlias, tableAlias, MAX_TSQL );
@@ -184,14 +184,14 @@ sTable( char *tableName, char *tableAlias, int cycler ) {
         printf( "table %d is %s\n", nTables, tableName );
     }
     nTables++;
-    return( 0 );
+    return 0;
 }
 
 int
 sColumn( int defineVal, char *tableName, char *columnName ) {
     if ( nColumns >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
-        return( CAT_TOO_MANY_TABLES );
+        return CAT_TOO_MANY_TABLES;
     }
     strncpy( Columns[nColumns].tableName, tableName, NAME_LEN );
     strncpy( Columns[nColumns].columnName, columnName, NAME_LEN );
@@ -199,7 +199,7 @@ sColumn( int defineVal, char *tableName, char *columnName ) {
     if ( debug > 1 ) printf( "column %d is %d %s %s\n",
                                  nColumns, defineVal, tableName, columnName );
     nColumns++;
-    return( 0 );
+    return 0;
 }
 
 /* given a defineValue, return the table and column names;
@@ -211,10 +211,10 @@ sGetColumnInfo( int defineVal, char **tableName, char **columnName ) {
         if ( Columns[i].defineValue == defineVal ) {
             *tableName = Columns[i].tableName;
             *columnName = Columns[i].columnName;
-            return( 0 );
+            return 0;
         }
     }
-    return( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 
 
@@ -274,7 +274,7 @@ tablePresent( char *table, char *sqlText ) {
     for ( ;; ) {
         cp2 = strstr( cp1, table );
         if ( cp2 == NULL ) {
-            return( 0 );
+            return 0;
         }
         tokens = 0;
         for ( ; *cp2 != '\0' && *cp2 != ','; cp2++ ) {
@@ -292,7 +292,7 @@ tablePresent( char *table, char *sqlText ) {
             tokens++;
         }
         if ( tokens == 1 ) {
-            return( 1 );
+            return 1;
         }
         cp1 = cp2;
     }
@@ -321,7 +321,7 @@ tScan( int table, int link ) {
         }
         thisKeep = 1;
         if ( nToFind <= 0 ) {
-            return( thisKeep );
+            return thisKeep;
         }
     }
     else {
@@ -329,7 +329,7 @@ tScan( int table, int link ) {
             if ( debug > 1 ) {
                 printf( "%d returning flag=%d\n", table, Tables[table].flag );
             }
-            return( 0 );
+            return 0;
         }
     }
     if ( Tables[table].cycler == 1 ) {
@@ -375,7 +375,7 @@ tScan( int table, int link ) {
                     printf( "added (2) to fromSQL: %s\n", fromSQL );
                 }
                 if ( nToFind <= 0 ) {
-                    return( thisKeep );
+                    return thisKeep;
                 }
             }
         }
@@ -414,7 +414,7 @@ tScan( int table, int link ) {
                     printf( "added (3) to fromSQL: %s\n", fromSQL );
                 }
                 if ( nToFind <= 0 ) {
-                    return( thisKeep );
+                    return thisKeep;
                 }
             }
         }
@@ -422,7 +422,7 @@ tScan( int table, int link ) {
     if ( debug > 1 ) {
         printf( "%d returning %d\n", table, thisKeep );
     }
-    return( thisKeep );
+    return thisKeep;
 }
 
 /* prelim test routine, find a subtree between two tables */
@@ -450,7 +450,7 @@ sTest( int i1, int i2 ) {
     else {
         printf( "SUCCESS linking %d to %d\n", i1, i2 );
     }
-    return( 0 );
+    return 0;
 }
 
 int sTest2( int i1, int i2, int i3 ) {
@@ -476,7 +476,7 @@ int sTest2( int i1, int i2, int i3 ) {
     else {
         printf( "SUCCESS linking %d, %d, %d\n", i1, i2, i3 );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -500,7 +500,7 @@ tCycleChk( int table, int link, int thisTreeNum ) {
             if ( debug > 1 ) {
                 printf( "Found cycle at node %d\n", table );
             }
-            return( 1 );
+            return 1;
         }
     }
     Tables[table].flag = thisTreeNum;
@@ -522,7 +522,7 @@ tCycleChk( int table, int link, int thisTreeNum ) {
                 thisKeep = 1;
                 if ( debug > 1 ) printf( "%d use link %d tree %d\n", table, i,
                                              thisTreeNum );
-                return( thisKeep );
+                return thisKeep;
             }
         }
     }
@@ -537,14 +537,14 @@ tCycleChk( int table, int link, int thisTreeNum ) {
                 if ( debug > 1 ) {
                     printf( "%d use link %d\n", table, i );
                 }
-                return( thisKeep );
+                return thisKeep;
             }
         }
     }
     if ( debug > 1 ) {
         printf( "%d returning %d\n", table, thisKeep );
     }
-    return( thisKeep );
+    return thisKeep;
 }
 
 /*
@@ -570,7 +570,7 @@ int findCycles( int startTable ) {
 
     if ( startTable != 0 ) {
         if ( startTable > nTables ) {
-            return( CAT_INVALID_ARGUMENT );
+            return CAT_INVALID_ARGUMENT;
         }
         treeNum++;
         status = tCycleChk( startTable, -1, treeNum );
@@ -578,7 +578,7 @@ int findCycles( int startTable ) {
             printf( "tree %d status %d\n", treeNum, status );
         }
         if ( status ) {
-            return( status );
+            return status;
         }
     }
 
@@ -590,11 +590,11 @@ int findCycles( int startTable ) {
                 printf( "tree %d status %d\n", treeNum, status );
             }
             if ( status ) {
-                return( status );
+                return status;
             }
         }
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -617,7 +617,7 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
         }
     }
     if ( colIx == -1 ) {
-        return( CAT_UNKNOWN_TABLE );
+        return CAT_UNKNOWN_TABLE;
     }
 
     for ( i = 0; i < nTables; i++ ) {
@@ -726,10 +726,10 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
             if ( debug > 1 ) {
                 printf( "table index=%d, nToFind=%d\n", i, nToFind );
             }
-            return( i );
+            return i;
         }
     }
-    return( -1 );
+    return -1;
 }
 
 /*
@@ -895,7 +895,7 @@ compoundConditionSpecified( char *condition ) {
     /* Simple case, not in the condition at all */
     if ( strstr( condition, "||" ) == NULL &&
             strstr( condition, "&&" ) == NULL ) {
-        return( 0 );
+        return 0;
     }
 
     /* Make a copy of the condition and erase the quoted strings */
@@ -918,9 +918,9 @@ compoundConditionSpecified( char *condition ) {
     /* And now test again */
     if ( strstr( myCondition, "||" ) == NULL &&
             strstr( myCondition, "&&" ) == NULL ) {
-        return( 0 );
+        return 0;
     }
-    return( 1 );
+    return 1;
 }
 
 
@@ -944,7 +944,7 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
 
     if ( prevWhereLen < 0 ) { /* reinitialize */
         conditionsForBindIx = 0;
-        return( 0 );
+        return 0;
     }
 
     rstrcpy( condPart1, condition, MAX_NAME_LEN * 2 );
@@ -994,7 +994,7 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
                  ( MAX_SQL_SIZE_GQ * 2 ) - conditionsForBindIx );
         status = insertWhere( ( char* )&conditionsForBind[conditionsForBindIx], 0 );
         if ( status ) {
-            return( status );
+            return status;
         }
         conditionsForBindIx += strlen( condPart1 ) + 1;
 
@@ -1010,7 +1010,7 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
             rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ );
             status = insertWhere( condPart2, 0 );
             if ( status ) {
-                return( status );
+                return status;
             }
             keepGoing = 0;
         }
@@ -1021,7 +1021,7 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
     }
 
     rstrcat( whereSQL, " ) ", MAX_SQL_SIZE_GQ );
-    return( 0 );
+    return 0;
 }
 
 /* Set the orderBySQL clause if needed */
@@ -1100,7 +1100,7 @@ setBlank( char *string, int count ) {
     for ( cp = string, i = 0; i < count; i++ ) {
         *cp++ = ' ';
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1169,10 +1169,10 @@ checkCondition( char *condition ) {
 
     for ( cp = tmpStr; *cp != '\0'; cp++ ) {
         if ( *cp != ' ' ) {
-            return( CAT_INVALID_ARGUMENT );
+            return CAT_INVALID_ARGUMENT;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -1210,7 +1210,7 @@ addInClauseToWhereForParentOf( char *inArg ) {
                      ( MAX_SQL_SIZE_GQ ) - inStrIx );
             inStrings[inStrIx + ncopy] = '\0';
             if ( cllBindVarCount + 1 >= MAX_BIND_VARS ) {
-                return( CAT_BIND_VARIABLE_LIMIT_EXCEEDED );
+                return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
             }
             cllBindVars[cllBindVarCount++] = ( char * )&inStrings[inStrIx];
             inStrIx = inStrIx + ncopy + 1;
@@ -1237,7 +1237,7 @@ addInClauseToWhereForIn( char *inArg, int option ) {
 
     if ( option == 1 ) {
         inStrIx = 0;
-        return( 0 );
+        return 0;
     }
     rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ );
     len = strlen( inArg );
@@ -1267,7 +1267,7 @@ addInClauseToWhereForIn( char *inArg, int option ) {
                          ( MAX_SQL_SIZE_GQ * 2 ) - inStrIx );
                 inStrings[inStrIx + ncopy] = '\0';
                 if ( cllBindVarCount + 1 >= MAX_BIND_VARS ) { // JMC - backport 4848
-                    return( CAT_BIND_VARIABLE_LIMIT_EXCEEDED );
+                    return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
                 }
 
                 cllBindVars[cllBindVarCount++] = ( char * )&inStrings[inStrIx];
@@ -1277,9 +1277,9 @@ addInClauseToWhereForIn( char *inArg, int option ) {
     }
     rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ );
     if ( nput == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1323,7 +1323,7 @@ addBetweenClauseToWhere( char *inArg ) {
                          MAX_SQL_SIZE_GQ - inStrIx );
                 inStrings[inStrIx + ncopy] = '\0';
                 if ( cllBindVarCount + 1 >= MAX_BIND_VARS ) { // JMC - backport 4848
-                    return( CAT_BIND_VARIABLE_LIMIT_EXCEEDED );
+                    return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
                 }
 
                 cllBindVars[cllBindVarCount++] = ( char * )&inStrings[inStrIx];
@@ -1332,9 +1332,9 @@ addBetweenClauseToWhere( char *inArg ) {
         }
     }
     if ( nput != 2 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1355,7 +1355,7 @@ insertWhere( char *condition, int option ) {
     if ( option == 1 ) { /* reinitialize */
         bindIx = 0;
         addInClauseToWhereForIn( condition, option );
-        return( 0 );
+        return 0;
     }
 
     condStart = condition;
@@ -1368,7 +1368,7 @@ insertWhere( char *condition, int option ) {
         cp = strstr( condition, "IN" );
     }
     if ( cp != NULL && cp == condStart ) {
-        return ( addInClauseToWhereForIn( condition, 0 ) );
+        return addInClauseToWhereForIn( condition, 0 );
     }
 
     cp = strstr( condition, "between" );
@@ -1376,7 +1376,7 @@ insertWhere( char *condition, int option ) {
         cp = strstr( condition, "BETWEEN" );
     }
     if ( cp != NULL && cp == condStart ) {
-        return ( addBetweenClauseToWhere( condition ) );
+        return addBetweenClauseToWhere( condition );
     }
 
     cpFirstQuote = 0;
@@ -1395,21 +1395,21 @@ insertWhere( char *condition, int option ) {
         rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
         rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ );
         rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( condition, "IS NOT NULL" ) == 0 ) {
         rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
         rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ );
         rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ );
-        return( 0 );
+        return 0;
     }
     bindIx++;
     thisBindVar = ( char* )&bindVars[bindIx];
     if ( cpFirstQuote == 0 || cpSecondQuote == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
     if ( ( cpSecondQuote - cpFirstQuote ) + bindIx > MAX_SQL_SIZE_GQ + 90 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     for ( cp1 = cpFirstQuote + 1; cp1 < cpSecondQuote; cp1++ ) {
@@ -1417,14 +1417,14 @@ insertWhere( char *condition, int option ) {
     }
     bindVars[bindIx++] = '\0';
     if ( cllBindVarCount + 1 >= MAX_BIND_VARS ) { // JMC - backport 4848
-        return( CAT_BIND_VARIABLE_LIMIT_EXCEEDED );
+        return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
     }
 
     cllBindVars[cllBindVarCount++] = thisBindVar;
 
     /* basic legality check on the condition */
     if ( ( cpFirstQuote - condition ) > 10 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     tmpStr[0] = ' ';
@@ -1481,7 +1481,7 @@ insertWhere( char *condition, int option ) {
             rstrcat( whereSQL, tmpStr, MAX_SQL_SIZE_GQ );
         }
     }
-    return( checkCondition( myCondition ) );
+    return checkCondition( myCondition );
 }
 
 /*
@@ -1496,7 +1496,7 @@ genqAppendAccessCheck() {
     int addedTicketCheck = 0;
 
     if ( accessControlPriv == LOCAL_PRIV_USER_AUTH ) {
-        return( 0 );
+        return 0;
     }
 
     if ( accessControlControlFlag > 1 ) {
@@ -1511,7 +1511,7 @@ genqAppendAccessCheck() {
 
     if ( cllBindVarCount + 6 >= MAX_BIND_VARS ) {
         /* too close, should normally have plenty of slots */
-        return( CAT_BIND_VARIABLE_LIMIT_EXCEEDED );
+        return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
     }
 
     /* First, in all cases (non-admin), check on ticket_string
@@ -1527,7 +1527,7 @@ genqAppendAccessCheck() {
     }
 
     if ( doCheck == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     /* if an item in R_DATA_MAIN is being accessed, add a
@@ -1592,7 +1592,7 @@ genqAppendAccessCheck() {
             }
         }
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1600,21 +1600,21 @@ genqAppendAccessCheck() {
  */
 int specialQueryIx( int ix ) {
     if ( ix == 0 ) {
-        return( COL_QUOTA_USER_ID );
+        return COL_QUOTA_USER_ID;
     }
     if ( ix == 1 ) {
-        return( COL_R_RESC_NAME );
+        return COL_R_RESC_NAME;
     }
     if ( ix == 2 ) {
-        return( COL_QUOTA_LIMIT );
+        return COL_QUOTA_LIMIT;
     }
     if ( ix == 3 ) {
-        return( COL_QUOTA_OVER );
+        return COL_QUOTA_OVER;
     }
     if ( ix == 4 ) {
-        return( COL_QUOTA_RESC_ID );
+        return COL_QUOTA_RESC_ID;
     }
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -1672,7 +1672,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
         }
     }
     if ( valid == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_R_RESC_NAME ) {
@@ -1695,7 +1695,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
             cllBindVarCount = cllCounter;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -1760,13 +1760,13 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         if ( table < 0 ) {
             rodsLog( LOG_ERROR, "Table for column %d not found\n",
                      genQueryInp.selectInp.inx[i] );
-            return( CAT_UNKNOWN_TABLE );
+            return CAT_UNKNOWN_TABLE;
         }
 #ifdef LIMIT_AUDIT_ACCESS
         if ( genQueryInp.selectInp.inx[i] >= COL_AUDIT_RANGE_START &&
                 genQueryInp.selectInp.inx[i] <= COL_AUDIT_RANGE_END ) {
             if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return( CAT_NO_ACCESS_PERMISSION );
+                return CAT_NO_ACCESS_PERMISSION;
             }
         }
 #endif
@@ -1818,7 +1818,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         if ( table < 0 ) {
             rodsLog( LOG_ERROR, "Table for column %d not found\n",
                      genQueryInp.sqlCondInp.inx[i] );
-            return( CAT_UNKNOWN_TABLE );
+            return CAT_UNKNOWN_TABLE;
         }
         if ( Tables[table].cycler < 1 ) {
             startingTable = table;  /* start with a non-cycler */
@@ -1827,20 +1827,20 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         if ( compoundConditionSpecified( condition ) ) {
             status = handleCompoundCondition( condition, prevWhereLen );
             if ( status ) {
-                return( status );
+                return status;
             }
         }
         else {
             status = insertWhere( condition, 0 );
             if ( status ) {
-                return( status );
+                return status;
             }
         }
 #ifdef LIMIT_AUDIT_ACCESS
         if ( genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
                 genQueryInp.sqlCondInp.inx[i] <= COL_AUDIT_RANGE_END ) {
             if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return( CAT_NO_ACCESS_PERMISSION );
+                return CAT_NO_ACCESS_PERMISSION;
             }
         }
 #endif
@@ -1849,7 +1849,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     keepVal = tScan( startingTable, -1 );
     if ( keepVal != 1 || nToFind != 0 ) {
         rodsLog( LOG_ERROR, "error failed to link tables\n" );
-        return( CAT_FAILED_TO_LINK_TABLES );
+        return CAT_FAILED_TO_LINK_TABLES;
     }
     else {
         if ( debug > 1 ) {
@@ -1869,15 +1869,15 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 
     if ( N_col_meta_user_attr_name > 1 ) {
         /* Not currently handled, return error */
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
     if ( N_col_meta_resc_attr_name > 1 ) {
         /* Not currently handled, return error */
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
     if ( N_col_meta_resc_group_attr_name > 1 ) {
         /* Not currently handled, return error */
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( debug ) {
@@ -1964,7 +1964,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
     strncpy( resultingCountSQL, countSQL, MAX_SQL_SIZE_GQ );
 #endif
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -2009,11 +2009,11 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     }
     if ( genQueryInp.condInput.len == 1 &&
             strcmp( genQueryInp.condInput.keyWord[0], ZONE_KW ) == 0 ) {
-        return( 0 );
+        return 0;
     }
 
     if ( userIx < 0 || zoneIx < 0 || accessIx < 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     /* Try to find the dataId and/or collID in the output */
@@ -2035,7 +2035,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         }
     }
     if ( dataIx < 0 && collIx < 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
 
     if ( dataIx >= 0 ) {
@@ -2045,7 +2045,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                 if ( strcmp( prevUser, genQueryInp.condInput.value[userIx] ) == 0 ) {
                     if ( strcmp( prevAccess,
                                  genQueryInp.condInput.value[accessIx] ) == 0 ) {
-                        return( prevStatus );
+                        return prevStatus;
                     }
                 }
             }
@@ -2074,7 +2074,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                      /*                  sessionTicket, accessControlHost, icss); */
                      sessionTicket, sessionClientAddr, icss );
         prevStatus = status;
-        return( status );
+        return status;
     }
 
     if ( collIx >= 0 ) {
@@ -2091,7 +2091,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                      ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx], icss );
     }
-    return( status );
+    return status;
 }
 
 /* Save some pre-provided parameters if msiAclPolicy is STRICT.
@@ -2136,7 +2136,7 @@ extern "C" int chl_gen_query_ticket_setup_impl(
     rstrcpy( sessionTicket, ticket, sizeof( sessionTicket ) );
     rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) );
     rodsLog( LOG_NOTICE, "session ticket setup, value: %s", ticket );
-    return( 0 );
+    return 0;
 }
 
 
@@ -2173,7 +2173,7 @@ extern "C" int chl_gen_query_impl(
 
     status = chlGetRcs( &icss );
     if ( status < 0 || icss == NULL ) {
-        return( CAT_NOT_OPEN );
+        return CAT_NOT_OPEN;
     }
 #if defined(_LP64) || defined(__LP64__)
     if ( debug ) {
@@ -2194,7 +2194,7 @@ extern "C" int chl_gen_query_impl(
             status = generateSQL( genQueryInp, combinedSQL, countSQL );
         }
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
         if ( logSQLGenQuery ) {
             if ( genQueryInp.rowOffset == 0 ) {
@@ -2225,7 +2225,7 @@ extern "C" int chl_gen_query_impl(
                              "chlGenQuery cmlGetIntegerValueFromSqlV3 failure %d",
                              status );
                 }
-                return( status );
+                return status;
             }
             if ( iVal >= 0 ) {
                 result->totalRowCount = iVal;
@@ -2253,11 +2253,11 @@ extern "C" int chl_gen_query_impl(
                     recursiveCall = 1;
                     genQueryInp.rowOffset = 0;
                     chlGenQuery( genQueryInp, result );
-                    return( saveStatus );
+                    return saveStatus;
                 }
             }
 #endif
-            return( status );
+            return status;
         }
 
 #if ORA_ICAT
@@ -2270,7 +2270,7 @@ extern "C" int chl_gen_query_impl(
             }
             if ( recursiveCall == 1 ) {
                 recursiveCall = 0;
-                return( status );
+                return status;
             }
         }
 #endif
@@ -2278,7 +2278,7 @@ extern "C" int chl_gen_query_impl(
         if ( genQueryInp.condInput.len > 0 ) {
             status = checkCondInputAccess( genQueryInp, statementNum, icss, 0 );
             if ( status != 0 ) {
-                return( status );
+                return status;
             }
         }
         result->continueInx = statementNum + 1;
@@ -2292,7 +2292,7 @@ extern "C" int chl_gen_query_impl(
         needToGetNextRow = 1;
         if ( genQueryInp.maxRows <= 0 ) { /* caller is closing out the query */
             status = cmlFreeStatement( statementNum, icss );
-            return( status );
+            return status;
         }
     }
     for ( i = 0; i < genQueryInp.maxRows; i++ ) {
@@ -2302,18 +2302,18 @@ extern "C" int chl_gen_query_impl(
                 cmlFreeStatement( statementNum, icss );
                 result->continueInx = 0;
                 if ( result->rowCnt == 0 ) {
-                    return( status );
+                    return status;
                 } /* NO ROWS; in this
                        case a continuation call is finding no more rows */
-                return( 0 );
+                return 0;
             }
             if ( status < 0 ) {
-                return( status );
+                return status;
             }
             if ( genQueryInp.condInput.len > 0 ) {
                 status = checkCondInputAccess( genQueryInp, statementNum, icss, 1 );
                 if ( status != 0 ) {
-                    return( status );
+                    return status;
                 }
             }
         }
@@ -2355,7 +2355,7 @@ extern "C" int chl_gen_query_impl(
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char* )malloc( totalLen );
                 if ( tResult == NULL ) {
-                    return( SYS_MALLOC_ERR );
+                    return SYS_MALLOC_ERR;
                 }
                 memset( tResult, 0, totalLen );
                 if ( genQueryInp.options & QUOTA_QUERY ) {
@@ -2390,7 +2390,7 @@ extern "C" int chl_gen_query_impl(
                 int k;
                 tResult = ( char* )malloc( totalLen );
                 if ( tResult == NULL ) {
-                    return( SYS_MALLOC_ERR );
+                    return SYS_MALLOC_ERR;
                 }
                 memset( tResult, 0, totalLen );
                 cp1 = result->sqlResult[j].value;
@@ -2425,14 +2425,14 @@ extern "C" int chl_gen_query_impl(
         int status2;
         result->continueInx = -1; /* Indicate more rows might have been available */
         status2 = cmlFreeStatement( statementNum, icss );
-        return( status2 );
+        return status2;
     }
-    return( 0 );
+    return 0;
 
 }
 
 int
 chlDebugGenQuery( int mode ) {
     logSQLGenQuery = mode;
-    return( 0 );
+    return 0;
 }

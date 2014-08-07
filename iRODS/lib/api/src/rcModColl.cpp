@@ -9,5 +9,5 @@ rcModColl( rcComm_t *conn, collInp_t *modCollInp ) {
     status = procApiRequest( conn, MOD_COLL_AN, modCollInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

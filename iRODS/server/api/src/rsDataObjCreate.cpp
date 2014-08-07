@@ -58,7 +58,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE );
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         openStat_t *openStat = NULL;
@@ -75,7 +75,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         if ( openStat != NULL ) {
             free( openStat );
         }
-        return ( l1descInx );
+        return l1descInx;
     }
 
     // =-=-=-=-=-=-=-
@@ -129,7 +129,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         if ( lockFd >= 0 ) {
             rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
         }
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     if ( rodsObjStatOut                      != NULL &&
@@ -214,7 +214,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     // =-=-=-=-=-=-=-
-    return ( l1descInx );
+    return l1descInx;
 }
 
 int
@@ -238,12 +238,12 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     // JMC - legacy resource - if (status < 0) {
     if ( status >= 0 ) {
-        return ( status );
+        return status;
     }
     else {
         rodsLog( LOG_NOTICE,
                  "rsDataObjCreate: Internal error" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 }
 
@@ -264,10 +264,10 @@ specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                  "specCollSubCreate: phyPath %s already exist",
                  dataObjInfo->filePath );
         freeDataObjInfo( dataObjInfo );
-        return ( SYS_COPY_ALREADY_IN_RESC );
+        return SYS_COPY_ALREADY_IN_RESC;
     }
     else if ( status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( status );
+        return status;
     }
 
     l1descInx = allocL1desc();
@@ -284,7 +284,7 @@ specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         status = dataCreate( rsComm, l1descInx );
         if ( status < 0 ) {
             freeL1desc( l1descInx );
-            return ( status );
+            return status;
         }
     }
 
@@ -345,7 +345,7 @@ _rsDataObjCreateWithRescInfo(
 
     if ( status < 0 ) {
         freeL1desc( l1descInx );
-        return ( status );
+        return status;
     }
 
     /* output of _rsDataObjCreate - filePath stored in
@@ -363,10 +363,10 @@ _rsDataObjCreateWithRescInfo(
 
     if ( status < 0 ) {
         freeL1desc( l1descInx );
-        return ( status );
+        return status;
     }
     else {
-        return ( l1descInx );
+        return l1descInx;
     }
 }
 
@@ -383,7 +383,7 @@ dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx ) {
     status = dataCreate( rsComm, l1descInx );
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     /* only register new copy */
@@ -393,11 +393,11 @@ dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx ) {
         rodsLog( LOG_NOTICE,
                  "dataObjCreateAndReg: rsRegDataObj for %s failed, status = %d",
                  myDataObjInfo->objPath, status );
-        return ( status );
+        return status;
     }
     else {
         myDataObjInfo->replNum = status;
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -418,13 +418,13 @@ dataCreate( rsComm_t *rsComm, int l1descInx ) {
         rodsLog( LOG_NOTICE,
                  "dataCreate: l3Create of %s failed, status = %d",
                  myDataObjInfo->filePath, status );
-        return ( status );
+        return status;
     }
     else {
         L1desc[l1descInx].l3descInx = status;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -460,7 +460,7 @@ l3Create( rsComm_t *rsComm, int l1descInx ) {
                                        L1desc[l1descInx].dataObjInfo );
     }
 
-    return ( l3descInx );
+    return l3descInx;
 }
 
 int
@@ -523,7 +523,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
             l3descInx <= 2 && retryCnt < 100 );
     clearKeyVal( &fileCreateInp.condInput );
-    return ( l3descInx );
+    return l3descInx;
 }
 
 /* getRescGrpForCreate - given the resource input in dataObjInp, get the
@@ -557,7 +557,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         rodsLog( LOG_NOTICE, "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
                  dataObjInp->objPath, status );
 
-        return ( status );
+        return status;
     }
 
     if ( rei.rgi == NULL ) {

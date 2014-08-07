@@ -39,17 +39,17 @@ rsFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileGet: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -90,7 +90,7 @@ int _rsFileGet(
 
     len = _get_inp->dataSize;
     if ( len <= 0 ) {
-        return ( 0 );
+        return 0;
     }
     fd = _rsFileOpen( _comm, _get_inp );
 
@@ -98,7 +98,7 @@ int _rsFileGet(
         rodsLog( LOG_NOTICE,
                  "_rsFileGet: fileGet for %s, status = %d",
                  _get_inp->fileName, fd );
-        return ( fd );
+        return fd;
     }
 
     if ( _get_buf->buf == NULL ) {
@@ -152,7 +152,7 @@ int _rsFileGet(
         irods::log( err );
     }
 
-    return ( bytes_read );
+    return bytes_read;
 
 } // _rsFileGet
 

@@ -11,5 +11,5 @@ rcGetTempPasswordForOther( rcComm_t *conn,
     status = procApiRequest( conn, GET_TEMP_PASSWORD_FOR_OTHER_AN,  getTempPasswordForOtherInp, NULL,
                              ( void ** ) getTempPasswordForOtherOut, NULL );
 
-    return ( status );
+    return status;
 }

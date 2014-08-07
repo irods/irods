@@ -84,7 +84,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
     }
     else {
         status = chkObjExist( conn, inpPath, hostname );
-        return ( status );
+        return status;
     }
 
     directory_iterator end_itr; // default construction yields past-the-end
@@ -105,7 +105,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
             status = chkObjExist( conn, fullPath, hostname );
         }
     }
-    return ( status );
+    return status;
 
 }
 
@@ -179,7 +179,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
     freeGenQueryOut( &genQueryOut1 );
     freeGenQueryOut( &genQueryOut2 );
 
-    return( status );
+    return status;
 
 }
 
@@ -216,7 +216,7 @@ iRODS object %s/%s \n", dataPath, loc, collName, dataName );
 
     }
 
-    return ( rc );
+    return rc;
 
 }
 
@@ -252,7 +252,7 @@ chkObjExist( rcComm_t *conn, char *inpPath, char *hostname ) {
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -294,6 +294,6 @@ checkIsMount( rcComm_t *conn, char *inpPath ) {
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 
 }

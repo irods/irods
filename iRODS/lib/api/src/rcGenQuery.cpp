@@ -43,7 +43,7 @@ printGenQI( genQueryInp_t *genQueryInp ) {
         cpp++;
         cp = *cpp;
     }
-    return ( 0 );
+    return 0;
 }
 
 /**
@@ -94,6 +94,6 @@ rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
     status = procApiRequest( conn, GEN_QUERY_AN,  genQueryInp, NULL,
                              ( void ** )genQueryOut, NULL );
 
-    return ( status );
+    return status;
 }
 

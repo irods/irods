@@ -23,7 +23,7 @@ initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet,
     if ( status == 0 ) {
         rstrcpy( ruleSetInitialized, ruleSet, NAME_LEN );
     }
-    return( status );
+    return status;
 }
 
 /* clearCoreRule - clear the core rules. Code copied from msiAdmAddAppRuleStruct
@@ -43,11 +43,11 @@ clearCoreRule() {
     }
     i = generateFunctionDescriptionTables();
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     i = clearDVarStruct( &coreRuleVarDef );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     i = clearFuncMapStruct( &coreRuleFuncMapDef );
     bzero( ruleSetInitialized, sizeof( ruleSetInitialized ) );
@@ -56,7 +56,7 @@ clearCoreRule() {
         return i;
     }
 
-    return( i );
+    return i;
 
 }
 

@@ -19,7 +19,7 @@ irodsGetattr( const char *path, struct stat *stbuf ) {
     iFuseConn = getAndUseConnByPath( ( char * ) path, &MyRodsEnv, &status );
     status = _irodsGetattr( iFuseConn, path, stbuf );
     unuseIFuseConn( iFuseConn );
-    return ( status );
+    return status;
 }
 
 int
@@ -53,7 +53,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                 }
                 else {
                     *stbuf = tmpPathCache->stbuf;
-                    return ( 0 );
+                    return 0;
                 }
             }
             else {
@@ -183,7 +183,7 @@ irodsReadlink( const char *path, char *buf, size_t size ) {
     rcDataObjClose( iFuseConn->conn, &dataObjReadInp );
     unuseIFuseConn( iFuseConn );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -282,7 +282,7 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
     rclCloseCollection( &collHandle );
     unuseIFuseConn( iFuseConn );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -386,7 +386,7 @@ irodsMkdir( const char *path, mode_t mode ) {
         unuseIFuseConn( iFuseConn );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -433,7 +433,7 @@ irodsUnlink( const char *path ) {
 
     clearKeyVal( &dataObjInp.condInput );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -475,7 +475,7 @@ irodsRmdir( const char *path ) {
 
     clearKeyVal( &collInp.condInput );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -555,7 +555,7 @@ irodsSymlink( const char *to, const char *from ) {
     rcDataObjClose( iFuseConn->conn, &dataObjWriteInp );
     unuseIFuseConn( iFuseConn );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -625,13 +625,13 @@ irodsRename( const char *from, const char *to ) {
     unuseIFuseConn( iFuseConn );
     free( toIrodsPath );
 
-    return ( status );
+    return status;
 }
 
 int
 irodsLink( const char *from, const char *to ) {
     rodsLog( LOG_DEBUG, "irodsLink: %s to %s" );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -655,7 +655,7 @@ irodsChmod( const char *path, mode_t mode ) {
             tmpPathCache->fileCache->mode = mode;
             UNLOCK_STRUCT( *tmpPathCache->fileCache );
             UNLOCK_STRUCT( *tmpPathCache );
-            return ( 0 );
+            return 0;
         }
         UNLOCK_STRUCT( *tmpPathCache->fileCache );
     }
@@ -711,13 +711,13 @@ irodsChmod( const char *path, mode_t mode ) {
     unuseIFuseConn( iFuseConn );
     clearKeyVal( &regParam );
 
-    return( status );
+    return status;
 }
 
 int
 irodsChown( const char *path, uid_t uid, gid_t gid ) {
     rodsLog( LOG_DEBUG, "irodsChown: %s", path );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -738,7 +738,7 @@ irodsTruncate( const char *path, off_t size ) {
                     _updatePathCacheStatFromFileCache( tmpPathCache );
                     UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
                     UNLOCK_STRUCT( *tmpPathCache );
-                    return ( 0 );
+                    return 0;
                 }
             }
             UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
@@ -776,19 +776,19 @@ irodsTruncate( const char *path, off_t size ) {
     }
     unuseIFuseConn( iFuseConn );
 
-    return ( status );
+    return status;
 }
 
 int
 irodsFlush( const char *path, struct fuse_file_info *fi ) {
     rodsLog( LOG_DEBUG, "irodsFlush: %s", path );
-    return ( 0 );
+    return 0;
 }
 
 int
 irodsUtimens( const char *path, const struct timespec ts[2] ) {
     rodsLog( LOG_DEBUG, "irodsUtimens: %s", path );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -825,7 +825,7 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
                 }
                 UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
                 UNLOCK_STRUCT( *tmpPathCache );
-                return ( 0 );
+                return 0;
             }
             UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
         }
@@ -914,7 +914,7 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
 
     fi->fh = desc->index;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -963,7 +963,7 @@ irodsStatfs( const char *path, struct statvfs *stbuf ) {
     rodsLog( LOG_DEBUG, "irodsStatfs: %s", path );
 
     if ( stbuf == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
 
@@ -981,7 +981,7 @@ irodsStatfs( const char *path, struct statvfs *stbuf ) {
     stbuf->f_fsid = 777;
     stbuf->f_namemax = MAX_NAME_LEN;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1001,21 +1001,21 @@ irodsRelease( const char *path, struct fuse_file_info *fi ) {
 
     if ( status < 0 ) {
         if ( ( myError = getErrno( status ) ) > 0 ) {
-            return ( -myError );
+            return -myError;
         }
         else {
             return -ENOENT;
         }
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
 int
 irodsFsync( const char *path, int isdatasync, struct fuse_file_info *fi ) {
     rodsLog( LOG_DEBUG, "irodsFsync: %s", path );
-    return ( 0 );
+    return 0;
 }
 
 

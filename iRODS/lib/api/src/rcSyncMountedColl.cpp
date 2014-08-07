@@ -9,5 +9,5 @@ rcSyncMountedColl( rcComm_t *conn, dataObjInp_t *syncMountedCollInp ) {
     status = procApiRequest( conn, SYNC_MOUNTED_COLL_AN, syncMountedCollInp,
                              NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

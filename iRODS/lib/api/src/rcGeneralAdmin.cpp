@@ -54,5 +54,5 @@ rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp ) {
     status = procApiRequest( conn, GENERAL_ADMIN_AN,  generalAdminInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

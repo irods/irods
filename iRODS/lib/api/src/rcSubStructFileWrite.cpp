@@ -10,5 +10,5 @@ rcSubStructFileWrite( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileWrit
     status = procApiRequest( conn, SUB_STRUCT_FILE_WRITE_AN, subStructFileWriteInp,
                              subStructFileWriteOutBBuf, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

@@ -82,7 +82,7 @@ printSimpleQuery( char *buf ) {
 
     } // for itr
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -97,7 +97,7 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
     if ( status ==  CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0; /* success */
         printf( "No rows found\n" );
-        return ( status );
+        return status;
     }
     if ( status < 0 ) {
         if ( Conn->rError ) {
@@ -114,7 +114,7 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
         myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
                  status, myName, mySubName );
-        return ( status );
+        return status;
     }
 
     printSimpleQuery( simpleQueryOut->outBuf );
@@ -130,7 +130,7 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
                 rodsLog( LOG_ERROR,
                          "rcSimpleQuery failed with error %d %s %s",
                          status, myName, mySubName );
-                return ( status );
+                return status;
             }
             if ( status == 0 ) {
                 printSimpleQuery( simpleQueryOut->outBuf );
@@ -140,7 +140,7 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
             }
         }
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -170,7 +170,7 @@ showToken( char *token, char *tokenName2 ) {
             simpleQueryInp.maxBufSize = 1024;
         }
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -191,7 +191,7 @@ showResc( char *resc ) {
         simpleQueryInp.arg1 = resc;
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -212,7 +212,7 @@ showZone( char *zone ) {
         simpleQueryInp.arg1 = zone;
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -236,7 +236,7 @@ getLocalZone() {
             rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
                      status, myName, mySubName );
             printf( "Error getting local zone\n" );
-            return ( status );
+            return status;
         }
         strncpy( localZone, simpleQueryOut->outBuf, BIG_STR );
         i = strlen( localZone );
@@ -250,7 +250,7 @@ getLocalZone() {
             }
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -356,13 +356,13 @@ showFile( char *file ) {
     simpleQueryInp.control = 0;
     if ( file == 0 || *file == '\0' ) {
         printf( "Need to specify a data_id number\n" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     simpleQueryInp.form = 2;
     simpleQueryInp.sql = "select * from R_DATA_MAIN where data_id=?";
     simpleQueryInp.arg1 = file;
     simpleQueryInp.maxBufSize = 1024;
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -398,7 +398,7 @@ showDir( char *dir ) {
     simpleQueryInp.arg1 = dir;
     simpleQueryInp.maxBufSize = 1024;
     printf( "Subcollections:\n" );
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -418,7 +418,7 @@ showUser( char *user ) {
         simpleQueryInp.sql = "select user_name||'#'||zone_name from R_USER_MAIN where user_type_name != 'rodsgroup'";
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -444,7 +444,7 @@ showUserAuth( char *user, char *zone ) {
         simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id";
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -459,7 +459,7 @@ showUserAuthName( char *authName )
     simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_AUTH.user_auth_name=?";
     simpleQueryInp.arg1 = authName;
     simpleQueryInp.maxBufSize = 1024;
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -481,7 +481,7 @@ showUserOfZone( char *zone, char *user ) {
         simpleQueryInp.arg1 = zone;
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -504,7 +504,7 @@ simpleQueryCheck() {
         status = 0;    /* success */
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -532,7 +532,7 @@ showGlobalQuotas( char *inputUserOrGroup ) {
     else {
         status = getLocalZone();
         if ( status ) {
-            return ( status );
+            return status;
         }
         status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( zoneName[0] == '\0' ) {
@@ -545,7 +545,7 @@ showGlobalQuotas( char *inputUserOrGroup ) {
         simpleQueryInp.arg2 = zoneName;
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -573,7 +573,7 @@ showResourceQuotas( char *inputUserOrGroup ) {
     else {
         status = getLocalZone();
         if ( status ) {
-            return ( status );
+            return status;
         }
         status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( zoneName[0] == '\0' ) {
@@ -585,7 +585,7 @@ showResourceQuotas( char *inputUserOrGroup ) {
         simpleQueryInp.arg2 = zoneName;
         simpleQueryInp.maxBufSize = 1024;
     }
-    return ( doSimpleQuery( simpleQueryInp ) );
+    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -662,7 +662,7 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
     printErrorStack( Conn->rError );
     freeRErrorContent( Conn->rError );
 
-    return ( status );
+    return status;
 }
 
 /*
@@ -695,7 +695,7 @@ getInput( char *cmdToken[], int maxTokens ) {
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
             cmdToken[nTokens++] = cpTokenStart;
-            return ( 0 );
+            return 0;
         }
         if ( tokenFlag == 0 ) {
             if ( ttybuf[i] == '\'' ) {
@@ -738,7 +738,7 @@ getInput( char *cmdToken[], int maxTokens ) {
             }
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /* handle a command,
@@ -766,11 +766,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "help" ) == 0 ||
             strcmp( cmdToken[0], "h" ) == 0 ) {
         usage( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "quit" ) == 0 ||
             strcmp( cmdToken[0], "q" ) == 0 ) {
-        return ( -1 );
+        return -1;
     }
     if ( strcmp( cmdToken[0], "lu" ) == 0 ) {
         char userName[NAME_LEN];
@@ -787,11 +787,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         else {
             showUser( cmdToken[1] );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "luz" ) == 0 ) {
         showUserOfZone( cmdToken[1], cmdToken[2] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lt" ) == 0 ) {
         if ( strcmp( cmdToken[1], "resc_type" ) == 0 ) {
@@ -800,27 +800,27 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         else {
             showToken( cmdToken[1], cmdToken[2] );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lr" ) == 0 ) {
         showResc( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
         showDir( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lf" ) == 0 ) {
         showFile( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lz" ) == 0 ) {
         showZone( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lg" ) == 0 ) {
         showGroup( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lgd" ) == 0 ) {
         if ( *cmdToken[1] == '\0' ) {
@@ -829,13 +829,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         else {
             showUser( cmdToken[1] );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lrg" ) == 0 ) {
         printf( "Resource groups are deprecated.\n" );
         printf( "Please investigate the available coordinating resource plugins.\n" );
         printf( "(e.g. random, replication, etc.)\n" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
         int status;
@@ -844,11 +844,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status ) {
             printf( "Invalid user name format" );
-            return ( USER_INVALID_USERNAME_FORMAT );
+            return USER_INVALID_USERNAME_FORMAT;
         }
         status = getLocalZone();
         if ( status ) {
-            return ( status );
+            return status;
         }
         if ( strcmp( zoneName, localZone ) == 0 ) {
             /* User entered user#localZone but call generalAdmin
@@ -862,7 +862,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                           cmdToken[3], cmdToken[4], cmdToken[5], "", "" );  /* "" is unused
                                                                               zoneName as that's part of the username now */
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "moduser" ) == 0 ) {
         if ( strcmp( cmdToken[2], "password" ) == 0 ) {
@@ -921,22 +921,22 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         }
         generalAdmin( 0, "modify", "user", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "aua" ) == 0 ) {
         generalAdmin( 0, "modify", "user", cmdToken[1], "addAuth",
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rua" ) == 0 ) {
         generalAdmin( 0, "modify", "user", cmdToken[1], "rmAuth",
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rpp" ) == 0 ) {
         generalAdmin( 0, "modify", "user", cmdToken[1], "rmPamPw",
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lua" ) == 0 ) {
         char userName[NAME_LEN];
@@ -953,33 +953,33 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         else {
             showUserAuth( cmdToken[1], "" );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "luan" ) == 0 ) {
         showUserAuthName( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "cu" ) == 0 ) {
         generalAdmin( 0, "calculate-usage", "", "", "",
                       "", "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "suq" ) == 0 ) {
         generalAdmin( 0, "set-quota", "user",
                       cmdToken[1], cmdToken[2], cmdToken[3],
                       "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "sgq" ) == 0 ) {
         generalAdmin( 0, "set-quota", "group",
                       cmdToken[1], cmdToken[2], cmdToken[3],
                       "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "lq" ) == 0 ) {
         showResourceQuotas( cmdToken[1] );
         showGlobalQuotas( cmdToken[1] );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
         if( _rodsArgs->force == True ) {
@@ -992,7 +992,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             usage( "mkdir" );
         } 
 
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "mkresc" ) == 0 ) {
@@ -1031,21 +1031,21 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         generalAdmin( 0, "add", "resource", cmdToken[1], ( char * )resc_type.c_str(),
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
         /* (add resource name type host:path contextstring) */
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "addchildtoresc" ) == 0 ) {
 
         generalAdmin( 0, "add", "childtoresc", cmdToken[1], cmdToken[2],
                       cmdToken[3], "", "", "", "", "" );
         /* (add childtoresc parent child context) */
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rmchildfromresc" ) == 0 ) {
 
         generalAdmin( 0, "rm", "childfromresc", cmdToken[1], cmdToken[2],
                       "", "", "", "", "", "" );
         /* (rm childfromresc parent child) */
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "modrescdatapaths" ) == 0 ) {
@@ -1067,7 +1067,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             generalAdmin( 0, "modify", "resourcedatapaths", cmdToken[1],
                           cmdToken[2], cmdToken[3], cmdToken[4], "", "", "", "" );
         }
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "modresc" ) == 0 ) {
@@ -1104,12 +1104,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             generalAdmin( 0, "modify", "resource", cmdToken[1], cmdToken[2],
                           cmdToken[3], "", "", "", "", "" );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "mkzone" ) == 0 ) {
         generalAdmin( 0, "add", "zone", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "modzone" ) == 0 ) {
         if ( strcmp( myEnv.rodsZone, cmdToken[1] ) == 0 &&
@@ -1136,66 +1136,66 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             generalAdmin( 0, "modify", "zone", cmdToken[1], cmdToken[2],
                           cmdToken[3], "", "", "", "", "" );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "modzonecollacl" ) == 0 ) {
         generalAdmin( 0, "modify", "zonecollacl", cmdToken[1], cmdToken[2],
                       cmdToken[3], "", "", "", "", "" );
-        return( 0 );
+        return 0;
     }
 
 
     if ( strcmp( cmdToken[0], "rmzone" ) == 0 ) {
         generalAdmin( 0, "rm", "zone", cmdToken[1], "",
                       "", "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "mkgroup" ) == 0 ) {
         generalAdmin( 0, "add", "user", cmdToken[1], "rodsgroup",
                       myEnv.rodsZone, "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rmgroup" ) == 0 ) {
         generalAdmin( 0, "rm", "user", cmdToken[1],
                       myEnv.rodsZone, "", "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "atg" ) == 0 ) {
         generalAdmin( 1, "modify", "group", cmdToken[1], "add", cmdToken[2],
                       cmdToken[3], "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "rfg" ) == 0 ) {
         generalAdmin( 1, "modify", "group", cmdToken[1], "remove", cmdToken[2],
                       cmdToken[3], "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "atrg" ) == 0 ) {
         printf( "Resource groups are deprecated.\n" );
         printf( "Please investigate the available coordinating resource plugins.\n" );
         printf( "(e.g. random, replication, etc.)\n" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "rfrg" ) == 0 ) {
         printf( "Resource groups are deprecated.\n" );
         printf( "Please investigate the available coordinating resource plugins.\n" );
         printf( "(e.g. random, replication, etc.)\n" );
-        return ( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "rmresc" ) == 0 ) {
         generalAdmin( 0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "", _rodsArgs );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rmdir" ) == 0 ) {
         generalAdmin( 0, "rm", "dir", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rmuser" ) == 0 ) {
         int status;
@@ -1205,28 +1205,28 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         /* just check for format */
         if ( status ) {
             printf( "Invalid user name format\n" );
-            return ( 0 );
+            return 0;
         }
         /* also check for current user, should not be able to rm own account */
         if ( strcmp( userName, myEnv.rodsUserName ) == 0 ) {
             if ( ( strcmp( zoneName, "" ) == 0 ) || ( strcmp( zoneName, myEnv.rodsZone ) == 0 ) ) {
                 printf( "Cannot remove currently authenticated user (yourself)\n" );
-                return ( 0 );
+                return 0;
             }
         }
         generalAdmin( 0, "rm", "user", cmdToken[1],
                       cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "at" ) == 0 ) {
         generalAdmin( 0, "add", "token", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rt" ) == 0 ) {
         generalAdmin( 0, "rm", "token", cmdToken[1], cmdToken[2],
                       cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "spass" ) == 0 ) {
         char scrambled[MAX_PASSWORD_LEN + 100];
@@ -1240,7 +1240,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             obfEncodeByKey( cmdToken[1], cmdToken[2], scrambled );
             printf( "Scrambled form is:%s\n", scrambled );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "dspass" ) == 0 ) {
         char unscrambled[MAX_PASSWORD_LEN + 100];
@@ -1257,12 +1257,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             obfDecodeByKey( cmdToken[1], cmdToken[2], unscrambled );
             printf( "Unscrambled form is:%s\n", unscrambled );
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "pv" ) == 0 ) {
         generalAdmin( 0, "pvacuum", cmdToken[1], cmdToken[2], "", ""
                       "", "", "", "", "", "" );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
         char myString[TIME_LEN];
@@ -1273,17 +1273,17 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 rodsLogError( LOG_ERROR, status, "ctime str:checkDateFormat error" );
             }
             printf( "Converted to local iRODS integer time: %s\n", cmdToken[2] );
-            return ( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "now" ) == 0 ) {
             char nowString[100];
             getNowStr( nowString );
             printf( "Current time as iRODS integer time: %s\n", nowString );
-            return ( 0 );
+            return 0;
         }
         getLocalTimeFromRodsTime( cmdToken[1], myString );
         printf( "Converted to local time: %s\n", myString );
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "rum" ) == 0 ) {
         int status;
@@ -1299,7 +1299,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             lastCommandStatus = 0;
 
         }
-        return ( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "asq" ) == 0 ) {
         int status;
@@ -1311,7 +1311,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         status = generalAdmin( 0, "rm", "specificQuery", cmdToken[1],
                                "", "", "", "", "", "", "" );
-        return ( status );
+        return status;
     }
 
     /* test is only used for testing so is not included in the help */
@@ -1319,27 +1319,27 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char* result;
         result = obfGetMD5Hash( cmdToken[1] );
         printf( "md5:%s\n", result );
-        return ( 0 );
+        return 0;
     }
     /* 2spass is only used for testing so is not included in the help */
     if ( strcmp( cmdToken[0], "2spass" ) == 0 ) {
         char scrambled[MAX_PASSWORD_LEN + 10];
         obfEncodeByKeyV2( cmdToken[1], cmdToken[2], cmdToken[3], scrambled );
         printf( "Version 2 scrambled form is:%s\n", scrambled );
-        return ( 0 );
+        return 0;
     }
     /* 2dspass is only used for testing so is not included in the help */
     if ( strcmp( cmdToken[0], "2dspass" ) == 0 ) {
         char unscrambled[MAX_PASSWORD_LEN + 10];
         obfDecodeByKeyV2( cmdToken[1], cmdToken[2], cmdToken[3], unscrambled );
         printf( "Version 2 unscrambled form is:%s\n", unscrambled );
-        return ( 0 );
+        return 0;
     }
     if ( *cmdToken[0] != '\0' ) {
         printf( "unrecognized command, try 'help'\n" );
-        return ( -2 );
+        return -2;
     }
-    return ( -3 );
+    return -3;
 }
 
 int

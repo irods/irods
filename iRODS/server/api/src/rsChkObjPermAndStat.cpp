@@ -21,7 +21,7 @@ rsChkObjPermAndStat( rsComm_t *rsComm,
     status = getAndConnRcatHost( rsComm, SLAVE_RCAT,
                                  chkObjPermAndStatInp->objPath, &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -35,7 +35,7 @@ rsChkObjPermAndStat( rsComm_t *rsComm,
                                       chkObjPermAndStatInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -55,7 +55,7 @@ _rsChkObjPermAndStat( rsComm_t *rsComm,
     }
     return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }
 
@@ -100,7 +100,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         rodsLog( LOG_ERROR,
                  "chkCollForBundleOpr: rsOpenCollection of %s error. status = %d",
                  openCollInp.collName, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->specColl.collClass != NO_SPEC_COLL ) {
@@ -230,9 +230,9 @@ chkCollForBundleOpr( rsComm_t *rsComm,
 
     rsCloseCollection( rsComm, &handleInx );
 
-    return ( 0 );
+    return 0;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }
 

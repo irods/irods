@@ -22,7 +22,7 @@ rsReadCollection( rsComm_t *rsComm, int *handleInxInp,
         rodsLog( LOG_NOTICE,
                  "rsReadCollection: handleInx %d out of range",
                  handleInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     collHandle = &CollHandle[handleInx];

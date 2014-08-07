@@ -1940,7 +1940,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
 
         if ( rei == NULL || rei->rsComm == NULL ) {
             rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -1949,7 +1949,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
         fd = rsDataObjOpen( rei->rsComm, &dataObjInp );
         if ( fd < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd );
-            return( fd );
+            return fd;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
@@ -1959,7 +1959,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
         i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
-            return( i );
+            return i;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
@@ -1969,13 +1969,13 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
         i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i );
-            return( i );
+            return i;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
         openedDataObjInp.l1descInx = fd;
         i = rsDataObjClose( rei->rsComm, &openedDataObjInp );
-        return( i );
+        return i;
     }
 
     /* inserted by Raja Dec 2, 2011 */
@@ -2719,7 +2719,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
     if ( inpParam == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( TYPE( inpParam ) == T_STRING ) {
@@ -2732,7 +2732,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
         if ( strcmp( inpParam->text, "null" ) != 0 ) {
             rstrcpy( collInpCache->collName, ( char* )inpParam->text, MAX_NAME_LEN );
         }
-        return ( 0 );
+        return 0;
     }
     else if ( TYPE( inpParam ) == T_IRODS && strcmp( RES_IRODS_TYPE( inpParam ), CollInp_MS_T ) == 0 ) {
         if ( outputToCache == 1 ) {
@@ -2750,7 +2750,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
         else {
             *outCollInp = ( collInp_t * ) RES_UNINTER_STRUCT( inpParam );
         }
-        return ( 0 );
+        return 0;
     }
     else {
         char buf[ERR_MSG_LEN];
@@ -2760,7 +2760,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: Unsupported input Param1 type %s",
                  buf );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 

@@ -11,5 +11,5 @@ rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp ) {
     status = procApiRequest( conn, FILE_CHMOD_AN,  fileChmodInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

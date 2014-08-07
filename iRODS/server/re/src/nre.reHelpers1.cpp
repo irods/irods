@@ -55,10 +55,10 @@ int initializeReDebug( rsComm_t *svrComm, int flag ) {
     char *addr = NULL;
 
     if ( svrComm == NULL ) {
-        return( 0 );
+        return 0;
     }
     if ( GlobalREDebugFlag != 4 ) {
-        return( 0 );
+        return 0;
     }
 
     s = 0;
@@ -105,7 +105,7 @@ int initializeReDebug( rsComm_t *svrComm, int flag ) {
         _writeXMsg( GlobalREDebugFlag, "idbug", waitMsg );
         snprintf( waitMsg, MAX_NAME_LEN, "%s:%i is waiting\n", myHostName, myPID );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -180,7 +180,7 @@ int processXMsg( int streamId, int *msgNum, int *seqNum,
         /* char errbuf[ERR_MSG_LEN]; */
         file = fopen( rulesFileName, "r" );
         if ( file == NULL ) {
-            return( RULES_FILE_READ_ERROR );
+            return RULES_FILE_READ_ERROR;
         }
         Pointer *p = newPointer( file, ptr );
 
@@ -491,12 +491,12 @@ processBreakPoint( int streamId, int *msgNum, int *seqNum,
                     snprintf( mymsg, MAX_NAME_LEN, "%s\n", param->actionName );
                     _writeXMsg( streamId, myhdr, mymsg );
                     curStat = REDEBUG_WAIT;
-                    return( curStat );
+                    return curStat;
                 }
             }
         }
     }
-    return( curStat );
+    return curStat;
 }
 
 
@@ -532,7 +532,7 @@ popReStack( RuleEngineEvent label, char* step ) {
         i = i - 1;
     }
     reDebugStackCurrPtr = i;
-    return( 0 );
+    return 0;
 }
 
 int
@@ -545,13 +545,13 @@ pushReStack( RuleEngineEvent label, char* step ) {
         reDebugStackCurr[i].step = strdup( step );
         reDebugStackCurrPtr = i + 1;
     }
-    return( 0 );
+    return 0;
 }
 
 
 int sendWaitXMsg( int streamId ) {
     _writeXMsg( streamId, waitHdr, waitMsg );
-    return( 0 );
+    return 0;
 }
 int cleanUpDebug( int streamId ) {
     int i;
@@ -571,7 +571,7 @@ int cleanUpDebug( int streamId ) {
     reDebugStackCurrPtr = 0;
     reDebugStackFullPtr = 0;
     GlobalREDebugFlag = -1;
-    return( 0 );
+    return 0;
 }
 
 void printRuleEngineEventLabel( char buf[], size_t n, RuleEngineEvent label, RuleEngineEventParam *param ) {
@@ -678,7 +678,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     if ( svrComm == NULL ) {
         rodsLog( LOG_ERROR, "Empty svrComm in REI structure for actionStr=%s\n",
                  param->actionName );
-        return( 0 );
+        return 0;
     }
 
     generateLogTimestamp( timestamp, TIME_LEN );
@@ -776,7 +776,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
             status = _readXMsg( GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr );
             if ( status == SYS_UNMATCHED_XMSG_TICKET ) {
                 cleanUpDebug( GlobalREDebugFlag );
-                return( 0 );
+                return 0;
             }
             if ( status  >= 0 ) {
                 rodsLog( LOG_NOTICE, "Getting XMsg:%i:%s:%s\n", s, readhdr, readmsg );
@@ -859,5 +859,5 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     }
 
 
-    return( 0 );
+    return 0;
 }

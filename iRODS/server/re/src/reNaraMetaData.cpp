@@ -57,7 +57,7 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
     if ( ( fp = fopen( metafile, "r" ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiExtractNaraMetadata: Cannot open the metadata file %s.", metafile );
-        return ( UNIX_FILE_OPEN_ERR );
+        return UNIX_FILE_OPEN_ERR;
     }
 
     memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
@@ -96,6 +96,6 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
         }
     }
     fclose( fp );
-    return( 0 );
+    return 0;
 }
 

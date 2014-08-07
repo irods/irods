@@ -12,6 +12,6 @@ rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
     status = procApiRequest( conn, RULE_EXEC_SUBMIT_AN, ruleExecSubmitInp,
                              NULL, ( void ** ) ruleExecId, NULL );
 
-    return ( status );
+    return status;
 }
 

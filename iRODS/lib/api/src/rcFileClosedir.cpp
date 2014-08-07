@@ -11,5 +11,5 @@ rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp ) {
     status = procApiRequest( conn, FILE_CLOSEDIR_AN,  fileClosedirInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

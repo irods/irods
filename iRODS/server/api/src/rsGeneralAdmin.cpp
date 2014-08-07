@@ -35,7 +35,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -59,7 +59,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         rodsLog( LOG_NOTICE,
                  "rsGeneralAdmin: rcGeneralAdmin error %d", status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -287,7 +287,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         args[0] = argStr;
         status = applyRuleArg( "acVacuum", args, 1, &rei, SAVE_REI );
-        return ( status );
+        return status;
     }
 
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
@@ -323,7 +323,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
@@ -351,7 +351,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
             status = chlRegZone( rsComm, generalAdminInp->arg2,
@@ -378,7 +378,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     }
                 }
             }
-            return ( status );
+            return status;
         } // add user
 
         // =-=-=-=-=-=-=-
@@ -436,13 +436,13 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         } // token
 
         if ( strcmp( generalAdminInp->arg1, "specificQuery" ) == 0 ) {
             status = chlAddSpecificQuery( rsComm, generalAdminInp->arg2,
                                           generalAdminInp->arg3 );
-            return ( status );
+            return status;
         }
 
     } // add
@@ -491,7 +491,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "group" ) == 0 ) {
             userInfo_t ui;
@@ -536,7 +536,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {
             status = chlModZone( rsComm, generalAdminInp->arg2,
@@ -562,12 +562,12 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     chlCommit( rsComm );
                 }
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "zonecollacl" ) == 0 ) {
             status = chlModZoneCollAcl( rsComm, generalAdminInp->arg2,
                                         generalAdminInp->arg3, generalAdminInp->arg4 );
-            return( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "localzonename" ) == 0 ) {
             /* run the acRenameLocalZone rule */
@@ -582,14 +582,14 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             args[1] = generalAdminInp->arg3;
             status = applyRuleArg( "acRenameLocalZone", args, 2, &rei,
                                    NO_SAVE_REI );
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "resourcedatapaths" ) == 0 ) {
             status = chlModRescDataPaths( rsComm, generalAdminInp->arg2,
                                           generalAdminInp->arg3, generalAdminInp->arg4,
                                           generalAdminInp->arg5 );
 
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
@@ -663,7 +663,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
     }
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
@@ -706,7 +706,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
@@ -719,7 +719,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
@@ -786,7 +786,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
 
         /* remove a child resource from the specified parent resource */
@@ -809,7 +809,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status == 0 ) {
                 status = chlCommit( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "token" ) == 0 ) {
 
@@ -850,20 +850,20 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "unusedAVUs" ) == 0 ) {
             status = chlDelUnusedAVUs( rsComm );
-            return ( status );
+            return status;
         }
         if ( strcmp( generalAdminInp->arg1, "specificQuery" ) == 0 ) {
             status = chlDelSpecificQuery( rsComm, generalAdminInp->arg2 );
-            return ( status );
+            return status;
         }
     }
     if ( strcmp( generalAdminInp->arg0, "calculate-usage" ) == 0 ) {
         status = chlCalcUsageAndQuota( rsComm );
-        return ( status );
+        return status;
     }
     if ( strcmp( generalAdminInp->arg0, "set-quota" ) == 0 ) {
         status = chlSetQuota( rsComm,
@@ -872,7 +872,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                               generalAdminInp->arg3,
                               generalAdminInp->arg4 );
 
-        return ( status );
+        return status;
     }
 
     if ( strcmp( generalAdminInp->arg0, "lt" ) == 0 ) {
@@ -883,6 +883,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         return status;
     }
 
-    return ( CAT_INVALID_ARGUMENT );
+    return CAT_INVALID_ARGUMENT;
 }
 #endif

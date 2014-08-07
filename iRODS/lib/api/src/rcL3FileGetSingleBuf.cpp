@@ -10,7 +10,7 @@ rcL3FileGetSingleBuf( rcComm_t *conn, int l1descInx,
     status = procApiRequest( conn, L3_FILE_GET_SINGLE_BUF_AN, &l1descInx, NULL,
                              ( void ** ) NULL, dataObjOutBBuf );
 
-    return ( status );
+    return status;
 }
 
 

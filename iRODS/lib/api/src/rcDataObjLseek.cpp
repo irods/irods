@@ -83,5 +83,5 @@ rcDataObjLseek( rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
     status = procApiRequest( conn, DATA_OBJ_LSEEK_AN,  dataObjLseekInp, NULL,
                              ( void ** ) dataObjLseekOut, NULL );
 
-    return ( status );
+    return status;
 }

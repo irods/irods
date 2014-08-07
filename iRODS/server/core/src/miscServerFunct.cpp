@@ -67,15 +67,15 @@ svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
 
         if ( rodsServerHost->conn == NULL ) {
             if ( errMsg.status < 0 ) {
-                return ( errMsg.status );
+                return errMsg.status;
             }
             else {
-                return ( SYS_SVR_TO_SVR_CONNECT_FAILED - errno );
+                return SYS_SVR_TO_SVR_CONNECT_FAILED - errno;
             }
         }
     }
 
-    return ( rodsServerHost->localFlag );
+    return rodsServerHost->localFlag;
 }
 
 int
@@ -93,10 +93,10 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
         rodsLog( LOG_NOTICE,
                  "svrToSvrConnect: clientLogin to %s failed",
                  rodsServerHost->hostName->name );
-        return ( status );
+        return status;
     }
     else {
-        return ( rodsServerHost->localFlag );
+        return rodsServerHost->localFlag;
     }
 }
 
@@ -167,7 +167,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         myPortalOpr->dataOprInp.numThreads = myDataObjPutOut->numThreads;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /* createSrvPortal - create a server socket portal.
@@ -238,7 +238,7 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     }
     free( udpaddr );
 
-    return ( lsock );
+    return lsock;
 }
 
 int
@@ -292,7 +292,7 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
         CLOSE_SOCK( myFd );
         return SYS_PORT_COOKIE_ERR;
     }
-    return ( myFd );
+    return myFd;
 }
 
 int applyRuleForSvrPortal( int sockFd, int oprType, int preOrPost, int load, rsComm_t *rsComm ) {
@@ -362,13 +362,13 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
     if ( myPortalOpr == NULL ) {
         rodsLog( LOG_NOTICE, "svrPortalPut: NULL myPortalOpr" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     thisPortList = &myPortalOpr->portList;
     if ( thisPortList == NULL ) {
         rodsLog( LOG_NOTICE, "svrPortalPut: NULL portList" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( getUdpPortFromPortList( thisPortList ) != 0 ) {
@@ -389,7 +389,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     if ( numThreads <= 0 || numThreads > MAX_NUM_CONFIG_TRAN_THR ) {
         rodsLog( LOG_NOTICE,
                  "svrPortalPut: numThreads %d out of range" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     memset( myInput, 0, sizeof( myInput ) );
@@ -413,7 +413,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
         CLOSE_SOCK( lsock );
 
-        return ( portalFd );
+        return portalFd;
     }
     applyRuleForSvrPortal( portalFd, oprType, 0, size0, rsComm );
 
@@ -438,7 +438,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
         CLOSE_SOCK( lsock );
 
-        return ( myInput[0].status );
+        return myInput[0].status;
     }
     else {
 #ifdef PARA_OPR
@@ -456,7 +456,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
                 CLOSE_SOCK( lsock );
 
-                return ( portalFd );
+                return portalFd;
             }
 
             myOffset += size0;
@@ -509,11 +509,11 @@ svrPortalPutGet( rsComm_t *rsComm ) {
             }
         } // for i
         CLOSE_SOCK( lsock );
-        return ( retVal );
+        return retVal;
 
 #else	/* PARA_OPR */
         CLOSE_SOCK( lsock );
-        return ( SYS_PARA_OPR_NO_SUPPORT );
+        return SYS_PARA_OPR_NO_SUPPORT;
 #endif	/* PARA_OPR */
 
     } // else
@@ -532,7 +532,7 @@ int fillPortalTransferInp(
     int                  flags ) {
 
     if ( myInput == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     myInput->rsComm          = rsComm;
@@ -563,7 +563,7 @@ int fillPortalTransferInp(
         myInput->encryption_algorithm,
         rsComm->encryption_algorithm,
         NAME_LEN );
-    return ( 0 );
+    return 0;
 }
 
 
@@ -1285,7 +1285,7 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rbudpRemLocCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     portalOprOut = &dataCopyInp->portalOprOut;
     dataOprInp = &dataCopyInp->dataOprInp;
@@ -1329,7 +1329,7 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                                        FileDesc[srcL3descInx].fd, dataSize,
                                        veryVerbose, sendRate, packetSize );
     }
-    return ( status );
+    return status;
 }
 
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
@@ -1353,7 +1353,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "remLocCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     portalOprOut = &dataCopyInp->portalOprOut;
@@ -1370,14 +1370,14 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
         retVal = rbudpRemLocCopy( rsComm, dataCopyInp );
-        return ( retVal );
+        return retVal;
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {
         rodsLog( LOG_NOTICE,
                  "remLocCopy: numThreads %d out of range",
                  numThreads );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
 
@@ -1391,7 +1391,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     sock = connectToRhostPortal( myPortList->hostAddr,
                                  myPortList->portNum, myPortList->cookie, rsComm->windowSize );
     if ( sock < 0 ) {
-        return ( sock );
+        return sock;
     }
 
     if ( oprType == COPY_TO_LOCAL_OPR ) {
@@ -1417,17 +1417,17 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             locToRemPartialCopy( &myInput[0] );
         }
         if ( myInput[0].status < 0 ) {
-            return ( myInput[0].status );
+            return myInput[0].status;
         }
         else {
             if ( myInput[0].bytesWritten == dataSize ) {
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_NOTICE,
                          "remLocCopy:bytesWritten %lld dataSize %lld mismatch",
                          myInput[0].bytesWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
     }
@@ -1439,7 +1439,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             sock = connectToRhostPortal( myPortList->hostAddr,
                                          myPortList->portNum, myPortList->cookie, rsComm->windowSize );
             if ( sock < 0 ) {
-                return ( sock );
+                return sock;
             }
             if ( oprType == COPY_TO_LOCAL_OPR ) {
                 myFd = l3OpenByHost( rsComm, dataOprInp->destRescTypeInx,
@@ -1488,7 +1488,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
 
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -1501,21 +1501,21 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             }
         }
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_NOTICE,
                          "remLocCopy: totalWritten %lld dataSize %lld mismatch",
                          totalWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
 #else   /* PARA_OPR */
-        return ( SYS_PARA_OPR_NO_SUPPORT );
+        return SYS_PARA_OPR_NO_SUPPORT;
 #endif  /* PARA_OPR */
     }
 }
@@ -1536,7 +1536,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "sameHostCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     dataOprInp = &dataCopyInp->dataOprInp;
@@ -1552,7 +1552,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         rodsLog( LOG_NOTICE,
                  "sameHostCopy: numThreads %d out of range",
                  numThreads );
-        return ( SYS_INVALID_PORTAL_OPR );
+        return SYS_INVALID_PORTAL_OPR;
     }
 
 #ifndef windows_platform
@@ -1579,7 +1579,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
         }
         sameHostPartialCopy( &myInput[0] );
-        return ( myInput[0].status );
+        return myInput[0].status;
     }
     else {
 #ifdef PARA_OPR
@@ -1627,7 +1627,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         tid[0] = new boost::thread( sameHostPartialCopy, &myInput[0] );
 
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -1640,21 +1640,21 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             }
         }
         if ( retVal < 0 ) {
-            return ( retVal );
+            return retVal;
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-                return ( 0 );
+                return 0;
             }
             else {
                 rodsLog( LOG_NOTICE,
                          "sameHostCopy: totalWritten %lld dataSize %lld mismatch",
                          totalWritten, dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
 #else   /* PARA_OPR */
-        return ( SYS_PARA_OPR_NO_SUPPORT );
+        return SYS_PARA_OPR_NO_SUPPORT;
 #endif  /* PARA_OPR */
     }
 }
@@ -2038,22 +2038,22 @@ int
 isUserPrivileged( rsComm_t *rsComm ) {
 
     if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
 
-    return( 0 );
+    return 0;
 }
 
 #if !defined(solaris_platform)
 char *regcmp( char *pat, char *end ) {
-    return( NULL );
+    return NULL;
 }
 
 char *regex( char *rec, char *text, ... ) {
-    return( NULL );
+    return NULL;
 }
 #endif  /* linux_platform */
 
@@ -2092,13 +2092,13 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 
     if ( myPortalOpr == NULL ) {
         rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL myPortalOpr" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     thisPortList = &myPortalOpr->portList;
     if ( thisPortList == NULL ) {
         rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL portList" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     lsock = getTcpSockFromPortList( thisPortList );
@@ -2109,7 +2109,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
                  "svrPortalPutGetRbudp: acceptSrvPortal error. errno = %d",
                  errno );
         CLOSE_SOCK( lsock );
-        return ( tcpSock );
+        return tcpSock;
     }
     else {
         CLOSE_SOCK( lsock );
@@ -2119,7 +2119,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         rodsLog( LOG_ERROR,
                  "svrPortalPutGetRbudp: readn error. toread %d, bytes read %d ",
                  sizeof( udpPortBuf ), status );
-        return ( SYS_UDP_CONNECT_ERR );
+        return SYS_UDP_CONNECT_ERR;
     }
 
     if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput,
@@ -2161,7 +2161,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
                      "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
                      errno );
             recvClose( &rbudpReceiver );
-            return ( USER_RODS_HOSTNAME_ERR );
+            return USER_RODS_HOSTNAME_ERR;
         }
 
         rbudpReceiver.rbudpBase.udpServerAddr.sin_port = htons( rbudpReceiver.rbudpBase.udpRemotePort );
@@ -2201,7 +2201,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
                      "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
                      errno );
             sendClose( &rbudpSender );
-            return ( USER_RODS_HOSTNAME_ERR );
+            return USER_RODS_HOSTNAME_ERR;
         }
         rbudpSender.rbudpBase.udpServerAddr.sin_port =
             htons( rbudpSender.rbudpBase.udpRemotePort );
@@ -2228,7 +2228,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         sendClose( &rbudpSender );
     }
 
-    return ( status );
+    return status;
 }
 #ifndef windows_platform
 void
@@ -2474,11 +2474,11 @@ _getSvrAddr( rodsServerHost_t *rodsServerHost ) {
                 strcmp( tmpHostName->name, "127.0.0.1" ) != 0 &&
                 strcmp( tmpHostName->name, "0.0.0.0" ) != 0 &&
                 strchr( tmpHostName->name, '.' ) != NULL ) {
-            return ( tmpHostName->name );
+            return tmpHostName->name;
         }
         tmpHostName = tmpHostName->next;
     }
-    return ( NULL );
+    return NULL;
 }
 
 char *
@@ -2531,7 +2531,7 @@ forkAndExec( char *av[] ) {
     else if ( childPid < 0 ) {
         rodsLog( LOG_ERROR,
                  "exectar: RODS_FORK failed. errno = %d", errno );
-        return ( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
 
     /* parent */
@@ -2561,7 +2561,7 @@ singleRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "remLocCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     dataOprInp = &dataCopyInp->dataOprInp;
     oprType = dataOprInp->oprType;
@@ -2591,7 +2591,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "singleRemToLocCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -2613,7 +2613,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                      "singleRemToLocCopy: Read %d bytes, Wrote %d bytes.\n ",
                      bytesRead, bytesWritten );
             free( dataObjReadInpBBuf.buf );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             totalWritten += bytesWritten;
@@ -2622,13 +2622,13 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     free( dataObjReadInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
             getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "singleRemToLocCopy: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
 }
 
@@ -2648,7 +2648,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "singleRemToLocCopy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -2671,7 +2671,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                      "singleLocToRemCopy: Read %d bytes, Wrote %d bytes.\n ",
                      bytesRead, bytesWritten );
             free( dataObjWriteInpBBuf.buf );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             totalWritten += bytesWritten;
@@ -2680,13 +2680,13 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     free( dataObjWriteInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
             getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "singleLocToRemCopy: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
 }
 
@@ -2705,7 +2705,7 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataCopyInp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "singleL1Copy: NULL dataCopyInp input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     dataOprInp = &dataCopyInp->dataOprInp;
     destL1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -2733,7 +2733,7 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                      "singleL1Copy: Read %d bytes, Wrote %d bytes.\n ",
                      bytesRead, bytesWritten );
             free( dataObjReadInpBBuf.buf );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
             totalWritten += bytesWritten;
@@ -2742,13 +2742,13 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     free( dataObjReadInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
             getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "singleL1Copy: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
 }
 
@@ -2777,7 +2777,7 @@ readStartupPack(
         rodsLog( LOG_NOTICE,
                  "readStartupPack: problem with myHeader.msgLen = %d",
                  myHeader.msgLen );
-        return ( SYS_HEADER_READ_LEN_ERR );
+        return SYS_HEADER_READ_LEN_ERR;
     }
 
     memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
@@ -2809,7 +2809,7 @@ readStartupPack(
         rodsLog( LOG_NOTICE,
                  "readStartupPack: wrong mag type - %s, expect %s",
                  myHeader.type, RODS_CONNECT_T );
-        return ( SYS_HEADER_TYPE_LEN_ERR );
+        return SYS_HEADER_TYPE_LEN_ERR;
     }
 
     if ( myHeader.bsLen != 0 ) {
@@ -2859,7 +2859,7 @@ readStartupPack(
                       status );
     }
 
-    return ( status );
+    return status;
 }
 
 
@@ -2879,7 +2879,7 @@ initServiceUser() {
     if ( serviceUser == NULL || getuid() != 0 ) {
         /* either the option is not set, or not running     */
         /* with the necessary root permission. Just return. */
-        return ( 0 );
+        return 0;
     }
 
     /* clear errno before getpwnam to distinguish an error from user */
@@ -2889,22 +2889,22 @@ initServiceUser() {
     if ( pwent ) {
         ServiceUid = pwent->pw_uid;
         ServiceGid = pwent->pw_gid;
-        return ( changeToServiceUser() );
+        return changeToServiceUser();
     }
 
     if ( errno ) {
         rodsLogError( LOG_ERROR, SYS_USER_RETRIEVE_ERR,
                       "setServiceUser: error in getpwnam %s, errno = %d",
                       serviceUser, errno );
-        return ( SYS_USER_RETRIEVE_ERR - errno );
+        return SYS_USER_RETRIEVE_ERR - errno;
     }
     else {
         rodsLogError( LOG_ERROR, SYS_USER_RETRIEVE_ERR,
                       "setServiceUser: user %s doesn't exist", serviceUser );
-        return ( SYS_USER_RETRIEVE_ERR );
+        return SYS_USER_RETRIEVE_ERR;
     }
 #else
-    return ( 0 );
+    return 0;
 #endif
 }
 
@@ -2929,7 +2929,7 @@ changeToRootUser() {
 
     if ( !isServiceUserSet() ) {
         /* not configured ... just return */
-        return ( 0 );
+        return 0;
     }
 
 #ifndef windows_platform
@@ -2942,11 +2942,11 @@ changeToRootUser() {
         errno = prev_errno;
         rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
                       "changeToRootUser: can't change to root user id" );
-        return ( SYS_USER_NO_PERMISSION - my_errno );
+        return SYS_USER_NO_PERMISSION - my_errno;
     }
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 /* changeToServiceUser - set the process effective uid to that of the
@@ -2959,7 +2959,7 @@ changeToServiceUser() {
 
     if ( !isServiceUserSet() ) {
         /* not configured ... just return */
-        return ( 0 );
+        return 0;
     }
 
 #ifndef windows_platform
@@ -2976,11 +2976,11 @@ changeToServiceUser() {
         errno = prev_errno;
         rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
                       "changeToServiceUser: can't change to service user id" );
-        return ( SYS_USER_NO_PERMISSION - my_errno );
+        return SYS_USER_NO_PERMISSION - my_errno;
     }
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 /* changeToUser - set the process effective uid to the provided uid.
@@ -3007,12 +3007,12 @@ changeToUser( uid_t uid ) {
         rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
                       "changeToUser: can't change to user id %d",
                       uid );
-        return ( SYS_USER_NO_PERMISSION - my_errno );
+        return SYS_USER_NO_PERMISSION - my_errno;
     }
     errno = prev_errno;
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 /* dropRootPrivilege - set the process real and effective uid to
@@ -3050,13 +3050,13 @@ dropRootPrivilege() {
         rodsLogError( LOG_ERROR, SYS_USER_NO_PERMISSION - my_errno,
                       "dropRootPrivilege: can't setuid() to uid %d",
                       new_real_uid );
-        return ( SYS_USER_NO_PERMISSION - my_errno );
+        return SYS_USER_NO_PERMISSION - my_errno;
     }
 
     errno = prev_errno;
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -3065,7 +3065,7 @@ dropRootPrivilege() {
 int
 checkModArgType( char *arg ) {
     if ( arg == NULL || strlen( arg ) == 0 ) {
-        return( CAT_INVALID_ARGUMENT );
+        return CAT_INVALID_ARGUMENT;
     }
     if ( ':' != arg[1] ) {
         return 0;

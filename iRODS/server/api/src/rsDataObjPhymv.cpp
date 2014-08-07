@@ -63,7 +63,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = _rcDataObjPhymv( rodsServerHost->conn, dataObjInp,
@@ -98,7 +98,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
         accessPerm = NULL;
     }
@@ -132,7 +132,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath );
         delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;
-        return ( status );
+        return status;
     }
 
     status = resolveInfoForPhymv( &dataObjInfoHead, &oldDataObjInfoHead, &myRescGrpInfo, &dataObjInp->condInput, multiCopyFlag );
@@ -145,10 +145,10 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             delete myRescGrpInfo;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return ( 0 );
+            return 0;
         }
         else {
-            return ( status );
+            return status;
         }
     }
 
@@ -162,7 +162,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         delete myRescGrpInfo;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -220,6 +220,6 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         savedStatus = 0;
     }
 
-    return ( savedStatus );
+    return savedStatus;
 }
 

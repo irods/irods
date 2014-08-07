@@ -51,5 +51,5 @@ rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
     status = procApiRequest( conn, SIMPLE_QUERY_AN,  simpleQueryInp, NULL,
                              ( void ** ) simpleQueryOut, NULL );
 
-    return ( status );
+    return status;
 }

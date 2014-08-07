@@ -62,17 +62,17 @@ rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
     }
     else {
         if ( local < 0 ) {
-            return ( local );
+            return local;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsStructFileExtract: resolveHost returned unrecognized value %d",
                      local );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -182,7 +182,7 @@ procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, cha
         if ( status == SYS_DIR_IN_VAULT_NOT_EMPTY ) {
             rodsLog( LOG_ERROR, "procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
                      cacheDir, resource, status );
-            return ( status );
+            return status;
         }
 
     }

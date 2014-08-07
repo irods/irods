@@ -15,7 +15,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     dataObjInp_t dataObjInp;
@@ -77,7 +77,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "replUtil: invalid repl objType %d for %s",
                      rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -101,7 +101,7 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "replDataObjUtil: NULL srcPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -132,7 +132,7 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -144,13 +144,13 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForRepl: NULL dataObjInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->replNum == True ) {
@@ -185,7 +185,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
-            return ( USER__NULL_INPUT_ERR );
+            return USER__NULL_INPUT_ERR;
         }
         else {
             myResc = rodsArgs->resourceString;
@@ -235,7 +235,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             rodsLogError( LOG_ERROR, status,
                           "initCondForRepl: openRestartFile of %s errno",
                           rodsArgs->restartFileString );
-            return ( status );
+            return status;
         }
     }
     if ( rodsArgs->rlock == True ) { // JMC - backport 4609
@@ -255,7 +255,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -271,14 +271,14 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     if ( srcColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "replCollUtil: NULL srcColl input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "replCollUtil: -r option must be used for getting %s collection",
                  srcColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -362,13 +362,13 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

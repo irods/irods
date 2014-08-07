@@ -70,14 +70,14 @@ int writeLine( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
 
     i = writeString( where, inString, rei );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     ptr = ( char* )inString->inOutStruct;
     sprintf( tmp, "%s\n", "" );
     inString->inOutStruct =  tmp;
     i = writeString( where, inString, rei );
     inString->inOutStruct = ptr;
-    return( i );
+    return i;
 
 }
 
@@ -141,7 +141,7 @@ int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
     i = _writeString( writeId, writeStr, rei );
 
     free( writeStr );
-    return( i );
+    return i;
 }
 
 int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
@@ -170,7 +170,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
 
         if ( rei == NULL || rei->rsComm == NULL ) {
             rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -179,7 +179,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         fd = rsDataObjOpen( rei->rsComm, &dataObjInp );
         if ( fd < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd );
-            return( fd );
+            return fd;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
@@ -189,7 +189,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
-            return( i );
+            return i;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
@@ -199,13 +199,13 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i );
-            return( i );
+            return i;
         }
 
         bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
         openedDataObjInp.l1descInx = fd;
         i = rsDataObjClose( rei->rsComm, &openedDataObjInp );
-        return( i );
+        return i;
     }
 
     // =-=-=-=-=-=-=-
@@ -239,7 +239,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
     /***** Jun 27, 2007
            i  = replaceVariablesAndMsParams("",writeStr, rei->msParamArray, rei);
            if (i < 0)
-           return(i);
+           return i;
     ****/
 
     if ( writeId != NULL ) {
@@ -251,7 +251,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         }
     }
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -308,7 +308,7 @@ int writePosInt( msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei ) {
 
     status = _writeString( writeId, writeStr, rei );
 
-    return ( status );
+    return status;
 }
 
 
@@ -372,7 +372,7 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
         free( writeStr );
     }
 
-    return ( status );
+    return status;
 }
 
 /**
@@ -423,12 +423,12 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
     /* sanity checks */
     if ( !rei ) {
         rodsLog( LOG_ERROR, "writeKeyValPairs: input rei is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( !where ) {
         rodsLog( LOG_ERROR, "writeKeyValPairs: No destination provided for writing." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     /* empty? */
@@ -439,7 +439,7 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
     /* check for proper input type and get keyValPair input */
     if ( inKVPair->type && strcmp( inKVPair->type, KeyValPair_MS_T ) ) {
         rodsLog( LOG_ERROR, "writeKeyValPairs: input parameter is not of KeyValPair_MS_T type." );
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     KVPairs = ( keyValPair_t * )inKVPair->inOutStruct;
 
@@ -488,7 +488,7 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
         free( writeStr );
     }
 
-    return ( rei->status );
+    return rei->status;
 }
 
 
@@ -549,7 +549,7 @@ writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecIn
     }
 
     i = _writeXMsg( streamId, ( char* )inHdr->inOutStruct, ( char* )inMsg->inOutStruct );
-    return( i );
+    return i;
 }
 
 /**
@@ -640,6 +640,6 @@ readXMsg( msParam_t* inStreamId, msParam_t *inCondRead,
         outAddr->type = strdup( STR_MS_T );
 
     }
-    return( i );
+    return i;
 }
 

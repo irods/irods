@@ -28,7 +28,7 @@ svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
     int status;
 
     if ( genQueryOut->continueInx <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -39,7 +39,7 @@ svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
 
     status =  rsGenQuery( rsComm, &genQueryInp, &junk );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -69,7 +69,7 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "isData: getSqlResultByInx for COL_D_DATA_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         if ( dataId != NULL ) {
             *dataId = strtoll( dataIdRes->value, 0, 0 );
@@ -78,7 +78,7 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
     }
 
     clearGenQueryInp( &genQueryInp );
-    return( status );
+    return status;
 }
 
 int // JMC - backport 4680
@@ -164,7 +164,7 @@ getPhyPath(
         if ( !phy_path_res ) {
             rodsLog( LOG_ERROR,
                      "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         // =-=-=-=-=-=-=-
@@ -220,7 +220,7 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "isColl: getSqlResultByInx for COL_D_DATA_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( collId != NULL ) {
@@ -230,7 +230,7 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
     }
 
     clearGenQueryInp( &genQueryInp );
-    return( status );
+    return status;
 }
 
 int
@@ -248,7 +248,7 @@ isUser( rsComm_t *rsComm, char *objName ) {
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
-    return( status );
+    return status;
 }
 
 int
@@ -266,7 +266,7 @@ isResc( rsComm_t *rsComm, char *objName ) {
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
-    return( status );
+    return status;
 }
 
 int
@@ -284,19 +284,19 @@ isRescGroup( rsComm_t *rsComm, char *objName ) {
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
-    return( status );
+    return status;
 }
 
 int
 isMeta( rsComm_t *rsComm, char *objName ) {
     /* needs to be filled in later */
-    return( INVALID_OBJECT_TYPE );
+    return INVALID_OBJECT_TYPE;
 }
 
 int
 isToken( rsComm_t *rsComm, char *objName ) {
     /* needs to be filled in later */
-    return( INVALID_OBJECT_TYPE );
+    return INVALID_OBJECT_TYPE;
 }
 
 int
@@ -323,9 +323,9 @@ getObjType( rsComm_t *rsComm, char *objName, char * objType ) {
         strcpy( objType, "-t" );
     }
     else {
-        return( INVALID_OBJECT_TYPE );
+        return INVALID_OBJECT_TYPE;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -342,7 +342,7 @@ addAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
     else {
         i = getObjType( rsComm, objName, objType );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
     }
 
@@ -359,10 +359,10 @@ addAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
         modAVUMetadataInp.arg5 = "";
         j = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
         if ( j < 0 ) {
-            return( j );
+            return j;
         }
     }
-    return( 0 );
+    return 0;
 }
 // =-=-=-=-=-=-=-
 // JMC - backport 4836
@@ -380,7 +380,7 @@ setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
     else {
         i = getObjType( rsComm, objName, objType );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
     }
     for ( i = 0; i < kVP->len ; i++ ) {
@@ -405,14 +405,14 @@ setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
 int
 getStructFileType( specColl_t *specColl ) {
     if ( specColl == NULL ) {
-        return ( -1 );
+        return -1;
     }
 
     if ( specColl->collClass == STRUCT_FILE_COLL ) {
-        return ( ( int ) specColl->type );
+        return ( int ) specColl->type;
     }
     else {
-        return ( -1 );
+        return -1;
     }
 }
 
@@ -429,7 +429,7 @@ removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
     else {
         i = getObjType( rsComm, objName, objType );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
     }
 
@@ -446,10 +446,10 @@ removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
         modAVUMetadataInp.arg5 = "";
         j = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
         if ( j < 0 ) {
-            return( j );
+            return j;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -478,12 +478,12 @@ getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
             rodsLog( LOG_ERROR,
                      "getTokenId: getSqlResultByInx for COL_TOKEN_ID failed" );
             freeGenQueryOut( &genQueryOut );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         status = atoi( tokenIdRes->value );
         freeGenQueryOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -512,12 +512,12 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
             rodsLog( LOG_ERROR,
                      "getUserId: getSqlResultByInx for COL_USER_ID failed" );
             freeGenQueryOut( &genQueryOut );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         status = atoi( userIdRes->value );
         freeGenQueryOut( &genQueryOut );
     }
-    return( status );
+    return status;
 }
 
 
@@ -551,10 +551,10 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         freeGenQueryOut( &genQueryOut );
-        return( 1 );
+        return 1;
     }
     else {
-        return( 0 );
+        return 0;
     }
 }
 
@@ -581,10 +581,10 @@ checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operI
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         freeGenQueryOut( &genQueryOut );
-        return( 1 );
+        return 1;
     }
     else {
-        return( 0 );
+        return 0;
     }
 }
 
@@ -611,10 +611,10 @@ checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId 
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         freeGenQueryOut( &genQueryOut );
-        return( 1 );
+        return 1;
     }
     else {
-        return( 0 );
+        return 0;
     }
 }
 
@@ -626,12 +626,12 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
     int userId;
     operId = getTokenId( rsComm, "access_type", oper );
     if ( operId < 0 ) {
-        return( operId );
+        return operId;
     }
 
     userId = getUserId( rsComm, user, zone );
     if ( userId < 0 ) {
-        return( userId );
+        return userId;
     }
 
     if ( !strcmp( objType, "-d" ) ) {
@@ -650,7 +650,7 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
     else {
         i = INVALID_OBJECT_TYPE;
     }
-    return( i );
+    return i;
 }
 
 /* checkDupReplica - Check if a given object with a given rescName
@@ -688,11 +688,11 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "checkDupReplica: getSqlResultByInx COL_DATA_REPL_NUM failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         intReplNum = atoi( replNum->value );
         freeGenQueryOut( &genQueryOut );
-        return ( intReplNum );
+        return intReplNum;
     }
     else {
         return status;

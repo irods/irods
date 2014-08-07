@@ -11,5 +11,5 @@ rcAuthRequest( rcComm_t *conn, authRequestOut_t **authRequestOut ) {
     status = procApiRequest( conn, AUTH_REQUEST_AN, NULL, NULL,
                              ( void ** ) authRequestOut, NULL );
 
-    return ( status );
+    return status;
 }

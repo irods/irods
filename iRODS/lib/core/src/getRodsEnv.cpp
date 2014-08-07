@@ -59,7 +59,7 @@ extern "C" {
 
     char *
     getRodsEnvFileName() {
-        return( configFileName );
+        return configFileName;
     }
 
     /* Return the auth filename, if any */
@@ -67,7 +67,7 @@ extern "C" {
        up and down the calling chain */
     char *
     getRodsEnvAuthFileName() {
-        return( authFileName );
+        return authFileName;
     }
 
     /* convert either an integer value or a name matching the defines, to
@@ -77,36 +77,36 @@ extern "C" {
         int i;
         i = atoi( inputStr );
         if ( i > 0 && i <= LOG_SQL ) {
-            return( i );
+            return i;
         }
         if ( strcmp( inputStr, "LOG_SQL" ) == 0 ) {
-            return( LOG_SQL );
+            return LOG_SQL;
         }
         if ( strcmp( inputStr, "LOG_SYS_FATAL" ) == 0 ) {
-            return( LOG_SYS_FATAL );
+            return LOG_SYS_FATAL;
         }
         if ( strcmp( inputStr, "LOG_SYS_WARNING" ) == 0 ) {
-            return( LOG_SYS_WARNING );
+            return LOG_SYS_WARNING;
         }
         if ( strcmp( inputStr, "LOG_ERROR" ) == 0 ) {
-            return( LOG_ERROR );
+            return LOG_ERROR;
         }
         if ( strcmp( inputStr, "LOG_NOTICE" ) == 0 ) {
-            return( LOG_NOTICE );
+            return LOG_NOTICE;
         }
         if ( strcmp( inputStr, "LOG_DEBUG" ) == 0 ) {
-            return( LOG_DEBUG );
+            return LOG_DEBUG;
         }
         if ( strcmp( inputStr, "LOG_DEBUG3" ) == 0 ) {
-            return( LOG_DEBUG3 );
+            return LOG_DEBUG3;
         }
         if ( strcmp( inputStr, "LOG_DEBUG2" ) == 0 ) {
-            return( LOG_DEBUG2 );
+            return LOG_DEBUG2;
         }
         if ( strcmp( inputStr, "LOG_DEBUG1" ) == 0 ) {
-            return( LOG_DEBUG1 );
+            return LOG_DEBUG1;
         }
-        return( 0 );
+        return 0;
     }
 
     int getRodsEnv( rodsEnv *rodsEnvArg ) {
@@ -197,7 +197,7 @@ extern "C" {
         }
 #endif
 
-        return( 0 );
+        return 0;
     }
 
     int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel ) {
@@ -451,7 +451,7 @@ extern "C" {
             return -1;
 #endif
         }
-        return( 0 );
+        return 0;
     }
 
     int
@@ -666,7 +666,7 @@ extern "C" {
                      "environment variable set, irodsDebug=%s",
                      rodsEnvArg->rodsDebug );
         }
-        return ( 0 );
+        return 0;
     }
 
     /* build a couple default values from others if appropriate */
@@ -686,7 +686,7 @@ extern "C" {
             rodsLog( LOG_NOTICE, "created irodsCwd=%s", rodsEnvArg->rodsCwd );
         }
 
-        return ( 0 );
+        return 0;
     }
 
 
@@ -713,7 +713,7 @@ extern "C" {
                         if ( *nextPtr == ' ' || *nextPtr == '\n'  || *nextPtr == '\0' ) {
                             /* imbedded "s are OK */
                             *myPtr = '\0';
-                            return( savePtr );
+                            return savePtr;
                         }
                     }
                     if ( *myPtr == '\n' ) {
@@ -724,7 +724,7 @@ extern "C" {
                            put the starting one back */
                         savePtr--;
                         *savePtr = '"';
-                        return( savePtr );
+                        return savePtr;
                     }
                     myPtr++;
                 }
@@ -738,7 +738,7 @@ extern "C" {
                         if ( *nextPtr == ' ' || *nextPtr == '\n'  || *nextPtr == '\0' ) {
                             /* imbedded 's are OK */
                             *myPtr = '\0';
-                            return( savePtr );
+                            return savePtr;
                         }
                     }
                     if ( *myPtr == '\n' ) {
@@ -749,7 +749,7 @@ extern "C" {
                            put the starting one back */
                         savePtr--;
                         *savePtr = '\'';
-                        return( savePtr );
+                        return savePtr;
                     }
                     myPtr++;
                 }
@@ -765,7 +765,7 @@ extern "C" {
                 *myPtr = '\0';
             }
             if ( *myPtr == '\0' ) {
-                return( savePtr );
+                return savePtr;
             }
         }
     }
@@ -799,11 +799,11 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "appendRodsEnv: cannot create file %s",
                      configFileName );
-            return( 0 );
+            return 0;
         }
         fputs( appendText, fptr );
         fclose( fptr );
-        return( 0 );
+        return 0;
     }
 
 } // extern "C"

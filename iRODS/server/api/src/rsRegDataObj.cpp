@@ -23,7 +23,7 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -43,7 +43,7 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         status = rcRegDataObj( rodsServerHost->conn, dataObjInfo,
                                outDataObjInfo );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -79,9 +79,9 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
             status = ret.code();
         }
     }
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 }
@@ -95,13 +95,13 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         rodsLog( LOG_NOTICE,
                  "svrRegDataObj: Reg path %s is in spec coll",
                  dataObjInfo->objPath );
-        return ( SYS_REG_OBJ_IN_SPEC_COLL );
+        return SYS_REG_OBJ_IN_SPEC_COLL;
     }
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -122,6 +122,6 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         }
     }
 
-    return ( status );
+    return status;
 }
 

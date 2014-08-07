@@ -127,7 +127,7 @@ int _freeIFuseDesc( iFuseDesc_t *desc ) {
     if ( desc->index < 3 ) {
         rodsLog( LOG_ERROR,
                  "freeIFuseDesc: descInx %d out of range", desc->index );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     for ( i = 0; i < MAX_BUF_CACHE; i++ ) {

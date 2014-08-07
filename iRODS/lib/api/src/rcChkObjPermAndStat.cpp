@@ -9,5 +9,5 @@ rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp )
     status = procApiRequest( conn, CHK_OBJ_PERM_AND_STAT_AN,
                              chkObjPermAndStatInp, NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

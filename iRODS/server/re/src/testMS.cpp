@@ -13,13 +13,13 @@ print_hello( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "Test for print_hello\n" );
     fprintf( stdout, "Hello\n" );
     _writeString( "stdout", "Hello\n", rei );
-    return( 0 );
+    return 0;
 }
 int
 recover_print_hello( ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( "\b\b\b\b\b     \b\b\b\b\b" );
     fprintf( stdout, "\b\b\b\b\b     \b\b\b\b\b" );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -44,7 +44,7 @@ print_doi( dataObjInfo_t *doi ) {
         rodsLog( LOG_NOTICE, "     dataType= %s\n", doi->dataType );
         rodsLog( LOG_NOTICE, "     dataSize= %lld\n", doi->dataSize );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -69,7 +69,7 @@ print_uoi( userInfo_t *uoi ) {
         rodsLog( LOG_NOTICE, "     userType= %s\n", uoi->userType );
 
     }
-    return( 0 );
+    return 0;
 }
 
 int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei ) {
@@ -80,7 +80,7 @@ int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei ) {
     rodsLog( LOG_NOTICE, "ALPHA: ------>  In:%s\n", In );
     mPOut2->type = strdup( STR_MS_T );
     mPOut2->inOutStruct = strdup( "Microservice_1" );
-    return( 0 );
+    return 0;
 
 }
 
@@ -91,10 +91,10 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
 
     if ( mPIn == NULL || mPIn->inpOutBuf == NULL ) {
         rodsLog( LOG_ERROR, "msiCutBufferInHalf: input is NULL." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     mPIn->inpOutBuf->len = ( mPIn->inpOutBuf->len ) / 2;
-    return( 0 );
+    return 0;
 
 }
 
@@ -157,7 +157,7 @@ msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
     /* Sanity checks */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiDoSomething: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* myKeyVal init */

@@ -1026,7 +1026,7 @@ do_action:	/* This label is used only to access EOF actions. */
 #line 70 "rulegen.l"
             {
                 count();
-                return( NUM_LIT );
+                return NUM_LIT;
             }
             YY_BREAK
         case 56:

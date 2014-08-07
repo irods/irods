@@ -91,5 +91,5 @@ rcOpenCollection( rcComm_t *conn, collInp_t *openCollInp ) {
     status = procApiRequest( conn, OPEN_COLLECTION_AN, openCollInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

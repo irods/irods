@@ -57,7 +57,7 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     }
     clearMsParamArray( &msParamArray, 0 );
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -71,7 +71,7 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
         rodsLog( LOG_NOTICE,
                  "rsDataObjRead: l1descInx %d out of range",
                  l1descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
     if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
         return BAD_INPUT_DESC_INDEX;
@@ -91,11 +91,11 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
         i = applyRuleForPostProcForRead( rsComm, dataObjReadOutBBuf,
                                          L1desc[l1descInx].dataObjInfo->objPath );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
     }
 
-    return ( bytesRead );
+    return bytesRead;
 }
 
 int
@@ -144,7 +144,7 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
             break;
         }
     }
-    return ( bytesRead );
+    return bytesRead;
 }
 
 int
@@ -162,5 +162,5 @@ _l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx, void *buf, int len ) 
     fileReadInp.len = len;
     bytesRead = rsFileRead( rsComm, &fileReadInp, &dataObjReadInpBBuf );
 
-    return ( bytesRead );
+    return bytesRead;
 }

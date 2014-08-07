@@ -23,7 +23,7 @@ getNewVarName( char *v, msParamArray_t *msParamArray ) {
     }
 
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -36,7 +36,7 @@ removeTmpVarName( msParamArray_t *msParamArray ) {
             rmMsParamByLabel( msParamArray, msParamArray->msParam[i]->label, 1 );
         }
     }
-    return( 0 );
+    return 0;
 
 }
 
@@ -49,7 +49,7 @@ carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsPa
     char *a;
     const char *b;
     if ( sourceMsParamArray == NULL ) {
-        return( 0 );
+        return 0;
     }
     /****
     for (i = 0; i < sourceMsParamArray->len ; i++) {
@@ -91,5 +91,5 @@ carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsPa
                                mPt->label, mPt->type, mPt->inOutStruct, mPt->inpOutBuf, 1 );
     }
 
-    return( 0 );
+    return 0;
 }

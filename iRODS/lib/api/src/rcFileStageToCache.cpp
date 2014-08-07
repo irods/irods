@@ -9,5 +9,5 @@ rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp ) {
     status = procApiRequest( conn, FILE_STAGE_TO_CACHE_AN,
                              fileStageToCacheInp, NULL, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

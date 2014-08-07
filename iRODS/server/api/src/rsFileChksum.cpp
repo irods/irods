@@ -42,17 +42,17 @@ rsFileChksum(
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileChksum: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -107,7 +107,7 @@ _rsFileChksum(
         *chksumStr = NULL;
     }
 
-    return ( status );
+    return status;
 }
 
 int fileChksum(
@@ -195,7 +195,7 @@ int fileChksum(
         else {
             status = ret.code();
         }
-        return ( status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
@@ -275,7 +275,7 @@ int fileChksum(
              chksumStr, total_bytes_read );
 #endif
 
-    return ( 0 );
+    return 0;
 
 }
 

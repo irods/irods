@@ -46,7 +46,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
                                        REMOTE_CREATE );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         int retval;
@@ -69,7 +69,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         rodsLog( LOG_ERROR,
                  "rsCollRepl: rsOpenCollection of %s error. status = %d",
                  collReplInp->collName, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
 
     if ( collOprStat != NULL ) {
@@ -82,7 +82,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
                  "rsCollRepl: unable to replicate mounted collection %s",
                  collReplInp->collName );
         rsCloseCollection( rsComm, &handleInx );
-        return ( 0 );
+        return 0;
     }
 
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
@@ -139,5 +139,5 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     }
     rsCloseCollection( rsComm, &handleInx );
 
-    return ( savedStatus );
+    return savedStatus;
 }

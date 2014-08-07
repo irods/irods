@@ -55,10 +55,10 @@ isPath( char *myPath ) {
     path p( myPath );
 
     if ( exists( p ) ) {
-        return ( 1 );
+        return 1;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -67,30 +67,30 @@ getFileSize( char *myPath ) {
     path p( myPath );
 
     if ( exists( p ) && is_regular_file( p ) ) {
-        return ( file_size( p ) );
+        return file_size( p );
     }
     else {
-        return ( -1 );
+        return -1;
     }
 }
 
 
 int freeBBuf( bytesBuf_t *myBBuf ) {
     if ( myBBuf == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( myBBuf->buf != NULL ) {
         free( myBBuf->buf );
     }
     free( myBBuf );
-    return ( 0 );
+    return 0;
 }
 
 int
 clearBBuf( bytesBuf_t *myBBuf ) {
     if ( myBBuf == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( myBBuf->buf != NULL ) {
@@ -98,7 +98,7 @@ clearBBuf( bytesBuf_t *myBBuf ) {
     }
 
     memset( myBBuf, 0, sizeof( bytesBuf_t ) );
-    return ( 0 );
+    return 0;
 }
 
 /* addRErrorMsg - Add an error msg to the rError_t struct.
@@ -114,7 +114,7 @@ addRErrorMsg( rError_t *myError, int status, const char *msg ) {
     int i;
 
     if ( myError == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( myError->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
@@ -160,12 +160,12 @@ int
 freeRError( rError_t *myError ) {
 
     if ( myError == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     freeRErrorContent( myError );
     free( myError );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -173,7 +173,7 @@ freeRErrorContent( rError_t *myError ) {
     int i;
 
     if ( myError == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( myError->len > 0 ) {
@@ -185,7 +185,7 @@ freeRErrorContent( rError_t *myError ) {
 
     memset( myError, 0, sizeof( rError_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -207,7 +207,7 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
         *( userName + ix ) = '\0';
         strncpy( userZone, fullUserNameIn + ix + 1, NAME_LEN );
         if ( strstr( userZone, "#" ) ) {
-            return( USER_INVALID_USERNAME_FORMAT );
+            return USER_INVALID_USERNAME_FORMAT;
         }
     }
     else {
@@ -219,10 +219,10 @@ parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
         char *cp2;
         cp2 = strstr( cp + 1, "@" );
         if ( cp2 ) {
-            return( USER_INVALID_USERNAME_FORMAT );
+            return USER_INVALID_USERNAME_FORMAT;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -234,7 +234,7 @@ apiTableLookup( int apiNumber ) {
     if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
         return apiNumber;
     }
-    return ( SYS_UNMATCHED_API_NUM );
+    return SYS_UNMATCHED_API_NUM;
 #endif
 }
 
@@ -243,7 +243,7 @@ myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
     char *inPtr, *outPtr;
 
     if ( outlonglong == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ntohl( 1 ) == 1 ) {
@@ -259,7 +259,7 @@ myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
     for ( i = 0; i < byte_length; i++ ) {
         outPtr[i] = inPtr[byte_length - 1 - i];
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -267,7 +267,7 @@ myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
     char *inPtr, *outPtr;
 
     if ( outlonglong == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ntohl( 1 ) == 1 ) {
@@ -283,13 +283,13 @@ myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
     for ( i = 0; i < byte_length; i++ ) {
         outPtr[i] = inPtr[byte_length - 1 - i];
     }
-    return ( 0 );
+    return 0;
 }
 
 int
 statToRodsStat( rodsStat_t *rodsStat, struct stat *myFileStat ) {
     if ( rodsStat == NULL || myFileStat == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rodsStat->st_size = myFileStat->st_size;
@@ -308,13 +308,13 @@ statToRodsStat( rodsStat_t *rodsStat, struct stat *myFileStat ) {
     rodsStat->st_blocks = myFileStat->st_blocks;
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 int
 rodsStatToStat( struct stat *myFileStat, rodsStat_t *rodsStat ) {
     if ( myFileStat == NULL || rodsStat == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     myFileStat->st_size = rodsStat->st_size;
@@ -333,13 +333,13 @@ rodsStatToStat( struct stat *myFileStat, rodsStat_t *rodsStat ) {
     myFileStat->st_blocks = rodsStat->st_blocks;
 #endif
 
-    return ( 0 );
+    return 0;
 }
 
 int
 direntToRodsDirent( struct rodsDirent *dirent, struct dirent *fileDirent ) {
     if ( dirent == NULL || fileDirent == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     strcpy( dirent->d_name, fileDirent->d_name );
@@ -390,7 +390,7 @@ direntToRodsDirent( struct rodsDirent *dirent, struct dirent *fileDirent ) {
     dirent->d_reclen = fileDirent->d_reclen;
     dirent->d_namlen = _D_EXACT_NAMLEN( fileDirent );
 #endif
-    return ( 0 );
+    return 0;
 }
 
 /* getStrInBuf get the next str in buf.
@@ -435,7 +435,7 @@ getStrInBuf( char **inbuf, char *outbuf, int *inbufLen, int outbufLen ) {
     }
     *outPtr = '\0';
     *inbuf = inPtr;
-    return ( bytesCopied );
+    return bytesCopied;
 }
 
 /* getNextEleInStr - same as getStrInBuf except it did not check for # */
@@ -483,7 +483,7 @@ getNextEleInStr( char **inbuf, char *outbuf, int *inbufLen, int maxOutLen ) {
     }
     *outPtr = '\0';
     *inbuf = inPtr;
-    return ( bytesCopied );
+    return bytesCopied;
 }
 
 /* getLine - Read the next line. Add a NULL char at the end.
@@ -528,7 +528,7 @@ getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len ) {
 
     if ( rcatZoneHint == NULL ) {
         zoneName[0] = '\0';
-        return ( 0 );
+        return 0;
     }
 
     if ( rcatZoneHint[0] == '/' ) {             /* a path */
@@ -555,13 +555,13 @@ getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len ) {
         zoneName[len - 1] = '\0';
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
 freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
     if ( dataObjInfo == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     clearKeyVal( &dataObjInfo->condInput );
@@ -576,7 +576,7 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
 
     free( dataObjInfo );
     dataObjInfo = 0;
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -589,7 +589,7 @@ freeAllDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
         freeDataObjInfo( tmpDataObjInfo );
         tmpDataObjInfo = nextDataObjInfo;
     }
-    return ( 0 );
+    return 0;
 }
 
 /* queDataObjInfo - queue the input dataObjInfo in dataObjInfoHead queue.
@@ -609,7 +609,7 @@ int queDataObjInfo(
     dataObjInfo_t *tmpDataObjInfo;
 
     if ( dataObjInfo == NULL ) {
-        return ( -1 );
+        return -1;
     }
 
     if ( *dataObjInfoHead == NULL ) {
@@ -649,7 +649,7 @@ int queDataObjInfo(
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 // =-=-=-=-=-=-=-
 // JMC - backport 4590
@@ -659,7 +659,7 @@ dequeDataObjInfo( dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo ) 
     dataObjInfo_t *prevDataObjInfo = NULL;
 
     if ( dataObjInfo == NULL || dataObjInfoHead == NULL ) {
-        return ( -1 );
+        return -1;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
@@ -690,7 +690,7 @@ getDataObjInfoCnt( dataObjInfo_t *dataObjInfoHead ) {
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    return ( cnt );
+    return cnt;
 }
 
 char *
@@ -698,16 +698,16 @@ getValByKey( const keyValPair_t *condInput, const char *keyWord ) {
     int i;
 
     if ( condInput == NULL ) {
-        return ( NULL );
+        return NULL;
     }
 
     for ( i = 0; i < condInput->len; i++ ) {
         if ( strcmp( condInput->keyWord[i], keyWord ) == 0 ) {
-            return ( condInput->value[i] );
+            return condInput->value[i];
         }
     }
 
-    return ( NULL );
+    return NULL;
 }
 
 int
@@ -715,17 +715,17 @@ getIvalByInx( inxIvalPair_t *inxIvalPair, int inx, int *outValue ) {
     int i;
 
     if ( inxIvalPair == NULL ) {
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     for ( i = 0; i < inxIvalPair->len; i++ ) {
         if ( inxIvalPair->inx[i] == inx ) {
             *outValue = inxIvalPair->value[i];
-            return ( 0 );
+            return 0;
         }
     }
 
-    return ( UNMATCHED_KEY_OR_INDEX );
+    return UNMATCHED_KEY_OR_INDEX;
 }
 
 int
@@ -733,7 +733,7 @@ rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
     int i, j;
 
     if ( condInput == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     for ( i = 0; i < condInput->len; i++ ) {
@@ -754,7 +754,7 @@ rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
             break;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -767,7 +767,7 @@ replKeyVal( const keyValPair_t *srcCondInput, keyValPair_t *destCondInput ) {
         addKeyVal( destCondInput, srcCondInput->keyWord[i],
                    srcCondInput->value[i] );
     }
-    return ( 0 );
+    return 0;
 }
 
 int copyKeyVal(
@@ -780,7 +780,7 @@ int copyKeyVal(
 
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -793,7 +793,7 @@ replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
 
     replKeyVal( &srcDataObjInp->condInput, &destDataObjInp->condInput );
     replSpecColl( srcDataObjInp->specColl, &destDataObjInp->specColl );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -816,7 +816,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     int emptyInx = -1;
 
     if ( condInput == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* check if the keyword exists */
@@ -824,7 +824,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
         if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
             condInput->value[i] = strdup( value );
-            return ( 0 );
+            return 0;
         }
         else if ( strlen( condInput->keyWord[i] ) == 0 ) {
             emptyInx = i;
@@ -836,7 +836,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
         free( condInput->value[emptyInx] );
         condInput->keyWord[emptyInx] = strdup( keyWord );
         condInput->value[emptyInx] = strdup( value );
-        return ( 0 );
+        return 0;
     }
 
     if ( ( condInput->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
@@ -863,7 +863,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     condInput->value[condInput->len] = strdup( value );
     condInput->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -876,7 +876,7 @@ addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag, char *keyWord
     int i;
 
     if ( condInput == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
@@ -913,7 +913,7 @@ addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag, char *keyWord
     condInput->postTag[condInput->len] = strdup( postTag );
     condInput->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -927,7 +927,7 @@ addInxIval( inxIvalPair_t *inxIvalPair, int inx, int value ) {
     int i;
 
     if ( inxIvalPair == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( inxIvalPair->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
@@ -954,7 +954,7 @@ addInxIval( inxIvalPair_t *inxIvalPair, int inx, int value ) {
     inxIvalPair->value[inxIvalPair->len] = value;
     inxIvalPair->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -965,7 +965,7 @@ addInxVal( inxValPair_t *inxValPair, int inx, const char *value ) {
     int i;
 
     if ( inxValPair == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( inxValPair->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
@@ -992,7 +992,7 @@ addInxVal( inxValPair_t *inxValPair, int inx, const char *value ) {
     inxValPair->value[inxValPair->len] = strdup( value );
     inxValPair->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1004,7 +1004,7 @@ addStrArray( strArray_t *strArray, char *value ) {
     int myLen;
 
     if ( strArray == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strArray->size <= 0 ) {
@@ -1017,7 +1017,7 @@ addStrArray( strArray_t *strArray, char *value ) {
             rodsLog( LOG_ERROR,
                      "addStrArray: invalid size %d, len %d",
                      strArray->size, strArray->len );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
     }
 
@@ -1050,7 +1050,7 @@ addStrArray( strArray_t *strArray, char *value ) {
     rstrcpy( &strArray->value[strArray->len * size], value, size );
     strArray->len++;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1088,7 +1088,7 @@ clearKeyVal( keyValPair_t *condInput ) {
     int i;
 
     if ( condInput == NULL || condInput->len < 1 ) {
-        return ( 0 );
+        return 0;
     }
 
     for ( i = 0; i < condInput->len; i++ ) {
@@ -1099,20 +1099,20 @@ clearKeyVal( keyValPair_t *condInput ) {
     free( condInput->keyWord );
     free( condInput->value );
     memset( condInput, 0, sizeof( keyValPair_t ) );
-    return( 0 );
+    return 0;
 }
 
 int
 clearInxIval( inxIvalPair_t *inxIvalPair ) {
     if ( inxIvalPair == NULL || inxIvalPair->len <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     free( inxIvalPair->inx );
     free( inxIvalPair->value );
     memset( inxIvalPair, 0, sizeof( inxIvalPair_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1120,7 +1120,7 @@ clearInxVal( inxValPair_t *inxValPair ) {
     int i;
 
     if ( inxValPair == NULL || inxValPair->len <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     for ( i = 0; i < inxValPair->len; i++ ) {
@@ -1131,7 +1131,7 @@ clearInxVal( inxValPair_t *inxValPair ) {
     free( inxValPair->value );
     memset( inxValPair, 0, sizeof( inxValPair_t ) );
 
-    return( 0 );
+    return 0;
 }
 
 void
@@ -1163,7 +1163,7 @@ freeGenQueryOut( genQueryOut_t **genQueryOut ) {
     free( *genQueryOut );
     *genQueryOut = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 void
@@ -1247,7 +1247,7 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
             continue;
         }
         if ( ( tmpValue = ( char * )malloc( totalRowCnt * len ) ) == 0 ) {
-            return ( SYS_MALLOC_ERR - errno );
+            return SYS_MALLOC_ERR - errno;
         }
         if ( targGenQueryOut->sqlResult[i].value != NULL ) {
             memcpy( tmpValue, targGenQueryOut->sqlResult[i].value,
@@ -1261,7 +1261,7 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
     }
     targGenQueryOut->rowCnt = totalRowCnt;
 
-    return ( 0 );
+    return 0;
 }
 
 void
@@ -1278,12 +1278,12 @@ clearBulkOprInp( void* voidInp ) {
 int
 moveKeyVal( keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal ) {
     if ( destKeyVal == NULL || srcKeyVal == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     *destKeyVal = *srcKeyVal;
     memset( srcKeyVal, 0, sizeof( keyValPair_t ) );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1306,9 +1306,9 @@ getUnixUid( char *userName ) {
     if ( splitPos != NULL ) {
         *splitPos = '@';
     }
-    return ( myuid );
+    return myuid;
 #else
-    return ( -1 );
+    return -1;
 #endif
 }
 
@@ -1447,7 +1447,7 @@ int get64RandomBytes( char *buf ) {
             }
             buffer[64] = '\0';
             strncpy( buf, buffer, 65 );
-            return( 0 );
+            return 0;
         }
     }
 #endif
@@ -1494,7 +1494,7 @@ int get64RandomBytes( char *buf ) {
     }
     buffer[64] = '\0';
     strncpy( buf, buffer, 65 );
-    return( 0 );
+    return 0;
 }
 
 sqlResult_t *
@@ -1507,10 +1507,10 @@ getSqlResultByInx( genQueryOut_t *genQueryOut, int attriInx ) {
 
     for ( i = 0; i < genQueryOut->attriCnt; i++ ) {
         if ( genQueryOut->sqlResult[i].attriInx == attriInx ) {
-            return ( &genQueryOut->sqlResult[i] );
+            return &genQueryOut->sqlResult[i];
         }
     }
-    return ( NULL );
+    return NULL;
 }
 
 void
@@ -1646,7 +1646,7 @@ freeAllRescQuota( rescQuota_t *rescQuotaHead ) {
         free( tmpRescQuota );
         tmpRescQuota = nextRescQuota;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1655,7 +1655,7 @@ parseMultiStr( char *strInput, strArray_t *strArray ) {
     int endReached = 0;
 
     if ( strInput == NULL || strArray == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     startPtr = endPtr = strInput;
@@ -1687,7 +1687,7 @@ parseMultiStr( char *strInput, strArray_t *strArray ) {
         startPtr = endPtr;
     }
 
-    return ( strArray->len );
+    return strArray->len;
 }
 
 /* Get the current time, in the  form: 2006-10-25-10.52.43 */
@@ -1762,7 +1762,7 @@ getLocalTimeStr( struct tm *mytm, char *timeStr ) {
         timeStr[17] = '0';
     }
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -1922,13 +1922,13 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
     if ( strlen( t ) == 0 || !strcmp( t, "REPEAT FOR EVER" ) ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        return( 0 );
+        return 0;
     }
     if ( !strcmp( t, "DOUBLE FOR EVER" ) ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         sprintf( delayStr, "%lld%c DOUBLE FOR EVER", it * 2, u );
-        return( 3 );
+        return 3;
     }
     if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
         s = s + strlen( "REPEAT UNTIL SUCCESS OR UNTIL " );
@@ -1940,10 +1940,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         if ( atol( tstr ) < dt ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 1 );
+            return 1;
         }
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
@@ -1957,10 +1957,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         sprintf( nextTime, "%lld", dt );
         sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR UNTIL %s", it * 2, u, s );
         if ( atol( tstr ) < dt ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 4 );
+            return 4;
         }
     }
     if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR " ) ) != NULL ) {
@@ -1985,10 +1985,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             sprintf( delayStr, "%lld%c REPEAT UNTIL SUCCESS OR %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
         }
         if ( n <= 0 ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 4 );
+            return 4;
         }
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR " ) ) != NULL ) {
@@ -2013,10 +2013,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
         }
         if ( n <= 0 ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 4 );
+            return 4;
         }
     }
     if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS UPTO " ) ) != NULL ) {
@@ -2035,18 +2035,18 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         else {
             sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS UPTO %s", it , u, s );
         }
-        return( 4 );
+        return 4;
     }
     if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        return( 1 );
+        return 1;
     }
     if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS", it * 2, u );
-        return( 4 );
+        return 4;
     }
     if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
         s = s + strlen( "REPEAT UNTIL " );
@@ -2058,10 +2058,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         if ( atol( tstr ) < dt ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 0 );
+            return 0;
         }
     }
 
@@ -2077,10 +2077,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         /* sprintf(delayStr,"%lld%c DOUBLE UNTIL %s", it * 2, u,s); */
         sprintf( delayStr, "%lld%c DOUBLE UNTIL %s", it * 2, u, tstr );
         if ( atol( tstr ) < dt ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 3 );
+            return 3;
         }
 
     }
@@ -2107,10 +2107,10 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             sprintf( delayStr, "%lld%c REPEAT %i TIMES. ORIGINAL TIMES=%i", it, u, n, n + 1 );
         }
         if ( n <= 0 ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 3 );
+            return 3;
         }
     }
     if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
@@ -2135,14 +2135,14 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             sprintf( delayStr, "%lld%c DOUBLE %i TIMES. ORIGINAL TIMES=%i", it * 2, u, n, n + 1 );
         }
         if ( n <= 0 ) {
-            return( 2 );
+            return 2;
         }
         else {
-            return( 3 );
+            return 3;
         }
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -2177,7 +2177,7 @@ localToUnixTime( char * localTime, char * unixTime ) {
     else {
         snprintf( unixTime, TIME_LEN, "%d", ( uint ) newTime );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2189,10 +2189,10 @@ isInteger( char * inStr ) {
     /* see if it is all digit */
     for ( i = 0; i < len; i++ ) {
         if ( !isdigit( inStr[i] ) ) {
-            return ( 0 );
+            return 0;
         }
     }
-    return ( 1 );
+    return 1;
 }
 
 
@@ -2209,7 +2209,7 @@ convertDateFormat( char * s, char * currTime ) {
     rstrcpy( tstr, s, 199 );
     i = checkDateFormat( tstr );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
     if ( !isInteger( s ) && strchr( s, '-' ) == NULL && strchr( s, ':' ) == NULL ) {
         it = atol( tstr ) + atol( currTime );
@@ -2218,7 +2218,7 @@ convertDateFormat( char * s, char * currTime ) {
     else {
         strcpy( s, tstr );
     }
-    return( 0 );
+    return 0;
 }
 
 /* checkDateFormat - convert the string given in s and output the time
@@ -2249,7 +2249,7 @@ checkDateFormat( char * s ) {
     int offset = 0;
 
     if ( isInteger( s ) ) {
-        return ( 0 );
+        return 0;
     }
 
     len = strlen( s );
@@ -2306,7 +2306,7 @@ checkDateFormat( char * s ) {
                     offset += s[mypos] - 48;
                 }
                 else {
-                    return ( DATE_FORMAT_ERR );
+                    return DATE_FORMAT_ERR;
                 }
 
                 mypos--;
@@ -2315,7 +2315,7 @@ checkDateFormat( char * s ) {
                         offset += 10 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2324,7 +2324,7 @@ checkDateFormat( char * s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != ':' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* min */
@@ -2334,7 +2334,7 @@ checkDateFormat( char * s ) {
                         offset += 60 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2346,7 +2346,7 @@ checkDateFormat( char * s ) {
                         offset += 10 * 60 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2355,7 +2355,7 @@ checkDateFormat( char * s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != ':' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* hour */
@@ -2365,7 +2365,7 @@ checkDateFormat( char * s ) {
                         offset += 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2377,7 +2377,7 @@ checkDateFormat( char * s ) {
                         offset += 10 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2386,7 +2386,7 @@ checkDateFormat( char * s ) {
                 mypos--;
                 if ( mypos >= 0 )
                     if ( s[mypos] != '.' ) {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
 
                 /* day */
@@ -2397,7 +2397,7 @@ checkDateFormat( char * s ) {
                         offset += 24 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
@@ -2409,14 +2409,14 @@ checkDateFormat( char * s ) {
                         offset += 10 * 24 * 3600 * ( s[mypos] - 48 );
                     }
                     else {
-                        return ( DATE_FORMAT_ERR );
+                        return DATE_FORMAT_ERR;
                     }
                 else {
                     break;
                 }
             }
             snprintf( s, 19, "%d", offset );
-            return ( 0 );
+            return 0;
         }
     }
 
@@ -2430,10 +2430,10 @@ checkDateFormat( char * s ) {
         if ( status >= 0 ) {
             rstrcpy( s, outUnixTime, TIME_LEN );
         }
-        return( status );
+        return status;
     }
     else {
-        return( DATE_FORMAT_ERR );
+        return DATE_FORMAT_ERR;
     }
 }
 
@@ -2455,7 +2455,7 @@ printErrorStack( rError_t * rError ) {
         }
         printf( "%s\n", errMsg->msg );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2468,12 +2468,12 @@ appendRandomToPath( char * trashPath ) {
     /* assume there is enough space for MAX_NAME_LEN char */
 
     if ( len >= MAX_NAME_LEN + 12 ) {
-        return ( SYS_INVALID_FILE_PATH );
+        return SYS_INVALID_FILE_PATH;
     }
     tmpPtr = trashPath + len;
     sprintf( tmpPtr, ".%d", ( uint ) random() );
 
-    return ( 0 );
+    return 0;
 }
 
 // =-=-=-=-=-=-=-
@@ -2563,10 +2563,10 @@ isTrashHome( char * myPath ) {
 
     if ( *tmpPtr == '\0' ) {
         /* /myZone/trash/home */
-        return ( 1 );
+        return 1;
     }
     else if ( *tmpPtr != '/' ) {
-        return ( 0 );
+        return 0;
     }
 
     tmpPtr++;
@@ -2644,10 +2644,10 @@ isHomeColl( char * myPath ) {
 
     if ( *tmpPtr == '\0' ) {
         /* /myZone/home */
-        return ( 1 );
+        return 1;
     }
     else if ( *tmpPtr != '/' ) {
-        return ( 0 );
+        return 0;
     }
 
     tmpPtr++;
@@ -2748,7 +2748,7 @@ openRestartFile( char * restartFile, rodsRestart_t * rodsRestart,
                 rodsRestart->collection, rodsRestart->doneCnt );
         printf( "File last completed = %s\n", rodsRestart->lastDonePath );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2772,7 +2772,7 @@ getLineInBuf( char **inbuf, char * outbuf, int bufLen ) {
     }
     *outPtr = '\0';
     *inbuf = inPtr + 1;
-    return ( bytesCopied );
+    return bytesCopied;
 }
 
 
@@ -2821,7 +2821,7 @@ setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
     }
     rodsRestart->restartState = OPR_RESUMED;    /* resumed opr */
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -2850,9 +2850,9 @@ writeRestartFile( rodsRestart_t * rodsRestart, char * lastDonePath ) {
         rodsLog( LOG_ERROR,
                  "writeRestartFile: write error, errno = %d",
                  errno );
-        return ( SYS_COPY_LEN_ERR - errno );
+        return SYS_COPY_LEN_ERR - errno;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -2866,7 +2866,7 @@ procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
     rodsRestart->curCnt ++;
     status = writeRestartFile( rodsRestart, donePath );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -2901,7 +2901,7 @@ setStateForRestart( rcComm_t * conn, rodsRestart_t * rodsRestart,
                  MAX_NAME_LEN );
         rodsRestart->doneCnt = rodsRestart->curCnt = 0;
     }
-    return ( 0 );
+    return 0;
 }
 
 /* checkStateForResume - check the state for resume operation
@@ -2920,7 +2920,7 @@ chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
             rodsLog( LOG_ERROR,
                      "chkStateForResume:Restart failed.curCnt %d>doneCnt %d,path %s",
                      rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
-            return ( RESTART_OPR_FAILED );
+            return RESTART_OPR_FAILED;
         }
 
         if ( rodsRestart->restartState & LAST_PATH_MATCHED ) {
@@ -2941,7 +2941,7 @@ chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
                 rodsLog( LOG_ERROR,
                          "chkStateForResume:Restart failed.curCnt %d!=doneCnt %d,path %s",
                          rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
-                return ( RESTART_OPR_FAILED );
+                return RESTART_OPR_FAILED;
             }
             rodsRestart->restartState |= LAST_PATH_MATCHED;
             status = 0;
@@ -2976,17 +2976,17 @@ getAttrIdFromAttrName( char * cname ) {
     int i;
     for ( i = 0; i < NumOfColumnNames ; i++ ) {
         if ( !strcmp( columnNames[i].columnName, cname ) ) {
-            return( columnNames[i].columnId );
+            return columnNames[i].columnId;
         }
     }
 #ifdef EXTENDED_ICAT
     for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
         if ( !strcmp( extColumnNames[i].columnName, cname ) ) {
-            return( extColumnNames[i].columnId );
+            return extColumnNames[i].columnId;
         }
     }
 #endif
-    return( NO_COLUMN_NAME_FOUND );
+    return NO_COLUMN_NAME_FOUND;
 }
 
 int
@@ -3000,7 +3000,7 @@ showAttrNames() {
         printf( "%s\n", extColumnNames[i].columnName );
     }
 #endif
-    return( 0 );
+    return 0;
 }
 
 int
@@ -3010,50 +3010,50 @@ separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
     if ( ( s = strchr( t, '(' ) ) == NULL ) {
         *colNm = t;
         *aggOp = NULL;
-        return( 0 );
+        return 0;
     }
     *aggOp = t;
     *s = '\0';
     s++;
     *colNm = s;
     if ( ( s = strchr( *colNm, ')' ) ) == NULL ) {
-        return( NO_COLUMN_NAME_FOUND );
+        return NO_COLUMN_NAME_FOUND;
     }
     *s = '\0';
-    return( 0 );
+    return 0;
 }
 
 int
 getSelVal( char * c ) {
     if ( c == NULL ) {
-        return( 1 );
+        return 1;
     }
     if ( !strcmp( c, "sum" ) || !strcmp( c, "SUM" ) ) {
-        return( SELECT_SUM );
+        return SELECT_SUM;
     }
     if ( !strcmp( c, "min" ) || !strcmp( c, "MIN" ) ) {
-        return( SELECT_MIN );
+        return SELECT_MIN;
     }
     if ( !strcmp( c, "max" ) || !strcmp( c, "MAX" ) ) {
-        return( SELECT_MAX );
+        return SELECT_MAX;
     }
     if ( !strcmp( c, "avg" ) || !strcmp( c, "AVG" ) ) {
-        return( SELECT_AVG );
+        return SELECT_AVG;
     }
     if ( !strcmp( c, "count" ) || !strcmp( c, "COUNT" ) ) {
-        return( SELECT_COUNT );
+        return SELECT_COUNT;
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4795
     if ( !strcmp( c, "order" ) || !strcmp( c, "ORDER" ) ) {
-        return( ORDER_BY );
+        return ORDER_BY;
     }
     if ( !strcmp( c, "order_desc" ) || !strcmp( c, "ORDER_DESC" ) ) {
-        return( ORDER_BY_DESC );
+        return ORDER_BY_DESC;
     }
     // =-=-=-=-=-=-=-
 
-    return( 1 );
+    return 1;
 }
 
 
@@ -3063,17 +3063,17 @@ getAttrNameFromAttrId( int cid ) {
     int i;
     for ( i = 0; i < NumOfColumnNames ; i++ ) {
         if ( columnNames[i].columnId == cid ) {
-            return( columnNames[i].columnName );
+            return columnNames[i].columnName;
         }
     }
 #ifdef EXTENDED_ICAT
     for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
         if ( extColumnNames[i].columnId == cid ) {
-            return( extColumnNames[i].columnName );
+            return extColumnNames[i].columnName;
         }
     }
 #endif
-    return( NULL );
+    return NULL;
 }
 
 int
@@ -3115,9 +3115,9 @@ goodStrExpr( char * expr ) {
         i++;
     }
     if ( bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 ) {
-        return( -1 );
+        return -1;
     }
-    return( 0 );
+    return 0;
 
 }
 
@@ -3147,7 +3147,7 @@ char *getCondFromString( char * t ) {
             *u = '\0';
             if ( goodStrExpr( t ) == 0 ) {
                 *u = ' ';
-                return( u );
+                return u;
             }
             *u = ' ';
             s = u + 1;
@@ -3156,7 +3156,7 @@ char *getCondFromString( char * t ) {
             break;
         }
     }
-    return( NULL );
+    return NULL;
 }
 
 int
@@ -3183,7 +3183,7 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
             n = getAttrIdFromAttrName( c );
             if ( n < 0 ) {
                 free( s );
-                return( n );
+                return n;
             }
             addInxIval( &genQueryInp->selectInp, n, m );
             t  = u + 1;
@@ -3194,47 +3194,47 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
         n = getAttrIdFromAttrName( c );
         if ( n < 0 ) {
             free( s );
-            return( n );
+            return n;
         }
         addInxIval( &genQueryInp->selectInp, n, m );
         if ( f == NULL ) {
             free( s );
-            return( 0 );
+            return 0;
         }
     }
     else {
         free( s );
-        return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
     t = f + 6;
     while ( ( u = getCondFromString( t ) ) != NULL ) {
         *u = '\0';
         trimWS( t );
         if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-            return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+            return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
         *p = '\0';
         n = getAttrIdFromAttrName( t );
         if ( n < 0 ) {
             free( s );
-            return( n );
+            return n;
         }
         addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
         t = u + 5;
     }
     trimWS( t );
     if ( ( p = strchr( t, ' ' ) ) == NULL ) {
-        return( INPUT_ARG_NOT_WELL_FORMED_ERR );
+        return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
     *p = '\0';
     n = getAttrIdFromAttrName( t );
     if ( n < 0 ) {
         free( s );
-        return( n );
+        return n;
     }
     addInxVal( &genQueryInp->sqlCondInp, n, p + 1 );
     free( s );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -3245,7 +3245,7 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
 
     if ( hint != NULL &&  strlen( hint ) > 0 ) {
         //i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
-        return( i );
+        return i;
     }
 
     n = genQueryOut->attriCnt;
@@ -3254,7 +3254,7 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
         v[i] = &genQueryOut->sqlResult[i];
         cname[i] = getAttrNameFromAttrId( v[i]->attriInx );
         if ( cname[i] == NULL ) {
-            return( NO_COLUMN_NAME_FOUND );
+            return NO_COLUMN_NAME_FOUND;
         }
     }
 
@@ -3310,7 +3310,7 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
         }
 
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -3344,7 +3344,7 @@ appendToByteBuf( bytesBuf_t * bytesBuf, char * str ) {
         printf("bytesBuf->len=%d  oldbufLen=%d  strlen=%d\n",bytesBuf->len,j,i);
         printf("bytesBuf->buf:%s\n",bytesBuf->buf);
      */
-    return( 0 );
+    return 0;
 }
 
 
@@ -3358,14 +3358,14 @@ getMountedSubPhyPath( char * logMountPoint, char * phyMountPoint,
         rodsLog( LOG_ERROR,
                  "getMountedSubPhyPath: sub path %s not in mount point %s",
                  logSubPath, logMountPoint );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     /* skip over the mount point */
     tmpPtr = logSubPath + len;
     /* compose the physical path */
     snprintf( phySubPathOut, MAX_NAME_LEN, "%s%s", phyMountPoint,
               tmpPtr );
-    return ( 0 );
+    return 0;
 
 }
 
@@ -3378,22 +3378,22 @@ getSpecCollTypeStr( specColl_t * specColl, char * outStr ) {
     }
     else if ( specColl->collClass == MOUNTED_COLL ) {
         rstrcpy( outStr, MOUNT_POINT_STR, NAME_LEN );
-        return ( 0 );
+        return 0;
     }
     else if ( specColl->collClass == LINKED_COLL ) {
         rstrcpy( outStr, LINK_POINT_STR, NAME_LEN );
-        return ( 0 );
+        return 0;
     }
     else {
         for ( i = 0; i < NumStructFileType; i++ ) {
             if ( specColl->type == StructFileTypeDef[i].type ) {
                 rstrcpy( outStr, StructFileTypeDef[i].typeName, NAME_LEN );
-                return ( 0 );
+                return 0;
             }
         }
         rodsLog( LOG_ERROR,
                  "getSpecCollTypeStr: unmatch specColl type %d", specColl->type );
-        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+        return SYS_UNMATCHED_SPEC_COLL_TYPE;
     }
 }
 
@@ -3403,12 +3403,12 @@ resolveSpecCollType( char * type, char * collection, char * collInfo1,
     int i;
 
     if ( specColl == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( *type == '\0' ) {
         specColl->collClass = NO_SPEC_COLL;
-        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+        return SYS_UNMATCHED_SPEC_COLL_TYPE;
     }
 
     rstrcpy( specColl->collection, collection,
@@ -3427,13 +3427,13 @@ resolveSpecCollType( char * type, char * collection, char * collInfo1,
         rstrcpy( specColl->resource, first_resc.c_str(), NAME_LEN );
         rstrcpy( specColl->rescHier, collInfo2, NAME_LEN );
 
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( type, LINK_POINT_STR ) == 0 ) {
         specColl->collClass = LINKED_COLL;
         rstrcpy( specColl->phyPath, collInfo1, MAX_NAME_LEN );
 
-        return ( 0 );
+        return 0;
     }
     else {
         for ( i = 0; i < NumStructFileType; i++ ) {
@@ -3443,14 +3443,14 @@ resolveSpecCollType( char * type, char * collection, char * collInfo1,
                 rstrcpy( specColl->objPath, collInfo1,
                          MAX_NAME_LEN );
                 parseCachedStructFileStr( collInfo2, specColl );
-                return ( 0 );
+                return 0;
             }
         }
 
         specColl->collClass = NO_SPEC_COLL;
         rodsLog( LOG_ERROR,
                  "resolveSpecCollType: unmatch specColl type %s", type );
-        return ( SYS_UNMATCHED_SPEC_COLL_TYPE );
+        return SYS_UNMATCHED_SPEC_COLL_TYPE;
     }
 }
 
@@ -3462,13 +3462,13 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
     if ( collInfo2 == NULL || specColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseCachedStructFileStr: NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strlen( collInfo2 ) == 0 ) {
         /* empty */
         specColl->cacheDir[0] = specColl->resource[0] = '\0';
-        return ( 0 );
+        return 0;
     }
 
     tmpPtr1 = strstr( collInfo2, ";;;" );
@@ -3515,11 +3515,11 @@ makeCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
     if ( collInfo2 == NULL || specColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "makeCachedStructFileStr: NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strlen( specColl->resource ) == 0 || strlen( specColl->cacheDir ) == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     snprintf( collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
@@ -3537,7 +3537,7 @@ getErrno( int irodError ) {
         unixErrno = -1 * unixErrno;
     }
 
-    return ( unixErrno );
+    return unixErrno;
 }
 
 int
@@ -3549,18 +3549,18 @@ getIrodsErrno( int irodError ) {
 structFileOprType_t
 getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
     if ( specColl == NULL ) {
-        return ( NOT_SPEC_COLL_OPR );
+        return NOT_SPEC_COLL_OPR;
     }
 
     if ( specColl->collClass != STRUCT_FILE_COLL ) {
-        return ( NON_STRUCT_FILE_SPEC_COLL_OPR );
+        return NON_STRUCT_FILE_SPEC_COLL_OPR;
     }
 
     if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == NULL ) {
-        return ( NORMAL_OPR_ON_STRUCT_FILE_COLL );
+        return NORMAL_OPR_ON_STRUCT_FILE_COLL;
     }
     else {
-        return ( STRUCT_FILE_SPEC_COLL_OPR );
+        return STRUCT_FILE_SPEC_COLL_OPR;
     }
 }
 
@@ -3770,7 +3770,7 @@ clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
     }
     memset( sendXmsgInfo, 0, sizeof( sendXmsgInfo_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 void
@@ -3945,7 +3945,7 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
 
     bulkDataObjRegInp->continueInx = -1;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -3973,7 +3973,7 @@ initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
     myBulkDataObjRegOut->continueInx = -1;
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -4103,7 +4103,7 @@ fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
         if ( chksum == NULL ) {
             rodsLog( LOG_ERROR,
                      "initAttriArrayOfBulkOprInp: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             rstrcpy( &chksum->value[NAME_LEN * rowCnt], inpChksum, NAME_LEN );
@@ -4143,14 +4143,14 @@ getAttriInAttriArray( char * inpObjPath, genQueryOut_t * attriArray,
                 getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getAttriInAttriArray: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
                 getSqlResultByInx( attriArray, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getAttriInAttriArray: getSqlResultByInx for COL_DATA_MODE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
@@ -4245,7 +4245,7 @@ untarBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
     {
         rodsLog( LOG_ERROR,
                  "untarBuf: pipe create failed. errno = %d", errno );
-        return ( SYS_PIPE_ERROR - errno );
+        return SYS_PIPE_ERROR - errno;
     }
 
     bzero( av, sizeof( av ) );
@@ -4274,7 +4274,7 @@ untarBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
     else if ( childPid < 0 ) {
         rodsLog( LOG_ERROR,
                  "untarBuf: RODS_FORK failed. errno = %d", errno );
-        return ( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
     else {      /* parent */
         close( pipeFd[0] );     /* close in */
@@ -4339,7 +4339,7 @@ tarToBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
     {
         rodsLog( LOG_ERROR,
                  "untarBuf: pipe create failed. errno = %d", errno );
-        return ( SYS_PIPE_ERROR - errno );
+        return SYS_PIPE_ERROR - errno;
     }
 
     bzero( av, sizeof( av ) );
@@ -4368,7 +4368,7 @@ tarToBuf( char * phyBunDir, bytesBuf_t * tarBBuf ) {
     else if ( childPid < 0 ) {
         rodsLog( LOG_ERROR,
                  "untarBuf: RODS_FORK failed. errno = %d", errno );
-        return ( SYS_FORK_ERROR );
+        return SYS_FORK_ERROR;
     }
     else {      /* parent */
         close( pipeFd[1] );
@@ -4423,7 +4423,7 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
 
             bytesBuf->len += nbytes;
             if ( buflen >= MAX_SZ_FOR_EXECMD_BUF ) {
-                return ( EXEC_CMD_OUTPUT_TOO_LARGE );
+                return EXEC_CMD_OUTPUT_TOO_LARGE;
             }
             else {
                 buflen = 4 * buflen;
@@ -4451,10 +4451,10 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
         }
     }
     if ( nbytes < 0 ) {
-        return ( nbytes );
+        return nbytes;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -4475,10 +4475,10 @@ writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
     close( fd );
 
     if ( toWrite != 0 ) {
-        return ( SYS_COPY_LEN_ERR - errno );
+        return SYS_COPY_LEN_ERR - errno;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -4579,7 +4579,7 @@ getRandomArray( int **randomArray, int size ) {
     }
     std::random_shuffle( *randomArray, *randomArray + size );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -4763,7 +4763,7 @@ splitMultiStr( char * strInput, strArray_t * strArray ) {
     int endReached = 0;
 
     if ( strInput == NULL || strArray == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     startPtr = endPtr = strInput;
@@ -4811,7 +4811,7 @@ splitMultiStr( char * strInput, strArray_t * strArray ) {
         startPtr = endPtr;
     }
 
-    return ( strArray->len );
+    return strArray->len;
 }
 
 namespace boost {

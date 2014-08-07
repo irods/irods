@@ -21,5 +21,5 @@ rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp ) {
     modDataObjMetaInp->dataObjInfo->next = srcNext;
 
 
-    return ( status );
+    return status;
 }

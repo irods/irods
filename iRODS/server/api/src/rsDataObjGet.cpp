@@ -37,7 +37,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == LOCAL_HOST ) {
         // =-=-=-=-=-=-=-
@@ -72,7 +72,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                 dataObjOutBBuf );
 
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
         if ( status == 0 ||
                 ( dataObjOutBBuf != NULL && dataObjOutBBuf->len > 0 ) ) {
@@ -94,7 +94,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -165,7 +165,7 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 free( chksumStr );
             }
         }
-        return ( status );
+        return status;
     }
 
 
@@ -178,7 +178,7 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if ( chksumStr != NULL ) {
             free( chksumStr );
         }
-        return ( status );
+        return status;
     }
 
     status = l1descInx;         /* means file not included */
@@ -200,11 +200,11 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( handlerFlag & INTERNAL_SVR_CALL ) {
         /* internal call. want to know the real status */
-        return ( retval );
+        return retval;
     }
     else {
         /* already send the client the status */
-        return ( SYS_NO_HANDLER_REPLY_MSG );
+        return SYS_NO_HANDLER_REPLY_MSG;
     }
 
 }
@@ -237,7 +237,7 @@ preProcParaGet( rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut )
         ( *portalOprOut )->l1descInx = l1descInx;
     }
     clearKeyVal( &dataOprInp.condInput );
-    return ( status );
+    return status;
 }
 
 int
@@ -273,7 +273,7 @@ l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
     }
 
     if ( bytesRead < 0 ) {
-        return ( bytesRead );
+        return bytesRead;
     }
     else {
         return status;
@@ -320,7 +320,7 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         subFile.flags = O_RDONLY;
         subFile.offset = dataObjInfo->dataSize;
         bytesRead = rsSubStructFileGet( rsComm, &subFile, dataObjOutBBuf );
-        return ( bytesRead );
+        return bytesRead;
     }
 
     memset( &fileGetInp, 0, sizeof( fileGetInp ) );
@@ -335,6 +335,6 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
     fileGetInp.dataSize = dataObjInfo->dataSize;
     /* XXXXX need to be able to handle structured file */
     bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
-    return ( bytesRead );
+    return bytesRead;
 }
 

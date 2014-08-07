@@ -74,19 +74,19 @@ int getFileFromS3( char *s3ObjName, char *fileName ) {
     accessKeyId = getenv( "S3_ACCESS_KEY_ID" );
     if ( accessKeyId == NULL ) {
         printf( "S3_ACCESS_KEY_ID environment variable is undefined" );
-        return( -1 );
+        return -1;
     }
 
     secretAccessKey = getenv( "S3_SECRET_ACCESS_KEY" );
     if ( secretAccessKey == NULL ) {
         printf( "S3_SECRET_ACCESS_KEY environment variable is undefined" );
-        return( -1 );
+        return -1;
     }
 
     key = strchr( s3ObjName, '/' );
     if ( key == NULL ) {
         printf( "S3 Key for the Object Not defined\n" );
-        return( -1 );
+        return -1;
     }
     *key = '\0';
     key++;
@@ -94,7 +94,7 @@ int getFileFromS3( char *s3ObjName, char *fileName ) {
     fd = fopen( fileName, "w" );
     if ( fd == NULL ) {
         printf( "Unable to open output file" );
-        return( -1 );
+        return -1;
     }
 
 
@@ -114,7 +114,7 @@ int getFileFromS3( char *s3ObjName, char *fileName ) {
             != S3StatusOK ) {
         printf( "Failed to initialize libs3: %s\n", S3_get_status_name( status ) );
         fclose( fd ); // JMC cppcheck - resource
-        return( -1 );
+        return -1;
     }
 
     S3_get_object( &bucketContext, key, NULL, startByte, byteCount, 0,
@@ -122,12 +122,12 @@ int getFileFromS3( char *s3ObjName, char *fileName ) {
     if ( statusG != S3StatusOK ) {
         printf( "Get failed: %i\n", statusG );
         S3_deinitialize();
-        return( -1 );
+        return -1;
     }
     S3_deinitialize();
 
     fclose( fd );
-    return( 0 );
+    return 0;
 }
 
 int main( int argc, char **argv ) {

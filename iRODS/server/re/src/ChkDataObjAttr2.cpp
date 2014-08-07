@@ -74,7 +74,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiChkRechkRecompChkSum4DatObjVol2: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -91,7 +91,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                  "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam1 error." );
         i = fillStrInMsParam( outParam, strOut );       // MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
 
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2 MinSize*/
@@ -104,7 +104,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
         rodsLog( LOG_ERROR,
                  "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam2 error." );
         i = fillStrInMsParam( outParam, strOut );	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
-        return ( -1 );
+        return -1;
     }
 
     /* parse inpParam3 MaxSize*/
@@ -117,7 +117,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
         rodsLog( LOG_ERROR,
                  "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam3 error." );
         i = fillStrInMsParam( outParam, strOut );	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
-        return ( -1 );
+        return -1;
     }
 
 
@@ -134,7 +134,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
         /* check for valid connection */
         if ( rsComm == NULL ) {
             rodsLog( LOG_ERROR, "getDataObjACL: input rsComm is NULL" );
-            return ( SYS_INTERNAL_NULL_INPUT_ERR );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         //memset (&genQueryInp7, 0, sizeof (genQueryInp_t));
@@ -155,7 +155,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiObjStat: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -167,7 +167,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiObjStat: input inpParam1 error. status = %d", rei->status );
-        return ( rei->status );
+        return rei->status;
     }
     else {
         printf( "GJKaaa myGlbPar1=(%s), myDataObjInp->objPath=(%s)\n", myGlbPar1, myDataObjInp->objPath );
@@ -230,7 +230,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                             "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 error for %s, stat=%d",
                             myCollInp->collName, status );
         rei->status = status;
-        return ( rei->status );
+        return rei->status;
     }
 
     while ( rei->status >= 0 ) {
@@ -261,7 +261,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                 rodsLog( LOG_ERROR,
                          "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRODS data object (dataObj == NULL), istatus=%d, rei->status=%d", myCollInp->collName, status, rei->status );
                 rei->status = UNMATCHED_KEY_OR_INDEX;
-                return ( rei->status );
+                return rei->status;
             }
             else {
                 // delej single object
@@ -272,7 +272,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
             rodsLog( LOG_ERROR,
                      "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRODS collection, rei->status=%d", myCollInp->collName, rei->status );
             rei->status = UNMATCHED_KEY_OR_INDEX;
-            return ( rei->status );
+            return rei->status;
         }
         /* get data names in the batch */
         if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
@@ -280,7 +280,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
             rodsLog( LOG_ERROR,
                      "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 for COL_DATA_NAME failed" );
             rei->status = UNMATCHED_KEY_OR_INDEX;
-            return ( rei->status );
+            return rei->status;
         }
 
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -309,7 +309,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                 /* check for valid connection */
                 if ( rsComm == NULL ) {
                     rodsLog( LOG_ERROR, "msiChkRechkRecompChkSum4DatObjVol2(): input rsComm is NULL" );
-                    return ( SYS_INTERNAL_NULL_INPUT_ERR );
+                    return SYS_INTERNAL_NULL_INPUT_ERR;
                 }
 
                 memset( &genQueryInp7, 0, sizeof( genQueryInp_t ) );
@@ -468,7 +468,7 @@ msiChkRechkRecompChkSum4DatObjVol2( msParam_t *coll, msParam_t * inpParam2, msPa
                             rei->status );
     }
 #endif
-    return ( rei->status );
+    return rei->status;
 } // msiChkRechkRecompChkSum4DatObjVol2
 
 /*
@@ -502,7 +502,7 @@ msiChkRechkRecompChkSum4DatObjVol2222( msParam_t * inpParam1, msParam_t * inpPar
         rodsLog( LOG_ERROR,
                  "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam1 error. status = %d",
                  rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     /* parse inpParam2 */
@@ -516,7 +516,7 @@ msiChkRechkRecompChkSum4DatObjVol2222( msParam_t * inpParam1, msParam_t * inpPar
         rodsLog( LOG_ERROR,
                  "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam2 error." );
         i = fillStrInMsParam( outParam1, strOut );	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
-        return ( -1 );
+        return -1;
     }
 
     printf
@@ -536,7 +536,7 @@ msiChkRechkRecompChkSum4DatObjVol2222( msParam_t * inpParam1, msParam_t * inpPar
     ( "GJK-P P.2222.0.9. in msiChkRechkRecompChkSum4DatObjVol2(), iCountUserDefinedMetadata=%d, iErr=%d\n",
       iCountUserDefinedMetadata, iErr );
 
-    return ( iErr );
+    return iErr;
 }
 
 int
@@ -564,14 +564,14 @@ intChkRechkRecompChkSum4DatObjVol2( rsComm_t * rsComm, char *strFullDataPath,
         rodsLog( LOG_ERROR,
                  "ERROR in intChkRechkRecompChkSum4DatObjVol2, tTime=(%ld) < 0",
                  tTime );
-        return ( -1 );
+        return -1;
     }
 
     if ( strFullDataPath == NULL || strlen( strFullDataPath ) < 1 ) {
         rodsLog( LOG_ERROR,
                  "ERROR in intChkRechkRecompChkSum4DatObjVol2, strFullDataPath=(%s) is strange ",
                  strFullDataPath );
-        return ( -2 );
+        return -2;
     }
 
     strncpy( ptrInpColl.collName, strFullDataPath, MAX_NAME_LEN );
@@ -597,7 +597,7 @@ intChkRechkRecompChkSum4DatObjVol2( rsComm_t * rsComm, char *strFullDataPath,
         rodsLog( LOG_NOTICE,
                  "GJK-P P.994.7.1. in intChkRechkRecompChkSum4DatObjVol2(), mam uz AVU a je novejsi, iTotalAVUs=%d, lMax=%ld, Time=%ld, timeDiff=%ld\n",
                  iTotalAVUs, lMax, tTime, ( tTime - lMax ) );
-        return ( 0 );
+        return 0;
     }
     else {
         if ( iTotalAVUs > 0 ) {
@@ -630,7 +630,7 @@ intChkRechkRecompChkSum4DatObjVol2( rsComm_t * rsComm, char *strFullDataPath,
                 rodsLog( LOG_ERROR,
                          "GJK-P P.994.27.1b. ERROR in intChkRechkRecompChkSum4DatObjVol2() in _rsDataObjChksum(), iRODS object (%s), returned check sum (%s)\n",
                          dataObjInp.objPath, dataObjChksumStr );
-                return ( -2 );
+                return -2;
             }
             // CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME
             iErr =
@@ -640,13 +640,13 @@ intChkRechkRecompChkSum4DatObjVol2( rsComm_t * rsComm, char *strFullDataPath,
                 rodsLog( LOG_ERROR,
                          "GJK-P P.994.27.1c. ERROR in intChkRechkRecompChkSum4DatObjVol2() in intAddChkSumDateAvuMetadataVol2(),  iRODS object (%s), returned check status %d\n",
                          `   strFullDataPath, status );
-                return ( -3 );
+                return -3;
             }
             printf
             ( "GJK-P P.994.17.1. in intChkRechkRecompChkSum4DatObjVol2(),mam uz AVU a je starsi, prepocti chksumu, porovnej a register novy cas, iTotalAVUs=%d, lMax=%ld, tTime=%ld, iErr=%d, t1=%ld, rei->status=%d, dataObjInp.objPath=(%s), *dataObjChksumStr=(%s)\n",
               iTotalAVUs, lMax, ( long ) tTime, iErr, ( long ) t1, rei->status,
               dataObjInp.objPath, dataObjChksumStr );
-            return ( iErr );
+            return iErr;
         }
         else {
             //      if (iTotalAVUs > 0)  , nemam zadne AVUs
@@ -884,7 +884,7 @@ intChkRechkRecompChkSum4DatObjVol2( rsComm_t * rsComm, char *strFullDataPath,
                 objPath );
     } // if (rei->status != CAT_NO_ROWS_FOUND)
     printf( "GJK-P P.994.0.8. in intChkRechkRecompChkSum4DatObjVol2()\n" );
-    return( 0 );
+    return 0;
 }
 
 int intAddChkSumDateAvuMetadataVol2( rsComm_t * rsComm, char *objPath, time_t t1,			     int *iStatus ) {
@@ -932,7 +932,7 @@ int intAddChkSumDateAvuMetadataVol2( rsComm_t * rsComm, char *objPath, time_t t1
         ( void ) rodsLog( LOG_ERROR,
                           "The Unix time (%d) is out of reasonable bounds for intAddChkSumDateAvuMetadataVol2() for iRODS data object (%s) ",
                           ( int ) t1, objPath );
-        return ( -1 );
+        return -1;
     }
     ( void ) snprintf( mytime, 255, "%d", ( int ) t1 );
     modAVUMetadataInp.arg4 = mytime;
@@ -957,7 +957,7 @@ int intAddChkSumDateAvuMetadataVol2( rsComm_t * rsComm, char *objPath, time_t t1
     ( "GJK-P P.123.0.4. OK in intAddChkSumDateAvuMetadataVol2(), after rsModAVUMetadata((%s), rsComm, *iStatus=%d\n",
       objPath, *iStatus );
 
-    return ( *iStatus );
+    return *iStatus;
 }
 
 int
@@ -1040,7 +1040,7 @@ intFindChkSumDateAvuMetadataVol2( int status, genQueryOut_t * genQueryOut,
     printf
     ( "GJK 333.3.3. intFindChkSumDateAvuMetadataVol2, i=%d, j=%d, iCountUserDefinedMetadata=%d, iResult=%d\n",
       i, j, *iCountUserDefinedMetadata, iResult );
-    return ( iResult );
+    return iResult;
 }
 
 int
@@ -1075,7 +1075,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol2( msParam_t * inpParam1,
         rodsLog( LOG_ERROR,
                  "msiGetDataObjChksumsTimeStampsFromAVUVol2(),  input inpParam1 error. status = %d",
                  rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     ( void ) time( &t1 );
@@ -1090,7 +1090,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol2( msParam_t * inpParam1,
     ( "GJK-P P.111.0.7. in msiGetDataObjChksumsTimeStampsFromAVUVol2(), GJK msiGetDataObjChksumsTimeStampsFromAVUVol2: GJK Calling msiGetDataObjChksumsTimeStampsFromAVUVol2, iErr=%d, iCountUserDefinedMetadata=%d\n",
       iErr, iCountUserDefinedMetadata );
 
-    return ( iErr );
+    return iErr;
 }
 
 /*
@@ -1123,7 +1123,7 @@ int msiGJK2( msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei 
         rodsLog( LOG_ERROR,
                  "msiGetDataObjChksumsTimeStampsFromAVUVol2(),  input inpParam1 error. status = %d",
                  rei->status );
-        return ( rei->status );
+        return rei->status;
     }
 
     iErr =
@@ -1152,7 +1152,7 @@ int msiGJK2( msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei 
     ( "GJK-P P.111.0.9. in msiGetDataObjChksumsTimeStampsFromAVUVol2(), GJK msiGetDataObjChksumsTimeStampsFromAVUVol2: GJK Calling msiGetDataObjChksumsTimeStampsFromAVUVol2, iCountUserDefinedMetadata=%d\n",
       iCountUserDefinedMetadata );
 
-    return ( iErr );
+    return iErr;
 }
 
 /* ****************************************************************************************** */
@@ -1212,7 +1212,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
             rodsLog( LOG_ERROR,
                      "GJK intGetDataObjChksumsTimeStampsFromAVUVol2: input (%s) is a collection.",
                      ptrInpColl->collName );
-            return ( rei->status );
+            return rei->status;
         }
     }
 
@@ -1220,7 +1220,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
 
     if ( rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "GJKgetDataObjPSmeta: input rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -1291,7 +1291,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
         iErr = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
         if ( iErr == 0 ) {
             printf( "GJK GJKgetDataObjPSmeta(),  iErr=%d, None\n", iErr );
-            return ( 0 );
+            return 0;
         }
         if ( iErr == CAT_NO_ROWS_FOUND ) {
 
@@ -1299,7 +1299,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
                      "GJKgetDataObjPSmeta: DataObject %s not found. iErr = %d",
                      strAbsPath, iErr );
             *iTotalAVUs = 0;
-            return ( 0 );
+            return 0;
         }
         printCount += intFindChkSumDateAvuMetadataVol2( iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs );	// proc??
     }
@@ -1317,5 +1317,5 @@ intGetDataObjChksumsTimeStampsFromAVUVol2( collInp_t * ptrInpColl,
     ( "GJK-P P.14.1.15. in intGetDataObjChksumsTimeStampsFromAVUVol2(), strAbsPath=(%s), ptrInpColl->collName=(%s), iErr=%d, *iTotalAVUs=%d\n",
       strAbsPath, ptrInpColl->collName, iErr, *iTotalAVUs );
 
-    return ( *iTotalAVUs );
+    return *iTotalAVUs;
 }

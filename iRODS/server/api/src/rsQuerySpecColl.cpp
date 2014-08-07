@@ -39,7 +39,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                      &rodsServerHost );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = rcQuerySpecColl( rodsServerHost->conn, dataObjInp,
@@ -77,7 +77,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rodsLog( LOG_NOTICE,
                      "rsQuerySpecColl: openSpecColl error for %s, status = %d",
                      dataObjInp->objPath, specCollInx );
-            return ( specCollInx );
+            return specCollInx;
         }
         continueFlag = 0;
     }
@@ -93,7 +93,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         freeGenQueryOut( genQueryOut );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -111,7 +111,7 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
         rodsLog( LOG_NOTICE,
                  "rsQuerySpecColl: resolveSpecColl error for %s, status = %d",
                  dataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
 
     if ( dataObjInfo->specColl->collClass == LINKED_COLL ) {
@@ -132,18 +132,18 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
         rodsLog( LOG_NOTICE,
                  "openSpecColl: specCollOpendir error for %s, status = %d",
                  dataObjInp->objPath, l3descInx );
-        return ( l3descInx );
+        return l3descInx;
     }
     specCollInx = allocSpecCollDesc();
     if ( specCollInx < 0 ) {
         freeDataObjInfo( dataObjInfo );
-        return ( specCollInx );
+        return specCollInx;
     }
     SpecCollDesc[specCollInx].l3descInx = l3descInx;
     SpecCollDesc[specCollInx].dataObjInfo = dataObjInfo;
     SpecCollDesc[specCollInx].parentInx = parentInx;
 
-    return ( specCollInx );
+    return specCollInx;
 }
 
 int
@@ -192,7 +192,7 @@ initOutForQuerySpecColl( genQueryOut_t **genQueryOut ) {
 
     myGenQueryOut->continueInx = -1;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -210,7 +210,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
     if ( SpecCollDesc[specCollInx].inuseFlag != FD_INUSE ) {
         rodsLog( LOG_ERROR,
                  "_rsQuerySpecColl: Input specCollInx %d not active", specCollInx );
-        return ( BAD_INPUT_DESC_INDEX );
+        return BAD_INPUT_DESC_INDEX;
     }
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, SEL_OBJ_TYPE_KW ) ) !=
@@ -267,7 +267,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
                      "_rsQuerySpecColl: l3Stat for %s error, status = %d",
                      myDataObjInfo.filePath, status );
             /* XXXXX need clean up */
-            return ( status );
+            return status;
         }
 
         if ( ( fileStatOut->st_mode & S_IFREG ) != 0 ) { /* a file */
@@ -369,7 +369,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
         status = CAT_NO_ROWS_FOUND;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -380,7 +380,7 @@ specCollReaddir( rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent ) 
     dataObjInfo_t *dataObjInfo = SpecCollDesc[specCollInx].dataObjInfo;
 
     if ( dataObjInfo == NULL || ( specColl = dataObjInfo->specColl ) == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -417,7 +417,7 @@ specCollReaddir( rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent ) 
         status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -428,7 +428,7 @@ specCollClosedir( rsComm_t *rsComm, int specCollInx ) {
     dataObjInfo_t *dataObjInfo = SpecCollDesc[specCollInx].dataObjInfo;
 
     if ( dataObjInfo == NULL || ( specColl = dataObjInfo->specColl ) == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -464,7 +464,7 @@ specCollClosedir( rsComm_t *rsComm, int specCollInx ) {
         status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -473,7 +473,7 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     int status;
 
     if ( dataObjInfo == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -511,6 +511,6 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
                      dataObjInfo->filePath, status );
         }
     }
-    return ( status );
+    return status;
 }
 

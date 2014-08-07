@@ -142,7 +142,7 @@ int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *r
     rstrcpy( actionCall, ( char * ) mPB->inOutStruct, MAX_ACTION_SIZE );
     rstrcpy( recoveryActionCall, ( char * ) mPC->inOutStruct, MAX_ACTION_SIZE );
     i = _delayExec( actionCall, recoveryActionCall, delayCondition, rei );
-    return( i );
+    return i;
 }
 
 int _delayExec( char *inActionCall, char *recoveryActionCall,
@@ -172,7 +172,7 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
         if ( actionCall != inActionCall ) {
             free( actionCall );
         }
-        return( i );
+        return i;
     }
     /* fill Conditions into Submit Struct */
     ruleSubmitInfo = ( ruleExecSubmitInp_t * ) mallocAndZero( sizeof( ruleExecSubmitInp_t ) );
@@ -182,7 +182,7 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     }
     if ( i < 0 ) {
         free( ruleSubmitInfo );
-        return( i );
+        return i;
     }
 
     /* Store ReiArgs Struct in a File */
@@ -194,12 +194,12 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
 
     free( ruleSubmitInfo );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     free( ruleExecId );
     snprintf( tmpStr, NAME_LEN, "%d", i );
     i = pushStack( &delayStack, tmpStr );
-    return( i );
+    return i;
 }
 
 int recover_delayExec( msParam_t *actionCall, msParam_t *delayCondition,  ruleExecInfo_t *rei ) {
@@ -211,11 +211,11 @@ int recover_delayExec( msParam_t *actionCall, msParam_t *delayCondition,  ruleEx
 
     i  = popStack( &delayStack, ruleExecDelInp.ruleExecId );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = rsRuleExecDel( rei->rsComm, &ruleExecDelInp );
-    return( i );
+    return i;
 
 }
 
@@ -285,7 +285,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     rstrcpy( tmpStr, ( char * ) mPD->inOutStruct, LONG_NAME_LEN );
     i = evaluateExpression( tmpStr, tmpStr1, rei );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     parseHostAddrStr( tmpStr1, &execMyRuleInp.addr );
 
@@ -302,7 +302,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     i = replMsParamArray( rei->msParamArray, tmpParamArray );
     if ( i < 0 ) {
         free( tmpParamArray );
-        return( i );
+        return i;
     }
     aParamArray = rei->msParamArray;
     rei->msParamArray = tmpParamArray;
@@ -312,7 +312,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     rei->msParamArray = aParamArray;
     clearMsParamArray( tmpParamArray, 0 );
     free( tmpParamArray );
-    return( i );
+    return i;
 }
 
 
@@ -337,7 +337,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
   if (strstr(actionCall,"##") == NULL && !strcmp(recoveryActionCall,"nop")) {
     i = parseAction(actionCall,action,args, &argc);
     if (i != 0)
-      return(i);
+      return i;
     mapExternalFuncToInternalProc(action);
     argc = 0;
   }
@@ -353,7 +353,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
   if (i < 0) {
     if (actionCall != inActionCall)
       free (actionCall);
-    return(i);
+    return i;
   }
 
   ruleSubmitInfo = mallocAndZero(sizeof(ruleExecSubmitInp_t));
@@ -363,7 +363,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
     free (actionCall);
   if (i < 0) {
     free(ruleSubmitInfo);
-    return(i);
+    return i;
   }
 
   i = rsRemoteRuleExecSubmit(rei->rsComm, ruleSubmitInfo, &ruleExecId);
@@ -374,11 +374,11 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
 
   free(ruleSubmitInfo);
   if (i < 0)
-    return(i);
+    return i;
   free (ruleExecId);
   snprintf(tmpStr,NAME_LEN, "%d",i);
   i = pushStack(&delayStack,tmpStr);
-  return(i);
+  return i;
 }
 ******/
 int recover_remoteExec( msParam_t *actionCall, msParam_t *delayCondition, char *hostName, ruleExecInfo_t *rei ) {
@@ -390,12 +390,12 @@ int recover_remoteExec( msParam_t *actionCall, msParam_t *delayCondition, char *
 
     i  = popStack( &delayStack, ruleExecDelInp.ruleExecId );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     /***
     i = rsRemoteRuleExecDel(rei->rsComm, &ruleExecDelInp);
     ***/
-    return( i );
+    return i;
 
 }
 
@@ -406,12 +406,12 @@ doForkExec( char *prog, char *arg1 ) {
 
     i = checkFilePerms( prog );
     if ( i ) {
-        return( i );
+        return i;
     }
 
     i = checkFilePerms( arg1 );
     if ( i ) {
-        return( i );
+        return i;
     }
 
 #ifndef windows_platform
@@ -430,7 +430,7 @@ doForkExec( char *prog, char *arg1 ) {
         }
         i = execl( prog, prog, arg1, ( char * ) 0 );
         printf( "execl failed %d\n", i );
-        return( 0 );
+        return 0;
     }
 #else
     /* windows platform */
@@ -439,7 +439,7 @@ doForkExec( char *prog, char *arg1 ) {
     }
 #endif
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -486,10 +486,10 @@ msiGoodFailure( ruleExecInfo_t *rei ) {
         if ( reTestFlag == LOG_TEST_1 ) {
             rodsLog( LOG_NOTICE, "   Calling msiGoodFailure So that It will Retry Other Rules Without Recovery\n" );
         }
-        return( RETRY_WITHOUT_RECOVERY_ERR );
+        return RETRY_WITHOUT_RECOVERY_ERR;
     }
     /**** This is Just a Test Stub  ****/
-    return( RETRY_WITHOUT_RECOVERY_ERR );
+    return RETRY_WITHOUT_RECOVERY_ERR;
 }
 
 
@@ -501,15 +501,15 @@ checkFilePerms( char *fileName ) {
     if ( stat( fileName, &buf ) == -1 ) {
         printf( "Stat failed for file %s\n",
                 fileName );
-        return( -1 );
+        return -1;
     }
 
     if ( buf.st_mode & 022 ) {
         printf( "File is writable by group or other: %s.\n",
                 fileName );
-        return( -2 );
+        return -2;
     }
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -577,14 +577,14 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
                 }
             }
         }
-        return( 0 );
+        return 0;
     }
 
     if ( memoryParam->inpOutBuf != NULL ) {
         free( memoryParam->inpOutBuf );
     }
     memoryParam->inpOutBuf = NULL;
-    return( 0 );
+    return 0;
 
 }
 
@@ -629,7 +629,7 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei ) {
     microsec = atoi( ( char * ) microsecPtr->inOutStruct );
 
     rodsSleep( sec, microsec );
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -689,7 +689,7 @@ msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
     reiSaveFlag = atoi( ( char * ) reiSaveFlagParam->inOutStruct );
     allRuleExecFlag = atoi( ( char * ) allRuleExecFlagParam->inOutStruct );
     i = applyAllRules( action, rei->msParamArray, rei, reiSaveFlag, allRuleExecFlag );
-    return( i );
+    return i;
 
 }
 
@@ -745,19 +745,19 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* Check for proper input */
     if ( ( parseMspForStr( inpParam1 ) == NULL ) ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input inpParam1 is NULL" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( ( parseMspForStr( inpParam2 ) == NULL ) ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input inpParam2 is NULL" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
 
@@ -786,7 +786,7 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
     /* result goes to outParam */
     status = fillStrInMsParam( outParam, timeStr );
 
-    return( status );
+    return status;
 }
 
 
@@ -836,7 +836,7 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
 
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiGetSystemTime: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
@@ -852,7 +852,7 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
 
     status = fillStrInMsParam( outParam, tStr );
 
-    return( status );
+    return status;
 }
 
 
@@ -903,14 +903,14 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
     /* microservice check */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiHumanToSystemTime: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* parse inpParam (date input string) */
     if ( ( hr_time = parseMspForStr( inpParam ) ) == NULL ) {
         rodsLog( LOG_ERROR, "msiHumanToSystemTime: parseMspForStr error for input param." );
-        return ( rei->status );
+        return rei->status;
     }
 
 
@@ -925,7 +925,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
     }
 
 
-    return( status );
+    return status;
 }
 
 
@@ -972,7 +972,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei ) 
     /* parse str_msp */
     if ( ( inStr = parseMspForStr( str_msp ) ) == NULL ) {
         rodsLog( LOG_ERROR, "msiStrToBytesBuf: input str_msp is NULL." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     /* buffer init */
@@ -1037,12 +1037,12 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) 
     /*check buf_msp */
     if ( buf_msp == NULL || buf_msp->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
     inBuf = buf_msp->inpOutBuf;
     if ( inBuf->len < 0 || inBuf->len > ( MAX_SZ_FOR_SINGLE_BUF - 10 ) )  {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
-        return ( USER_INPUT_FORMAT_ERR );
+        return USER_INPUT_FORMAT_ERR;
     }
     outStr = ( char * ) malloc( ( inBuf->len + 1 ) );
     outStr[inBuf->len] = '\0';
@@ -1108,7 +1108,7 @@ msiListEnabledMS(
     /* Sanity test */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiListEnabledMS: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* Allocate memory for our result struct */
@@ -1196,7 +1196,7 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiGetFormattedSystemTime: input rei or rsComm is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     format = ( char* )inpParam->inOutStruct;
     dateFormat = ( char* )inpFormatParam->inOutStruct;
@@ -1213,7 +1213,7 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
                   mytm->tm_hour, mytm->tm_min, mytm->tm_sec );
     }
     status = fillStrInMsParam( outParam, tStr );
-    return( status );
+    return status;
 }
 
 

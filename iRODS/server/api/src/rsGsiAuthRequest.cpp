@@ -37,13 +37,13 @@ rsGsiAuthRequest( rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut ) {
         }
         rsComm->auth_scheme = strdup( "gsi" );
     }
-    return( status );
+    return status;
 #else
     status = GSI_NOT_BUILT_INTO_SERVER;
     rodsLog( LOG_ERROR,
              "rsGsiAuthRequest failed GSI_NOT_BUILT_INTO_SERVER, status = %d",
              status );
-    return ( status );
+    return status;
 #endif
 
 }
@@ -209,7 +209,7 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
                   clientName,
                   status );
         gsiAuthReqError = status;
-        return( status );
+        return status;
     }
 
     if ( status < 0 ) {
@@ -218,35 +218,35 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
         snprintf( gsiAuthReqErrorMsg, sizeof gsiAuthReqErrorMsg,
                   "igsiServersideAuth: rsGenQuery failed, status = %d", status );
         gsiAuthReqError = status;
-        return ( status );
+        return status;
     }
 
     if ( noNameMode == 0 ) {
         if ( genQueryOut == NULL || genQueryOut->rowCnt < 1 ) {
             gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
-            return( GSI_NO_MATCHING_DN_FOUND );
+            return GSI_NO_MATCHING_DN_FOUND;
         }
         if ( genQueryOut->rowCnt > 1 ) {
             gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
-            return( GSI_MULTIPLE_MATCHING_DN_FOUND );
+            return GSI_MULTIPLE_MATCHING_DN_FOUND;
         }
         if ( genQueryOut->attriCnt != 3 ) {
             gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
-            return( GSI_QUERY_INTERNAL_ERROR );
+            return GSI_QUERY_INTERNAL_ERROR;
         }
     }
     else {
         if ( genQueryOut == NULL || genQueryOut->rowCnt < 1 ) {
             gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
-            return( GSI_NO_MATCHING_DN_FOUND );
+            return GSI_NO_MATCHING_DN_FOUND;
         }
         if ( genQueryOut->rowCnt > 1 ) {
             gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
-            return( GSI_MULTIPLE_MATCHING_DN_FOUND );
+            return GSI_MULTIPLE_MATCHING_DN_FOUND;
         }
         if ( genQueryOut->attriCnt != 4 ) {
             gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
-            return( GSI_QUERY_INTERNAL_ERROR );
+            return GSI_QUERY_INTERNAL_ERROR;
         }
     }
 
@@ -303,7 +303,7 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
                 rodsLog( LOG_ERROR,
                          "igsiServersideAuth failed in getAndConnRcatHost, status = %d",
                          status3 );
-                return ( status3 );
+                return status3;
             }
         }
     }
@@ -313,6 +313,6 @@ int igsiServersideAuth( rsComm_t *rsComm ) {
     rodsLog( LOG_ERROR,
              "igsiServersideAuth failed GSI_NOT_BUILT_INTO_SERVER, status = %d",
              status );
-    return ( status );
+    return status;
 #endif
 }

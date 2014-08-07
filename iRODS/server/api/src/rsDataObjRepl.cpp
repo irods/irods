@@ -73,7 +73,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
         /* To SU, cannot be called by normal user directly */
         if ( rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH ) {
-            return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
     }
 
@@ -89,7 +89,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
             else {
                 freeAllDataObjInfo( dataObjInfo );
-                return ( SYS_REG_OBJ_IN_SPEC_COLL );
+                return SYS_REG_OBJ_IN_SPEC_COLL;
             }
         }
     }
@@ -98,7 +98,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = _rcDataObjRepl( rodsServerHost->conn, dataObjInp,
@@ -198,7 +198,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -224,7 +224,7 @@ _rsDataObjRepl(
     }
     else if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return ( CAT_INSUFFICIENT_PRIVILEGE_LEVEL );
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
         accessPerm = NULL;
     }
@@ -256,7 +256,7 @@ _rsDataObjRepl(
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "%s: getDataObjInfo for [%s] failed", __FUNCTION__, dataObjInp->objPath );
-        return ( status );
+        return status;
     }
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
@@ -447,7 +447,7 @@ _rsDataObjRepl(
     delete myRescGrpInfo->rescInfo;
     delete myRescGrpInfo;
 
-    return ( savedStatus );
+    return savedStatus;
 }
 
 /* _rsDataObjRepl - Update existing copies from srcDataObjInfoHead to
@@ -617,7 +617,7 @@ _rsDataObjReplNewCopy(
         return destRescGrpInfo->status;
     }
     else {
-        return ( savedStatus );
+        return savedStatus;
     }
 }
 
@@ -652,7 +652,7 @@ _rsDataObjReplS(
                                     rescGroupName, destDataObjInfo, updateFlag );
 
     if ( l1descInx < 0 ) {
-        return ( l1descInx );
+        return l1descInx;
     }
 
     if ( L1desc[l1descInx].stageFlag != NO_STAGING ) {
@@ -702,7 +702,7 @@ _rsDataObjReplS(
         return status1;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 
@@ -783,7 +783,7 @@ dataObjOpenForRepl(
                      srcDataObjInfo->objPath );
             free( myDestDataObjInfo );
             free( srcDataObjInfo );
-            return ( SYS_UPDATE_REPL_INFO_ERR );
+            return SYS_UPDATE_REPL_INFO_ERR;
         }
         /* inherit the replStatus of the src */
         inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
@@ -895,7 +895,7 @@ dataObjOpenForRepl(
 
         if ( status < 0 ) {
             freeL1desc( destL1descInx );
-            return ( status );
+            return status;
         }
     }
     else {
@@ -903,7 +903,7 @@ dataObjOpenForRepl(
             status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status < 0 ) {
                 freeL1desc( destL1descInx );
-                return ( status );
+                return status;
             }
         }
     }
@@ -980,13 +980,13 @@ dataObjOpenForRepl(
             memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
             dataObjCloseInp.l1descInx = destL1descInx;
             rsDataObjClose( rsComm, &dataObjCloseInp );
-            return ( status );
+            return status;
         }
     }
 
     L1desc[destL1descInx].srcL1descInx = srcL1descInx;
 
-    return ( destL1descInx );
+    return destL1descInx;
 }
 
 int
@@ -1029,7 +1029,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         dataCopyInp.portalOprOut.l1descInx = l1descInx;
         status = singleL1Copy( rsComm, &dataCopyInp );
         clearKeyVal( &dataOprInp->condInput );
-        return ( status );
+        return status;
     }
     else if ( srcRemoteFlag != REMOTE_ZONE_HOST &&
               destRemoteFlag != REMOTE_ZONE_HOST &&
@@ -1057,7 +1057,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaPut error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
-                return ( status );
+                return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
         }
@@ -1080,7 +1080,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
-                return ( status );
+                return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
         }
@@ -1103,7 +1103,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
-                return ( status );
+                return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
         }
@@ -1151,7 +1151,7 @@ l3DataCopySingleBuf( rsComm_t * rsComm, int l1descInx ) {
                  "l3DataCopySingleBuf: dataSize %lld for %s is negative",
                  L1desc[srcL1descInx].dataSize,
                  L1desc[srcL1descInx].dataObjInfo->objPath );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
     else if ( L1desc[srcL1descInx].dataSize == 0 ) {
         bytesRead = 0;
@@ -1163,7 +1163,7 @@ l3DataCopySingleBuf( rsComm_t * rsComm, int l1descInx ) {
 
     if ( bytesRead < 0 ) {
         free( dataBBuf.buf ); // JMC cppcheck - leak
-        return ( bytesRead );
+        return bytesRead;
     }
     else if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
                            NO_CHK_COPY_LEN_KW ) != NULL ) {
@@ -1186,15 +1186,15 @@ l3DataCopySingleBuf( rsComm_t * rsComm, int l1descInx ) {
             rodsLog( LOG_NOTICE,
                      "l3DataCopySingleBuf: l3FilePut error, towrite %d, written %d",
                      bytesRead, bytesWritten );
-            return ( SYS_COPY_LEN_ERR );
+            return SYS_COPY_LEN_ERR;
         }
         else {
-            return ( bytesWritten );
+            return bytesWritten;
         }
     }
 
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1212,7 +1212,7 @@ l3DataStageSync( rsComm_t * rsComm, int l1descInx ) {
                  "l3DataStageSync: dataSize %lld for %s is negative",
                  L1desc[srcL1descInx].dataSize,
                  L1desc[srcL1descInx].dataObjInfo->objPath );
-        return ( SYS_COPY_LEN_ERR );
+        return SYS_COPY_LEN_ERR;
     }
     else if ( L1desc[srcL1descInx].dataSize >= 0 ||
               L1desc[srcL1descInx].dataSize == UNKNOWN_FILE_SZ ) {
@@ -1237,7 +1237,7 @@ l3DataStageSync( rsComm_t * rsComm, int l1descInx ) {
                                              L1desc[srcL1descInx].dataSize;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -1304,7 +1304,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
     }
     delete sync_out;
-    return ( status );
+    return status;
 }
 
 int
@@ -1341,7 +1341,7 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     rstrcpy( file_stage.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
     file_stage.mode = mode;
     status = rsFileStageToCache( rsComm, &file_stage );
-    return ( status );
+    return status;
 }
 
 /* rsReplAndRequeDataObjInfo - This routine handle the msiSysReplDataObj

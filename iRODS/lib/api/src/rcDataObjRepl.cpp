@@ -114,7 +114,7 @@ rcDataObjRepl( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     if ( transferStat != NULL ) {
         free( transferStat );
     }
-    return ( status );
+    return status;
 }
 
 int

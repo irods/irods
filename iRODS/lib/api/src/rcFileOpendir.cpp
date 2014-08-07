@@ -11,5 +11,5 @@ rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp ) {
     status = procApiRequest( conn, FILE_OPENDIR_AN,  fileOpendirInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

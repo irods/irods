@@ -46,24 +46,24 @@ rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t*
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileCreate: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     if ( fd < 0 ) {
-        return ( fd );
+        return fd;
     }
 
     fileInx = allocAndFillFileDesc( rodsServerHost, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_,
                                     fd, fileCreateInp->mode );
 
-    return ( fileInx );
+    return fileInx;
 }
 
 int
@@ -114,7 +114,7 @@ int _rsFileCreate(
                          DO_CHK_PATH_PERM ); // JMC - backport 4774
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "_rsFileCreate - chkFilePathPerm returned %d", status );
-            return ( status );
+            return status;
         }
     }
 

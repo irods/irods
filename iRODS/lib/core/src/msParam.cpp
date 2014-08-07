@@ -19,7 +19,7 @@ addMsParam( msParamArray_t *msParamArray, char *label,
     int status = addMsParamToArray( msParamArray, label, type,
                                     inOutStruct, inpOutBuf, 0 );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -54,7 +54,7 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
     if ( msParamArray == NULL || label == NULL ) {
         rodsLog( LOG_ERROR,
                  "addMsParam: NULL msParamArray or label input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     len = msParamArray->len;
@@ -68,7 +68,7 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
             if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) &&
                     !strcmp( type, STR_MS_T ) &&
                     !strcmp( ( char * ) inOutStruct, ( char * ) msParamArray->msParam[i]->inOutStruct ) ) {
-                return( 0 );
+                return 0;
             }
             /*** RAJA ADDED Jan 28 2010 to make it not given an error ***/
             rodsLog( LOG_ERROR,
@@ -85,7 +85,7 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
             else
                 rodsLog( LOG_ERROR,
                          "addMsParam: new param is of type: %s\n", type );
-            return ( USER_PARAM_LABEL_ERR );
+            return USER_PARAM_LABEL_ERR;
         }
     }
 
@@ -142,7 +142,7 @@ replMsParamArray( msParamArray_t *msParamArray,
         status = replMsParam( msParamArray->msParam[i],
                               outMsParamArray->msParam[i] );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -180,7 +180,7 @@ replMsParam( msParam_t *msParam, msParam_t *outMsParam ) {
         outMsParam->inpOutBuf->buf = malloc( inpOutBuf->len + 100 );
         memcpy( outMsParam->inpOutBuf->buf, inpOutBuf->buf, inpOutBuf->len );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -205,7 +205,7 @@ replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "replInOutStruct: packStruct error for type %s", type );
-                return ( status );
+                return status;
             }
             status = unpackStruct( packedResult->buf,
                                    ( void ** ) outStruct, type, NULL, NATIVE_PROT );
@@ -214,11 +214,11 @@ replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
                 rodsLogError( LOG_ERROR, status,
                               "replInOutStruct: unpackStruct error for type %s",
                               type );
-                return ( status );
+                return status;
             }
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -241,7 +241,7 @@ fillMsParam( msParam_t *msParam, char *label,
     }
     msParam->inpOutBuf = inpOutBuf;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -253,7 +253,7 @@ fillIntInMsParam( msParam_t *msParam, int myInt ) {
         *myInOutStruct = myInt;
         fillMsParam( msParam, NULL, INT_MS_T, myInOutStruct, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -265,7 +265,7 @@ fillFloatInMsParam( msParam_t *msParam, float myFloat ) {
         *myInOutStruct = myFloat;
         fillMsParam( msParam, NULL, FLOAT_MS_T, myInOutStruct, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -277,7 +277,7 @@ fillDoubleInMsParam( msParam_t *msParam, rodsLong_t myDouble ) {
         *myInOutStruct = myDouble;
         fillMsParam( msParam, NULL, DOUBLE_MS_T, myInOutStruct, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -289,7 +289,7 @@ fillCharInMsParam( msParam_t *msParam, char myChar ) {
         *myInOutStruct = myChar;
         fillMsParam( msParam, NULL, CHAR_MS_T, myInOutStruct, NULL );
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -317,7 +317,7 @@ fillBufLenInMsParam( msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf ) {
         *myInOutStruct = myInt;
         fillMsParam( msParam, NULL, BUF_LEN_MS_T, myInOutStruct, bytesBuf );
     }
-    return ( 0 );
+    return 0;
 }
 
 
@@ -329,18 +329,18 @@ printMsParam( msParamArray_t *outParamArray ) {
     msParam_t *msParam;
 
     if ( outParamArray == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     for ( i = 0; i < outParamArray->len; i++ ) {
         msParam = outParamArray->msParam[i];
         j = writeMsParam( buf, 10000,  msParam );
         if ( j < 0 ) {
-            return( j );
+            return j;
         }
         printf( "%s", buf );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -395,7 +395,7 @@ writeMsParam( char *buf, int len, msParam_t *msParam ) {
         snprintf( &buf[strlen( buf )], len - strlen( buf ), "    outBuf: buf length = %d\n", msParam->inpOutBuf->len );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -409,10 +409,10 @@ getMsParamByLabel( msParamArray_t *msParamArray, char *label ) {
 
     for ( i = 0; i < msParamArray->len; i++ ) {
         if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
-            return ( msParamArray->msParam[i] );
+            return msParamArray->msParam[i];
         }
     }
-    return ( NULL );
+    return NULL;
 }
 
 msParam_t *
@@ -425,10 +425,10 @@ getMsParamByType( msParamArray_t *msParamArray, const char *type ) {
 
     for ( i = 0; i < msParamArray->len; i++ ) {
         if ( strcmp( msParamArray->msParam[i]->type, type ) == 0 ) {
-            return ( msParamArray->msParam[i] );
+            return msParamArray->msParam[i];
         }
     }
-    return ( NULL );
+    return NULL;
 }
 
 void
@@ -441,10 +441,10 @@ void
 
     for ( i = 0; i < msParamArray->len; i++ ) {
         if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
-            return ( msParamArray->msParam[i]->inOutStruct );
+            return msParamArray->msParam[i]->inOutStruct;
         }
     }
-    return ( NULL );
+    return NULL;
 }
 
 int
@@ -467,7 +467,7 @@ rmMsParamByLabel( msParamArray_t *msParamArray, char *label, int freeStruct ) {
             break;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -488,13 +488,13 @@ clearMsParamArray( msParamArray_t *msParamArray, int freeStruct ) {
         memset( msParamArray, 0, sizeof( msParamArray_t ) );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
 clearMsParam( msParam_t *msParam, int freeStruct ) {
     if ( msParam == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( msParam->label != NULL ) {
@@ -509,7 +509,7 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     }
 
     memset( msParam, 0, sizeof( msParam_t ) );
-    return ( 0 );
+    return 0;
 }
 
 
@@ -517,7 +517,7 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 int
 resetMsParam( msParam_t * msParam ) {
     if ( msParam == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     msParam->type = NULL;
@@ -530,7 +530,7 @@ resetMsParam( msParam_t * msParam ) {
         freeBBuf( msParam->inpOutBuf );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 
@@ -602,7 +602,7 @@ trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
         free( value );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 /* parseMspForDataObjInp - This is a rather convoluted subroutine because
@@ -628,7 +628,7 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
     if ( inpParam == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjInp: input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -642,7 +642,7 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
             rstrcpy( dataObjInpCache->objPath, ( char* )inpParam->inOutStruct,
                      MAX_NAME_LEN );
         }
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( inpParam->type, DataObjInp_MS_T ) == 0 ) {
         if ( outputToCache == 1 ) {
@@ -660,7 +660,7 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
         else {
             *outDataObjInp = ( dataObjInp_t * ) inpParam->inOutStruct;
         }
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( inpParam->type, KeyValPair_MS_T ) == 0 ) {
         /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
@@ -668,10 +668,10 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
         keyValPair_t *kW;
         kW = ( keyValPair_t * )inpParam->inOutStruct;
         if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
         if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( dataObjInpCache == NULL ) {
@@ -681,13 +681,13 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
         memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
         snprintf( dataObjInpCache->objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
         *outDataObjInp = dataObjInpCache;
-        return( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjInp: Unsupported input Param1 type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 
@@ -702,7 +702,7 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
     if ( inpParam == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -716,7 +716,7 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
             rstrcpy( collInpCache->collName, ( char* )inpParam->inOutStruct,
                      MAX_NAME_LEN );
         }
-        return ( 0 );
+        return 0;
     }
     else if ( strcmp( inpParam->type, CollInp_MS_T ) == 0 ) {
         if ( outputToCache == 1 ) {
@@ -734,13 +734,13 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
         else {
             *outCollInp = ( collInp_t * ) inpParam->inOutStruct;
         }
-        return ( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: Unsupported input Param1 type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 
@@ -751,7 +751,7 @@ parseMspForDataObjCopyInp( msParam_t * inpParam,
     if ( inpParam == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjCopyInp: input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -776,23 +776,23 @@ parseMspForDataObjCopyInp( msParam_t * inpParam,
         keyValPair_t *kW;
         kW = ( keyValPair_t * )inpParam->inOutStruct;
         if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
         if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
         memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
         snprintf( dataObjCopyInpCache->srcDataObjInp.objPath, MAX_NAME_LEN, "%s/%s", cVal, dVal );
         *outDataObjCopyInp = dataObjCopyInpCache;
-        return( 0 );
+        return 0;
     }
     else {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjCopyInp: Unsupported input Param1 type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
-    return ( 0 );
+    return 0;
 }
 
 /* parseMspForCondInp - Take the inpParam->inOutStruct and use that as the
@@ -814,10 +814,10 @@ parseMspForCondInp( msParam_t * inpParam, keyValPair_t * condInput,
             rodsLog( LOG_ERROR,
                      "parseMspForCondInp: Unsupported input Param type %s",
                      inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /* parseMspForCondKw - Take the KW from inpParam->inOutStruct and add that
@@ -838,10 +838,10 @@ parseMspForCondKw( msParam_t * inpParam, keyValPair_t * condInput ) {
             rodsLog( LOG_ERROR,
                      "parseMspForCondKw: Unsupported input Param type %s",
                      inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -872,10 +872,10 @@ parseMspForPhyPathReg( msParam_t * inpParam, keyValPair_t * condInput ) {
             rodsLog( LOG_ERROR,
                      "parseMspForCondKw: Unsupported input Param type %s",
                      inpParam->type );
-            return ( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -885,7 +885,7 @@ parseMspForPosInt( msParam_t * inpParam ) {
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
         if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-            return ( SYS_NULL_INPUT );
+            return SYS_NULL_INPUT;
         }
         myInt = atoi( ( const char* )inpParam->inOutStruct );
     }
@@ -901,19 +901,19 @@ parseMspForPosInt( msParam_t * inpParam ) {
         rodsLog( LOG_ERROR,
                  "parseMspForPosInt: Unsupported input Param type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     if ( myInt < 0 ) {
         rodsLog( LOG_DEBUG,
                  "parseMspForPosInt: parsed int %d is negative", myInt );
     }
-    return ( myInt );
+    return myInt;
 }
 
 char *
 parseMspForStr( msParam_t * inpParam ) {
     if ( inpParam == NULL || inpParam->inOutStruct == NULL ) {
-        return ( NULL );
+        return NULL;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
@@ -924,10 +924,10 @@ parseMspForStr( msParam_t * inpParam ) {
     }
 
     if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-        return ( NULL );
+        return NULL;
     }
 
-    return ( char * )( inpParam->inOutStruct );
+    return  ( char * )( inpParam->inOutStruct );
 }
 
 int
@@ -939,7 +939,7 @@ parseMspForFloat( msParam_t * inpParam, float * floatout ) {
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
         if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-            return ( SYS_NULL_INPUT );
+            return SYS_NULL_INPUT;
         }
 #if defined(solaris_platform)
         *floatout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
@@ -955,7 +955,7 @@ parseMspForFloat( msParam_t * inpParam, float * floatout ) {
         rodsLog( LOG_ERROR,
                  "parseMspForPosFloat: Unsupported input Param type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
     return 0;
 }
@@ -967,7 +967,7 @@ parseMspForExecCmdInp( msParam_t * inpParam,
     if ( inpParam == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMspForExecCmdInp: input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -984,9 +984,9 @@ parseMspForExecCmdInp( msParam_t * inpParam,
         rodsLog( LOG_ERROR,
                  "parseMspForExecCmdInp: Unsupported input Param1 type %s",
                  inpParam->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
-    return ( 0 );
+    return 0;
 }
 int
 getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
@@ -995,7 +995,7 @@ getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
     if ( inpExecCmdOut == NULL ) {
         rodsLog( LOG_ERROR,
                  "getStdoutInExecCmdOut input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
@@ -1012,7 +1012,7 @@ getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
         rodsLog( LOG_ERROR,
                  "getStdoutInExecCmdOut: Unsupported input Param type %s",
                  inpExecCmdOut->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 
@@ -1023,7 +1023,7 @@ getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
     if ( inpExecCmdOut == NULL ) {
         rodsLog( LOG_ERROR,
                  "getStderrInExecCmdOut input inpParam is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
@@ -1040,7 +1040,7 @@ getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
         rodsLog( LOG_ERROR,
                  "getStderrInExecCmdOut: Unsupported input Param type %s",
                  inpExecCmdOut->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 
@@ -1049,7 +1049,7 @@ initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) 
     if ( inpStr == NULL || parsedMsKeyValStr == NULL ) {
         rodsLog( LOG_ERROR,
                  "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     bzero( parsedMsKeyValStr, sizeof( parsedMsKeyValStr_t ) );
@@ -1065,7 +1065,7 @@ clearParsedMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
     if ( parsedMsKeyValStr == NULL ) {
         rodsLog( LOG_ERROR,
                  "clearParsedMsKeyValStr: input parsedMsKeyValStr is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     if ( parsedMsKeyValStr->inpStr != NULL ) {
         free( parsedMsKeyValStr->inpStr );
@@ -1090,7 +1090,7 @@ getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
     if ( parsedMsKeyValStr == NULL ) {
         rodsLog( LOG_ERROR,
                  "getNextKeyValFromMsKeyValStr: input parsedMsKeyValStr is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     if ( parsedMsKeyValStr->curPtr >= parsedMsKeyValStr->endPtr ) {
         return NO_MORE_RESULT;
@@ -1151,7 +1151,7 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
     if ( inpParam == NULL || dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForDataObjInp: input inpParam or dataObjInp is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
@@ -1285,7 +1285,7 @@ parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
     if ( inpParam == NULL || collInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForCollInp: input inpParam or collInp is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
@@ -1453,7 +1453,7 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
     if ( inpParam == NULL || structFileExtAndRegInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForStructFile:inpParam or structFileInp is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
@@ -1558,7 +1558,7 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
 
     if ( inBuf == NULL || strcmp( inBuf, "null" ) == 0 ) {
         inpParamArray = NULL;
-        return ( 0 );
+        return 0;
     }
 
     memset( &strArray, 0, sizeof( strArray ) );
@@ -1568,7 +1568,7 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
         rodsLog( LOG_ERROR,
                  "parseMsParamFromIRFile: parseMultiStr error, status = %d", status );
         inpParamArray = NULL;
-        return ( status );
+        return status;
     }
     value = strArray.value;
 
@@ -1592,5 +1592,5 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }

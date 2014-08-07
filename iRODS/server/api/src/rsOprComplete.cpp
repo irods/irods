@@ -25,10 +25,10 @@ int rsOprComplete( rsComm_t *rsComm, int *retval ) {
     }
 
     if ( *retval >= 0 ) {
-        return ( SYS_HANDLER_DONE_NO_ERROR );
+        return SYS_HANDLER_DONE_NO_ERROR;
     }
     else {
-        return ( *retval );
+        return *retval;
     }
 }
 

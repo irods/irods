@@ -87,7 +87,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
             }
         }
     }
-    return( printCount );
+    return printCount;
 }
 
 
@@ -152,7 +152,7 @@ showResc( char *name, int longOption ) {
         if ( strncmp( name, BUNDLE_RESC, sizeof( BUNDLE_RESC ) ) == 0 ) {
             printf( "%s is a pseudo resource for system use only.\n",
                     BUNDLE_RESC );
-            return( 0 );
+            return 0;
         }
         // =-=-=-=-=-=-=-
         i2a[0] = COL_R_RESC_NAME;
@@ -183,7 +183,7 @@ showResc( char *name, int longOption ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             if ( name != NULL && name[0] != '\0' ) {
@@ -192,7 +192,7 @@ showResc( char *name, int longOption ) {
             else {
                 printf( "Resource does not exist.\n" );
             }
-            return( 0 );
+            return 0;
         }
     }
 
@@ -208,7 +208,7 @@ showResc( char *name, int longOption ) {
                                             columnNames, longOption );
     }
 
-    return ( 1 );
+    return 1;
 }
 
 

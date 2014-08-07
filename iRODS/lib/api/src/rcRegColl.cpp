@@ -9,5 +9,5 @@ rcRegColl( rcComm_t *conn, collInp_t *regCollInp ) {
     status = procApiRequest( conn, REG_COLL_AN, regCollInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

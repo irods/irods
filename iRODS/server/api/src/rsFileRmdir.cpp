@@ -31,19 +31,19 @@ rsFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileRmdir: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int
@@ -97,7 +97,7 @@ int _rsFileRmdir(
         if ( strstr( _rmdir_inp->dirName, CACHE_DIR_STR ) == NULL ) {
             rodsLog( LOG_ERROR, "_rsFileRmdir: recursive rm of non cachedir path %s",
                      _rmdir_inp->dirName );
-            return ( SYS_INVALID_FILE_PATH );
+            return SYS_INVALID_FILE_PATH;
         }
 
         // call opendir via resource plugin
@@ -111,7 +111,7 @@ int _rsFileRmdir(
             msg << "]";
             irods::error err = PASSMSG( msg.str(), opendir_err );
             irods::log( err );
-            return ( opendir_err.code() );
+            return opendir_err.code();
         }
 
         // read the directory via resource plugin and either handle files or recurse into another directory
@@ -157,7 +157,7 @@ int _rsFileRmdir(
                     irods::log( log_err );
                 }
 
-                return ( stat_err.code() );
+                return stat_err.code();
 
             }  // if !stat_err.ok()
 

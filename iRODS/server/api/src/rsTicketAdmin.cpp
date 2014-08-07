@@ -17,7 +17,7 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -39,7 +39,7 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
         rodsLog( LOG_NOTICE,
                  "rsTicketAdmin failed, error %d", status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -56,12 +56,12 @@ _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
         status = applyRule( "acTicketPolicy", NULL, &rei, NO_SAVE_REI );
         rodsLog( LOG_DEBUG, "debug ticket rule status:%d", status );
         if ( status != 0 ) {
-            return( status );
+            return status;
         }
     }
     status = chlModTicket( rsComm, ticketAdminInp->arg1,
                            ticketAdminInp->arg2, ticketAdminInp->arg3,
                            ticketAdminInp->arg4, ticketAdminInp->arg5 );
-    return( status );
+    return status;
 }
 #endif

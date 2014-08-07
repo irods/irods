@@ -26,7 +26,7 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInfo->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -43,7 +43,7 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -67,7 +67,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
     if ( regParam->len == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     /* In dataObjInfo, need just dataId. But it will accept objPath too,
@@ -149,9 +149,9 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 
 }
@@ -176,7 +176,7 @@ int _call_file_modified_for_modification(
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
     if ( regParam->len == 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( getValByKey( regParam, ALL_KW ) != NULL ) {

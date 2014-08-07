@@ -88,14 +88,14 @@ isioSetup() {
                  errMsg.status,
                  errMsg.msg );
         status = errMsg.status;
-        return( status );
+        return status;
     }
 
     status = clientLogin( Comm );
     if ( status == 0 ) {
         setupFlag = 1;
     }
-    return( status );
+    return status;
 }
 
 FILE *isioFileOpen( char *filename, char *modes ) {
@@ -111,7 +111,7 @@ FILE *isioFileOpen( char *filename, char *modes ) {
     if ( setupFlag == 0 ) {
         status = isioSetup();
         if ( status ) {
-            return( NULL );
+            return NULL;
         }
     }
 
@@ -122,7 +122,7 @@ FILE *isioFileOpen( char *filename, char *modes ) {
     }
     if ( i >= ISIO_MAX_OPEN_FILES ) {
         fprintf( stderr, "Too many open files in isioFileOpen\n" );
-        return( NULL );
+        return NULL;
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -130,7 +130,7 @@ FILE *isioFileOpen( char *filename, char *modes ) {
                                dataObjInp.objPath );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "isioFileOpen" );
-        return( NULL );
+        return NULL;
     }
 
     /* Set the openFlags based on the input mode (incomplete
@@ -152,20 +152,20 @@ FILE *isioFileOpen( char *filename, char *modes ) {
     }
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "isioFileOpen" );
-        return( NULL );
+        return NULL;
     }
     openFiles[i] = status;
     cacheInfo[i].base = ( char * )malloc( sizeof( char ) * ISIO_INITIAL_BUF_SIZE );
     if ( cacheInfo[i].base == NULL ) {
         fprintf( stderr, "Memory Allocation error\n" );
-        return( NULL );
+        return NULL;
     }
     cacheInfo[i].bufferSize = sizeof( char ) * ISIO_INITIAL_BUF_SIZE;
     cacheInfo[i].ptr = cacheInfo[i].base;
     cacheInfo[i].count = 0;
     cacheInfo[i].usingUsersBuffer = 'n';
     cacheInfo[i].written = 0;
-    return( ( FILE * )i );
+    return ( FILE * )i;
 }
 
 FILE *irodsfopen( char *filename, char *modes ) {
@@ -178,10 +178,10 @@ FILE *irodsfopen( char *filename, char *modes ) {
 
     len = strlen( PREFIX );
     if ( strncmp( filename, PREFIX, len ) == 0 ) {
-        return( isioFileOpen( filename + len, modes ) );
+        return isioFileOpen( filename + len, modes );
     }
     else {
-        return( fopen( filename, modes ) );
+        return fopen( filename, modes );
     }
 }
 
@@ -211,13 +211,13 @@ isioFillBuffer( int fileIndex ) {
         printf( "isioFillBuffer rcDataObjRead stat: %d\n", status );
     }
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     cacheInfo[i].ptr = cacheInfo[i].base;
     cacheInfo[i].count = status;
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -238,7 +238,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
     /* If the buffer had been used for writing, flush it */
     status = isioFlush( fileIndex );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     reqSize = maxToRead;
@@ -248,7 +248,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
             memcpy( myPtr, cacheInfo[fileIndex].ptr, reqSize );
             cacheInfo[fileIndex].ptr += reqSize;
             cacheInfo[fileIndex].count -= reqSize;
-            return( maxToRead );
+            return maxToRead;
         }
         else {
             memcpy( myPtr, cacheInfo[fileIndex].ptr, cacheInfo[fileIndex].count );
@@ -282,7 +282,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
             cacheInfo[i].base = ( char * )malloc( newBufSize );
             if ( cacheInfo[i].base == NULL ) {
                 fprintf( stderr, "Memory Allocation error\n" );
-                return( 0 );
+                return 0;
             }
             cacheInfo[i].bufferSize = newBufSize;
             cacheInfo[i].usingUsersBuffer = 'n';
@@ -299,7 +299,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
 
     status = isioFillBuffer( fileIndex );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( cacheInfo[i].usingUsersBuffer == 'y' ) {
@@ -308,7 +308,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
         if ( debug ) {
             printf( "isioFileRead return1: %d\n", count );
         }
-        return( count );
+        return count;
     }
     if ( cacheInfo[fileIndex].count > 0 ) {
         toMove = reqSize;
@@ -325,7 +325,7 @@ isioFileRead( int fileIndex, void *buffer, int maxToRead ) {
     if ( debug ) {
         printf( "isioFileRead return2: %d\n", count );
     }
-    return( count );
+    return count;
 
 }
 
@@ -338,10 +338,10 @@ size_t irodsfread( void *buffer, size_t itemsize, int nitems, FILE *fi_stream ) 
     }
 
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFileRead( i, buffer, itemsize * nitems ) );
+        return isioFileRead( i, buffer, itemsize * nitems );
     }
     else {
-        return( fread( buffer, itemsize, nitems, fi_stream ) );
+        return fread( buffer, itemsize, nitems, fi_stream );
     }
 }
 
@@ -366,7 +366,7 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
         offset = - cacheInfo[fileIndex].count;
         status = isioFileSeek( fileIndex, offset, SEEK_CUR );
         if ( status ) {
-            return( status );
+            return status;
         }
         cacheInfo[fileIndex].ptr = cacheInfo[fileIndex].base;
         cacheInfo[fileIndex].count = 0;
@@ -385,12 +385,12 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
         memcpy( cacheInfo[fileIndex].ptr, buffer, countToWrite );
         cacheInfo[fileIndex].ptr += countToWrite;
         cacheInfo[fileIndex].written += countToWrite;
-        return( countToWrite );
+        return countToWrite;
     }
 
     status = isioFlush( fileIndex ); /* if anything is buffered, flush it */
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( countToWrite > ISIO_MAX_BUF_SIZE ) {
@@ -409,7 +409,7 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
             printf( "isioFileWrite: rcDataWrite 2 %d\n", status );
         }
         if ( status < 0 ) {
-            return( status );
+            return status;
         }
 
         return( status ); /* total bytes written */
@@ -434,7 +434,7 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
         cacheInfo[i].base = ( char * )malloc( newBufSize );
         if ( cacheInfo[i].base == NULL ) {
             fprintf( stderr, "Memory Allocation error\n" );
-            return( 0 );
+            return 0;
         }
         cacheInfo[i].bufferSize = newBufSize;
         cacheInfo[i].usingUsersBuffer = 'n';
@@ -448,7 +448,7 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
     cacheInfo[fileIndex].ptr += countToWrite;
     cacheInfo[fileIndex].count -= countToWrite; //??
     cacheInfo[fileIndex].written += countToWrite;
-    return( countToWrite );
+    return countToWrite;
 
 }
 
@@ -460,10 +460,10 @@ irodsfwrite( void *buffer, size_t itemsize, int nitems, FILE *fi_stream ) {
         printf( "irodsfwrite: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFileWrite( i, buffer, itemsize * nitems ) );
+        return isioFileWrite( i, buffer, itemsize * nitems );
     }
     else {
-        return( fwrite( buffer, itemsize, nitems, fi_stream ) );
+        return fwrite( buffer, itemsize, nitems, fi_stream );
     }
 }
 
@@ -479,7 +479,7 @@ isioFileClose( int fileIndex ) {
     /* If the buffer had been used for writing, flush it */
     status = isioFlush( fileIndex );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
 
@@ -498,7 +498,7 @@ isioFileClose( int fileIndex ) {
 
     cacheInfo[i].usingUsersBuffer = ' ';
 
-    return( rcDataObjClose( Comm, &dataObjCloseInp ) );
+    return rcDataObjClose( Comm, &dataObjCloseInp );
 }
 
 size_t irodsfclose( FILE *fi_stream ) {
@@ -508,10 +508,10 @@ size_t irodsfclose( FILE *fi_stream ) {
         printf( "isiofclose: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFileClose( i ) );
+        return isioFileClose( i );
     }
     else {
-        return( fclose( fi_stream ) );
+        return fclose( fi_stream );
     }
 }
 
@@ -532,7 +532,7 @@ isioFileSeek( int fileIndex, long offset, int whence ) {
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "isioFileSeek" );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -543,10 +543,10 @@ irodsfseek( FILE *fi_stream, long offset, int whence ) {
         printf( "isiofseek: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFileSeek( i, offset, whence ) );
+        return isioFileSeek( i, offset, whence );
     }
     else {
-        return( fseek( fi_stream, offset, whence ) );
+        return fseek( fi_stream, offset, whence );
     }
 }
 
@@ -579,10 +579,10 @@ isioFlush( int fileIndex ) {
             cacheInfo[i].ptr = cacheInfo[i].base;
             cacheInfo[i].written = 0;
         }
-        return( status );
+        return status;
 
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -594,10 +594,10 @@ irodsfflush( FILE *fi_stream ) {
         printf( "isiofflush: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFlush( i ) );
+        return isioFlush( i );
     }
     else {
-        return( fflush( fi_stream ) );
+        return fflush( fi_stream );
     }
 }
 
@@ -605,7 +605,7 @@ int
 isioFilePutc( int inchar, int fileIndex ) {
     int mychar;
     mychar = inchar;
-    return ( isioFileWrite( fileIndex, ( void* )&mychar, 1 ) );
+    return isioFileWrite( fileIndex, ( void* )&mychar, 1 );
 }
 
 int
@@ -616,10 +616,10 @@ irodsfputc( int inchar, FILE *fi_stream ) {
         printf( "isiofputc: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFilePutc( inchar, i ) );
+        return isioFilePutc( inchar, i );
     }
     else {
-        return( fputc( inchar, fi_stream ) );
+        return fputc( inchar, fi_stream );
     }
 }
 
@@ -629,12 +629,12 @@ isioFileGetc( int fileIndex ) {
     int status;
     status = isioFileRead( fileIndex, ( void* )&mychar, 1 );
     if ( status == 0 ) {
-        return( EOF );
+        return EOF;
     }
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
-    return( mychar );
+    return mychar;
 }
 
 int
@@ -645,10 +645,10 @@ irodsfgetc( FILE *fi_stream ) {
         printf( "isiofgetc: %d\n", i );
     }
     if ( i < ISIO_MAX_OPEN_FILES && i >= ISIO_MIN_OPEN_FD && openFiles[i] > 0 ) {
-        return( isioFileGetc( i ) );
+        return isioFileGetc( i );
     }
     else {
-        return( fgetc( fi_stream ) );
+        return fgetc( fi_stream );
     }
 }
 

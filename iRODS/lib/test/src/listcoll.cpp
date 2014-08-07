@@ -126,10 +126,10 @@ printCollection( rcComm_t *conn, char *collection, int flags ) {
     rclCloseCollection( &collHandle );
 
     if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-        return ( status );
+        return status;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -148,7 +148,7 @@ printCollectionNat( rcComm_t *conn, char *collection, int flags ) {
     if ( handleInx < 0 ) {
         fprintf( stderr, "rcOpenCollection of %s error. status = %d\n",
                  collection, handleInx );
-        return ( handleInx );
+        return handleInx;
     }
 
     while ( ( status = rcReadCollection( conn, handleInx, &collEnt ) ) >= 0 ) {
@@ -186,10 +186,10 @@ printCollectionNat( rcComm_t *conn, char *collection, int flags ) {
     rcCloseCollection( conn, handleInx );
 
     if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-        return ( status );
+        return status;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 

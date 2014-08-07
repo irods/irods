@@ -74,6 +74,6 @@ rcDataObjChksum( rcComm_t *conn, dataObjInp_t *dataObjChksumInp,
     status = procApiRequest( conn, DATA_OBJ_CHKSUM_AN,  dataObjChksumInp, NULL,
                              ( void ** ) outChksum, NULL );
 
-    return ( status );
+    return status;
 }
 

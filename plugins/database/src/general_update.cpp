@@ -58,7 +58,7 @@ generalInsert( generalUpdateInp_t generalUpdateInp ) {
             }
         }
         else {
-            return( j );
+            return j;
         }
 
         doBind = 1;
@@ -87,7 +87,7 @@ generalInsert( generalUpdateInp_t generalUpdateInp ) {
         }
         else {
             if ( strcmp( tableName, firstTableName ) != 0 ) {
-                return( CAT_INVALID_ARGUMENT );
+                return CAT_INVALID_ARGUMENT;
             }
             rstrcat( tSQL, ", ", MAX_SQL_SIZE );
             rstrcat( tSQL, columnName, MAX_SQL_SIZE );
@@ -124,7 +124,7 @@ generalInsert( generalUpdateInp_t generalUpdateInp ) {
         printf( "tSQL: %s\n", tSQL );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -153,7 +153,7 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
             }
         }
         else {
-            return( j );
+            return j;
         }
         if ( i == 0 ) {
             firstTableName = tableName;
@@ -165,7 +165,7 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
         }
         else {
             if ( strcmp( tableName, firstTableName ) != 0 ) {
-                return( CAT_INVALID_ARGUMENT );
+                return CAT_INVALID_ARGUMENT;
             }
             rstrcat( tSQL, " and ", MAX_SQL_SIZE );
             rstrcat( tSQL, columnName, MAX_SQL_SIZE );
@@ -176,7 +176,7 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
     if ( updateDebug ) {
         printf( "tSQL: %s\n", tSQL );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -189,7 +189,7 @@ extern "C" int chl_general_update_impl(
 
     status = chlGetRcs( &icss );
     if ( status < 0 || !icss ) {
-        return( CAT_NOT_OPEN );
+        return CAT_NOT_OPEN;
     }
 
     /*   result->rowCount=0; */
@@ -200,7 +200,7 @@ extern "C" int chl_general_update_impl(
     if ( generalUpdateInp.type == GENERAL_UPDATE_INSERT ) {
         status = generalInsert( generalUpdateInp );
         if ( status ) {
-            return ( status );
+            return status;
         }
         /* Since the sql string is lower case, this is not checked for
            in ICAT test suite; removed since now this is only for
@@ -213,14 +213,14 @@ extern "C" int chl_general_update_impl(
         if ( generalUpdateInp.type == GENERAL_UPDATE_DELETE ) {
             status = generalDelete( generalUpdateInp );
             if ( status ) {
-                return ( status );
+                return status;
             }
             if ( logSQLGenUpdate ) {
                 rodsLog( LOG_SQL, "chlGeneralUpdate sql 2" );
             }
         }
         else {
-            return( CAT_INVALID_ARGUMENT );
+            return CAT_INVALID_ARGUMENT;
         }
     }
 
@@ -228,7 +228,7 @@ extern "C" int chl_general_update_impl(
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE, "chlGeneralUpdate cmlExecuteNoAnswerSql insert failure %d", status );
         cmlExecuteNoAnswerSql( "rollback", icss ); // JMC - backport 4509
-        return( status );
+        return status;
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", icss );
@@ -236,14 +236,14 @@ extern "C" int chl_general_update_impl(
         rodsLog( LOG_NOTICE,
                  "chlGeneralUpdate cmlExecuteNoAnswerSql commit failure %d",
                  status );
-        return( status );
+        return status;
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
 chlDebugGenUpdate( int mode ) {
     logSQLGenUpdate = mode;
-    return( 0 );
+    return 0;
 }

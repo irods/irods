@@ -49,7 +49,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                        &destDataObjInp->condInput );
 
     if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
-        return ( SAME_SRC_DEST_PATHS_ERR );
+        return SAME_SRC_DEST_PATHS_ERR;
     }
 
     /* connect to rcat for cross zone */
@@ -57,7 +57,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                                  srcDataObjInp->objPath, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) {
-        return ( status );
+        return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
         status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
@@ -90,7 +90,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                  destDataObjInp->objPath );
         freeDataObjInfo( srcDataObjInfo );
         freeDataObjInfo( destDataObjInfo );
-        return ( SYS_DEST_SPEC_COLL_SUB_EXIST );
+        return SYS_DEST_SPEC_COLL_SUB_EXIST;
     }
 
     if ( srcType >= 0 ) { /* specColl of some sort */
@@ -116,24 +116,24 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         }
         freeDataObjInfo( srcDataObjInfo );
         freeDataObjInfo( destDataObjInfo );
-        return ( status );
+        return status;
     }
     else if ( srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return ( SYS_SPEC_COLL_OBJ_NOT_EXIST );
+        return SYS_SPEC_COLL_OBJ_NOT_EXIST;
     }
     else if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
         /* source is normal object but dest is not */
         rodsLog( LOG_ERROR,
                  "rsDataObjRename: src %s is not in spec coll but dest %s is",
                  srcDataObjInp->objPath, destDataObjInp->objPath );
-        return ( SYS_SRC_DEST_SPEC_COLL_CONFLICT );
+        return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
     }
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                  dataObjRenameInp->srcDataObjInp.objPath,
                                  &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -146,7 +146,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -197,7 +197,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         rodsLog( LOG_ERROR,
                  "_rsDataObjRename: splitPathByKey for %s error, status = %d",
                  srcDataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
 
     if ( ( status = splitPathByKey(
@@ -205,7 +205,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         rodsLog( LOG_ERROR,
                  "_rsDataObjRename: splitPathByKey for %s error, status = %d",
                  destDataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
 
     multiCopyFlag = getMultiCopyPerResc( rsComm );  // JMC - backport 4556
@@ -221,7 +221,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             rodsLog( LOG_ERROR,
                      "_rsDataObjRename: src data %s does not exist, status = %d",
                      srcDataObjInp->objPath, status );
-            return ( status );
+            return status;
         }
     }
     else if ( srcDataObjInp->oprType == RENAME_COLL ) {
@@ -230,7 +230,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             rodsLog( LOG_ERROR,
                      "_rsDataObjRename: src coll %s does not exist, status = %d",
                      srcDataObjInp->objPath, status );
-            return ( status );
+            return status;
         }
     }
     else {
@@ -248,7 +248,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                 rodsLog( LOG_ERROR,
                          "_rsDataObjRename: src data %s does not exist, status = %d",
                          srcDataObjInp->objPath, status );
-                return ( status );
+                return status;
             }
         }
         else if ( ( status = isColl( rsComm, srcDataObjInp->objPath, &srcId ) )
@@ -259,7 +259,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             rodsLog( LOG_ERROR,
                      "_rsDataObjRename: src obj %s does not exist, status = %d",
                      srcDataObjInp->objPath, status );
-            return ( status );
+            return status;
         }
     }
 
@@ -276,7 +276,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         /* rename */
         if ( srcId < 0 ) {
             status = srcId;
-            return ( status );
+            return status;
         }
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
@@ -300,7 +300,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     }
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
     if ( strcmp( srcColl, destColl ) != 0 ) {
@@ -310,7 +310,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             rodsLog( LOG_ERROR,
                      "_rsDataObjRename: dest coll %s does not exist, status = %d",
                      destColl, status );
-            return ( status );
+            return status;
         }
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
@@ -336,7 +336,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     if ( status >= 0 ) {
         if ( multiCopyFlag > 0 ) {
             status = chlCommit( rsComm );
-            return ( status );
+            return status;
         }
         else {
             /* enforce physPath consistency */
@@ -383,7 +383,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     else {
         chlRollback( rsComm );
     }
-    return( status );
+    return status;
 #else
     return SYS_NO_ICAT_SERVER_ERR;
 #endif
@@ -410,9 +410,9 @@ specCollObjRename( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         rodsLog( LOG_ERROR,
                  "specCollObjRename: l3Rename error from %s to %s, status = %d",
                  srcDataObjInfo->subPath, newPath, status );
-        return ( status );
+        return status;
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -452,7 +452,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
         fileRenameOut_t* ren_out = 0;
         status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
     }
-    return ( status );
+    return status;
 }
 
 /* moveMountedCollObj - move a mounted collecion obj to a normal obj */
@@ -500,7 +500,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         rodsLog( LOG_ERROR,
                  "moveMountedCollDataObj: getFilePathName err for %s. status = %d",
                  destDataObjInfo.objPath, status );
-        return ( status );
+        return status;
     }
 
     status = filePathTypeInResc( rsComm, destDataObjInfo.objPath, destDataObjInfo.filePath, destDataObjInfo.rescHier,
@@ -537,7 +537,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         rodsLog( LOG_ERROR,
                  "moveMountedCollDataObj: l3Rename error from %s to %s, status = %d",
                  srcDataObjInfo->filePath, destDataObjInfo.filePath, status );
-        return ( status );
+        return status;
     }
     status = svrRegDataObj( rsComm, &destDataObjInfo );
     if ( status < 0 ) {
@@ -546,7 +546,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                  "moveMountedCollDataObj: rsRegDataObj for %s failed, status = %d",
                  destDataObjInfo.objPath, status );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -589,7 +589,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
             rodsLog( LOG_ERROR,
                      "moveMountedCollCollObj: l3Stat for %s error, status = %d",
                      subSrcDataObjInfo.filePath, status );
-            return ( status );
+            return status;
         }
         snprintf( subSrcDataObjInfo.dataCreate, TIME_LEN, "%d",
                   fileStatOut->st_ctim );

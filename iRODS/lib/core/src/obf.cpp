@@ -99,13 +99,13 @@ obftestmain( int argc, char *argv[] ) {
             printf( "val  = %d \n", i );
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
 obfSetDebug( int opt ) {
     obfDebug = opt;
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -115,7 +115,7 @@ obfiGetFilename( char *fileName ) {
     envVar = getRodsEnvAuthFileName();
     if ( envVar != NULL && *envVar != '\0' ) {
         strcpy( fileName, envVar );
-        return( 0 );
+        return 0;
     }
 
 #ifdef windows_platform
@@ -133,7 +133,7 @@ obfiGetFilename( char *fileName ) {
     envVar =  getenv( "HOME" );
 #endif
     if ( envVar == NULL ) {
-        return( ENVIRONMENT_VAR_HOME_NOT_DEFINED );
+        return ENVIRONMENT_VAR_HOME_NOT_DEFINED;
     }
     strncpy( fileName, envVar, MAX_NAME_LEN );
     strncat( fileName, "/", MAX_NAME_LEN );
@@ -145,7 +145,7 @@ obfiGetFilename( char *fileName ) {
     }
 #endif
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -164,22 +164,22 @@ obfGetPw( char *pw ) {
 
     i = obfiGetFilename( fileName );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = obfiGetTv( fileName );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = obfiGetPw( fileName, myPw );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = obfiDecode( myPw, myPwD, envVal );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     isTemp = 0;
@@ -210,7 +210,7 @@ obfRmPw( int opt ) {
 
     i = obfiGetFilename( fileName );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
 #ifdef windows_platform
@@ -222,7 +222,7 @@ obfRmPw( int opt ) {
         if ( opt == 0 ) {
             printf( "%s does not exist\n", fileName );
         }
-        return( AUTH_FILE_DOES_NOT_EXIST );
+        return AUTH_FILE_DOES_NOT_EXIST;
     }
     close( fd );
     if ( opt == 0 ) {
@@ -242,9 +242,9 @@ obfRmPw( int opt ) {
         i = unlink( fileName );
     }
     if ( i == 0 ) {
-        return( 0 );
+        return 0;
     }
-    return ( UNLINK_FAILED );
+    return UNLINK_FAILED;
 }
 
 /* Set timeVal from a fstat of the file after writing to it.
@@ -296,7 +296,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 
     i = obfiGetFilename( fileName );
     if ( i != 0 ) {
-        return( i );
+        return i;
     }
 
     envVal = obfiGetEnvKey();
@@ -337,7 +337,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
         return NO_PASSWORD_ENTERED;
     }
     if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 2 ) {
-        return ( PASSWORD_EXCEEDS_MAX_SIZE );
+        return PASSWORD_EXCEEDS_MAX_SIZE;
     }
     if ( inbuf[i - 1] == '\n' ) {
         inbuf[i - 1] = '\0';    /* remove trailing \n */
@@ -349,7 +349,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 
     fd = obfiOpenOutFile( fileName, fileOpt );
     if ( fd < 0 ) {
-        return ( FILE_OPEN_ERR );
+        return FILE_OPEN_ERR;
     }
 
     if ( fd == 0 ) {
@@ -358,7 +358,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 
     i = obfiSetTimeFromFile( fd );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     obfiEncode( inbuf, myPw, envVal );
@@ -368,7 +368,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
 
     i = obfiWritePw( fd, myPw );
     if ( i < 0 ) {
-        return ( i );
+        return i;
     }
 
     if ( obfDebug || printOpt ) {
@@ -396,7 +396,7 @@ int obfTempOps( int tmpOpt ) {
         if ( isTemp ) {
             i = obfiGetFilename( fileName );
             if ( i != 0 ) {
-                return( i );
+                return i;
             }
             unlink( fileName );
         }
@@ -501,7 +501,7 @@ obfiOpenOutFile( char *fileName, int fileOpt ) {
             return 0;
         }
     }
-    return( fd_out );
+    return fd_out;
 }
 
 int
@@ -530,7 +530,7 @@ int obfiTimeval() {
     if ( obfDebug > 1 ) {
         printf( "val  = %d %x\n", val, val );
     }
-    return( val );
+    return val;
 }
 
 
@@ -722,7 +722,7 @@ obfiTimeCheck( int time1, int time2 ) {
         delta = 0 - delta;
     }
     if ( delta < fudge ) {
-        return( 0 );
+        return 0;
     }
 
     if ( time1 < 65000 ) {
@@ -737,10 +737,10 @@ obfiTimeCheck( int time1, int time2 ) {
         delta = 0 - delta;
     }
     if ( delta < fudge ) {
-        return( 0 );
+        return 0;
     }
 
-    return( 1 );
+    return 1;
 }
 
 
@@ -971,7 +971,7 @@ obfSetDefaultHashType( int type ) {
 
 int
 obfGetDefaultHashType() {
-    return( defaultHashType );
+    return defaultHashType;
 }
 
 /* Generate a hash string using MD5 or Sha1 */
@@ -1333,5 +1333,5 @@ obfGetMD5Hash( char *stringToHash ) {
              buffer[4], buffer[5], buffer[6], buffer[7],
              buffer[8], buffer[9], buffer[10], buffer[11],
              buffer[12], buffer[13], buffer[14], buffer[15] );
-    return( outBuf );
+    return outBuf;
 }

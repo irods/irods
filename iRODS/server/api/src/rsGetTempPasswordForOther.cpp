@@ -17,7 +17,7 @@ rsGetTempPasswordForOther( rsComm_t *rsComm,
     rodsLog( LOG_DEBUG,
              "rsGetTempPasswordForOther get stat=%d", status );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -38,7 +38,7 @@ rsGetTempPasswordForOther( rsComm_t *rsComm,
                  "rsGetTempPasswordForOther: rcGetTempPasswordForOther failed, status = %d",
                  status );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -62,6 +62,6 @@ _rsGetTempPasswordForOther( rsComm_t *rsComm,
 
     *getTempPasswordForOtherOut = myGetTempPasswordForOtherOut;
 
-    return ( status );
+    return status;
 }
 #endif

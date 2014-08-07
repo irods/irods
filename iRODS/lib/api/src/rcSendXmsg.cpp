@@ -9,5 +9,5 @@ rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp ) {
     status = procApiRequest( conn, SEND_XMSG_AN, sendXmsgInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

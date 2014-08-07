@@ -9,5 +9,5 @@ rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp ) {
     status = procApiRequest( conn, TICKET_ADMIN_AN,  ticketAdminInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

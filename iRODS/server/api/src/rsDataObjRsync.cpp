@@ -23,14 +23,14 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *outParamArray = NULL;
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR, "rsDataObjRsync error. NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsyncMode = getValByKey( &dataObjInp->condInput, RSYNC_MODE_KW );
     if ( rsyncMode == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsDataObjRsync: RSYNC_MODE_KW input is missing" );
-        return ( USER_RSYNC_NO_MODE_INPUT_ERR );
+        return USER_RSYNC_NO_MODE_INPUT_ERR;
     }
 
     if ( strcmp( rsyncMode, LOCAL_TO_IRODS ) == 0 ) {
@@ -53,7 +53,7 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 rodsLog( LOG_ERROR,
                          "rsDataObjRsync: RSYNC_DEST_PATH_KW input is missing for %s",
                          dataObjInp->objPath );
-                return ( USER_RSYNC_NO_MODE_INPUT_ERR );
+                return USER_RSYNC_NO_MODE_INPUT_ERR;
             }
             myDataObjInp = *dataObjInp;
             remoteZoneOpr = REMOTE_CREATE;
@@ -72,7 +72,7 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if ( remoteFlag < 0 ) {
-        return ( remoteFlag );
+        return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
 
@@ -93,10 +93,10 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     else {
         rodsLog( LOG_ERROR,
                  "rsDataObjRsync: rsyncMode %s  not supported" );
-        return ( USER_RSYNC_NO_MODE_INPUT_ERR );
+        return USER_RSYNC_NO_MODE_INPUT_ERR;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -112,7 +112,7 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
                  dataObjInp->objPath );
-        return ( CHKSUM_EMPTY_IN_STRUCT_ERR );
+        return CHKSUM_EMPTY_IN_STRUCT_ERR;
     }
 
     status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
@@ -126,7 +126,7 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
                  dataObjInp->objPath, status );
-        return ( status );
+        return status;
     }
 
     freeAllDataObjInfo( dataObjInfoHead );
@@ -134,7 +134,7 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( dataObjChksumStr != NULL &&
             strcmp( dataObjChksumStr, fileChksumStr ) == 0 ) {
         free( dataObjChksumStr );
-        return ( 0 );
+        return 0;
     }
 
     return SYS_SVR_TO_CLI_GET_ACTION;
@@ -152,7 +152,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( fileChksumStr == NULL ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing" );
-        return ( CHKSUM_EMPTY_IN_STRUCT_ERR );
+        return CHKSUM_EMPTY_IN_STRUCT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -195,7 +195,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( dataObjChksumStr != NULL &&
             strcmp( dataObjChksumStr, fileChksumStr ) == 0 ) {
         free( dataObjChksumStr );
-        return ( 0 );
+        return 0;
     }
     return SYS_SVR_TO_CLI_PUT_ACTION;
 }
@@ -217,7 +217,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToData: RSYNC_DEST_PATH_KW input is missing for %s",
                  dataObjInp->objPath );
-        return ( USER_RSYNC_NO_MODE_INPUT_ERR );
+        return USER_RSYNC_NO_MODE_INPUT_ERR;
     }
 
     memset( &dataObjCopyInp, 0, sizeof( dataObjCopyInp ) );
@@ -241,7 +241,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                  "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
                  dataObjCopyInp.srcDataObjInp.objPath, status );
         clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
-        return ( status );
+        return status;
     }
 
     /* use rsDataObjChksum because the path could in in remote zone */
@@ -254,7 +254,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                  "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
                  dataObjCopyInp.destDataObjInp.objPath, status );
         clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
-        return ( status );
+        return status;
     }
 
     if ( destChksumStr != NULL && strcmp( srcChksumStr, destChksumStr ) == 0 ) {
@@ -262,7 +262,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         free( destChksumStr );
         clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
         clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
-        return ( 0 );
+        return 0;
     }
 
     addKeyVal( &dataObjCopyInp.destDataObjInp.condInput, REG_CHKSUM_KW,

@@ -34,7 +34,7 @@ doTest1( char *arg1, char *arg2, char *arg3, char *arg4 ) {
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 int
@@ -56,7 +56,7 @@ doTest2( char *arg1, char *arg2, char *arg3, char *arg4 ) {
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 int
@@ -89,7 +89,7 @@ doTest3( char *arg1, char *arg2, char *arg3, char *arg4 ) {
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 int
@@ -112,7 +112,7 @@ doTest4( char *arg1, char *arg2, char *arg3, char *arg4 ) {
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 
@@ -156,7 +156,7 @@ doTest5( char *arg1, char *arg2, char *arg3, char *arg4,
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 int
@@ -181,7 +181,7 @@ doTest6( char *arg1, char *arg2, char *arg3, char *arg4 ) {
     status  = chlGeneralUpdate( generalUpdateInp );
     printf( "chlGenUpdate status=%d\n", status );
 
-    return( status );
+    return status;
 }
 
 int
@@ -233,7 +233,7 @@ main( int argc, char **argv ) {
         rodsLog( LOG_SYS_FATAL,
                  "chlopen Error. Status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
     if ( strstr( myEnv.rodsDebug, "CAT" ) != NULL ) {
@@ -289,5 +289,5 @@ main( int argc, char **argv ) {
    the rule-engine is not needed in this ICAT test. */
 int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
-    return( 0 );
+    return 0;
 }

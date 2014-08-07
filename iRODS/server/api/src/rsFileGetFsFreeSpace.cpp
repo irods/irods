@@ -38,19 +38,19 @@ rsFileGetFsFreeSpace( rsComm_t *rsComm,
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFileGetFsFreeSpace: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     /* Manually insert call-specific code here */
 
-    return ( status );
+    return status;
 }
 
 int
@@ -120,7 +120,7 @@ int _rsFileGetFsFreeSpace(
         msg << "]";
         irods::error err = PASSMSG( msg.str(), free_err );
         irods::log( err );
-        return ( ( int ) free_err.code() );
+        return ( int ) free_err.code();
     }
 
     // =-=-=-=-=-=-=-
@@ -128,7 +128,7 @@ int _rsFileGetFsFreeSpace(
     *_freespace_out  = ( fileGetFsFreeSpaceOut_t* )malloc( sizeof( fileGetFsFreeSpaceOut_t ) );
     ( *_freespace_out )->size = free_err.code();
 
-    return ( 0 );
+    return 0;
 
 } // _rsFileGetFsFreeSpace
 

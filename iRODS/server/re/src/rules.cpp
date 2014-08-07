@@ -42,7 +42,7 @@ int readRuleSetFromLocalFile( char *ruleBaseName, char *rulesFileName, RuleSet *
                   "readRuleSetFromFile() could not open rules file %s\n",
                   rulesFileName );
         addRErrorMsg( errmsg, RULES_FILE_READ_ERROR, errbuf );
-        return( RULES_FILE_READ_ERROR );
+        return RULES_FILE_READ_ERROR;
     }
     Pointer *e = newPointer( file, ruleBaseName );
     int ret = parseRuleSet( e, ruleSet, funcDesc, errloc, errmsg, r );

@@ -140,16 +140,16 @@ static int _ikrbWriteAll( int fd, char *buf, unsigned int nbyte ) {
             if ( errno == EINTR ) {
                 continue;
             }
-            return ( ret );
+            return ret;
         }
         else if ( ret == 0 ) {
-            return ( ptr - buf );
+            return ptr - buf;
         }
     }
     if ( ikrbDebugFlag > 0 ) {
         fprintf( stderr, "_ikrbWriteAll, wrote=%d\n", ptr - buf );
     }
-    return ( ptr - buf );
+    return ptr - buf;
 }
 #endif
 
@@ -166,14 +166,14 @@ static int _ikrbReadAll( int fd, char *buf, unsigned int nbyte ) {
             if ( errno == EINTR ) {
                 continue;
             }
-            return ( KRB_SOCKET_READ_ERROR );
+            return KRB_SOCKET_READ_ERROR;
         }
         else if ( ret == 0 ) {
-            return ( ptr - buf );
+            return ptr - buf;
         }
     }
 
-    return ( ptr - buf );
+    return ptr - buf;
 }
 
 /*
@@ -350,7 +350,7 @@ int _ikrbRcvToken( int fd, gss_buffer_t tok ) {
             return length;
         }
 
-        return ( _ikrbRcvTokenBody( fd, tok, length ) );
+        return _ikrbRcvTokenBody( fd, tok, length );
     }
     else {
         i = read( fd, ( char * ) tok->value, tok->length );
@@ -358,7 +358,7 @@ int _ikrbRcvToken( int fd, gss_buffer_t tok ) {
             fprintf( stderr, "rcved token, length = %d\n", i );
         }
         if ( i <= 0 ) {
-            return ( i );
+            return i;
         }
         tok->length = i;        /* Assume all of token is rcv'ed */
         return 1;               /* success */
@@ -593,10 +593,10 @@ int ikrbSetupCreds( rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( KRB_NOT_BUILT_INTO_CLIENT );
+        return KRB_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( KRB_NOT_BUILT_INTO_SERVER );
+        return KRB_NOT_BUILT_INTO_SERVER;
     }
 #endif
 }
@@ -740,10 +740,10 @@ int ikrbEstablishContextServerside( rsComm_t *rsComm, char *clientName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( KRB_NOT_BUILT_INTO_CLIENT );
+        return KRB_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( KRB_NOT_BUILT_INTO_SERVER );
+        return KRB_NOT_BUILT_INTO_SERVER;
     }
 #endif
 }
@@ -964,10 +964,10 @@ int ikrbEstablishContextClientside( rcComm_t *Comm, char *serviceName,
 
 #else
     if ( ProcessType == CLIENT_PT ) {
-        return( KRB_NOT_BUILT_INTO_CLIENT );
+        return KRB_NOT_BUILT_INTO_CLIENT;
     }
     else {
-        return( KRB_NOT_BUILT_INTO_SERVER );
+        return KRB_NOT_BUILT_INTO_SERVER;
     }
 #endif
 
@@ -981,5 +981,5 @@ int ikrbEstablishContextClientside( rcComm_t *Comm, char *serviceName,
  */
 int ikrb_debug( int val ) {
     ikrbDebugFlag = val;
-    return( 0 );
+    return 0;
 }

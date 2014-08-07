@@ -58,10 +58,10 @@ int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ru
 
     s = getValByKey( kvp, k );
     if ( s == NULL ) {
-        return( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     i = fillStrInMsParam( outVal, s );
-    return( i );
+    return i;
 }
 
 /**
@@ -126,13 +126,13 @@ int msiPrintKeyValPair( msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *r
         j = writeString( where, &tms, rei );
         if ( j < 0 ) {
             free( s );
-            return( j );
+            return j;
         }
     }
     if ( m > 0 ) {
         free( s );
     }
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -183,7 +183,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
     i =  parseMultiStr( buf, &strArray );
     free( buf );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     value = strArray.value;
 
@@ -195,7 +195,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
             tmpPtr++;
             j = addKeyVal( kvp, valPtr, tmpPtr );
             if ( j < 0 ) {
-                return( j );
+                return j;
             }
             *tmpPtr = '=';
         }
@@ -203,7 +203,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
     outKeyValPairP->inOutStruct = ( void * ) kvp;
     outKeyValPairP->type = ( char * ) strdup( KeyValPair_MS_T );
 
-    return( 0 );
+    return 0;
 }
 
 /**
@@ -247,7 +247,7 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
 
     if ( inBufferP == NULL || inBufferP->inOutStruct == NULL ||
             inBufferP->type == NULL || strcmp( inBufferP->type, STR_MS_T ) != 0 ) {
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     buf = strdup( ( char * )  inBufferP->inOutStruct );
@@ -255,12 +255,12 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
     i =  parseMultiStr( buf, strArray );
     free( buf );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     outStrArrayP->inOutStruct = ( void * ) strArray;
     outStrArrayP->type = ( char * ) strdup( StrArray_MS_T );
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -317,7 +317,7 @@ int msiStrArray2String( msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t 
     outStr->inOutStruct = ( void * ) strdup( s );
     outStr->type = ( char * ) strdup( STR_MS_T );
     free( s );
-    return( 0 );
+    return 0;
 }
 
 
@@ -367,7 +367,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     /* Sanity checks */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiAddKeyVal: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
@@ -376,7 +376,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     /* Parse key */
     if ( ( key_str = parseMspForStr( key ) ) == NULL ) {
         rodsLog( LOG_ERROR, "msiAddKeyVal: input key is NULL." );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     /* Parse value */
@@ -385,7 +385,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     /* Check for wrong parameter type */
     if ( inKeyValPair->type && strcmp( inKeyValPair->type, KeyValPair_MS_T ) ) {
         rodsLog( LOG_ERROR, "msiAddKeyVal: inKeyValPair is not of type KeyValPair_MS_T." );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     /* Parse inKeyValPair. Create new one if empty. */
@@ -407,7 +407,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     rei->status = addKeyVal( ( keyValPair_t* )inKeyValPair->inOutStruct, key_str, value_str );
 
     /* Done */
-    return ( rei->status );
+    return rei->status;
 }
 
 

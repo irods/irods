@@ -84,6 +84,6 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
     }
 
 
-    return ( status );
+    return status;
 }
 

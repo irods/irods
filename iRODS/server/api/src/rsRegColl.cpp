@@ -27,7 +27,7 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
                          dataObjInp.objPath );
                 //if (rodsObjStatOut != NULL)  // JMC cppcheck null ptr ref
                 freeRodsObjStat( rodsObjStatOut );
-                return ( SYS_REG_OBJ_IN_SPEC_COLL );
+                return SYS_REG_OBJ_IN_SPEC_COLL;
             }
         }
         freeRodsObjStat( rodsObjStatOut );
@@ -36,7 +36,7 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, regCollInp->collName,
                                  &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -49,7 +49,7 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
         status = rcRegColl( rodsServerHost->conn, regCollInp );
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -87,8 +87,8 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
     status = chlRegColl( rsComm, &collInfo );
     clearKeyVal( &collInfo.condInput );
-    return ( status );
+    return status;
 #else
-    return ( SYS_NO_RCAT_SERVER_ERR );
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }

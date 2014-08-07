@@ -84,25 +84,25 @@ extern "C" {
         if ( inRequestPath ==  NULL ||
                 strcmp( inRequestPath->type , STR_MS_T ) != 0 ||
                 inRequestPath->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileMode ==  NULL ||
                 strcmp( inFileMode->type , STR_MS_T ) != 0 ||
                 inFileMode->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inFileFlags ==  NULL ||
                 strcmp( inFileFlags->type , STR_MS_T ) != 0 ||
                 inFileFlags->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         if ( inCacheFilename ==  NULL ||
                 strcmp( inCacheFilename->type , STR_MS_T ) != 0 ||
                 inCacheFilename->inOutStruct == NULL ) {
-            return( USER_PARAM_TYPE_ERR );
+            return USER_PARAM_TYPE_ERR;
         }
 
         /*  coerce input to local variables */
@@ -112,7 +112,7 @@ extern "C" {
         }
         else {
             free( str );
-            return( USER_INPUT_FORMAT_ERR );
+            return USER_INPUT_FORMAT_ERR;
         }
 
 
@@ -133,7 +133,7 @@ extern "C" {
         objFD = rsDataObjOpen( rsComm, &dataObjInp );
         if ( objFD < 0 ) {
             printf( "msigetobj_slink: Unable to open file %s:%i\n", dataObjInp.objPath, objFD );
-            return( objFD );
+            return objFD;
         }
 
         destFd = open( cacheFilename, O_WRONLY | O_CREAT | O_TRUNC, mode );
@@ -168,7 +168,7 @@ extern "C" {
         close( destFd );
         i = rsDataObjClose( rsComm, &dataObjCloseInp );
 
-        return( i );
+        return i;
 
     }
 

@@ -50,7 +50,7 @@ printCommandSummary() {
         Step (step/skip throuh a  rule in verbose mode)
         [C]continue X ([C]continue for X steps and stop)
     */
-    return( 0 );
+    return 0;
 }
 
 void  printIdbugHelp( char *cmd ) {
@@ -71,7 +71,7 @@ int connectToX() {
     int sleepSec = 1;
 
     if ( conn != NULL ) {
-        return( 0 );
+        return 0;
     }
 
     status = getRodsEnv( &myRodsEnv );
@@ -103,7 +103,7 @@ int connectToX() {
             continue;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int sendIDebugCommand( char *buf, char *hdr ) {
@@ -140,7 +140,7 @@ int sendIDebugCommand( char *buf, char *hdr ) {
         if ( status < 0 ) {
             fprintf( stderr, "rsSendXmsg error for %i. status = %d\n",
                      streamId, status );
-            return( status );
+            return status;
         }
         mNum++;
     }
@@ -151,7 +151,7 @@ int sendIDebugCommand( char *buf, char *hdr ) {
         if ( status < 0 ) {
             fprintf( stderr, "rsSendXmsg error for %i. status = %d\n",
                      streamId, status );
-            return( status );
+            return status;
         }
         mNum++;
     }
@@ -165,13 +165,13 @@ int sendIDebugCommand( char *buf, char *hdr ) {
                 if ( status < 0 ) {
                     fprintf( stderr, "rsSendXmsg error for %i. status = %d\n",
                              streamId, status );
-                    return( status );
+                    return status;
                 }
                 mNum++;
             }
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int getIDebugReply( rcvXmsgInp_t *rcvXmsgInp, rcvXmsgOut_t **rcvXmsgOut, int waitFlag ) {
@@ -181,7 +181,7 @@ int getIDebugReply( rcvXmsgInp_t *rcvXmsgInp, rcvXmsgOut_t **rcvXmsgOut, int wai
     while ( 1 ) {
         status = rcRcvXmsg( conn, rcvXmsgInp, rcvXmsgOut );
         if ( status >= 0 || waitFlag == 0 ) {
-            return( status );
+            return status;
         }
         sleep( sleepNum );
         if ( sleepNum < 10 ) {
@@ -231,7 +231,7 @@ storeSendAddr( char *addr ) {
             }
         }
         else if ( strcmp( addr, sendAddr[i] ) == 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     if ( j < 0 ) {
@@ -242,7 +242,7 @@ storeSendAddr( char *addr ) {
         sendAddr[j] = strdup( addr );    /* filling holes */
     }
     /*  printf("+++added addr:%s:j=%i:sendAddrInx=%i\n",addr,j,sendAddrInx);*/
-    return( 0 );
+    return 0;
 }
 /***
 int
@@ -262,7 +262,7 @@ unstoreSendAddr(char *addr) {
   }
   if (j == 1)
     sendAddrInx--;
-  return(0);
+  return 0;
 }
 **/
 int
@@ -276,7 +276,7 @@ unstoreSendAddr( char *addr ) {
             break;
         }
     }
-    return( 0 );
+    return 0;
 }
 
 int processUserInput( char *buf ) {
@@ -290,7 +290,7 @@ int processUserInput( char *buf ) {
     /*
     if (localStatus == 1 && c != 'q') {
       printf("Waiting on iRODS. User input ignored: %s\n", buf);
-      return(0);
+      return 0;
     }
     */
     if ( ( t = strstr( buf, " for " ) ) != NULL ) {
@@ -311,7 +311,7 @@ int processUserInput( char *buf ) {
             }
             else {
                 printf( "Wrong Server: No server found for %s\n", t );
-                return( 0 );
+                return 0;
             }
         }
     }
@@ -370,7 +370,7 @@ int processUserInput( char *buf ) {
         fprintf( stderr, "Error: Unknown Option\n" );
         break;
     }
-    return( 0 );
+    return 0;
 
 }
 

@@ -388,10 +388,10 @@ showTickets1( char *inOption, char *inName ) {
         genQueryInp.selectInp.len = 1;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
-            return( 0 );
+            return 0;
         }
     }
 
@@ -407,7 +407,7 @@ showTickets1( char *inOption, char *inName ) {
                                  columnNames, 0, 1 );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 void
@@ -482,7 +482,7 @@ doTicketOp( char *arg1, char *arg2, char *arg3, char *arg4, char *arg5 ) {
         rodsLog( LOG_ERROR, "rcTicketAdmin failed with error %d %s %s",
                  status, myName, mySubName );
     }
-    return( status );
+    return status;
 }
 
 void
@@ -613,11 +613,11 @@ doCommand( char *cmdToken[] ) {
     if ( strcmp( cmdToken[0], "help" ) == 0 ||
             strcmp( cmdToken[0], "h" ) == 0 ) {
         usage( cmdToken[1] );
-        return( 0 );
+        return 0;
     }
     if ( strcmp( cmdToken[0], "quit" ) == 0 ||
             strcmp( cmdToken[0], "q" ) == 0 ) {
-        return( -1 );
+        return -1;
     }
 
     if ( strcmp( cmdToken[0], "create" ) == 0
@@ -635,39 +635,39 @@ doCommand( char *cmdToken[] ) {
         makeFullPath( cmdToken[2], &fullPath );
         doTicketOp( "create", myTicket, cmdToken[1], fullPath,
                     cmdToken[3] );
-        return( 0 );
+        return 0;
     }
 
 
     if ( strcmp( cmdToken[0], "delete" ) == 0 ) {
         doTicketOp( "delete", cmdToken[1], cmdToken[2],
                     cmdToken[3], cmdToken[4] );
-        return( 0 );
+        return 0;
     }
 
 
     if ( strcmp( cmdToken[0], "mod" ) == 0 ) {
         doTicketOp( "mod", cmdToken[1], cmdToken[2],
                     cmdToken[3], cmdToken[4] );
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
         showTickets( cmdToken[1] );
-        return( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "ls-all" ) == 0 ) {
         printf( "Listing all of your tickets, even those for which the target collection\nor data-object no longer exists:\n" );
         showTickets1( "basic", "" );
-        return( 0 );
+        return 0;
     }
 
     if ( *cmdToken[0] != '\0' ) {
         printf( "unrecognized command, try 'help'\n" );
-        return( -2 );
+        return -2;
     }
-    return( -3 );
+    return -3;
 }
 
 int
@@ -927,7 +927,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -975,7 +975,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -989,7 +989,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1005,7 +1005,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1020,7 +1020,7 @@ usage( char *subOpt ) {
             };
             for ( i = 0;; i++ ) {
                 if ( strlen( msgs[i] ) == 0 ) {
-                    return( 0 );
+                    return 0;
                 }
                 printf( "%s\n", msgs[i] );
             }
@@ -1028,5 +1028,5 @@ usage( char *subOpt ) {
         printf( "Sorry, either %s is an invalid command or the help has not been written yet\n",
                 subOpt );
     }
-    return( 0 );
+    return 0;
 }

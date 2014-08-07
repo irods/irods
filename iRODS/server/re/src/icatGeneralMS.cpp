@@ -382,7 +382,7 @@ msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t
         getLocalTimeFromRodsTime( tStr0, tStr );
     }
     i = fillStrInMsParam( timeOutParam, tStr );
-    return( i );
+    return i;
 }
 
 /**
@@ -435,7 +435,7 @@ msiVacuum( ruleExecInfo_t *rei ) {
 
     rodsLog( LOG_NOTICE, "msiVacuum done\n" );
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -482,7 +482,7 @@ msiQuota( ruleExecInfo_t *rei ) {
 #else
     status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return( status );
+    return status;
 }
 
 /**
@@ -529,7 +529,7 @@ int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
     }
 
     strcpy( rei->doi->rescName, rescName );
-    return( 0 );
+    return 0;
 }
 
 
@@ -572,10 +572,10 @@ int msiCheckOwner( ruleExecInfo_t *rei ) {
 
     if ( !strcmp( rei->doi->dataOwnerName, rei->uoic->userName ) &&
             !strcmp( rei->doi->dataOwnerZone, rei->uoic->rodsZone ) ) {
-        return( 0 );
+        return 0;
     }
     else {
-        return( ACTION_FAILED_ERR );
+        return ACTION_FAILED_ERR;
     }
 
 }
@@ -621,10 +621,10 @@ int msiCheckPermission( msParam_t* xperm, ruleExecInfo_t *rei ) {
         }
     }
     if ( strstr( rei->doi->dataAccess, perm ) != NULL ) {
-        return( 0 );
+        return 0;
     }
     else {
-        return( ACTION_FAILED_ERR );
+        return ACTION_FAILED_ERR;
     }
 
 }
@@ -675,21 +675,21 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
 
     if ( inObjName == NULL || inObjName->inOutStruct == NULL ||
             inObjName->type == NULL || strcmp( inObjName->type, STR_MS_T ) != 0 ) {
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     if ( inOperation == NULL || inOperation->inOutStruct == NULL ||
             inOperation->type == NULL || strcmp( inOperation->type, STR_MS_T ) != 0 ) {
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     if ( rei == NULL || rei->rsComm == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( strlen( rei->rsComm->clientUser.userName ) == 0 ||
             strlen( rei->rsComm->clientUser.rodsZone ) == 0 ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     oper = ( char * ) inOperation->inOutStruct;
@@ -699,7 +699,7 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
 
     i = getObjType( rei->rsComm, objName, objType );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
 
     i = checkPermissionByObjType( rei->rsComm, objName, objType, user, zone, oper );
@@ -709,11 +709,11 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
     }
 
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     fillIntInMsParam( outResult, i );
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -765,7 +765,7 @@ msiCommit( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiCommit\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -774,7 +774,7 @@ msiCommit( ruleExecInfo_t *rei ) {
 #else
     status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return( status );
+    return status;
 }
 
 /**
@@ -821,7 +821,7 @@ msiRollback( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiRollback\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -832,7 +832,7 @@ msiRollback( ruleExecInfo_t *rei ) {
 #else
     status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return( status );
+    return status;
 }
 
 /**
@@ -896,7 +896,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
             pathName == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: one of the input parameter is NULL" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     recFlg = 0; /* non recursive mode */
@@ -911,7 +911,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: Unsupported input recursiveFlag type %i",
                             recursiveFlag->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     if ( strcmp( accessLevel->type, STR_MS_T ) == 0 ) {
@@ -921,7 +921,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: Unsupported input accessLevel type %s",
                             accessLevel->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     if ( strcmp( userName->type, STR_MS_T ) == 0 ) {
@@ -931,7 +931,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: Unsupported input userName type %s",
                             userName->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     if ( strcmp( pathName->type, STR_MS_T ) == 0 ) {
@@ -941,7 +941,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: Unsupported input pathName type %s",
                             pathName->type );
-        return ( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 
     rsComm = rei->rsComm;
@@ -964,7 +964,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
         rodsLog( LOG_NOTICE, "msiSetACL: ACL modifications has failed for user %s on object %s, error = %i\n", user, path, rc );
     }
 
-    return ( rc );
+    return rc;
 }
 
 /**
@@ -1009,7 +1009,7 @@ msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
             rodsLog( LOG_NOTICE, "   Calling msiDeleteUnusedAVUs\n" );
         }
         if ( reLoopBackFlag > 0 ) {
-            return( 0 );
+            return 0;
         }
     }
     /**** This is Just a Test Stub  ****/
@@ -1020,5 +1020,5 @@ msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
 #else
     status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return( status );
+    return status;
 }

@@ -51,14 +51,14 @@ irods_connect_() {
                  errMsg.status,
                  errMsg.msg );
         status = errMsg.status;
-        return( status );
+        return status;
     }
 
     status = clientLogin( Comm );
     if ( status == 0 ) {
         setupFlag = 1;
     }
-    return( status );
+    return status;
 }
 
 int irods_file_open_( char *filename, char *mode ) {
@@ -89,7 +89,7 @@ int irods_file_open_( char *filename, char *mode ) {
     if ( setupFlag == 0 ) {
         status = irods_connect_();
         if ( status ) {
-            return( -1 );
+            return -1;
         }
     }
 
@@ -98,7 +98,7 @@ int irods_file_open_( char *filename, char *mode ) {
                                dataObjInp.objPath );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irods_file_open" );
-        return( -1 );
+        return -1;
     }
 
     /* Set the openFlags based on the input mode (incomplete
@@ -117,9 +117,9 @@ int irods_file_open_( char *filename, char *mode ) {
     }
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irods_file_open" );
-        return( -1 );
+        return -1;
     }
-    return( status );
+    return status;
 }
 
 int irods_file_create_( char *filename ) {
@@ -150,7 +150,7 @@ int irods_file_create_( char *filename ) {
     if ( setupFlag == 0 ) {
         status = irods_connect_();
         if ( status ) {
-            return( -1 );
+            return -1;
         }
     }
 
@@ -159,7 +159,7 @@ int irods_file_create_( char *filename ) {
                                dataObjInp.objPath );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irods_file_create" );
-        return( -1 );
+        return -1;
     }
 
     dataObjInp.openFlags = O_RDWR;
@@ -169,9 +169,9 @@ int irods_file_create_( char *filename ) {
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irods_file_open" );
-        return( -1 );
+        return -1;
     }
-    return( status );
+    return status;
 }
 
 int irods_file_close_( int *fd ) {
@@ -187,7 +187,7 @@ int irods_file_close_( int *fd ) {
 
     status = rcDataObjClose( Comm, &dataObjCloseInp );
 
-    return( status );
+    return status;
 }
 
 int
@@ -216,7 +216,7 @@ irods_file_read_( int *fd, void *buffer, int *size ) {
         printf( "irods_file_read_ rcDataObjRead stat: %d\n", status );
     }
 
-    return( status );
+    return status;
 }
 
 int
@@ -245,7 +245,7 @@ irods_file_write_( int *fd, void *buffer, int *size ) {
         printf( "irods_file_write_ rcDataObjWrite stat: %d\n", status );
     }
 
-    return( status );
+    return status;
 }
 
 int
@@ -275,7 +275,7 @@ irods_file_seek_( int *fd, long *offset, char *whence ) {
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irods_file_seek_" );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -288,5 +288,5 @@ irods_disconnect_() {
     if ( setupFlag > 0 ) {
         status = rcDisconnect( Comm );
     }
-    return ( status );
+    return status;
 }

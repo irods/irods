@@ -16,7 +16,7 @@ int
 trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     dataObjInp_t dataObjInp;
@@ -54,7 +54,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog( LOG_ERROR,
                      "trimUtil: invalid trim objType %d for %s",
                      rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -82,7 +82,7 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
                  "trimDataObjUtil: NULL srcPath input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
@@ -100,7 +100,7 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -111,13 +111,13 @@ initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForTrim: NULL dataObjInp input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
     if ( rodsArgs == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( rodsArgs->number == True ) {
@@ -148,7 +148,7 @@ initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, DRYRUN_KW, "" );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -163,14 +163,14 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     if ( srcColl == NULL ) {
         rodsLog( LOG_ERROR,
                  "trimCollUtil: NULL srcColl input" );
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
                  "trimCollUtil: -r option must be used for getting %s collection",
                  srcColl );
-        return ( USER_INPUT_OPTION_ERR );
+        return USER_INPUT_OPTION_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
@@ -223,20 +223,20 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             status = trimCollUtil( conn, collEnt.collName, myRodsEnv,
                                    rodsArgs, &childDataObjInp );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                return ( status );
+                return status;
             }
         }
     }
     rclCloseCollection( &collHandle );
 
     if ( savedStatus < 0 ) {
-        return ( savedStatus );
+        return savedStatus;
     }
     else if ( status == CAT_NO_ROWS_FOUND ) {
-        return ( 0 );
+        return 0;
     }
     else {
-        return ( status );
+        return status;
     }
 }
 

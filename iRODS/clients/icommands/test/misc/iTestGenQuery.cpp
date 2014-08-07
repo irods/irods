@@ -37,7 +37,7 @@ printGenQOut( genQueryOut_t *genQueryOut ) {
         }
         printf( "genQueryOut->continueInx=%d\n", genQueryOut->continueInx );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -93,7 +93,7 @@ doTest1( rcComm_t *Conn,
         printGenQOut( genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -152,7 +152,7 @@ doTest2( rcComm_t *Conn,
         printGenQOut( genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -207,7 +207,7 @@ doTest3( rcComm_t *Conn,
         printGenQOut( genQueryOut );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int
@@ -252,7 +252,7 @@ doTest4( rcComm_t *Conn,
 
     }
 
-    return( 0 );
+    return 0;
 }
 
 /*
@@ -316,7 +316,7 @@ doTest5( rcComm_t *Conn,
             printf( "close out rcGenQuery status=%d\n", status );
         }
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -356,7 +356,7 @@ chkObjExist( rcComm_t *conn, char *inpPath, char *hostname ) {
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -380,7 +380,7 @@ doTest6( rcComm_t *Conn,
             break;
         }
     }
-    return( status );
+    return status;
 }
 
 int
@@ -431,7 +431,7 @@ doTest7( rcComm_t *Conn,
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return ( status );
+    return status;
 }
 
 

@@ -104,7 +104,7 @@ printNice( char *inArg, int minLen, char *Units ) {
         printf( "%s (%s %s) %s", niceString,
                 firstPart, numberName, Units );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -215,11 +215,11 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "None\n\n" );
-        return( 0 );
+        return 0;
     }
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
-        return( status );
+        return status;
     }
 
     if ( genQueryOut->rowCnt > 0 && printedTime == 0 ) {
@@ -287,7 +287,7 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
         }
         printf( "\n" );
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -355,11 +355,11 @@ showUserUsage( char *userName, char *usersZone ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "No records found, run 'iadmin cu' to calculate usage\n" );
-        return( 0 );
+        return 0;
     }
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
-        return( status );
+        return status;
     }
 
     printf( "%s\n", header );
@@ -408,7 +408,7 @@ showUserUsage( char *userName, char *usersZone ) {
             getLocalTimeFromRodsTime( tResult, quotaTime );
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 /*
@@ -462,11 +462,11 @@ showUserGroupMembership( char *userNameIn, char *usersZone ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "Not a member of any group\n" );
-        return( 0 );
+        return 0;
     }
     if ( status != 0 ) {
         printError( Conn, status, "rcGenQuery" );
-        return( status );
+        return status;
     }
 
     printCount = 0;
@@ -491,7 +491,7 @@ showUserGroupMembership( char *userNameIn, char *usersZone ) {
         }
     }
     printf( "\n" );
-    return ( 0 );
+    return 0;
 }
 
 

@@ -11,5 +11,5 @@ rcDataCopy( rcComm_t *conn, dataCopyInp_t *dataCopyInp ) {
     status = procApiRequest( conn, DATA_COPY_AN, dataCopyInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

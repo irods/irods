@@ -154,7 +154,7 @@ xmsgServerMain() {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "xmsgServerMain: initAgent error. status = %d",
                  status );
-        return ( status );
+        return status;
     }
 
 
@@ -221,7 +221,7 @@ xmsgServerMain() {
             else {
                 rodsLog( LOG_NOTICE, "xmsgServerMain: select() error, errno = %d",
                          errno );
-                return ( -1 );
+                return -1;
             }
         }
 
@@ -238,7 +238,7 @@ xmsgServerMain() {
         if ( loopCnt > 0 ) {
             loopCnt--;
             if ( loopCnt == 0 ) {
-                return( 0 );
+                return 0;
             }
         }
 

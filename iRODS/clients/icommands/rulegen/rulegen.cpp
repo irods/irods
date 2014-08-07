@@ -18,35 +18,35 @@ char cutstr[10];
 char nopstr[10];
 char *pop_stack( char *stack[] ) {
     if ( stack_top == 0 ) {
-        return( NULL );
+        return NULL;
     }
     stack_top--;
     if ( yydebug == 1 ) {
         printf( "SSS:Pop %i:%s\n", stack_top, stack[stack_top] );
     }
-    return( stack[stack_top] );
+    return stack[stack_top];
 }
 
 int push_stack( char *stack[], char *item ) {
     if ( stack_top == 100 ) {
-        return( -1 );
+        return -1;
     }
     stack[stack_top] = strdup( item );
     stack_top++;
     if ( yydebug == 1 ) {
         printf( "SSS:Push %i:%s\n", stack_top, item );
     }
-    return( stack_top );
+    return stack_top;
 }
 
 char *get_stack( char *stack[] ) {
     if ( stack_top == 0 ) {
-        return( NULL );
+        return NULL;
     }
     if ( yydebug == 1 ) {
         printf( "SSS:Get %i:%s\n", stack_top, stack[stack_top - 1] );
     }
-    return( stack[stack_top - 1] );
+    return stack[stack_top - 1];
 }
 
 usage( char *com ) {

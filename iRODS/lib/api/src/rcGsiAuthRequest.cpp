@@ -11,5 +11,5 @@ rcGsiAuthRequest( rcComm_t *conn, gsiAuthRequestOut_t **gsiAuthRequestOut ) {
     status = procApiRequest( conn, GSI_AUTH_REQUEST_AN, NULL, NULL,
                              ( void ** ) gsiAuthRequestOut, NULL );
 
-    return ( status );
+    return status;
 }

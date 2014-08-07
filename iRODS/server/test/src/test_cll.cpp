@@ -74,6 +74,6 @@ main( int argc, char **argv ) {
    the rule-engine is not needed in this ICAT test. */
 int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
-    return( 0 );
+    return 0;
 }
 

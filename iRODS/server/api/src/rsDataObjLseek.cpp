@@ -28,7 +28,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
         rodsLog( LOG_NOTICE,
                  "rsDataObjLseek: l1descInx %d out of range",
                  l1descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
     if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
         return BAD_INPUT_DESC_INDEX;
@@ -48,7 +48,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
         rodsLog( LOG_NOTICE,
                  "rsDataObjLseek: l3descInx %d out of range",
                  l3descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -94,7 +94,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
         }
     }
 
-    return ( status );
+    return status;
 }
 
 rodsLong_t
@@ -110,11 +110,11 @@ _l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
     fileLseekInp.whence = whence;
     status = rsFileLseek( rsComm, &fileLseekInp, &fileLseekOut );
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
     else {
         rodsLong_t off = fileLseekOut->offset;
         free( fileLseekOut );
-        return ( off );
+        return off;
     }
 }

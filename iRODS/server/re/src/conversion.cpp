@@ -135,7 +135,7 @@ int getCollectionSize( char *typ, void *inPtr, Region *r ) {
         return ( ( keyValPair_t * ) inPtr ) -> len;
     }
     else {
-        return( USER_PARAM_TYPE_ERR );
+        return USER_PARAM_TYPE_ERR;
     }
 }
 int convertMsParamToRes( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) {

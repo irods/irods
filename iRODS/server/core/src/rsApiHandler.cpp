@@ -61,7 +61,7 @@ int rsApiHandler(
         /* cannot use sendApiReply because it does not know apiInx */
         sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL, NULL, NULL,
                      apiInx, rsComm->irodsProt );
-        return ( apiInx );
+        return apiInx;
     }
 
     rsComm->apiInx = apiInx;
@@ -69,7 +69,7 @@ int rsApiHandler(
     status = chkApiVersion( rsComm, apiInx );
     if ( status < 0 ) {
         sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
-        return ( status );
+        return status;
     }
 
     status = chkApiPermission( rsComm, apiInx );
@@ -77,7 +77,7 @@ int rsApiHandler(
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: User has no permission for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
-        return ( status );
+        return status;
     }
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
@@ -88,7 +88,7 @@ int rsApiHandler(
                  "rsApiHandler: input struct error 1 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
                       &myOutBsBBuf );
-        return ( SYS_API_INPUT_ERR );
+        return SYS_API_INPUT_ERR;
     }
 
     if ( inputStructBBuf->len <= 0 && RsApiTable[apiInx]->inPackInstruct != NULL ) {
@@ -96,7 +96,7 @@ int rsApiHandler(
                  "rsApiHandler: input struct error 2 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
                       &myOutBsBBuf );
-        return ( SYS_API_INPUT_ERR );
+        return SYS_API_INPUT_ERR;
     }
 
     if ( bsBBuf->len > 0 && RsApiTable[apiInx]->inBsFlag <= 0 ) {
@@ -104,7 +104,7 @@ int rsApiHandler(
                  "rsApiHandler: input byte stream error for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
                       &myOutBsBBuf );
-        return ( SYS_API_INPUT_ERR );
+        return SYS_API_INPUT_ERR;
     }
 
     if ( inputStructBBuf->len > 0 ) {
@@ -116,7 +116,7 @@ int rsApiHandler(
                      apiNumber, status );
             sendApiReply( rsComm, apiInx, status, myOutStruct,
                           &myOutBsBBuf );
-            return ( status );
+            return status;
         }
     }
 
@@ -187,10 +187,10 @@ int rsApiHandler(
     }
 
     if ( retVal >= 0 && status < 0 ) {
-        return ( status );
+        return status;
     }
     else {
-        return ( retVal );
+        return retVal;
     }
 }
 
@@ -216,7 +216,7 @@ sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status,
         rsComm->portalOpr = NULL;
     }
 
-    return ( retval );
+    return retval;
 }
 
 int
@@ -330,7 +330,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     freeBBuf( outStructBBuf );
     freeBBuf( rErrorBBuf );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -343,10 +343,10 @@ chkApiVersion( rsComm_t * rsComm, int apiInx ) {
             rodsLog( LOG_ERROR,
                      "chkApiVersion:Client's API Version %s does not match Server's %s",
                      cliApiVersion, RsApiTable[apiInx]->apiVersion );
-            return ( USER_API_VERSION_MISMATCH );
+            return USER_API_VERSION_MISMATCH;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -367,32 +367,32 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
             rodsLog( LOG_ERROR,
                      "chkApiPermission: xmsgServer not allowed to handle api %d",
                      RsApiTable[apiInx]->apiNumber );
-            return ( SYS_NO_API_PRIV );
+            return SYS_NO_API_PRIV;
         }
     }
     else if ( xmsgSvrOnly != 0 ) {
         rodsLog( LOG_ERROR,
                  "chkApiPermission: non xmsgServer not allowed to handle api %d",
                  RsApiTable[apiInx]->apiNumber );
-        return ( SYS_NO_API_PRIV );
+        return SYS_NO_API_PRIV;
     }
 
     if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
             && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
-        return ( 0 );
+        return 0;
     }
 
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 
     if ( clientUserAuth > rsComm->clientUser.authInfo.authFlag ) {
-        return ( SYS_NO_API_PRIV );
+        return SYS_NO_API_PRIV;
     }
 
     proxyUserAuth = RsApiTable[apiInx]->proxyUserAuth & 0xfff;
     if ( proxyUserAuth > rsComm->proxyUser.authInfo.authFlag ) {
-        return ( SYS_NO_API_PRIV );
+        return SYS_NO_API_PRIV;
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -401,7 +401,7 @@ handlePortalOpr( rsComm_t * rsComm ) {
     int status;
 
     if ( rsComm == NULL || rsComm->portalOpr == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     oprType = rsComm->portalOpr->oprType;
@@ -417,7 +417,7 @@ handlePortalOpr( rsComm_t * rsComm ) {
         status = SYS_INVALID_PORTAL_OPR;
         break;
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -495,12 +495,12 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
             ret = readMsgHeader( net_obj, &myHeader, NULL );
             if ( !ret.ok() ) {
                 svrChkReconnAtReadEnd( rsComm );
-                return ( savedStatus );
+                return savedStatus;
             }
         }
         else {
             svrChkReconnAtReadEnd( rsComm );
-            return( ret.code() );
+            return ret.code();
         }
     } // if !ret.ok()
 
@@ -517,7 +517,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         svrChkReconnAtReadEnd( rsComm );
-        return ( ret.code() );
+        return ret.code();
     }
 
     svrChkReconnAtReadEnd( rsComm );
@@ -537,17 +537,17 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         clearBBuf( &errorBBuf );
 
         if ( ( flags & RET_API_STATUS ) != 0 ) {
-            return ( status );
+            return status;
         }
         else {
-            return ( 0 );
+            return 0;
         }
     }
     else if ( strcmp( myHeader.type, RODS_DISCONNECT_T ) == 0 ) {
         rodsLog( LOG_NOTICE,
                  "readAndProcClientMsg: received disconnect msg from client" );
 
-        return ( DISCONN_STATUS );
+        return DISCONN_STATUS;
     }
     else if ( strcmp( myHeader.type, RODS_RECONNECT_T ) == 0 ) {
         rodsLog( LOG_NOTICE,
@@ -560,7 +560,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         rodsLog( LOG_NOTICE,
                  "agentMain: msg type %s not support by server",
                  myHeader.type );
-        return ( USER_MSG_TYPE_NO_SUPPORT );
+        return USER_MSG_TYPE_NO_SUPPORT;
     }
 }
 
@@ -591,7 +591,7 @@ sendAndRecvBranchMsg( rsComm_t * rsComm, int apiInx, int status,
         rodsLog( LOG_ERROR,
                  "sendAndRecvBranchMsg: sendAndProcApiReply error. status = %d", retval );
         rsComm->apiInx = savedApiInx;
-        return ( retval );
+        return retval;
     }
 
     while ( 1 )  {
@@ -606,7 +606,7 @@ sendAndRecvBranchMsg( rsComm_t * rsComm, int apiInx, int status,
                 return 0;
             }
             else {
-                return ( retval );
+                return retval;
             }
         }
     }
@@ -622,10 +622,10 @@ svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
         rodsLog( LOG_ERROR,
                  "svrSendCollOprStat: client reply %d != %d.",
                  status, SYS_CLI_TO_SVR_COLL_STAT_REPLY );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else {
-        return ( 0 );
+        return 0;
     }
 }
 
@@ -650,7 +650,7 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
         rodsLogError( LOG_ERROR, status,
                       "svrSendCollOprStat: read handshake failed. status = %d", status );
     }
-    return ( ntohl( myBuf ) );
+    return ntohl( myBuf );
 }
 
 int
@@ -669,7 +669,7 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
             break;
         }
     }
-    return ( status );
+    return status;
 }
 
 void

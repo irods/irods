@@ -9,5 +9,5 @@ rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp ) {
     status = procApiRequest( conn, GENERAL_UPDATE_AN, generalUpdateInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

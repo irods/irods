@@ -60,7 +60,7 @@ applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf,
     }
     clearMsParamArray( &msParamArray, 0 );
 
-    return( 0 );
+    return 0;
 
 }
 
@@ -76,7 +76,7 @@ int rsDataObjWrite(
             LOG_NOTICE,
             "rsDataObjWrite: l1descInx %d out of range",
             l1descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
@@ -99,7 +99,7 @@ int rsDataObjWrite(
                     dataObjWriteInpBBuf,
                     L1desc[l1descInx].dataObjInfo->objPath );
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
 
         // =-=-=-=-=-=-=-
@@ -134,7 +134,7 @@ int rsDataObjWrite(
                            dataObjWriteInpBBuf );
     }
 
-    return ( bytesWritten );
+    return bytesWritten;
 }
 
 int
@@ -174,7 +174,7 @@ l3Write( rsComm_t *rsComm, int l1descInx, int len,
             L1desc[l1descInx].bytesWritten += bytesWritten;
         }
     }
-    return ( bytesWritten );
+    return bytesWritten;
 }
 
 int
@@ -191,5 +191,5 @@ _l3Write( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
     fileWriteInp.len = len;
     bytesWritten = rsFileWrite( rsComm, &fileWriteInp,
                                 &dataObjWriteInpBBuf );
-    return ( bytesWritten );
+    return bytesWritten;
 }

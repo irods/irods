@@ -71,14 +71,14 @@ chkLogfileName( char *logDir, char *logFileName ) {
     myTime = time( 0 );
     if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
         /* not time yet */
-        return ( 0 );
+        return 0;
     }
 
     getLogfileName( &logFile, logDir, logFileName );
 
     if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
         free( logFile );
-        return ( 0 );
+        return 0;
     }
 
     /* open the logfile */
@@ -86,7 +86,7 @@ chkLogfileName( char *logDir, char *logFileName ) {
     if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
         fprintf( stderr, "Unable to open logFile %s\n", logFile );
         free( logFile );
-        return ( -1 );
+        return -1;
     }
     else {
         lseek( i, 0, SEEK_END );
@@ -106,7 +106,7 @@ chkLogfileName( char *logDir, char *logFileName ) {
     ( void ) dup2( i, 2 );
     ( void ) close( i );
 
-    return ( 0 );
+    return 0;
 }
 
 #endif

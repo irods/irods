@@ -10,5 +10,5 @@ rcGetRescQuota( rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp,
     status = procApiRequest( conn, GET_RESC_QUOTA_AN,  getRescQuotaInp, NULL,
                              ( void ** ) rescQuota, NULL );
 
-    return ( status );
+    return status;
 }

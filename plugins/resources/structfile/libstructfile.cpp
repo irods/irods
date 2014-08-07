@@ -581,11 +581,11 @@ extern "C" {
         for ( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
             if ( PluginStructFileDesc[i].inuseFlag == FD_FREE ) {
                 PluginStructFileDesc[i].inuseFlag = FD_INUSE;
-                return ( i );
+                return i;
             };
         } // for i
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
 
     } // alloc_struct_file_desc
 
@@ -593,12 +593,12 @@ extern "C" {
         if ( _idx  < 0 || _idx  >= NUM_STRUCT_FILE_DESC ) {
             rodsLog( LOG_NOTICE,
                      "free_struct_file_desc: index %d out of range", _idx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         memset( &PluginStructFileDesc[ _idx ], 0, sizeof( structFileDesc_t ) );
 
-        return ( 0 );
+        return 0;
 
     } // free_struct_file_desc
 
@@ -611,11 +611,11 @@ extern "C" {
                     PluginStructFileDesc[i].specColl  != NULL     &&
                     strcmp( PluginStructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
                     strcmp( PluginStructFileDesc[i].specColl->objPath,    _spec_coll->objPath ) == 0 ) {
-                return ( i );
+                return i;
             };
         } // for
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
 
     } // match_struct_file_desc
 
@@ -771,14 +771,14 @@ extern "C" {
         for ( int i = 1; i < NUM_TAR_SUB_FILE_DESC; i++ ) {
             if ( PluginTarSubFileDesc[i].inuseFlag == FD_FREE ) {
                 PluginTarSubFileDesc[i].inuseFlag = FD_INUSE;
-                return ( i );
+                return i;
             };
         }
 
         rodsLog( LOG_NOTICE,
                  "alloc_tar_sub_file_desc: out of PluginTarSubFileDesc" );
 
-        return ( SYS_OUT_OF_FILE_DESC );
+        return SYS_OUT_OF_FILE_DESC;
 
     } // alloc_tar_sub_file_desc
 
@@ -788,12 +788,12 @@ extern "C" {
         if ( _idx < 0 || _idx >= NUM_TAR_SUB_FILE_DESC ) {
             rodsLog( LOG_NOTICE,
                      "free_tar_sub_file_desc: index %d out of range", _idx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         memset( &PluginTarSubFileDesc[ _idx ], 0, sizeof( tarSubFileDesc_t ) );
 
-        return ( 0 );
+        return 0;
     }
 
     // =-=-=-=-=-=-=-

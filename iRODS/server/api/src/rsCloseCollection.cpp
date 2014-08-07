@@ -19,10 +19,10 @@ rsCloseCollection( rsComm_t *rsComm, int *handleInxInp ) {
         rodsLog( LOG_NOTICE,
                  "rsCloseCollection: handleInx %d out of range",
                  handleInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     status = freeCollHandle( handleInx );
 
-    return ( status );
+    return status;
 }

@@ -55,7 +55,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
             }
         }
     }
-    return( printCount );
+    return printCount;
 }
 
 /*
@@ -113,11 +113,11 @@ showUser( char *name ) {
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
         if ( status == 0 ) {
             printf( "None\n" );
-            return( 0 );
+            return 0;
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             printf( "User %s does not exist.\n", name );
-            return( 0 );
+            return 0;
         }
     }
 
@@ -178,7 +178,7 @@ showUser( char *name ) {
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
         printf( "Not a member of any group\n" );
-        return( 0 );
+        return 0;
     }
     printCount += printGenQueryResults( Conn, status, genQueryOut, columnNames2 );
 
@@ -189,7 +189,7 @@ showUser( char *name ) {
                                             columnNames2 );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int

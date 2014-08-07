@@ -26,7 +26,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                  newModAccessControlInp.path, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -45,7 +45,7 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
         rodsLog( LOG_NOTICE,
                  "rsModAccessControl: rcModAccessControl failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -111,6 +111,6 @@ _rsModAccessControl( rsComm_t *rsComm,
         }
     }
 
-    return( status );
+    return status;
 }
 #endif

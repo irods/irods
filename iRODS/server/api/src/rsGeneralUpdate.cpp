@@ -16,7 +16,7 @@ rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -35,7 +35,7 @@ rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
         rodsLog( LOG_NOTICE,
                  "rsGeneralUpdate: rcGeneralUpdate failed" );
     }
-    return ( status );
+    return status;
 }
 
 #ifdef RODS_CAT
@@ -45,6 +45,6 @@ _rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
 
     status  = chlGeneralUpdate( *generalUpdateInp );
 
-    return( status );
+    return status;
 }
 #endif

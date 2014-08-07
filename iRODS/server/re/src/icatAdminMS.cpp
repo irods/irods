@@ -64,7 +64,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
         if ( reLoopBackFlag > 0 ) {
             rodsLog( LOG_NOTICE,
                      "   Test mode, returning without performing normal operations (chlRegUserRE)" );
-            return ( 0 );
+            return 0;
         }
     }
     /**** End of Test Stub  ****/
@@ -74,7 +74,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
 #else
     i =  SYS_NO_ICAT_SERVER_ERR;
 #endif
-    return ( i );
+    return i;
 }
 
 /**
@@ -133,7 +133,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         if ( reLoopBackFlag > 0 ) {
             rodsLog( LOG_NOTICE,
                      "   Test mode, returning without performing normal operations (chlRegCollByAdmin)" );
-            return ( 0 );
+            return 0;
         }
     }
     /**** End of Test Stub  ****/
@@ -151,7 +151,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
 #else
     i =  SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return ( i );
+    return i;
 }
 
 /**
@@ -209,7 +209,7 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         }
         rodsLog( LOG_NOTICE,
                  "   Test mode, returning without performing normal operations (chlDelCollByAdmin)" );
-        return ( 0 );
+        return 0;
     }
     /**** End of Test Stub  ****/
 
@@ -230,9 +230,9 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
            or here; but for now it's here.  */
         /* If the error is that it does not exist, return OK. */
         freeRErrorContent( &rei->rsComm->rError ); /* remove suberrors if any */
-        return ( 0 );
+        return 0;
     }
-    return ( i );
+    return i;
 }
 
 /**
@@ -282,7 +282,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
         }
         rodsLog( LOG_NOTICE,
                  "   Test mode, returning without performing normal operations (chlDelUserRE)" );
-        return ( 0 );
+        return 0;
     }
     /**** End of Test Stub  ****/
 
@@ -291,7 +291,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
 #else
     i = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return ( i );
+    return i;
 }
 
 /**
@@ -344,11 +344,11 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
         }
         rodsLog( LOG_NOTICE,
                  "   Test mode, returning without performing normal operations (chlModGroup)" );
-        return ( 0 );
+        return 0;
     }
 #ifdef RODS_CAT
     if ( strncmp( rei->uoio->userType, "rodsgroup", 9 ) == 0 ) {
-        return ( 0 );
+        return 0;
     }
     groupName = ( char * ) msParam->inOutStruct;
     i =  chlModGroup( rei->rsComm, groupName, "add", rei->uoio->userName,
@@ -356,7 +356,7 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
 #else
     i = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return ( i );
+    return i;
 }
 
 /**
@@ -407,7 +407,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
 #else
     status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return ( status );
+    return status;
 }
 
 /**
@@ -458,7 +458,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
 #else
     status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    return ( status );
+    return status;
 }
 
 /**
@@ -516,7 +516,7 @@ msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei ) {
         chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
 #endif
     }
-    return ( 0 );
+    return 0;
 }
 
 
@@ -573,7 +573,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     /* Sanity checks */
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR, "msiSetQuota: input rei or rsComm is NULL." );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
@@ -582,7 +582,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
         status = CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         rodsLog( LOG_ERROR, "msiSetQuota: User %s is not local admin. Status = %d",
                  rei->uoic->userName, status );
-        return ( status );
+        return status;
     }
 
 
@@ -610,7 +610,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
         status = USER_BAD_KEYWORD_ERR;
         rodsLog( LOG_ERROR, "msiSetQuota: Invalid user type: %s. Valid types are \"user\" and \"group\"",
                  generalAdminInp.arg1 );
-        return ( status );
+        return status;
     }
 
     /* Parse user/group name */
@@ -639,7 +639,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     else {
         status = USER_PARAM_TYPE_ERR;
         rodsLog( LOG_ERROR, "msiSetQuota: Invalid type for param value. Status = %d", status );
-        return ( status );
+        return status;
     }
 
     /* Fill up the rest of generalAdminInp */

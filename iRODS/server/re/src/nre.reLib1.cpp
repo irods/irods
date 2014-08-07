@@ -38,7 +38,7 @@ applyRuleArg( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
     int i;
 
     i = applyRuleArgPA( action , args,  argc, inMsParamArray, rei, reiSaveFlag );
-    return( i );
+    return i;
 }
 
 /*
@@ -67,7 +67,7 @@ applyRuleArgPA( const char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int a
         logErrMsg( &errmsgBuf, &rei->rsComm->rError );
     }
     freeRErrorContent( &errmsgBuf );
-    return( i );
+    return i;
 
 }
 
@@ -309,7 +309,7 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, char *ou
         param.ruleIndex = -1;
         reDebug( EXEC_MY_RULE_END, -1, &param, NULL, NULL, rei );
     }
-    return( status );
+    return status;
 }
 
 int
@@ -330,7 +330,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
       if (i == 0)*/
     i = readRuleStructFromFile( processType, irbSet, &coreRuleStrct );
     if ( i < 0 ) {
-        return( i );
+        return i;
     }
     /* read logging settings */
     if ( svrComm != NULL ) { /* if this is not a process started by a client, then we used the default logging setting */
@@ -348,7 +348,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
             i = readDVarStructFromFile( r1, &coreRuleVarDef );
         }
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
         strcpy( r2, r3 );
     }
@@ -362,7 +362,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
             i = readFuncMapStructFromFile( r1, &coreRuleFuncMapDef );
         }
         if ( i < 0 ) {
-            return( i );
+            return i;
         }
         strcpy( r2, r3 );
     }
@@ -403,7 +403,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
 
     initializeReDebug( svrComm, GlobalREDebugFlag );
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -499,7 +499,7 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
         }
     }
     /* deleteEnv(env, 3); */
-    return( 0 );
+    return 0;
 }
 
 int
@@ -556,7 +556,7 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
         }
     }
     inRuleStrct->MaxNumOfRules = l;
-    return( 0 );
+    return 0;
 }
 
 
@@ -604,7 +604,7 @@ readDVMapStructFromDB( char *dvmBaseName, char *versionStr, rulevardef_t *inDvmS
         }
     }
     inDvmStrct->MaxNumOfDVars = l;
-    return( 0 );
+    return 0;
 }
 
 
@@ -651,7 +651,7 @@ readFNMapStructFromDB( char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnm
         }
     }
     inFnmStrct->MaxNumOfFMaps = l;
-    return( 0 );
+    return 0;
 }
 
 
@@ -717,7 +717,7 @@ readMsrvcStructFromDB( int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t
         }
     }
     inMsrvcStrct->MaxNumOfMsrvcs = l;
-    return( 0 );
+    return 0;
 }
 
 int
@@ -755,7 +755,7 @@ clearRuleStruct( ruleStruct_t *inRuleStrct ) {
         clearResources( RESC_APP_RULE_SET | RESC_APP_FUNC_DESC_INDEX );
     }
 
-    return( 0 );
+    return 0;
 }
 
 int clearDVarStruct( rulevardef_t *inRuleVarDef ) {
@@ -772,7 +772,7 @@ int clearDVarStruct( rulevardef_t *inRuleVarDef ) {
         }
     }
     inRuleVarDef->MaxNumOfDVars =  0;
-    return( 0 );
+    return 0;
 }
 
 int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef ) {
@@ -793,7 +793,7 @@ int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef ) {
         clearIndex( &appRuleFuncMapDefIndex );
     }
 
-    return( 0 );
+    return 0;
 }
 
 
@@ -833,7 +833,7 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
         rodsLog( LOG_NOTICE,
                  "readDvarStructFromFile() could not open dvm file %s\n",
                  dvarsFileName );
-        return( DVARMAP_FILE_READ_ERROR );
+        return DVARMAP_FILE_READ_ERROR;
     }
     buf[MAX_DVAR_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_DVAR_LENGTH - 1, file ) != NULL ) {
@@ -859,7 +859,7 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
     }
     fclose( file );
     inRuleVarDef->MaxNumOfDVars = ( long int )  i;
-    return( 0 );
+    return 0;
 }
 
 int
@@ -897,7 +897,7 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
         rodsLog( LOG_NOTICE,
                  "readFmapStructFromFile() could not open fnm file %s\n",
                  fmapsFileName );
-        return( FMAP_FILE_READ_ERROR );
+        return FMAP_FILE_READ_ERROR;
     }
     buf[MAX_FMAP_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_FMAP_LENGTH - 1, file ) != NULL ) {
@@ -927,7 +927,7 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
     else if ( inRuleFuncMapDef == &appRuleFuncMapDef ) {
         createFuncMapDefIndex( &appRuleFuncMapDef, &appRuleFuncMapDefIndex );
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -957,7 +957,7 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
         rodsLog( LOG_NOTICE,
                  "readMservcStructFromFile() could not open msrvc file %s\n",
                  mymsrvcFileName );
-        return( MSRVC_FILE_READ_ERROR );
+        return MSRVC_FILE_READ_ERROR;
     }
     buf[MAX_RULE_LENGTH - 1] = '\0';
     while ( fgets( buf, MAX_RULE_LENGTH - 1, file ) != NULL ) {
@@ -999,7 +999,7 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
     }
     fclose( file );
     inMsrvcStruct->MaxNumOfMsrvcs = i;
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1015,7 +1015,7 @@ findNextRule( char *action,  int *ruleInx ) {
         for ( ; i < appRuleStrct.MaxNumOfRules; i++ ) {
             if ( !strcmp( appRuleStrct.action[i], action ) ) {
                 *ruleInx = i;
-                return( 0 );
+                return 0;
             }
         }
         i = APP_RULE_INDEX_OFF;
@@ -1025,7 +1025,7 @@ findNextRule( char *action,  int *ruleInx ) {
         for ( ; i < appRuleStrct.MaxNumOfRules; i++ ) {
             if ( !strcmp( appRuleStrct.action[i], action ) ) {
                 *ruleInx = i;
-                return( 0 );
+                return 0;
             }
         }
         i = CORE_RULE_INDEX_OFF;
@@ -1034,10 +1034,10 @@ findNextRule( char *action,  int *ruleInx ) {
     for ( ; i < coreRuleStrct.MaxNumOfRules; i++ ) {
         if ( !strcmp( coreRuleStrct.action[i], action ) ) {
             *ruleInx = i + APP_RULE_INDEX_OFF;
-            return( 0 );
+            return 0;
         }
     }
-    return( NO_MORE_RULES_ERR );
+    return NO_MORE_RULES_ERR;
 }
 
 
@@ -1061,7 +1061,7 @@ getRule( int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
         rstrcpy( ruleAction , coreRuleStrct.ruleAction[ri], rSize );
         rstrcpy( ruleRecovery , coreRuleStrct.ruleRecovery[ri], rSize );
     }
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1087,7 +1087,7 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
-        return( rc1 );
+        return rc1;
     }
 
     for ( i = 0; i < ruleSet->len; i++ ) {
@@ -1184,13 +1184,13 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
-            return( rc1 );
+            return rc1;
         }
     }
 
     endTransactionInp.arg0 = "commit";
     rc1 = rsEndTransaction( rei->rsComm, &endTransactionInp );
-    return( rc1 );
+    return rc1;
 }
 
 int
@@ -1216,7 +1216,7 @@ insertRulesIntoDB( char * baseName, ruleStruct_t *coreRuleStruct,
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
-        return( rc1 );
+        return rc1;
     }
 
     for ( i = 0; i < coreRuleStruct->MaxNumOfRules; i++ ) {
@@ -1237,13 +1237,13 @@ insertRulesIntoDB( char * baseName, ruleStruct_t *coreRuleStruct,
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
-            return( rc1 );
+            return rc1;
         }
     }
 
     endTransactionInp.arg0 = "commit";
     rc1 = rsEndTransaction( rei->rsComm, &endTransactionInp );
-    return( rc1 );
+    return rc1;
 }
 
 int
@@ -1266,7 +1266,7 @@ insertDVMapsIntoDB( char * baseName, dvmStruct_t *coreDVMStruct,
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
-        return( rc1 );
+        return rc1;
     }
 
     for ( i = 0; i < coreDVMStruct->MaxNumOfDVars; i++ ) {
@@ -1281,13 +1281,13 @@ insertDVMapsIntoDB( char * baseName, dvmStruct_t *coreDVMStruct,
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
-            return( rc1 );
+            return rc1;
         }
     }
 
     endTransactionInp.arg0 = "commit";
     rc1 = rsEndTransaction( rei->rsComm, &endTransactionInp );
-    return( rc1 );
+    return rc1;
 }
 
 int
@@ -1310,7 +1310,7 @@ insertFNMapsIntoDB( char * baseName, fnmapStruct_t *coreFNMStruct,
     if ( rc1 < 0 ) {
         endTransactionInp.arg0 = "rollback";
         rsEndTransaction( rei->rsComm, &endTransactionInp );
-        return( rc1 );
+        return rc1;
     }
 
     for ( i = 0; i < coreFNMStruct->MaxNumOfFMaps; i++ ) {
@@ -1324,13 +1324,13 @@ insertFNMapsIntoDB( char * baseName, fnmapStruct_t *coreFNMStruct,
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
-            return( rc1 );
+            return rc1;
         }
     }
 
     endTransactionInp.arg0 = "commit";
     rc1 = rsEndTransaction( rei->rsComm, &endTransactionInp );
-    return( rc1 );
+    return rc1;
 }
 
 
@@ -1366,13 +1366,13 @@ insertMSrvcsIntoDB( msrvcStruct_t *coreMsrvcStruct,
         if ( rc1 < 0 ) {
             endTransactionInp.arg0 = "rollback";
             rsEndTransaction( rei->rsComm, &endTransactionInp );
-            return( rc1 );
+            return rc1;
         }
     }
 
     endTransactionInp.arg0 = "commit";
     rc1 = rsEndTransaction( rei->rsComm, &endTransactionInp );
-    return( rc1 );
+    return rc1;
 
 }
 
@@ -1410,7 +1410,7 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
         rodsLog( LOG_NOTICE,
                  "writeRulesIntoFile() could not open rules file %s for writing\n",
                  fileName );
-        return( FILE_OPEN_ERR );
+        return FILE_OPEN_ERR;
     }
     for ( i = 0; i < myRuleStruct->MaxNumOfRules; i++ ) {
         fprintf( file, "%s|%s|%s|%s|%ld\n", myRuleStruct->ruleHead[i],
@@ -1421,7 +1421,7 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
 
     }
     fclose( file );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1454,7 +1454,7 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
         rodsLog( LOG_NOTICE,
                  "writeDVMapsIntoFile() could not open rules file %s for writing\n",
                  fileName );
-        return( FILE_OPEN_ERR );
+        return FILE_OPEN_ERR;
     }
     for ( i = 0; i < myDVMapStruct->MaxNumOfDVars; i++ ) {
         fprintf( file, "%s|%s|%s|%ld\n", myDVMapStruct->varName[i],
@@ -1463,7 +1463,7 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
                  myDVMapStruct->varId[i] );
     }
     fclose( file );
-    return( 0 );
+    return 0;
 }
 
 
@@ -1497,7 +1497,7 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
         rodsLog( LOG_NOTICE,
                  "writeFNMapsIntoFile() could not open rules file %s for writing\n",
                  fileName );
-        return( FILE_OPEN_ERR );
+        return FILE_OPEN_ERR;
     }
     for ( i = 0; i < myFNMapStruct->MaxNumOfFMaps; i++ ) {
         fprintf( file, "%s|%s|%ld\n", myFNMapStruct->funcName[i],
@@ -1505,7 +1505,7 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
                  myFNMapStruct->fmapId[i] );
     }
     fclose( file );
-    return( 0 );
+    return 0;
 }
 
 
@@ -1532,7 +1532,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
         rodsLog( LOG_NOTICE,
                  "writeMsrvcsIntoFile() could not open microservics file %s for writing\n",
                  fileName );
-        return( FILE_OPEN_ERR );
+        return FILE_OPEN_ERR;
     }
     for ( i = 0; i < myMsrvcStruct->MaxNumOfMsrvcs; i++ ) {
         fprintf( file, "%s|%s|%s|%s|%s|%s|%s|%s|%ld|%ld\n",
@@ -1548,7 +1548,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
                  myMsrvcStruct->msrvcId[i] );
     }
     fclose( file );
-    return( 0 );
+    return 0;
 }
 
 int
@@ -1556,7 +1556,7 @@ finalzeRuleEngine( rsComm_t *rsComm ) {
     if ( GlobalREDebugFlag > 5 ) {
         _writeXMsg( GlobalREDebugFlag, "idbug", "PROCESS END" );
     }
-    return( 0 );
+    return 0;
 }
 
 
@@ -1568,7 +1568,7 @@ mymalloc(char *file,int line, int x)
     void *p;
         p = malloc(x);
         rodsLog(LOG_NOTICE, "MYMALLOC: %s:%i:%i=%x",file,line,x,p);
-       return(p);
+       return p;
 }
 
 void *
@@ -1578,7 +1578,7 @@ mycalloc(char *file,int line, int x, int y)
     p = malloc(x * y );
     bzero(p, x * y);
     rodsLog(LOG_NOTICE, "MYCALLOC: %s:%i:%i:%i=%x",file,line,x,y,p);
-       return(p);
+       return p;
 }
 
 void
@@ -1593,6 +1593,6 @@ mystrdup(char *file,int line, char *x)
     void *p;
         p = strdup(x);
         rodsLog(LOG_NOTICE, "MYSTRDUP: %s:%i=%d",file,line,p);
-       return(p);
+       return p;
 }
 moved to stringOpr.c *****/

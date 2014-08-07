@@ -22,7 +22,7 @@ static char buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 1];
 // =-=-=-=-=-=-=-
 // accessor for static challenge buf variable
 char* _rsAuthRequestGetChallenge() {
-    return ( ( char * )&buf );
+    return ( char * )&buf;
 }
 
 // =-=-=-=-=-=-=-

@@ -76,6 +76,6 @@ rcPhyPathReg( rcComm_t *conn, dataObjInp_t *phyPathRegInp ) {
     status = procApiRequest( conn, PHY_PATH_REG_AN,  phyPathRegInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }
 

@@ -72,7 +72,7 @@ irsDataObjClose(
         rodsLog( LOG_NOTICE,
                  "rsDataObjClose: l1descInx %d out of range",
                  l1descInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     if ( outDataObjInfo != NULL ) {
@@ -216,7 +216,7 @@ irsDataObjClose(
 
     freeL1desc( l1descInx );
 
-    return ( status );
+    return status;
 }
 
 #ifdef LOG_TRANSFERS
@@ -251,7 +251,7 @@ logTransfer( char *oprType, char *objPath, rodsLong_t fileSize,
         rodsLogError( LOG_NOTICE, status,
                       "printTiming: splitPathByKey for %s error, status = %d",
                       objPath, status );
-        return ( status );
+        return status;
     }
 
     diffTime.tv_sec = endTime.tv_sec - startTime->tv_sec;
@@ -288,7 +288,7 @@ logTransfer( char *oprType, char *objPath, rodsLong_t fileSize,
                  sizeInMb, timeInSec, transRate, oprType, rescName,
                  objPath, userName, hostName );
     }
-    return ( 0 );
+    return 0;
 }
 #endif
 
@@ -320,7 +320,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: l3Close of %d failed, status = %d",
                      l3descInx, status );
-            return ( status );
+            return status;
         }
     }
 
@@ -366,7 +366,7 @@ _rsDataObjClose(
                          inet_ntoa( rsComm->remoteAddr.sin_addr ) );
         }
 #endif
-        return ( status );
+        return status;
     }
 
     if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
@@ -386,14 +386,14 @@ _rsDataObjClose(
             rodsLog( LOG_ERROR,
                      "_rsDataObjClose: getSizeInVault error for %s, status = %d",
                      L1desc[l1descInx].dataObjInfo->objPath, status );
-            return ( status );
+            return status;
         }
         else if ( L1desc[l1descInx].dataSize > 0 ) {
             if ( newSize != L1desc[l1descInx].dataSize && noChkCopyLenFlag == 0 ) {
                 rodsLog( LOG_NOTICE,
                          "_rsDataObjClose: size in vault %lld != target size %lld",
                          newSize, L1desc[l1descInx].dataSize );
-                return ( SYS_COPY_LEN_ERR );
+                return SYS_COPY_LEN_ERR;
             }
         }
     }
@@ -428,7 +428,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
@@ -483,7 +483,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
@@ -564,7 +564,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
                      destDataObjInfo->objPath, status );
-            return ( status );
+            return status;
         }
     }
     else if ( L1desc[l1descInx].dataObjInfo->specColl == NULL ) {
@@ -618,7 +618,7 @@ _rsDataObjClose(
         clearKeyVal( &regParam );
 
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
             /* update quota overrun */
@@ -691,7 +691,7 @@ _rsDataObjClose(
     }
 #endif
 
-    return ( status );
+    return status;
 }
 
 int
@@ -726,7 +726,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
         status = rsFileClose( rsComm, &fileCloseInp );
 
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -738,7 +738,7 @@ _l3Close( rsComm_t *rsComm, int rescTypeInx, int l3descInx ) {
     fileCloseInp.fileInx = l3descInx;
     status = rsFileClose( rsComm, &fileCloseInp );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -773,7 +773,7 @@ l3Stat( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat ) {
         rstrcpy( fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         status = rsFileStat( rsComm, &fileStatInp, myStat );
     }
-    return ( status );
+    return status;
 }
 
 /* procChksumForClose - handle checksum issues on close. Returns a non-null
@@ -797,7 +797,7 @@ procChksumForClose(
             rodsLog( LOG_NOTICE,
                      "procChksumForClose: srcL1descInx %d out of range",
                      srcL1descInx );
-            return ( SYS_FILE_DESC_OUT_OF_RANGE );
+            return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
@@ -857,7 +857,7 @@ procChksumForClose(
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
             rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
             /* from a put type operation */
             /* verify against the input value. */
@@ -868,7 +868,7 @@ procChksumForClose(
                          L1desc[l1descInx].chksum, *chksumStr );
                 free( *chksumStr );
                 *chksumStr = NULL;
-                return ( USER_CHKSUM_MISMATCH );
+                return USER_CHKSUM_MISMATCH;
             }
             if ( strcmp( dataObjInfo->chksum, *chksumStr ) == 0 ) {
                 /* the same as in rcat */
@@ -883,7 +883,7 @@ procChksumForClose(
             }
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
 
             if ( strlen( dataObjInfo->chksum ) > 0 ) {
@@ -903,7 +903,7 @@ procChksumForClose(
                     status = 0;
                 }
             }
-            return ( status );
+            return status;
         }
         else if ( oprType == COPY_DEST ) {
             /* created through copy */
@@ -923,7 +923,7 @@ procChksumForClose(
             }
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
             if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
                 rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
@@ -947,7 +947,7 @@ procChksumForClose(
 
         status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
         if ( status < 0 ) {
-            return ( status );
+            return status;
         }
 
         if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
@@ -959,7 +959,7 @@ procChksumForClose(
                 free( *chksumStr );
                 *chksumStr = NULL;
             }
-            return ( 0 );
+            return 0;
         }
         else if ( oprType == COPY_DEST ) {
             /* created through copy */
@@ -969,7 +969,7 @@ procChksumForClose(
                 rodsLog( LOG_DEBUG,
                          "procChksumForClose: invalid srcL1descInx %d for copy",
                          srcL1descInx );
-                return ( 0 );
+                return 0;
             }
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
             if ( strlen( srcDataObjInfo->chksum ) == 0 ) {
@@ -977,7 +977,7 @@ procChksumForClose(
                 *chksumStr = NULL;
             }
         }
-        return ( 0 );
+        return 0;
     }
     return status;
 }

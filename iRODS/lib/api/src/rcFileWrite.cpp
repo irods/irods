@@ -13,6 +13,6 @@ rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
     status = procApiRequest( conn, FILE_WRITE_AN, fileWriteInp,
                              fileWriteInpBBuf, ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }
 

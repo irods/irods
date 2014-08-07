@@ -15,12 +15,12 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
             ruleExecSubmitInp->packedReiAndArgBBuf->buf == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsRuleExecSubmit error. NULL input" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     status = getAndConnReHost( rsComm, &rodsServerHost );
     if ( status < 0 ) {
-        return( status );
+        return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -32,7 +32,7 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
 #else
         rodsLog( LOG_NOTICE,
                  "rsRuleExecSubmit error. ICAT is not configured on this host" );
-        return ( SYS_NO_ICAT_SERVER_ERR );
+        return SYS_NO_ICAT_SERVER_ERR;
 #endif
     }
     else {
@@ -53,7 +53,7 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
                  "rsRuleExecSubmit: rcRuleExecSubmit failed, status = %d",
                  status );
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -69,7 +69,7 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "rsRuleExecSubmit: getReiFilePath failed, status = %d", status );
-            return ( status );
+            return status;
         }
         reiFd = open( ruleExecSubmitInp->reiFilePath, O_CREAT | O_EXCL | O_RDWR,
                       0640 );
@@ -82,7 +82,7 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
                 rodsLog( LOG_ERROR,
                          "rsRuleExecSubmit: creat failed for %s, status = %d",
                          ruleExecSubmitInp->reiFilePath, status );
-                return ( status );
+                return status;
             }
         }
         else {
@@ -99,7 +99,7 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
         rodsLog( LOG_ERROR,
                  "rsRuleExecSubmit: write rei error.toWrite %d, %d written",
                  ruleExecSubmitInp->packedReiAndArgBBuf->len, status );
-        return ( SYS_COPY_LEN_ERR - errno );
+        return SYS_COPY_LEN_ERR - errno;
     }
 
     /* register the request */
@@ -109,11 +109,11 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
         rodsLog( LOG_ERROR,
                  "_rsRuleExecSubmit: chlRegRuleExec error. status = %d", status );
     }
-    return ( status );
+    return status;
 #else
     rodsLog( LOG_ERROR,
              "_rsRuleExecSubmit error. ICAT is not configured on this host" );
-    return ( SYS_NO_ICAT_SERVER_ERR );
+    return SYS_NO_ICAT_SERVER_ERR;
 #endif
 
 }
@@ -123,7 +123,7 @@ getReiFilePath( char *reiFilePath, char *userName ) {
     char *myUserName;
 
     if ( reiFilePath == NULL ) {
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( userName == NULL || strlen( userName ) == 0 ) {
@@ -137,6 +137,6 @@ getReiFilePath( char *reiFilePath, char *userName ) {
               "%-s/%-s/%-s.%-s.%-d", getConfigDir(), PACKED_REI_DIR,
               REI_FILE_NAME, myUserName, ( uint ) random() );
 
-    return ( 0 );
+    return 0;
 }
 

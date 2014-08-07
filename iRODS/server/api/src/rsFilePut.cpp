@@ -58,22 +58,22 @@ rsFilePut(
     }
     else {
         if ( remoteFlag < 0 ) {
-            return ( remoteFlag );
+            return remoteFlag;
         }
         else {
             rodsLog( LOG_NOTICE,
                      "rsFilePut: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            return ( SYS_UNRECOGNIZED_REMOTE_FLAG );
+            return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
     if ( status < 0 ) {
-        return ( status );
+        return status;
     }
 
 
-    return ( status );
+    return status;
 }
 
 int
@@ -151,7 +151,7 @@ int _rsFilePut(
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd );
         }
-        return ( fd );
+        return fd;
     }
 
     // =-=-=-=-=-=-=-

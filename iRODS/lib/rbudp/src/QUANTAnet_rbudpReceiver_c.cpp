@@ -110,12 +110,12 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
                      rbudpReceiver->rbudpBase.sizeofErrorBitmap ) !=
                 rbudpReceiver->rbudpBase.sizeofErrorBitmap ) {
             perror( "tcp send" );
-            return ( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
     }
     free( rbudpReceiver->rbudpBase.errorBitmap );
     free( rbudpReceiver->rbudpBase.hashTable );
-    return ( 0 );
+    return 0;
 }
 
 int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
@@ -153,7 +153,7 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
                 if ( recv( rbudpReceiver->rbudpBase.udpSockfd, msg,
                            rbudpReceiver->rbudpBase.packetSize, 0 ) < 0 ) {
                     perror( "recv" );
-                    return ( errno ? ( -1 * errno ) : -1 );
+                    return errno ? ( -1 * errno ) : -1;
                 }
             }
             else {
@@ -165,7 +165,7 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
                                &rbudpReceiver->rbudpBase.udpServerAddr,
                                &fromlen ) < 0 ) {
                     perror( "recvfrom" );
-                    return ( errno ? ( -1 * errno ) : -1 );
+                    return errno ? ( -1 * errno ) : -1;
                 }
             }
 
@@ -247,7 +247,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
                        ( char * )&nbufSize, sizeof( nbufSize ) );
         if ( n < 0 ) {
             fprintf( stderr, "read error.\n" );
-            return( FAILED );
+            return FAILED;
         }
 
         bufSize = rb_ntohll( nbufSize );
@@ -285,7 +285,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
         free( buf );
     }
     close( tofd );
-    return( ok );
+    return ok;
 }
 
 int  getfile( rbudpReceiver_t *rbudpReceiver, char * origFName,
@@ -304,12 +304,12 @@ int  getfile( rbudpReceiver_t *rbudpReceiver, char * origFName,
     int fd = open( destFName, O_RDWR | O_CREAT | O_TRUNC, 0666 );
 
     if ( fd < 0 ) {
-        return ( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
     status = getfileByFd( rbudpReceiver, fd, packetSize );
     close( fd );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -324,7 +324,7 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
                    ( char * )&filesize, sizeof( filesize ) );
     if ( n < 0 ) {
         fprintf( stderr, "read error.\n" );
-        return( errno ? ( -1 * errno ) : -1 );
+        return errno ? ( -1 * errno ) : -1;
     }
 
     /* Can't use ntohl() on long longs! */
@@ -358,7 +358,7 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
         if ( buf == MAP_FAILED ) {
             fprintf( stderr, "mmap failed. toRead = %d, offset = %lld, errno = %d\n",
                      toRead, offset, errno );
-            return ( errno ? ( -1 * errno ) : -1 );
+            return errno ? ( -1 * errno ) : -1;
         }
 
         status = receiveBuf( rbudpReceiver, buf, toRead, packetSize );
@@ -404,7 +404,7 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
                            sizeof( filesize ) );
             if ( n < 0 ) {
                 fprintf( stderr, "read error.\n" );
-                return( FAILED );
+                return FAILED;
             }
 
             filesize = rb_ntohll( filesize );

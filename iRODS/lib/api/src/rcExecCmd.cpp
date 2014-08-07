@@ -11,7 +11,7 @@ rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     status = procApiRequest( conn, EXEC_CMD_AN, execCmdInp, NULL,
                              ( void ** ) execCmdOut, NULL );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -21,6 +21,6 @@ rcExecCmd241( rcComm_t *conn, execCmd241_t *execCmdInp,
     status = procApiRequest( conn, EXEC_CMD241_AN, execCmdInp, NULL,
                              ( void ** ) execCmdOut, NULL );
 
-    return ( status );
+    return status;
 }
 

@@ -77,7 +77,7 @@ int chlDebug(
         auditEnabled = 0;//cmlDebug( 0 );
     }
 
-    return( 0 );
+    return 0;
 
 } // chlDebug
 
@@ -837,7 +837,7 @@ int chlTest( rsComm_t *rsComm, char *name ) {
 
     dataObjInfo.replStatus = 5;
 
-    return ( chlRegDataObj( rsComm, &dataObjInfo ) );
+    return chlRegDataObj( rsComm, &dataObjInfo );
 }
 
 /// =-=-=-=-=-=-=-

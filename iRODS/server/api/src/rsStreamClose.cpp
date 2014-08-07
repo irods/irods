@@ -17,7 +17,7 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {
     if ( fileInx < 3 || fileInx >= NUM_FILE_DESC ) {
         rodsLog( LOG_ERROR,
                  "rsStreamClose: fileInx %d out of range", fileInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
     if ( FileDesc[fileInx].inuseFlag != FD_INUSE ) {
         return SYS_BAD_FILE_DESCRIPTOR;

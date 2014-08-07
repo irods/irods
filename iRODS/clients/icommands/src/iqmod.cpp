@@ -35,7 +35,7 @@ modDelayedRule( char *ruleId, char *fieldName, char *fieldValue ) {
         status = checkDateFormat( fieldValue );
         if ( status == DATE_FORMAT_ERR ) {
             printf( "Time format error: it should be sec in unix time or YYYY-MM-DD.hh:mm:ss.\n" );
-            return ( status );
+            return status;
         }
     }
 
@@ -46,12 +46,12 @@ modDelayedRule( char *ruleId, char *fieldName, char *fieldValue ) {
 
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         printf( "No rule found with id %s\n", ruleId );
-        return( status );
+        return status;
     }
     if ( status < 0 ) {
         printError( Conn, status, "rcRuleExecMod" );
     }
-    return( status );
+    return status;
 }
 
 int

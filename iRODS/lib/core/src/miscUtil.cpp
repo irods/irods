@@ -37,7 +37,7 @@ mkColl( rcComm_t *conn, char *collection ) {
         status = 0;
     }
 
-    return ( status );
+    return status;
 }
 
 /* mk the directory resursively */
@@ -157,7 +157,7 @@ mkdirForFilePath( char* filePath ) {
         rodsLogError( LOG_ERROR, status,
                       "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
                       filePath, status );
-        return ( status );
+        return status;
     }
 
     status =  mkdirR( "/", parent, DEFAULT_DIR_MODE );
@@ -188,7 +188,7 @@ rmdirR( char *startDir, char *destDir ) {
         }
         tmpPath[tmpLen] = '\0';
     }
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -198,7 +198,7 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     if ( rodsPath == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -212,7 +212,7 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
 
         if ( status == OBJ_PATH_DOES_NOT_EXIST ||
                 status == USER_FILE_DOES_NOT_EXIST ) {
-            return ( NOT_EXIST_ST );
+            return NOT_EXIST_ST;
         }
         else {
             rodsLogError( LOG_ERROR, status,
@@ -245,7 +245,7 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
     }
     rodsPath->rodsObjStat = rodsObjStatOut;
 
-    return ( rodsPath->objState );
+    return rodsPath->objState;
 }
 
 /* genAllInCollQCond - Generate a sqlCondInp for querying every thing under
@@ -256,7 +256,7 @@ getRodsObjType( rcComm_t *conn, rodsPath_t *rodsPath ) {
 int
 genAllInCollQCond( char *collection, char *collQCond ) {
     if ( collection == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( strcmp( collection, "/" ) == 0 ) {
@@ -267,7 +267,7 @@ genAllInCollQCond( char *collection, char *collQCond ) {
         snprintf( collQCond, MAX_NAME_LEN, " = '%s' || like '%s/%%' ",
                   collection, collection );
     }
-    return ( 0 );
+    return 0;
 }
 
 /* queryCollInColl - query the subCollections in a collection.
@@ -281,7 +281,7 @@ queryCollInColl( queryHandle_t *queryHandle, char *collection,
     int status;
 
     if ( collection == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -307,7 +307,7 @@ queryCollInColl( queryHandle_t *queryHandle, char *collection,
     status = ( *queryHandle->genQuery )(
                  ( rcComm_t * ) queryHandle->conn, genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 }
 
 /* queryDataObjInColl - query the DataObj in a collection.
@@ -321,7 +321,7 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
     char *rescName = NULL;
 
     if ( collection == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -357,7 +357,7 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
     status = ( *queryHandle->genQuery )(
                  ( rcComm_t * ) queryHandle->conn, genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -365,7 +365,7 @@ int
 setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
 
     if ( genQueryInp == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     addInxIval( &genQueryInp->selectInp, COL_COLL_NAME, 1 );
@@ -391,7 +391,7 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
         }
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -407,7 +407,7 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
         rodsLogError( LOG_NOTICE, status,
                       "printTiming: splitPathByKey for %s error, status = %d",
                       objPath, status );
-        return ( status );
+        return status;
     }
 
     diffTime.tv_sec = endTime->tv_sec - startTime->tv_sec;
@@ -455,7 +455,7 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
                  myFile, sizeInMb, timeInSec, conn->transStat.numThreads, transRate );
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -471,7 +471,7 @@ printTime( rcComm_t *conn, char *objPath, struct timeval *startTime,
         rodsLogError( LOG_NOTICE, status,
                       "printTime: splitPathByKey for %s error, status = %d",
                       objPath, status );
-        return ( status );
+        return status;
     }
 
     diffTime.tv_sec = endTime->tv_sec - startTime->tv_sec;
@@ -486,7 +486,7 @@ printTime( rcComm_t *conn, char *objPath, struct timeval *startTime,
 
     fprintf( stdout, "   %-25.25s  %.3f sec\n", myFile, timeInSec );
 
-    return ( 0 );
+    return 0;
 }
 
 #ifdef SYS_TIMING
@@ -581,7 +581,7 @@ printNoSync( char *objPath, rodsLong_t fileSize, char *reason ) {
     fprintf( stdout,
              "   %-25.25s  %10.3f MB --- %s no sync required \n", myFile, sizeInMb, reason );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -591,7 +591,7 @@ queryDataObjAcl( rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
     char tmpStr[MAX_NAME_LEN];
 
     if ( dataId == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -617,7 +617,7 @@ queryDataObjAcl( rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
 
     status =  rcGenQuery( conn, &genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -629,7 +629,7 @@ queryCollAclSpecific( rcComm_t *conn, char *collName, char *zoneHint,
     specificQueryInp_t specificQueryInp;
 
     if ( collName == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     myGenQueryOut = *genQueryOut =
@@ -646,7 +646,7 @@ queryCollAclSpecific( rcComm_t *conn, char *collName, char *zoneHint,
     specificQueryInp.sql = "ShowCollAcls";
     specificQueryInp.args[0] = collName;
     status = rcSpecificQuery( conn, &specificQueryInp, genQueryOut );
-    return( status );
+    return status;
 }
 
 
@@ -658,7 +658,7 @@ queryCollAcl( rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **ge
     char tmpStr[MAX_NAME_LEN];
 
     if ( collName == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -690,7 +690,7 @@ queryCollAcl( rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **ge
 
     status =  rcGenQuery( conn, &genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -703,7 +703,7 @@ queryCollInheritance( rcComm_t *conn, char *collName,
     char tmpStr[MAX_NAME_LEN];
 
     if ( collName == NULL || genQueryOut == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -723,7 +723,7 @@ queryCollInheritance( rcComm_t *conn, char *collName,
 
     status =  rcGenQuery( conn, &genQueryInp, genQueryOut );
 
-    return ( status );
+    return status;
 
 }
 
@@ -736,7 +736,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
 
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
             collSqlResult == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     collSqlResult->rowCnt = myGenQueryOut->rowCnt;
@@ -747,7 +747,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
     if ( ( collName = getSqlResultByInx( myGenQueryOut, COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "genQueryOutToCollRes: getSqlResultByInx for COL_COLL_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else {
         collSqlResult->collName = *collName;
@@ -799,7 +799,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO1 failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             collSqlResult->collInfo1 = *collInfo1;
@@ -808,7 +808,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                 NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO2 failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             collSqlResult->collInfo2 = *collInfo2;
@@ -817,7 +817,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                                               COL_COLL_OWNER_NAME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_OWNER_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             collSqlResult->collOwner = *collOwner;
@@ -826,7 +826,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                                 COL_COLL_CREATE_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_CREATE_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             collSqlResult->collCreateTime = *collCreateTime;
@@ -835,7 +835,7 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
                                 COL_COLL_MODIFY_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "genQueryOutToCollRes: getSqlResultByInx COL_COLL_MODIFY_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             collSqlResult->collModifyTime = *collModifyTime;
@@ -844,14 +844,14 @@ genQueryOutToCollRes( genQueryOut_t **genQueryOut,
 
     free( *genQueryOut );
     *genQueryOut = NULL;
-    return ( 0 );
+    return 0;
 }
 
 int
 setSqlResultValue( sqlResult_t *sqlResult, int attriInx, char *valueStr,
                    int rowCnt ) {
     if ( sqlResult == NULL || rowCnt <= 0 ) {
-        return ( 0 );
+        return 0;
     }
 
     sqlResult->attriInx = attriInx;
@@ -874,13 +874,13 @@ setSqlResultValue( sqlResult_t *sqlResult, int attriInx, char *valueStr,
             tmpPtr += sqlResult->len;
         }
     }
-    return ( 0 );
+    return 0;
 }
 
 int
 clearCollSqlResult( collSqlResult_t *collSqlResult ) {
     if ( collSqlResult == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( collSqlResult->collName.value != NULL ) {
@@ -913,7 +913,7 @@ clearCollSqlResult( collSqlResult_t *collSqlResult ) {
 int
 clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     if ( dataObjSqlResult->collName.value != NULL ) {
@@ -974,7 +974,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
 
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
             dataObjSqlResult == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     dataObjSqlResult->rowCnt = myGenQueryOut->rowCnt;
@@ -985,7 +985,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     if ( ( collName = getSqlResultByInx( myGenQueryOut, COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "genQueryOutToDataObjRes: getSqlResultByInx for COL_COLL_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else {
         dataObjSqlResult->collName = *collName;
@@ -994,7 +994,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     if ( ( dataName = getSqlResultByInx( myGenQueryOut, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "genQueryOutToDataObjRes: getSqlResultByInx for COL_DATA_NAME failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
     else {
         dataObjSqlResult->dataName = *dataName;
@@ -1126,7 +1126,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     free( *genQueryOut );
     *genQueryOut = NULL;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1177,7 +1177,7 @@ rclOpenCollection( rcComm_t *conn, char *collection, int flags,
         return status;
     }
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1188,7 +1188,7 @@ rclReadCollection( rcComm_t *conn, collHandle_t *collHandle,
     collHandle->queryHandle.conn = conn;        /* in case it changed */
     status = readCollection( collHandle, collEnt );
 
-    return ( status );
+    return status;
 }
 
 int
@@ -1208,7 +1208,7 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
     memset( collEnt, 0, sizeof( collEnt_t ) );
 
     if ( collHandle->state == COLL_CLOSED ) {
-        return ( CAT_NO_ROWS_FOUND );
+        return CAT_NO_ROWS_FOUND;
     }
 
     if ( ( collHandle->flags & DATA_QUERY_FIRST_FG ) == 0 ) {
@@ -1325,7 +1325,7 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
 
         }
     }
-    return ( CAT_NO_ROWS_FOUND );
+    return CAT_NO_ROWS_FOUND;
 }
 
 
@@ -1426,7 +1426,7 @@ genDataResInColl( queryHandle_t *queryHandle, collHandle_t *collHandle ) {
 
 int
 rclCloseCollection( collHandle_t *collHandle ) {
-    return ( clearCollHandle( collHandle, 1 ) );
+    return clearCollHandle( collHandle, 1 );
 }
 
 int
@@ -1453,7 +1453,7 @@ clearCollHandle( collHandle_t *collHandle, int freeSpecColl ) {
     collHandle->state = COLL_CLOSED;
     collHandle->rowInx = 0;
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1468,7 +1468,7 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     collSqlResult_t *collSqlResult = &collHandle->collSqlResult;
 
     if ( outCollEnt == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( outCollEnt, 0, sizeof( collEnt_t ) );
@@ -1493,7 +1493,7 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                              ( rcComm_t * ) queryHandle->conn, genQueryInp, &genQueryOut );
             }
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
             else {
                 status = genQueryOutToCollRes( &genQueryOut, collSqlResult );
@@ -1505,7 +1505,7 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             }
         }
         else {
-            return ( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
     }
     value = collSqlResult->collName.value;
@@ -1559,7 +1559,7 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
         status = 0;
     }
     ( collHandle->rowInx ) ++;
-    return ( status );
+    return status;
 }
 
 int
@@ -1578,7 +1578,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     int selectedInx = -1;
 
     if ( outCollEnt == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     prevdataId = collHandle->prevdataId;
@@ -1603,7 +1603,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                              ( rcComm_t * ) queryHandle->conn, genQueryInp, &genQueryOut );
             }
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
             else {
                 status = genQueryOutToDataObjRes( &genQueryOut,
@@ -1613,7 +1613,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             }
         }
         else {
-            return ( CAT_NO_ROWS_FOUND );
+            return CAT_NO_ROWS_FOUND;
         }
     }
 
@@ -1736,7 +1736,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     len = dataObjSqlResult->rescGrp.len;
     outCollEnt->rescGrp = &value[len * selectedInx];
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -1759,7 +1759,7 @@ setQueryFlag( rodsArguments_t *rodsArgs ) {
 int
 rclInitQueryHandle( queryHandle_t *queryHandle, rcComm_t *conn ) {
     if ( queryHandle == NULL || conn == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     queryHandle->conn = conn;
@@ -1767,26 +1767,26 @@ rclInitQueryHandle( queryHandle_t *queryHandle, rcComm_t *conn ) {
     queryHandle->querySpecColl = ( funcPtr ) rcQuerySpecColl;
     queryHandle->genQuery = ( funcPtr ) rcGenQuery;
 
-    return ( 0 );
+    return 0;
 }
 
 int
 freeCollEnt( collEnt_t *collEnt ) {
     if ( collEnt == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     clearCollEnt( collEnt );
 
     free( collEnt );
 
-    return ( 0 );
+    return 0;
 }
 
 int
 clearCollEnt( collEnt_t *collEnt ) {
     if ( collEnt == NULL ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( collEnt->collName != NULL ) {
@@ -1819,14 +1819,14 @@ clearCollEnt( collEnt_t *collEnt ) {
     if ( collEnt->dataType != NULL ) {
         free( collEnt->dataType );    // JMC - backport 4636
     }
-    return ( 0 );
+    return 0;
 }
 
 
 int
 myChmod( char *inPath, uint dataMode ) {
     if ( dataMode < 0100 ) {
-        return ( 0 );
+        return 0;
     }
 
     if ( Myumask == INIT_UMASK_VAL ) {
@@ -1836,7 +1836,7 @@ myChmod( char *inPath, uint dataMode ) {
 
     chmod( inPath, dataMode & 0777 & ~( Myumask ) );
 
-    return ( 0 );
+    return 0;
 }
 
 char *
@@ -1849,7 +1849,7 @@ getZoneHintForGenQuery( genQueryInp_t *genQueryInp ) {
     }
 
     if ( ( zoneHint = getValByKey( &genQueryInp->condInput, ZONE_KW ) ) != NULL ) {
-        return ( zoneHint );
+        return zoneHint;
     }
 
     for ( i = 0; i < genQueryInp->sqlCondInp.len; i++ ) {
@@ -1862,7 +1862,7 @@ getZoneHintForGenQuery( genQueryInp_t *genQueryInp ) {
             if ( ( tmpPtr = strchr( zoneHint, '/' ) ) != NULL ) {
                 zoneHint = tmpPtr;
             }
-            return ( zoneHint );
+            return zoneHint;
         }
     }
     return NULL;
@@ -1881,7 +1881,7 @@ getZoneType( rcComm_t *conn, char *icatZone, char *inZoneName,
     char tmpStr[MAX_NAME_LEN];
 
     if ( inZoneName == NULL || outZoneType == NULL ) {
-        return ( USER__NULL_INPUT_ERR );
+        return USER__NULL_INPUT_ERR;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -1906,7 +1906,7 @@ getZoneType( rcComm_t *conn, char *icatZone, char *inZoneName,
     if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "getZoneInfo: getSqlResultByInx for COL_ZONE_TYPE failed" );
-        return ( UNMATCHED_KEY_OR_INDEX );
+        return UNMATCHED_KEY_OR_INDEX;
     }
 
     rstrcpy( outZoneType, zoneType->value, MAX_NAME_LEN );
@@ -1950,7 +1950,7 @@ getCollSizeForProgStat( rcComm_t *conn, char *srcColl,
                 status = getCollSizeForProgStat( conn, collEnt.collName,
                                                  operProgress );
                 if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                    return ( status );
+                    return status;
                 }
             }
         }
@@ -1985,7 +1985,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
         rodsLog( LOG_ERROR,
                  "getDirSizeForProgStat: opendir local dir error for %s, errno = %d\n",
                  srcDir, errno );
-        return ( USER_INPUT_PATH_ERR );
+        return USER_INPUT_PATH_ERR;
     }
 
     directory_iterator end_itr; // default construction yields past-the-end
@@ -2002,7 +2002,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
             rodsLog( LOG_ERROR,
                      "getDirSizeForProgStat: stat error for %s, errno = %d\n",
                      srcChildPath, errno );
-            return ( USER_INPUT_PATH_ERR );
+            return USER_INPUT_PATH_ERR;
         }
         else if ( is_regular_file( p ) ) {
             operProgress->totalNumFiles++;
@@ -2012,7 +2012,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
             status = getDirSizeForProgStat( rodsArgs, srcChildPath,
                                             operProgress );
             if ( status < 0 ) {
-                return ( status );
+                return status;
             }
 
         }
@@ -2088,7 +2088,7 @@ getOpenedCollLen( collHandle_t *collHandle ) {
     else {
         len = strlen( collHandle->dataObjInp.objPath );
     }
-    return ( len );
+    return len;
 }
 
 int
@@ -2232,7 +2232,7 @@ mkCollWithDirMeta( rcComm_t *conn, char *collection, char *dirname ) {
         status = 0;
     }
 
-    return ( status );
+    return status;
 }
 
 int
@@ -2320,7 +2320,7 @@ mkCollWithSrcCollMeta( rcComm_t *conn, char *collection, char *srcColl ) {
         status = 0;
     }
 
-    return ( status );
+    return status;
 }
 
 int

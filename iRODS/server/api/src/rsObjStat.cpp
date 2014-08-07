@@ -32,7 +32,7 @@ rsObjStat(
     status = getAndConnRcatHost( rsComm, SLAVE_RCAT, dataObjInp->objPath,
                                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-        return( status );
+        return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
@@ -84,7 +84,7 @@ rsObjStat(
         rstrcpy( ( *rodsObjStatOut )->specColl->objPath, dataObjInp->objPath, MAX_NAME_LEN );
 
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -100,7 +100,7 @@ _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             NULL || strcmp( tmpStr, "dataObj" ) == 0 ) {
         status = dataObjStat( rsComm, dataObjInp, rodsObjStatOut );
         if ( status >= 0 ) {
-            return ( status );
+            return status;
         }
     }
 
@@ -115,7 +115,7 @@ _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                   &( *rodsObjStatOut )->specColl );
                 }
             }
-            return ( status );
+            return status;
         }
     }
 
@@ -127,7 +127,7 @@ _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         status = USER_FILE_DOES_NOT_EXIST;
     }
-    return ( status );
+    return status;
 }
 
 int
@@ -156,7 +156,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( ( status = splitPathByKey(
                         dataObjInp->objPath, myColl, MAX_NAME_LEN, myData, MAX_NAME_LEN, '/' ) ) < 0 ) {
-        return ( OBJ_PATH_DOES_NOT_EXIST );
+        return OBJ_PATH_DOES_NOT_EXIST;
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -187,61 +187,61 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_DATA_SIZE failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( dataMode = getSqlResultByInx( genQueryOut,
                                COL_DATA_MODE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_DATA_MODE failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( replStatus = getSqlResultByInx( genQueryOut,
                                  COL_D_REPL_STATUS ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_D_REPL_STATUS failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( dataId = getSqlResultByInx( genQueryOut,
                                                 COL_D_DATA_ID ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_D_DATA_ID failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( chksum = getSqlResultByInx( genQueryOut,
                                                 COL_D_DATA_CHECKSUM ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerName = getSqlResultByInx( genQueryOut,
                                 COL_D_OWNER_NAME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_OWNER_NAME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
                                 COL_D_OWNER_ZONE ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_OWNER_ZONE failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( createTime = getSqlResultByInx( genQueryOut,
                                  COL_D_CREATE_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_CREATE_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
                                  COL_D_MODIFY_TIME ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_MODIFY_TIME failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( rescHier = getSqlResultByInx( genQueryOut,
                                COL_D_RESC_HIER ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_RESC_HIER failed" );
-            return ( UNMATCHED_KEY_OR_INDEX );
+            return UNMATCHED_KEY_OR_INDEX;
         }
         else {
             int i;
@@ -297,6 +297,6 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         freeGenQueryOut( &genQueryOut );
     }
 
-    return ( status );
+    return status;
 }
 

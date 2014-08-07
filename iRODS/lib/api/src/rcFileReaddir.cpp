@@ -12,5 +12,5 @@ rcFileReaddir( rcComm_t *conn, fileReaddirInp_t *fileReaddirInp,
     status = procApiRequest( conn, FILE_READDIR_AN,  fileReaddirInp, NULL,
                              ( void ** ) fileReaddirOut, NULL );
 
-    return ( status );
+    return status;
 }

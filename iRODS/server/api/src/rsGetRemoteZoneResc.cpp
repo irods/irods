@@ -33,7 +33,7 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "rsGetRemoteZoneResc: REMOTE_ZONE_OPR_KW not defined for %s",
                  dataObjInp->objPath );
-        return ( USER_BAD_KEYWORD_ERR );
+        return USER_BAD_KEYWORD_ERR;
     }
 
     // =-=-=-=-=-=-=-

@@ -66,5 +66,5 @@ rcDataObjUnlink( rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp ) {
     status = procApiRequest( conn, DATA_OBJ_UNLINK_AN,  dataObjUnlinkInp, NULL,
                              ( void ** ) NULL, NULL );
 
-    return ( status );
+    return status;
 }

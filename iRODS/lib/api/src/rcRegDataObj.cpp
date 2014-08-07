@@ -34,5 +34,5 @@ rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
         }
 
     }
-    return ( status );
+    return status;
 }

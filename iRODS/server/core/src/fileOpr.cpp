@@ -22,7 +22,7 @@
 int
 initFileDesc() {
     memset( FileDesc, 0, sizeof( FileDesc ) );
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -32,14 +32,14 @@ allocFileDesc() {
     for ( i = 3; i < NUM_FILE_DESC; i++ ) {
         if ( FileDesc[i].inuseFlag == FD_FREE ) {
             FileDesc[i].inuseFlag = FD_INUSE;
-            return ( i );
+            return i;
         };
     }
 
     rodsLog( LOG_NOTICE,
              "allocFileDesc: out of FileDesc" );
 
-    return ( SYS_OUT_OF_FILE_DESC );
+    return SYS_OUT_OF_FILE_DESC;
 }
 
 int
@@ -53,7 +53,7 @@ allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
 
     fileInx = allocFileDesc();
     if ( fileInx < 0 ) {
-        return ( fileInx );
+        return fileInx;
     }
 
     FileDesc[fileInx].rodsServerHost = rodsServerHost;
@@ -63,7 +63,7 @@ allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
     FileDesc[fileInx].mode = mode;
     FileDesc[fileInx].fd = fd;
 
-    return ( fileInx );
+    return fileInx;
 }
 
 int
@@ -71,7 +71,7 @@ freeFileDesc( int fileInx ) {
     if ( fileInx < 3 || fileInx >= NUM_FILE_DESC ) {
         rodsLog( LOG_NOTICE,
                  "freeFileDesc: fileInx %d out of range", fileInx );
-        return ( SYS_FILE_DESC_OUT_OF_RANGE );
+        return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
     if ( FileDesc[fileInx].fileName != NULL ) {
@@ -86,7 +86,7 @@ freeFileDesc( int fileInx ) {
 
     memset( &FileDesc[fileInx], 0, sizeof( fileDesc_t ) );
 
-    return ( 0 );
+    return 0;
 }
 
 int
@@ -96,19 +96,19 @@ getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost ) {
     if ( fileInx < 3 || fileInx >= NUM_FILE_DESC ) {
         rodsLog( LOG_NOTICE,
                  "getServerHostByFileInx: Bad fileInx value %d", fileInx );
-        return ( SYS_BAD_FILE_DESCRIPTOR );
+        return SYS_BAD_FILE_DESCRIPTOR;
     }
 
     if ( FileDesc[fileInx].inuseFlag == 0 ) {
         rodsLog( LOG_NOTICE,
                  "getServerHostByFileInx: fileInx %d not active", fileInx );
-        return ( SYS_BAD_FILE_DESCRIPTOR );
+        return SYS_BAD_FILE_DESCRIPTOR;
     }
 
     *rodsServerHost = FileDesc[fileInx].rodsServerHost;
     remoteFlag = ( *rodsServerHost )->localFlag;
 
-    return ( remoteFlag );
+    return remoteFlag;
 }
 
 int
@@ -126,12 +126,12 @@ mkDirForFilePath(
         rodsLog( LOG_NOTICE,
                  "mkDirForFilePath: splitPathByKey for %s error, status = %d",
                  filePath.c_str(), status );
-        return ( status );
+        return status;
     }
 
     status = mkFileDirR( rsComm, startDirLen, myDir, hier, mode );
 
-    return ( status );
+    return status;
 }
 
 // =-=-=-=-=-=-=-
@@ -197,7 +197,7 @@ int mkFileDirR(
                 rodsLog( LOG_NOTICE,
                          "mkFileDirR: A local non-directory %s already exists \n",
                          physical_directory.c_str() );
-                return ( stat_err.code() );
+                return stat_err.code();
             }
         }
         else {
@@ -400,7 +400,7 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     if ( rodsServerHost == NULL ) {
         rodsLog( LOG_NOTICE,
                  "chkFilePathPerm: NULL rodsServerHost" );
-        return ( SYS_INTERNAL_NULL_INPUT_ERR );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     // =-=-=-=-=-=-=-
@@ -410,7 +410,7 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 
         if ( status == 1 ) {
             /* a match in vault */
-            return ( status );
+            return status;
         }
         else if ( status == -1 ) {
             /* in vault, but not in user's vault */
@@ -432,7 +432,7 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 
     status = rsChkNVPathPermByHost( rsComm, fileOpenInp, rodsServerHost );
 
-    return ( status );
+    return status;
 }
 
 // =-=-=-=-=-=-=-
