@@ -815,6 +815,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc repl" )
 
 
+    def test_rule_engine_2242(self):
+        assertiCmdFail(s.adminsession,"irule -F rule1_2242.r", "LIST", "failmsg" )
+        assertiCmd(s.adminsession,"irule -F rule2_2242.r", "EMPTY" )
 
 
 
