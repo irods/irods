@@ -606,7 +606,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         /* do the input value conversion */
         ExprType **coercionTypes = coercionType->subtrees;
         for ( i = 0; i < n; i++ ) {
-            if ( ( ( ioParam[i] | IO_TYPE_INPUT ) == IO_TYPE_INPUT ) && ( nodeArgs[i]->option & OPTION_COERCE ) != 0 ) {
+            if ( ( ( ioParam[i] & IO_TYPE_INPUT ) == IO_TYPE_INPUT ) && ( nodeArgs[i]->option & OPTION_COERCE ) != 0 ) {
                 argsProcessed[i] = processCoercion( nodeArgs[i], args[i], coercionTypes[i], env->current, errmsg, newRegion );
                 if ( getNodeType( argsProcessed[i] ) == N_ERROR ) {
                     res = ( Res * )argsProcessed[i];
@@ -678,7 +678,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                 res = ( Res * )argsProcessed[i];
                 RETURN ;
             }
-            if(!definitelyEq(args[i], argsProcessed[i])) {
+            if(( ioParam[i] & IO_TYPE_INPUT ) == 0 || !definitelyEq(args[i], argsProcessed[i])) {
             	resp = setVariableValue( appArgs[i]->text, argsProcessed[i], nodeArgs[i], rei, env, errmsg, r );
             }
             /*char *buf = convertResToString(args[i]);
@@ -1090,6 +1090,7 @@ ret:
 
 
 }
+#define SYSTEM_SPACE_RULE 0x100
 /*
  * look up rule node by rulename from index
  * apply rule condition index if possilbe
@@ -1114,11 +1115,18 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
     strcpy( ruleName, ruleNameInp );
     mapExternalFuncToInternalProc2( ruleName );
 
+	int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
+	int _reiSaveFlag = reiSaveFlag & SAVE_REI;
+
     RuleIndexListNode *ruleIndexListNode;
     int success = 0;
     int first = 1;
     while ( 1 ) {
-        statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
+		if(systemSpaceRuleFlag != 0) {
+			statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode);
+		} else {
+			statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
+		}
 
         if ( statusI != 0 ) {
             if ( applyAllRule == 0 ) {
@@ -1132,7 +1140,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
             }
             break;
         }
-        if ( reiSaveFlag == SAVE_REI ) {
+        if ( _reiSaveFlag == SAVE_REI ) {
             int statusCopy = 0;
             if ( inited == 0 ) {
                 saveRei = ( ruleExecInfo_t * ) mallocAndZero( sizeof( ruleExecInfo_t ) );
@@ -1156,7 +1164,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
         }
 
         if ( ruleIndexListNode->secondaryIndex ) {
-            statusRes = execRuleFromCondIndex( ruleName, args, argc, ruleIndexListNode->condIndex, applyAllRule, env, rei, reiSaveFlag, errmsg, r );
+            statusRes = execRuleFromCondIndex( ruleName, args, argc, ruleIndexListNode->condIndex, applyAllRule, env, rei, reiSaveFlag | systemSpaceRuleFlag, errmsg, r );
         }
         else {
 
@@ -1193,7 +1201,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
 #endif
                 /* printTree(rule, 0); */
 
-                statusRes = execRuleNodeRes( rule, args, argc,  applyAllRule > 1 ? applyAllRule : 0, env, rei, reiSaveFlag, errmsg, r );
+                statusRes = execRuleNodeRes( rule, args, argc,  applyAllRule > 1 ? applyAllRule : 0, env, rei, reiSaveFlag | systemSpaceRuleFlag, errmsg, r );
 
             }
         }
@@ -1203,7 +1211,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
                 break;
             }
             else {   /* apply all rules */
-                if ( reiSaveFlag == SAVE_REI ) {
+                if ( _reiSaveFlag == SAVE_REI ) {
                     freeRuleExecInfoStruct( saveRei, 0 );
                     inited = 0;
                 }
@@ -1578,15 +1586,17 @@ int definitelyEq(Res *a, Res *b) {
 		case T_PATH:
 			return strcmp(a->text, b->text) == 0 ? 1 : 0;
 		case T_CONS:
-			if(strcmp(a->text, b->text) == 0 && a->degree == b->degree) {
-				int res = 1;
-				for(int i=0;i<a->degree;i++) {
-					if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
-						res = 0;
-						break;
+			if(a->degree == b->degree) {
+				if(a->text == b->text || strcmp(a->text, b->text) == 0) {
+					int res = 1;
+					for(int i=0;i<a->degree;i++) {
+						if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+							res = 0;
+							break;
+						}
 					}
+					return res;
 				}
-				return res;
 			}
 			return 0;
 		case T_TUPLE:
