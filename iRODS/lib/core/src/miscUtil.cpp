@@ -1237,7 +1237,7 @@ readCollection( collHandle_t *collHandle, collEnt_t *collEnt ) {
                 }
             }
             status = genDataResInColl( queryHandle, collHandle );
-            if( status < 0 ) {
+            if( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 rodsLog( LOG_ERROR, "genDataResInColl in readCollection failed with status %d", status );
             }
         }
