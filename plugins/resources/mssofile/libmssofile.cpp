@@ -541,7 +541,7 @@ extern "C" {
                      "Cannot open rule file %s. ernro = %d\n", inRuleFile, errno );
             return FILE_OPEN_ERR;
         }
-        size_t len;
+        int len;
         char buf[META_STR_LEN * 3];
         while ( ( len = getLine( fptr, buf, META_STR_LEN ) ) > 0 ) {
             if ( buf[0] == '#' ) {
