@@ -1497,6 +1497,9 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             }
             else {
                 status = genQueryOutToCollRes( &genQueryOut, collSqlResult );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "genQueryOutToCollRes in getNextCollMetaInfo failed with status %d", status );
+                }
                 collHandle->rowInx = 0;
                 free( genQueryOut );
             }
