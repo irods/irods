@@ -883,12 +883,12 @@ addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag, char *keyWord
 
     if ( ( condInput->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newLen = condInput->len + PTR_ARRAY_MALLOC_LEN;
-        newKeyWord = ( char ** ) malloc( newLen * sizeof( newKeyWord ) );
-        newPreTag = ( char ** ) malloc( newLen * sizeof( newPreTag ) );
-        newPostTag = ( char ** ) malloc( newLen * sizeof( newPostTag ) );
-        memset( newKeyWord, 0, newLen * sizeof( newKeyWord ) );
-        memset( newPreTag, 0, newLen * sizeof( newPreTag ) );
-        memset( newPostTag, 0, newLen * sizeof( newPostTag ) );
+        newKeyWord = ( char ** ) malloc( newLen * sizeof( *newKeyWord ) );
+        newPreTag = ( char ** ) malloc( newLen * sizeof( *newPreTag ) );
+        newPostTag = ( char ** ) malloc( newLen * sizeof( *newPostTag ) );
+        memset( newKeyWord, 0, newLen * sizeof( *newKeyWord ) );
+        memset( newPreTag, 0, newLen * sizeof( *newPreTag ) );
+        memset( newPostTag, 0, newLen * sizeof( *newPostTag ) );
         for ( i = 0; i < condInput->len; i++ ) {
             newKeyWord[i] = condInput->keyWord[i];
             newPreTag[i] = condInput->preTag[i];
