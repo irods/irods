@@ -894,9 +894,11 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     if ( getStructFileType( rodsObjStatOut->specColl ) >= 0 ) {
-        /* a struct file */
         status = _rsSyncMountedColl( rsComm, rodsObjStatOut->specColl,
                                      PURGE_STRUCT_FILE_CACHE );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "_rsSyncMountedColl failed in unmountFileDir with status %d", status );
+        }
     }
 
     freeRodsObjStat( rodsObjStatOut );
