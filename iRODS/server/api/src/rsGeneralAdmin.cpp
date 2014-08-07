@@ -249,7 +249,6 @@ _listRescTypes( rsComm_t* _rsComm ) {
 int
 _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     int status;
-    userInfo_t userInfo;
     collInfo_t collInfo;
     rescInfo_t rescInfo;
     ruleExecInfo_t rei;
@@ -296,6 +295,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
+            userInfo_t userInfo = {0};
             strncpy( userInfo.userName, generalAdminInp->arg2,
                      sizeof( userInfo.userName ) );
             if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
@@ -672,6 +672,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
+            userInfo_t userInfo = {0};
             strncpy( userInfo.userName, generalAdminInp->arg2,
                      sizeof( userInfo.userName ) );
             if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
