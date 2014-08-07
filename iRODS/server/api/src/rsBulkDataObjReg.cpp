@@ -203,7 +203,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 msg << "\" was registered";
                 ret = PASSMSG( msg.str(), ret );
                 irods::log( ret );
-                status = ret.code();
+                return ret.code();
             }
 
         }
