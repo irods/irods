@@ -253,11 +253,6 @@ main( int argc, char *argv[] ) {
 
     logAgentProc( &rsComm );
 
-    bool done = true;
-    while ( !done ) {
-        sleep( 1 );
-    }
-    // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated
     irods::network_object_ptr new_net_obj;
     ret = irods::network_factory( &rsComm, new_net_obj );
@@ -274,7 +269,6 @@ main( int argc, char *argv[] ) {
     new_net_obj->to_server( &rsComm );
     status = agentMain( &rsComm );
 
-    // =-=-=-=-=-=-=-
     // call initialization for network plugin as negotiated
     ret = sockAgentStop( new_net_obj );
     if ( !ret.ok() ) {
