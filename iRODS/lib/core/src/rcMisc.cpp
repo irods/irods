@@ -970,10 +970,10 @@ addInxVal( inxValPair_t *inxValPair, int inx, const char *value ) {
 
     if ( ( inxValPair->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newLen = inxValPair->len + PTR_ARRAY_MALLOC_LEN;
-        newInx = ( int * ) malloc( newLen * sizeof( int ) );
-        newValue = ( char ** ) malloc( newLen * sizeof( newValue ) );
-        memset( newInx, 0, newLen * sizeof( int ) );
-        memset( newValue, 0, newLen * sizeof( newValue ) );
+        newInx = ( int * ) malloc( newLen * sizeof( *newInx ) );
+        newValue = ( char ** ) malloc( newLen * sizeof( *newValue ) );
+        memset( newInx, 0, newLen * sizeof( *newInx ) );
+        memset( newValue, 0, newLen * sizeof( *newValue ) );
         for ( i = 0; i < inxValPair->len; i++ ) {
             newInx[i] = inxValPair->inx[i];
             newValue[i] = inxValPair->value[i];
