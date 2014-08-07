@@ -66,22 +66,22 @@ public:
 
     // =-=-=-=-=-=-=-
     // Mutators
-    void addr( rodsHostAddr_t _addr ) {
+    void addr( const rodsHostAddr_t& _addr ) {
         addr_      = _addr;
     }
-    void sub_file_path( const std::string _p ) {
+    void sub_file_path( const std::string& _p ) {
         sub_file_path_ = _p;
     }
     void spec_coll( specColl_t*    _coll ) {
         spec_coll_ = _coll;
     }
-    void data_type( std::string    _dt ) {
+    void data_type( const std::string&    _dt ) {
         data_type_ = _dt;
     }
     void opr_type( int            _ot ) {
         opr_type_ = _ot;
     }
-    void spec_coll_type( structFileType_t _t ) {
+    void spec_coll_type( const structFileType_t& _t ) {
         spec_coll_type_ = _t;
     }
 
