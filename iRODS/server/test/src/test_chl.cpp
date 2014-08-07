@@ -365,8 +365,6 @@ int testDelFileTrash( rsComm_t *rsComm, char *name, char *dataId ) {
     dataObjInfo_t dataObjInfo;
     keyValPair_t condInput;
 
-    char *replica = 0;
-
     rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     memset( &condInput, 0, sizeof( condInput ) );
     addKeyVal( &condInput, ADMIN_RMTRASH_KW, " " );
@@ -381,13 +379,6 @@ int testDelFileTrash( rsComm_t *rsComm, char *name, char *dataId ) {
         }
     }
     dataObjInfo.replNum = -1;
-    if ( replica != NULL && *replica != 0 ) {
-        int ireplica;
-        ireplica = atoi( replica );
-        if ( ireplica >= 0 ) {
-            dataObjInfo.replNum = ireplica;
-        }
-    }
     strncpy( dataObjInfo.objPath, name, sizeof dataObjInfo.objPath );
 
     return chlUnregDataObj( rsComm, &dataObjInfo, &condInput );
