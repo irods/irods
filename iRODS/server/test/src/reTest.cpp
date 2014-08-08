@@ -22,7 +22,8 @@ int main( int argc, char **argv ) {
     char ruleSet[RULE_SET_DEF_LENGTH];
     hrtime_t ht1, ht2, ht3;
     time_t now = time( 0 );
-    struct tm off = {0};
+    struct tm off;
+    memset( &off, 0, sizeof( off ) );
     time_t new;
     struct tm *mytm;
 
