@@ -1705,6 +1705,7 @@ iRODS Server is down
 ********************
 
 :Error Code: USER_SOCK_CONNECT_TIMEDOUT -347000
+:Error Code: CROSS_ZONE_SOCK_CONNECT_ERR -92110
 
 Common areas to check for this error include:
 
