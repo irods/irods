@@ -1213,11 +1213,6 @@ extern "C" {
                          specColl->objPath, runDir, errno );
                 return SYS_MSSO_STRUCT_FILE_EXTRACT_ERR - errno;
             }
-            /* return any results */
-            if ( strlen( showFiles ) != 0 ) { /* replace subFile by showFile */
-                _fco->sub_file_path( showFiles );
-                //rstrcpy( subFile->subFilePath, showFiles, MAX_NAME_LEN );
-            }
             return status;
         }
         else { /* fileType == 4   looking at run results*/
