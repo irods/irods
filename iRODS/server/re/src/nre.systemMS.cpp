@@ -981,7 +981,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei ) 
 
     /* fill string in buffer */
     outBuf->len = strlen( inStr );
-    outBuf->buf = inStr;
+    outBuf->buf = strdup( inStr );
 
     /* fill buffer in buf_msp */
     fillBufLenInMsParam( buf_msp, outBuf->len, outBuf );
