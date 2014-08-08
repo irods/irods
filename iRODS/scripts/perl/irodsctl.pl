@@ -1017,7 +1017,7 @@ sub startIrods
 	my $portTestLimit = 5;
 	my $waitSeconds = 1;
 	while ($waitSeconds < $portTestLimit){
-		my $porttest = `netstat -tlpen 2> /dev/null | grep $IRODS_PORT | awk '{print \$9}'`;
+		my $porttest = `netstat -tlpen 2> /dev/null | grep ":$IRODS_PORT" | awk '{print \$9}'`;
 		chomp($porttest);
 		if ($porttest ne ""){
 			print("($waitSeconds) Waiting for process bound to port $IRODS_PORT ... [$porttest]\n");
