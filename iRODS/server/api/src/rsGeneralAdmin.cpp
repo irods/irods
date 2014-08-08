@@ -66,8 +66,8 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 int
 _addChildToResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t _rei2,
-    rsComm_t* _rsComm ) {
+    ruleExecInfo_t&    _rei2,
+    rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
     memset( &rescInfo, 0, sizeof( rescInfo ) );
@@ -93,8 +93,8 @@ _addChildToResource(
 int
 _removeChildFromResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t _rei2,
-    rsComm_t* _rsComm ) {
+    ruleExecInfo_t&    _rei2,
+    rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
 
@@ -115,7 +115,7 @@ _removeChildFromResource(
 int
 _addResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t     _rei2,
+    ruleExecInfo_t&    _rei2,
     rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
