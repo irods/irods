@@ -478,7 +478,7 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
             irods::resource_ptr resc;
             std::string rescName = rescGrpInfo->rescInfo->rescName; // save the resource name
             irods::error err = irods::get_resc_info( rescName, *rescInfo );
-            free( rescGrpInfo->rescInfo );
+            delete rescGrpInfo->rescInfo;
             if ( !err.ok() ) {
                 delete rescInfo;
                 savedStatus = err.code();
