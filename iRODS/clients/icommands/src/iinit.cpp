@@ -153,7 +153,7 @@ main( int argc, char **argv ) {
        Check on the key Environment values, prompt and save
        them if not already available.
      */
-    if ( myEnv.rodsHost == NULL || strlen( myEnv.rodsHost ) == 0 ) {
+    if ( strlen( myEnv.rodsHost ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
