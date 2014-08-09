@@ -1303,7 +1303,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
         rstrcpy( destDataObjInfo->filePath, sync_out->file_name, MAX_NAME_LEN );
         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
     }
-    delete sync_out;
+    free( sync_out );
     return status;
 }
 
