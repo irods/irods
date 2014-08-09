@@ -181,7 +181,7 @@ main( int argc, char **argv ) {
         rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
         myEnv.rodsPort = atoi( ttybuf );
     }
-    if ( myEnv.rodsUserName == NULL || strlen( myEnv.rodsUserName ) == 0 ) {
+    if ( strlen( myEnv.rodsUserName ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
