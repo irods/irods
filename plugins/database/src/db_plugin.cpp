@@ -1504,18 +1504,8 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
 
 /* create a path name with escaped SQL special characters (% and _) */
 void
-makeEscapedPath( char *inPath, char *outPath, int size ) {
-    int i;
-    for ( i = 0; i < size - 1; i++ ) {
-        if ( *inPath == '%' || *inPath == '_' ) {
-            *outPath++ = '\\';
-        }
-        if ( *inPath == '\0' ) {
-            *outPath++ = *inPath++;
-            break;
-        }
-        *outPath++ = *inPath++;
-    }
+makeEscapedPath( const std::string &inPath, char *outPath, int size ) {
+    snprintf(outPath, size, "%s", boost::regex_replace( inPath, boost::regex("[%_]"), "\\$&" ).c_str() );
     return;
 }
 
