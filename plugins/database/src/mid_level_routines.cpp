@@ -1153,12 +1153,6 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     int hostOK = 0;
     int userOK = 0;
     int groupOK = 0;
-    char myUser[NAME_LEN];
-
-    strncpy( myUser, userName, NAME_LEN );
-    myUser[NAME_LEN - 1] = '\0'; // cppcheck - Dangerous usage of 'myUser' (strncpy doesn't always 0-terminate it)
-    strncat( myUser, "#", NAME_LEN );
-    strncat( myUser, userZone, NAME_LEN );
 
     /* first, check if there are any host restrictions, and if so
        return error if the connected client host is not in the list */
@@ -1176,6 +1170,7 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
             return status;
         }
     }
+
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
         if ( strncmp( ticketHost,
                       icss->stmtPtr[stmtNum]->resultValue[0],
@@ -1206,6 +1201,9 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
             return status;
         }
     }
+    std::string myUser( userName );
+    myUser += "#";
+    myUser += userZone;
     for ( ; status != CAT_NO_ROWS_FOUND; ) {
         if ( strncmp( userName,
                       icss->stmtPtr[stmtNum]->resultValue[0],
@@ -1214,7 +1212,7 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
         }
         else {
             /* try user#zone */
-            if ( strncmp( myUser,
+            if ( strncmp( myUser.c_str(),
                           icss->stmtPtr[stmtNum]->resultValue[0],
                           NAME_LEN ) == 0 ) {
                 userOK = 1;
