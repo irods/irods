@@ -95,7 +95,7 @@ showUser( char *name ) {
     genQueryInp.selectInp.len = i;
 
     i2a[0] = COL_USER_NAME;
-    sprintf( v1, "='%s'", name );
+    snprintf( v1, BIG_STR, "='%s'", name );
     condVal[0] = v1;
 
     genQueryInp.sqlCondInp.inx = i2a;
