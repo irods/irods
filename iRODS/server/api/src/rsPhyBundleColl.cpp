@@ -55,7 +55,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     }
 
     rescGrpInfo_t rescGrpInfo;
-    rescGrpInfo.rescInfo = 0;
+    rescGrpInfo.rescInfo = NULL;
     irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
@@ -683,6 +683,9 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
     int status;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
+    if( !rescGrpInfo || !rescGrpInfo->rescInfo ) {
+        return SYS_NULL_INPUT;
+    }
 
     std::string type;
     irods::error err = irods::get_resource_property< std::string >(
