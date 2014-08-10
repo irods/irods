@@ -1205,7 +1205,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
 
             }
         }
-        if ( getNodeType( statusRes ) != N_ERROR ) {
+        if ( statusRes != NULL && getNodeType( statusRes ) != N_ERROR ) {
             success = 1;
             if ( applyAllRule == 0 ) { /* apply first rule */
                 break;
@@ -1236,7 +1236,7 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
             /* if we apply all rules, then it succeeds even if some of the rules fail */
             return newIntRes( r, 0 );
         }
-        else if ( TYPE( statusRes ) == T_SUCCESS ) {
+        else if ( statusRes != NULL && TYPE( statusRes ) == T_SUCCESS ) {
             return newIntRes( r, 0 );
         }
         else {
