@@ -199,7 +199,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    myRodsEnv->rodsDefResource );
     }
 
-    if ( rodsArgs->backupMode == True ) {
+    if ( myResc != NULL && rodsArgs->backupMode == True ) {
         addKeyVal( &dataObjInp->condInput, BACKUP_RESC_NAME_KW,
                    myResc );
     }
