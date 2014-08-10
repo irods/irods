@@ -809,54 +809,33 @@ replSpecColl( specColl_t *inSpecColl, specColl_t **outSpecColl ) {
 
 int
 addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
-    char **newKeyWord;
-    char **newValue;
-    int newLen;
-    int i;
-    int emptyInx = -1;
-
     if ( condInput == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* check if the keyword exists */
-    for ( i = 0; i < condInput->len; i++ ) {
-        if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
+    for ( int i = 0; i < condInput->len; i++ ) {
+        if ( condInput->keyWord[i] == NULL || strlen( condInput->keyWord[i] ) == 0 ) {
+            free( condInput->keyWord[i] );
+            free( condInput->value[i] );
+            condInput->keyWord[i] = strdup( keyWord );
+            condInput->value[i] = strdup( value );
+            return 0;
+        }
+        else if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
             condInput->value[i] = strdup( value );
             return 0;
         }
-        else if ( strlen( condInput->keyWord[i] ) == 0 ) {
-            emptyInx = i;
-        }
-    }
-
-    if ( emptyInx >= 0 ) {
-        free( condInput->keyWord[emptyInx] );
-        free( condInput->value[emptyInx] );
-        condInput->keyWord[emptyInx] = strdup( keyWord );
-        condInput->value[emptyInx] = strdup( value );
-        return 0;
     }
 
     if ( ( condInput->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
-        newLen = condInput->len + PTR_ARRAY_MALLOC_LEN;
-        newKeyWord = ( char ** ) malloc( newLen * sizeof( *newKeyWord ) );
-        newValue = ( char ** ) malloc( newLen * sizeof( *newValue ) );
-        memset( newKeyWord, 0, newLen * sizeof( *newKeyWord ) );
-        memset( newValue, 0, newLen * sizeof( *newValue ) );
-        for ( i = 0; i < condInput->len; i++ ) {
-            newKeyWord[i] = condInput->keyWord[i];
-            newValue[i] = condInput->value[i];
-        }
-        if ( condInput->keyWord != NULL ) {
-            free( condInput->keyWord );
-        }
-        if ( condInput->value != NULL ) {
-            free( condInput->value );
-        }
-        condInput->keyWord = newKeyWord;
-        condInput->value = newValue;
+        condInput->keyWord = ( char ** )realloc( condInput->keyWord,
+                ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->keyWord ) );
+        condInput->value = ( char ** )realloc( condInput->value,
+                ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->value ) );
+        memset( condInput->keyWord + condInput->len, 0, PTR_ARRAY_MALLOC_LEN * sizeof( *condInput->keyWord ) );
+        memset( condInput->value + condInput->len, 0, PTR_ARRAY_MALLOC_LEN * sizeof( *condInput->value ) );
     }
 
     condInput->keyWord[condInput->len] = strdup( keyWord );
