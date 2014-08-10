@@ -2832,6 +2832,9 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
             return 0;
         }
     }
+    else if( myDim < 0 ) {
+        return SYS_NEGATIVE_SIZE;
+    }
 
     switch ( myTypeNum ) {
     case PACK_CHAR_TYPE:
