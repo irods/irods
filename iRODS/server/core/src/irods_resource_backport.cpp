@@ -243,16 +243,11 @@ error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc )
     if ( !_grp_info.rescInfo ) {
         _grp_info.rescInfo = new rescInfo_t;
     }
-    else {
-
-    }
-
     // =-=-=-=-=-=-=-
     // call earlier helper function to fill in the rescInfo_t structure
     error err = resource_to_resc_info( *_grp_info.rescInfo, _resc );
     if ( !err.ok() ) {
         return PASS( err );
-
     }
 
     // =-=-=-=-=-=-=-
@@ -534,17 +529,14 @@ error get_resc_grp_info( std::string _name, rescGrpInfo_t& _info ) {
         error info_err = resource_to_resc_grp_info( _info, resc );
         if ( info_err.ok() ) {
             return SUCCESS();
-
         }
         else {
             return PASS( info_err );
-
         }
 
     }
     else {
         return PASS( res_err );
-
     }
 
 
