@@ -156,7 +156,7 @@ showResc( char *name, int longOption ) {
         }
         // =-=-=-=-=-=-=-
         i2a[0] = COL_R_RESC_NAME;
-        sprintf( v1, "='%s'", name );
+        snprintf( v1, BIG_STR, "='%s'", name );
         condVal[0] = v1;
         genQueryInp.sqlCondInp.len = 1;
     }
