@@ -61,7 +61,7 @@ main( int argc, char **argv ) {
         }
         else if ( strncmp( argv[argc - i], "i:", 2 ) == 0 ) {
             srcType = UNKNOWN_OBJ_T;
-            strcpy( buffer, argv[argc - i] + 2 );
+            snprintf( buffer, HUGE_NAME_LEN, "%s", argv[argc - i] + 2 );
             argv[argc - i] = strdup( buffer );
         }
         else {
@@ -75,7 +75,7 @@ main( int argc, char **argv ) {
     }
     else if ( strncmp( argv[argc - 1], "i:", 2 ) == 0 ) {
         destType = UNKNOWN_OBJ_T;
-        strcpy( buffer, argv[argc - 1] + 2 );
+        snprintf( buffer, HUGE_NAME_LEN, "%s", argv[argc - 1] + 2 );
         argv[argc - 1] = strdup( argv[argc - 1] + 2 );
     }
     else {
