@@ -19,9 +19,9 @@
 
 
 
-//	#include "irods_ms_plugin.hpp"
-//	extern irods::ms_table MicrosTable;
-//	extern int NumOfAction;
+//    #include "irods_ms_plugin.hpp"
+//    extern irods::ms_table MicrosTable;
+//    extern int NumOfAction;
 
 #define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
 #define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = RE_ERROR;return;}
@@ -35,7 +35,7 @@ int initializeEnv( Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 
 
     Node** args2 = params->subtrees;
-    /*	int argc2 = ruleHead->degree; */
+    /*    int argc2 = ruleHead->degree; */
     int i;
     /*getSystemFunctions(env, r); */
     for ( i = 0; i < argc ; i++ ) {
@@ -107,8 +107,8 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
         case N_APPLICATION:
             /* try to evaluate as a function, */
             /*
-            						printf("start execing %s\n", oper1);
-            						printEnvToStdOut(env);
+                                    printf("start execing %s\n", oper1);
+                                    printEnvToStdOut(env);
 
             */
             funcRes = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
@@ -124,8 +124,8 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             }
             res = evaluateFunctionApplication( funcRes, argRes, applyAll, expr, rei, reiSaveFlag, env, errmsg, r );
             /*
-            						printf("finish execing %s\n", oper1);
-            						printEnvToStdOut(env);
+                                    printf("finish execing %s\n", oper1);
+                                    printEnvToStdOut(env);
             */
             break;
         case N_TUPLE:
@@ -483,10 +483,10 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         return newIntRes( r, 0 );
     }
     /*    printEnvIndent(env);
-    	printf("calling function %s\n", fn);
-    	char buf0[ERR_MSG_LEN];
-    	generateErrMsg("", NODE_EXPR_POS(node), node->base, buf0);
-    	printf("%s", buf0); */
+        printf("calling function %s\n", fn);
+        char buf0[ERR_MSG_LEN];
+        generateErrMsg("", NODE_EXPR_POS(node), node->base, buf0);
+        printf("%s", buf0); */
     Res *appArgRes = appRes->subtrees[1];
 
     n = appArgRes->degree;
@@ -577,15 +577,15 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     coercionType = node->subtrees[1]->coercionType;
     if ( coercionType != NULL ) {
         /*for(i=0;i<n;i++) {
-        	 if((ioParam[i] == 'i' || ioParam[i] == 'p') && nodeArgs[i]->exprType != NULL) {
-        		if(unifyWith(args[i]->exprType, nodeArgs[i]->exprType, env->current, r) == NULL) {
-        			snprintf(buf, ERR_MSG_LEN, "error: dynamically typed parameter does not have expected type.");
-        			                    generateErrMsg(buf, nodeArgs[i]->expr, nodeArgs[i]->base, buf2);
-        			                    addRErrorMsg(errmsg, TYPE_ERROR, buf2);
-        			                    res = newErrorRes(r, TYPE_ERROR);
-        			                    RETURN;
-        		}
-        	}
+             if((ioParam[i] == 'i' || ioParam[i] == 'p') && nodeArgs[i]->exprType != NULL) {
+                if(unifyWith(args[i]->exprType, nodeArgs[i]->exprType, env->current, r) == NULL) {
+                    snprintf(buf, ERR_MSG_LEN, "error: dynamically typed parameter does not have expected type.");
+                                        generateErrMsg(buf, nodeArgs[i]->expr, nodeArgs[i]->base, buf2);
+                                        addRErrorMsg(errmsg, TYPE_ERROR, buf2);
+                                        res = newErrorRes(r, TYPE_ERROR);
+                                        RETURN;
+                }
+            }
         }*/
 
 
@@ -613,11 +613,11 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                     RETURN;
                 }
             } else {
-            	argsProcessed[i] = args[i];
+                argsProcessed[i] = args[i];
             }
         }
     } else {
-    	memcpy(argsProcessed, args, sizeof(Res *) * n);
+        memcpy(argsProcessed, args, sizeof(Res *) * n);
     }
 
 
@@ -679,7 +679,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                 RETURN ;
             }
             if(( ioParam[i] & IO_TYPE_INPUT ) == 0 || !definitelyEq(args[i], argsProcessed[i])) {
-            	resp = setVariableValue( appArgs[i]->text, argsProcessed[i], nodeArgs[i], rei, env, errmsg, r );
+                resp = setVariableValue( appArgs[i]->text, argsProcessed[i], nodeArgs[i], rei, env, errmsg, r );
             }
             /*char *buf = convertResToString(args[i]);
             printEnvIndent(env);
@@ -999,10 +999,10 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
 
     /*
             char vn[100];
-    	for(i=0;i<numOfStrArgs;i++) {
+        for(i=0;i<numOfStrArgs;i++) {
                 sprintf(vn,"**%d",i);
                 largs[i] = lookupFromHashTable(env, vn);
-    	}
+        }
     */
     res = newIntRes( r, ii );
 ret:
@@ -1093,7 +1093,7 @@ ret:
 #define SYSTEM_SPACE_RULE 0x100
 /*
  * look up rule node by rulename from index
- * apply rule condition index if possilbe
+ * apply rule condition index if possible
  * call execRuleNodeRes until success or no more rules
  */
 Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRuleInp, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
@@ -1115,23 +1115,23 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
     strcpy( ruleName, ruleNameInp );
     mapExternalFuncToInternalProc2( ruleName );
 
-	int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
-	int _reiSaveFlag = reiSaveFlag & SAVE_REI;
+    int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
+    int _reiSaveFlag = reiSaveFlag & SAVE_REI;
 
     RuleIndexListNode *ruleIndexListNode;
     int success = 0;
     int first = 1;
     while ( 1 ) {
-		if(systemSpaceRuleFlag != 0) {
-			statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode);
-		} else {
-			statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
-		}
+        if(systemSpaceRuleFlag != 0) {
+            statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode);
+        } else {
+            statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
+        }
 
         if ( statusI != 0 ) {
             if ( applyAllRule == 0 ) {
 #ifndef DEBUG
-//				rodsLog (LOG_NOTICE,"execRule: no more rules: %s with status %i",ruleName, statusI);
+//                rodsLog (LOG_NOTICE,"execRule: no more rules: %s with status %i",ruleName, statusI);
 #endif
                 statusRes = statusRes == NULL ? newErrorRes( r, NO_RULE_FOUND_ERR ) : statusRes;
             }
@@ -1521,10 +1521,10 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
     char *varMap;
     char errbuf[ERR_MSG_LEN];
     if ( varName[0] == '$' ) {
-    	char *arg = varName+1;
-    	if((i = applyRuleArg("acPreProcForWriteSessionVariable", &arg, 1, rei, 0)) < 0) {
-    		return newErrorRes(r, i);
-    	}
+        char *arg = varName+1;
+        if((i = applyRuleArg("acPreProcForWriteSessionVariable", &arg, 1, rei, 0)) < 0) {
+            return newErrorRes(r, i);
+        }
         i = getVarMap( "", varName, &varMap, 0 );
         if ( i < 0 ) {
             snprintf( errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".", varName );
@@ -1569,53 +1569,53 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
 }
 
 int definitelyEq(Res *a, Res *b) {
-	if(a != b && TYPE(a) == TYPE(b)) {
-		switch(TYPE(a)) {
-		case T_INT:
-			return RES_INT_VAL(a) == RES_INT_VAL(b);
-		case T_DOUBLE:
-			return RES_DOUBLE_VAL(a) == RES_DOUBLE_VAL(b);
-		case T_STRING:
-			return strcmp(a->text, b->text) == 0 ? 1 : 0;
-		case T_DATETIME:
-			return RES_TIME_VAL(a) == RES_TIME_VAL(b);
-		case T_BOOL:
-			return RES_BOOL_VAL(a) == RES_BOOL_VAL(b);
-		case T_IRODS:
-			return RES_UNINTER_STRUCT(a) == RES_UNINTER_STRUCT(b) && RES_UNINTER_BUFFER(a) == RES_UNINTER_BUFFER(b);
-		case T_PATH:
-			return strcmp(a->text, b->text) == 0 ? 1 : 0;
-		case T_CONS:
-			if(a->degree == b->degree) {
-				if(a->text == b->text || strcmp(a->text, b->text) == 0) {
-					int res = 1;
-					for(int i=0;i<a->degree;i++) {
-						if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
-							res = 0;
-							break;
-						}
-					}
-					return res;
-				}
-			}
-			return 0;
-		case T_TUPLE:
-			if(a->degree == b->degree) {
-				int res = 1;
-				for(int i=0;i<a->degree;i++) {
-					if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
-						res = 0;
-						break;
-					}
-				}
-				return res;
-			}
-			return 0;
-		default:
-			return 0;
-		}
+    if(a != b && TYPE(a) == TYPE(b)) {
+        switch(TYPE(a)) {
+        case T_INT:
+            return RES_INT_VAL(a) == RES_INT_VAL(b);
+        case T_DOUBLE:
+            return RES_DOUBLE_VAL(a) == RES_DOUBLE_VAL(b);
+        case T_STRING:
+            return strcmp(a->text, b->text) == 0 ? 1 : 0;
+        case T_DATETIME:
+            return RES_TIME_VAL(a) == RES_TIME_VAL(b);
+        case T_BOOL:
+            return RES_BOOL_VAL(a) == RES_BOOL_VAL(b);
+        case T_IRODS:
+            return RES_UNINTER_STRUCT(a) == RES_UNINTER_STRUCT(b) && RES_UNINTER_BUFFER(a) == RES_UNINTER_BUFFER(b);
+        case T_PATH:
+            return strcmp(a->text, b->text) == 0 ? 1 : 0;
+        case T_CONS:
+            if(a->degree == b->degree) {
+                if(a->text == b->text || strcmp(a->text, b->text) == 0) {
+                    int res = 1;
+                    for(int i=0;i<a->degree;i++) {
+                        if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+                            res = 0;
+                            break;
+                        }
+                    }
+                    return res;
+                }
+            }
+            return 0;
+        case T_TUPLE:
+            if(a->degree == b->degree) {
+                int res = 1;
+                for(int i=0;i<a->degree;i++) {
+                    if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+                        res = 0;
+                        break;
+                    }
+                }
+                return res;
+            }
+            return 0;
+        default:
+            return 0;
+        }
 
-	}
-	return a == b;
+    }
+    return a == b;
 }
 
