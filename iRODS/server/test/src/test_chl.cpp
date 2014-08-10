@@ -428,7 +428,7 @@ int testRegDataObj( rsComm_t *rsComm, char *name,
     dataObjInfo.dataSize = 42;
 
     strcpy( dataObjInfo.rescName, "demoResc" );
-    strcpy( dataObjInfo.filePath, filePath );
+    snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
 
@@ -510,7 +510,7 @@ int testModDataObjMeta( rsComm_t *rsComm, char *name,
 
     strcpy( dataObjInfo.rescName, "resc A" );
 
-    strcpy( dataObjInfo.filePath, filePath );
+    snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
 
@@ -545,7 +545,7 @@ int testModDataObjMeta2( rsComm_t *rsComm, char *name,
 
     strcpy( dataObjInfo.rescName, "resc A" );
 
-    strcpy( dataObjInfo.filePath, filePath );
+    snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
 
@@ -604,7 +604,7 @@ int testModRuleMeta( rsComm_t *rsComm, char *id,
 
     addKeyVal( &regParam, attrName, tmpStr );
 
-    strcpy( ruleId, id );
+    snprintf( ruleId, sizeof( ruleId ), "%s", id );
 
     status = chlModRuleExec( rsComm, ruleId, &regParam );
 
@@ -655,7 +655,7 @@ int testRegReplica( rsComm_t *rsComm, char *srcPath, char *srcDataId,
 
     strcpy( dstDataObjInfo.rescName, "resc A" );
     strcpy( dstDataObjInfo.rescGroupName, "resc A" );
-    strcpy( dstDataObjInfo.filePath, dstPath );
+    snprintf( dstDataObjInfo.filePath, sizeof( dstDataObjInfo.filePath ), "%s",  dstPath );
 
     dstDataObjInfo.replStatus = 5;
 
