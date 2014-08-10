@@ -1515,7 +1515,8 @@ int _modInheritance( int inheritFlag, int recursiveFlag, char *collIdStr, char *
     rodsLong_t status;
     char myTime[50];
     char newValue[10];
-    char pathStart[MAX_NAME_LEN * 2];
+    char tmpPath[MAX_NAME_LEN * 2];
+    char pathStart[MAX_NAME_LEN * 2 + 2];
     char auditStr[30];
 
     if ( recursiveFlag == 0 ) {
@@ -1553,8 +1554,8 @@ int _modInheritance( int inheritFlag, int recursiveFlag, char *collIdStr, char *
     }
     else {
         /* Recursive mode */
-        makeEscapedPath( pathName, pathStart, sizeof( pathStart ) );
-        strncat( pathStart, "/%", sizeof( pathStart ) );
+        makeEscapedPath( pathName, tmpPath, sizeof( tmpPath ) );
+        snprintf( pathStart, sizeof( pathStart ), "%s/%%", tmpPath );
 
         cllBindVars[cllBindVarCount++] = newValue;
         cllBindVars[cllBindVarCount++] = myTime;
