@@ -117,13 +117,18 @@ error load_plugin( PluginType*&       _plugin,
 
     // =-=-=-=-=-=-=-
     // attempt to load the plugin version interface
-    char* err = NULL;
+    char *err;
     double( *get_version )() = reinterpret_cast< double( * )() >(
                                    dlsym( handle, "get_plugin_interface_version" ) );
     if ( ( err = dlerror() ) || !get_version ) {
         std::stringstream msg;
         msg << "failed to get [get_plugin_interface_version]";
-        msg << " dlerror is [" << err << "]";
+        if ( err != NULL ) {
+            msg << " dlerror is [" << err << "]";
+        }
+        else {
+            msg << "dlerror reported no error message.";
+        }
         dlclose( handle );
         return ERROR( PLUGIN_ERROR, msg.str() );
     }
