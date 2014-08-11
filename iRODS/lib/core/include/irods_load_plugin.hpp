@@ -117,10 +117,10 @@ error load_plugin( PluginType*&       _plugin,
 
     // =-=-=-=-=-=-=-
     // attempt to load the plugin version interface
-    char* err = 0;
+    char* err = NULL;
     double( *get_version )() = reinterpret_cast< double( * )() >(
                                    dlsym( handle, "get_plugin_interface_version" ) );
-    if ( !get_version || ( ( err = dlerror() ) != 0 ) ) {
+    if ( ( err = dlerror() ) || !get_version ) {
         std::stringstream msg;
         msg << "failed to get [get_plugin_interface_version]";
         msg << " dlerror is [" << err << "]";
