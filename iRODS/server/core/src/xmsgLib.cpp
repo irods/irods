@@ -216,14 +216,8 @@ int checkMsgCondition( irodsXmsg_t *irodsXmsg, char *msgCond ) {
 
 
 int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
-    int status, i ;
-    irodsXmsg_t *tmpIrodsXmsg;
-    ticketMsgStruct_t *ticketMsgStruct;
-    int rcvTicket;
-    char *msgCond;
-
-    rcvTicket = rcvXmsgInp->rcvTicket;
-    msgCond = rcvXmsgInp->msgCondition;
+    int rcvTicket = rcvXmsgInp->rcvTicket;
+    char *msgCond = rcvXmsgInp->msgCondition;
 
     if ( outIrodsXmsg == NULL ) {
         rodsLog( LOG_ERROR,
@@ -233,7 +227,8 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
 
     /* locate the ticketMsgStruct_t */
 
-    status = getTicketMsgStructByTicket( rcvTicket, &ticketMsgStruct );
+    ticketMsgStruct_t *ticketMsgStruct;
+    int status = getTicketMsgStructByTicket( rcvTicket, &ticketMsgStruct );
 
     if ( status < 0 ) {
         return status;
@@ -242,31 +237,18 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
     /* now locate the irodsXmsg_t */
 
     MessQueCondMutex.lock();
+    irodsXmsg_t *tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
 
-    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
-
-    if ( tmpIrodsXmsg == NULL ) {
-        MessQueCondMutex.unlock();
-        return SYS_NO_XMSG_FOR_MSG_NUMBER;
-    }
-
-    while ( tmpIrodsXmsg != NULL ) {
-        /*      if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) break; */
-        i = checkMsgCondition( tmpIrodsXmsg, msgCond );
-        if ( i == 0 ) {
-            break;
-        }
+    while ( tmpIrodsXmsg != NULL && checkMsgCondition( tmpIrodsXmsg, msgCond ) != 0 ) {
         tmpIrodsXmsg = tmpIrodsXmsg->tnext;
     }
 
     *outIrodsXmsg = tmpIrodsXmsg;
+    MessQueCondMutex.unlock();
     if ( tmpIrodsXmsg == NULL ) {
-        MessQueCondMutex.unlock();
         return SYS_NO_XMSG_FOR_MSG_NUMBER;
     }
-    else {
-        return 0;
-    }
+    return 0;
 }
 
 
