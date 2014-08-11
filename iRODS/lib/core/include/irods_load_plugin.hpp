@@ -185,7 +185,7 @@ error load_plugin( PluginType*&       _plugin,
         return ERROR( PLUGIN_ERROR, msg.str() );
     }
 
-    return SUCCESS();;
+    return SUCCESS();
 
 } // load_plugin
 
