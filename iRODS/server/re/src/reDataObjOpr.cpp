@@ -727,9 +727,8 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
             }
             myBBuf = inpParam2->inpOutBuf;
         }
+        rei->status = rsDataObjWrite( rsComm, myDataObjWriteInp, myBBuf );
     }
-
-    rei->status = rsDataObjWrite( rsComm, myDataObjWriteInp, myBBuf );
 
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
