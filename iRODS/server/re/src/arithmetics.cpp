@@ -1217,10 +1217,10 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
                 }
             }
         }
-        else if ( RES_ERR_CODE( statusRes ) == RETRY_WITHOUT_RECOVERY_ERR ) {
+        else if ( statusRes != NULL && RES_ERR_CODE( statusRes ) == RETRY_WITHOUT_RECOVERY_ERR ) {
             reTryWithoutRecovery = 1;
         }
-        else if ( RES_ERR_CODE( statusRes ) == CUT_ACTION_PROCESSED_ERR ) {
+        else if ( statusRes != NULL && RES_ERR_CODE( statusRes ) == CUT_ACTION_PROCESSED_ERR ) {
             break;
         }
 
