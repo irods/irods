@@ -421,13 +421,13 @@ int testRegDataObj( rsComm_t *rsComm, char *name,
     dataObjInfo_t dataObjInfo;
     memset( &dataObjInfo, 0, sizeof( dataObjInfo_t ) );
 
-    strcpy( dataObjInfo.objPath, name );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
     dataObjInfo.replNum = 1;
-    strcpy( dataObjInfo.version, "12" );
-    strcpy( dataObjInfo.dataType, dataType );
+    snprintf( dataObjInfo.version, sizeof( dataObjInfo.version ), "%s", "12" );
+    snprintf( dataObjInfo.dataType, sizeof( dataObjInfo.dataType ), "%s", dataType );
     dataObjInfo.dataSize = 42;
 
-    strcpy( dataObjInfo.rescName, "demoResc" );
+    snprintf( dataObjInfo.rescName, sizeof( dataObjInfo.rescName ), "%s", "demoResc" );
     snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
@@ -500,16 +500,15 @@ int testModDataObjMeta( rsComm_t *rsComm, char *name,
     snprintf( tmpStr2, sizeof tmpStr2, "test comment" );
     addKeyVal( &regParam, "dataComments", tmpStr2 );
 
-    strcpy( dataObjInfo.objPath, name );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
     /*   dataObjInfo.replNum=1; */
     dataObjInfo.replNum = 0;
 
-    strcpy( dataObjInfo.version, "12" );
-    strcpy( dataObjInfo.dataType, dataType );
+    snprintf( dataObjInfo.version, sizeof( dataObjInfo.version ), "%s", "12" );
+    snprintf( dataObjInfo.dataType, sizeof( dataObjInfo.dataType ), "%s", dataType );
     dataObjInfo.dataSize = 42;
 
-    strcpy( dataObjInfo.rescName, "resc A" );
-
+    snprintf( dataObjInfo.rescName, sizeof( dataObjInfo.rescName ), "%s", "resc A" );
     snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
@@ -537,14 +536,13 @@ int testModDataObjMeta2( rsComm_t *rsComm, char *name,
     snprintf( tmpStr2, sizeof tmpStr2, "42" );
     addKeyVal( &regParam, "dataSize", tmpStr2 );
 
-    strcpy( dataObjInfo.objPath, name );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
     dataObjInfo.replNum = 0;
-    strcpy( dataObjInfo.version, "12" );
-    strcpy( dataObjInfo.dataType, dataType );
+    snprintf( dataObjInfo.version, sizeof( dataObjInfo.version ), "%s", "12" );
+    snprintf( dataObjInfo.dataType, sizeof( dataObjInfo.dataType ), "%s", dataType );
     dataObjInfo.dataSize = 42;
 
-    strcpy( dataObjInfo.rescName, "resc A" );
-
+    snprintf( dataObjInfo.rescName, sizeof( dataObjInfo.rescName ), "%s", "resc A" );
     snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", filePath );
 
     dataObjInfo.replStatus = 5;
@@ -648,13 +646,13 @@ int testRegReplica( rsComm_t *rsComm, char *srcPath, char *srcDataId,
     memset( &dstDataObjInfo, 0, sizeof( dataObjInfo_t ) );
     memset( &condInput, 0, sizeof( condInput ) );
 
-    strcpy( srcDataObjInfo.objPath, srcPath );
+    snprintf( srcDataObjInfo.objPath, sizeof( srcDataObjInfo.objPath ), "%s", srcPath );
     srcDataObjInfo.dataId = atoi( srcDataId );
     srcDataObjInfo.replNum = atoi( srcReplNum );
 
 
-    strcpy( dstDataObjInfo.rescName, "resc A" );
-    strcpy( dstDataObjInfo.rescGroupName, "resc A" );
+    snprintf( dstDataObjInfo.rescName, sizeof( dstDataObjInfo.rescName ), "%s", "resc A" );
+    snprintf( dstDataObjInfo.rescGroupName, sizeof( dstDataObjInfo.rescGroupName ), "%s", "resc A" );
     snprintf( dstDataObjInfo.filePath, sizeof( dstDataObjInfo.filePath ), "%s",  dstPath );
 
     dstDataObjInfo.replStatus = 5;
