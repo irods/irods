@@ -547,7 +547,6 @@ int readICatUserInfo( char *userName, char *attr, char userInfo[MAX_NAME_LEN], r
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char condstr[MAX_NAME_LEN];
-    sqlResult_t *r;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -559,13 +558,12 @@ int readICatUserInfo( char *userName, char *attr, char userInfo[MAX_NAME_LEN], r
     addInxIval( &genQueryInp.selectInp, COL_META_USER_ATTR_VALUE, 1 );
 
     status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    userInfo[0] = '\0';
     if ( status >= 0 && genQueryOut->rowCnt > 0 ) {
-        r = getSqlResultByInx( genQueryOut, COL_META_USER_ATTR_VALUE );
-        rstrcpy( userInfo, &r->value[0], MAX_NAME_LEN );
+        if ( sqlResult_t *r = getSqlResultByInx( genQueryOut, COL_META_USER_ATTR_VALUE ) ) {
+            rstrcpy( userInfo, &r->value[0], MAX_NAME_LEN );
+        }
         genQueryInp.continueInx =  genQueryOut->continueInx;
-    }
-    else {
-        userInfo[0] = '\0';
     }
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
