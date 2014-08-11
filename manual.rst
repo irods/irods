@@ -130,7 +130,17 @@ Repositories, issue trackers, and source code are available on GitHub.
 Installation
 ------------
 
-iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource.  A resource server connects to an existing data grid (Zone) and can provide additional `Storage Resources`_.  An iCAT server, consisting of an iRODS server, storage resource(s), and an iCAT metadata catalog, provide the central point of coordination for a single data grid (Zone).
+iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource:
+
+1) An iCAT server manages a data grid (Zone), handles the database connection to the iCAT metadata catalog (which could be either local or remote), and can provide `Storage Resources`_.  An iRODS data grid (Zone) will have exactly one iCAT server.
+
+2) A Resource server connects to an existing data grid (Zone) and can provide additional storage resource(s).  An iRODS data grid (Zone) can have zero or more Resource servers.
+
+An iCAT server is just a Resource server that also provides the central point of coordination for the data grid (Zone) and manages the metadata.
+
+A single computer cannot have both an iCAT server and a Resource server installed.
+
+The simplest iRODS installation consists of one iCAT server and zero Resource servers.
 
 iCAT Server
 -----------
