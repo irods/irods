@@ -884,6 +884,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
+        free( rodsObjStatOut );
         return status;
     }
     else if ( rodsObjStatOut->specColl == NULL ) {
@@ -966,6 +967,7 @@ int structFileReg(
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 || NULL == rodsObjStatOut ) {
+        free( rodsObjStatOut );
         return status;    // JMC cppcheck - nullptr
     }
 
