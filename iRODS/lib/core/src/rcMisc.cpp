@@ -812,6 +812,9 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     if ( condInput == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
+    if ( condInput->keyWord == NULL || condInput->value == NULL ) {
+        condInput->len = 0;
+    }
 
     /* check if the keyword exists */
     for ( int i = 0; i < condInput->len; i++ ) {
