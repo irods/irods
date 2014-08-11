@@ -55,10 +55,16 @@ fi
 set +e
 CHECKACCT=`getent passwd $MYACCTNAME `
 set -e
+SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+DETECTEDOS=`$SCRIPTPATH/find_os.sh`
 if [ "$CHECKACCT" = "" ] ; then
   # new account
   echo "Creating Service Account: $MYACCTNAME at $IRODS_HOME_DIR "
   useradd -r -d $IRODS_HOME_DIR -M -s /bin/bash -g $MYGROUPNAME -c "iRODS Administrator" $MYACCTNAME
+  # remove the password from the service account
+  if [ "$DETECTEDOS" != "MacOSX" ] ; then
+    passwd -d $MYACCTNAME > /dev/null
+  fi
 else
   # use existing account
   # leave user settings and files as is
@@ -79,8 +85,6 @@ chown -R $MYACCTNAME:$MYGROUPNAME /etc/irods
 
 # =-=-=-=-=-=-=-
 # set permissions on iRODS authentication mechanisms
-SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
-DETECTEDOS=`$SCRIPTPATH/find_os.sh`
 if [ "$DETECTEDOS" == "MacOSX" ] ; then
     chown root:wheel $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
 else
