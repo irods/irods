@@ -976,7 +976,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
                     *dataObjInfoHead = tmpDataObjInfo->next;
 
                 }
-                else {
+                else if ( prevDataObjInfo != NULL ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
 
                 }
@@ -1008,7 +1008,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
                     *dataObjInfoHead = tmpDataObjInfo->next;
 
                 }
-                else {
+                else if ( prevDataObjInfo != NULL ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
 
                 }
