@@ -53,8 +53,8 @@ scanObj( rcComm_t *conn,
         // if it is part of a mounted collection, abort
         if ( is_directory( p ) ) {
             if ( int status = checkIsMount( conn, inpPath ) ) {
-                rodsLog( LOG_ERROR, "The directory %s or one of its"
-                        "subdirectories to be scanned is declared as being"
+                rodsLog( LOG_ERROR, "The directory %s or one of its "
+                        "subdirectories to be scanned is declared as being "
                         "used for a mounted collection: abort!", inpPath );
                 return status;
             }
