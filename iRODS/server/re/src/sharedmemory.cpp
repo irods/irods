@@ -20,7 +20,7 @@ unsigned char *prepareServerSharedMemory() {
     }
 
     try {
-        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shared_memory_name.c_str(), boost::interprocess::read_write );
+        shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_or_create, shared_memory_name.c_str(), boost::interprocess::read_write, 0600 );
         boost::interprocess::offset_t size;
         if ( shm_obj->get_size( size ) && size == 0 ) {
             shm_obj->truncate( SHMMAX );
