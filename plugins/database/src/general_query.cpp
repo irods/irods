@@ -935,60 +935,50 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
     static char condPart2[MAX_NAME_LEN * 2];
     static char conditionsForBind[MAX_NAME_LEN * 2];
     static int conditionsForBindIx = 0;
-    int type;
-    char *cptr;
     int status;
-    int i;
-    int first = 1;
-    int keepGoing = 1;
 
     if ( prevWhereLen < 0 ) { /* reinitialize */
         conditionsForBindIx = 0;
         return 0;
     }
 
-    rstrcpy( condPart1, condition, MAX_NAME_LEN * 2 );
+    /* If there's an AND that was appended, need to include it */
+    int i = prevWhereLen;
+    while ( whereSQL[i] == ' ' ) {
+        i++;
+    }
+    if ( strncmp( whereSQL + i, "AND", 3 ) == 0 ) {
+        prevWhereLen = i + 3;
+    }
 
-    while ( keepGoing ) {
-        type = 0;
-        cptr = strstr( condPart1, "||" );
-        if ( cptr != NULL ) {
+    rstrcpy( tabAndColumn, ( char * )&whereSQL[prevWhereLen], MAX_SQL_SIZE_GQ );
+    whereSQL[prevWhereLen] = '\0'; /* reset whereSQL to previous spot */
+    rstrcat( whereSQL, " ( ", MAX_SQL_SIZE_GQ );
+
+    rstrcpy( condPart2, condition, MAX_NAME_LEN * 2 );
+
+    while ( true ) {
+        rstrcpy( condPart1, condPart2, MAX_NAME_LEN * 2 );
+
+        char* orptr = strstr( condPart1, "||" );
+        char* andptr = strstr( condPart1, "&&" );
+        char *cptr = NULL;
+        int type = 0;
+        if( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
+            cptr = orptr;
             type = 1;
         }
-        else {
-            cptr = strstr( condPart1, "&&" );
+        else if( andptr != NULL && ( orptr == NULL || andptr < orptr ) ) {
+            cptr = andptr;
             type = 2;
         }
-        if ( type ) {
-            *cptr = '\0';
-            cptr += 2; /* past the && or || */
-            rstrcpy( condPart2, cptr, MAX_NAME_LEN * 2 );
+        else {
+            break;
         }
+        *cptr = '\0';
+        cptr += 2; /* past the && or || */
+        rstrcpy( condPart2, cptr, MAX_NAME_LEN * 2 );
 
-        if ( first ) {
-            /* If there's an AND that was appended, need to include it */
-            i = prevWhereLen;
-            if ( whereSQL[i] == ' ' ) {
-                i++;
-            }
-            if ( whereSQL[i] == ' ' ) {
-                i++;
-            }
-            if ( whereSQL[i] == 'A' ) {
-                i++;
-                if ( whereSQL[i] == 'N' ) {
-                    i++;
-                    if ( whereSQL[i] == 'D' ) {
-                        i++;
-                        prevWhereLen = i;
-                    }
-                }
-            }
-
-            rstrcpy( tabAndColumn, ( char * )&whereSQL[prevWhereLen], MAX_SQL_SIZE_GQ );
-            whereSQL[prevWhereLen] = '\0'; /* reset whereSQL to previous spot */
-            rstrcat( whereSQL, " ( ", MAX_SQL_SIZE_GQ );
-        }
         rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ );
         rstrcpy( ( char* )&conditionsForBind[conditionsForBindIx], condPart1,
                  ( MAX_SQL_SIZE_GQ * 2 ) - conditionsForBindIx );
@@ -1001,23 +991,15 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         if ( type == 1 ) {
             rstrcat( whereSQL, " OR ", MAX_SQL_SIZE_GQ );
         }
-        else {
+        else if (type == 2) {
             rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
         }
+    }
 
-        if ( strstr( condPart2, "||" ) == NULL &&
-                strstr( condPart2, "&&" ) == NULL ) {
-            rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ );
-            status = insertWhere( condPart2, 0 );
-            if ( status ) {
-                return status;
-            }
-            keepGoing = 0;
-        }
-        else {
-            rstrcpy( condPart1, condPart2, MAX_NAME_LEN * 2 );
-        }
-        first = 0;
+    rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ );
+    status = insertWhere( condPart2, 0 );
+    if ( status ) {
+        return status;
     }
 
     rstrcat( whereSQL, " ) ", MAX_SQL_SIZE_GQ );
