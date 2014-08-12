@@ -172,17 +172,12 @@ $(BOOSTVERSIONARCHIVE) :
 
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
-	@sed "s/defined(__GLIBC_HAVE_LONG_LONG)/(defined(__GLIBC_HAVE_LONG_LONG) || (defined(__GLIBC__) \&\& ((__GLIBC__ > 2) || ((__GLIBC__ == 2) \&\& (__GLIBC_MINOR__ >= 17)))))/" $(BOOSTVERSION)/boost/cstdint.hpp > /tmp/cstdint.hpp
-	@rsync -c /tmp/cstdint.hpp $(BOOSTVERSION)/boost/cstdint.hpp
-	@rm -f /tmp/cstdint.hpp
-	@touch $(BOOSTVERSION)/link.jam
 	@cd $(BOOSTVERSION) ; \
 		./bootstrap.sh --with-libraries=filesystem,system,thread,regex
 
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
-		./bjam clean ; \
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(HDF5VERSIONARCHIVE) :
