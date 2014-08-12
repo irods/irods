@@ -32,9 +32,9 @@ extern "C" {
     int
     trimQuotes( char *s );
     int
-    checkStringForSystem( char *inString );
+    checkStringForSystem( const char *inString );
     int
-    checkStringForEmailAddress( char *inString );
+    checkStringForEmailAddress( const char *inString );
 
 #ifdef __cplusplus
 }

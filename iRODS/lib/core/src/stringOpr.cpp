@@ -8,8 +8,9 @@
 #include "rodsErrorTable.hpp"
 #include "rodsLog.hpp"
 #include <string>
+#include "boost/regex.hpp"
 
-char *rmemmove( void *dest, void *src, int strLen, int maxLen ) {
+char *rmemmove( void *dest, const void *src, int strLen, int maxLen ) {
 
     if ( dest == NULL || src == NULL ) {
         return NULL;
@@ -27,7 +28,7 @@ char *rmemmove( void *dest, void *src, int strLen, int maxLen ) {
     }
 }
 
-char *rmemcpy( void *dest, void *src, int strLen, int maxLen ) {
+char *rmemcpy( void *dest, const void *src, int strLen, int maxLen ) {
 
     if ( dest == NULL || src == NULL ) {
         return NULL;
@@ -305,10 +306,14 @@ trimQuotes( char * s ) {
 }
 
 int
-checkStringForSystem( char * inString ) {
-    // .zZZZz. :: TODO - Make this do something. Sanitize strings to be
-    // passed as arguments to system calls, I think?
-    return 0;
+checkStringForSystem( const char * inString ) {
+    if ( inString == NULL ) {
+        return 0;
+    }
+    if ( boost::regex_match( inString, boost::regex("[a-zA-Z0-9,./ ]*") ) ) {
+        return 0;
+    }
+    return USER_INPUT_STRING_ERR;
 }
 
 /*
@@ -318,21 +323,12 @@ checkStringForSystem( char * inString ) {
  * And this set of characters is a subset of that allowed in the RFCs.
  */
 int
-checkStringForEmailAddress( char * inString ) {
-    char c;
+checkStringForEmailAddress( const char * inString ) {
     if ( inString == NULL ) {
         return 0;
     }
-    c = *inString;
-    while ( c != '\0' ) {
-        if ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
-                ( c >= '0' && c <= '9' ) ||  c == ',' || c == '.' ||
-                c == '/' || c == '-' || c == '+' || c == '*' || c == '_' || c == '@' ) {
-        }
-        else {
-            return USER_INPUT_STRING_ERR;
-        }
-        c = *inString++;
+    if ( boost::regex_match( inString, boost::regex("[-a-zA-Z0-9,./+*_@]*") ) ) {
+        return 0;
     }
-    return 0;
+    return USER_INPUT_STRING_ERR;
 }

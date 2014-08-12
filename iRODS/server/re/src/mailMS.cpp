@@ -62,10 +62,12 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
 
     status = checkStringForEmailAddress( toAddr );
     if ( status ) {
+        rodsLog( LOG_NOTICE, "checkStringForEmailAddress failed for [%s]", toAddr );
         return status;
     }
     status = checkStringForSystem( subjectLine );
     if ( status ) {
+        rodsLog( LOG_NOTICE, "checkStringForSystem failed for [%s]", subjectLine );
         return status;
     }
 
