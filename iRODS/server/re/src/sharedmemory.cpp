@@ -29,8 +29,8 @@ unsigned char *prepareServerSharedMemory() {
         unsigned char *shmBuf = ( unsigned char * ) mapped->get_address();
         return shmBuf;
     }
-    catch ( boost::interprocess::interprocess_exception e ) {
-        rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to prepare shared memory" );
+    catch ( const boost::interprocess::interprocess_exception &e ) {
+        rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to prepare shared memory. Exception caught [%s]", e.what() );
         return NULL;
     }
 }
@@ -59,7 +59,7 @@ unsigned char *prepareNonServerSharedMemory() {
     std::string shared_memory_name;
     irods::error ret = getSharedMemoryName( shared_memory_name );
     if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory name" );
+        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory name [%s]", shared_memory_name.c_str() );
         return NULL;
     }
         
@@ -69,8 +69,8 @@ unsigned char *prepareNonServerSharedMemory() {
         unsigned char *buf = ( unsigned char * ) mapped->get_address();
         return buf;
     }
-    catch ( boost::interprocess::interprocess_exception e ) {
-        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory" );
+    catch ( const boost::interprocess::interprocess_exception &e ) {
+        rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory object [%s]. Exception caught [%s]", shared_memory_name.c_str(), e.what() );
         return NULL;
     }
 }
