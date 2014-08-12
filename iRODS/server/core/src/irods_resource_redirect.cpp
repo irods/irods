@@ -85,9 +85,10 @@ error request_vote_for_file_object(
 /// @breif function to handle resolving the hier given votes of the
 ///        root resources for an open operation
 static
-error resolve_hier_for_open_without_keyword(
+error resolve_hier_for_open_or_write_without_keyword(
     rsComm_t*                _comm,
     irods::file_object_ptr  _file_obj,
+    const std::string&       _oper,
     std::string&             _out_hier ) {
     // =-=-=-=-=-=-=-
     // build a list of root hiers for all
@@ -123,7 +124,7 @@ error resolve_hier_for_open_without_keyword(
         std::string voted_hier;
         irods::error ret = request_vote_for_file_object(
                                _comm,
-                               OPEN_OPERATION,
+                               _oper.c_str(),
                                itr->first,
                                _file_obj,
                                voted_hier,
@@ -159,16 +160,17 @@ error resolve_hier_for_open_without_keyword(
 
     return SUCCESS();
 
-} // resolve_hier_for_open_without_keyword
+} // resolve_hier_for_open_or_write_without_keyword
 
 /// =-=-=-=-=-=-=-
 /// @breif function to handle resolving the hier given the fco and
 ///        resource keyword
 static
-error resolve_hier_for_open(
+error resolve_hier_for_open_or_write(
     rsComm_t*                _comm,
     irods::file_object_ptr  _file_obj,
     const char*              _key_word,
+    const std::string&       _oper,
     std::string&             _out_hier ) {
     // =-=-=-=-=-=-=-
     // regardless we need to resolve the appropriate resource
@@ -203,7 +205,7 @@ error resolve_hier_for_open(
             float vote = 0.0;
             error ret = request_vote_for_file_object(
                             _comm,
-                            OPEN_OPERATION,
+                            _oper.c_str(),
                             _key_word,
                             _file_obj,
                             _out_hier,
@@ -226,12 +228,13 @@ error resolve_hier_for_open(
 
     // =-=-=-=-=-=-=-
     // either no kw match or no kw, so pick one...
-    return resolve_hier_for_open_without_keyword(
+    return resolve_hier_for_open_or_write_without_keyword(
                _comm,
                _file_obj,
+               _oper,
                _out_hier );
 
-} // resolve_hier_for_open
+} // resolve_hier_for_open_or_write
 
 /// =-=-=-=-=-=-=-
 /// @breif function to handle resolving the hier given the fco and
@@ -452,7 +455,7 @@ error resolve_resource_hierarchy(
     // =-=-=-=-=-=-=-
     // perform an open operation if create is not specificied ( thats all we have for now )
     if ( OPEN_OPERATION  == oper ||
-            WRITE_OPERATION == oper ) {
+         WRITE_OPERATION == oper ) {
         // =-=-=-=-=-=-=-
         // factory has already been called, test for
         // success before proceeding
@@ -474,10 +477,11 @@ error resolve_resource_hierarchy(
         // =-=-=-=-=-=-=-
         // attempt to resolve for an open
         _out_hier = "";
-        error ret = resolve_hier_for_open(
+        error ret = resolve_hier_for_open_or_write(
                         _comm,
                         file_obj,
                         key_word,
+                        oper,
                         _out_hier );
         return ret;
 
