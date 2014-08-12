@@ -11,6 +11,9 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
+#include <iostream>
+#include <vector>
+
 #define MAX_SQL 300
 #define BIG_STR 200
 
