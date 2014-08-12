@@ -20,6 +20,7 @@
 
 #include "sockComm.hpp"
 #include "irods_threads.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 rcComm_t *
 rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,

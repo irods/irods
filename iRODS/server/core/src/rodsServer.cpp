@@ -30,6 +30,7 @@
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
+#include "sockCommNetworkInterface.hpp"
 
 
 

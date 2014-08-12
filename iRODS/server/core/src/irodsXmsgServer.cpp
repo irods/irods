@@ -13,6 +13,7 @@
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_signal.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitely */
 

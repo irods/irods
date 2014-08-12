@@ -25,6 +25,7 @@ jmp_buf Jenv;
 #include "irods_network_factory.hpp"
 #include "irods_server_api_table.hpp"
 #include "irods_threads.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 
 int rsApiHandler(

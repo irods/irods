@@ -35,6 +35,7 @@ jmp_buf Jcenv;
 #include "irods_network_manager.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_network_constants.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
 //

@@ -11,6 +11,7 @@
 #include "irods_network_constants.hpp"
 #include "irods_tcp_object.hpp"
 #include "irods_stacktrace.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

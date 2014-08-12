@@ -14,6 +14,7 @@
 #include "rcGlobalExtern.hpp"
 #include "rcMisc.hpp"
 #include "sockComm.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

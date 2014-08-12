@@ -19,6 +19,8 @@
 #include "reFuncDefs.hpp"
 #include "irods_network_factory.hpp"
 
+#include "sockCommNetworkInterface.hpp"
+
 static boost::mutex			     ReqQueCondMutex;
 static boost::mutex			     MessQueCondMutex;
 static boost::thread*			 ProcReqThread[ NUM_XMSG_THR ];

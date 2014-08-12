@@ -42,6 +42,7 @@ char *__loc1;
 #include "irods_client_server_negotiation.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_threads.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 #include <iomanip>
 #include <fstream>

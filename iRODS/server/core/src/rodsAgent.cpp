@@ -32,6 +32,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_threads.hpp"
 
 #include "readServerConfig.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 /* #define SERVER_DEBUG 1   */
 int

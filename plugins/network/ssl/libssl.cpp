@@ -12,6 +12,7 @@
 #include "irods_ssl_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_buffer_encryption.hpp"
+#include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
