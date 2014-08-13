@@ -30,9 +30,11 @@ extern "C" {
         action = ( struct sigaction* )malloc( sizeof( struct sigaction ) );
         memset( action, 0, sizeof( struct sigaction ) );
         action->sa_handler = segv_handler;
+#ifndef RELEASE_FLAG
         sigaction( 11, action, 0 );
         sigaction( 6, action, 0 );
         sigaction( 2, action, 0 );
+#endif
     }
 
     void unregister_handlers() {
