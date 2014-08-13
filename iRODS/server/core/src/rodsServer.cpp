@@ -2,6 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "rodsServer.hpp"
+#include "sharedmemory.hpp"
+#include "cache.hpp"
 #include "resource.hpp"
 #include "miscServerFunct.hpp"
 
@@ -93,19 +95,19 @@ namespace {
                    << static_cast<intmax_t>( getpid() )
                    << "_"
                    << cache_salt_random;
-    
+
         ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
         if ( !ret.ok() ) {
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
             return PASS( ret );
         }
-        
+
         int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
         if ( 0 != ret_int ) {
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable" );
             return ERROR( SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable" );
-        }        
-        
+        }
+
         return SUCCESS();
     }
 }
@@ -429,7 +431,7 @@ serverMain( char *logDir ) {
     }		/* infinite loop */
 
     /* not reached - return (status); */
-    return( 0 ); /* to avoid warning */
+    return ( 0 ); /* to avoid warning */
 }
 
 void
@@ -925,6 +927,13 @@ initServerMain( rsComm_t *svrComm ) {
             execv( av[0], av );
             exit( 1 );
         }
+    }
+    else if ( unsigned char *shared = prepareServerSharedMemory() ) {
+        copyCache( &shared, SHMMAX, &ruleEngineConfig );
+        detachSharedMemory();
+    }
+    else {
+        rodsLog( LOG_ERROR, "Cannot open shared memory." );
     }
     getXmsgHost( &xmsgServerHost );
     if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {
