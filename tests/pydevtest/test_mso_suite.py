@@ -57,29 +57,7 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmd( s.adminsession, 'ireg -D mso -R archiveResc "//http://people.renci.org/~jasonc/irods/http_mso_test_file.txt" '+test_file_path+'/test_file.txt')
         assertiCmd( s.adminsession, 'iget -f '+test_file_path+'/test_file.txt')
-        
-        shutil.copy( 'test_file.txt', 'backup_test_file.txt' )
-        myfile = open( 'test_file.txt', "a")
-        myfile.write('THIS IS A NEW LINE\n')
-        myfile.close()
-        
-        assertiCmd( s.adminsession, 'iput -f test_file.txt '+test_file_path+'/test_file.txt')
         os.remove( 'test_file.txt' )
-        
-	assertiCmd( s.adminsession, 'iget -f '+test_file_path+'/test_file.txt')
-
-
-	result = os.system("diff %s %s" % ( 'test_file.txt', 'backup_test_file.txt' ))
-        assert result != 0 
-
-        # repave remote file with old copy of the file
-        assertiCmd( s.adminsession, 'iput -f backup_test_file.txt '+test_file_path+'/test_file.txt')
-        
-        # unregister the object
-        assertiCmd( s.adminsession, 'irm -U '+test_file_path+'/test_file.txt')
-        
-        os.remove( 'test_file.txt' )
-        os.remove( 'backup_test_file.txt' )
 
     def test_mso_slink(self):
         test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
