@@ -1477,14 +1477,20 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
-        if ( irods::OPEN_OPERATION == ( *_opr ) ) {
+        if ( irods::OPEN_OPERATION == ( *_opr ) ||
+             irods::WRITE_OPERATION  == ( *_opr ) ) {
+            
+            if( irods::WRITE_OPERATION  == ( *_opr ) ) {
+                _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
+            }
+
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
             return compound_file_redirect_open( _ctx, _curr_host, _out_parser, _out_vote );
 
         }
-        else if ( irods::CREATE_OPERATION == ( *_opr ) ||
-                  irods::WRITE_OPERATION  == ( *_opr ) ) {
+        else if ( irods::CREATE_OPERATION == ( *_opr ) 
+                   ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
             return compound_file_redirect_create( _ctx, ( *_opr ), resc_name, _curr_host, _out_parser, _out_vote );
