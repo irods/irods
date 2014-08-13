@@ -33,14 +33,9 @@ use File::Basename;
 $version{"irods_setup.pl"} = "Mar 2014";
 
 # =-=-=-=-=-=-=-
-# detect whether running in a consistent environment (usually the service account user)
+# detect the running environment (usually the service account user)
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
-if( $scripttoplevel !~ /$ENV{HOME}/ ) {
-    print "The current environment [$ENV{HOME}] does not match script location [$scripttoplevel].\n";
-    print "Please switch user and run this script again.\n";
-    exit(1);
-}
 
 # =-=-=-=-=-=-=-
 # for testing later...
