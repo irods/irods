@@ -58,6 +58,9 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         assertiCmd( s.adminsession, 'ireg -D mso -R archiveResc "//http://people.renci.org/~jasonc/irods/http_mso_test_file.txt" '+test_file_path+'/test_file.txt')
         assertiCmd( s.adminsession, 'iget -f '+test_file_path+'/test_file.txt')
         os.remove( 'test_file.txt' )
+        # unregister the object
+        assertiCmd( s.adminsession, 'irm -U '+test_file_path+'/test_file.txt')
+        assertiCmd( s.adminsession, 'ils -L', 'STDOUT', 'tempZone')
 
     def test_mso_slink(self):
         test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
@@ -76,7 +79,7 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
     def test_mso_irods(self):
         hostname = socket.gethostname()
         test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
-        assertiCmd( s.adminsession, 'iput -fR origResc ../zombiereaper.sh src_file.txt' )
+        assertiCmd( s.adminsession, 'iput -fR pydevtest_AnotherResc ../zombiereaper.sh src_file.txt' )
         assertiCmd( s.adminsession, 'ireg -D mso -R archiveResc "//irods:'+hostname+':1247:rods@tempZone'+test_file_path+'/src_file.txt" '+test_file_path+'/test_file.txt')
         assertiCmd( s.adminsession, 'iget -f '+test_file_path+'/test_file.txt')
 	
@@ -87,4 +90,5 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         
         # unregister the object
         assertiCmd( s.adminsession, 'irm -U '+test_file_path+'/test_file.txt')
+        assertiCmd( s.adminsession, 'irm -f src_file.txt' )
 
