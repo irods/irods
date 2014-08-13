@@ -80,6 +80,29 @@ error::error(
 } // ctor
 
 // =-=-=-=-=-=-=-
+// public - deprecated constructor - since 4.0.3
+error::error(
+    bool         ,
+    long long    ,
+    std::string  _msg,
+    std::string  _file,
+    int          _line,
+    std::string  _fcn,
+    const error& _rhs ) :
+    status_( _rhs.status() ),
+    code_( _rhs.code() ),
+    message_( _msg ) {
+    // =-=-=-=-=-=-=-
+    // cache RHS vector into our vector first
+    result_stack_ = _rhs.result_stack_;
+
+    // =-=-=-=-=-=-=-
+    // cache message on message stack
+    result_stack_.push_back( build_result_string( _file, _line, _fcn ) );
+
+} // ctor
+
+// =-=-=-=-=-=-=-
 // public - useful constructor
 error::error(
     std::string  _msg,
@@ -160,6 +183,12 @@ std::string error::result() const {
     return result;
 
 } // result
+
+// =-=-=-=-=-=-=-
+// public - return the status_ - deprecated in 4.0.3
+bool error::ok() {
+    return status_;
+} // ok
 
 // =-=-=-=-=-=-=-
 // public - return the status_
