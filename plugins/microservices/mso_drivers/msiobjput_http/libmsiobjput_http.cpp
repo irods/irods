@@ -103,7 +103,7 @@ extern "C" {
         }
 
 
-        printf( "CURL: msiputobj_http: Calling with %s and dataSize=%lld\n", reqStr, dataSize );
+        rodsLog( LOG_DEBUG, "CURL: msiputobj_http: Calling with %s and dataSize=%lld\n", reqStr, dataSize );
         curl = curl_easy_init();
         if ( !curl ) {
             printf( "Curl Error: msiputobj_http: Initialization failed\n" );
@@ -124,14 +124,24 @@ extern "C" {
         res = curl_easy_perform( curl );
         fclose( srcFd );
         if ( res != 0 ) {
-            printf( "msiputobj_http: Curl Error for %s:ErrNum=%i, Msg=%s\n", reqStr, res, curlErrBuf );
+            rodsLog( LOG_ERROR, "msiputobj_http: Curl Error for %s:ErrNum=%i, Msg=%s\n", reqStr, res, curlErrBuf );
             curl_easy_cleanup( curl );
             free( reqStr );
             return MSO_OBJ_PUT_FAILED;
         }
+
+        long http_code = 0;
+        curl_easy_getinfo( curl, CURLINFO_RESPONSE_CODE, &http_code );
         curl_easy_cleanup( curl );
 
-        printf( "CURL: put success with %s\n", reqStr );
+        if( 200 != http_code ) {
+            rodsLog( LOG_ERROR, "msiputobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code ); 
+            free( reqStr );
+            return MSO_OBJ_PUT_FAILED;
+
+        }
+
+        rodsLog( LOG_DEBUG, "CURL: put success with %s\n", reqStr );
 
         /* clean up */
         free( reqStr );

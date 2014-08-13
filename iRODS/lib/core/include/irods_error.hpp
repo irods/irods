@@ -38,6 +38,14 @@ public:
         std::string,   // file name
         int,           // line number
         std::string ); // function
+    error(                  // deprecated since 4.0.3
+        bool,           // status
+        long long,      // error code
+        std::string,    // message
+        std::string,    // file name
+        int,            // line number
+        std::string,    // function
+        const error& ); // previous error
     error(
         std::string,    // message
         std::string,    // file name
@@ -59,6 +67,7 @@ public:
     bool        status() const;
     long long   code() const;
     std::string result() const;
+    bool        ok();          // deprecated since 4.0.3
     bool        ok() const;
 
     // =-=-=-=-=-=-=-

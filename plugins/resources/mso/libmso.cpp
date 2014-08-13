@@ -383,7 +383,6 @@ extern "C" {
                         // more flags to simplify decision making
                         bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
                         bool resc_us = ( _resc_name == last_resc );
-
                         // =-=-=-=-=-=-=-
                         // success - correct resource and dont need a specific
                         //           replication, or the repl nums match
@@ -444,7 +443,8 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
-                    if ( irods::OPEN_OPERATION == ( *_opr ) ) {
+                    if ( irods::OPEN_OPERATION == ( *_opr ) ||
+                         irods::WRITE_OPERATION == (*_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         result = mso_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
