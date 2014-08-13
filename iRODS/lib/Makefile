@@ -123,6 +123,11 @@ endif
 endif
 INCLUDES +=	-I$(libCoreIncDir)
 
+
+ifdef RELEASE_FLAG
+CFLAGS +=       -DRELEASE_FLAG
+endif
+
 ifdef EXTENDED_ICAT
 CFLAGS +=	-DEXTENDED_ICAT
 INCLUDES +=	-I$(svrExtIcatIncDir)

@@ -58,29 +58,29 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_physical_object.o \
 		$(svrCoreObjDir)/irods_file_object.o \
 	    $(svrCoreObjDir)/irods_database_factory.o \
-   		$(svrCoreObjDir)/irods_database_manager.o \
-   		$(svrCoreObjDir)/irods_database_object.o  \
-   		$(svrCoreObjDir)/irods_postgres_object.o  \
-   		$(svrCoreObjDir)/irods_mysql_object.o  \
-   		$(svrCoreObjDir)/irods_oracle_object.o  \
-   		$(svrCoreObjDir)/irods_server_api_table.o  \
-   		$(svrCoreObjDir)/irods_get_l1desc.o  \
-   		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
+		$(svrCoreObjDir)/irods_database_manager.o \
+		$(svrCoreObjDir)/irods_database_object.o  \
+		$(svrCoreObjDir)/irods_postgres_object.o  \
+		$(svrCoreObjDir)/irods_mysql_object.o  \
+		$(svrCoreObjDir)/irods_oracle_object.o  \
+		$(svrCoreObjDir)/irods_server_api_table.o  \
+		$(svrCoreObjDir)/irods_get_l1desc.o  \
+		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_IFACE_OBJS = \
 	    $(svrCoreObjDir)/irods_database_factory.o \
-   		$(svrCoreObjDir)/irods_database_manager.o \
-   		$(svrCoreObjDir)/irods_database_object.o  \
-   		$(svrCoreObjDir)/irods_postgres_object.o  \
-   		$(svrCoreObjDir)/irods_mysql_object.o  \
-   		$(svrCoreObjDir)/irods_oracle_object.o  \
+		$(svrCoreObjDir)/irods_database_manager.o \
+		$(svrCoreObjDir)/irods_database_object.o  \
+		$(svrCoreObjDir)/irods_postgres_object.o  \
+		$(svrCoreObjDir)/irods_mysql_object.o  \
+		$(svrCoreObjDir)/irods_oracle_object.o  \
         $(svrCoreObjDir)/readServerConfig.o
 
 DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o 
 DB_PLUGIN_SRC = $(buildDir)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o 
-   		
+
 
 INCLUDES +=	-I$(svrCoreIncDir) -I$(libHasherIncDir)
 
@@ -176,6 +176,9 @@ ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)
 endif
 
+ifdef RELEASE_FLAG
+CFLAGS +=       -DRELEASE_FLAG
+endif
 ifdef GSI_AUTH
 CFLAGS +=       -DGSI_AUTH
 endif

@@ -1106,6 +1106,13 @@ if [ "$BUILDIRODS" == "1" ] ; then
         detected_irods_config_dir="/etc/irods"
     fi
 
+    # set RELEASE_FLAG accordingly
+    if [ "$RELEASE" == "1" ] ; then
+        set_tmpfile
+        sed -e "\,^#RELEASE_FLAG=,s,^.*$,RELEASE_FLAG=1," ./config/config.mk > $TMPFILE
+        mv $TMPFILE ./config/config.mk
+    fi
+
     # update build_dir to our absolute path
     set_tmpfile
     sed -e "\,^IRODS_BUILD_DIR=,s,^.*$,IRODS_BUILD_DIR=$BUILDDIR," ./config/config.mk > $TMPFILE
