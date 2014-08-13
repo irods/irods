@@ -66,16 +66,16 @@ curlErrBuf[0] = '\0';
 destFd = fopen( cacheFilename, "wb" );
 if ( destFd ==  0 ) {
     status = UNIX_FILE_OPEN_ERR - errno;
-    printf(
+    rodsLog( LOG_ERROR,
         "msigetobj_http: open error for cacheFilename %s",
         cacheFilename );
 
     RETURN( status );
 }
-printf( "CURL: msigetobj_http: Calling with %s\n", reqStr );
+rodsLog( LOG_DEBUG, "CURL: msigetobj_http: Calling with %s\n", reqStr );
 curl = curl_easy_init();
 if ( !curl ) {
-    printf( "Curl Error: msigetobj_http: Initialization failed\n" );
+    rodsLog( LOG_ERROR, "Curl Error: msigetobj_http: Initialization failed\n" );
     fclose( destFd );
     RETURN( MSO_OBJ_GET_FAILED );
 }
@@ -91,12 +91,12 @@ curl_easy_setopt( curl, CURLOPT_SSL_VERIFYHOST, 0L );
 res = curl_easy_perform( curl );
 fclose( destFd );
 if ( res != 0 ) {
-    printf(
-        "msigetobj_http: Curl Error for %s:ErrNum=%i, Msg=%s\n",
-        reqStr, res, curlErrBuf );
+    rodsLog( LOG_ERROR,
+             "msigetobj_http: Curl Error for %s:ErrNum=%i, Msg=%s\n",
+             reqStr, res, curlErrBuf );
     curl_easy_cleanup( curl );
     /***    return(MSO_OBJ_GET_FAILED);***/
-    printf( "msigetobj_http:apiNumber:%d\n",
+    rodsLog( LOG_ERROR, "msigetobj_http:apiNumber:%d\n",
             rei->rsComm->apiInx );
     if ( rei->rsComm->apiInx == 606 ) {
         RETURN( 0 );
@@ -105,9 +105,20 @@ if ( res != 0 ) {
         RETURN( MSO_OBJ_GET_FAILED );
     }
 }
+
+
+long http_code = 0;
+curl_easy_getinfo( curl, CURLINFO_RESPONSE_CODE, &http_code );
 curl_easy_cleanup( curl );
 
-printf( "CURL: get success with %s\n", reqStr );
+if( 200 != http_code ) {
+    rodsLog( LOG_ERROR, "msigetobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code ); 
+    free( reqStr );
+    return MSO_OBJ_GET_FAILED;
+
+}
+
+rodsLog( LOG_DEBUG, "CURL: get success with %s\n", reqStr );
 
 // cppcheck-suppress syntaxError
 MICROSERVICE_END
