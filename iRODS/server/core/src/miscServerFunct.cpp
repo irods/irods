@@ -3072,14 +3072,14 @@ checkModArgType( char *arg ) {
         return 0;
     }
     switch( arg[0] ) {
-        case 'n':
-            return 1;
-        case 'v':
-            return 2;
-        case 'u':
-            return 3;
-        default:
-            return 0;
+    case 'n':
+        return 1;
+    case 'v':
+        return 2;
+    case 'u':
+        return 3;
+    default:
+        return 0;
     }
 }
 
@@ -3292,7 +3292,7 @@ irods::error setRECacheSaltFromEnv() {
     if ( NULL == p_mutex_salt ) {
         rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
         return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
-    }            
+    }
 
     ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
     if ( !ret.ok() ) {

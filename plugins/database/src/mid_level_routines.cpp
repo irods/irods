@@ -185,8 +185,8 @@ int cmlGetOneRowFromSqlBV( char *sql,
     }
 #endif
     int status = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
-                                bindVar1, bindVar2, bindVar3, bindVar4,
-                                bindVar5, 0 );
+                                         bindVar1, bindVar2, bindVar3, bindVar4,
+                                         bindVar5, 0 );
     if ( status != 0 ) {
         if ( status <= CAT_ENV_ERR ) {
             return status;    /* already an iRODS error code */
@@ -486,7 +486,7 @@ int cmlGetStringValueFromSql( char *sql,
     iVals[0] = cValSize;
 
     status = cmlGetOneRowFromSqlBV( sql, cVals, iVals, 1,
-                               bindVar1, bindVar2, bindVar3, 0, 0, icss );
+                                    bindVar1, bindVar2, bindVar3, 0, 0, icss );
     if ( status == 1 ) {
         return 0;
     }

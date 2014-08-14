@@ -135,7 +135,7 @@ extern "C" {
         curl_easy_cleanup( curl );
 
         if( 200 != http_code ) {
-            rodsLog( LOG_ERROR, "msiputobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code ); 
+            rodsLog( LOG_ERROR, "msiputobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code );
             free( reqStr );
             return MSO_OBJ_PUT_FAILED;
 

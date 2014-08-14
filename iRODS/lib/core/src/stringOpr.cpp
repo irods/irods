@@ -231,7 +231,7 @@ isAllDigit( const char * myStr ) {
 
 int
 splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
-        char * file, size_t maxFileLen, char key ) {
+                char * file, size_t maxFileLen, char key ) {
     std::string srcPathString( srcPath );
 
     if( maxDirLen == 0 || maxFileLen == 0 ) {

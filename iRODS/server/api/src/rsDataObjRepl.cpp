@@ -121,12 +121,12 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // make sure tmp_dest_resc exists and is available
     if (!tmp_dest_resc.empty()) {
-		rescInfo_t resc_info;
-		irods::error resc_err = irods::get_resc_info( tmp_dest_resc, resc_info );
-		if ( !resc_err.ok() ) {
-			irods::log(resc_err);
-			return resc_err.code();
-		}
+        rescInfo_t resc_info;
+        irods::error resc_err = irods::get_resc_info( tmp_dest_resc, resc_info );
+        if ( !resc_err.ok() ) {
+            irods::log(resc_err);
+            return resc_err.code();
+        }
     }
 
     // =-=-=-=-=-=-=-

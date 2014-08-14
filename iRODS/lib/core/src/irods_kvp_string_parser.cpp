@@ -68,8 +68,8 @@ error parse_kvp_string(
         if ( std::string::npos == pos ) {
             // =-=-=-=-=-=-=-
             // no association, just add to the map
-            rodsLog( 
-                LOG_DEBUG, 
+            rodsLog(
+                LOG_DEBUG,
                 "parse_kvp_string :: no kvp found [%s]",
                 _string.c_str() );
             return ERROR( -1, "" );

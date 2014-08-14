@@ -983,14 +983,14 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
         if( _rodsArgs->force == True ) {
-            generalAdmin( 0, "add", "dir", 
+            generalAdmin( 0, "add", "dir",
                           cmdToken[1], cmdToken[2],
-                          cmdToken[3], cmdToken[4], 
-                          cmdToken[5], cmdToken[6], 
+                          cmdToken[3], cmdToken[4],
+                          cmdToken[5], cmdToken[6],
                           "", "" );
         } else {
             usage( "mkdir" );
-        } 
+        }
 
         return 0;
     }

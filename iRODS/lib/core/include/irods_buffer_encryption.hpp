@@ -68,8 +68,8 @@ public:
     /// =-=-=-=-=-=-=-
     /// @brief hex encode buffer_crypt::array_t
     static irods::error hex_encode(
-    const array_t&,     // bytes to encode
-    std::string&);      // hex encoded bytes
+        const array_t&,     // bytes to encode
+        std::string&);      // hex encoded bytes
 
     /// =-=-=-=-=-=-=-
     /// @brief accessors for attributes

@@ -12,8 +12,8 @@
 
 namespace irods {
 /// =-=-=-=-=-=-=-
-/// @brief check the incoming signed SID against all locals SIDs 
-error check_sent_sid( 
+/// @brief check the incoming signed SID against all locals SIDs
+error check_sent_sid(
     server_properties& _props,
     const std::string  _in_sid ) {
     // =-=-=-=-=-=-=-
@@ -27,8 +27,8 @@ error check_sent_sid(
     // =-=-=-=-=-=-=-
     // get the agent key
     std::string encr_key;
-    irods::error err = _props.get_property< std::string >( 
-                           AGENT_KEY_KW, 
+    irods::error err = _props.get_property< std::string >(
+                           AGENT_KEY_KW,
                            encr_key );
     if( !err.ok() ) {
         return PASS( err );
@@ -36,10 +36,10 @@ error check_sent_sid(
     // =-=-=-=-=-=-=-
     // start with local SID
     std::string svr_sid;
-    err = _props.get_property< 
-              std::string >( 
-                  LOCAL_ZONE_SID_KW, 
-                  svr_sid );
+    err = _props.get_property<
+          std::string >(
+              LOCAL_ZONE_SID_KW,
+              svr_sid );
     if( !err.ok() ) {
         return PASS( err );
     }
@@ -64,10 +64,10 @@ error check_sent_sid(
     // =-=-=-=-=-=-=-
     // get remote zone SIDs
     std::vector< std::string > rem_sids;
-    err = _props.get_property< 
-              std::vector< std::string > >( 
-                  REMOTE_ZONE_SID_KW, 
-                  rem_sids );
+    err = _props.get_property<
+          std::vector< std::string > >(
+              REMOTE_ZONE_SID_KW,
+              rem_sids );
     if( !err.ok() ) {
         return PASS( err );
     }
@@ -218,8 +218,8 @@ error client_server_negotiation_for_server(
 
                     // =-=-=-=-=-=-=-
                     // check SID against our SIDs
-                    err = check_sent_sid( 
-                              props, 
+                    err = check_sent_sid(
+                              props,
                               svr_sid );
                     if( !err.ok() ) {
                         rodsLog(
@@ -228,18 +228,18 @@ error client_server_negotiation_for_server(
                             PASS(err).status() );
                     } else {
                         // =-=-=-=-=-=-=-
-                        // store property that states this is an 
+                        // store property that states this is an
                         // Agent-Agent connection
-                        props.set_property< 
-                            std::string >( 
-                                AGENT_CONN_KW, 
-                                svr_sid );
+                        props.set_property<
+                        std::string >(
+                            AGENT_CONN_KW,
+                            svr_sid );
                     }
 
                 } // if sid is not empty
                 else {
-                    rodsLog( 
-                        LOG_DEBUG, 
+                    rodsLog(
+                        LOG_DEBUG,
                         "%s - sent SID is empty",
                         __FUNCTION__ );
                 }

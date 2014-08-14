@@ -44,11 +44,11 @@ allocFileDesc() {
 
 int
 allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
-        const std::string&  objPath,
-        const std::string&  fileName,
-        const std::string&  rescHier,
-        int                 fd,
-        int                 mode ) {
+                      const std::string&  objPath,
+                      const std::string&  fileName,
+                      const std::string&  rescHier,
+                      int                 fd,
+                      int                 mode ) {
     int fileInx;
 
     fileInx = allocFileDesc();
@@ -113,11 +113,11 @@ getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost ) {
 
 int
 mkDirForFilePath(
-        rsComm_t *          rsComm,
-        size_t              startDirLen,
-        const std::string&  filePath,
-        const std::string&  hier,
-        int                 mode ) {
+    rsComm_t *          rsComm,
+    size_t              startDirLen,
+    const std::string&  filePath,
+    const std::string&  hier,
+    int                 mode ) {
     int status;
 
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
@@ -150,8 +150,8 @@ int mkFileDirR(
     }
     if( destDir.size() < startDirLen ) {
         rodsLog( LOG_ERROR, "mkFileDirR called with a destDir: [%s]"
-                "shorter than its startDirLen: [%ju]",
-                destDir.c_str(), (uintmax_t)startDirLen );
+                 "shorter than its startDirLen: [%ju]",
+                 destDir.c_str(), (uintmax_t)startDirLen );
         return SYS_INVALID_INPUT_PARAM;
     }
     if ( !rsComm ) {

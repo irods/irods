@@ -347,9 +347,9 @@ error server_properties::capture() {
                 if( result.ok() ) {
                     rem_sids.push_back( prop_setting );
                 }
-            } 
-           
-            if( result.ok() ) { 
+            }
+
+            if( result.ok() ) {
                 rem_sids.push_back( prop_setting );
                 result = properties.set< std::vector< std::string > >( prop_name, rem_sids );
             } else {

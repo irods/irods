@@ -106,7 +106,7 @@ getPhyPath(
             irods::log( PASS( ret ) );
             return SYS_INVALID_INPUT_PARAM;
         }
-    } 
+    }
     else {
         resc_hier = _resc_hier;
     }
@@ -128,8 +128,8 @@ getPhyPath(
     // split the object path by the last delimiter /
     int status = splitPathByKey(
                      _obj_name,
-                        logical_parent_dir_name, MAX_NAME_LEN,
-                        logical_end_name, MAX_NAME_LEN, '/' );
+                     logical_parent_dir_name, MAX_NAME_LEN,
+                     logical_end_name, MAX_NAME_LEN, '/' );
 
     genQueryInp_t  gen_inp;
     memset( &gen_inp, 0, sizeof( genQueryInp_t ) );

@@ -14,13 +14,13 @@ using namespace boost::filesystem;
 
 int
 fsckObj( rcComm_t *conn,
-        rodsArguments_t *myRodsArgs,
-        rodsPathInp_t *rodsPathInp,
-        char hostname[LONG_NAME_LEN] ) {
+         rodsArguments_t *myRodsArgs,
+         rodsPathInp_t *rodsPathInp,
+         char hostname[LONG_NAME_LEN] ) {
 
     if ( rodsPathInp->numSrc != 1 ) {
         rodsLog( LOG_ERROR, "fsckObj: gave %i input source path, "
-                "should give one and only one", rodsPathInp->numSrc );
+                 "should give one and only one", rodsPathInp->numSrc );
         return USER_INPUT_PATH_ERR;
     }
 
@@ -43,7 +43,7 @@ fsckObj( rcComm_t *conn,
     }
     if ( lenInpPath >= LONG_NAME_LEN ) {
         rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in fsckObj",
-                inpPathO, (intmax_t) LONG_NAME_LEN );
+                 inpPathO, (intmax_t) LONG_NAME_LEN );
         return USER_STRLEN_TOOLONG;
     }
 
@@ -54,8 +54,8 @@ fsckObj( rcComm_t *conn,
     if ( is_directory( p ) ) {
         if ( int status = checkIsMount( conn, inpPath ) ) {
             rodsLog( LOG_ERROR, "The directory %s or one of its "
-                    "subdirectories to be checked is declared as being "
-                    "used for a mounted collection: abort!", inpPath );
+                     "subdirectories to be checked is declared as being "
+                     "used for a mounted collection: abort!", inpPath );
             return status;
         }
     }

@@ -43,7 +43,7 @@ allocFileDesc();
 
 int
 allocAndFillFileDesc( rodsServerHost_t *rodsServerHost, const std::string& objPath,
-        const std::string& fileName, const std::string& rescHier, int fd, int mode );
+                      const std::string& fileName, const std::string& rescHier, int fd, int mode );
 
 int
 freeFileDesc( int fileInx );

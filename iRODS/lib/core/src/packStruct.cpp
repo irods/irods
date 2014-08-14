@@ -765,7 +765,7 @@ int
 resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
     myPackedItem->dim = myPackedItem->hintDim = 0;
     char openSymbol = '\0';         // either '(', '[', or '\0' depending on whether we are
-                                    // in a parenthetical or bracketed expression, or not
+    // in a parenthetical or bracketed expression, or not
 
     std::string buffer;
     for ( size_t nameIndex = 0; '\0' != myPackedItem->name[ nameIndex ]; nameIndex++ ) {
@@ -773,13 +773,13 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
         if ( '[' == c || '(' == c ) {
             if ( openSymbol ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: got %c inside %c for %s",
-                        c, openSymbol, myPackedItem->name );
+                         c, openSymbol, myPackedItem->name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             else if ( ( '[' == c && myPackedItem->dim >= MAX_PACK_DIM ) ||
-                    ( '(' == c && myPackedItem->hintDim >= MAX_PACK_DIM ) ) {
+                      ( '(' == c && myPackedItem->hintDim >= MAX_PACK_DIM ) ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: dimension of %s larger than %d",
-                        myPackedItem->name, MAX_PACK_DIM );
+                         myPackedItem->name, MAX_PACK_DIM );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             openSymbol = c;
@@ -790,19 +790,19 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
             if ( ( ']' == c && '[' != openSymbol ) ||
                     ( ')' == c && '(' != openSymbol ) ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: Got %c without %c for %s",
-                        c, ( ']' == c ) ? '[' : '(', myPackedItem->name );
+                         c, ( ']' == c ) ? '[' : '(', myPackedItem->name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             else if ( buffer.empty() ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: Empty %c%c in %s",
-                        ( ']' == c ) ? '[' : '(', c, myPackedItem->name );
+                         ( ']' == c ) ? '[' : '(', c, myPackedItem->name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             openSymbol = '\0';
 
             int& dimSize = ( ']' == c ) ?
-                myPackedItem->dimSize[myPackedItem->dim++] :
-                myPackedItem->hintDimSize[myPackedItem->hintDim++];
+                           myPackedItem->dimSize[myPackedItem->dim++] :
+                           myPackedItem->hintDimSize[myPackedItem->hintDim++];
             if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem, myPackTable ) ) < 0 ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
                          myPackedItem->name, buffer.c_str() );
@@ -945,7 +945,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 
 int
 packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
-        packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
+                 packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int numElement;     /* number of elements pointed to by one pointer */
     int numPointer;     /* number of pointers in the array of pointer */
     int elementSz;
@@ -2045,7 +2045,7 @@ unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
         /* bin type. need to decode */
         unsigned long outLen = len;
         if( int status = base64_decode( ( const unsigned char * ) * inPtr,
-                    inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
+                                        inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
             return status;
         }
         if ( ( int ) outLen != len ) {

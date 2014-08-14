@@ -519,9 +519,9 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         //update the filename in case of a retry
         rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
         retryCnt++;
-     } while ( getErrno( l3descInx ) == EEXIST &&
-            resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
-            l3descInx <= 2 && retryCnt < 100 );
+    } while ( getErrno( l3descInx ) == EEXIST &&
+              resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
+              l3descInx <= 2 && retryCnt < 100 );
     clearKeyVal( &fileCreateInp.condInput );
     return l3descInx;
 }

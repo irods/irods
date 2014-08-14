@@ -628,8 +628,8 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                     line_len--;
                 }
                 char *val = line_len > 0 ?
-                    quoteString( line, string && ruleGen, 0 ) :
-                    strdup( tmpPtr + 1 );
+                            quoteString( line, string && ruleGen, 0 ) :
+                            strdup( tmpPtr + 1 );
                 addMsParam( execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
                             val, NULL );
             }
@@ -645,8 +645,8 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                     line_len--;
                 }
                 char *val = line_len > 0 ?
-                    quoteString( line, string && ruleGen, 0 ) :
-                    strdup( tmpPtr );
+                            quoteString( line, string && ruleGen, 0 ) :
+                            strdup( tmpPtr );
                 addMsParam( execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
                             val, NULL );
             }

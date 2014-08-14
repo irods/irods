@@ -90,7 +90,7 @@ buffer_crypt::~buffer_crypt() {
 irods::error buffer_crypt::generate_key(
     array_t& _out_key,
     int _key_size
- ) {
+) {
     // =-=-=-=-=-=-=-
     // generate random bytes
     _out_key.resize( _key_size );

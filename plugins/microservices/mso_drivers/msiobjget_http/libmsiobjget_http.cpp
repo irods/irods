@@ -67,8 +67,8 @@ destFd = fopen( cacheFilename, "wb" );
 if ( destFd ==  0 ) {
     status = UNIX_FILE_OPEN_ERR - errno;
     rodsLog( LOG_ERROR,
-        "msigetobj_http: open error for cacheFilename %s",
-        cacheFilename );
+             "msigetobj_http: open error for cacheFilename %s",
+             cacheFilename );
 
     RETURN( status );
 }
@@ -97,7 +97,7 @@ if ( res != 0 ) {
     curl_easy_cleanup( curl );
     /***    return(MSO_OBJ_GET_FAILED);***/
     rodsLog( LOG_ERROR, "msigetobj_http:apiNumber:%d\n",
-            rei->rsComm->apiInx );
+             rei->rsComm->apiInx );
     if ( rei->rsComm->apiInx == 606 ) {
         RETURN( 0 );
     }
@@ -112,7 +112,7 @@ curl_easy_getinfo( curl, CURLINFO_RESPONSE_CODE, &http_code );
 curl_easy_cleanup( curl );
 
 if( 200 != http_code ) {
-    rodsLog( LOG_ERROR, "msigetobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code ); 
+    rodsLog( LOG_ERROR, "msigetobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code );
     free( reqStr );
     return MSO_OBJ_GET_FAILED;
 

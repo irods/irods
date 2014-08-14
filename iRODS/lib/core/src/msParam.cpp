@@ -129,7 +129,7 @@ replMsParamArray( msParamArray_t *msParamArray,
     memset( outMsParamArray, 0, sizeof( msParamArray_t ) );
 
     int newLen = ( msParamArray->len / PTR_ARRAY_MALLOC_LEN + 1 ) *
-             PTR_ARRAY_MALLOC_LEN;
+                 PTR_ARRAY_MALLOC_LEN;
 
     outMsParamArray->msParam =
         ( msParam_t ** ) malloc( newLen * sizeof( *outMsParamArray->msParam ) );

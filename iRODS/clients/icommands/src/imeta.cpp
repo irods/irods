@@ -151,7 +151,7 @@ showDataObj( char *name, char *attrName, int wild ) {
             strncpy( fullName, name, MAX_NAME_LEN );
         }
         if ( int status = splitPathByKey( fullName, myDirName,
-                    MAX_NAME_LEN, myFileName, MAX_NAME_LEN, '/' ) ) {
+                                          MAX_NAME_LEN, myFileName, MAX_NAME_LEN, '/' ) ) {
             rodsLog( LOG_ERROR, "splitPathByKey failed in showDataObj with status %d", status );
         }
         snprintf( v1, sizeof( v1 ), "='%s'", myDirName );

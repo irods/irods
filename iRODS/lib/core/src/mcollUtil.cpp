@@ -20,7 +20,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
-                               rodsPathInp );
+                                        rodsPathInp );
 
     if ( savedStatus < 0 ) {
         return savedStatus;

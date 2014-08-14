@@ -634,7 +634,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         }
 
         int status = chkStateForResume( conn, rodsRestart, targChildPath,
-                                    rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
+                                        rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
 
         if ( status < 0 ) {
             /* restart failed */
@@ -887,7 +887,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
         if ( status >= 0 ) {
             status = SYS_COPY_LEN_ERR - errno;
             rodsLogError( LOG_ERROR, status, "bulkPutFileUtil: bytesRead %ju does not match srcSize %ju for %s",
-                    ( uintmax_t )bytesRead, ( uintmax_t )srcSize, srcPath );
+                          ( uintmax_t )bytesRead, ( uintmax_t )srcSize, srcPath );
         }
         else {
             status = USER_INPUT_PATH_ERR - errno;

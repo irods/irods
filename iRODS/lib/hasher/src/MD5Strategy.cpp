@@ -36,6 +36,6 @@ MD5Strategy::digest( std::string& messageDigest, boost::any& _context ) const {
 
 bool
 MD5Strategy::isChecksum( const std::string& _chksum) const {
-   return std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" );
+    return std::string::npos == _chksum.find_first_not_of( "0123456789abcdefABCDEF" );
 }
 }; //namespace irods

@@ -273,7 +273,7 @@ error client_server_negotiation_for_client(
     // Agent.  sign the SID and send it showing that we are a trusted
     // Agent and not an actual Client ( icommand, jargon connection etc )
     std::string cli_msg;
-    
+
     // =-=-=-=-=-=-=-
     // if we cannot read the server.config file, punt
     // as this must be a client-side situation
@@ -283,16 +283,16 @@ error client_server_negotiation_for_client(
         // =-=-=-=-=-=-=-
         // get our local zone SID
         std::string sid;
-        err = props.get_property< 
-                  std::string >(
-                      LOCAL_ZONE_SID_KW,
-                      sid );
+        err = props.get_property<
+              std::string >(
+                  LOCAL_ZONE_SID_KW,
+                  sid );
         if( err.ok() ) {
             std::string enc_key;
-            err = props.get_property< 
-                      std::string >(
-                          AGENT_KEY_KW,
-                          enc_key );
+            err = props.get_property<
+                  std::string >(
+                      AGENT_KEY_KW,
+                      enc_key );
             if( err.ok() ) {
                 // =-=-=-=-=-=-=-
                 // sign the SID
@@ -309,21 +309,21 @@ error client_server_negotiation_for_client(
                                signed_sid                +
                                irods::kvp_delimiter();
                 } else {
-                    rodsLog( 
-                        LOG_DEBUG, 
-                        "%s", 
+                    rodsLog(
+                        LOG_DEBUG,
+                        "%s",
                         PASS(err).result().c_str() );
                 }
             } else {
-                rodsLog( 
+                rodsLog(
                     LOG_DEBUG,
                     "failed to get agent key" );
             }
         } else {
-                rodsLog( 
-                    LOG_DEBUG,
-                    "failed to get local zone SID" );
-            }
+            rodsLog(
+                LOG_DEBUG,
+                "failed to get local zone SID" );
+        }
 
     }
 

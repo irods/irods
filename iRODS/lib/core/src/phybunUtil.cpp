@@ -16,7 +16,7 @@ phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     rodsPath_t *collPath;
     structFileExtAndRegInp_t phyBundleCollInp;
     int savedStatus = initCondForPhybunOpr( myRodsEnv, myRodsArgs, &phyBundleCollInp,
-                                   rodsPathInp );
+                                            rodsPathInp );
     if ( savedStatus < 0 ) {
         return savedStatus;
     }

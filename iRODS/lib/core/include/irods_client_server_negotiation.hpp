@@ -91,8 +91,8 @@ error sign_server_sid(
     std::string& );      // signed buffer
 
 /// =-=-=-=-=-=-=-
-/// @brief check the incoming signed SID against all locals SIDs 
-error check_sent_sid( 
+/// @brief check the incoming signed SID against all locals SIDs
+error check_sent_sid(
     server_properties&,   // server properties
     const std::string );  // incoming signed SID
 

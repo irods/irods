@@ -17,7 +17,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     int savedStatus = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
-                                rodsPathInp );
+                                         rodsPathInp );
     if ( savedStatus < 0 ) {
         return savedStatus;
     }

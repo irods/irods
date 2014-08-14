@@ -3782,8 +3782,8 @@ extern "C" {
                     rodsLog( LOG_SQL, "chlDelRuleExec SQL 1 " );
                 }
                 int status = cmlGetStringValueFromSql(
-                             "select user_name from R_RULE_EXEC where rule_exec_id=?",
-                             userName, MAX_NAME_LEN, _re_id, 0, 0, &icss );
+                                 "select user_name from R_RULE_EXEC where rule_exec_id=?",
+                                 userName, MAX_NAME_LEN, _re_id, 0, 0, &icss );
                 if ( status != 0 || strncmp( userName, _comm->clientUser.userName, MAX_NAME_LEN )
                         != 0 ) {
                     return ERROR( CAT_NO_ACCESS_PERMISSION, "no access permission" );
@@ -3799,8 +3799,8 @@ extern "C" {
             rodsLog( LOG_SQL, "chlDelRuleExec SQL 2 " );
         }
         int status =  cmlExecuteNoAnswerSql(
-                      "delete from R_RULE_EXEC where rule_exec_id=?",
-                      &icss );
+                          "delete from R_RULE_EXEC where rule_exec_id=?",
+                          &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlDelRuleExec delete failure %d",
@@ -6916,7 +6916,7 @@ extern "C" {
         if ( nPasswords == MAX_PASSWORDS ) {
             // There are more than MAX_PASSWORDS in the database take the extra time to get them all.
             status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?",
-                    &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
+                                                &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR, "cmlGetIntegerValueFromSql failed in db_check_auth_op with status %d", status);
             }

@@ -30,8 +30,8 @@ mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPath_t * targPath = &rodsPathInp->targPath[i];
 
         int status = mvObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                            targPath->outPath, targPath->objType, myRodsEnv, myRodsArgs,
-                            &dataObjRenameInp );
+                                targPath->outPath, targPath->objType, myRodsEnv, myRodsArgs,
+                                &dataObjRenameInp );
 
         /* XXXX may need to return a global status */
         if ( status < 0 &&

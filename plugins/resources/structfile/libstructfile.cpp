@@ -173,14 +173,14 @@ extern "C" {
     } // irods_file_open
 
     int irods_file_open_for_read(
-            struct archive* _arch,
-            void*           _data ) {
+        struct archive* _arch,
+        void*           _data ) {
         return irods_file_open( _arch, _data, O_RDONLY );
     }
 
     int irods_file_open_for_write(
-            struct archive* _arch,
-            void*           _data ) {
+        struct archive* _arch,
+        void*           _data ) {
         return irods_file_open( _arch, _data, O_WRONLY | O_CREAT );
     }
 

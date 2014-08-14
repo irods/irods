@@ -62,7 +62,7 @@ unsigned char *prepareNonServerSharedMemory() {
         rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory name [%s]", shared_memory_name.c_str() );
         return NULL;
     }
-        
+
     try {
         shm_obj = new boost::interprocess::shared_memory_object( boost::interprocess::open_only, shared_memory_name.c_str(), boost::interprocess::read_only );
         mapped = new boost::interprocess::mapped_region( *shm_obj, boost::interprocess::read_only );

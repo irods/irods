@@ -7,17 +7,17 @@
 
 namespace irods {
 
-    namespace {
-        boost::unordered_map<const std::string, const HashStrategy*>
-        make_map() {
-            boost::unordered_map<const std::string, const HashStrategy*> map;
-            map[ SHA256_NAME ] = new SHA256Strategy();
-            map[ MD5_NAME ] = new MD5Strategy();
-            return map;
-        }
+namespace {
+boost::unordered_map<const std::string, const HashStrategy*>
+make_map() {
+    boost::unordered_map<const std::string, const HashStrategy*> map;
+    map[ SHA256_NAME ] = new SHA256Strategy();
+    map[ MD5_NAME ] = new MD5Strategy();
+    return map;
+}
 
-        const boost::unordered_map<const std::string, const HashStrategy*> _strategies( make_map() );
-    };
+const boost::unordered_map<const std::string, const HashStrategy*> _strategies( make_map() );
+};
 
 error
 getHasher( const std::string& _name, Hasher& _hasher) {

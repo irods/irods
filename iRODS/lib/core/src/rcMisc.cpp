@@ -834,9 +834,9 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
 
     if ( ( condInput->len % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         condInput->keyWord = ( char ** )realloc( condInput->keyWord,
-                ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->keyWord ) );
+                             ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->keyWord ) );
         condInput->value = ( char ** )realloc( condInput->value,
-                ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->value ) );
+                                               ( condInput->len + PTR_ARRAY_MALLOC_LEN ) * sizeof( *condInput->value ) );
         memset( condInput->keyWord + condInput->len, 0, PTR_ARRAY_MALLOC_LEN * sizeof( *condInput->keyWord ) );
         memset( condInput->value + condInput->len, 0, PTR_ARRAY_MALLOC_LEN * sizeof( *condInput->value ) );
     }
@@ -3812,7 +3812,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
         addr->portNum = 0;
     }
     else {
-    	rstrcpy( addr->hostAddr, buffer, LONG_NAME_LEN );
+        rstrcpy( addr->hostAddr, buffer, LONG_NAME_LEN );
         addr->portNum = atoi( port );
     }
     return 0;
@@ -4557,7 +4557,7 @@ getRandomArray( int **randomArray, int size ) {
 
     *randomArray = ( int * ) malloc( size * sizeof( int ) );
     for( int i = 0; i < size; i++ ) {
-       ( *randomArray )[i] = i + 1;
+        ( *randomArray )[i] = i + 1;
     }
     std::random_shuffle( *randomArray, *randomArray + size );
 
