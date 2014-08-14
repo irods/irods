@@ -10,7 +10,6 @@
 #define INIT_SERVER_HPP
 
 #include "rods.hpp"
-#include "irods_error.hpp"
 //#include "sockComm.hpp"
 #include "rsLog.hpp"
 
@@ -267,7 +266,5 @@ queAgentProc( agentProc_t *agentPorc, agentProc_t **agentPorcHead,
               irodsPosition_t position );
 int
 purgeLockFileDir( int chkLockFlag ); // JMC - backport 4612
-irods::error
-setRECacheSaltFromEnv();
 
 #endif	/* INIT_SERVER_H */

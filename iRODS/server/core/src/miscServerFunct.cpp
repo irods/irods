@@ -3278,13 +3278,27 @@ irods::error update_resource_object_count(
 
 } // update_resource_object_count
 
+irods::error setRECacheSaltFromEnv() {
+    // Should only ever set the cache salt once
+    irods::server_properties &server_properties = irods::server_properties::getInstance();
+    std::string existing_name;
+    irods::error ret = server_properties.get_property<std::string>( RE_CACHE_SALT_KW, existing_name );
+    if ( ret.ok() ) {
+        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
+        return ERROR( SYS_ALREADY_INITIALIZED, "setRECacheSaltFromEnv: mutex name already set" );
+    }
 
+    const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
+    if ( NULL == p_mutex_salt ) {
+        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
+        return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
+    }            
 
+    ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
+        return PASS( ret );
+    }
 
-
-
-
-
-
-
-
+    return SUCCESS();
+}

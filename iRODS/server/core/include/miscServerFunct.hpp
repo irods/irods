@@ -157,4 +157,6 @@ irods::error update_resource_object_count(
     rsComm_t*,                     // server comm handle
     irods::plugin_property_map& ); // resource property map
 
+irods::error setRECacheSaltFromEnv();
+
 #endif	/* MISC_SERVER_FUNCT_H */
