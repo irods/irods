@@ -5,6 +5,7 @@
 #ifndef FILESYSTEM_HPP
 #define FILESYSTEM_HPP
 
+#include <string>
 #include "datetime.hpp"
 
 int getModifiedTime( char *fn, time_type *timestamp );
