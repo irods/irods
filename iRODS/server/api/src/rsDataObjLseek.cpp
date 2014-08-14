@@ -19,7 +19,6 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
                 fileLseekOut_t **dataObjLseekOut ) {
     int status;
     int l1descInx, l3descInx;
-    int rescTypeInx;
     dataObjInfo_t *dataObjInfo;
 
     l1descInx = dataObjLseekInp->l1descInx;
@@ -81,9 +80,8 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
     else {
         *dataObjLseekOut = ( fileLseekOut_t* )malloc( sizeof( fileLseekOut_t ) );
         memset( *dataObjLseekOut, 0, sizeof( fileLseekOut_t ) );
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
-        ( *dataObjLseekOut )->offset = _l3Lseek( rsComm, rescTypeInx, l3descInx,
+        ( *dataObjLseekOut )->offset = _l3Lseek( rsComm, l3descInx,
                                        dataObjLseekInp->offset, dataObjLseekInp->whence );
 
         if ( ( *dataObjLseekOut )->offset >= 0 ) {
@@ -98,7 +96,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
 }
 
 rodsLong_t
-_l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+_l3Lseek( rsComm_t *rsComm, int l3descInx,
           rodsLong_t offset, int whence ) {
     fileLseekInp_t fileLseekInp;
     fileLseekOut_t *fileLseekOut = NULL;

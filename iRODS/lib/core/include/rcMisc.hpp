@@ -166,8 +166,7 @@ extern "C" {
     int
     isTrashHome( char *myPath );
     int
-    openRestartFile( char *restartFile, rodsRestart_t *rodsRestart,
-                     rodsArguments_t *rodsArgs );
+    openRestartFile( char *restartFile, rodsRestart_t *rodsRestart );
     int
     setStateForResume( rcComm_t *conn, rodsRestart_t *rodsRestart,
                        char *restartPath, objType_t objType, keyValPair_t *condInput,
@@ -177,8 +176,8 @@ extern "C" {
     int
     procAndWrriteRestartFile( rodsRestart_t *rodsRestart, char *donePath );
     int
-    setStateForRestart( rcComm_t *conn, rodsRestart_t *rodsRestart,
-                        rodsPath_t *targPath, rodsArguments_t *rodsArgs );
+    setStateForRestart( rodsRestart_t *rodsRestart, rodsPath_t *targPath,
+                        rodsArguments_t *rodsArgs );
     int
     chkStateForResume( rcComm_t *conn, rodsRestart_t *rodsRestart,
                        char *targPath, rodsArguments_t *rodsArgs, objType_t objType,

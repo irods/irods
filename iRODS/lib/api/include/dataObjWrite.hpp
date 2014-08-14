@@ -24,7 +24,7 @@ int
 l3Write( rsComm_t *rsComm, int l1descInx, int len,
          bytesBuf_t *dataObjWriteInpBBuf );
 int
-_l3Write( rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
+_l3Write( rsComm_t *rsComm, int l3descInx,
           void *buf, int len );
 #else
 #define RS_DATA_OBJ_WRITE NULL

@@ -33,12 +33,11 @@ _rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 _rsDataObjReplUpdate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                       dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
-                      transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo );
+                      transferStat_t *transStat );
 int
 _rsDataObjReplNewCopy( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                        dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-                       transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
-                       dataObjInfo_t *outDataObjInfo );
+                       transferStat_t *transStat, dataObjInfo_t *outDataObjInfo );
 int
 _rsDataObjReplS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo,

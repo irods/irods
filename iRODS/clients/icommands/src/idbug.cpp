@@ -376,7 +376,7 @@ int processUserInput( char *buf ) {
 
 void
 #if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
-signalIdbugExit( int sig )
+signalIdbugExit( int )
 #else
 signalIdbugExit()
 #endif

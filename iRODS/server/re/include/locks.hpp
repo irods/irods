@@ -11,7 +11,7 @@
 typedef boost::interprocess::named_mutex mutex_type;
 void unlockMutex( mutex_type **mutex );
 int lockMutex( mutex_type **mutex );
-void resetMutex( mutex_type **mutex );
+void resetMutex();
 irods::error getMutexName( std::string &mutex_name );
 
 #endif

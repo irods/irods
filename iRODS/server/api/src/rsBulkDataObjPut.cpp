@@ -119,10 +119,8 @@ int
 unbunBulkBuf(
     rsComm_t* rsComm,
     dataObjInp_t* dataObjInp,
-    rescInfo_t* rescInfo,
     bulkOprInp_t *bulkOprInp,
-    bytesBuf_t *bulkBBuf,
-    const std::string& baseDir ) {
+    bytesBuf_t *bulkBBuf ) {
     sqlResult_t *objPath, *offset;
     char *tmpObjPath;
     char *bufPtr;
@@ -279,7 +277,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     // addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, getValByKey (&bulkOprInp->condInput, FORCE_FLAG_KW));
     // addKeyVal(&dataObjInp.condInput, VERIFY_CHKSUM_KW, getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW));
 
-    status = unbunBulkBuf( rsComm, &dataObjInp, rescInfo, bulkOprInp, bulkOprInpBBuf, phyBunDir );
+    status = unbunBulkBuf( rsComm, &dataObjInp, bulkOprInp, bulkOprInpBBuf );
     if ( status < 0 ) {
         delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;
@@ -546,7 +544,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         rstrcpy( fileRenameInp.rescHier, dataObjInfo.rescHier, MAX_NAME_LEN );
         char new_fn[ MAX_NAME_LEN ];
         status = renameFilePathToNewDir( rsComm, ORPHAN_DIR,
-                                         &fileRenameInp, rescInfo, 1, new_fn );
+                                         &fileRenameInp, 1, new_fn );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "bulkProcAndRegSubfile: renameFilePathToNewDir err for %s. status = %d",

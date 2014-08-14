@@ -459,7 +459,7 @@ irods::error writeMsgHeader(
 } // writeMsgHeader
 
 int
-myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+myRead( int sock, void *buf, int len,
         int *bytesRead, struct timeval *tv ) {
     int nbytes;
     int toRead;
@@ -534,7 +534,7 @@ myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
 }
 
 int
-myWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+myWrite( int sock, void *buf, int len,
          int *bytesWritten ) {
     int nbytes;
     int toWrite;
@@ -792,7 +792,7 @@ connectToRhostPortal( char *rodsHost, int rodsPort,
     }
 
     myCookie = htonl( cookie );
-    nbytes = myWrite( sock, &myCookie, sizeof( myCookie ), SOCK_TYPE, NULL );
+    nbytes = myWrite( sock, &myCookie, sizeof( myCookie ), NULL );
 
     if ( nbytes != sizeof( myCookie ) ) {
         CLOSE_SOCK( sock );

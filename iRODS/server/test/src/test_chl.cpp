@@ -29,8 +29,7 @@ extern icatSessionStruct *chlGetRcs();
 
 rodsEnv myEnv;
 
-int testRegUser( rsComm_t *rsComm, char *name,
-                 char *zone, char *userType, char *dn ) {
+int testRegUser( char *name, char *zone, char *userType, char *dn ) {
     userInfo_t userInfo;
 
     strncpy( userInfo.userName, name, sizeof userInfo.userName );
@@ -75,7 +74,7 @@ int testRename( rsComm_t *rsComm, char *id, char *newName ) {
     return chlCommit( rsComm );
 }
 
-int testLogin( rsComm_t *rsComm, char *User, char *pw, char *pw1 ) {
+int testLogin( char *User, char *pw, char *pw1 ) {
     int status;
     rcComm_t *Conn;
     rErrMsg_t errMsg;
@@ -148,7 +147,7 @@ int testTempPwConvert( char *s1, char *s2 ) {
 }
 
 int
-testGetLocalZone( rsComm_t *rsComm, char *expectedZone ) {
+testGetLocalZone( char *expectedZone ) {
     std::string zone;
     chlGetLocalZone( zone );
     printf( "Zone is %s\n", zone.c_str() );
@@ -298,7 +297,7 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 
 }
 
-int testDelUser( rsComm_t *rsComm, char *name, char *zone ) {
+int testDelUser( char *name, char *zone ) {
     userInfo_t userInfo;
 
     strncpy( userInfo.userName, name, sizeof userInfo.userName );
@@ -790,7 +789,7 @@ int testCheckQuota( rsComm_t *rsComm, char *userName, char *rescName,
 }
 
 rodsLong_t
-testCurrent( rsComm_t *rsComm ) {
+testCurrent() {
     rodsLong_t status = 0;
     icatSessionStruct *icss;
 
@@ -1011,7 +1010,7 @@ main( int argc, char **argv ) {
     */
 
     if ( strcmp( argv[1], "rmuser" ) == 0 ) {
-        status = testDelUser( Comm, argv[2], argv[3] );
+        status = testDelUser( argv[2], argv[3] );
         didOne = 1;
     }
 
@@ -1057,14 +1056,14 @@ main( int argc, char **argv ) {
 
     if ( strcmp( argv[1], "rename" ) == 0 ) {
         status = testRename( Comm, argv[2], argv[3] );
-        // JMC testCurrent( Comm );  // exercise this as part of rename;
+        // JMC testCurrent();  // exercise this as part of rename;
         // testCurrent needs a SQL context
         didOne = 1;
     }
 
     if ( strcmp( argv[1], "login" ) == 0 ) {
         printf( "login - 2 [%s] 3 [%s] 4 [%s]\n", argv[2], argv[3], argv[4] );
-        status = testLogin( Comm, argv[2], argv[3], argv[4] );
+        status = testLogin( argv[2], argv[3], argv[4] );
         didOne = 1;
     }
 
@@ -1195,7 +1194,7 @@ main( int argc, char **argv ) {
         didOne = 1;
     }
     if ( strcmp( argv[1], "getlocalzone" ) == 0 ) {
-        status = testGetLocalZone( Comm, argv[2] );
+        status = testGetLocalZone( argv[2] );
         didOne = 1;
     }
     if ( strcmp( argv[1], "getpampw" ) == 0 ) {
@@ -1236,6 +1235,6 @@ main( int argc, char **argv ) {
 /* This is a dummy version of icatApplyRule for this test program so
 -   the rule-engine is not needed in this ICAT test. */
 int
-icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
+icatApplyRule( rsComm_t*, char*, char*) {
     return 0;
 }

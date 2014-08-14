@@ -410,8 +410,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
  *      All other oprType will be treated as normal.
  */
 int
-resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
-                   rodsPathInp_t *rodsPathInp, int oprType ) {
+resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
     rodsPath_t *srcPath, *destPath;
     char srcElement[MAX_NAME_LEN], destElement[MAX_NAME_LEN];
     int status;

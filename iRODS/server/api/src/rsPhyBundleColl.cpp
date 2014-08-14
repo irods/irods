@@ -284,7 +284,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
             if ( curSubFileCond.bundled > 0 ) {
                 /* already bundled. skip */
             }
-            else if ( isDataObjBundled( rsComm, collEnt ) ) {
+            else if ( isDataObjBundled( collEnt ) ) {
                 /* already bundled, skip */
                 curSubFileCond.bundled = 1;
                 curSubFileCond.subPhyPath[0] = '\0';
@@ -618,7 +618,7 @@ setSubPhyPath( char *phyBunDir, rodsLong_t dataId, char *subPhyPath ) {
 }
 
 int
-isDataObjBundled( rsComm_t *rsComm, collEnt_t *collEnt ) {
+isDataObjBundled( collEnt_t *collEnt ) {
     if ( strcmp( collEnt->resource, BUNDLE_RESC ) == 0 ) {
         if ( collEnt->replStatus > 0 ) {
             return 1;

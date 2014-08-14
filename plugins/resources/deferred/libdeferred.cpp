@@ -132,8 +132,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief Start Up Operation - initialize the deferred number generator
     irods::error deferred_start_operation(
-        irods::plugin_property_map& _prop_map,
-        irods::resource_child_map&  _cmap ) {
+        irods::plugin_property_map&,
+        irods::resource_child_map& ) {
         srand( time( NULL ) );
         return SUCCESS();
 
@@ -843,7 +843,7 @@ extern "C" {
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _pdmo ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
 

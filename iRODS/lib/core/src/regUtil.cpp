@@ -14,7 +14,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     dataObjInp_t dataObjOprInp;
-    initCondForReg( myRodsEnv, myRodsArgs, &dataObjOprInp, rodsPathInp );
+    initCondForReg( myRodsEnv, myRodsArgs, &dataObjOprInp );
 
     int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
@@ -67,8 +67,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 }
 
 int
-initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp ) {
+initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForReg: NULL dataObjOprInp input" );

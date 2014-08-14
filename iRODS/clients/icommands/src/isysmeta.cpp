@@ -5,7 +5,7 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
-void usage( char *option );
+void usage();
 
 /*
  print the results of a general query.
@@ -322,7 +322,7 @@ main( int argc, char **argv ) {
     }
 
     if ( myRodsArgs.help == True ) {
-        usage( "" );
+        usage();
         exit( 0 );
     }
 
@@ -376,7 +376,7 @@ main( int argc, char **argv ) {
     }
 
     if ( *cmdToken[1] == '\0' ) {
-        usage( "" );
+        usage();
         exit( 1 );
     }
 
@@ -409,12 +409,12 @@ main( int argc, char **argv ) {
         char theTime[TIME_LEN + 20];
 
         if ( *cmdToken[2] == '\0' ) {
-            usage( "" );
+            usage();
             exit( 1 );
         }
         if ( strcmp( cmdToken[2], "datatype" ) == 0 ) {
             if ( *cmdToken[3] == '\0' ) {
-                usage( "" );
+                usage();
                 exit( 1 );
             }
             status = doModDatatype( Conn, objPath, cmdToken[3] );
@@ -422,7 +422,7 @@ main( int argc, char **argv ) {
         }
         else if ( strcmp( cmdToken[2], "comment" ) == 0 ) {
             if ( *cmdToken[3] == '\0' ) {
-                usage( "" );
+                usage();
                 exit( 1 );
             }
             if ( *cmdToken[4] == '\0' ) {
@@ -459,7 +459,7 @@ main( int argc, char **argv ) {
     rcDisconnect( Conn );
 
     if ( didOne == 0 ) {
-        usage( "" );
+        usage();
         exit( 1 );
     }
 
@@ -478,7 +478,7 @@ printMsgs( char *msgs[] ) {
 }
 
 void
-usage( char *option ) {
+usage() {
     char *Msgs[] = {
         "Usage: isysmeta [-lvVh] [command]",
         " Show or modify system metadata.",

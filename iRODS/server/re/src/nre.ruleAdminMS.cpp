@@ -53,21 +53,21 @@
  * \post none
  * \sa msiAdmShowFNM
 **/
-int msiAdmShowDVM( msParam_t *bufParam, ruleExecInfo_t *rei ) {
+int msiAdmShowDVM( msParam_t*, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- DVM -----------------------------\n", rei );
 
-    i = _admShowDVM( bufParam, rei, &appRuleVarDef, 0 );
+    i = _admShowDVM( rei, &appRuleVarDef, 0 );
     if ( i != 0 ) {
         return i;
     }
-    i = _admShowDVM( bufParam, rei, &coreRuleVarDef, 1000 );
+    i = _admShowDVM( rei, &coreRuleVarDef, 1000 );
     _writeString( "stdout", "----------------------------- DVM -----------------------------\n", rei );
     return i;
 }
 
-int _admShowDVM( msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
+int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
     int j;
     char outStr[MAX_RULE_LENGTH];
 
@@ -118,20 +118,20 @@ int _admShowDVM( msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleV
  * \post none
  * \sa msiAdmShowDVM
 **/
-int msiAdmShowFNM( msParam_t *bufParam, ruleExecInfo_t *rei ) {
+int msiAdmShowFNM( msParam_t*, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- FNM -----------------------------\n", rei );
-    i = _admShowFNM( bufParam, rei, &appRuleFuncMapDef, 0 );
+    i = _admShowFNM( rei, &appRuleFuncMapDef, 0 );
     if ( i != 0 ) {
         return i;
     }
-    i = _admShowFNM( bufParam, rei, &coreRuleFuncMapDef, 1000 );
+    i = _admShowFNM( rei, &coreRuleFuncMapDef, 1000 );
     _writeString( "stdout", "----------------------------- FNM -----------------------------\n", rei );
     return i;
 }
 
-int _admShowFNM( msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx ) {
+int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx ) {
 
     int j;
     char outStr[MAX_RULE_LENGTH];
@@ -928,7 +928,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  * \post none
  * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
 **/
-int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
+int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
 
 {
 

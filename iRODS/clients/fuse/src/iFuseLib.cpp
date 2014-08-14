@@ -182,7 +182,7 @@ irodsMknodWithCache( char *path, mode_t mode, char *cachePath ) {
 
 
 int
-dataObjCreateByFusePath( rcComm_t *conn, char *path, int mode,
+dataObjCreateByFusePath( rcComm_t *conn, int mode,
                          char *irodsPath ) {
     dataObjInp_t dataObjInp;
     int status;

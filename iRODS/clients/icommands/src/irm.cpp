@@ -77,7 +77,7 @@ main( int argc, char **argv ) {
         exit( 7 );
     }
 
-    status = rmUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
+    status = rmUtil( conn, &myRodsArgs, &rodsPathInp );
 
     printErrorStack( conn->rError );
     rcDisconnect( conn );

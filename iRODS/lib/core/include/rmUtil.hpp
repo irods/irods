@@ -18,18 +18,17 @@ extern "C" {
 #endif
 
     int
-    rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+    rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp );
     int
     rmDataObjUtil( rcComm_t *conn, char *srcPath,
-                   rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   dataObjInp_t *dataObjInp );
+                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
-    initCondForRm( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   dataObjInp_t *dataObjInp, collInp_t *collInp );
+    initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
+                    collInp_t *collInp );
     int
-    rmCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-                rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp );
+    rmCollUtil( rcComm_t *conn, char *srcColl,
+                rodsArguments_t *rodsArgs, collInp_t *collInp );
     int
     mvDataObjToTrash( rcComm_t *conn, dataObjInp_t *dataObjInp );
     int

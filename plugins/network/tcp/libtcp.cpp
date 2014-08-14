@@ -174,7 +174,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     //
     irods::error tcp_start(
-        irods::plugin_context& _ctx ) {
+        irods::plugin_context& ) {
         return SUCCESS();
 
     } // tcp_start
@@ -182,7 +182,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     //
     irods::error tcp_end(
-        irods::plugin_context& _ctx ) {
+        irods::plugin_context& ) {
         return SUCCESS();
 
     } // tcp_end
@@ -190,7 +190,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     //
     irods::error tcp_shutdown(
-        irods::plugin_context& _ctx ) {
+        irods::plugin_context& ) {
         return SUCCESS();
 
     } // tcp_end
@@ -649,7 +649,7 @@ extern "C" {
     // stub for ops that the tcp plug does
     // not need to support - accept etc
     irods::error tcp_success_stub(
-        irods::plugin_context& _ctx ) {
+        irods::plugin_context& ) {
         return SUCCESS();
 
     } // tcp_success_stub

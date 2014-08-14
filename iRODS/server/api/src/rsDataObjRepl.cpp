@@ -274,7 +274,7 @@ _rsDataObjRepl(
     if ( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey( &dataObjInp->condInput, UPDATE_REPL_KW ) != NULL ) {
 
         /* update old repl to new repl */
-        status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat, NULL );
+        status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat );
 
         if ( status >= 0 && outDataObjInfo != NULL ) {
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
@@ -406,7 +406,7 @@ _rsDataObjRepl(
     if ( destDataObjInfo != NULL ) {
 
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
-                                       destDataObjInfo, transStat, oldDataObjInfoHead );
+                                       destDataObjInfo, transStat );
         if ( status >= 0 ) {
             if ( outDataObjInfo != NULL ) {
                 *outDataObjInfo = *destDataObjInfo;
@@ -435,7 +435,7 @@ _rsDataObjRepl(
     if ( myRescGrpInfo != NULL ) {
         /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
-                                        myRescGrpInfo, transStat, oldDataObjInfoHead,
+                                        myRescGrpInfo, transStat,
                                         outDataObjInfo );
         if ( status < 0 ) {
             savedStatus = status;
@@ -466,8 +466,7 @@ int _rsDataObjReplUpdate(
     dataObjInp_t*   dataObjInp,
     dataObjInfo_t*  srcDataObjInfoHead,
     dataObjInfo_t*  destDataObjInfoHead,
-    transferStat_t* transStat,
-    dataObjInfo_t*  oldDataObjInfo ) {
+    transferStat_t* transStat ) {
     // =-=-=-=-=-=-=-
     //
     dataObjInfo_t *destDataObjInfo = 0;
@@ -566,7 +565,6 @@ _rsDataObjReplNewCopy(
     dataObjInfo_t *srcDataObjInfoHead,
     rescGrpInfo_t *destRescGrpInfo,
     transferStat_t *transStat,
-    dataObjInfo_t *oldDataObjInfo,
     dataObjInfo_t *outDataObjInfo ) {
     dataObjInfo_t *srcDataObjInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
@@ -806,7 +804,7 @@ dataObjOpenForRepl(
         // set a creation operation
         op_name = irods::CREATE_OPERATION;
 
-        initDataObjInfoForRepl( rsComm, myDestDataObjInfo, srcDataObjInfo,
+        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo,
                                 destRescInfo, rescGroupName );
         replStatus = srcDataObjInfo->replStatus;
     }
@@ -1474,7 +1472,7 @@ _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead,
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     bzero( &dataObjInp.condInput, sizeof( dataObjInp.condInput ) );
     rstrcpy( dataObjInp.objPath, ( *bunfileObjInfoHead )->objPath, MAX_NAME_LEN );
-    status = sortObjInfoForOpen( rsComm, bunfileObjInfoHead, condInput, 0 );
+    status = sortObjInfoForOpen( bunfileObjInfoHead, condInput, 0 );
 
     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, ( *bunfileObjInfoHead )->rescHier );
     if ( status < 0 ) {

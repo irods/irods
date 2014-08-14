@@ -133,10 +133,10 @@ int initReiWithDataObjInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
                            dataObjInp_t *dataObjIn );
 int initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
                         collInp_t *collCreateInp, collInfo_t *collInfo );
-int packRei( rsComm_t *rsComm, ruleExecInfo_t *rei, bytesBuf_t **packedReiBBuf );
+int packRei( ruleExecInfo_t *rei, bytesBuf_t **packedReiBBuf );
 int unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei, bytesBuf_t *packedReiBBuf );
 int touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei );
-int packReiAndArg( rsComm_t *rsComm, ruleExecInfo_t *rei, char *myArgv[],
+int packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
                    int myArgc, bytesBuf_t **packedReiAndArgBBuf );
 int unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
                      bytesBuf_t *packedReiAndArgBBuf );
@@ -212,9 +212,9 @@ int isStarVariable( char *str );
 
 int mapExternalFuncToInternalProc( char *funcName );
 
-int _admShowDVM( msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx );
-int _admShowFNM( msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx );
-int _admShowIRB( msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleStrct, int inx );
+int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx );
+int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx );
+//int _admShowIRB( msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleStrct, int inx );
 
 
 int getNextValueAndBufFromListOrStruct( char *typ, void *inPtr, void **value,
@@ -224,8 +224,7 @@ int checkFilePerms( char *fileName );
 int evaluateExpression( char *expr, char *res, ruleExecInfo_t *rei );
 int removeTmpVarName( msParamArray_t *msParamArray );
 int
-getAllSessionVarValue( char *action, ruleExecInfo_t *rei,
-                       keyValPair_t *varValues );
+getAllSessionVarValue( ruleExecInfo_t *rei, keyValPair_t *varValues );
 int
 getSessionVarValue( char *action, char *varName, ruleExecInfo_t *rei,
                     char **varValue );

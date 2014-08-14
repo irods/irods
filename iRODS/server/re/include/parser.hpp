@@ -84,7 +84,7 @@ typedef struct {
 }
 #define TOKEN_TYPE(t) (token->type == (t))
 #define TOKEN_TEXT(str) (strcmp(token->text, (str))==0)
-#define PUSHBACK pushback(e, token, context)
+#define PUSHBACK pushback( token, context)
 #define FPOS (getFPos(&pos, e, context))
 #define UPDATE_ERR_LOC if(FPOS->exprloc > context->errloc.exprloc) {context->errloc = *FPOS;}
 #define CASCADE(x) \
@@ -369,7 +369,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDesc, int *errloc, rErr
 Node *parseRuleRuleGen( Pointer *expr, int backwardCompatible, ParserContext *pc );
 Node *parseTermRuleGen( Pointer *expr, int rulegn, ParserContext *pc );
 Node *parseActionsRuleGen( Pointer *expr, int rulegn, int backwardCompatible, ParserContext *pc );
-void pushback( Pointer *e, Token *token, ParserContext *pc );
+void pushback( Token *token, ParserContext *pc );
 void initPointer( Pointer *p, FILE* fp, char* ruleBaseName );
 void initPointer2( Pointer *p, char* buf );
 Pointer *newPointer( FILE* buf, char *ruleBaseName );

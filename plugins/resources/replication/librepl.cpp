@@ -1355,7 +1355,6 @@ extern "C" {
     /// @brief Selects a child from the vector of parsers based on host access
     irods::error replSelectChild(
         irods::resource_plugin_context& _ctx,
-        const std::string& _curr_host,
         const redirect_map_t& _redirect_map,
         irods::hierarchy_parser* _out_parser,
         float* _out_vote ) {
@@ -1466,7 +1465,7 @@ extern "C" {
         }
 
         // foreach child parser determine the best to access based on host
-        else if ( !( ret = replSelectChild( _ctx, *_curr_host, redirect_map, _inout_parser, _out_vote ) ).ok() ) {
+        else if ( !( ret = replSelectChild( _ctx, redirect_map, _inout_parser, _out_vote ) ).ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to select an appropriate child.";
@@ -1667,7 +1666,7 @@ extern "C" {
         } // ctor
 
         irods::error post_disconnect_maintenance_operation(
-            irods::pdmo_type& _out_pdmo ) {
+            irods::pdmo_type& ) {
             irods::error result = SUCCESS();
             // nothing to do
             return result;

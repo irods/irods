@@ -109,7 +109,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
             return status;
         }
 
-        status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &execCmdInp->condInput, 0 );
+        status = sortObjInfoForOpen( &dataObjInfoHead, &execCmdInp->condInput, 0 );
 
         if ( status < 0 || NULL == dataObjInfoHead ) {
             return status;    // JMC cppcheck nullptr
@@ -151,7 +151,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsExecCmd( rsComm, execCmdInp, execCmdOut );
+        status = _rsExecCmd( execCmdInp, execCmdOut );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = remoteExecCmd( rsComm, execCmdInp, execCmdOut,
@@ -211,7 +211,7 @@ remoteExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
 }
 
 int
-_rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
+_rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     int childPid;
     int stdoutFd[2];
     int stderrFd[2];

@@ -20,7 +20,7 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     collInp_t collInp;
     dataObjInp_t dataObjInp;
-    int savedStatus = initCondForChksum( myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+    int savedStatus = initCondForChksum( myRodsArgs, &dataObjInp, &collInp );
 
     if ( savedStatus < 0 ) {
         return savedStatus;
@@ -39,7 +39,7 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
-            status = chksumDataObjUtil( conn, rodsPathInp->srcPath[i].outPath, myRodsEnv, myRodsArgs, &dataObjInp );
+            status = chksumDataObjUtil( conn, rodsPathInp->srcPath[i].outPath, myRodsArgs, &dataObjInp );
         }
 
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
@@ -70,8 +70,7 @@ chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 chksumDataObjUtil( rcComm_t *conn, char *srcPath,
-                   rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   dataObjInp_t *dataObjInp ) {
+                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     struct timeval startTime, endTime;
     char *chksumStr = NULL;
@@ -118,7 +117,7 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
 }
 
 int
-initCondForChksum( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForChksum( rodsArguments_t *rodsArgs,
                    dataObjInp_t *dataObjInp, collInp_t *collInp ) {
     if ( dataObjInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -222,7 +221,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                       collEnt.collName, collEnt.dataName );
             /* screen unnecessary call to chksumDataObjUtil if user input a
              * resource. */
-            status = chksumDataObjUtil( conn, srcChildPath, myRodsEnv,
+            status = chksumDataObjUtil( conn, srcChildPath,
                                         rodsArgs, dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,

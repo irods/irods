@@ -25,7 +25,7 @@ using namespace boost::filesystem;
 
 
 int
-rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
+rsProcStat( rsComm_t * rsComm, procStatInp_t * procStatInp,
             genQueryOut_t **procStatOut ) {
     int status;
     int remoteFlag;
@@ -64,11 +64,11 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     char *tmpStr = NULL;
 
     if ( getValByKey( &procStatInp->condInput, ALL_KW ) != NULL ) {
-        status = _rsProcStatAll( rsComm, procStatInp, procStatOut );
+        status = _rsProcStatAll( rsComm, procStatOut );
         return status;
     }
     if ( getValByKey( &procStatInp->condInput, EXEC_LOCALLY_KW ) != NULL ) {
-        status = localProcStat( rsComm, procStatInp, procStatOut );
+        status = localProcStat( procStatInp, procStatOut );
         return status;
     }
 
@@ -117,13 +117,13 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
         rmKeyVal( &myProcStatInp.condInput, EXEC_LOCALLY_KW );
     }
     else {
-        status = localProcStat( rsComm, procStatInp, procStatOut );
+        status = localProcStat( procStatInp, procStatOut );
     }
     return status;
 }
 
 int
-_rsProcStatAll( rsComm_t *rsComm, procStatInp_t *procStatInp,
+_rsProcStatAll( rsComm_t *rsComm,
                 genQueryOut_t **procStatOut ) {
     rodsServerHost_t *tmpRodsServerHost;
     procStatInp_t myProcStatInp;
@@ -138,7 +138,7 @@ _rsProcStatAll( rsComm_t *rsComm, procStatInp_t *procStatInp,
         if ( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
                 setLocalSrvAddr( myProcStatInp.addr );
-                status = localProcStat( rsComm, &myProcStatInp, &singleProcStatOut );
+                status = localProcStat( &myProcStatInp, &singleProcStatOut );
             }
             else {
                 rstrcpy( myProcStatInp.addr, tmpRodsServerHost->hostName->name, NAME_LEN );
@@ -170,7 +170,7 @@ _rsProcStatAll( rsComm_t *rsComm, procStatInp_t *procStatInp,
 }
 
 int
-localProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
+localProcStat( procStatInp_t *procStatInp,
                genQueryOut_t **procStatOut ) {
     int numProc, status = 0;
     procLog_t procLog;

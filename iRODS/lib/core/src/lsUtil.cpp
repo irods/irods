@@ -30,7 +30,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
-    initCondForLs( myRodsEnv, myRodsArgs, &genQueryInp );
+    initCondForLs( &genQueryInp );
 
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
         rstrcpy( zoneHint, rodsPathInp->srcPath[i].inPath, MAX_NAME_LEN ); // // JMC - backport 4416
@@ -50,7 +50,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             status = lsDataObjUtil( conn, &rodsPathInp->srcPath[i],
-                                    myRodsEnv, myRodsArgs, &genQueryInp );
+                                    myRodsArgs, &genQueryInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             status = lsCollUtil( conn, &rodsPathInp->srcPath[i],
@@ -86,8 +86,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
-               rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-               genQueryInp_t *genQueryInp ) {
+               rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp ) {
     int status = 0;
 
 
@@ -95,22 +94,19 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
         if ( srcPath->rodsObjStat != NULL &&
                 srcPath->rodsObjStat->specColl != NULL ) {
             if ( srcPath->rodsObjStat->specColl->collClass == LINKED_COLL ) {
-                lsDataObjUtilLong( conn,
-                                   srcPath->rodsObjStat->specColl->objPath, myRodsEnv, rodsArgs,
-                                   genQueryInp );
+                lsDataObjUtilLong( conn, srcPath->rodsObjStat->specColl->objPath,
+                        rodsArgs, genQueryInp );
             }
             else {
-                lsSpecDataObjUtilLong( conn, srcPath,
-                                       myRodsEnv, rodsArgs );
+                lsSpecDataObjUtilLong( srcPath, rodsArgs );
             }
         }
         else {
-            lsDataObjUtilLong( conn, srcPath->outPath, myRodsEnv, rodsArgs,
-                               genQueryInp );
+            lsDataObjUtilLong( conn, srcPath->outPath, rodsArgs, genQueryInp );
         }
     }
     else if ( rodsArgs->bundle == True ) { // JMC - backport 4536
-        lsSubfilesInBundle( conn, srcPath->outPath, myRodsEnv, rodsArgs );
+        lsSubfilesInBundle( conn, srcPath->outPath );
     }
     else {
         printLsStrShort( srcPath->outPath );
@@ -140,7 +136,7 @@ printLsStrShort( char *srcPath ) {
 }
 
 int
-lsDataObjUtilLong( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
+lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
                    rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp ) {
     int status;
     genQueryOut_t *genQueryOut = NULL;
@@ -321,8 +317,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
 }
 
 int
-lsSpecDataObjUtilLong( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
-                       rodsArguments_t *rodsArgs ) {
+lsSpecDataObjUtilLong( rodsPath_t *srcPath, rodsArguments_t *rodsArgs ) {
     char sizeStr[NAME_LEN];
     int status;
     rodsObjStat_t *rodsObjStat = srcPath->rodsObjStat;
@@ -374,8 +369,7 @@ printLsShort( rcComm_t *conn,  rodsArguments_t *rodsArgs,
 }
 
 int
-initCondForLs( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-               genQueryInp_t *genQueryInp ) {
+initCondForLs( genQueryInp_t *genQueryInp ) {
     if ( genQueryInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForLs: NULL genQueryInp input" );
@@ -383,10 +377,6 @@ initCondForLs( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
-
-    if ( rodsArgs == NULL ) {
-        return 0;
-    }
 
     return 0;
 }
@@ -444,7 +434,7 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
                 char myPath[MAX_NAME_LEN];
                 snprintf( myPath, MAX_NAME_LEN, "%s/%s", collEnt.collName,
                           collEnt.dataName );
-                lsSubfilesInBundle( conn, myPath, myRodsEnv, rodsArgs );
+                lsSubfilesInBundle( conn, myPath );
             }
             else {
                 printDataCollEnt( &collEnt, queryFlags );
@@ -780,8 +770,7 @@ printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
 }
 
 int
-lsSubfilesInBundle( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
-                    rodsArguments_t *rodsArgs ) {
+lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
     int i, status;
     genQueryOut_t *genQueryOut = NULL;
     genQueryInp_t genQueryInp;

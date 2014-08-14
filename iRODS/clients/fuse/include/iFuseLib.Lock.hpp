@@ -166,7 +166,7 @@ void* removeLastElementOfConcurrentList( concurrentList_t *l );
 int _listSize( concurrentList_t *l );
 int listSize( concurrentList_t *l );
 
-iFuseConn_t *getAndUseConnByPath( char *localPath, rodsEnv *myRodsEnv, int *status );
+iFuseConn_t *getAndUseConnByPath( char *localPath, int *status );
 int lookupPathNotExist( char *inPath );
 int lookupPathExist( char *inPath, pathCache_t **paca );
 int matchAndLockPathCache( char *inPath, pathCache_t **outPathCache );
@@ -181,8 +181,8 @@ int _addFileCacheForPath( pathCache_t *pathCache, fileCache_t *fileCache );
 int _pathNotExist( char *path );
 int _pathReplace( char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache );
 int _getAndUseConnForPathCache( iFuseConn_t **iFuseConn, pathCache_t *paca );
-int _getAndUseIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv );
-int getAndUseIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv );
+int _getAndUseIFuseConn( iFuseConn_t **iFuseConn );
+int getAndUseIFuseConn( iFuseConn_t **iFuseConn );
 
 int iFuseFileCacheLseek( fileCache_t *fileCache, off_t offset );
 int _iFuseFileCacheLseek( fileCache_t *fileCache, off_t offset );

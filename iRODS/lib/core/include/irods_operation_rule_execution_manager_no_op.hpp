@@ -27,25 +27,25 @@ public:
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for pre operation
     error exec_pre_op(
-        keyValPair_t& _kvp,  // fco vars
-        std::string&  _res ) {
+        keyValPair_t&,  // fco vars
+        std::string& ) {
         return SUCCESS();
     }
 
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     error exec_post_op(
-        keyValPair_t& _kvp,  // fco vars
-        std::string&  _res ) {
+        keyValPair_t&,  // fco vars
+        std::string& ) {
         return SUCCESS();
     }
 
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     error exec_op(
-        keyValPair_t&      _kvp,      // fco vars
-        const std::string& _rn,       // rule name
-        std::string&       _res ) {   // results of call to rule
+        keyValPair_t&,          // fco vars
+        const std::string&,     // rule name
+        std::string& ) {        // results of call to rule
         return SUCCESS();
     }
 

@@ -17,7 +17,7 @@ extern "C" {
                rodsPathInp_t *rodsPathInp );
     int
     initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                      dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp );
+                      dataObjInp_t *dataObjOprInp );
 
 #ifdef __cplusplus
 }

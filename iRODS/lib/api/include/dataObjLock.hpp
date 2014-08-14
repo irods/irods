@@ -31,7 +31,7 @@
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-_rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
+_rsDataObjLock( dataObjInp_t *dataObjInp );
 int
 getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type );
 int

@@ -67,7 +67,7 @@ matchCliVaultPath( rsComm_t*,
 int
 chkEmptyDir( rsComm_t *rsComm, const std::string& cacheDir, const std::string& hier );
 int
-filePathTypeInResc( rsComm_t *rsComm, const std::string& objPath, const std::string& fileName, const std::string& rescHier, rescInfo_t *rescInfo );
+filePathTypeInResc( rsComm_t *rsComm, const std::string& objPath, const std::string& fileName, const std::string& rescHier );
 int
 bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd );
 #endif  /* FILE_OPR_H */

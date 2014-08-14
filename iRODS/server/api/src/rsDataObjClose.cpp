@@ -156,7 +156,7 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
 #ifdef TEST_QUE_RULE
-                status = packReiAndArg( rsComm, &rei, NULL, 0,
+                status = packReiAndArg( &rei, NULL, 0,
                                         &packedReiAndArgBBuf );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
@@ -730,7 +730,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
 }
 
 int
-_l3Close( rsComm_t *rsComm, int rescTypeInx, int l3descInx ) {
+_l3Close( rsComm_t *rsComm, int l3descInx ) {
     fileCloseInp_t fileCloseInp;
     int status;
 

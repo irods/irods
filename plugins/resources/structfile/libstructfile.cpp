@@ -2581,7 +2581,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for getting freespace of the fs
     irods::error tar_file_getfsfreespace_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, "tar_file_getfsfreespace_plugin is not implemented" );
 
     } // tar_file_getfsfreespace_plugin
@@ -2589,7 +2589,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     irods::error tar_file_registered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2597,7 +2597,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     irods::error tar_file_unregistered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2605,7 +2605,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     irods::error tar_file_modified_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2613,7 +2613,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // tar_file_rebalance - code which would rebalance the subtree
     irods::error tar_file_rebalance(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
 
     } // tar_file_rebalance
@@ -2621,8 +2621,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // tar_file_notify - code which would notify the subtree of a change
     irods::error tar_file_notify(
-        irods::resource_plugin_context& _ctx,
-        const std::string*               _opr ) {
+        irods::resource_plugin_context&,
+        const std::string*             ) {
         return SUCCESS();
 
     } // tar_file_rebalance

@@ -25,7 +25,7 @@ int
 rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
                 fileLseekOut_t **dataObjLseekOut );
 rodsLong_t
-_l3Lseek( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+_l3Lseek( rsComm_t *rsComm, int l3descInx,
           rodsLong_t offset, int whence );
 #else
 #define RS_DATA_OBJ_LSEEK NULL

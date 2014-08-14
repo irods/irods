@@ -19,7 +19,7 @@ using namespace boost::filesystem;
 
 static int CurrentTime = 0;
 int
-ageExceeded( int ageLimit, int myTime, int verbose, char *objPath,
+ageExceeded( int ageLimit, int myTime, char *objPath,
              rodsLong_t fileSize );
 
 int
@@ -29,7 +29,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, RSYNC_OPR );
+    int savedStatus = resolveRodsTarget( conn, rodsPathInp, RSYNC_OPR );
     if ( savedStatus < 0 ) {
         rodsLogError( LOG_ERROR, savedStatus,
                       "rsyncUtil: resolveRodsTarget" );
@@ -73,7 +73,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( srcType == DATA_OBJ_T && targType == LOCAL_FILE_T ) {
             rmKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW );
             status = rsyncDataToFileUtil( conn, srcPath, targPath,
-                                          myRodsEnv, myRodsArgs, &dataObjOprInp );
+                                          myRodsArgs, &dataObjOprInp );
         }
         else if ( srcType == LOCAL_FILE_T && targType == DATA_OBJ_T ) {
             if ( isPathSymlink( myRodsArgs, srcPath->outPath ) > 0 ) {
@@ -83,7 +83,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
                                  &dataObjOprInp.condInput );
             status = rsyncFileToDataUtil( conn, srcPath, targPath,
-                                          myRodsEnv, myRodsArgs, &dataObjOprInp );
+                                          myRodsArgs, &dataObjOprInp );
         }
         else if ( srcType == DATA_OBJ_T && targType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjCopyInp.srcDataObjInp.condInput,
@@ -91,7 +91,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             addKeyVal( &dataObjCopyInp.destDataObjInp.condInput,
                        REG_CHKSUM_KW, "" );
             status = rsyncDataToDataUtil( conn, srcPath, targPath,
-                                          myRodsEnv, myRodsArgs, &dataObjCopyInp );
+                                          myRodsArgs, &dataObjCopyInp );
         }
         else if ( srcType == COLL_OBJ_T && targType == LOCAL_DIR_T ) {
             addKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW, "" );
@@ -144,7 +144,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                     rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                     rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                      dataObjInp_t *dataObjOprInp ) {
     int status;
     struct timeval startTime, endTime;
@@ -161,7 +161,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( myRodsArgs->age == True ) {
         if ( srcPath->rodsObjStat != NULL ) {
             if ( ageExceeded( myRodsArgs->agevalue,
-                              atoi( srcPath->rodsObjStat->modifyTime ), myRodsArgs->verbose,
+                              atoi( srcPath->rodsObjStat->modifyTime ),
                               srcPath->outPath, srcPath->size ) ) {
                 return 0;
             }
@@ -269,7 +269,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 int
 rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                     rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                     rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                      dataObjInp_t *dataObjOprInp ) {
     int status;
     struct timeval startTime, endTime;
@@ -298,7 +298,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             return USER_INPUT_PATH_ERR;
         }
         if ( ageExceeded( myRodsArgs->agevalue, statbuf.st_mtime,
-                          myRodsArgs->verbose, srcPath->outPath, srcPath->size ) ) {
+                          srcPath->outPath, srcPath->size ) ) {
             return 0;
         }
     }
@@ -412,7 +412,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 int
 rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                     rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                     rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                      dataObjCopyInp_t *dataObjCopyInp ) {
     int status;
     struct timeval startTime, endTime;
@@ -428,7 +428,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( myRodsArgs->age == True ) {
         if ( srcPath->rodsObjStat != NULL ) {
             if ( ageExceeded( myRodsArgs->agevalue,
-                              atoi( srcPath->rodsObjStat->modifyTime ), myRodsArgs->verbose,
+                              atoi( srcPath->rodsObjStat->modifyTime ),
                               srcPath->outPath, srcPath->size ) ) {
                 return 0;
             }
@@ -576,7 +576,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
         if ( collEnt.objType == DATA_OBJ_T ) {
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,
-                                  atoi( collEnt.modifyTime ), rodsArgs->verbose,
+                                  atoi( collEnt.modifyTime ),
                                   collEnt.dataName, collEnt.dataSize ) ) {
                     continue;
                 }
@@ -597,7 +597,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
             getFileType( &myTargPath );
 
             status = rsyncDataToFileUtil( conn, &mySrcPath, &myTargPath,
-                                          myRodsEnv, rodsArgs, dataObjOprInp );
+                                          rodsArgs, dataObjOprInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "rsyncCollUtil: rsyncDataObjUtil failed for %s. status = %d",
@@ -723,7 +723,6 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 ageExceeded(
                     rodsArgs->agevalue,
                     last_write_time( p ),
-                    rodsArgs->verbose,
                     mySrcPath.outPath,
                     file_size( p ) ) ) {
             continue;
@@ -750,7 +749,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             mySrcPath.size = file_size( p );
             getRodsObjType( conn, &myTargPath );
             status = rsyncFileToDataUtil( conn, &mySrcPath, &myTargPath,
-                                          myRodsEnv, rodsArgs, dataObjOprInp );
+                                          rodsArgs, dataObjOprInp );
             /* fix a big mem leak */
             if ( myTargPath.rodsObjStat != NULL ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
@@ -870,7 +869,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         if ( collEnt.objType == DATA_OBJ_T ) {
             if ( rodsArgs->age == True ) {
                 if ( ageExceeded( rodsArgs->agevalue,
-                                  atoi( collEnt.modifyTime ), rodsArgs->verbose,
+                                  atoi( collEnt.modifyTime ),
                                   collEnt.dataName, collEnt.dataSize ) ) {
                     continue;
                 }
@@ -891,8 +890,8 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
             getRodsObjType( conn, &myTargPath );
 
-            status = rsyncDataToDataUtil( conn, &mySrcPath,
-                                          &myTargPath, myRodsEnv, rodsArgs, dataObjCopyInp );
+            status = rsyncDataToDataUtil( conn, &mySrcPath, &myTargPath,
+                                            rodsArgs, dataObjCopyInp );
             if ( myTargPath.rodsObjStat != NULL ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
                 myTargPath.rodsObjStat = NULL;
@@ -1092,7 +1091,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 }
 
 int
-ageExceeded( int ageLimit, int myTime, int verbose, char *objPath,
+ageExceeded( int ageLimit, int myTime, char *objPath,
              rodsLong_t fileSize ) {
     int age;
 

@@ -34,5 +34,5 @@ reServerMain( rsComm_t *rsComm, char* logDir );
 int
 reSvrSleep( rsComm_t *rsComm );
 int
-chkAndResetRule( rsComm_t *rsComm );
+chkAndResetRule();
 #endif	/* RE_SERVER_H */

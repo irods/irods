@@ -28,7 +28,7 @@ int
 rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
 _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                           int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo ); // JMC - backport 4537
+                           int phyOpenFlag, dataObjInfo_t *dataObjInfo ); // JMC - backport 4537
 int
 _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
@@ -38,7 +38,7 @@ l3Open( rsComm_t *rsComm, int l1descInx );
 int
 _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags );
 int
-l3OpenByHost( rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags );
+l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags );
 int
 applyPreprocRuleForOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          dataObjInfo_t **dataObjInfoHead );
@@ -49,8 +49,8 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 // JMC - backport 4590
 int
 procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
-                         dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
+                         dataObjInfo_t **dataObjInfoHead,
+                         dataObjInfo_t **compDataObjInfo );
 int
 procDataObjOpenForRead( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                         dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,

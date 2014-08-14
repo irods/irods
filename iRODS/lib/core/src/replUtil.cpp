@@ -59,10 +59,10 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = replDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                      rodsPathInp->srcPath[i].size, myRodsEnv, myRodsArgs, &dataObjInp );
+                                      rodsPathInp->srcPath[i].size, myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
-            setStateForRestart( conn, &rodsRestart, &rodsPathInp->srcPath[i],
+            setStateForRestart( &rodsRestart, &rodsPathInp->srcPath[i],
                                 myRodsArgs );
             addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
             status = replCollUtil( conn, rodsPathInp->srcPath[i].outPath,
@@ -93,8 +93,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
-                 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                 dataObjInp_t *dataObjInp ) {
+                 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -229,8 +228,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
         int status;
-        status = openRestartFile( rodsArgs->restartFileString, rodsRestart,
-                                  rodsArgs );
+        status = openRestartFile( rodsArgs->restartFileString, rodsRestart );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "initCondForRepl: openRestartFile of %s errno",
@@ -318,7 +316,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             }
 
             status = replDataObjUtil( conn, srcChildPath, collEnt.dataSize,
-                                      myRodsEnv, rodsArgs, dataObjInp );
+                                      rodsArgs, dataObjInp );
 
             if ( status == SYS_COPY_ALREADY_IN_RESC ) {
                 if ( rodsArgs->verbose == True ) {

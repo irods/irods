@@ -126,7 +126,7 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  * \sa none
  **/
 int
-msiSetRescSortScheme( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
+msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
     rodsLog( LOG_ERROR, "msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type" );
     return SYS_NOT_SUPPORTED;
 }
@@ -401,7 +401,7 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
         if ( strcmp( sortScheme, "random" ) == 0 ) {
             sortDataObjInfoRandom( &rei->doi );
             // JMC - legacy resource -     } else if (strcmp (sortScheme, "byRescClass") == 0) {
-            //    rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
+            //    rei->status = sortObjInfoForOpen( &rei->doi, NULL, 1 );
         }
     }
     return rei->status;

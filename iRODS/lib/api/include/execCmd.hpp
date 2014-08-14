@@ -60,8 +60,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
 int
 initExecCmdMutex();
 int
-_rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
-            execCmdOut_t **execCmdOut );
+_rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
 int
 remoteExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
                execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost );

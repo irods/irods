@@ -14,7 +14,7 @@ database_object::database_object() {
 // =-=-=-=-=-=-=-
 // public - cctor
 database_object::database_object(
-    const database_object& _rhs ) {
+    const database_object& ) {
 
 
 } // cctor
@@ -27,7 +27,7 @@ database_object::~database_object() {
 // =-=-=-=-=-=-=-
 // public - assignment operator
 database_object& database_object::operator=(
-    const database_object& _rhs ) {
+    const database_object& ) {
 
     return *this;
 
@@ -36,7 +36,7 @@ database_object& database_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equivalence operator
 bool database_object::operator==(
-    const database_object& _rhs ) const {
+    const database_object& ) const {
     return false;
 
 } // operator==
@@ -44,7 +44,7 @@ bool database_object::operator==(
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
 error database_object::get_re_vars(
-    keyValPair_t& _kvp ) {
+    keyValPair_t& ) {
 
     //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 

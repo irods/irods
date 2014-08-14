@@ -18,11 +18,9 @@ extern "C" {
               rodsPathInp_t *rodsPathInp );
     int
     trimDataObjUtil( rcComm_t *conn, char *srcPath,
-                     rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                     dataObjInp_t *dataObjInp );
+                     rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
-    initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                     dataObjInp_t *dataObjInp );
+    initCondForTrim( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
     trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );

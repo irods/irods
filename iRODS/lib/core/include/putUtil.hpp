@@ -38,7 +38,7 @@ extern "C" {
              rodsPathInp_t *rodsPathInp );
     int
     putFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                 rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                 rodsLong_t srcSize, rodsArguments_t *myRodsArgs,
                  dataObjInp_t *dataObjOprInp );
     int
     initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
@@ -56,7 +56,7 @@ extern "C" {
     getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir );
     int
     bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                     rodsLong_t srcSize, int createMode, rodsEnv *myRodsEnv,
+                     rodsLong_t srcSize, int createMode,
                      rodsArguments_t *myRodsArgs, bulkOprInp_t *bulkOprInp,
                      bulkOprInfo_t *bulkOprInfo );
     int

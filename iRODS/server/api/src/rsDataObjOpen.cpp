@@ -158,7 +158,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
     else {
         /* screen out any stale copies */
-        status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
+        status = sortObjInfoForOpen( &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
         if ( status < 0 ) { // JMC - backport 4604
             if ( lockFd > 0 ) {
                 rsDataObjUnlock( rsComm, dataObjInp, lockFd );
@@ -185,7 +185,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     else if ( writeFlag > 0 ) {
         // JMC :: had to reformat this code to find a missing {
         //     :: i seriously hope its in the right place...
-        status = procDataObjOpenForWrite( rsComm, dataObjInp, &dataObjInfoHead, &cacheDataObjInfo, &compDataObjInfo, &compRescInfo );
+        status = procDataObjOpenForWrite( rsComm, dataObjInp, &dataObjInfoHead, &compDataObjInfo );
     }
 
     if ( status < 0 ) {
@@ -239,7 +239,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             continue;
         }
 
-        status = l1descInx = _rsDataObjOpenWithObjInfo( rsComm, dataObjInp, phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo );
+        status = l1descInx = _rsDataObjOpenWithObjInfo( rsComm, dataObjInp, phyOpenFlag, tmpDataObjInfo );
 
         if ( status >= 0 ) {
             if ( compDataObjInfo != NULL ) {
@@ -289,7 +289,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
 int
 _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                           int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo ) { // JMC - backport 4537
+                           int phyOpenFlag, dataObjInfo_t *dataObjInfo ) { // JMC - backport 4537
     int replStatus;
     int status;
     int l1descInx;
@@ -426,7 +426,7 @@ _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags ) {
  */
 
 int
-l3OpenByHost( rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags ) {
+l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags ) {
     fileOpenInp_t fileOpenInp;
     int newL3descInx;
 
@@ -527,7 +527,7 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             continue;
         }
         /* close it */
-        _l3Close( rsComm, rescInfo->rescTypeInx, status );
+        _l3Close( rsComm, status );
 
         /* register the replica */
         memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
@@ -560,8 +560,8 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 // JMC - backport 4590
 int
 procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
-                         dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo ) {
+                         dataObjInfo_t **dataObjInfoHead,
+                         dataObjInfo_t **compDataObjInfo ) {
     int status = 0;
 
     /* put the copy with destResc on top */

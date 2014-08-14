@@ -33,7 +33,7 @@ rsFileRename(
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsFileRename( rsComm, fileRenameInp, rename_out, rodsServerHost );
+        status = _rsFileRename( rsComm, fileRenameInp, rename_out );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = remoteFileRename( rsComm, fileRenameInp, rename_out, rodsServerHost );
@@ -86,8 +86,7 @@ remoteFileRename(
 int _rsFileRename(
     rsComm_t*         _comm,
     fileRenameInp_t*  _rename_inp,
-    fileRenameOut_t** _rename_out,
-    rodsServerHost_t* _server_host ) {
+    fileRenameOut_t** _rename_out ) {
     // =-=-=-=-=-=-=-
     // FIXME: need to check resource permission and vault permission
     // when RCAT is available

@@ -56,10 +56,10 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
-    initCondForGet( conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart );
+    initCondForGet( conn, myRodsArgs, &dataObjOprInp, &rodsRestart );
 
     if ( rodsPathInp->resolved == False ) {
-        status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
+        status = resolveRodsTarget( conn, rodsPathInp, 1 );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "getUtil: resolveRodsTarget" );
@@ -125,11 +125,11 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rmKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW );
             status = getDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
                                      targPath->outPath, rodsPathInp->srcPath[i].size,
-                                     rodsPathInp->srcPath[i].objMode, myRodsEnv,
+                                     rodsPathInp->srcPath[i].objMode,
                                      myRodsArgs, &dataObjOprInp );
         }
         else if ( targPath->objType ==  LOCAL_DIR_T ) {
-            setStateForRestart( conn, &rodsRestart, targPath, myRodsArgs );
+            setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             addKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW, "" );
             status = getCollUtil( myConn, rodsPathInp->srcPath[i].outPath,
                                   targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
@@ -199,7 +199,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                rodsLong_t srcSize, uint dataMode, rodsEnv *myRodsEnv,
+                rodsLong_t srcSize, uint dataMode,
                 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
     int status;
     struct timeval startTime, endTime;
@@ -261,7 +261,7 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
 }
 
 int
-initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart ) {
     char *tmpStr;
 
@@ -354,8 +354,7 @@ initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
         int status;
-        status = openRestartFile( rodsArgs->restartFileString, rodsRestart,
-                                  rodsArgs );
+        status = openRestartFile( rodsArgs->restartFileString, rodsRestart );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "initCondForPut: openRestartFile of %s errno",
@@ -472,9 +471,8 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                 continue;
             }
 
-            status = getDataObjUtil( conn, srcChildPath,
-                                     targChildPath, mySize, collEnt.dataMode, myRodsEnv, rodsArgs,
-                                     dataObjOprInp );
+            status = getDataObjUtil( conn, srcChildPath, targChildPath, mySize,
+                    collEnt.dataMode, rodsArgs, dataObjOprInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "getCollUtil: getDataObjUtil failed for %s. status = %d",

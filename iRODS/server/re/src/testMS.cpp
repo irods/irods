@@ -72,7 +72,7 @@ print_uoi( userInfo_t *uoi ) {
     return 0;
 }
 
-int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei ) {
+int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t* ) {
     char *In;
 
     In  = ( char * ) mPIn->inOutStruct;
@@ -148,7 +148,7 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  * \bug  no known bugs
 **/
 int
-msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
+msiDoSomething( msParam_t*, msParam_t *outParam, ruleExecInfo_t *rei ) {
     keyValPair_t *myKeyVal;						/* will contain results */
 
     /* For testing mode when used with irule --test */

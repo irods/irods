@@ -648,7 +648,6 @@ sortObjInfo(
  * then current cache, current archival, old cache and old archival.
  */
 int sortObjInfoForOpen(
-    rsComm_t*       rsComm,
     dataObjInfo_t** dataObjInfoHead,
     keyValPair_t*   condInput,
     int             writeFlag ) {

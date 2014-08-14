@@ -41,7 +41,7 @@ sortObjInfoForRepl( dataObjInfo_t **dataObjInfoHead,
                     int deleteOldFlag, const char* resc_hier,
                     const char* dst_resc_hier );
 int
-sortObjInfoForOpen( rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
+sortObjInfoForOpen( dataObjInfo_t **dataObjInfoHead,
                     keyValPair_t *condInput, int writeFlag );
 int
 sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead );

@@ -7,7 +7,7 @@
 #include "miscUtil.hpp"
 
 int
-phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -15,8 +15,7 @@ phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     rodsPath_t *collPath;
     structFileExtAndRegInp_t phyBundleCollInp;
-    int savedStatus = initCondForPhybunOpr( myRodsEnv, myRodsArgs, &phyBundleCollInp,
-                                            rodsPathInp );
+    int savedStatus = initCondForPhybunOpr( myRodsArgs, &phyBundleCollInp );
     if ( savedStatus < 0 ) {
         return savedStatus;
     }
@@ -48,9 +47,8 @@ phybunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 }
 
 int
-initCondForPhybunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                      structFileExtAndRegInp_t *phyBundleCollInp,
-                      rodsPathInp_t *rodsPathInp ) {
+initCondForPhybunOpr( rodsArguments_t *rodsArgs,
+                      structFileExtAndRegInp_t *phyBundleCollInp ) {
     char tmpStr[NAME_LEN], tmpStr1[NAME_LEN]; // JMC - backport 4771
 
     if ( phyBundleCollInp == NULL ) {

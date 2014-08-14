@@ -131,7 +131,7 @@ extern "C" {
 
 
     int
-    checkPhySafety( char *file ) {
+    checkPhySafety( char* ) {
         /*  need to see if path is good. it should be only  a logical file */
         /* it may be file in another zone also!!! */
         return 0;
@@ -174,7 +174,7 @@ extern "C" {
     }
 
 
-    int checkSafety( char *file ) {
+    int checkSafety( char* ) {
         /*  need to see if path is good. it should be only  a logical file */
         /* it may be file in another zone also!!! */
         return 0;
@@ -294,9 +294,7 @@ extern "C" {
         }
     }
 
-    int mkMssoCacheDir(
-        int                          _struct_inx,
-        irods::structured_object_ptr _fco ) {
+    int mkMssoCacheDir( int _struct_inx ) {
         int i = 0;
         int status;
         fileMkdirInp_t fileMkdirInp;
@@ -1160,7 +1158,7 @@ extern "C" {
         if ( fileType == 1 ) {
             if ( strlen( specColl->cacheDir ) == 0 ) {
                 /* no cache. stage one. make the CacheDir first */
-                status = mkMssoCacheDir( _struct_inx , _fco );
+                status = mkMssoCacheDir( _struct_inx );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -1183,7 +1181,7 @@ extern "C" {
         else if ( fileType == 2 ) {
             if ( strlen( specColl->cacheDir ) == 0 ) {
                 /* no cache. stage one. make the CacheDir first */
-                status = mkMssoCacheDir( _struct_inx , _fco );
+                status = mkMssoCacheDir( _struct_inx );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -2496,7 +2494,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for getting freespace of the fs
     irods::error msso_file_getfsfreespace_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, "msso_file_getfsfreespace_plugin is not implemented" );
 
     } // msso_file_getfsfreespace_plugin
@@ -2504,7 +2502,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     irods::error msso_file_registered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2512,7 +2510,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     irods::error msso_file_unregistered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2520,7 +2518,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     irods::error msso_file_modified_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // NOOP
         return SUCCESS();
     }
@@ -2528,7 +2526,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief  - code which would rebalance the subtree
     irods::error msso_file_rebalance_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
 
     } // msso_file_rebalance
@@ -2536,8 +2534,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief - code which would notify the subtree of a change
     irods::error msso_file_notify_plugin(
-        irods::resource_plugin_context& _ctx,
-        const std::string*               _opr ) {
+        irods::resource_plugin_context& ,
+        const std::string* ) {
         return SUCCESS();
 
     } // msso_file_notify_plugin

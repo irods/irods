@@ -10,7 +10,7 @@
 #include "rsGlobalExtern.hpp"
 
 int
-rsReadCollection( rsComm_t *rsComm, int *handleInxInp,
+rsReadCollection( rsComm_t*, int *handleInxInp,
                   collEnt_t **collEnt ) {
     int status;
     collHandle_t *collHandle;

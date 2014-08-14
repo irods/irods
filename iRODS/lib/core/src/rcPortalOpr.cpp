@@ -38,8 +38,7 @@ sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
     myHtonll( offset, ( rodsLong_t * ) &myHeader.offset );
     myHtonll( length, ( rodsLong_t * ) &myHeader.length );
 
-    retVal = myWrite( sock, ( void * ) &myHeader, sizeof( myHeader ),
-                      SOCK_TYPE, NULL );
+    retVal = myWrite( sock, ( void * ) &myHeader, sizeof( myHeader ), NULL );
 
     if ( retVal != sizeof( myHeader ) ) {
         rodsLog( LOG_ERROR,
@@ -63,7 +62,7 @@ rcvTranHeader( int sock, transferHeader_t *myHeader ) {
     transferHeader_t tmpHeader;
 
     retVal = myRead( sock, ( void * ) &tmpHeader, sizeof( tmpHeader ),
-                     SOCK_TYPE, NULL, NULL );
+                     NULL, NULL );
 
     if ( retVal != sizeof( tmpHeader ) ) {
         rodsLog( LOG_ERROR,
@@ -117,7 +116,7 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
     myBBuf->len = dataSize;
     conn->transStat.bytesWritten = dataSize;
 
-    status = myRead( in_fd, myBBuf->buf, ( int ) dataSize, FILE_DESC_TYPE,
+    status = myRead( in_fd, myBBuf->buf, ( int ) dataSize,
                      NULL, NULL );
 
     close( in_fd );
@@ -401,7 +400,6 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
                             srcFd,
                             buf,
                             toRead,
-                            FILE_DESC_TYPE,
                             &bytesRead,
                             NULL );
             if ( bytesRead != toRead ) {
@@ -461,7 +459,6 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
                                    destFd,
                                    &new_size,
                                    sizeof( int ),
-                                   SOCK_TYPE,
                                    &bytesWritten );
 
             }
@@ -472,7 +469,6 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
                                destFd,
                                buf,
                                new_size,
-                               SOCK_TYPE,
                                &bytesWritten );
 
             if ( bytesWritten != new_size ) {
@@ -560,7 +556,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     }
 
     while ( ( dataObjWriteInpBBuf.len =
-                  myRead( in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ, FILE_DESC_TYPE,
+                  myRead( in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ,
                           &bytesRead, NULL ) ) > 0 ) {
         /* Write to the data object */
 
@@ -660,7 +656,7 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath ) 
         }
 
         bytesWritten = myWrite( out_fd, dataObjOutBBuf->buf,
-                                dataObjOutBBuf->len, FILE_DESC_TYPE, NULL );
+                                dataObjOutBBuf->len, NULL );
 
         close( out_fd );
     }
@@ -729,7 +725,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         }
         else {
             bytesWritten = myWrite( out_fd, dataObjReadInpBBuf.buf,
-                                    bytesRead, FILE_DESC_TYPE, NULL );
+                                    bytesRead, NULL );
         }
 
         if ( bytesWritten != bytesRead ) {
@@ -1067,7 +1063,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                                 srcFd,
                                 &new_size,
                                 sizeof( int ),
-                                SOCK_TYPE,
                                 NULL, NULL );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog(
@@ -1085,7 +1080,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                             srcFd,
                             buf,
                             new_size,
-                            SOCK_TYPE,
                             &bytesRead,
                             NULL );
             if ( bytesRead != new_size ) {
@@ -1131,7 +1125,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                                destFd,
                                buf,
                                plain_size,
-                               FILE_DESC_TYPE,
                                &bytesWritten );
             if ( bytesWritten != plain_size ) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
@@ -1187,9 +1180,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
 int putFileToPortalRbudp(
     portalOprOut_t*      portalOprOut,
     char*                locFilePath,
-    char*                objPath,
     int                  locFd,
-    rodsLong_t           dataSize,
     int                  veryVerbose,
     int                  sendRate,
     int                  packetSize ) {
@@ -1273,7 +1264,6 @@ int getFileToPortalRbudp(
     portalOprOut_t* portalOprOut,
     char*           locFilePath,
     int             locFd,
-    rodsLong_t      dataSize,
     int             veryVerbose,
     int             packetSize ) {
 
@@ -1674,7 +1664,7 @@ putSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
         }
 
         dataObjWriteInpBBuf->len = myRead( localFd,
-                                           dataObjWriteInpBBuf->buf, toRead, FILE_DESC_TYPE, NULL, NULL );
+                                           dataObjWriteInpBBuf->buf, toRead, NULL, NULL );
         /* Write to the data object */
         dataObjWriteInp->len = dataObjWriteInpBBuf->len;
         bytesWritten = rcDataObjWrite( conn, dataObjWriteInp,
@@ -1846,7 +1836,7 @@ getSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
             return SYS_COPY_LEN_ERR;
         }
         bytesWritten = myWrite( localFd, dataObjReadInpBBuf->buf,
-                                bytesRead, FILE_DESC_TYPE, NULL );
+                                bytesRead, NULL );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_ERROR,

@@ -70,7 +70,7 @@ main( int argc, char **argv ) {
         exit( 7 );
     }
 
-    status = mkdirUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
+    status = mkdirUtil( conn, &myRodsArgs, &rodsPathInp );
 
     printErrorStack( conn->rError );
     rcDisconnect( conn );

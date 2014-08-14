@@ -10,7 +10,7 @@
 #include "rsGlobalExtern.hpp"
 
 int
-rsCloseCollection( rsComm_t *rsComm, int *handleInxInp ) {
+rsCloseCollection( rsComm_t*, int *handleInxInp ) {
     int status;
     int handleInx = *handleInxInp;
 

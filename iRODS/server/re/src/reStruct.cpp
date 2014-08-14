@@ -310,7 +310,7 @@ initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
 }
 
 int
-packRei( rsComm_t *rsComm, ruleExecInfo_t *rei,
+packRei( ruleExecInfo_t *rei,
          bytesBuf_t **packedReiBBuf ) {
     int status;
 
@@ -361,7 +361,7 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
 }
 
 int
-packReiAndArg( rsComm_t *rsComm, ruleExecInfo_t *rei, char *myArgv[],
+packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
                int myArgc, bytesBuf_t **packedReiAndArgBBuf ) {
     int status;
     ruleExecInfoAndArg_t reiAndArg;

@@ -19,9 +19,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp,
-                                        rodsPathInp );
-
+    int savedStatus = initCondForMcoll( myRodsEnv, myRodsArgs, &dataObjOprInp );
     if ( savedStatus < 0 ) {
         return savedStatus;
     }
@@ -73,7 +71,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                  dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp ) {
+                  dataObjInp_t *dataObjOprInp ) {
     if ( dataObjOprInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForReg: NULL dataObjOprInp input" );

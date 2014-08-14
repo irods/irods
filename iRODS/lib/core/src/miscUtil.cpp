@@ -459,7 +459,7 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
 }
 
 int
-printTime( rcComm_t *conn, char *objPath, struct timeval *startTime,
+printTime( char *objPath, struct timeval *startTime,
            struct timeval *endTime ) {
     struct timeval diffTime;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];

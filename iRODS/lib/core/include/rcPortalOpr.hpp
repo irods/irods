@@ -70,12 +70,12 @@ extern "C" {
              rodsLong_t dataSize );
     int
     putFileToPortalRbudp( portalOprOut_t *portalOprOut,
-                          char *locFilePath, char *objPath, int locFd, rodsLong_t dataSize,
+                          char *locFilePath, int locFd,
                           int veryVerbose, int sendRate, int packetSize );
     int
     getFileToPortalRbudp( portalOprOut_t *portalOprOut,
-                          char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
-                          int packetSize );
+                          char *locFilePath, int locFd,
+                          int veryVerbose, int packetSize );
     int
     initRbudpClient( rbudpBase_t *rbudpBase, portList_t *myPortList );
     int

@@ -234,8 +234,6 @@ irods::error unix_check_params_and_path(
 // =-=-=-=-=-=-=-
 //@brief Recursively make all of the dirs in the path
 irods::error unix_file_mkdir_r(
-    rsComm_t*                      _comm,
-    const std::string&             _results,
     const std::string& path,
     mode_t mode ) {
     irods::error result = SUCCESS();
@@ -322,7 +320,7 @@ extern "C" {
     /// @brief interface to notify of a file operation
     irods::error unix_file_notify_plugin(
         irods::resource_plugin_context& _ctx,
-        const std::string*               _opr ) {
+        const std::string* ) {
         irods::error result = SUCCESS();
         // Check the operation parameters and update the physical path
         irods::error ret = unix_check_params_and_path( _ctx );
@@ -1013,7 +1011,7 @@ extern "C" {
                 std::string new_path = new_full_path;
                 std::size_t last_slash = new_path.find_last_of( '/' );
                 new_path.erase( last_slash );
-                ret = unix_file_mkdir_r( _ctx.comm(), "", new_path.c_str(), 0750 );
+                ret = unix_file_mkdir_r( new_path.c_str(), 0750 );
                 if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
 
                 }
@@ -1121,7 +1119,6 @@ extern "C" {
     // redirect_create - code to determine redirection for create operation
     irods::error unix_file_redirect_create(
         irods::plugin_property_map&   _prop_map,
-        irods::file_object_ptr        _file_obj,
         const std::string&             _resc_name,
         const std::string&             _curr_host,
         float&                         _out_vote ) {
@@ -1342,7 +1339,7 @@ extern "C" {
                     else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
-                        ret = unix_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+                        ret = unix_file_redirect_create( _ctx.prop_map(), resc_name, ( *_curr_host ), ( *_out_vote ) );
                         result = ASSERT_PASS( ret, "Failed redirecting for create." );
                     }
 
@@ -1422,7 +1419,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             irods::error result = SUCCESS();
             return ERROR( -1, "nop" );
         }

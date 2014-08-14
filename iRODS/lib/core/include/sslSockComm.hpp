@@ -35,16 +35,16 @@ extern "C" {
                     bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt,
                     struct timeval *tv, SSL *ssl );
     int
-    sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl );
+    sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl );
     int
-    sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
+    sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
                     bytesBuf_t *byteStreamBBuf, bytesBuf_t *errorBBuf, int intInfo,
                     irodsProt_t irodsProt, SSL *ssl );
     int
-    sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+    sslRead( int sock, void *buf, int len,
              int *bytesRead, struct timeval *tv, SSL *ssl );
     int
-    sslWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+    sslWrite( void *buf, int len,
               int *bytesWritten, SSL *ssl );
 
 #ifdef __cplusplus

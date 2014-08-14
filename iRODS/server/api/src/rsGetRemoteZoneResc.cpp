@@ -88,7 +88,6 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         int writeFlag;
         writeFlag = getWriteFlag( dataObjInp->openFlags );
         status = sortObjInfoForOpen(
-                     rsComm,
                      &dataObjInfoHead,
                      &dataObjInp->condInput,
                      writeFlag );

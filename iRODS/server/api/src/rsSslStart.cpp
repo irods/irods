@@ -6,7 +6,7 @@
 #include "sslStart.hpp"
 
 int
-rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp ) {
+rsSslStart( rsComm_t *rsComm, sslStartInp_t* ) {
     /* if SSL is on already, just return success */
     if ( rsComm->ssl_on ) {
         return 0;

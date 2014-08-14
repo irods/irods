@@ -72,7 +72,7 @@ extern "C" {
     irods::error native_auth_client_start(
         irods::auth_plugin_context& _ctx,
         rcComm_t*                    _comm,
-        const char*                  _context ) {
+        const char* ) {
         irods::error result = SUCCESS();
         irods::error ret;
 
@@ -564,10 +564,10 @@ extern "C" {
     // stub for ops that the native plug does
     // not need to support
     irods::error native_auth_agent_verify(
-        irods::auth_plugin_context& _ctx,
-        const char* _a,
-        const char* _b,
-        const char* _c ) {
+        irods::auth_plugin_context& ,
+        const char* ,
+        const char* ,
+        const char* ) {
         return SUCCESS();
 
     } // native_auth_agent_verify
@@ -577,7 +577,7 @@ extern "C" {
     // stub for ops that the native plug does
     // not need to support
     irods::error native_auth_success_stub(
-        irods::auth_plugin_context& _ctx ) {
+        irods::auth_plugin_context& ) {
         return SUCCESS();
 
     } // native_auth_success_stub

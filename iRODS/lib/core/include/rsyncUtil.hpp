@@ -25,15 +25,15 @@ extern "C" {
 
     int
     rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                         rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                         rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                          dataObjInp_t *dataObjOprInp );
     int
     rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                         rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                         rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                          dataObjInp_t *dataObjOprInp );
     int
     rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                         rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+                         rodsPath_t *targPath, rodsArguments_t *myRodsArgs,
                          dataObjCopyInp_t *dataObjCopyInp );
     int
     rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,

@@ -11,7 +11,6 @@
 // local implementation which makes the icat high level
 // call to compute the hierarchy for a given resource
 int _rsGetHierarchyForResc(
-    rsComm_t*                  _comm,
     getHierarchyForRescInp_t*  _inp,
     getHierarchyForRescOut_t** _out ) {
     // =-=-=-=-=-=-=-
@@ -74,7 +73,7 @@ int rsGetHierarchyForResc(
     // otherwise redirect to the icat server
     if ( svr_host->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsGetHierarchyForResc( _comm, _inp, _out );
+        status = _rsGetHierarchyForResc( _inp, _out );
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif

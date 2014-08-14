@@ -9,7 +9,7 @@
 extern ticketHashQue_t XmsgHashQue[];
 
 int
-rsGetXmsgTicket( rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
+rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
                  xmsgTicketInfo_t **outXmsgTicketInfo ) {
     int status;
     int hashSlotNum;

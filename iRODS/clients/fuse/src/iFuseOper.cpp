@@ -16,7 +16,7 @@ irodsGetattr( const char *path, struct stat *stbuf ) {
     int status;
     iFuseConn_t *iFuseConn = NULL;
 
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &MyRodsEnv, &status );
+    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
     status = _irodsGetattr( iFuseConn, path, stbuf );
     unuseIFuseConn( iFuseConn );
     return status;
@@ -141,7 +141,7 @@ irodsReadlink( const char *path, char *buf, size_t size ) {
         return -ENOTDIR;
     }
 
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &MyRodsEnv, &status );
+    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
 
     memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
 
@@ -215,7 +215,7 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
         return -ENOTDIR;
     }
 
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &MyRodsEnv, &status );
+    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
     status = rclOpenCollection( iFuseConn->conn, collPath, 0, &collHandle );
 
     if ( status < 0 ) {
@@ -286,7 +286,7 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
 }
 
 int
-irodsMknod( const char *path, mode_t mode, dev_t rdev ) {
+irodsMknod( const char *path, mode_t mode, dev_t ) {
     pathCache_t *tmpPathCache = NULL;
     struct stat stbuf;
     int status = -1;
@@ -314,15 +314,15 @@ irodsMknod( const char *path, mode_t mode, dev_t rdev ) {
     }
 
 
-    status = getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    status = getAndUseIFuseConn( &iFuseConn );
     if ( status < 0 ) {
-        status = dataObjCreateByFusePath( iFuseConn->conn, ( char * ) path,
+        status = dataObjCreateByFusePath( iFuseConn->conn,
                                           mode, objPath );
 
         if ( status < 0 ) {
             if ( isReadMsgError( status ) ) {
                 ifuseReconnect( iFuseConn );
-                status = dataObjCreateByFusePath( iFuseConn->conn, ( char * ) path, mode, objPath );
+                status = dataObjCreateByFusePath( iFuseConn->conn, mode, objPath );
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -342,7 +342,7 @@ irodsMknod( const char *path, mode_t mode, dev_t rdev ) {
 }
 
 int
-irodsMkdir( const char *path, mode_t mode ) {
+irodsMkdir( const char *path, mode_t ) {
     collInp_t collCreateInp;
     int status;
     iFuseConn_t *iFuseConn = NULL;
@@ -360,7 +360,7 @@ irodsMkdir( const char *path, mode_t mode ) {
         return -ENOTDIR;
     }
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     status = rcCollCreate( iFuseConn->conn, &collCreateInp );
 
     if ( status < 0 ) {
@@ -410,7 +410,7 @@ irodsUnlink( const char *path ) {
 
     addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     status = rcDataObjUnlink( iFuseConn->conn, &dataObjInp );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
@@ -457,7 +457,7 @@ irodsRmdir( const char *path ) {
 
     addKeyVal( &collInp.condInput, FORCE_FLAG_KW, "" );
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     RECONNECT_IF_NECESSARY( status, iFuseConn, rcRmColl( iFuseConn->conn, &collInp, 0 ) );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
@@ -499,7 +499,7 @@ irodsSymlink( const char *to, const char *from ) {
         return -ENOTDIR;
     }
 
-    iFuseConn = getAndUseConnByPath( ( char * ) from, &MyRodsEnv, &status );
+    iFuseConn = getAndUseConnByPath( ( char * ) from, &status );
     status = _irodsGetattr( iFuseConn, ( char * ) from, &stbuf );
 
     memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
@@ -595,7 +595,7 @@ irodsRename( const char *from, const char *to ) {
     dataObjRenameInp.srcDataObjInp.oprType =
         dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     /*    rodsLog (LOG_ERROR, "irodsRenme: %s -> %s conn: %p", from, to, iFuseConn);*/
 
     status = rcDataObjRename( iFuseConn->conn, &dataObjRenameInp );
@@ -630,7 +630,7 @@ irodsRename( const char *from, const char *to ) {
 
 int
 irodsLink( const char *from, const char *to ) {
-    rodsLog( LOG_DEBUG, "irodsLink: %s to %s" );
+    rodsLog( LOG_DEBUG, "irodsLink: %s to %s", from, to );
     return 0;
 }
 
@@ -688,7 +688,7 @@ irodsChmod( const char *path, mode_t mode ) {
     modDataObjMetaInp.regParam = &regParam;
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     RECONNECT_IF_NECESSARY( status, iFuseConn, rcModDataObjMeta( iFuseConn->conn, &modDataObjMetaInp ) );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
@@ -715,7 +715,7 @@ irodsChmod( const char *path, mode_t mode ) {
 }
 
 int
-irodsChown( const char *path, uid_t uid, gid_t gid ) {
+irodsChown( const char *path, uid_t, gid_t ) {
     rodsLog( LOG_DEBUG, "irodsChown: %s", path );
     return 0;
 }
@@ -758,7 +758,7 @@ irodsTruncate( const char *path, off_t size ) {
 
     dataObjInp.dataSize = size;
 
-    getAndUseIFuseConn( &iFuseConn, &MyRodsEnv );
+    getAndUseIFuseConn( &iFuseConn );
     RECONNECT_IF_NECESSARY( status, iFuseConn, rcDataObjTruncate( iFuseConn->conn, &dataObjInp ) );
     if ( status >= 0 ) {
         pathCache_t *tmpPathCache;
@@ -780,13 +780,13 @@ irodsTruncate( const char *path, off_t size ) {
 }
 
 int
-irodsFlush( const char *path, struct fuse_file_info *fi ) {
+irodsFlush( const char *path, struct fuse_file_info * ) {
     rodsLog( LOG_DEBUG, "irodsFlush: %s", path );
     return 0;
 }
 
 int
-irodsUtimens( const char *path, const struct timespec ts[2] ) {
+irodsUtimens( const char *path, const struct timespec[2] ) {
     rodsLog( LOG_DEBUG, "irodsUtimens: %s", path );
     return 0;
 }
@@ -843,8 +843,8 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
         return -ENOTDIR;
     }
 
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &MyRodsEnv, &status );
-    /* status = getAndUseIFuseConn(&iFuseConn, &MyRodsEnv); */
+    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
+    /* status = getAndUseIFuseConn( &iFuseConn ); */
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "irodsOpen: cannot get connection for %s error", path );
         /* use ENOTDIR for this type of error */
@@ -1013,7 +1013,7 @@ irodsRelease( const char *path, struct fuse_file_info *fi ) {
 }
 
 int
-irodsFsync( const char *path, int isdatasync, struct fuse_file_info *fi ) {
+irodsFsync( const char *path, int, struct fuse_file_info * ) {
     rodsLog( LOG_DEBUG, "irodsFsync: %s", path );
     return 0;
 }

@@ -332,7 +332,7 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
     return token;
 }
 
-void pushback( Pointer *e, Token *token, ParserContext *context ) {
+void pushback( Token *token, ParserContext *context ) {
     if ( token->type == TK_EOS ) {
         return;
     }
@@ -3207,7 +3207,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
         default:
             break;
         }
-        pushback( e, token, pc );
+        pushback( token, pc );
 
         Node *node = parseRuleRuleGen( e, backwardCompatible, pc );
         if ( node == NULL ) {

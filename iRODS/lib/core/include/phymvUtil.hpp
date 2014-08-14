@@ -18,7 +18,7 @@ extern "C" {
                rodsPathInp_t *rodsPathInp );
     int
     phymvDataObjUtil( rcComm_t *conn, char *srcPath,
-                      rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                      rodsArguments_t *rodsArgs,
                       dataObjInp_t *dataObjInp );
     int
     initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,

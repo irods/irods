@@ -10,16 +10,15 @@
 #include "mvUtil.hpp"
 
 int
-mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-        rodsPathInp_t *rodsPathInp ) {
+mvUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
     dataObjCopyInp_t dataObjRenameInp;
-    initCondForMv( myRodsEnv, myRodsArgs, &dataObjRenameInp );
+    initCondForMv( &dataObjRenameInp );
 
-    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, MOVE_OPR );
+    int savedStatus = resolveRodsTarget( conn, rodsPathInp, MOVE_OPR );
     if ( savedStatus < 0 ) {
         rodsLogError( LOG_ERROR, savedStatus,
                       "mvUtil: resolveRodsTarget error, status = %d", savedStatus );
@@ -30,8 +29,8 @@ mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPath_t * targPath = &rodsPathInp->targPath[i];
 
         int status = mvObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                targPath->outPath, targPath->objType, myRodsEnv, myRodsArgs,
-                                &dataObjRenameInp );
+                            targPath->outPath, targPath->objType, myRodsArgs,
+                            &dataObjRenameInp );
 
         /* XXXX may need to return a global status */
         if ( status < 0 &&
@@ -47,8 +46,7 @@ mvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
-           rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-           dataObjCopyInp_t *dataObjRenameInp ) {
+           rodsArguments_t *rodsArgs, dataObjCopyInp_t *dataObjRenameInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -94,8 +92,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
 }
 
 int
-initCondForMv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-               dataObjCopyInp_t *dataObjRenameInp ) {
+initCondForMv( dataObjCopyInp_t *dataObjRenameInp ) {
     if ( dataObjRenameInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForMv: NULL dataObjRenameInp incp" );
@@ -103,10 +100,6 @@ initCondForMv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     memset( dataObjRenameInp, 0, sizeof( dataObjCopyInp_t ) );
-
-    if ( rodsArgs == NULL ) {
-        return 0;
-    }
 
     return 0;
 }

@@ -17,23 +17,23 @@
 
 extern "C" {
     irods::error impostor_resource_registered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
     }
 
     irods::error impostor_resource_unregistered_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
     }
 
     irods::error impostor_resource_modified_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
     }
 
     irods::error impostor_resource_notify_plugin(
-        irods::resource_plugin_context& _ctx,
-        const std::string*               _opr ) {
+        irods::resource_plugin_context&,
+        const std::string* ) {
         return SUCCESS();
     }
 
@@ -54,15 +54,15 @@ extern "C" {
 
     irods::error impostor_resource_read_plugin(
         irods::resource_plugin_context& _ctx,
-        void*                           _buf,
-        int                             _len ) {
+        void*,
+        int ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_read_plugin
 
     irods::error impostor_resource_write_plugin(
         irods::resource_plugin_context& _ctx,
-        void*                           _buf,
-        int                             _len ) {
+        void*,
+        int ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_write_plugin
 
@@ -78,14 +78,14 @@ extern "C" {
 
     irods::error impostor_resource_stat_plugin(
         irods::resource_plugin_context& _ctx,
-        struct stat*                    _statbuf ) {
+        struct stat* ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_stat_plugin
 
     irods::error impostor_resource_lseek_plugin(
         irods::resource_plugin_context& _ctx,
-        long long                       _offset,
-        int                             _whence ) {
+        long long ,
+        int ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_lseek_plugin
 
@@ -111,13 +111,13 @@ extern "C" {
 
     irods::error impostor_resource_readdir_plugin(
         irods::resource_plugin_context& _ctx,
-        struct rodsDirent**             _dirent_ptr ) {
+        struct rodsDirent** ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_readdir_plugin
 
     irods::error impostor_resource_rename_plugin(
         irods::resource_plugin_context& _ctx,
-        const char*                     _new_file_name ) {
+        const char* ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_rename_plugin
 
@@ -128,13 +128,13 @@ extern "C" {
 
     irods::error impostor_resource_stagetocache_plugin(
         irods::resource_plugin_context& _ctx,
-        const char*                     _cache_file_name ) {
+        const char* ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_stagetocache_plugin
 
     irods::error impostor_resource_synctoarch_plugin(
         irods::resource_plugin_context& _ctx,
-        char*                           _cache_file_name ) {
+        char* ) {
         return irods::impostor_resource::report_error( _ctx );
     } // impostor_resource_synctoarch_plugin
 
@@ -142,7 +142,6 @@ extern "C" {
     // redirect_create - code to determine redirection for create operation
     irods::error impostor_resource_redirect_create(
         irods::plugin_property_map&   _prop_map,
-        irods::file_object_ptr        _file_obj,
         const std::string&             _resc_name,
         const std::string&             _curr_host,
         float&                         _out_vote ) {
@@ -363,7 +362,7 @@ extern "C" {
                     else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
-                        ret = impostor_resource_redirect_create( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+                        ret = impostor_resource_redirect_create( _ctx.prop_map(), resc_name, ( *_curr_host ), ( *_out_vote ) );
                         result = ASSERT_PASS( ret, "Failed redirecting for create." );
                     }
 
@@ -498,7 +497,7 @@ error impostor_resource::need_post_disconnect_maintenance_operation( bool& _b ) 
     return SUCCESS();
 }
 
-error impostor_resource::post_disconnect_maintenance_operation( pdmo_type& _op ) {
+error impostor_resource::post_disconnect_maintenance_operation( pdmo_type& ) {
     return ERROR( -1, "nop" );
 }
 

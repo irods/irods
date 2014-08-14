@@ -72,7 +72,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     }
 
     if ( rodsPathInp->resolved == False ) {
-        status = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
+        status = resolveRodsTarget( conn, rodsPathInp, 1 );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putUtil: resolveRodsTarget error, status = %d", status );
@@ -130,11 +130,11 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
             getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
                                  &dataObjOprInp.condInput );
             status = putFileUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                  targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv,
+                                  targPath->outPath, rodsPathInp->srcPath[i].size,
                                   myRodsArgs, &dataObjOprInp );
         }
         else if ( targPath->objType == COLL_OBJ_T ) {
-            setStateForRestart( conn, &rodsRestart, targPath, myRodsArgs );
+            setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             if ( myRodsArgs->bulk == True ) {
                 status = bulkPutDirUtil( myConn,
                                          rodsPathInp->srcPath[i].outPath, targPath->outPath,
@@ -211,7 +211,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
 
 int
 putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
-             rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
+             rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -448,8 +448,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
         int status;
-        status = openRestartFile( rodsArgs->restartFileString, rodsRestart,
-                                  rodsArgs );
+        status = openRestartFile( rodsArgs->restartFileString, rodsRestart );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "initCondForPut: openRestartFile of %s error",
@@ -652,13 +651,13 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         if ( childObjType == DATA_OBJ_T ) {   /* a file */
             if ( bulkFlag == BULK_OPR_SMALL_FILES ) {
                 status = bulkPutFileUtil( conn, srcChildPath, targChildPath,
-                                          dataSize,  dataObjOprInp->createMode, myRodsEnv, rodsArgs,
+                                          dataSize,  dataObjOprInp->createMode, rodsArgs,
                                           bulkOprInp, bulkOprInfo );
             }
             else {
                 /* normal put */
                 status = putFileUtil( conn, srcChildPath, targChildPath,
-                                      dataSize, myRodsEnv, rodsArgs, dataObjOprInp );
+                                      dataSize, rodsArgs, dataObjOprInp );
             }
             if ( rodsRestart->fd > 0 ) {
                 if ( status >= 0 ) {
@@ -811,7 +810,7 @@ getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
 
 int
 bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                 rodsLong_t srcSize, int createMode, rodsEnv *myRodsEnv,
+                 rodsLong_t srcSize, int createMode,
                  rodsArguments_t *rodsArgs, bulkOprInp_t *bulkOprInp,
                  bulkOprInfo_t *bulkOprInfo ) {
     int status;
@@ -882,7 +881,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
         return status;
     }
 
-    status = myRead( in_fd, bufPtr, srcSize, FILE_DESC_TYPE, &bytesRead, NULL );
+    status = myRead( in_fd, bufPtr, srcSize, &bytesRead, NULL );
     if ( status != srcSize ) {
         if ( status >= 0 ) {
             status = SYS_COPY_LEN_ERR - errno;

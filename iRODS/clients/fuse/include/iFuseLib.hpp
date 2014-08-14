@@ -225,7 +225,7 @@ extern "C" {
     int
     _ifuseFlush( iFuseDesc_t *desc );
     int
-    dataObjCreateByFusePath( rcComm_t *conn, char *path, int mode,
+    dataObjCreateByFusePath( rcComm_t *conn, int mode,
                              char *irodsPath );
     int
     ifusePut( rcComm_t *conn, char *objPath, char *cachePath, int mode,

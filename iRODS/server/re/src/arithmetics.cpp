@@ -31,13 +31,11 @@ extern int GlobalREDebugFlag;
 extern int GlobalREAuditFlag;
 
 /* utilities */
-int initializeEnv( Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env, Region *r ) {
+int initializeEnv( Node *params, Res *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, Hashtable *env ) {
 
 
     Node** args2 = params->subtrees;
-    /*    int argc2 = ruleHead->degree; */
     int i;
-    /*getSystemFunctions(env, r); */
     for ( i = 0; i < argc ; i++ ) {
         insertIntoHashTable( env, args2[i]->text, args[i] );
     }
@@ -79,7 +77,7 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             res = newStringRes( r, expr->text );
             break;
         case TK_VAR:
-            res = evaluateVar3( expr->text, expr, rei, reiSaveFlag,  env, errmsg, r );
+            res = evaluateVar3( expr->text, expr, rei, env, errmsg, r );
             break;
         case TK_TEXT:
             fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
@@ -168,7 +166,7 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
     return res;
 }
 
-ExprType* isIterable( ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r );
+ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r );
 Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, rError_t *errmsg, Region *r ) {
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     char *buf2;
@@ -304,7 +302,7 @@ Res* processCoercion( Node *node, Res *res, ExprType *type, Hashtable *tvarEnv, 
                 nres = res;
                 break;
             default:
-                if ( isIterable( res->exprType, 0, newHashTable2( 10, r ), r ) != NULL ) {
+                if ( isIterable( res->exprType, newHashTable2( 10, r ), r ) != NULL ) {
                     nres = res;
                 }
                 break;
@@ -534,7 +532,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
             break;
         case IO_TYPE_DYNAMIC: /* dynamic */
             if ( isVariableNode( appArgs[i] ) ) {
-                args[i] = attemptToEvaluateVar3( appArgs[i]->text, appArgs[i], rei, reiSaveFlag, env, errmsg, newRegion );
+                args[i] = attemptToEvaluateVar3( appArgs[i]->text, appArgs[i], rei, env, errmsg, newRegion );
                 if ( getNodeType( args[i] ) == N_ERROR ) {
                     res = args[i];
                     RETURN;
@@ -595,7 +593,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
             RETURN;
         }
         /* solve local typing constraints */
-        /* typingConstraintsToString(localTypingConstraints, localTVarEnv, buf, 1024);
+        /* typingConstraintsToString(localTypingConstraints, buf, 1024);
         printf("%s\n", buf); */
         Node *errnode;
         if ( !solveConstraints( localTypingConstraints, env->current, errmsg, &errnode, r ) ) {
@@ -631,7 +629,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     if ( fd != NULL ) {
         switch ( getNodeType( fd ) ) {
         case N_FD_DECONSTRUCTOR:
-            res = deconstruct( fn, argsProcessed, n, FD_PROJ( fd ), errmsg, r );
+            res = deconstruct( argsProcessed, FD_PROJ( fd ) );
             break;
         case N_FD_CONSTRUCTOR:
             res = construct( fn, argsProcessed, n, instantiate( node->exprType, env->current, 1, r ), r );
@@ -704,7 +702,7 @@ ret:
 
 }
 
-Res* attemptToEvaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res* attemptToEvaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r ) {
     if ( vn[0] == '*' ) { /* local variable */
         /* try to get local var from env */
         Res* res0 = ( Res * )lookupFromEnv( env, vn );
@@ -716,7 +714,7 @@ Res* attemptToEvaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, int reiSa
         }
     }
     else if ( vn[0] == '$' ) { /* session variable */
-        Res *res = getSessionVar( "", node, vn, rei, env, errmsg, r );
+        Res *res = getSessionVar( "", node, vn, rei, errmsg, r );
         if ( res == NULL ) {
             return newUnspecifiedRes( r );
         }
@@ -729,10 +727,10 @@ Res* attemptToEvaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, int reiSa
     }
 }
 
-Res* evaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res* evaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r ) {
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     char buf2[ERR_MSG_LEN];
-    Res *res = attemptToEvaluateVar3( vn, node, rei, reiSaveFlag, env, errmsg, r );
+    Res *res = attemptToEvaluateVar3( vn, node, rei, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
@@ -764,7 +762,7 @@ Res* evaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, E
  * return NULL error
  *        otherwise success
  */
-Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, Env *env, rError_t *errmsg, Region *r ) {
+Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, rError_t *errmsg, Region *r ) {
     char *varMap;
     Res *varValue = NULL;
     int i, vinx;
@@ -975,7 +973,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     }
 
     /* converts back env */
-    ret = updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, errmsg, r );
+    ret = updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, r );
     if ( ret != 0 ) {
         generateErrMsg( "execMicroService3: error env from MsParamArray", NODE_EXPR_POS( node ), node->base, errbuf );
         addRErrorMsg( errmsg, ret, errbuf );
@@ -985,7 +983,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     /* params */
     for ( i = 0; i < numOfStrArgs; i++ ) {
         if ( myArgv[i] != NULL ) {
-            res = convertMsParamToRes(myArgv[i], errmsg, r);
+            res = convertMsParamToRes(myArgv[i], r);
             if(res != NULL && getNodeType(res) == N_ERROR) {
                 generateErrMsg( "execMicroService3: error converting arguments from MsParam", NODE_EXPR_POS( node ), node->base, errbuf );
                 addRErrorMsg( errmsg, ret, errbuf );
@@ -1040,7 +1038,7 @@ Res* execRuleFromCondIndex( char *ruleName, Res **args, int argc, CondIndexVal *
         return newErrorRes( r, ACTION_ARG_COUNT_MISMATCH );
     }
 
-    int i = initializeEnv( civ->params, args, argc, envNew->current, r );
+    int i = initializeEnv( civ->params, args, argc, envNew->current );
     if ( i != 0 ) {
         status = newErrorRes( r, i );
         RETURN;
@@ -1309,7 +1307,7 @@ Res* execRuleNodeRes( Node *rule, Res** args, unsigned int argc, int applyAll, E
 
     int statusInitEnv;
     /* printEnvToStdOut(envNew->current); */
-    statusInitEnv = initializeEnv( ruleHead->subtrees[0], args, argc, envNew->current, rNew );
+    statusInitEnv = initializeEnv( ruleHead->subtrees[0], args, argc, envNew->current );
     if ( statusInitEnv != 0 ) {
         return newErrorRes( r, statusInitEnv );
     }

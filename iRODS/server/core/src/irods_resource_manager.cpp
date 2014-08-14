@@ -31,7 +31,7 @@ resource_manager::resource_manager() {
 
 // =-=-=-=-=-=-=-
 // public - Copy Constructor
-resource_manager::resource_manager( const resource_manager& _rhs ) {
+resource_manager::resource_manager( const resource_manager& ) {
 } // cctor
 
 // =-=-=-=-=-=-=-

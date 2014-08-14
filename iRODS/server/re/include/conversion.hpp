@@ -8,16 +8,16 @@
 
 
 /** conversion functions */
-int getCollectionSize( char *typ, void *inPtr, Region *r );
+int getCollectionSize( char *typ, void *inPtr );
 Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r );
 
-int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r );
-int updateMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r );
-int convertMsParamArrayToEnv( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r );
-int convertMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r );
-int convertMsParamToRes( msParam_t *var, Res *res, rError_t *errmsg, Region *r );
-int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, rError_t *errmsg, Region *r );
-Res* convertMsParamToRes( msParam_t *mP, rError_t *errmsg, Region *r );
+int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, Region *r );
+int updateMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, Region *r );
+int convertMsParamArrayToEnv( msParamArray_t *var, Env *env, Region *r );
+int convertMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, Region *r );
+int convertMsParamToRes( msParam_t *var, Res *res, Region *r );
+int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r );
+Res* convertMsParamToRes( msParam_t *mP, Region *r );
 void convertCollectionToRes( msParam_t *mP, Res* res );
 void convertDoubleValue( Res *res, double inval, Region *r );
 void convertStrValue( Res *res, char *val, Region *r );
@@ -29,7 +29,7 @@ void convertIntValue( Res *res, int inval, Region *r );
 int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg );
 int updateResToMsParam( msParam_t *var, Res *res, rError_t *errmsg );
 int convertEnvToMsParamArray( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r );
-int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r );
+int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_t *errmsg );
 
 char* convertResToString( Res *res );
 int convertResToIntReturnValue( Res* res );

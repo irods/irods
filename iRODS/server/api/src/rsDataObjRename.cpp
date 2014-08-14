@@ -503,8 +503,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return status;
     }
 
-    status = filePathTypeInResc( rsComm, destDataObjInfo.objPath, destDataObjInfo.filePath, destDataObjInfo.rescHier,
-                                 destDataObjInfo.rescInfo );
+    status = filePathTypeInResc( rsComm, destDataObjInfo.objPath, destDataObjInfo.filePath, destDataObjInfo.rescHier );
     if ( status == LOCAL_DIR_T ) {
         status = SYS_PATH_IS_NOT_A_FILE;
         rodsLog( LOG_ERROR,
@@ -520,7 +519,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
             /* orphan */
             char new_fn[ MAX_NAME_LEN ];
             rstrcpy( fileRenameInp.oldFileName, destDataObjInfo.filePath, MAX_NAME_LEN );
-            renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, destDataObjInfo.rescInfo, 1, new_fn );
+            renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, 1, new_fn );
             strncpy( destDataObjInfo.filePath, new_fn, MAX_NAME_LEN );
         }
         else if ( status == 0 ) {

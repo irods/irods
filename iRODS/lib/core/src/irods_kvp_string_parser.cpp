@@ -60,7 +60,7 @@ error parse_kvp_string(
     // =-=-=-=-=-=-=-
     // test for the delim first, if there is none then
     // short circuit, test for association and place in map
-    size_t pos = _string.find( kvp_delimiter() );
+    size_t pos = _string.find( _delim );
     if ( std::string::npos == pos ) {
         // =-=-=-=-=-=-=-
         // no delim, look for association

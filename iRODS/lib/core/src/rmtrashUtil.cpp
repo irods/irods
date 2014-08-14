@@ -10,8 +10,8 @@
 #include "rmtrashUtil.hpp"
 
 int
-rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-             rodsPathInp_t *rodsPathInp ) {
+rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
+        rodsPathInp_t *rodsPathInp ) {
     int i = 0;
     int status = 0;
     int savedStatus = 0;
@@ -23,7 +23,7 @@ rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    initCondForRmtrash( myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+    initCondForRmtrash( myRodsArgs, &dataObjInp, &collInp );
 
     if ( rodsPathInp->numSrc <= 0 ) {
         char trashPath[MAX_NAME_LEN];
@@ -88,11 +88,11 @@ rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             status = rmtrashDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                         myRodsEnv, myRodsArgs, &dataObjInp );
+                                         myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             status = rmtrashCollUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                      myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+                                      myRodsArgs, &collInp );
         }
         else {
             /* should not be here */
@@ -122,8 +122,7 @@ rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
-                    rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                    dataObjInp_t *dataObjInp ) {
+                    rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
     struct timeval startTime, endTime;
 
@@ -151,7 +150,7 @@ rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
 }
 
 int
-initCondForRmtrash( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForRmtrash( rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjInp, collInp_t *collInp ) {
     char tmpStr[NAME_LEN];
 
@@ -200,8 +199,8 @@ initCondForRmtrash( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 }
 
 int
-rmtrashCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-                 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp ) {
+rmtrashCollUtil( rcComm_t *conn, char *srcColl,
+        rodsArguments_t *rodsArgs, collInp_t *collInp ) {
     int status;
 
     if ( srcColl == NULL ) {

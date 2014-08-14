@@ -25,7 +25,7 @@ int
 l3Read( rsComm_t *rsComm, int l1descInx, int len,
         bytesBuf_t *dataObjReadOutBBuf );
 int
-_l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+_l3Read( rsComm_t *rsComm, int l3descInx,
          void *buf, int len );
 #else
 #define RS_DATA_OBJ_READ NULL

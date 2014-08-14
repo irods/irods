@@ -19,8 +19,7 @@ extern "C" {
             rodsPathInp_t *rodsPathInp );
     int
     cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
-                rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                dataObjCopyInp_t *dataObjCopyInp );
+                rodsArguments_t *rodsArgs, dataObjCopyInp_t *dataObjCopyInp );
     int
     initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart );

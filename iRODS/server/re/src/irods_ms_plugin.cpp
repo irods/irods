@@ -31,7 +31,7 @@ ms_table_entry::ms_table_entry(
 } // ctor
 
 ms_table_entry::ms_table_entry(
-    const std::string& _name,
+    const std::string&, //_name
     int                _num_args,
     ms_func_ptr        _fcn_ptr ) :
     plugin_base(

@@ -367,7 +367,7 @@ This documentation is generated from the iRODS code.
  * \sa none
 **/
 int
-msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei ) {
+msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t* ) {
     char *type;
     char tStr0[TIME_LEN], tStr[TIME_LEN];
     int i;
@@ -423,7 +423,7 @@ msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t
  * \sa none
 **/
 int
-msiVacuum( ruleExecInfo_t *rei ) {
+msiVacuum( ruleExecInfo_t* ) {
     int i;
     rodsLog( LOG_NOTICE, "msiVacuum called\n" );
 

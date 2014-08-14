@@ -14,6 +14,12 @@ typedef const void * ( CacheCopyFuncType )( unsigned char *, unsigned char **, u
 #define RE_STRUCT_FUNC_PROTO(T) \
 		T* RE_STRUCT_FUNC(T)(unsigned char *buf, unsigned char **p, unsigned char **pointers, T *ptr, Hashtable *objectMap, int generatePtrDesc)
 
+#define RE_STRUCT_FUNC_PROTO_NO_BUF(T) \
+		T* RE_STRUCT_FUNC(T)(unsigned char *, unsigned char **p, unsigned char **pointers, T *ptr, Hashtable *objectMap, int generatePtrDesc)
+
+#define RE_STRUCT_FUNC_PROTO_NO_BUF_PTR_DESC(T) \
+		T* RE_STRUCT_FUNC(T)(unsigned char *, unsigned char **p, unsigned char **pointers, T *ptr, Hashtable *objectMap, int)
+
 /* #define COPY_FUNC_BEGIN(T) \
 	 COPY_FUNC_PROTO(T) {  \
 		  allocateInBuffer(T, ecopy, e); */

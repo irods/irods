@@ -67,7 +67,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     irods::error mso_mkdir_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         irods::error result = SUCCESS();
         // =-=-=-=-=-=-=-
         // stub out
@@ -78,7 +78,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     irods::error mso_file_stat_plugin(
-        irods::resource_plugin_context& _ctx,
+        irods::resource_plugin_context& ,
         struct stat*                    _statbuf ) {
         irods::error result = SUCCESS();
         // =-=-=-=-=-=-=-
@@ -97,8 +97,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     irods::error mso_rename_plugin(
-        irods::resource_plugin_context& _ctx,
-        const char*                     _new_file_name ) {
+        irods::resource_plugin_context&,
+        const char* ) {
         // =-=-=-=-=-=-=-
         // stub out
         return SUCCESS();
@@ -108,7 +108,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     irods::error mso_unlink_plugin(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         // =-=-=-=-=-=-=-
         // stub out
         return SUCCESS();
@@ -472,7 +472,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // mso_rebalance - code which would rebalance the subtree
     irods::error mso_rebalance(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return SUCCESS();
 
     } // mso_file_rebalancec
@@ -527,7 +527,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
 

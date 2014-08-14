@@ -46,7 +46,7 @@ char waitHdr[HEADER_TYPE_LEN];
 char waitMsg[MAX_NAME_LEN];
 int myPID;
 
-int initializeReDebug( rsComm_t *svrComm, int flag ) {
+int initializeReDebug( rsComm_t *svrComm ) {
     char condRead[NAME_LEN];
     int i, s, m, status;
     char *readhdr = NULL;
@@ -109,10 +109,9 @@ int initializeReDebug( rsComm_t *svrComm, int flag ) {
 }
 
 
-int processXMsg( int streamId, int *msgNum, int *seqNum,
-                 char * readhdr, char *readmsg,
-                 RuleEngineEvent label, RuleEngineEventParam *param, Node *node,
-                 Env *env, int curStat, ruleExecInfo_t *rei ) {
+int processXMsg( int streamId, char *readmsg,
+                 RuleEngineEventParam *param, Node *node,
+                 Env *env, ruleExecInfo_t *rei ) {
 
     char myhdr[HEADER_TYPE_LEN];
     char mymsg[MAX_NAME_LEN];
@@ -463,9 +462,8 @@ int processXMsg( int streamId, int *msgNum, int *seqNum,
 }
 
 int
-processBreakPoint( int streamId, int *msgNum, int *seqNum,
-                   RuleEngineEvent label, RuleEngineEventParam *param, Node *node,
-                   Env *env, int curStat, ruleExecInfo_t *rei ) {
+processBreakPoint( int streamId, RuleEngineEventParam *param,
+                    Node *node, int curStat ) {
 
     int i;
     char myhdr[HEADER_TYPE_LEN];
@@ -491,8 +489,7 @@ processBreakPoint( int streamId, int *msgNum, int *seqNum,
                     _writeXMsg( streamId, myhdr, mymsg );
                     snprintf( mymsg, MAX_NAME_LEN, "%s\n", param->actionName );
                     _writeXMsg( streamId, myhdr, mymsg );
-                    curStat = REDEBUG_WAIT;
-                    return curStat;
+                    return REDEBUG_WAIT;
                 }
             }
         }
@@ -554,7 +551,7 @@ int sendWaitXMsg( int streamId ) {
     _writeXMsg( streamId, waitHdr, waitMsg );
     return 0;
 }
-int cleanUpDebug( int streamId ) {
+int cleanUpDebug() {
     int i;
     for ( i = 0 ; i < REDEBUG_STACK_SIZE_CURR; i++ ) {
         if ( reDebugStackCurr[i].step != NULL ) {
@@ -776,14 +773,13 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
             */
             status = _readXMsg( GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr );
             if ( status == SYS_UNMATCHED_XMSG_TICKET ) {
-                cleanUpDebug( GlobalREDebugFlag );
+                cleanUpDebug();
                 return 0;
             }
             if ( status  >= 0 ) {
                 rodsLog( LOG_NOTICE, "Getting XMsg:%i:%s:%s\n", s, readhdr, readmsg );
-                curStat = processXMsg( GlobalREDebugFlag, &m, &s, readhdr, readmsg,
-                                       label, param, node,
-                                       env, curStat, rei );
+                curStat = processXMsg( GlobalREDebugFlag, readmsg,
+                                        param, node, env, rei );
                 if ( readhdr != NULL ) {
                     free( readhdr );
                 }
@@ -844,9 +840,8 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
                 if ( processedBreakPoint == 1 ) {
                     break;
                 }
-                curStat = processBreakPoint( GlobalREDebugFlag, &m, &s,
-                                             label, param, node,
-                                             env, curStat, rei );
+                curStat = processBreakPoint( GlobalREDebugFlag,
+                                             param, node, curStat );
                 processedBreakPoint = 1;
                 if ( curStat == REDEBUG_WAIT ) {
                     sendWaitXMsg( GlobalREDebugFlag );

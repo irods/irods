@@ -462,7 +462,7 @@ extern "C" {
     // stub for ops that the native plug does
     // not need to support
     irods::error pam_auth_success_stub(
-        irods::auth_plugin_context& _ctx ) {
+        irods::auth_plugin_context& ) {
         return SUCCESS();
 
     } // pam_auth_success_stub

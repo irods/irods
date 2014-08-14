@@ -71,7 +71,7 @@ ExprType* unifyTVarR( ExprType *type, ExprType* expected, Hashtable *varTypes, R
 
 void printType( ExprType *type, Hashtable *var_types );
 char *typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize );
-void typingConstraintsToString( List *typingConstraints, Hashtable *var_types, char *buf, int bufsize );
+void typingConstraintsToString( List *typingConstraints, char *buf, int bufsize );
 
 const void *lookupFromEnv( Env *env, const char *key );
 void updateInEnv( Env *env, char *varname, Res *res );

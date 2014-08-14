@@ -427,16 +427,15 @@ initPackedOutputWithBuf( packedOutput_t *packedOutput, void *buf, int len ) {
 }
 
 int
-resolvePackedItem( packItem_t *myPackedItem, void **inPtr,
-                   packInstructArray_t *myPackTable, packOpr_t packOpr ) {
+resolvePackedItem( packItem_t *myPackedItem, void **inPtr, packOpr_t packOpr ) {
     int status;
 
-    status = iparseDependent( myPackedItem, myPackTable );
+    status = iparseDependent( myPackedItem );
     if ( status < 0 ) {
         return status;
     }
 
-    status = resolveDepInArray( myPackedItem, myPackTable );
+    status = resolveDepInArray( myPackedItem );
 
     if ( status < 0 ) {
         return status;
@@ -462,14 +461,14 @@ resolvePackedItem( packItem_t *myPackedItem, void **inPtr,
 }
 
 int
-iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
+iparseDependent( packItem_t *myPackedItem ) {
     int status;
 
     if ( myPackedItem->typeInx == PACK_DEPENDENT_TYPE ) {
-        status =  resolveStrInItem( myPackedItem, myPackTable );
+        status =  resolveStrInItem( myPackedItem );
     }
     else if ( myPackedItem->typeInx == PACK_INT_DEPENDENT_TYPE ) {
-        status =  resolveIntDepItem( myPackedItem, myPackTable );
+        status =  resolveIntDepItem( myPackedItem );
     }
     else {
         status = 0;
@@ -478,7 +477,7 @@ iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
 }
 
 int
-resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
+resolveIntDepItem( packItem_t *myPackedItem ) {
     const char *tmpPtr = 0;
     char *bufPtr = 0;
     char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
@@ -524,7 +523,7 @@ resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
         tmpPtr++;
     }
 
-    keyVal = resolveIntInItem( buf, myPackedItem, myPackTable );
+    keyVal = resolveIntInItem( buf, myPackedItem );
     if ( keyVal == SYS_PACK_INSTRUCT_FORMAT_ERR ) {
         rodsLog( LOG_ERROR,
                  "resolveIntDepItem: resolveIntInItem error for %s", buf );
@@ -633,8 +632,7 @@ resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
 }
 
 int
-resolveIntInItem( const char *name, packItem_t *myPackedItem,
-                  packInstructArray_t *myPackTable ) {
+resolveIntInItem( const char *name, packItem_t *myPackedItem ) {
     packItem_t *tmpPackedItem;
     int i;
 
@@ -674,7 +672,7 @@ resolveIntInItem( const char *name, packItem_t *myPackedItem,
 }
 
 int
-resolveStrInItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
+resolveStrInItem( packItem_t *myPackedItem ) {
     packItem_t *tmpPackedItem;
     char *name;
 
@@ -762,7 +760,7 @@ matchPackInstruct( char *name, packInstructArray_t *myPackTable ) {
 }
 
 int
-resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) {
+resolveDepInArray( packItem_t *myPackedItem ) {
     myPackedItem->dim = myPackedItem->hintDim = 0;
     char openSymbol = '\0';         // either '(', '[', or '\0' depending on whether we are
     // in a parenthetical or bracketed expression, or not
@@ -801,9 +799,9 @@ resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable ) 
             openSymbol = '\0';
 
             int& dimSize = ( ']' == c ) ?
-                           myPackedItem->dimSize[myPackedItem->dim++] :
-                           myPackedItem->hintDimSize[myPackedItem->hintDim++];
-            if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem, myPackTable ) ) < 0 ) {
+                        myPackedItem->dimSize[myPackedItem->dim++] :
+                        myPackedItem->hintDimSize[myPackedItem->hintDim++];
+            if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem ) ) < 0 ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
                          myPackedItem->name, buffer.c_str() );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
@@ -1237,7 +1235,7 @@ packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
           packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int status;
 
-    status = resolvePackedItem( myPackedItem, inPtr, myPackTable, PACK_OPR );
+    status = resolvePackedItem( myPackedItem, inPtr, PACK_OPR );
     if ( status < 0 ) {
         return status;
     }
@@ -1319,15 +1317,14 @@ packString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
         status = packXmlString( inPtr, packedOutput, maxStrLen, myPackedItem );
     }
     else {
-        status = packNatString( inPtr, packedOutput, maxStrLen, myPackedItem );
+        status = packNatString( inPtr, packedOutput, maxStrLen );
     }
 
     return status;
 }
 
 int
-packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-               packItem_t *myPackedItem ) {
+packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen ) {
     int myStrlen;
     char *outPtr;
 
@@ -1867,7 +1864,7 @@ unpackItem( packItem_t *myPackedItem, void **inPtr,
             irodsProt_t irodsProt ) {
     int status;
 
-    status = resolvePackedItem( myPackedItem, inPtr, myPackTable, UNPACK_OPR );
+    status = resolvePackedItem( myPackedItem, inPtr, UNPACK_OPR );
     if ( status < 0 ) {
         return status;
     }

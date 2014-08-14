@@ -540,7 +540,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
              * rename and reg the path of the old one */
             char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
-                                             rescInfo, 1, new_fn );
+                                             1, new_fn );
             if ( status < 0 ) {
                 char* sys_error;
                 char* rods_error = rodsErrorName( status, &sys_error );
@@ -587,7 +587,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
             char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
-                                             rescInfo, 0, new_fn );
+                                             0, new_fn );
             if ( status >= 0 ) {
                 //rstrcpy( filePath, fileRenameInp.newFileName, MAX_NAME_LEN );
                 rstrcpy( filePath, new_fn, MAX_NAME_LEN );
@@ -610,7 +610,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
         rstrcpy( fileRenameInp.objPath,     objPath,            MAX_NAME_LEN );
         char new_fn[ MAX_NAME_LEN ];
         status = renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp,
-                                         rescInfo, 1, new_fn );
+                                         1, new_fn );
         if ( status >= 0 ) {
             return 1;
         }
@@ -632,8 +632,8 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
 
 int
 renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
-                        fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag,
-                        char* new_fn ) {
+                        fileRenameInp_t *fileRenameInp,
+                        int renameFlag, char* new_fn ) {
     int len, status;
     char *oldPtr, *newPtr;
     char *filePath = fileRenameInp->oldFileName;

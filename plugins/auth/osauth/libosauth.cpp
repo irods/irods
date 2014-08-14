@@ -74,8 +74,8 @@ extern "C" {
     // native auth object with relevant information: user, zone, etc
     irods::error osauth_auth_client_start(
         irods::auth_plugin_context& _ctx,
-        rcComm_t*                    _comm,
-        const char*                  _context ) {
+        rcComm_t*                   _comm,
+        const char* ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::osauth_auth_object >().ok() ) {
@@ -644,7 +644,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // operation to verify the response on the agent side
     irods::error osauth_auth_agent_auth_verify(
-        irods::auth_plugin_context& _ctx,
+        irods::auth_plugin_context&,
         const char*                  _challenge,
         const char*                  _user_name,
         const char*                  _response ) {
@@ -671,7 +671,7 @@ extern "C" {
     // stub for ops that the native plug does
     // not need to support
     irods::error osauth_auth_success_stub(
-        irods::auth_plugin_context& _ctx ) {
+        irods::auth_plugin_context& ) {
         return SUCCESS();
 
     } // osauth_auth_success_stub

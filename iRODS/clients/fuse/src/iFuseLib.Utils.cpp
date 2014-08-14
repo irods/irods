@@ -229,6 +229,6 @@ void deleteConcurrentList( concurrentList_t *l ) {
 /*#define FUSE_DEBUG 1*/
 
 /* dummy function */
-char *cpStringExt( const char *str, Region *r ) {
+char *cpStringExt( const char*, Region* ) {
     return NULL;
 }

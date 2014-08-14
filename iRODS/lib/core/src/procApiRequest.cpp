@@ -434,7 +434,7 @@ _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
     int status;
 
     myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
-    status = myWrite( conn->sock, ( void * ) &myBuf, 4, SOCK_TYPE, NULL );
+    status = myWrite( conn->sock, ( void * ) &myBuf, 4, NULL );
     status = readAndProcApiReply( conn, conn->apiInx,
                                   ( void ** ) collOprStat, NULL );
 

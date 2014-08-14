@@ -401,7 +401,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
         keyValPair_t varKeyVal;
         int i;
         bzero( &varKeyVal, sizeof( varKeyVal ) );
-        rei->status = getAllSessionVarValue( "", rei, &varKeyVal );
+        rei->status = getAllSessionVarValue( rei, &varKeyVal );
         if ( rei->status >= 0 ) {
             if ( strcmp( outputModeStr, "server" ) == 0 ||
                     strcmp( outputModeStr, "all" ) == 0 ) {

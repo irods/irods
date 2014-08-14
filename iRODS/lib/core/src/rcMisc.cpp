@@ -2645,8 +2645,7 @@ isHomeColl( char * myPath ) {
 }
 
 int
-openRestartFile( char * restartFile, rodsRestart_t * rodsRestart,
-                 rodsArguments_t * rodsArgs ) {
+openRestartFile( char * restartFile, rodsRestart_t * rodsRestart ) {
     path p( restartFile );
     char buf[MAX_NAME_LEN * 3];
     char *inptr;
@@ -2852,8 +2851,8 @@ procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
 }
 
 int
-setStateForRestart( rcComm_t * conn, rodsRestart_t * rodsRestart,
-                    rodsPath_t * targPath, rodsArguments_t * rodsArgs ) {
+setStateForRestart( rodsRestart_t * rodsRestart, rodsPath_t * targPath,
+                    rodsArguments_t * rodsArgs ) {
     if ( rodsRestart->restartState & PATH_MATCHING ) {
         /* check the restart collection */
         if ( strstr( targPath->outPath, rodsRestart->collection ) != NULL ) {
@@ -4399,7 +4398,7 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
     toRead = buflen;
 
     while ( 1 ) {
-        nbytes = myRead( fd, bufptr, toRead, SOCK_TYPE, NULL, NULL );
+        nbytes = myRead( fd, bufptr, toRead, NULL, NULL );
         if ( nbytes == toRead ) { /* more */
             char *tmpPtr;
 
@@ -4447,7 +4446,7 @@ writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
 
     bufptr = ( char * )bytesBuf->buf;
     toWrite = bytesBuf->len;
-    while ( ( nbytes = myWrite( fd, bufptr, toWrite, SOCK_TYPE, NULL ) ) >= 0 ) {
+    while ( ( nbytes = myWrite( fd, bufptr, toWrite, NULL ) ) >= 0 ) {
         toWrite -= nbytes;
         bufptr += nbytes;
         if ( toWrite <= 0 ) {

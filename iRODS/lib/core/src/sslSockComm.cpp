@@ -233,7 +233,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
     /* read the header length packet */
 
     nbytes = sslRead( sock, ( void * ) &myLen, sizeof( myLen ),
-                      SOCK_TYPE, NULL, tv, ssl );
+                      NULL, tv, ssl );
     if ( nbytes != sizeof( myLen ) ) {
         if ( nbytes < 0 ) {
             status = nbytes - errno;
@@ -255,7 +255,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         return SYS_HEADER_READ_LEN_ERR;
     }
 
-    nbytes = sslRead( sock, ( void * ) tmpBuf, myLen, SOCK_TYPE, NULL, tv, ssl );
+    nbytes = sslRead( sock, ( void * ) tmpBuf, myLen, NULL, tv, ssl );
 
     if ( nbytes != myLen ) {
         if ( nbytes < 0 ) {
@@ -320,7 +320,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         inputStructBBuf->buf = malloc( myHeader->msgLen );
 
         nbytes = sslRead( sock, inputStructBBuf->buf, myHeader->msgLen,
-                          SOCK_TYPE, NULL, tv, ssl );
+                          NULL, tv, ssl );
 
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "received msg: \n%s\n", ( char * ) inputStructBBuf->buf );
@@ -344,7 +344,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         errorBBuf->buf = malloc( myHeader->errorLen );
 
         nbytes = sslRead( sock, errorBBuf->buf, myHeader->errorLen,
-                          SOCK_TYPE, NULL, tv, ssl );
+                          NULL, tv, ssl );
 
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "received error msg: \n%s\n", ( char * ) errorBBuf->buf );
@@ -373,7 +373,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
             bsBBuf->buf = malloc( myHeader->bsLen );
         }
 
-        nbytes = sslRead( sock, bsBBuf->buf, myHeader->bsLen, SOCK_TYPE,
+        nbytes = sslRead( sock, bsBBuf->buf, myHeader->bsLen,
                           &bytesRead, tv, ssl );
 
         if ( nbytes != myHeader->bsLen ) {
@@ -390,7 +390,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
 }
 
 int
-sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
+sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
     int nbytes;
     int status;
     int myLen;
@@ -413,7 +413,7 @@ sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
 
     myLen = htonl( headerBBuf->len );
 
-    nbytes = sslWrite( sock, ( void * ) &myLen, sizeof( myLen ), SOCK_TYPE, NULL, ssl );
+    nbytes = sslWrite( ( void * ) &myLen, sizeof( myLen ), NULL, ssl );
 
     if ( nbytes != sizeof( myLen ) ) {
         rodsLog( LOG_ERROR,
@@ -424,7 +424,7 @@ sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
 
     /* now send the header */
 
-    nbytes = sslWrite( sock, headerBBuf->buf, headerBBuf->len, SOCK_TYPE, NULL, ssl );
+    nbytes = sslWrite( headerBBuf->buf, headerBBuf->len, NULL, ssl );
 
     if ( headerBBuf->len != nbytes ) {
         rodsLog( LOG_ERROR,
@@ -440,7 +440,7 @@ sslWriteMsgHeader( int sock, msgHeader_t *myHeader, SSL *ssl ) {
 }
 
 int
-sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
+sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
                 bytesBuf_t *byteStreamBBuf, bytesBuf_t *errorBBuf, int intInfo,
                 irodsProt_t irodsProt, SSL *ssl ) {
     int status;
@@ -474,7 +474,7 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
 
     msgHeader.intInfo = intInfo;
 
-    status = sslWriteMsgHeader( sock, &msgHeader, ssl );
+    status = sslWriteMsgHeader( &msgHeader, ssl );
 
     if ( status < 0 ) {
         return status;
@@ -486,7 +486,7 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "sending msg: \n%s\n", ( char * ) msgBBuf->buf );
         }
-        status = sslWrite( sock, msgBBuf->buf, msgBBuf->len, SOCK_TYPE, NULL, ssl );
+        status = sslWrite( msgBBuf->buf, msgBBuf->len, NULL, ssl );
         if ( status < 0 ) {
             return status;
         }
@@ -496,15 +496,15 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "sending error msg: \n%s\n", ( char * ) errorBBuf->buf );
         }
-        status = sslWrite( sock, errorBBuf->buf, errorBBuf->len, SOCK_TYPE,
+        status = sslWrite( errorBBuf->buf, errorBBuf->len,
                            NULL, ssl );
         if ( status < 0 ) {
             return status;
         }
     }
     if ( msgHeader.bsLen > 0 ) {
-        status = sslWrite( sock, byteStreamBBuf->buf,
-                           byteStreamBBuf->len, SOCK_TYPE, &bytesWritten, ssl );
+        status = sslWrite( byteStreamBBuf->buf, byteStreamBBuf->len,
+                            &bytesWritten, ssl );
         if ( status < 0 ) {
             return status;
         }
@@ -514,7 +514,7 @@ sslSendRodsMsg( int sock, char *msgType, bytesBuf_t *msgBBuf,
 }
 
 int
-sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+sslRead( int sock, void *buf, int len,
          int *bytesRead, struct timeval *tv, SSL *ssl ) {
     int nbytes;
     int toRead;
@@ -580,7 +580,7 @@ sslRead( int sock, void *buf, int len, irodsDescType_t irodsDescType,
 }
 
 int
-sslWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType,
+sslWrite( void *buf, int len,
           int *bytesWritten, SSL *ssl ) {
     int nbytes;
     int toWrite;

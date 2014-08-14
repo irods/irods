@@ -15,7 +15,7 @@
 
 #ifdef RODS_CAT
 int
-connectRcat( rsComm_t *rsComm ) {
+connectRcat() {
     int status = 0;
     rodsServerHost_t *tmpRodsServerHost;
     int gotRcatHost = 0;
@@ -73,7 +73,7 @@ connectRcat( rsComm_t *rsComm ) {
 }
 
 int
-disconnectRcat( rsComm_t *rsComm ) {
+disconnectRcat() {
     int status;
 
     if ( IcatConnState == INITIAL_DONE ) {
@@ -91,7 +91,7 @@ disconnectRcat( rsComm_t *rsComm ) {
 }
 
 int
-resetRcat( rsComm_t *rsComm ) {
+resetRcat() {
     IcatConnState = INITIAL_NOT_DONE;
     return 0;
 }

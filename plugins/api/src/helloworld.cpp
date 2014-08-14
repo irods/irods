@@ -35,7 +35,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // api function to be referenced by the entry
-    int rs_hello_world( rsComm_t* _comm, helloInp_t* _inp, helloOut_t** _out ) {
+    int rs_hello_world( rsComm_t*, helloInp_t* _inp, helloOut_t** _out ) {
         rodsLog( LOG_NOTICE, "Dynamic API - HELLO WORLD" );
 
         ( *_out ) = ( helloOut_t* )malloc( sizeof( helloOut_t ) );
@@ -52,8 +52,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
     irods::api_entry* plugin_factory(
-        const std::string& _inst_name,
-        const std::string& _context ) {
+        const std::string&,     //_inst_name
+        const std::string& ) { // _context
         // =-=-=-=-=-=-=-
         // create a api def object
         irods::apidef_t def = { 1300,

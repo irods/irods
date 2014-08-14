@@ -10,7 +10,7 @@
 #include "rmUtil.hpp"
 
 int
-rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -18,7 +18,7 @@ rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     collInp_t collInp;
     dataObjInp_t dataObjInp;
-    initCondForRm( myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+    initCondForRm( myRodsArgs, &dataObjInp, &collInp );
 
     int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
@@ -36,11 +36,11 @@ rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             status = rmDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                    myRodsEnv, myRodsArgs, &dataObjInp );
+                                    myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             status = rmCollUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                 myRodsEnv, myRodsArgs, &dataObjInp, &collInp );
+                                 myRodsArgs, &collInp );
         }
         else {
             /* should not be here */
@@ -63,8 +63,7 @@ rmUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 rmDataObjUtil( rcComm_t *conn, char *srcPath,
-               rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-               dataObjInp_t *dataObjInp ) {
+               rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -92,8 +91,8 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
 }
 
 int
-initCondForRm( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-               dataObjInp_t *dataObjInp, collInp_t *collInp ) {
+initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
+                collInp_t *collInp ) {
 
 #ifdef _WIN32
     struct _timeb timebuffer;
@@ -152,8 +151,8 @@ initCondForRm( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 }
 
 int
-rmCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-            rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp ) {
+rmCollUtil( rcComm_t *conn, char *srcColl,
+            rodsArguments_t *rodsArgs, collInp_t *collInp ) {
     int status;
 
     if ( srcColl == NULL ) {

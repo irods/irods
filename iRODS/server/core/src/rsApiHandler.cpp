@@ -67,7 +67,7 @@ int rsApiHandler(
 
     rsComm->apiInx = apiInx;
 
-    status = chkApiVersion( rsComm, apiInx );
+    status = chkApiVersion( apiInx );
     if ( status < 0 ) {
         sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
         return status;
@@ -335,7 +335,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
 }
 
 int
-chkApiVersion( rsComm_t * rsComm, int apiInx ) {
+chkApiVersion( int apiInx ) {
     char *cliApiVersion;
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
@@ -645,7 +645,7 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
     }
 
     /* read 4 bytes */
-    status = myRead( rsComm->sock, &myBuf, sizeof( myBuf ), SOCK_TYPE, NULL,
+    status = myRead( rsComm->sock, &myBuf, sizeof( myBuf ), NULL,
                      NULL );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
@@ -666,7 +666,7 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
         }
         else {
             int myBuf = htonl( status );
-            myWrite( conn->sock, ( void * ) &myBuf, 4, SOCK_TYPE, NULL );
+            myWrite( conn->sock, ( void * ) &myBuf, 4, NULL );
             break;
         }
     }
@@ -674,7 +674,7 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
 }
 
 void
-readTimeoutHandler( int sig ) {
+readTimeoutHandler( int ) {
     alarm( 0 );
     if ( isL1descInuse() ) {
         rodsLog( LOG_ERROR,

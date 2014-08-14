@@ -26,7 +26,11 @@ MK_PTR( msParam_t, param )
 RE_STRUCT_END( Node )
 #endif
 
+#ifdef CACHE_PROTO_HPP
+RE_STRUCT_BEGIN_NO_BUF( msParam_t )
+#else
 RE_STRUCT_BEGIN( msParam_t )
+#endif
 MK_VAR_ARRAY( char, label )
 MK_VAR_ARRAY( const char, type )
 MK_TRANSIENT_PTR( void, inOutStruct )
@@ -86,5 +90,9 @@ MK_PTR( Node, params )
 MK_PTR_TAPP( Hashtable, valIndex, PARAM( RuleIndexListNode ) )
 RE_STRUCT_END( CondIndexVal )
 
+#ifdef CACHE_PROTO_HPP
+RE_STRUCT_BEGIN_NO_BUF_PTR_DESC( bytesBuf_t )
+#else
 RE_STRUCT_BEGIN( bytesBuf_t )
+#endif
 RE_STRUCT_END( bytesBuf_t )

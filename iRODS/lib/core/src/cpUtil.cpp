@@ -16,7 +16,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = resolveRodsTarget( conn, myRodsEnv, rodsPathInp, 1 );
+    int savedStatus = resolveRodsTarget( conn, rodsPathInp, 1 );
     if ( savedStatus < 0 ) {
         rodsLogError( LOG_ERROR, savedStatus,
                       "cpUtil: resolveRodsTarget error, status = %d", savedStatus );
@@ -60,11 +60,11 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rmKeyVal( &dataObjCopyInp.srcDataObjInp.condInput,
                       TRANSLATED_PATH_KW );
             status = cpFileUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                 targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv,
+                                 targPath->outPath, rodsPathInp->srcPath[i].size,
                                  myRodsArgs, &dataObjCopyInp );
         }
         else if ( targPath->objType == COLL_OBJ_T ) {
-            setStateForRestart( conn, &rodsRestart, targPath, myRodsArgs );
+            setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             addKeyVal( &dataObjCopyInp.srcDataObjInp.condInput,
                        TRANSLATED_PATH_KW, "" );
             status = cpCollUtil( conn, rodsPathInp->srcPath[i].outPath,
@@ -108,7 +108,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
-            rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjCopyInp_t *dataObjCopyInp ) {
+            rodsArguments_t *rodsArgs, dataObjCopyInp_t *dataObjCopyInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -255,8 +255,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     memset( rodsRestart, 0, sizeof( rodsRestart_t ) );
     if ( rodsArgs->restart == True ) {
         int status;
-        status = openRestartFile( rodsArgs->restartFileString, rodsRestart,
-                                  rodsArgs );
+        status = openRestartFile( rodsArgs->restartFileString, rodsRestart );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "initCondForCp: openRestartFile of %s errno",
@@ -323,7 +322,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             }
 
             status = cpFileUtil( conn, srcChildPath, targChildPath,
-                                 collEnt.dataSize, myRodsEnv, rodsArgs, dataObjCopyInp );
+                                 collEnt.dataSize, rodsArgs, dataObjCopyInp );
 
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,

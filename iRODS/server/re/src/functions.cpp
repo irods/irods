@@ -51,45 +51,45 @@ static keyValPair_t globalHashtable = {0, NULL, NULL};
 int rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp );
 int rsCloseCollection( rsComm_t *rsComm, int *handleInxInp );
 int rsReadCollection( rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt );
-int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei );
-int msiCloseGenQuery( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei );
-int msiGetMoreRows( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei );
+int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t* rei );
+int msiCloseGenQuery( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t* rei );
+int msiGetMoreRows( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t* rei );
 
 
-Res *smsi_getGlobalSessionId( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_getGlobalSessionId( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newStringRes( r, globalSessionId );
 }
 
-Res *smsi_setGlobalSessionId( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_setGlobalSessionId( Node**subtrees, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     char *sid = subtrees[0]->text;
     rstrcpy( globalSessionId, sid, MAX_NAME_LEN );
     return newIntRes( r, 0 );
 }
 
-Res *smsi_properties( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_properties( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newUninterpretedRes( r, KeyValPair_MS_T, &globalHashtable, NULL );
 }
 
 
-void reIterable_genQuery_init( ReIterableData *itrData, Region *r );
-int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r );
-Res *reIterable_genQuery_next( ReIterableData *itrData, Region *r );
-void reIterable_genQuery_finalize( ReIterableData *itrData, Region *r );
+void reIterable_genQuery_init( ReIterableData *itrData, Region* r );
+int reIterable_genQuery_hasNext( ReIterableData *itrData, Region* r );
+Res *reIterable_genQuery_next( ReIterableData *itrData, Region* r );
+void reIterable_genQuery_finalize( ReIterableData *itrData, Region* r );
 
-void reIterable_list_init( ReIterableData *itrData, Region *r );
-int reIterable_list_hasNext( ReIterableData *itrData, Region *r );
-Res *reIterable_list_next( ReIterableData *itrData, Region *r );
-void reIterable_list_finalize( ReIterableData *itrData, Region *r );
+void reIterable_list_init( ReIterableData *itrData, Region* r );
+int reIterable_list_hasNext( ReIterableData *itrData, Region* r );
+Res *reIterable_list_next( ReIterableData *itrData, Region* r );
+void reIterable_list_finalize( ReIterableData *itrData, Region* r );
 
-void reIterable_irods_init( ReIterableData *itrData, Region *r );
-int reIterable_irods_hasNext( ReIterableData *itrData, Region *r );
-Res *reIterable_irods_next( ReIterableData *itrData, Region *r );
-void reIterable_irods_finalize( ReIterableData *itrData, Region *r );
+void reIterable_irods_init( ReIterableData *itrData, Region* r );
+int reIterable_irods_hasNext( ReIterableData *itrData, Region* r );
+Res *reIterable_irods_next( ReIterableData *itrData, Region* r );
+void reIterable_irods_finalize( ReIterableData *itrData, Region* r );
 
-void reIterable_collection_init( ReIterableData *itrData, Region *r );
-int reIterable_collection_hasNext( ReIterableData *itrData, Region *r );
-Res *reIterable_collection_next( ReIterableData *itrData, Region *r );
-void reIterable_collection_finalize( ReIterableData *itrData, Region *r );
+void reIterable_collection_init( ReIterableData *itrData, Region* r );
+int reIterable_collection_hasNext( ReIterableData *itrData, Region* r );
+Res *reIterable_collection_next( ReIterableData *itrData, Region* r );
+void reIterable_collection_finalize( ReIterableData *itrData, Region* r );
 
 #define NUM_RE_ITERABLE 7
 ReIterableTableRow reIterableTable[NUM_RE_ITERABLE] = {
@@ -105,11 +105,11 @@ ReIterableTableRow reIterableTable[NUM_RE_ITERABLE] = {
 ReIterableData *newReIterableData(
     char *varName,
     Res *res,
-    Node **subtrees,
-    Node *node,
-    ruleExecInfo_t *rei,
+    Node** subtrees,
+    Node* node,
+    ruleExecInfo_t* rei,
     int reiSaveFlag,
-    Env *env,
+    Env* env,
     rError_t* errmsg ) {
     ReIterableData *itrData = ( ReIterableData * ) malloc( sizeof( ReIterableData ) );
     itrData->varName = varName;
@@ -131,7 +131,7 @@ void deleteReIterableData( ReIterableData *itrData ) {
 }
 int fileConcatenate( const char *file1, const char *file2, const char *file3 );
 
-Node *wrapToActions( Node *node, Region *r ) {
+Node *wrapToActions( Node* node, Region* r ) {
     if ( getNodeType( node ) != N_ACTIONS ) {
         Node *actions[1];
         actions[0] = node;
@@ -142,7 +142,7 @@ Node *wrapToActions( Node *node, Region *r ) {
     }
     return node;
 }
-Res *smsi_ifExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r ) {
+Res *smsi_ifExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
@@ -155,7 +155,7 @@ Res *smsi_ifExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     }
 }
 
-Res *smsi_if2Exec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r ) {
+Res *smsi_if2Exec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
@@ -168,7 +168,7 @@ Res *smsi_if2Exec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
     }
 }
 
-Res *smsi_do( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_do( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     switch ( getNodeType( params[0] ) ) {
     case N_ACTIONS:
         return evaluateActions( ( Node * )params[0], NULL, 0, rei, reiSaveFlag, env, errmsg, r );
@@ -177,7 +177,7 @@ Res *smsi_do( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     }
 
 }
-Res *smsi_letExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r ) {
+Res *smsi_letExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
@@ -193,7 +193,7 @@ Res *smsi_letExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
     /* deleteEnv(nEnv, 1); */
     return res;
 }
-Res *smsi_matchExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t* errmsg, Region *r ) {
+Res *smsi_matchExec( Node** params, int n, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = evaluateExpression3( params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
@@ -216,7 +216,7 @@ Res *smsi_matchExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int 
 }
 
 
-Res *smsi_whileExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_whileExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
 
     Res *cond, *res;
     GC_BEGIN
@@ -252,10 +252,10 @@ Res *smsi_whileExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int 
 
 }
 
-Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_forExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
 
     Res *init, *cond, *res = NULL, *step;
-    Region *rnew = make_region( 0, NULL );
+    Region* rnew = make_region( 0, NULL );
     init = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, rnew );
     if ( getNodeType( init ) == N_ERROR ) {
         res = init;
@@ -303,9 +303,9 @@ Res *smsi_forExec( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
 
 }
 
-Res *smsi_split( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r );
+Res *smsi_split( Node** params, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r );
 
-Res *smsi_collection( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_collection( Node** subtrees, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     char *collName = subtrees[0]->text;
 
     /* todo need to find a way to free this buffer */
@@ -316,7 +316,7 @@ Res *smsi_collection( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     return newUninterpretedRes( r, CollInp_MS_T, collInpCache, NULL );
 }
 
-ReIterableType collType( Res *coll, Node *node, rError_t *errmsg, Region *r ) {
+ReIterableType collType( Res *coll ) {
     if ( TYPE( coll ) == T_STRING ) {
         return RE_ITERABLE_COMMA_STRING;
     }
@@ -366,14 +366,14 @@ typedef struct reIterable_genQuery_data {
     genQueryOut_t *genQueryOut;
 } ReIterable_genQuery_data;
 
-void reIterable_genQuery_init( ReIterableData *itrData, Region *r ) {
+void reIterable_genQuery_init( ReIterableData *itrData, Region* ) {
     ReIterable_genQuery_data *data = ( ReIterable_genQuery_data * ) malloc( sizeof( ReIterable_genQuery_data ) );
 
     itrData->itrSpecData = data;
 
     data->genQueryOut = ( genQueryOut_t* )RES_UNINTER_STRUCT( itrData->res->subtrees[1] );
     data->cont = data->genQueryOut->continueInx > 0;
-    data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r );
+    data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut );
     data->i = 0;
 
     convertResToMsParam( &( data->genQInpParam ), itrData->res->subtrees[0], itrData->errmsg );
@@ -381,7 +381,7 @@ void reIterable_genQuery_init( ReIterableData *itrData, Region *r ) {
 
 }
 
-int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r ) {
+int reIterable_genQuery_hasNext( ReIterableData *itrData, Region* r ) {
     ReIterable_genQuery_data *data = ( ReIterable_genQuery_data * ) itrData->itrSpecData;
     if ( data->i < data->len ) {
         return 1;
@@ -401,7 +401,7 @@ int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r ) {
             return 0;
         }
         data->genQueryOut = ( genQueryOut_t * ) data->genQOutParam.inOutStruct;
-        data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r );
+        data->len = getCollectionSize( itrData->res->subtrees[1]->exprType->text, data->genQueryOut );
         if ( data->len > 0 ) {
             return 1;
         }
@@ -410,7 +410,7 @@ int reIterable_genQuery_hasNext( ReIterableData *itrData, Region *r ) {
         }
     }
 }
-Res *reIterable_genQuery_next( ReIterableData *itrData, Region *r ) {
+Res *reIterable_genQuery_next( ReIterableData *itrData, Region* r ) {
     ReIterable_genQuery_data *data = ( ReIterable_genQuery_data * ) itrData->itrSpecData;
     Res *elem = getValueFromCollection( itrData->res->subtrees[1]->exprType->text, data->genQueryOut, data->i++, r );
     setVariableValue( itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r );
@@ -425,7 +425,7 @@ Res *reIterable_genQuery_next( ReIterableData *itrData, Region *r ) {
     return res;
 
 }
-void reIterable_genQuery_finalize( ReIterableData *itrData, Region *r ) {
+void reIterable_genQuery_finalize( ReIterableData *itrData, Region* r ) {
     ReIterable_genQuery_data *data = ( ReIterable_genQuery_data * ) itrData->itrSpecData;
     int status = msiCloseGenQuery( &( data->genQInpParam ), &( data->genQOutParam ), itrData->rei );
     clearMsParam( &( data->genQInpParam ), 0 );
@@ -445,7 +445,7 @@ typedef struct reIterable_list_data {
     int n;
 } ReIterable_list_data;
 
-void reIterable_list_init( ReIterableData *itrData, Region *r ) {
+void reIterable_list_init( ReIterableData *itrData, Region* ) {
     ReIterable_list_data *data = ( ReIterable_list_data * ) malloc( sizeof( ReIterable_list_data ) );
 
     itrData->itrSpecData = data;
@@ -454,12 +454,12 @@ void reIterable_list_init( ReIterableData *itrData, Region *r ) {
     data->elems = itrData->res->subtrees;
 }
 
-int reIterable_list_hasNext( ReIterableData *itrData, Region *r ) {
+int reIterable_list_hasNext( ReIterableData *itrData, Region* ) {
     ReIterable_list_data *data = ( ReIterable_list_data * ) itrData->itrSpecData;
     return data->i < data->n;
 }
 
-Res *reIterable_list_next( ReIterableData *itrData, Region *r ) {
+Res *reIterable_list_next( ReIterableData *itrData, Region* r ) {
     ReIterable_list_data *data = ( ReIterable_list_data * ) itrData->itrSpecData;
     Res *elem = data->elems[data->i++];
     setVariableValue( itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r );
@@ -467,7 +467,7 @@ Res *reIterable_list_next( ReIterableData *itrData, Region *r ) {
     return res;
 }
 
-void reIterable_list_finalize( ReIterableData *itrData, Region *r ) {
+void reIterable_list_finalize( ReIterableData *itrData, Region* ) {
     ReIterable_list_data *data = ( ReIterable_list_data * ) itrData->itrSpecData;
     free( data );
 }
@@ -478,20 +478,20 @@ typedef struct reIterable_irods_data {
     int n;
 } ReIterable_irods_data;
 
-void reIterable_irods_init( ReIterableData *itrData, Region *r ) {
+void reIterable_irods_init( ReIterableData *itrData, Region* ) {
     ReIterable_irods_data *data = ( ReIterable_irods_data * ) malloc( sizeof( ReIterable_irods_data ) );
 
     itrData->itrSpecData = data;
     data->i = 0;
-    data->n = getCollectionSize( itrData->res->exprType->text, RES_UNINTER_STRUCT( itrData->res ), r );
+    data->n = getCollectionSize( itrData->res->exprType->text, RES_UNINTER_STRUCT( itrData->res ) );
 }
 
-int reIterable_irods_hasNext( ReIterableData *itrData, Region *r ) {
+int reIterable_irods_hasNext( ReIterableData *itrData, Region* ) {
     ReIterable_irods_data *data = ( ReIterable_irods_data * ) itrData->itrSpecData;
     return data->i < data->n;
 }
 
-Res *reIterable_irods_next( ReIterableData *itrData, Region *r ) {
+Res *reIterable_irods_next( ReIterableData *itrData, Region* r ) {
     ReIterable_irods_data *data = ( ReIterable_irods_data * ) itrData->itrSpecData;
     Res *elem = getValueFromCollection( itrData->res->exprType->text, RES_UNINTER_STRUCT( itrData->res ), data->i++, r );
     setVariableValue( itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r );
@@ -499,7 +499,7 @@ Res *reIterable_irods_next( ReIterableData *itrData, Region *r ) {
     return res;
 }
 
-void reIterable_irods_finalize( ReIterableData *itrData, Region *r ) {
+void reIterable_irods_finalize( ReIterableData *itrData, Region* ) {
     ReIterable_irods_data *data = ( ReIterable_irods_data * ) itrData->itrSpecData;
     free( data );
 }
@@ -512,7 +512,7 @@ typedef struct reIterable_collection_data {
     dataObjInp_t *dataObjInp;				/* will contain pathnames for each object (one at a time) */
 } ReIterable_collection_data;
 
-void reIterable_collection_init( ReIterableData *itrData, Region *r ) {
+void reIterable_collection_init( ReIterableData *itrData, Region* r ) {
     ReIterable_collection_data *data = ( ReIterable_collection_data * ) malloc( sizeof( ReIterable_collection_data ) );
 
     itrData->itrSpecData = data;
@@ -552,7 +552,7 @@ void reIterable_collection_init( ReIterableData *itrData, Region *r ) {
     }
 }
 
-int reIterable_collection_hasNext( ReIterableData *itrData, Region *r ) {
+int reIterable_collection_hasNext( ReIterableData *itrData, Region* ) {
     ReIterable_collection_data *data = ( ReIterable_collection_data * ) itrData->itrSpecData;
 
     collEnt_t *collEnt;
@@ -570,7 +570,7 @@ int reIterable_collection_hasNext( ReIterableData *itrData, Region *r ) {
     }
     return 0;
 }
-Res *reIterable_collection_next( ReIterableData *itrData, Region *r ) {
+Res *reIterable_collection_next( ReIterableData *itrData, Region* r ) {
     ReIterable_collection_data *data = ( ReIterable_collection_data * ) itrData->itrSpecData;
 
     /* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
@@ -590,7 +590,7 @@ Res *reIterable_collection_next( ReIterableData *itrData, Region *r ) {
     return ret;
 
 }
-void reIterable_collection_finalize( ReIterableData *itrData, Region *r ) {
+void reIterable_collection_finalize( ReIterableData *itrData, Region* r ) {
     ReIterable_collection_data *data = ( ReIterable_collection_data * ) itrData->itrSpecData;
     free( data->dataObjInp );
     itrData->rei->status = rsCloseCollection( itrData->rei->rsComm, &data->handleInx );
@@ -614,9 +614,9 @@ ReIterable *getReIterable( ReIterableType nodeType ) {
     }
     return NULL;
 }
-Res *smsi_forEach2Exec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res;
-    ReIterableType ctype = collType( subtrees[1], node->subtrees[1], errmsg, r );
+    ReIterableType ctype = collType( subtrees[1] );
     ReIterableData *itrData;
     Res *oldVal;
     ReIterable* itr;
@@ -708,10 +708,10 @@ Res *smsi_forEach2Exec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei,
     }
 
 }
-Res *smsi_forEachExec( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_forEachExec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res;
     char* varName = ( ( Node * )subtrees[0] )->text;
-    Res* orig = evaluateVar3( varName, ( ( Node * )subtrees[0] ), rei, reiSaveFlag, env, errmsg, r );
+    Res* orig = evaluateVar3( varName, ( ( Node * )subtrees[0] ), rei, env, errmsg, r );
     if ( getNodeType( orig ) == N_ERROR || TYPE( orig ) == T_ERROR ) {
         return orig;
     }
@@ -738,7 +738,7 @@ void columnToString( Node *n, char **queryStr, int *size ) {
 
 }
 
-Res *smsi_query( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
 #ifdef DEBUG
     return newErrorRes( r, RE_UNSUPPORTED_OP_OR_TYPE );
 #else
@@ -815,7 +815,7 @@ Res *smsi_query( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
 
             for ( k = 1; k < subQueNode->degree; k++ ) {
 
-                Node *node = subQueNode->subtrees[k];
+                Node* node = subQueNode->subtrees[k];
 
                 /* Make the condition */
                 res0 = evaluateExpression3( node->subtrees[0], 0, 0, rei, reiSaveFlag, env, errmsg, r );
@@ -872,7 +872,7 @@ Res *smsi_query( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
 
     deleteHashTable( queCondHashTable, nop );
 
-    Region *rNew = make_region( 0, NULL );
+    Region* rNew = make_region( 0, NULL );
     msParam_t genQOutParam;
     memset( &genQOutParam, 0, sizeof( msParam_t ) );
     int status = msiExecGenQuery( &genQInpParam, &genQOutParam, rei );
@@ -882,9 +882,9 @@ Res *smsi_query( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
         return newErrorRes( r, status );
     }
     Res *res = newRes( r );
-    convertMsParamToResAndFreeNonIRODSType( &genQInpParam, res, errmsg, r );
+    convertMsParamToResAndFreeNonIRODSType( &genQInpParam, res, r );
     Res *res2 = newRes( r );
-    convertMsParamToResAndFreeNonIRODSType( &genQOutParam, res2, errmsg, r );
+    convertMsParamToResAndFreeNonIRODSType( &genQOutParam, res2, r );
     region_free( rNew );
 
     Res **comps = ( Res ** ) region_alloc( r, sizeof( Res * ) * 2 );
@@ -894,19 +894,19 @@ Res *smsi_query( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
     return newTupleRes( 2, comps, r );
 #endif
 }
-Res *smsi_break( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_break( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region * r ) {
 
     Res *	res = newRes( r );
     res->exprType = newSimpType( T_BREAK, r );
     return res;
 }
-Res *smsi_succeed( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_succeed( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
 
     Res *	res = newRes( r );
     res->exprType = newSimpType( T_SUCCESS, r );
     return res;
 }
-Res *smsi_fail( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_fail( Node** subtrees, int n, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
 
     Res *	res = newErrorRes( r, n == 0 ? FAIL_ACTION_ENCOUNTERED_ERR : RES_INT_VAL( subtrees[0] ) );
     char *msg = ( n == 0 || n == 1 ) ? ( char * ) "fail action encountered" : subtrees[1]->text;
@@ -915,7 +915,7 @@ Res *smsi_fail( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
 }
 
 
-Res *smsi_assign( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_assign( Node** subtrees, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
 
     /* An smsi shares the same env as the enclosing rule. */
     /* Therefore, our modification to the env is reflected to the enclosing rule automatically. */
@@ -943,7 +943,7 @@ Examples:
 *kv."A B" == "b"
 \endcode
  */
-Res *smsi_getValByKey( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_getValByKey( Node** params, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     keyValPair_t *kvp = ( keyValPair_t * ) RES_UNINTER_STRUCT( params[0] );
     char *key = NULL;
@@ -973,41 +973,13 @@ Res *smsi_getValByKey( Node **params, int n, Node *node, ruleExecInfo_t *rei, in
     generateAndAddErrMsg( errbuf, node, UNMATCHED_KEY_OR_INDEX, errmsg );
     return newErrorRes( r, UNMATCHED_KEY_OR_INDEX );
 }
-Res *smsi_listvars( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
-    /*
-    		char buf2[MAX_COND_LEN];
-    		char buf3[MAX_COND_LEN];
-    		sprintf(buf2, "len: %d\n", rei->msParamArray->len);
-    		for(i=0;i<rei->msParamArray->len;i++) {
-    			msParam_t *mP = rei->msParamArray->msParam[i];
-    			if(i!=0)strncat(buf2, ",", MAX_COND_LEN);
-    			strncat(buf2, mP->label, MAX_COND_LEN);
-    			strncat(buf2, "=", MAX_COND_LEN);
-    			if(mP->inOutStruct == NULL)
-    				strncat(buf2, "<null>", MAX_COND_LEN);
-    			else	{
-    				if (strcmp(mP->type, DOUBLE_MS_T) == 0) { // if the parameter is an integer
-    					snprintf(buf3, MAX_COND_LEN, "%f:",*(double *)mP->inOutStruct);
-    				} else if (strcmp(mP->type, INT_MS_T) == 0) { // if the parameter is an integer
-    					snprintf(buf3, MAX_COND_LEN, "%d:",*(int *)mP->inOutStruct);
-    				} else if (strcmp(mP->type, STR_MS_T) == 0) { // if the parameter is a string
-    					snprintf(buf3, MAX_COND_LEN, "%s:",(char *)mP->inOutStruct);
-    				} else if(strcmp(mP->type, DATETIME_MS_T) == 0) {
-    					snprintf(buf3, MAX_COND_LEN, "%ld:",*(time_t *)mP->inOutStruct);
-    				} else {
-    					snprintf(buf3, MAX_COND_LEN, "<value>:");
-    				}
-    				strncat(buf2, buf3, MAX_COND_LEN);
-    				strncat(buf2, mP->type, MAX_COND_LEN);
-    			}
-    		}
-    */
+Res *smsi_listvars( Node**, int, Node*, ruleExecInfo_t*, int, Env* env, rError_t*, Region* r ) {
     char buf[1024];
     printHashtable( env->current, buf );
     Res *res = newStringRes( r, buf );
     return res;
 }
-Res *smsi_listcorerules( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_listcorerules( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *coll = newCollRes( ruleEngineConfig.coreRuleSet->len, newSimpType( T_STRING, r ), r );
     int i;
     for ( i = 0; i < ruleEngineConfig.coreRuleSet->len; i++ ) {
@@ -1015,7 +987,7 @@ Res *smsi_listcorerules( Node **params, int n, Node *node, ruleExecInfo_t *rei, 
     }
     return coll;
 }
-Res *smsi_listapprules( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_listapprules( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *coll = newCollRes( ruleEngineConfig.appRuleSet->len, newSimpType( T_STRING, r ), r );
     int i;
     for ( i = 0; i < ruleEngineConfig.appRuleSet->len; i++ ) {
@@ -1023,7 +995,7 @@ Res *smsi_listapprules( Node **params, int n, Node *node, ruleExecInfo_t *rei, i
     }
     return coll;
 }
-Res *smsi_listextrules( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_listextrules( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *coll = newCollRes( ruleEngineConfig.extRuleSet->len, newSimpType( T_STRING, r ), r );
     int i;
     for ( i = 0; i < ruleEngineConfig.extRuleSet->len; i++ ) {
@@ -1031,14 +1003,14 @@ Res *smsi_listextrules( Node **params, int n, Node *node, ruleExecInfo_t *rei, i
     }
     return coll;
 }
-Res *smsi_true( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_true( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newBoolRes( r, 1 );
 }
-Res *smsi_false( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_false( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newBoolRes( r, 0 );
 }
 
-Res *smsi_max( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_max( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     int init = 0;
     double max = 0;
     int i;
@@ -1055,7 +1027,7 @@ Res *smsi_max( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     Res *res = newDoubleRes( r, max );
     return res;
 }
-Res *smsi_min( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_min( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     int init = 0;
     double min = 0;
     int i;
@@ -1072,7 +1044,7 @@ Res *smsi_min( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     Res *res = newDoubleRes( r, min );
     return res;
 }
-Res *smsi_average( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_average( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     double sum = 0;
     int i;
     for ( i = 0; i < n; i++ ) {
@@ -1082,7 +1054,7 @@ Res *smsi_average( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
     Res *res = newDoubleRes( r, sum / n );
     return res;
 }
-Res *smsi_hd( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_hd( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     if ( params[0]->degree > 0 ) {
         return params[0]->subtrees[0];
     }
@@ -1091,7 +1063,7 @@ Res *smsi_hd( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         return newErrorRes( r, RE_RUNTIME_ERROR );
     }
 }
-Res *smsi_tl( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_tl( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     if ( params[0]->degree > 0 ) {
         Res *res = newRes( r );
         ExprType *elemType = T_CONS_TYPE_ARG( ( ( Res * )params[0] )->exprType, 0 );
@@ -1110,7 +1082,7 @@ Res *smsi_tl( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         return newErrorRes( r, RE_RUNTIME_ERROR );
     }
 }
-Res *smsi_cons( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_cons( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *res = newRes( r );
     ExprType *elemType = params[0]->exprType;
     /* allocate memory for elements */
@@ -1124,7 +1096,7 @@ Res *smsi_cons( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     }
     return res;
 }
-Res *smsi_setelem( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_setelem( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     Res *res = newRes( r );
     Res *coll = params[0];
     Res *indexRes = params[1];
@@ -1146,7 +1118,7 @@ Res *smsi_setelem( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
     res->subtrees[index] = val;
     return res;
 }
-Res *smsi_list( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_list( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *res = newRes( r );
     ExprType *elemType =
         n == 0 ? newSimpType( T_UNSPECED, r ) : params[0]->exprType;
@@ -1160,7 +1132,7 @@ Res *smsi_list( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     }
     return res;
 }
-Res *smsi_tuple( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_tuple( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *res = newRes( r );
     /* allocate memory for element types */
     ExprType **elemTypes = ( ExprType ** )region_alloc( r, n * sizeof( ExprType * ) );
@@ -1178,7 +1150,7 @@ Res *smsi_tuple( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
     }
     return res;
 }
-Res *smsi_elem( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_elem( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     int index = RES_INT_VAL( params[1] );
     if ( TYPE( params[0] ) == T_CONS ) {
@@ -1192,7 +1164,7 @@ Res *smsi_elem( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     }
     else {
         if ( index < 0 || index >= getCollectionSize( params[0]->exprType->text,
-                RES_UNINTER_STRUCT( params[0] ), r ) ) {
+                RES_UNINTER_STRUCT( params[0] ) ) ) {
             snprintf( errbuf, ERR_MSG_LEN, "error: index out of range %d. %s", index, ( ( Res * )params[0] )->exprType->text );
             addRErrorMsg( errmsg, RE_RUNTIME_ERROR, errbuf );
             return newErrorRes( r, RE_RUNTIME_ERROR );
@@ -1204,7 +1176,7 @@ Res *smsi_elem( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
         return res2;
     }
 }
-Res *smsi_size( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_size( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res * res = newRes( r );
     res->exprType = newSimpType( T_INT, r );
     if ( TYPE( params[0] ) == T_CONS ) {
@@ -1212,11 +1184,11 @@ Res *smsi_size( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     }
     else {
         RES_INT_VAL_LVAL( res ) = getCollectionSize( params[0]->exprType->text,
-                                  RES_UNINTER_STRUCT( params[0] ), r );
+                                  RES_UNINTER_STRUCT( params[0] ) );
     }
     return res;
 }
-Res *smsi_datetime( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_datetime( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     Res *res = newRes( r );
     Res* timestr = params[0];
@@ -1249,13 +1221,13 @@ Res *smsi_datetime( Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
     return res;
 }
 
-Res *smsi_time( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_time( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     time_t t;
     time( &t );
     Res*res = newDatetimeRes( r, t );
     return res;
 }
-Res *smsi_timestr( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_timestr( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     Res *res = newRes( r );
     Res* dtime = params[0];
@@ -1279,14 +1251,14 @@ Res *smsi_timestr( Node **params, int n, Node *node, ruleExecInfo_t *rei, int re
     }
     return res;
 }
-Res *smsi_type( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_type( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *val = params[0], *res;
     char typeName[128];
     typeToString( val->exprType, NULL, typeName, 128 );
     res = newStringRes( r, typeName );
     return res;
 }
-Res *smsi_arity( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_arity( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *val = params[0];
     RuleIndexListNode *ruleInxLstNode;
     if ( findNextRule2( val->text, 0, &ruleInxLstNode ) < 0 ) {
@@ -1302,7 +1274,7 @@ Res *smsi_arity( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
     RuleDesc *rd = getRuleDesc( ri );
     return newIntRes( r, RULE_NODE_NUM_PARAMS( rd->node ) );
 }
-Res *smsi_str( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     Res *val = params[0], *res;
     if ( TYPE( val ) == T_INT
             || TYPE( val ) == T_DOUBLE
@@ -1367,7 +1339,7 @@ Res *smsi_str( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     return res;
 }
 
-Res *smsi_double( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_double( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     Res *val = params[0], *res = newRes( r );
     if ( TYPE( val ) == T_STRING ) {
@@ -1388,7 +1360,7 @@ Res *smsi_double( Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     }
     return res;
 }
-Res *smsi_int( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_int( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     Res *val = params[0], *res = newRes( r );
     if ( TYPE( val ) == T_STRING ) {
@@ -1409,7 +1381,7 @@ Res *smsi_int( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     }
     return res;
 }
-Res *smsi_bool( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_bool( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     Res *val = params[0], *res = newRes( r );
     res->exprType = newSimpType( T_BOOL, r );
@@ -1435,16 +1407,16 @@ Res *smsi_bool( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     }
     return res;
 }
-Res *smsi_lmsg( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_lmsg( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     writeToTmp( "re.log", params[0]->text );
     Res *res = newIntRes( r, 0 );
     return res;
 }
-Res *smsi_not( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_not( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newBoolRes( r, !RES_BOOL_VAL( params[0] ) ? 1 : 0 );
 
 }
-Res *smsi_negate( Node **args, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_negate( Node** args, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     if ( TYPE( args[0] ) == T_INT ) {
         return newIntRes( r, -RES_INT_VAL( args[0] ) );
     }
@@ -1452,7 +1424,7 @@ Res *smsi_negate( Node **args, int n, Node *node, ruleExecInfo_t *rei, int reiSa
         return newDoubleRes( r, -RES_DOUBLE_VAL( args[0] ) );
     }
 }
-Res *smsi_abs( Node **args, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_abs( Node** args, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     if ( TYPE( args[0] ) == T_INT ) {
         int val = RES_INT_VAL( args[0] );
         return newIntRes( r, ( int )( val < 0 ? -val : val ) );
@@ -1462,42 +1434,42 @@ Res *smsi_abs( Node **args, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
         return newDoubleRes( r, ( val < 0 ? -val : val ) );
     }
 }
-Res *smsi_exp( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_exp( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     double val = RES_DOUBLE_VAL( args[0] );
     return newDoubleRes( r, exp( val ) );
 }
-Res *smsi_log( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_log( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     double val = RES_DOUBLE_VAL( args[0] );
     return newDoubleRes( r, log( val ) );
 
 }
-Res *smsi_floor( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_floor( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     double val = RES_DOUBLE_VAL( args[0] );
     return newDoubleRes( r, floor( val ) );
 
 }
-Res *smsi_ceiling( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_ceiling( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     double val = RES_DOUBLE_VAL( args[0] );
     return newDoubleRes( r, ceil( val ) );
 
 }
 
-Res *smsi_and( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_and( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     return newBoolRes( r, RES_BOOL_VAL( args[0] ) && RES_BOOL_VAL( args[1] ) ? 1 : 0 );
 
 }
 
-Res *smsi_or( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_or( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
     return newBoolRes( r, RES_BOOL_VAL( args[0] ) || RES_BOOL_VAL( args[1] ) ? 1 : 0 );
 }
 
-Res *smsi_add( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_add( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     if ( TYPE( params[0] ) == T_INT ) {
         return newIntRes( r, RES_INT_VAL( params[0] ) + RES_INT_VAL( params[1] ) );
     }
@@ -1505,7 +1477,7 @@ Res *smsi_add( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
         return newDoubleRes( r, RES_DOUBLE_VAL( params[0] ) + RES_DOUBLE_VAL( params[1] ) );
     }
 }
-Res *smsi_subtract( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_subtract( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     if ( TYPE( params[0] ) == T_INT ) {
         return newIntRes( r, RES_INT_VAL( params[0] ) - RES_INT_VAL( params[1] ) );
     }
@@ -1513,7 +1485,7 @@ Res *smsi_subtract( Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
         return newDoubleRes( r, RES_DOUBLE_VAL( params[0] ) - RES_DOUBLE_VAL( params[1] ) );
     }
 }
-Res *smsi_multiply( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_multiply( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     if ( TYPE( params[0] ) == T_INT ) {
         return newIntRes( r, RES_INT_VAL( params[0] ) * RES_INT_VAL( params[1] ) );
     }
@@ -1521,7 +1493,7 @@ Res *smsi_multiply( Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
         return newDoubleRes( r, RES_DOUBLE_VAL( params[0] ) * RES_DOUBLE_VAL( params[1] ) );
     }
 }
-Res *smsi_divide( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_divide( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     if ( TYPE( params[0] ) == T_INT ) {
         if ( RES_INT_VAL( params[1] ) != 0 ) {
             return newDoubleRes( r, RES_INT_VAL( params[0] ) / ( double )RES_INT_VAL( params[1] ) );
@@ -1536,7 +1508,7 @@ Res *smsi_divide( Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     return newErrorRes( r, RE_DIVISION_BY_ZERO );
 }
 
-Res *smsi_modulo( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_modulo( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     if ( RES_INT_VAL( params[1] ) != 0 ) {
         return newDoubleRes( r, RES_INT_VAL( params[0] ) % RES_INT_VAL( params[1] ) );
     }
@@ -1544,10 +1516,10 @@ Res *smsi_modulo( Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     return newErrorRes( r, RE_DIVISION_BY_ZERO );
 }
 
-Res *smsi_power( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_power( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newDoubleRes( r, pow( RES_DOUBLE_VAL( params[0] ), RES_DOUBLE_VAL( params[1] ) ) );
 }
-Res *smsi_root( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_root( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     if ( RES_DOUBLE_VAL( params[1] ) != 0 ) {
         return newDoubleRes( r, pow( RES_DOUBLE_VAL( params[0] ), 1 / RES_DOUBLE_VAL( params[1] ) ) );
     }
@@ -1555,13 +1527,8 @@ Res *smsi_root( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
     return newErrorRes( r, RE_DIVISION_BY_ZERO );
 }
 
-Res *smsi_concat( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_concat( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **args = ( Res ** )params;
-    /*    if(args[0]->value.s.len+args[1]->value.s.len>=1024) {
-            //error
-            addRErrorMsg(errmsg, STRING_OVERFLOW, "error: string too long.");
-            return newErrorRes(r, STRING_OVERFLOW);
-        } else {*/
     char *newbuf = ( char * )malloc( ( RES_STRING_STR_LEN( args[0] ) + RES_STRING_STR_LEN( args[1] ) + 1 ) * sizeof( char ) );
 
     strcpy( newbuf, args[0]->text );
@@ -1573,7 +1540,7 @@ Res *smsi_concat( Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     /*}*/
 }
 
-Res *smsi_lt( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_lt( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_INT:
         return newBoolRes( r, RES_INT_VAL( params[0] ) < RES_INT_VAL( params[1] ) ? 1 : 0 );
@@ -1596,7 +1563,7 @@ Res *smsi_lt( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
 }
-Res *smsi_le( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_le( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_INT:
         return newBoolRes( r, RES_INT_VAL( params[0] ) <= RES_INT_VAL( params[1] ) ? 1 : 0 );
@@ -1619,7 +1586,7 @@ Res *smsi_le( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
 }
-Res *smsi_gt( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_gt( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_INT:
         return newBoolRes( r, RES_INT_VAL( params[0] ) > RES_INT_VAL( params[1] ) ? 1 : 0 );
@@ -1642,7 +1609,7 @@ Res *smsi_gt( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
 }
-Res *smsi_ge( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_ge( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_INT:
         return newBoolRes( r, RES_INT_VAL( params[0] ) >= RES_INT_VAL( params[1] ) ? 1 : 0 );
@@ -1664,7 +1631,7 @@ Res *smsi_ge( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
-Res *smsi_eq( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_eq( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_BOOL:
         return newBoolRes( r, RES_BOOL_VAL( params[0] ) == RES_BOOL_VAL( params[1] ) ? 1 : 0 );
@@ -1692,7 +1659,7 @@ Res *smsi_eq( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
-Res *smsi_neq( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_neq( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     switch ( TYPE( params[0] ) ) {
     case T_BOOL:
         return newBoolRes( r, RES_BOOL_VAL( params[0] ) != RES_BOOL_VAL( params[1] ) ? 1 : 0 );
@@ -1720,7 +1687,7 @@ Res *smsi_neq( Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
-Res *smsi_like( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_like( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **params = paramsr;
     char *pattern;
     char *bufstr;
@@ -1739,14 +1706,14 @@ Res *smsi_like( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiS
     free( bufstr );
     return res;
 }
-Res *smsi_not_like( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_not_like( Node** paramsr, int n, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = smsi_like( paramsr, n, node, rei, reiSaveFlag, env, errmsg, r );
     if ( TYPE( res ) != N_ERROR ) {
         return newBoolRes( r, RES_BOOL_VAL( res ) ? 0 : 1 );
     }
     return res;
 }
-Res *smsi_like_regex( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_like_regex( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res **params = paramsr;
     char *pattern;
     char *bufstr;
@@ -1764,7 +1731,7 @@ Res *smsi_like_regex( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
     free( pattern );
     return res;
 }
-Res *smsi_not_like_regex( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_not_like_regex( Node** paramsr, int n, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = smsi_like_regex( paramsr, n, node, rei, reiSaveFlag, env, errmsg, r );
     if ( TYPE( res ) != N_ERROR ) {
         return newBoolRes( r, RES_BOOL_VAL( res ) ? 0 : 1 );
@@ -1772,13 +1739,13 @@ Res *smsi_not_like_regex( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei
     return res;
 }
 
-Res *smsi_eval( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_eval( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res **params = ( Res ** )paramsr;
     /*printf("\neval: %s\n", params[0]->text); */
     return eval( params[0]->text, env, rei, reiSaveFlag, errmsg, r );
 }
 
-Res *smsi_evalrule( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_evalrule( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res **params = ( Res ** )paramsr;
     /*printf("\neval: %s\n", params[0]->text); */
     return newIntRes( r, parseAndComputeRule( params[0]->text, env, rei, reiSaveFlag, errmsg, r ) );
@@ -1787,7 +1754,7 @@ Res *smsi_evalrule( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
  * Run node and return the errorcode.
  * If the execution is successful, the returned errorcode is 0.
  */
-Res *smsi_errorcode( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_errorcode( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res;
     switch ( getNodeType( paramsr[0] ) ) {
     case N_ACTIONS:
@@ -1809,7 +1776,7 @@ Res *smsi_errorcode( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
  * Run node and return the errorcode.
  * If the execution is successful, the returned errorcode is 0.
  */
-Res *smsi_errormsg( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_errormsg( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     char *errbuf = ( char * )malloc( ERR_MSG_LEN * 1024 * sizeof( char ) );
     Res *res;
     switch ( getNodeType( paramsr[0] ) ) {
@@ -1832,7 +1799,7 @@ Res *smsi_errormsg( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
     }
 }
 
-Res *smsi_delayExec( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_delayExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env* env, rError_t* errmsg, Region* r ) {
     int i;
     char actionCall[MAX_ACTION_SIZE];
     char recoveryActionCall[MAX_ACTION_SIZE];
@@ -1866,7 +1833,7 @@ Res *smsi_delayExec( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
     }
 }
 
-Res *smsi_remoteExec( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env* env, rError_t* errmsg, Region* r ) {
 #ifdef DEBUG
     return newErrorRes( r, RE_UNSUPPORTED_OP_OR_TYPE );
 #else
@@ -1907,7 +1874,7 @@ Res *smsi_remoteExec( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
     if ( outParamArray != NULL ) {
         rei->msParamArray = outParamArray;
     }
-    updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, errmsg, r );
+    updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, r );
     deleteMsParamArray( rei->msParamArray );
     rei->msParamArray = NULL;
     if ( i < 0 ) {
@@ -1918,7 +1885,7 @@ Res *smsi_remoteExec( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
     }
 #endif
 }
-int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExecInfo_t *rei ) {
+int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExecInfo_t* rei ) {
     execCmdOut_t *myExecCmdOut;
     Res *execOutRes;
 #ifndef DEBUG
@@ -2005,7 +1972,7 @@ int writeStringNew( char *writeId, char *writeStr, Env *env, Region *r, ruleExec
     return 0;
 }
 
-Res *smsi_writeLine( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_writeLine( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char *inString = convertResToString( paramsr[1] );
     Res *where = ( Res * )paramsr[0];
     char *whereId = where->text;
@@ -2033,7 +2000,7 @@ Res *smsi_writeLine( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
         return newIntRes( r, i );
     }
 }
-Res *smsi_writeString( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_writeString( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
 
     char *inString = convertResToString( paramsr[1] );
     Res *where = ( Res * )paramsr[0];
@@ -2050,7 +2017,7 @@ Res *smsi_writeString( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, i
     }
 }
 
-Res *smsi_triml( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_triml( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     /* if the length of delim is 0, strstr should return str */
     Res *strres = ( Res * )paramsr[0];
     Res *delimres = ( Res * )paramsr[1];
@@ -2067,16 +2034,13 @@ Res *smsi_triml( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
         /* not found return the original string */
         return strres;
     }
-
-
-
 }
-Res *smsi_strlen( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_strlen( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *strres = ( Res * )paramsr[0];
     return newIntRes( r, strlen( strres->text ) );
 }
 
-Res *smsi_substr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_substr( Node** paramsr, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     Res *strres = ( Res * )paramsr[0];
     Res *startres = ( Res * )paramsr[1];
     Res *finishres = ( Res * )paramsr[2];
@@ -2098,7 +2062,7 @@ Res *smsi_substr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int re
     return retres;
 }
 
-Res *smsi_split( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *strres = ( Res * )paramsr[0];
     Res *delimres = ( Res * )paramsr[1];
 
@@ -2154,11 +2118,11 @@ Res *smsi_split( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 }
 
-Res *smsi_undefined( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_undefined( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newUnspecifiedRes( r );
 
 }
-Res *smsi_trimr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_trimr( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *strres = ( Res * )paramsr[0];
     Res *delimres = ( Res * )paramsr[1];
 
@@ -2192,7 +2156,7 @@ Res *smsi_trimr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 }
 
-Res *smsi_msiAdmShowIRB( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmShowIRB( Node**, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char buf[1024 * 16];
     int i;
     if ( isComponentInitialized( ruleEngineConfig.extRuleSetStatus ) ) {
@@ -2224,7 +2188,7 @@ Res *smsi_msiAdmShowIRB( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei,
     }
     return newIntRes( r, 0 );
 }
-Res *smsi_msiAdmShowCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmShowCoreRE( Node**, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char buf[1024];
     //char *conDir = getConfigDir();
     //char file2[1024];
@@ -2251,7 +2215,7 @@ Res *smsi_msiAdmShowCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *r
     fclose( f2 );
     return newIntRes( r, 0 );
 }
-Res *smsi_msiAdmClearAppRuleStruct( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmClearAppRuleStruct( Node**, int, Node*, ruleExecInfo_t* rei, int, Env*, rError_t*, Region* r ) {
 
     int i;
 #ifndef DEBUG
@@ -2284,7 +2248,7 @@ Res *smsi_msiAdmClearAppRuleStruct( Node **paramsr, int n, Node *node, ruleExecI
 #endif
 
 }
-Res *smsi_msiAdmAddAppRuleStruct( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmAddAppRuleStruct( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env*, rError_t*, Region* r ) {
     int i;
 
 #ifndef DEBUG
@@ -2324,7 +2288,7 @@ Res *smsi_msiAdmAddAppRuleStruct( Node **paramsr, int n, Node *node, ruleExecInf
 
 }
 
-Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmAppendToTopOfCoreRE( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
 #ifndef DEBUG
     int i;
     if ( ( i = isUserPrivileged( rei->rsComm ) ) != 0 ) {
@@ -2360,7 +2324,7 @@ Res *smsi_msiAdmAppendToTopOfCoreRE( Node **paramsr, int n, Node *node, ruleExec
     return newIntRes( r, 0 );
 
 }
-Res *smsi_msiAdmChangeCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmChangeCoreRE( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
 #ifndef DEBUG
     int i;
     if ( ( i = isUserPrivileged( rei->rsComm ) ) != 0 ) {
@@ -2400,9 +2364,9 @@ Res *smsi_msiAdmChangeCoreRE( Node **paramsr, int n, Node *node, ruleExecInfo_t 
 
 }
 
-int insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet, ruleExecInfo_t *rei );
+int insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet, ruleExecInfo_t* rei );
 
-Res * smsi_msiAdmInsertRulesFromStructIntoDB( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res * smsi_msiAdmInsertRulesFromStructIntoDB( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
 
     /* ruleStruct_t *coreRuleStruct; */
     int i;
@@ -2430,7 +2394,7 @@ Res * smsi_msiAdmInsertRulesFromStructIntoDB( Node **paramsr, int n, Node *node,
     }
 
 }
-Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
 
     int i;
     RuleSet *ruleSet;
@@ -2450,7 +2414,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node **paramsr, int n, Node *node,
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
-    Region *rsr = make_region( 0, NULL );
+    Region* rsr = make_region( 0, NULL );
 
     ruleSet = newRuleSet( rsr );
 
@@ -2477,7 +2441,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct( Node **paramsr, int n, Node *node,
     return newIntRes( r, 0 );
 }
 
-Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node** paramsr, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
@@ -2524,9 +2488,9 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node **paramsr, int n, Node *node,
 
 
 
-int readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *rs, ruleExecInfo_t *rei, rError_t *errmsg, Region *r );
+int readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *rs, ruleExecInfo_t* rei, rError_t* errmsg, Region* r );
 
-Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
 
     int i;
     RuleSet *ruleSet;
@@ -2550,7 +2514,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node **paramsr, int n, Node *nod
         generateAndAddErrMsg( "empty input struct", node, PARAOPR_EMPTY_IN_STRUCT_ERR, errmsg );
         return newErrorRes( r, PARAOPR_EMPTY_IN_STRUCT_ERR );
     }
-    Region *rsr = make_region( 0, NULL );
+    Region* rsr = make_region( 0, NULL );
 
     ruleSet = newRuleSet( rsr );
 
@@ -2576,7 +2540,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node **paramsr, int n, Node *nod
     return newIntRes( r, 0 );
 }
 
-Res *smsi_getReLogging( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_getReLogging( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
     int logging;
     char *userName = paramsr[0]->text;
     int i = readICatUserLogging( userName, &logging, rei->rsComm );
@@ -2588,7 +2552,7 @@ Res *smsi_getReLogging( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
     return newBoolRes( r, logging );
 }
 
-Res *smsi_setReLogging( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_setReLogging( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r ) {
     char *userName = paramsr[0]->text;
     int logging = RES_BOOL_VAL( paramsr[1] );
 
@@ -2602,7 +2566,7 @@ Res *smsi_setReLogging( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 }
 
 
-Res *smsi_getstdout( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_getstdout( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = ( Res * )lookupFromEnv( env, "ruleExecOut" );
     if ( res == NULL ) {
         generateAndAddErrMsg( "ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg );
@@ -2617,7 +2581,7 @@ Res *smsi_getstdout( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
     return ret;
 }
 
-Res *smsi_getstderr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_getstderr( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res = ( Res * )lookupFromEnv( env, "ruleExecOut" );
     if ( res == NULL ) {
         generateAndAddErrMsg( "ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg );
@@ -2631,7 +2595,7 @@ Res *smsi_getstderr( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
     return ret;
 }
 
-Res *smsi_assignStr( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_assignStr( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *val = evaluateExpression3( ( Node * )subtrees[1], 0, 1, rei, reiSaveFlag,  env, errmsg, r );
     if ( getNodeType( val ) == N_ERROR ) {
         return val;
@@ -2646,7 +2610,7 @@ Res *smsi_assignStr( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, in
 }
 
 extern int GlobalAllRuleExecFlag;
-Res *smsi_applyAllRules( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_applyAllRules( Node** subtrees, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t* errmsg, Region* r ) {
     Res *res;
     Node *action;
     int reiSaveFlag2;
@@ -2664,7 +2628,7 @@ Res *smsi_applyAllRules( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei
 
 
 
-Res *smsi_path( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_path( Node** subtrees, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     char *pathName = subtrees[0]->text;
     /* remove excessive slashes */
     while ( pathName[0] == '/' && pathName[1] == '/' ) {
@@ -2675,7 +2639,7 @@ Res *smsi_path( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
     return res;
 }
 
-Res *smsi_execCmdArg( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_execCmdArg( Node** subtrees, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     char *arg = subtrees[0]->text;
     char *argNew = ( char * ) malloc( strlen( arg ) * 2 + 4 );
     char *p = arg, *q = argNew;
@@ -2699,8 +2663,8 @@ Res *smsi_execCmdArg( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
 
 }
 
-int checkStringForSystem( char *s );
-Res *smsi_msiCheckStringForSystem( Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+int checkStringForSystem( const char *s );
+Res *smsi_msiCheckStringForSystem( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     char *s = paramsr[0]->text;
     int ret = checkStringForSystem( s );
     if ( ret < 0 ) {
@@ -2764,7 +2728,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
     }
 }
 
-Res *smsiCollectionSpider( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     collInp_t collInpCache, *collInp;		/* input for rsOpenCollection */
     collEnt_t *collEnt;						/* input for rsReadCollection */
     int handleInx;							/* collection handler */
@@ -2916,22 +2880,22 @@ int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
     return error;
 }
 
-Res* eval( char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errmsg, Region *r ) {
+Res* eval( char *expr, Env* env, ruleExecInfo_t* rei, int saveREI, rError_t* errmsg, Region* r ) {
     Res *res = parseAndComputeExpression( expr, env, rei, saveREI, errmsg, r );
     return res;
 }
 
-Node *construct( char *fn, Node **args, int argc, Node *constype, Region *r ) {
+Node *construct( char *fn, Node** args, int argc, Node *constype, Region* r ) {
     Node *res = newRes( r );
     res->text = cpStringExt( fn, r );
     res->degree = argc;
-    res->subtrees = ( Node ** )region_alloc( r, sizeof( Node * ) * argc );
+    res->subtrees = ( Node**  )region_alloc( r, sizeof( Node * ) * argc );
     memcpy( res->subtrees, args, sizeof( Node * )*argc );
     res->exprType = constype;
     return res;
 }
 
-Node *deconstruct( char *fn, Node **args, int argc, int proj, rError_t*errmsg, Region *r ) {
+Node *deconstruct( Node** args, int proj ) {
     Node *res = args[0]->subtrees[proj];
     return res;
 }
@@ -2975,13 +2939,13 @@ char *wildCardToRegex( char *buf ) {
     return buf2;
 }
 
-Res *smsi_segfault( Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
+Res *smsi_segfault( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* ) {
 
     raise( SIGSEGV );
     return NULL;
 }
 
-void getSystemFunctions( Hashtable *ft, Region *r ) {
+void getSystemFunctions( Hashtable *ft, Region* r ) {
     insertIntoHashTable( ft, "do", newFunctionFD( "e ?->?", smsi_do, r ) );
     insertIntoHashTable( ft, "eval", newFunctionFD( "string->?", smsi_eval, r ) );
     insertIntoHashTable( ft, "evalrule", newFunctionFD( "string->?", smsi_evalrule, r ) );

@@ -169,7 +169,7 @@ initServerInfo( rsComm_t *rsComm ) {
 
     queZone( rsComm->myEnv.rodsZone, rsComm->myEnv.rodsPort, NULL, NULL );
 
-    status = initHostConfigByFile( rsComm );
+    status = initHostConfigByFile();
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "initServerInfo: initHostConfigByFile error, status = %d",
@@ -177,14 +177,14 @@ initServerInfo( rsComm_t *rsComm ) {
         return status;
     }
 
-    status = initLocalServerHost( rsComm );
+    status = initLocalServerHost();
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "initServerInfo: initLocalServerHost error, status = %d",
                  status );
         return status;
     }
-    status = initRcatServerHostByFile( rsComm );
+    status = initRcatServerHostByFile();
     if ( status < 0 ) {
         rodsLog( LOG_SYS_FATAL,
                  "initServerInfo: initRcatServerHostByFile error, status = %d",
@@ -193,7 +193,7 @@ initServerInfo( rsComm_t *rsComm ) {
     }
 
 #ifdef RODS_CAT
-    status = connectRcat( rsComm );
+    status = connectRcat();
     if ( status < 0 ) {
         return status;
     }
@@ -230,7 +230,7 @@ initServerInfo( rsComm_t *rsComm ) {
 }
 
 int
-initLocalServerHost( rsComm_t *rsComm ) {
+initLocalServerHost() {
     int status;
     char myHostName[MAX_NAME_LEN];
 
@@ -457,7 +457,7 @@ printZoneInfo() {
 }
 
 int
-initRcatServerHostByFile( rsComm_t *rsComm ) {
+initRcatServerHostByFile() {
     FILE *fptr;
     char inbuf[MAX_NAME_LEN];
     rodsHostAddr_t addr;
@@ -982,7 +982,7 @@ getLocalZoneName() {
 
 /* Check if there is a connected ICAT host, and if there is, disconnect */
 int
-getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
                        rodsServerHost_t **rodsServerHost ) {
     int status;
 
@@ -1000,7 +1000,7 @@ getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
 }
 
 int
-disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
+disconnRcatHost( int rcatType, char *rcatZoneHint ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
@@ -1029,7 +1029,7 @@ disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
 /* resetRcatHost is similar to disconnRcatHost except it does not disconnect */
 
 int
-resetRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint ) {
+resetRcatHost( int rcatType, char *rcatZoneHint ) {
     rodsServerHost_t *rodsServerHost = NULL;
     int status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
@@ -1398,11 +1398,11 @@ cleanupAndExit( int status ) {
              "Agent exiting with status = %d", status );
 
 #ifdef RODS_CAT
-    disconnectRcat( ThisComm );
+    disconnectRcat();
 #endif
 
     /* added by RAJA April 12, 2011 */
-    finalzeRuleEngine( ThisComm );
+    finalizeRuleEngine();
 
     if ( InitialState == INITIAL_DONE ) {
         /* close all opened descriptors */
@@ -1459,7 +1459,7 @@ rsPipSigalHandler( int ) {
 }
 
 int
-initHostConfigByFile( rsComm_t *rsComm ) {
+initHostConfigByFile() {
     FILE *fptr = 0;
     char inbuf[MAX_NAME_LEN];
     char hostBuf[LONG_NAME_LEN];

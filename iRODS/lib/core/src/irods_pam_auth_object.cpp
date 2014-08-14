@@ -44,7 +44,7 @@ pam_auth_object& pam_auth_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equality operator
 bool pam_auth_object::operator==(
-    const pam_auth_object& _rhs ) const {
+    const pam_auth_object& ) const {
     return false;
 }
 

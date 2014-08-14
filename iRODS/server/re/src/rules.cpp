@@ -90,7 +90,7 @@ int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInf
     int i;
     for ( i = 0; i < var->len; i++ ) {
         Res *res = newRes( r );
-        int ret = convertMsParamToRes( var->msParam[i], res, errmsg, r );
+        int ret = convertMsParamToRes( var->msParam[i], res, r );
         if ( ret != 0 ) {
             return ret;
         }
@@ -149,7 +149,7 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
             rule = rule + 10;
         }
         else {
-            rescode = convertMsParamArrayToEnv( msParamArray, globalEnv( env ), &errmsgBuf, r );
+            rescode = convertMsParamArrayToEnv( msParamArray, globalEnv( env ), r );
             RE_ERROR( rescode < 0 );
         }
     }
@@ -201,7 +201,7 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
     msParamArray_t *orig = NULL;
 
     if ( msParamArray != NULL ) {
-        rescode = convertMsParamArrayToEnv( msParamArray, env->previous, errmsg, r );
+        rescode = convertMsParamArrayToEnv( msParamArray, env->previous, r );
         RE_ERROR( rescode < 0 );
     }
 
@@ -348,7 +348,7 @@ Res *computeExpressionWithParams( const char *actionName, char **params, int par
     Env *global = newEnv( newHashTable2( 10, r ), NULL, NULL, r );
     Env *env = newEnv( newHashTable2( 10, r ), global, NULL, r );
     if ( msParamArray != NULL ) {
-        convertMsParamArrayToEnv( msParamArray, global, errmsg, r );
+        convertMsParamArrayToEnv( msParamArray, global, r );
     }
     Res *res = computeNode( node, NULL, env, rei, reiSaveFlag, errmsg, r );
     /* deleteEnv(env, 3); */
@@ -409,7 +409,7 @@ ExprType *typeRuleSet( RuleSet *ruleset, rError_t *errmsg, Node **errnode, Regio
             Hashtable *varTypes = newHashTable2( 100, r );
             ExprType *restype = typeRule( rule, funcDesc, varTypes, typingConstraints, errmsg, errnode, r );
             /*char buf[1024]; */
-            /*typingConstraintsToString(typingConstraints, NULL, buf, 1024); */
+            /*typingConstraintsToString(typingConstraints, buf, 1024); */
             /*printf("rule %s, typing constraints: %s\n", ruleset->rules[i]->subtrees[0]->text, buf); */
             if ( getNodeType( restype ) == T_ERROR ) {
                 res = restype;
@@ -707,7 +707,7 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     rei->msParamArray = NULL;
 
     if ( inMsParamArray != NULL ) {
-        convertMsParamArrayToEnv( inMsParamArray, env, &errmsgBuf, r );
+        convertMsParamArrayToEnv( inMsParamArray, env, r );
     }
 
     res = parseAndComputeExpression( inAction, env, rei, reiSaveFlag, &errmsgBuf, r );

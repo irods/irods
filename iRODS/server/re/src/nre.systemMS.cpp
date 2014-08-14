@@ -167,7 +167,7 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     args[1] = NULL;
     argc = 0;
     /* Pack Rei and Args */
-    i = packReiAndArg( rei->rsComm, rei, args, argc, &packedReiAndArgBBuf );
+    i = packReiAndArg( rei, args, argc, &packedReiAndArgBBuf );
     if ( i < 0 ) {
         if ( actionCall != inActionCall ) {
             free( actionCall );
@@ -202,7 +202,7 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     return i;
 }
 
-int recover_delayExec( msParam_t *actionCall, msParam_t *delayCondition,  ruleExecInfo_t *rei ) {
+int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
 
     int i;
     ruleExecDelInp_t ruleExecDelInp;
@@ -349,7 +349,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
     argc = 0;
   }
 
-  i = packReiAndArg (rei->rsComm, rei, args, argc, &packedReiAndArgBBuf);
+  i = packReiAndArg (rei, args, argc, &packedReiAndArgBBuf);
   if (i < 0) {
     if (actionCall != inActionCall)
       free (actionCall);
@@ -381,7 +381,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
   return i;
 }
 ******/
-int recover_remoteExec( msParam_t *actionCall, msParam_t *delayCondition, char *hostName, ruleExecInfo_t *rei ) {
+int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
 
     int i;
     ruleExecDelInp_t ruleExecDelInp;
@@ -479,7 +479,7 @@ doForkExec( char *prog, char *arg1 ) {
  * \sa fail
 **/
 int
-msiGoodFailure( ruleExecInfo_t *rei ) {
+msiGoodFailure( ruleExecInfo_t* ) {
 
     /**** This is Just a Test Stub  ****/
     if ( reTestFlag > 0 ) {
@@ -621,7 +621,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  * \sa  none
 **/
 int
-msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei ) {
+msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
 
     int sec, microsec;
 
@@ -965,7 +965,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  * \sa none
 **/
 int
-msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei ) {
+msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
     char *inStr;
     bytesBuf_t *outBuf;
 
@@ -1030,7 +1030,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei ) 
  * \bug  no known bugs
 **/
 int
-msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *rei ) {
+msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     char *outStr;
     bytesBuf_t *inBuf;
 

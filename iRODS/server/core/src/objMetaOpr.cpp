@@ -288,13 +288,13 @@ isRescGroup( rsComm_t *rsComm, char *objName ) {
 }
 
 int
-isMeta( rsComm_t *rsComm, char *objName ) {
+isMeta( rsComm_t*, char* ) {
     /* needs to be filled in later */
     return INVALID_OBJECT_TYPE;
 }
 
 int
-isToken( rsComm_t *rsComm, char *objName ) {
+isToken( rsComm_t*, char* ) {
     /* needs to be filled in later */
     return INVALID_OBJECT_TYPE;
 }

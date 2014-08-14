@@ -49,8 +49,8 @@ extern "C" {
 // other legacy functions
 int sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto );
     int rodsSetSockOpt( int sock, int windowSize );
-    int myRead( int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesRead, struct timeval *tv );
-    int myWrite( int sock, void *buf, int len, irodsDescType_t irodsDescType, int *bytesWritten );
+    int myRead( int sock, void *buf, int len, int *bytesRead, struct timeval *tv );
+    int myWrite( int sock, void *buf, int len, int *bytesWritten );
     int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
     int connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
                                  int timeoutFlag );

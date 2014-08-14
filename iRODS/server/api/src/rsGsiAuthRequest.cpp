@@ -48,7 +48,7 @@ rsGsiAuthRequest( rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut ) {
 
 }
 
-int igsiServersideAuth( rsComm_t *rsComm ) {
+int igsiServersideAuth() {
     int status;
 #if defined(GSI_AUTH)
     char clientName[500];

@@ -36,7 +36,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 
 /* #define SERVER_DEBUG 1   */
 int
-main( int argc, char *argv[] ) {
+main( int, char ** ) {
 
     int status;
     rsComm_t rsComm;

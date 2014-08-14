@@ -114,7 +114,7 @@ Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r ) {
         return NULL;
     }
 }
-int getCollectionSize( char *typ, void *inPtr, Region *r ) {
+int getCollectionSize( char *typ, void *inPtr ) {
     if ( !strcmp( typ, StrArray_MS_T ) ) {
         strArray_t *strA;
         /* ->size size of an element */
@@ -138,7 +138,7 @@ int getCollectionSize( char *typ, void *inPtr, Region *r ) {
         return USER_PARAM_TYPE_ERR;
     }
 }
-int convertMsParamToRes( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) {
+int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
 #ifdef DEBUG
     writeToTmp( "relog.txt", "type: " );
     writeToTmp( "relog.txt", mP->type );
@@ -210,15 +210,15 @@ int convertMsParamToRes( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) 
 
 
 }
-Res* convertMsParamToRes(msParam_t* myArgv, rError_t* errmsg, Region* r) {
+Res* convertMsParamToRes(msParam_t* myArgv, Region* r) {
     Res* res = newRes(r); /* we need to create a new res here to make keep all res'es immutable */
-    int ret = convertMsParamToResAndFreeNonIRODSType(myArgv, res, errmsg, r);
+    int ret = convertMsParamToResAndFreeNonIRODSType(myArgv, res, r);
     if (ret != 0) {
         res = newErrorRes(r, ret);
     }
     return res;
 }
-int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) {
+int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r ) {
 #ifdef DEBUG
     writeToTmp( "relog.txt", "type: " );
     writeToTmp( "relog.txt", mP->type );
@@ -472,10 +472,10 @@ int convertEnvToMsParamArray( msParamArray_t *var, Env *env, rError_t *errmsg, R
             return ret;
         }
     }
-    return convertHashtableToMsParamArray( var, env->current, errmsg, r );
+    return convertHashtableToMsParamArray( var, env->current, errmsg );
 }
 
-int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_t *errmsg, Region *r ) {
+int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_t *errmsg ) {
     int i;
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
@@ -522,18 +522,18 @@ int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_
     }
     return 0;
 }
-int convertMsParamArrayToEnv( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r ) {
-    return updateMsParamArrayToEnv( var, env, errmsg, r );
+int convertMsParamArrayToEnv( msParamArray_t *var, Env *env, Region *r ) {
+    return updateMsParamArrayToEnv( var, env, r );
 }
 
-int convertMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r ) {
-    return updateMsParamArrayToEnvAndFreeNonIRODSType( var, env, errmsg, r );
+int convertMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, Region *r ) {
+    return updateMsParamArrayToEnvAndFreeNonIRODSType( var, env, r );
 }
-int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r ) {
+int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, Region *r ) {
     int i;
     for ( i = 0; i < var->len; i++ ) {
         Res *res = newRes( r );
-        int ret = convertMsParamToRes( var->msParam[i], res, errmsg, r );
+        int ret = convertMsParamToRes( var->msParam[i], res, r );
         if ( ret != 0 ) {
             return ret;
         }
@@ -544,11 +544,11 @@ int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, rError_t *errmsg, Re
     }
     return 0;
 }
-int updateMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r ) {
+int updateMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, Region *r ) {
     int i;
     for ( i = 0; i < var->len; i++ ) {
         Res *res = newRes( r );
-        int ret = convertMsParamToResAndFreeNonIRODSType( var->msParam[i], res, errmsg, r );
+        int ret = convertMsParamToResAndFreeNonIRODSType( var->msParam[i], res, r );
         if ( ret != 0 ) {
             return ret;
         }

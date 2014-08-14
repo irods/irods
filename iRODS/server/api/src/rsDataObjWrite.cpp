@@ -178,7 +178,7 @@ l3Write( rsComm_t *rsComm, int l1descInx, int len,
 }
 
 int
-_l3Write( rsComm_t *rsComm, int rescTypeInx, int l3descInx,
+_l3Write( rsComm_t *rsComm, int l3descInx,
           void *buf, int len ) {
     fileWriteInp_t fileWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;

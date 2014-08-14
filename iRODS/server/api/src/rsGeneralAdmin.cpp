@@ -66,7 +66,6 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 int
 _addChildToResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t&    _rei2,
     rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
@@ -93,7 +92,6 @@ _addChildToResource(
 int
 _removeChildFromResource(
     generalAdminInp_t* _generalAdminInp,
-    ruleExecInfo_t&    _rei2,
     rsComm_t*          _rsComm ) {
     int result = 0;
     rescInfo_t rescInfo;
@@ -390,7 +388,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
         /* add a child resource to the specified parent resource */
         if ( strcmp( generalAdminInp->arg1, "childtoresc" ) == 0 ) {
-            return _addChildToResource( generalAdminInp, rei2, rsComm );
+            return _addChildToResource( generalAdminInp, rsComm );
         }
 
         if ( strcmp( generalAdminInp->arg1, "token" ) == 0 ) {
@@ -794,7 +792,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
         /* remove a child resource from the specified parent resource */
         if ( strcmp( generalAdminInp->arg1, "childfromresc" ) == 0 ) {
-            return _removeChildFromResource( generalAdminInp, rei2, rsComm );
+            return _removeChildFromResource( generalAdminInp, rsComm );
         }
 
         if ( strcmp( generalAdminInp->arg1, "zone" ) == 0 ) {

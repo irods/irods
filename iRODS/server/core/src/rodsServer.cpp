@@ -797,7 +797,7 @@ initServer( rsComm_t *svrComm ) {
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #if RODS_CAT
-        disconnectRcat( svrComm );
+        disconnectRcat();
 #endif
     }
     else {

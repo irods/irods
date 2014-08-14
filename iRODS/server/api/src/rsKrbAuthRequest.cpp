@@ -51,7 +51,7 @@ rsKrbAuthRequest( rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut ) {
 
 }
 
-int ikrbServersideAuth( rsComm_t *rsComm ) {
+int ikrbServersideAuth() {
     int status;
 #if defined(KRB_AUTH)
     char clientName[500];

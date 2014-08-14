@@ -143,8 +143,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // factory function to provide instance of the plugin
     irods::api_entry* plugin_factory(
-        const std::string& _inst_name,
-        const std::string& _context ) {
+        const std::string&,    // _inst_name
+        const std::string& ) { //_context
         // =-=-=-=-=-=-=-
         // create a api def object
         irods::apidef_t def = { SET_RR_CTX_AN,

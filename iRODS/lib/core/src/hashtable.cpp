@@ -280,7 +280,7 @@ void deleteBucket( struct bucket *b0, void ( *f )( const void * ) ) {
     }
     free( b0 );
 }
-void nop( const void *a ) {
+void nop( const void* ) {
 }
 
 void free_const( const void *a ) {

@@ -87,7 +87,7 @@ extern "C" {
     int
     initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
     int
-    initDataObjInfoForRepl( rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo,
+    initDataObjInfoForRepl( dataObjInfo_t *destDataObjInfo,
                             dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, char *rescGroupName );
     int
     convL3descInx( int l3descInx );

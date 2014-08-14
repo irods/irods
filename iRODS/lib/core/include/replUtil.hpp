@@ -17,7 +17,7 @@ extern "C" {
               rodsPathInp_t *rodsPathInp );
     int
     replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
-                     rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
+                     rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
     initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                      dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart );

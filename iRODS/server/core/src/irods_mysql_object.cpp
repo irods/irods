@@ -14,8 +14,8 @@ mysql_object::mysql_object() {
 // =-=-=-=-=-=-=-
 // public - cctor
 mysql_object::mysql_object(
-    const mysql_object& _rhs ) {
-
+    const mysql_object& _rhs ) :
+    database_object( _rhs ) {
 
 } // cctor
 
@@ -27,7 +27,7 @@ mysql_object::~mysql_object() {
 // =-=-=-=-=-=-=-
 // public - assignment operator
 mysql_object& mysql_object::operator=(
-    const mysql_object& _rhs ) {
+    const mysql_object& ) {
 
     return *this;
 
@@ -36,7 +36,7 @@ mysql_object& mysql_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equivalence operator
 bool mysql_object::operator==(
-    const mysql_object& _rhs ) const {
+    const mysql_object& ) const {
     return false;
 
 } // operator==
@@ -99,7 +99,7 @@ error mysql_object::resolve(
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
 error mysql_object::get_re_vars(
-    keyValPair_t& _kvp ) {
+    keyValPair_t& ) {
 
     //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 

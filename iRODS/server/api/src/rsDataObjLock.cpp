@@ -42,7 +42,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
     else {
 #ifdef RODS_CAT
-        status = _rsDataObjLock( rsComm, dataObjInp );
+        status = _rsDataObjLock( dataObjInp );
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
@@ -51,7 +51,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 }
 
 int
-_rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
+_rsDataObjLock( dataObjInp_t *dataObjInp ) {
     int status;
     int cmd, type, fd;
 

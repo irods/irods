@@ -17,11 +17,11 @@ extern "C" {
              rodsPathInp_t *rodsPathInp );
     int
     getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
-                    rodsLong_t srcSize, uint dataMode, rodsEnv *myRodsEnv,
+                    rodsLong_t srcSize, uint dataMode,
                     rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp );
 
     int
-    initCondForGet( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+    initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart );
 
     int

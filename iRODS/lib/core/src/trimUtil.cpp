@@ -20,7 +20,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     dataObjInp_t dataObjInp;
-    initCondForTrim( myRodsEnv, myRodsArgs, &dataObjInp );
+    initCondForTrim( myRodsArgs, &dataObjInp );
 
     if ( myRodsArgs->dryrun == True ) {
         printf( "====== This is a DRYRUN ======\n" );
@@ -41,7 +41,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = trimDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                      myRodsEnv, myRodsArgs, &dataObjInp );
+                                      myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             collCnt ++;
@@ -75,8 +75,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
-                 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                 dataObjInp_t *dataObjInp ) {
+                 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
 
     if ( srcPath == NULL ) {
@@ -104,7 +103,7 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
 }
 
 int
-initCondForTrim( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForTrim( rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp ) {
     char tmpStr[NAME_LEN];
 
@@ -195,7 +194,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
-            status = trimDataObjUtil( conn, srcChildPath, myRodsEnv, rodsArgs,
+            status = trimDataObjUtil( conn, srcChildPath, rodsArgs,
                                       dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,

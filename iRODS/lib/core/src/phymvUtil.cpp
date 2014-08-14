@@ -36,7 +36,7 @@ phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
             status = phymvDataObjUtil( conn, rodsPathInp->srcPath[i].outPath,
-                                       myRodsEnv, myRodsArgs, &dataObjInp );
+                                       myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
             addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
@@ -64,8 +64,7 @@ phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 phymvDataObjUtil( rcComm_t *conn, char *srcPath,
-                  rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                  dataObjInp_t *dataObjInp ) {
+                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     struct timeval startTime, endTime;
 
@@ -186,7 +185,7 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                       collEnt.collName, collEnt.dataName );
 
             status = phymvDataObjUtil( conn, srcChildPath,
-                                       myRodsEnv, rodsArgs, dataObjInp );
+                                       rodsArgs, dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "phymvCollUtil: phymvDataObjUtil failed for %s. status = %d",

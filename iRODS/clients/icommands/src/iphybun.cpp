@@ -75,7 +75,7 @@ main( int argc, char **argv ) {
         exit( 7 );
     }
 
-    status = phybunUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );
+    status = phybunUtil( conn, &myRodsArgs, &rodsPathInp );
 
     printErrorStack( conn->rError );
     rcDisconnect( conn );

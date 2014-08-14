@@ -552,8 +552,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         }
 
         /* screen out any stale copies */
-        status = sortObjInfoForOpen( rsComm, dataObjInfo,
-                                     &myDataObjInp.condInput, 0 );
+        status = sortObjInfoForOpen( dataObjInfo, &myDataObjInp.condInput, 0 );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "specCollSubStat: sortObjInfoForOpen error for %s. status = %d",

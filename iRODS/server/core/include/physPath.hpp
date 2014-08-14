@@ -72,7 +72,7 @@ extern "C" {
                             rescInfo_t *rescInfo, int replStatus );
     int
     renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
-                            fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag, char* );
+                            fileRenameInp_t *fileRenameInp, int renameFlag, char* );
     int
     syncDataObjPhyPath( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                         dataObjInfo_t *dataObjInfoHead, char *acLCollection );

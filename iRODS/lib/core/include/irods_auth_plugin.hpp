@@ -62,12 +62,12 @@ public:
     }
 
     /// @brief default start operation
-    static error default_start_operation( plugin_property_map& _map ) {
+    static error default_start_operation( plugin_property_map& ) {
         return SUCCESS();
     }
 
     /// @brief default stop operation
-    static error default_stop_operation( plugin_property_map& _map ) {
+    static error default_stop_operation( plugin_property_map& ) {
         return SUCCESS();
     }
 

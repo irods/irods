@@ -452,7 +452,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         return status;
     }
 
-    status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &phyPathRegInp->condInput, 0 );
+    status = sortObjInfoForOpen( &dataObjInfoHead, &phyPathRegInp->condInput, 0 );
     if ( status < 0 ) {
         // =-=-=-=-=-=-=-
         // we perhaps did not match the hier string but

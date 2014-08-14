@@ -70,7 +70,7 @@ int getParamIOType( char *iotypes, int index );
 
 FunctionDesc *getFuncDescFromChain( int n, FunctionDesc *fDesc );
 Node *construct( char *fn, Node **args, int argc, Node* constype, Region *r );
-Node *deconstruct( char *fn, Node **args, int argc, int proj, rError_t*errmsg, Region *r );
+Node *deconstruct( Node **args, int proj );
 char* matchWholeString( char *buf );
 char *wildCardToRegex( char *buf );
 

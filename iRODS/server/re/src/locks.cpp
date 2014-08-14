@@ -28,7 +28,7 @@ void unlockMutex( mutex_type **mutex ) {
 
 /* This function can be used during initialization to remove a previously held mutex that has not been released.
  * This should only be used when there is no other process using the mutex */
-void resetMutex( mutex_type **mutex ) {
+void resetMutex() {
     std::string mutex_name;
     irods::error ret = getMutexName( mutex_name );
     if ( !ret.ok() ) {

@@ -500,7 +500,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * \sa none
  **/
 int
-msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei ) {
+msiAclPolicy( msParam_t *msParam, ruleExecInfo_t* ) {
     char *inputArg;
 
     inputArg = ( char * ) msParam->inOutStruct;

@@ -547,7 +547,7 @@ Satisfiability simplifyLocally( ExprType *tca, ExprType *tcb, int flex, Node *no
 Satisfiability solveConstraints( List *typingConstraints, Hashtable *typingEnv, rError_t *errmsg, Node ** errnode, Region *r ) {
     /*
         char buf0[1024];
-        typingConstraintsToString(typingConstraints, typingEnv, buf0, 1024);
+        typingConstraintsToString(typingConstraints, buf0, 1024);
         printf("solving constraints: %s\n", buf0);
     */
     ListNode *nextNode = NULL;
@@ -616,7 +616,7 @@ Satisfiability solveConstraints( List *typingConstraints, Hashtable *typingEnv, 
     return typingConstraints->head == NULL ? TAUTOLOGY : CONTINGENCY;
 }
 
-int consistent( List *typingConstraints, Hashtable *typingEnv, Region *r ) {
+int consistent( List*, Hashtable*, Region* ) {
     return 1;
 }
 Satisfiability simplify( List *typingConstraints, Hashtable *typingEnv, rError_t *errmsg, Node **errnode, Region *r ) {
@@ -626,12 +626,12 @@ Satisfiability simplify( List *typingConstraints, Hashtable *typingEnv, rError_t
     List *simpleTypingConstraints = newList( r );
     /* printf("start\n"); */
     /*char buf[1024];
-    typingConstraintsToString(typingConstraints, typingEnv, buf, 1024);*/
+    typingConstraintsToString(typingConstraints, buf, 1024);*/
     Satisfiability ret = TAUTOLOGY;
     do {
         changed = typingEnv->len;
         ln = typingConstraints->head;
-        /*typingConstraintsToString(typingConstraints, typingEnv, buf, 1024);
+        /*typingConstraintsToString(typingConstraints, buf, 1024);
         printf("constraints: \n%s\n\n", buf);*/
         while ( ln != NULL ) {
             TypingConstraint *tc = ( TypingConstraint * )ln->value;
@@ -663,7 +663,7 @@ Satisfiability simplify( List *typingConstraints, Hashtable *typingEnv, rError_t
             }
             ln = ln->next;
         }
-        /*typingConstraintsToString(typingConstraints, typingEnv, buf, 1024);
+        /*typingConstraintsToString(typingConstraints, buf, 1024);
         printf("simplified constraints: \n%s\n\n", buf);
         printHashtable(typingEnv, buf);
         printf("env: \n%s\n", buf);*/
@@ -756,7 +756,7 @@ int isIterableBaseRuleType( ExprType *type, ExprType **templa, ExprType **templb
  *                 null if type is not iterable
  * type does not need to be dereferenced
  */
-ExprType* isIterable( ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r ) {
+ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
     ExprType *derefedType = dereference( type, var_type_table, r );
     Node *disjuncts[6];
     Res *unified, *comp0, *comp1;
@@ -849,7 +849,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
         ExprType *varType;
         ExprType *collType = varType0 == NULL ? NULL : dereference( varType0, var_type_table, r );
         if ( collType != NULL ) {
-            varType = isIterable( collType, dynamictyping, var_type_table, r );
+            varType = isIterable( collType, var_type_table, r );
             if ( varType == NULL ) {
                 /* error if res is not an iterable type */
                 RE_ERROR2( 1, "foreach is applied to a non collection type" );

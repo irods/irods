@@ -13,18 +13,17 @@
 extern "C" {
 #endif
     int
-    rmtrashUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+    rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
                  rodsPathInp_t *rodsPathInp );
     int
     rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
-                        rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                        dataObjInp_t *dataObjInp );
+                        rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
-    initCondForRmtrash( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                        dataObjInp_t *dataObjInp, collInp_t *collInp );
+    initCondForRmtrash( rodsArguments_t *rodsArgs, dataObjInp_t* dataObjInp,
+                        collInp_t *collInp );
     int
-    rmtrashCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-                     rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp );
+    rmtrashCollUtil( rcComm_t *conn, char *srcColl,
+            rodsArguments_t *rodsArgs, collInp_t *collInp );
 
 #ifdef __cplusplus
 }

@@ -30,7 +30,7 @@ void initConn() {
 }
 /* getIFuseConnByPath - try to use the same conn as opened desc of the
  * same path */
-iFuseConn_t *getAndUseConnByPath( char *localPath, rodsEnv *myRodsEnv, int *status ) {
+iFuseConn_t *getAndUseConnByPath( char *localPath, int *status ) {
     iFuseConn_t *iFuseConn;
     /* make sure iFuseConn is not released after getAndLockIFuseDescByPath finishes */
     pathCache_t *tmpPathCache;
@@ -42,7 +42,7 @@ iFuseConn_t *getAndUseConnByPath( char *localPath, rodsEnv *myRodsEnv, int *stat
     }
     else {
         /* no match. just assign one */
-        *status = getAndUseIFuseConn( &iFuseConn, myRodsEnv );
+        *status = getAndUseIFuseConn( &iFuseConn );
 
     }
 
@@ -76,7 +76,7 @@ int _getAndUseConnForPathCache( iFuseConn_t **iFuseConn, pathCache_t *paca ) {
 
     iFuseConn_t *tmpIFuseConn;
     UNLOCK_STRUCT( *paca );
-    status = getAndUseIFuseConn( &tmpIFuseConn, &MyRodsEnv );
+    status = getAndUseIFuseConn( &tmpIFuseConn );
     LOCK_STRUCT( *paca );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -98,8 +98,8 @@ int _getAndUseConnForPathCache( iFuseConn_t **iFuseConn, pathCache_t *paca ) {
     return 0;
 }
 
-int getAndUseIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv ) {
-    int ret = _getAndUseIFuseConn( iFuseConn, myRodsEnv );
+int getAndUseIFuseConn( iFuseConn_t **iFuseConn ) {
+    int ret = _getAndUseIFuseConn( iFuseConn );
     return ret;
 
 }
@@ -117,7 +117,7 @@ void _waitForConn() {
     deleteConnReqWaitMutex( &myConnReqWait );
 }
 
-int _getAndUseIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv ) {
+int _getAndUseIFuseConn( iFuseConn_t **iFuseConn ) {
     int status;
     iFuseConn_t *tmpIFuseConn;
 

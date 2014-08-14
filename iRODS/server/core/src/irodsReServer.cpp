@@ -189,7 +189,7 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
         chkLogfileName( logDir, RULE_EXEC_LOGFILE );
 #endif
 #endif
-        chkAndResetRule( rsComm );
+        chkAndResetRule();
         rodsLog( LOG_NOTICE,
                  "reServerMain: checking the queue for jobs" );
         status = getReInfo( rsComm, &genQueryOut );
@@ -204,7 +204,7 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
                    reconnect and possibly recover from an Oracle
                    outage. */
                 if ( repeatedQueryErrorCount > 3 ) { // JMC - backport 4520
-                    disconnectRcat( rsComm );
+                    disconnectRcat();
                     repeatedQueryErrorCount = 0;
                 }
 #endif
@@ -254,13 +254,13 @@ int
 reSvrSleep( rsComm_t *rsComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
 
-    int status = disconnRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone );
+    int status = disconnRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
 #ifndef ORA_ICAT
         /* For Oracle, we don't disconnect.  This is to avoid a
            memory leak in the OCI library */
-        status = disconnectRcat( rsComm );
+        status = disconnectRcat();
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "reSvrSleep: disconnectRcat error. status = %d", status );
@@ -273,7 +273,7 @@ reSvrSleep( rsComm_t *rsComm ) {
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone, &rodsServerHost );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = connectRcat( rsComm );
+        status = connectRcat();
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "reSvrSleep: connectRcat error. status = %d", status );
@@ -284,7 +284,7 @@ reSvrSleep( rsComm_t *rsComm ) {
 }
 
 int
-chkAndResetRule( rsComm_t *rsComm ) {
+chkAndResetRule() {
 //    char *configDir;
 //    char rulesFileName[MAX_NAME_LEN];
     int status = 0;

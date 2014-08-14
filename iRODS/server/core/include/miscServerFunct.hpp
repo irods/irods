@@ -79,7 +79,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 void
 sameHostPartialCopy( portalTransferInp_t *myInput );
 int
-rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
+rbudpRemLocCopy( dataCopyInp_t *dataCopyInp );
 int
 remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 void
@@ -94,10 +94,6 @@ int
 singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
 int
 isUserPrivileged( rsComm_t *rsComm );
-#if !defined(solaris_platform)
-char *regcmp( char *pat, char *end );
-char *regex( char *rec, char *text, ... );
-#endif
 int intNoSupport( ... );
 rodsLong_t longNoSupport( ... );
 void getZoneServerId( char *zoneName, char *zoneSID );

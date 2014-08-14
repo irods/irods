@@ -473,8 +473,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
             if ( oprType == PUT_OPR ) {
                 /* open the file */
-                l3descInx = l3OpenByHost( rsComm, dataOprInp->destRescTypeInx,
-                                          dataOprInp->destL3descInx, O_WRONLY );
+                l3descInx = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
                 fillPortalTransferInp( &myInput[i], rsComm,
                                        portalFd, l3descInx, 0,
                                        dataOprInp->destRescTypeInx,
@@ -483,8 +482,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
             }
             else {	/* a get */
-                l3descInx = l3OpenByHost( rsComm, dataOprInp->srcRescTypeInx,
-                                          dataOprInp->srcL3descInx, O_RDONLY );
+                l3descInx = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
                 fillPortalTransferInp( &myInput[i], rsComm,
                                        l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
                                        i, mySize, myOffset, flags );
@@ -570,7 +568,7 @@ int fillPortalTransferInp(
 
 void
 partialDataPut( portalTransferInp_t *myInput ) {
-    int destL3descInx = 0, srcFd = 0, destRescTypeInx = 0;
+    int destL3descInx = 0, srcFd = 0;
     unsigned char *buf = 0;
     int bytesWritten = 0;
     rodsLong_t bytesToGet = 0;
@@ -596,18 +594,17 @@ partialDataPut( portalTransferInp_t *myInput ) {
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcFd = myInput->srcFd;
-    destRescTypeInx = myInput->destRescTypeInx;
 
     if ( myInput->offset != 0 ) {
-        myOffset = _l3Lseek( myInput->rsComm, destRescTypeInx,
-                             destL3descInx, myInput->offset, SEEK_SET );
+        myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
+                myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
                      "_partialDataPut: _objSeek error, status = %d ",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
+                _l3Close( myInput->rsComm, destL3descInx );
             }
             CLOSE_SOCK( srcFd );
             return;
@@ -672,7 +669,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
                      "partialDataPut: sendTranHeader error. status = %d",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
+                _l3Close( myInput->rsComm, destL3descInx );
             }
             CLOSE_SOCK( srcFd );
             free( buf );
@@ -697,7 +694,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
                                 srcFd,
                                 &new_size,
                                 sizeof( int ),
-                                SOCK_TYPE,
                                 NULL, NULL );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
@@ -711,7 +707,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
                             srcFd,
                             buf,
                             new_size,
-                            SOCK_TYPE,
                             NULL, NULL );
 
 #ifdef PARA_TIMING
@@ -751,7 +746,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
 
                 if ( ( bytesWritten = _l3Write(
                                           myInput->rsComm,
-                                          destRescTypeInx,
                                           destL3descInx,
                                           buf,
                                           plain_size ) ) != ( plain_size ) ) {
@@ -805,7 +799,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
 
     sendTranHeader( srcFd, DONE_OPR, 0, 0, 0 );
     if ( myInput->threadNum > 0 ) {
-        _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
+        _l3Close( myInput->rsComm, destL3descInx );
     }
     mySockClose( srcFd );
 #ifdef PARA_TIMING
@@ -822,7 +816,7 @@ void partialDataGet(
     portalTransferInp_t* myInput ) {
     // =-=-=-=-=-=-=-
     //
-    int srcL3descInx = 0, destFd = 0, srcRescTypeInx = 0;
+    int srcL3descInx = 0, destFd = 0;
     unsigned char *buf = 0;
     int bytesWritten = 0;
     rodsLong_t bytesToGet = 0;
@@ -842,18 +836,17 @@ void partialDataGet(
     myInput->status = 0;
     srcL3descInx = myInput->srcFd;
     destFd = myInput->destFd;
-    srcRescTypeInx = myInput->srcRescTypeInx;
 
     if ( myInput->offset != 0 ) {
-        myOffset = _l3Lseek( myInput->rsComm, srcRescTypeInx,
-                             srcL3descInx, myInput->offset, SEEK_SET );
+        myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
+                myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
                      "_partialDataGet: _objSeek error, status = %d ",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+                _l3Close( myInput->rsComm, srcL3descInx );
             }
             CLOSE_SOCK( destFd );
             return;
@@ -923,7 +916,7 @@ void partialDataGet(
                      "partialDataGet: sendTranHeader error. status = %d",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+                _l3Close( myInput->rsComm, srcL3descInx );
             }
             CLOSE_SOCK( destFd );
             free( buf );
@@ -940,7 +933,7 @@ void partialDataGet(
                 toread1 = toread0;
             }
 
-            bytesRead = _l3Read( myInput->rsComm, srcRescTypeInx, srcL3descInx, buf, toread1 );
+            bytesRead = _l3Read( myInput->rsComm, srcL3descInx, buf, toread1 );
 
 #ifdef PARA_TIMING
             tafterRead = time( 0 );
@@ -996,7 +989,6 @@ void partialDataGet(
                                        destFd,
                                        &new_size,
                                        sizeof( int ),
-                                       SOCK_TYPE,
                                        &bytesWritten );
                 }
 
@@ -1006,7 +998,6 @@ void partialDataGet(
                                    destFd,
                                    buf,
                                    new_size,
-                                   SOCK_TYPE,
                                    &bytesWritten );
 
                 if ( bytesWritten != new_size ) {
@@ -1064,7 +1055,7 @@ void partialDataGet(
 
     sendTranHeader( destFd, DONE_OPR, 0, 0, 0 );
     if ( myInput->threadNum > 0 ) {
-        _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+        _l3Close( myInput->rsComm, srcL3descInx );
     }
     CLOSE_SOCK( destFd );
 #ifdef PARA_TIMING
@@ -1080,7 +1071,7 @@ void partialDataGet(
 void
 remToLocPartialCopy( portalTransferInp_t *myInput ) {
     transferHeader_t myHeader;
-    int destL3descInx = 0, srcFd = 0, destRescTypeInx = 0;
+    int destL3descInx = 0, srcFd = 0;
     unsigned char *buf = 0;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
@@ -1098,7 +1089,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcFd = myInput->srcFd;
-    destRescTypeInx = myInput->destRescTypeInx;
     myInput->bytesWritten = 0;
 
     // =-=-=-=-=-=-=-
@@ -1155,8 +1145,8 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
         }
         if ( myHeader.offset != curOffset ) {
             curOffset = myHeader.offset;
-            myOffset = _l3Lseek( myInput->rsComm, destRescTypeInx,
-                                 destL3descInx, myHeader.offset, SEEK_SET );
+            myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
+                    myHeader.offset, SEEK_SET );
             if ( myOffset < 0 ) {
                 myInput->status = myOffset;
                 rodsLog( LOG_NOTICE,
@@ -1180,7 +1170,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
             // read the incoming size as it might differ due to encryption
             int new_size = toRead;
             if ( use_encryption_flg ) {
-                bytesRead = myRead( srcFd, &new_size, sizeof( int ), SOCK_TYPE, NULL, NULL );
+                bytesRead = myRead( srcFd, &new_size, sizeof( int ), NULL, NULL );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
                     break;
@@ -1189,7 +1179,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 
             // =-=-=-=-=-=-=-
             // now read the provided number of bytes as suggested by the incoming size
-            bytesRead = myRead( srcFd, buf, new_size, SOCK_TYPE, NULL, NULL );
+            bytesRead = myRead( srcFd, buf, new_size, NULL, NULL );
             if ( bytesRead != new_size ) {
                 if ( bytesRead < 0 ) {
                     myInput->status = bytesRead;
@@ -1238,7 +1228,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 
             bytesWritten = _l3Write(
                                myInput->rsComm,
-                               destRescTypeInx,
                                destL3descInx,
                                buf,
                                plain_size );
@@ -1265,7 +1254,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 
     free( buf );
     if ( myInput->threadNum > 0 ) {
-        _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
+        _l3Close( myInput->rsComm, destL3descInx );
     }
     CLOSE_SOCK( srcFd );
 }
@@ -1274,10 +1263,9 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
  */
 
 int
-rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
+rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
     portalOprOut_t *portalOprOut;
     dataOprInp_t *dataOprInp;
-    rodsLong_t dataSize;
     int oprType;
     int veryVerbose, sendRate, packetSize;
     char *tmpStr;
@@ -1291,7 +1279,6 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     portalOprOut = &dataCopyInp->portalOprOut;
     dataOprInp = &dataCopyInp->dataOprInp;
     oprType = dataOprInp->oprType;
-    dataSize = dataOprInp->dataSize;
 
     if ( getValByKey( &dataOprInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
         veryVerbose = 2;
@@ -1312,7 +1299,7 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         int destL3descInx = dataOprInp->destL3descInx;
 
         status = getFileToPortalRbudp( portalOprOut, NULL,
-                                       FileDesc[destL3descInx].fd, dataSize,
+                                       FileDesc[destL3descInx].fd,
                                        veryVerbose, packetSize );
 
     }
@@ -1326,8 +1313,8 @@ rbudpRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         else {
             sendRate = DEF_UDP_SEND_RATE;
         }
-        status = putFileToPortalRbudp( portalOprOut, NULL, NULL,
-                                       FileDesc[srcL3descInx].fd, dataSize,
+        status = putFileToPortalRbudp( portalOprOut, NULL,
+                                       FileDesc[srcL3descInx].fd,
                                        veryVerbose, sendRate, packetSize );
     }
     return status;
@@ -1370,7 +1357,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
-        retVal = rbudpRemLocCopy( rsComm, dataCopyInp );
+        retVal = rbudpRemLocCopy( dataCopyInp );
         return retVal;
     }
 
@@ -1443,8 +1430,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 return sock;
             }
             if ( oprType == COPY_TO_LOCAL_OPR ) {
-                myFd = l3OpenByHost( rsComm, dataOprInp->destRescTypeInx,
-                                     dataOprInp->destL3descInx, O_WRONLY );
+                myFd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
                 if ( myFd < 0 ) {  /* error */
                     retVal = myFd;
                     rodsLog( LOG_NOTICE,
@@ -1461,8 +1447,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 tid[i] = new boost::thread( remToLocPartialCopy, &myInput[i] );
             }
             else {
-                myFd = l3OpenByHost( rsComm, dataOprInp->srcRescTypeInx,
-                                     dataOprInp->srcL3descInx, O_RDONLY );
+                myFd = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
                 if ( myFd < 0 ) {  /* error */
                     retVal = myFd;
                     rodsLog( LOG_NOTICE,
@@ -1597,8 +1582,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 mySize = size1;
             }
 
-            out_fd = l3OpenByHost( rsComm, dataOprInp->destRescTypeInx,
-                                   dataOprInp->destL3descInx, O_WRONLY );
+            out_fd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
             if ( out_fd < 0 ) {  /* error */
                 retVal = out_fd;
                 rodsLog( LOG_NOTICE,
@@ -1607,8 +1591,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 continue;
             }
 
-            in_fd = l3OpenByHost( rsComm, dataOprInp->srcRescTypeInx,
-                                  dataOprInp->srcL3descInx, O_RDONLY );
+            in_fd = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
             if ( in_fd < 0 ) {  /* error */
                 retVal = in_fd;
                 rodsLog( LOG_NOTICE,
@@ -1662,7 +1645,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
 void
 sameHostPartialCopy( portalTransferInp_t *myInput ) {
-    int destL3descInx, srcL3descInx, destRescTypeInx, srcRescTypeInx;
+    int destL3descInx, srcL3descInx;
     void *buf;
     rodsLong_t myOffset = 0;
     rodsLong_t toCopy;
@@ -1680,34 +1663,32 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcL3descInx = myInput->srcFd;
-    destRescTypeInx = myInput->destRescTypeInx;
-    srcRescTypeInx = myInput->srcRescTypeInx;
     myInput->bytesWritten = 0;
 
     if ( myInput->offset != 0 ) {
-        myOffset = _l3Lseek( myInput->rsComm, destRescTypeInx,
-                             destL3descInx, myInput->offset, SEEK_SET );
+        myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
+                myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
                      "sameHostPartialCopy: _objSeek error, status = %d ",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
-                _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+                _l3Close( myInput->rsComm, destL3descInx );
+                _l3Close( myInput->rsComm, srcL3descInx );
             }
             return;
         }
-        myOffset = _l3Lseek( myInput->rsComm, srcRescTypeInx,
-                             srcL3descInx, myInput->offset, SEEK_SET );
+        myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
+                myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
                      "sameHostPartialCopy: _objSeek error, status = %d ",
                      myInput->status );
             if ( myInput->threadNum > 0 ) {
-                _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
-                _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+                _l3Close( myInput->rsComm, destL3descInx );
+                _l3Close( myInput->rsComm, srcL3descInx );
             }
             return;
         }
@@ -1727,8 +1708,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
             toRead = toCopy;
         }
 
-        bytesRead = _l3Read( myInput->rsComm, srcRescTypeInx,
-                             srcL3descInx, buf, toRead );
+        bytesRead = _l3Read( myInput->rsComm, srcL3descInx, buf, toRead );
 
         if ( bytesRead <= 0 ) {
             if ( bytesRead < 0 ) {
@@ -1745,8 +1725,8 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
             break;
         }
 
-        bytesWritten = _l3Write( myInput->rsComm, destRescTypeInx,
-                                 destL3descInx, buf, bytesRead );
+        bytesWritten = _l3Write( myInput->rsComm, destL3descInx,
+                buf, bytesRead );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_NOTICE,
@@ -1768,15 +1748,15 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
 
     free( buf );
     if ( myInput->threadNum > 0 ) {
-        _l3Close( myInput->rsComm, destRescTypeInx, destL3descInx );
-        _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+        _l3Close( myInput->rsComm, destL3descInx );
+        _l3Close( myInput->rsComm, srcL3descInx );
     }
 }
 
 void
 locToRemPartialCopy( portalTransferInp_t *myInput ) {
     transferHeader_t myHeader;
-    int srcL3descInx = 0, destFd = 0, srcRescTypeInx = 0;
+    int srcL3descInx = 0, destFd = 0;
     unsigned char *buf = 0;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
@@ -1794,7 +1774,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
     myInput->status = 0;
     srcL3descInx = myInput->srcFd;
     destFd = myInput->destFd;
-    srcRescTypeInx = myInput->srcRescTypeInx;
     myInput->bytesWritten = 0;
 
     // =-=-=-=-=-=-=-
@@ -1852,8 +1831,8 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 
         if ( myHeader.offset != curOffset ) {
             curOffset = myHeader.offset;
-            myOffset = _l3Lseek( myInput->rsComm, srcRescTypeInx,
-                                 srcL3descInx, myHeader.offset, SEEK_SET );
+            myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
+                    myHeader.offset, SEEK_SET );
             if ( myOffset < 0 ) {
                 myInput->status = myOffset;
                 rodsLog( LOG_NOTICE,
@@ -1873,8 +1852,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
                 toRead = toGet;
             }
 
-            bytesRead = _l3Read( myInput->rsComm, srcRescTypeInx,
-                                 srcL3descInx, buf, toRead );
+            bytesRead = _l3Read( myInput->rsComm, srcL3descInx, buf, toRead );
 
             if ( bytesRead != toRead ) {
                 if ( bytesRead < 0 ) {
@@ -1940,7 +1918,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
                                    destFd,
                                    &new_size,
                                    sizeof( int ),
-                                   SOCK_TYPE,
                                    &bytesWritten );
             }
 
@@ -1948,7 +1925,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
                                destFd,
                                buf,
                                new_size,
-                               SOCK_TYPE,
                                NULL );
 
             if ( bytesWritten != new_size ) {
@@ -1974,7 +1950,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 
     free( buf );
     if ( myInput->threadNum > 0 ) {
-        _l3Close( myInput->rsComm, srcRescTypeInx, srcL3descInx );
+        _l3Close( myInput->rsComm, srcL3descInx );
     }
     CLOSE_SOCK( destFd );
 }
@@ -2047,16 +2023,6 @@ isUserPrivileged( rsComm_t *rsComm ) {
 
     return 0;
 }
-
-#if !defined(solaris_platform)
-char *regcmp( char *pat, char *end ) {
-    return NULL;
-}
-
-char *regex( char *rec, char *text, ... ) {
-    return NULL;
-}
-#endif  /* linux_platform */
 
 /* generic functions to return SYS_NOT_SUPPORTED */
 
@@ -2582,7 +2548,6 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t dataSize;
     int l1descInx;
     int destL3descInx;
-    int destRescTypeInx;
     bytesBuf_t dataObjReadInpBBuf;
     openedDataObjInp_t dataObjReadInp;
     int bytesWritten, bytesRead;
@@ -2597,7 +2562,6 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
     destL3descInx = dataOprInp->destL3descInx;
-    destRescTypeInx = dataOprInp->destRescTypeInx;
     dataSize = dataOprInp->dataSize;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
@@ -2606,8 +2570,8 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataObjReadInp.l1descInx = l1descInx;
     while ( ( bytesRead = rsDataObjRead( rsComm, &dataObjReadInp,
                                          &dataObjReadInpBBuf ) ) > 0 ) {
-        bytesWritten = _l3Write( rsComm, destRescTypeInx,
-                                 destL3descInx, dataObjReadInpBBuf.buf, bytesRead );
+        bytesWritten = _l3Write( rsComm, destL3descInx,
+                dataObjReadInpBBuf.buf, bytesRead );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_ERROR,
@@ -2639,7 +2603,6 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t dataSize;
     int l1descInx;
     int srcL3descInx;
-    int srcRescTypeInx;
     bytesBuf_t dataObjWriteInpBBuf;
     openedDataObjInp_t dataObjWriteInp;
     int bytesWritten, bytesRead;
@@ -2654,7 +2617,6 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
     srcL3descInx = dataOprInp->srcL3descInx;
-    srcRescTypeInx = dataOprInp->srcRescTypeInx;
     dataSize = dataOprInp->dataSize;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
@@ -2662,8 +2624,8 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
 
-    while ( ( bytesRead = _l3Read( rsComm, srcRescTypeInx,
-                                   srcL3descInx, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ ) ) > 0 ) {
+    while ( ( bytesRead = _l3Read( rsComm, srcL3descInx,
+                    dataObjWriteInpBBuf.buf, TRANS_BUF_SZ ) ) > 0 ) {
         dataObjWriteInp.len =  dataObjWriteInpBBuf.len = bytesRead;
         bytesWritten = rsDataObjWrite( rsComm, &dataObjWriteInp,
                                        &dataObjWriteInpBBuf );

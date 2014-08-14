@@ -611,7 +611,7 @@ char* typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize
     return buf;
 
 }
-void typingConstraintsToString( List *typingConstraints, Hashtable *var_types, char *buf, int bufsize ) {
+void typingConstraintsToString( List *typingConstraints, char *buf, int bufsize ) {
     char buf2[1024];
     char buf3[1024];
     ListNode *p = typingConstraints->head;

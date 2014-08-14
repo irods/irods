@@ -49,7 +49,7 @@ plugin_base::~plugin_base( ) {
 
 // =-=-=-=-=-=-=-
 // public - default implementation
-error plugin_base::post_disconnect_maintenance_operation( pdmo_type& _op ) {
+error plugin_base::post_disconnect_maintenance_operation( pdmo_type& ) {
     return ERROR( NO_PDMO_DEFINED, "no defined operation" );
 
 } // post_disconnect_maintenance_operation

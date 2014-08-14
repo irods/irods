@@ -532,8 +532,7 @@ filePathTypeInResc(
     rsComm_t*           rsComm,
     const std::string&  objPath,
     const std::string&  fileName,
-    const std::string&  rescHier,
-    rescInfo_t*         rescInfo ) {
+    const std::string&  rescHier ) {
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
     int status;

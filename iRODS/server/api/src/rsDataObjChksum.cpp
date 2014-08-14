@@ -103,7 +103,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else if ( allFlag == 0 ) {
         /* screen out any stale copies */
-        status = sortObjInfoForOpen( rsComm, dataObjInfoHead, &dataObjInp->condInput, 0 );
+        status = sortObjInfoForOpen( dataObjInfoHead, &dataObjInp->condInput, 0 );
         if ( status < 0 ) {
             return status;
         }

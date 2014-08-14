@@ -392,7 +392,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
                      MAX_NAME_LEN );
             char new_fn[ MAX_NAME_LEN ];
             status = renameFilePathToNewDir( rsComm, ORPHAN_DIR,
-                                             &fileRenameInp, rescInfo, 1, new_fn );
+                                             &fileRenameInp, 1, new_fn );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "regSubFile: renameFilePathToNewDir err for %s. status = %d",

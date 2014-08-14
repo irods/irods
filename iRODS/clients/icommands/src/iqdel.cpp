@@ -15,7 +15,7 @@
 
 void usage();
 int
-qdelUtil( rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
+qdelUtil( rcComm_t *conn, char *userName, int allFlag,
           rodsArguments_t *myRodsArgs );
 
 int debug = 0;
@@ -102,11 +102,10 @@ main( int argc, char **argv ) {
     }
 
     if ( myRodsArgs.all ) {
-        status = qdelUtil( Conn, NULL, myRodsArgs.all, &myEnv, &myRodsArgs );
+        status = qdelUtil( Conn, NULL, myRodsArgs.all, &myRodsArgs );
     }
     else if ( myRodsArgs.user ) {
-        status = qdelUtil( Conn, myRodsArgs.userString, myRodsArgs.all, &myEnv,
-                           &myRodsArgs );
+        status = qdelUtil( Conn, myRodsArgs.userString, myRodsArgs.all, &myRodsArgs );
     }
     else {
         for ( i = argOffset; i < argc; i++ ) {
@@ -124,7 +123,7 @@ main( int argc, char **argv ) {
 }
 
 int
-qdelUtil( rcComm_t *conn, char *userName, int allFlag, rodsEnv *myEnv,
+qdelUtil( rcComm_t *conn, char *userName, int allFlag,
           rodsArguments_t *myRodsArgs ) {
     genQueryInp_t genQueryInp;
     int status, i, continueInx;

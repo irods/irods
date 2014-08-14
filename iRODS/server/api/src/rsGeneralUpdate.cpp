@@ -21,7 +21,7 @@ rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsGeneralUpdate( rsComm, generalUpdateInp );
+        status = _rsGeneralUpdate( generalUpdateInp );
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
@@ -40,7 +40,7 @@ rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
 
 #ifdef RODS_CAT
 int
-_rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {
+_rsGeneralUpdate( generalUpdateInp_t *generalUpdateInp ) {
     int status;
 
     status  = chlGeneralUpdate( *generalUpdateInp );

@@ -45,7 +45,7 @@ native_auth_object& native_auth_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equality operator
 bool native_auth_object::operator==(
-    const native_auth_object& _rhs ) const {
+    const native_auth_object& ) const {
     return false;
 }
 

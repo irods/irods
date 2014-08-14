@@ -28,7 +28,7 @@ _rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp );
 int
 l3Close( rsComm_t *rsComm, int l1descInx );
 int
-_l3Close( rsComm_t *rsComm, int rescTypeInx, int l3descInx );
+_l3Close( rsComm_t *rsComm, int l3descInx );
 int
 l3Stat( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat );
 int

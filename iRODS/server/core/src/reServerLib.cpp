@@ -106,7 +106,7 @@ getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
  */
 
 int
-getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
+getNextQueuedRuleExec( genQueryOut_t **inGenQueryOut,
                        int startInx, ruleExecSubmitInp_t *queuedRuleExec,
                        reExec_t *reExec, int jobType ) {
     sqlResult_t *ruleExecId, *ruleName, *reiFilePath, *userName, *exeAddress,
@@ -377,10 +377,10 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
     int thrInx;
 
     inx = -1;
-    while ( time( NULL ) <= endTime && ( thrInx = allocReThr( rsComm, reExec ) ) >= 0 ) { // JMC - backport 4695
+    while ( time( NULL ) <= endTime && ( thrInx = allocReThr( reExec ) ) >= 0 ) { // JMC - backport 4695
         myRuleExecInp = &reExec->reExecProc[thrInx].ruleExecSubmitInp;
         chkAndUpdateResc( rsComm );
-        if ( ( inx = getNextQueuedRuleExec( rsComm, genQueryOut, inx + 1,
+        if ( ( inx = getNextQueuedRuleExec( genQueryOut, inx + 1,
                                             myRuleExecInp, reExec, jobType ) ) < 0 ) {
             /* no job to run */
             freeReThr( reExec, thrInx );
@@ -420,7 +420,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
                 if ( ( status = resetRcatHost( rsComm, MASTER_RCAT,
                                                rsComm->myEnv.rodsZone ) ) == LOCAL_HOST ) {
 #ifdef RODS_CAT
-                    resetRcat( rsComm );
+                    resetRcat();
 #endif
                 }
                 /* this call doesn't come back */
@@ -467,16 +467,16 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
     /* child. need to disconnect Rcat */
     rodsServerHost_t *rodsServerHost = NULL;
 
-    if ( ( status = resetRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone ) )
+    if ( ( status = resetRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone ) )
             == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        resetRcat( rsComm );
+        resetRcat();
 #endif
     }
     if ( ( status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                         rsComm->myEnv.rodsZone, &rodsServerHost ) ) == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = connectRcat( rsComm );
+        status = connectRcat();
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "runQueuedRuleExec: connectRcat error. status=%d", status );
@@ -575,7 +575,7 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
 }
 
 int
-allocReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 4695
+allocReThr( reExec_t * reExec ) { // JMC - backport 4695
     int i;
     int thrInx = SYS_NO_FREE_RE_THREAD;
 

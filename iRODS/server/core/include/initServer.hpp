@@ -137,9 +137,9 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 int
 initServerInfo( rsComm_t *rsComm );
 int
-initLocalServerHost( rsComm_t *rsComm );
+initLocalServerHost();
 int
-initRcatServerHostByFile( rsComm_t *rsComm );
+initRcatServerHostByFile();
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int
@@ -177,7 +177,7 @@ int
 getAndConnRcatHostNoLogin( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
                            rodsServerHost_t **rodsServerHost );
 int
-getAndDisconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
                        rodsServerHost_t **rodsServerHost );
 int
 setExecArg( char *commandArgv, char *av[] );
@@ -189,7 +189,7 @@ void
 rsPipSigalHandler( int );
 
 int
-initHostConfigByFile( rsComm_t *rsComm );
+initHostConfigByFile();
 int
 matchHostConfig( rodsServerHost_t *myRodsServerHost );
 int
@@ -198,7 +198,7 @@ queConfigName( rodsServerHost_t *configServerHost,
 int
 disconnectAllSvrToSvrConn();
 int
-disconnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint );
+disconnRcatHost( int rcatType, char *rcatZoneHint );
 int
 svrReconnect( rsComm_t *rsComm );
 int
@@ -228,7 +228,7 @@ isSameZone( char *zoneHint1, char *zoneHint2 );
 int
 convZoneSockError( int inStatus );
 int
-resetRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint );
+resetRcatHost( int rcatType, char *rcatZoneHint );
 int
 getReHost( rodsServerHost_t **rodsServerHost );
 int

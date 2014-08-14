@@ -15,7 +15,7 @@ int
 getUptimeStr( uint startTime, uint curTime, char *outStr );
 void usage();
 int
-initCondForProcStat( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForProcStat( rodsArguments_t *rodsArgs,
                      procStatInp_t *procStatInp );
 
 int
@@ -71,7 +71,7 @@ main( int argc, char **argv ) {
         }
     }
 
-    initCondForProcStat( &myEnv, &myRodsArgs, &procStatInp );
+    initCondForProcStat( &myRodsArgs, &procStatInp );
 
     status = rcProcStat( conn, &procStatInp, &procStatOut );
 
@@ -237,8 +237,7 @@ getUptimeStr( uint startTime, uint curTime, char *outStr ) {
 }
 
 int
-initCondForProcStat( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                     procStatInp_t *procStatInp ) {
+initCondForProcStat( rodsArguments_t *rodsArgs, procStatInp_t *procStatInp ) {
     if ( procStatInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForProcStat: NULL procStatInp input" );

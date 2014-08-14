@@ -14,8 +14,8 @@ postgres_object::postgres_object() {
 // =-=-=-=-=-=-=-
 // public - cctor
 postgres_object::postgres_object(
-    const postgres_object& _rhs ) {
-
+    const postgres_object& _rhs) :
+    database_object( _rhs ) {
 
 } // cctor
 
@@ -27,7 +27,7 @@ postgres_object::~postgres_object() {
 // =-=-=-=-=-=-=-
 // public - assignment operator
 postgres_object& postgres_object::operator=(
-    const postgres_object& _rhs ) {
+    const postgres_object& ) {
 
     return *this;
 
@@ -36,7 +36,7 @@ postgres_object& postgres_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equivalence operator
 bool postgres_object::operator==(
-    const postgres_object& _rhs ) const {
+    const postgres_object& ) const {
     return false;
 
 } // operator==
@@ -99,7 +99,7 @@ error postgres_object::resolve(
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
 error postgres_object::get_re_vars(
-    keyValPair_t& _kvp ) {
+    keyValPair_t& ) {
 
     //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 

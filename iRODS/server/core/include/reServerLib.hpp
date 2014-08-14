@@ -48,7 +48,7 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut );
 int
 getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut );
 int
-getNextQueuedRuleExec( rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
+getNextQueuedRuleExec( genQueryOut_t **inGenQueryOut,
                        int startInx, ruleExecSubmitInp_t *queuedRuleExec,
                        reExec_t *reExec, int jobType );
 int
@@ -59,7 +59,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
 int
 initReExec( rsComm_t *rsComm, reExec_t *reExec );
 int
-allocReThr( rsComm_t *rsComm, reExec_t *reExec ); // JMC - backport 4695
+allocReThr( reExec_t *reExec ); // JMC - backport 4695
 int
 freeReThr( reExec_t *reExec, int thrInx );
 int

@@ -17,8 +17,7 @@ extern "C" {
              rodsPathInp_t *rodsPathInp );
     int
     initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                       structFileExtAndRegInp_t *structFileExtAndRegInp,
-                       rodsPathInp_t *rodsPathInp );
+                       structFileExtAndRegInp_t *structFileExtAndRegInp );
 #ifdef __cplusplus
 }
 #endif

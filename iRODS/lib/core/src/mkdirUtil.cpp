@@ -7,7 +7,7 @@
 #include "miscUtil.hpp"
 
 int
-mkdirUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
     int i = 0;
     int status = 0;

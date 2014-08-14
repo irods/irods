@@ -10,7 +10,7 @@ extern ticketHashQue_t XmsgHashQue[];
 extern xmsgQue_t XmsgQue;
 
 int
-rsRcvXmsg( rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
+rsRcvXmsg( rsComm_t*, rcvXmsgInp_t *rcvXmsgInp,
            rcvXmsgOut_t **rcvXmsgOut ) {
     int status;
     irodsXmsg_t *irodsXmsg = NULL;

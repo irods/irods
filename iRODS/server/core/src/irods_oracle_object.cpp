@@ -14,7 +14,8 @@ oracle_object::oracle_object() {
 // =-=-=-=-=-=-=-
 // public - cctor
 oracle_object::oracle_object(
-    const oracle_object& _rhs ) {
+    const oracle_object& _rhs ) :
+    database_object( _rhs ) {
 
 
 } // cctor
@@ -27,7 +28,7 @@ oracle_object::~oracle_object() {
 // =-=-=-=-=-=-=-
 // public - assignment operator
 oracle_object& oracle_object::operator=(
-    const oracle_object& _rhs ) {
+    const oracle_object& ) {
 
     return *this;
 
@@ -36,7 +37,7 @@ oracle_object& oracle_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equivalence operator
 bool oracle_object::operator==(
-    const oracle_object& _rhs ) const {
+    const oracle_object& ) const {
     return false;
 
 } // operator==
@@ -99,7 +100,7 @@ error oracle_object::resolve(
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
 error oracle_object::get_re_vars(
-    keyValPair_t& _kvp ) {
+    keyValPair_t& ) {
 
     //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 

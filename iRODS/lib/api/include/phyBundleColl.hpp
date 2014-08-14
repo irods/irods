@@ -75,7 +75,7 @@ int
 replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
                       char *rescName, char* rescHier, char* destRescHier, int adminFlag, dataObjInfo_t *outCacheObjInfo );
 int
-isDataObjBundled( rsComm_t *rsComm, collEnt_t *collEnt );
+isDataObjBundled( collEnt_t *collEnt );
 int
 setSubPhyPath( char *phyBunDir, rodsLong_t dataId, char *subBunPhyPath );
 int

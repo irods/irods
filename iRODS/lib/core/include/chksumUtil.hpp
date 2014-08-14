@@ -17,10 +17,9 @@ extern "C" {
                 rodsPathInp_t *rodsPathInp );
     int
     chksumDataObjUtil( rcComm_t *conn, char *srcPath,
-                       rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                       dataObjInp_t *dataObjInp );
+                       rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
-    initCondForChksum( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+    initCondForChksum( rodsArguments_t *rodsArgs,
                        dataObjInp_t *dataObjInp, collInp_t *collInp );
     int
     chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,

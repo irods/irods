@@ -17,12 +17,11 @@ extern "C" {
             rodsPathInp_t *rodsPathInp );
     int
     lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
-                   rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   genQueryInp_t *genQueryInp );
+                   rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp );
     int
     printLsStrShort( char *srcPath );
     int
-    lsDataObjUtilLong( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
+    lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
                        rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp );
     int
     printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
@@ -31,8 +30,7 @@ extern "C" {
     printLsShort( rcComm_t *conn, rodsArguments_t *rodsArgs,
                   genQueryOut_t *genQueryOut );
     int
-    initCondForLs( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   genQueryInp_t *genQueryInp );
+    initCondForLs( genQueryInp_t *genQueryInp );
     int
     lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
                 rodsArguments_t *rodsArgs );
@@ -43,8 +41,8 @@ extern "C" {
     int
     printCollInheritance( rcComm_t *conn, char *collName );
     int
-    lsSpecDataObjUtilLong( rcComm_t *conn, rodsPath_t *srcPath,
-                           rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs );
+    lsSpecDataObjUtilLong( rodsPath_t *srcPath,
+                           rodsArguments_t *rodsArgs );
     int
     printSpecLsLong( char *objPath, char *ownerName, char *objSize,
                      char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs );
@@ -58,8 +56,7 @@ extern "C" {
     int
     printCollCollEnt( collEnt_t *collEnt, int flags );
     int
-    lsSubfilesInBundle( rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
-                        rodsArguments_t *rodsArgs );
+    lsSubfilesInBundle( rcComm_t *conn, char *srcPath );
     int
     setSessionTicket( rcComm_t *myConn, char *ticket );
 #ifdef __cplusplus

@@ -171,7 +171,7 @@ extern "C" {
     printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
                  char *localFile, struct timeval *startTime, struct timeval *endTime );
     int
-    printTime( rcComm_t *conn, char *objPath, struct timeval *startTime,
+    printTime( char *objPath, struct timeval *startTime,
                struct timeval *endTime );
     int
     initSysTiming( char *procName, char *action, int envVarFlag );

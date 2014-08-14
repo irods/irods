@@ -477,7 +477,6 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // local function to write a buffer to a socket
     irods::error ssl_socket_write(
-        int   _socket,
         void* _buffer,
         int   _length,
         int&  _bytes_written,
@@ -618,9 +617,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     //
-    irods::error ssl_client_stop(
-        irods::plugin_context& _ctx,
-        rodsEnv*                _env ) {
+    irods::error ssl_client_stop( irods::plugin_context& _ctx ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -708,7 +705,7 @@ extern "C" {
                         std::string err_str = "post connection certificate check failed";
                         ssl_build_error_string( err_str );
                         if ( !( result = ASSERT_ERROR( status, SSL_CERT_ERROR, err_str.c_str() ) ).ok() ) {
-                            ssl_client_stop( _ctx, _env );
+                            ssl_client_stop( _ctx );
                         }
                         else {
 
@@ -976,7 +973,6 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // extract the useful bits from the context
             irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
-            int socket_handle = ssl_obj->socket_handle();
 
             // =-=-=-=-=-=-=-
             // convert host byte order to network byte order
@@ -985,14 +981,14 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // write the length of the header to the socket
             int bytes_written = 0;
-            ret = ssl_socket_write( socket_handle, &header_length, sizeof( header_length ), bytes_written, ssl_obj->ssl() );
+            ret = ssl_socket_write( &header_length, sizeof( header_length ), bytes_written, ssl_obj->ssl() );
             int status = SYS_HEADER_WRITE_LEN_ERR - errno;
             if ( ( result = ASSERT_ERROR( ret.ok() && bytes_written == sizeof( header_length ), status, "Wrote %d expected %d.",
                                           bytes_written, header_length ) ).ok() ) {
 
                 // =-=-=-=-=-=-=-
                 // now send the actual header
-                ret = ssl_socket_write( socket_handle, _header->buf, _header->len, bytes_written, ssl_obj->ssl() );
+                ret = ssl_socket_write( _header->buf, _header->len, bytes_written, ssl_obj->ssl() );
                 status = SYS_HEADER_WRITE_LEN_ERR - errno;
                 result = ASSERT_ERROR( ret.ok() && bytes_written == _header->len, status, "Wrote %d expected %d.",
                                        bytes_written, _header->len );
@@ -1027,7 +1023,6 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // extract the useful bits from the context
                 irods::ssl_object_ptr ssl_obj = boost::dynamic_pointer_cast< irods::ssl_object >( _ctx.fco() );
-                int socket_handle = ssl_obj->socket_handle();
 
                 // =-=-=-=-=-=-=-
                 // initialize a new header
@@ -1063,7 +1058,7 @@ extern "C" {
                                 getRodsLogLevel() >= LOG_DEBUG3 ) {
                             printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
                         }
-                        ret = ssl_socket_write( socket_handle, _msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl() );
+                        ret = ssl_socket_write( _msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl() );
                         result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
                     } // if msgLen > 0
 
@@ -1078,7 +1073,7 @@ extern "C" {
 
                             }
 
-                            ret = ssl_socket_write( socket_handle, _error_buf->buf, _error_buf->len, bytes_written, ssl_obj->ssl() );
+                            ret = ssl_socket_write( _error_buf->buf, _error_buf->len, bytes_written, ssl_obj->ssl() );
                             result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
                         } // if errorLen > 0
 
@@ -1092,7 +1087,7 @@ extern "C" {
                                     printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
                                 }
 
-                                ret = ssl_socket_write( socket_handle, _stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl() );
+                                ret = ssl_socket_write( _stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl() );
                                 result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
 
                             } // if bsLen > 0
@@ -1243,7 +1238,7 @@ extern "C" {
     // stub for ops that the ssl plug does
     // not need to support - accept etc
     irods::error ssl_success_stub(
-        irods::plugin_context& _ctx ) {
+        irods::plugin_context& ) {
         return SUCCESS();
 
     } // ssl_success_stub

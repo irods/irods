@@ -194,8 +194,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             status = putFileToPortalRbudp(
                          portalOprOut,
                          locFilePath,
-                         dataObjInp->objPath,
-                         -1, dataObjInp->dataSize,
+                         -1,
                          veryVerbose,
                          0, 0 );
         }

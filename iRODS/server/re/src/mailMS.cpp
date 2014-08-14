@@ -46,7 +46,7 @@
  * \post none
  * \sa none
 **/
-int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei ) {
+int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
     char *mailStr  = 0;
     char fName[100];
     char *t1 = 0, *t2  = 0;

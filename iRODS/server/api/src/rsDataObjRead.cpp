@@ -148,7 +148,7 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
 }
 
 int
-_l3Read( rsComm_t *rsComm, int rescTypeInx, int l3descInx, void *buf, int len ) {
+_l3Read( rsComm_t *rsComm, int l3descInx, void *buf, int len ) {
     fileReadInp_t fileReadInp;
     bytesBuf_t dataObjReadInpBBuf;
     int bytesRead;

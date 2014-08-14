@@ -45,7 +45,7 @@ osauth_auth_object& osauth_auth_object::operator=(
 // =-=-=-=-=-=-=-
 // public - equality operator
 bool osauth_auth_object::operator==(
-    const osauth_auth_object& _rhs ) const {
+    const osauth_auth_object& ) const {
     return false;
 }
 

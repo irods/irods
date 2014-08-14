@@ -60,7 +60,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
     irods::error univ_mss_file_create(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_create
@@ -68,7 +68,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     irods::error univ_mss_file_open(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_open
@@ -76,9 +76,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
     irods::error univ_mss_file_read(
-        irods::resource_plugin_context& _ctx,
-        void*                               _buf,
-        int                                 _len ) {
+        irods::resource_plugin_context& ,
+        void*,
+        int ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_read
@@ -86,9 +86,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
     irods::error univ_mss_file_write(
-        irods::resource_plugin_context& _ctx,
-        void*                               _buf,
-        int                                 _len ) {
+        irods::resource_plugin_context&,
+        void*,
+        int ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_write
@@ -96,7 +96,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
     irods::error univ_mss_file_close(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_close
@@ -142,7 +142,7 @@ extern "C" {
         strcat( cmdArgv, "'" );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_UNLINK_ERR - errno;
@@ -207,7 +207,7 @@ extern "C" {
         strcat( cmdArgv, "' " );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
             if ( execCmdOut->stdoutBuf.buf != NULL ) {
@@ -267,9 +267,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     irods::error univ_mss_file_lseek(
-        irods::resource_plugin_context& _ctx,
-        long long                        _offset,
-        int                              _whence ) {
+        irods::resource_plugin_context&,
+        long long,
+        int ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_lseek
@@ -323,7 +323,7 @@ extern "C" {
         strcat( cmdArgv, strmode );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_CHMOD_ERR - errno;
@@ -380,7 +380,7 @@ extern "C" {
         strcat( cmdArgv, "'" );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
         if ( status < 0 ) {
             status = UNIV_MSS_MKDIR_ERR - errno;
             std::stringstream msg;
@@ -401,7 +401,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
     irods::error univ_mss_file_rmdir(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_rmdir
@@ -409,7 +409,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
     irods::error univ_mss_file_opendir(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_opendir
@@ -417,7 +417,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
     irods::error univ_mss_file_closedir(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_closedir
@@ -425,8 +425,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX readdir
     irods::error univ_mss_file_readdir(
-        irods::resource_plugin_context& _ctx,
-        struct rodsDirent**                 _dirent_ptr ) {
+        irods::resource_plugin_context& ,
+        struct rodsDirent** ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_readdir
@@ -499,7 +499,7 @@ extern "C" {
         strcat( cmdArgv, "'" );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_RENAME_ERR - errno;
@@ -518,7 +518,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
     irods::error univ_mss_file_truncate(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_truncate
@@ -526,7 +526,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     irods::error univ_mss_file_getfs_freespace(
-        irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_getfs_freespace
@@ -577,7 +577,7 @@ extern "C" {
         strcat( cmdArgv, "'" );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_STAGETOCACHE_ERR - errno;
@@ -666,7 +666,7 @@ extern "C" {
 
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( _ctx.comm(), &execCmdInp, &execCmdOut );
+        status = _rsExecCmd( &execCmdInp, &execCmdOut );
         if ( status == 0 ) {
             err = univ_mss_file_chmod( _ctx );
             if ( !err.ok() ) {
@@ -743,8 +743,6 @@ extern "C" {
     // redirect_get - code to determine redirection for get operation
     irods::error univ_mss_file_redirect_create(
         irods::plugin_property_map& _prop_map,
-        irods::file_object_ptr         _file_obj,
-        const std::string&           _resc_name,
         const std::string&           _curr_host,
         float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
@@ -932,7 +930,7 @@ extern "C" {
         else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return univ_mss_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+            return univ_mss_file_redirect_create( _ctx.prop_map(), ( *_curr_host ), ( *_out_vote ) );
         }
 
         // =-=-=-=-=-=-=-
@@ -988,7 +986,7 @@ extern "C" {
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _pdmo ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
 

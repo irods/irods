@@ -323,7 +323,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
     GlobalAllRuleExecFlag = 0;
 
     if ( processType == RULE_ENGINE_INIT_CACHE ) {
-        resetMutex( NULL );
+        resetMutex();
     }
     /*while (strlen(r2) > 0) {
       i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
@@ -401,7 +401,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
     msParamStack.len = 0;
     msParamStack.value = NULL;
 
-    initializeReDebug( svrComm, GlobalREDebugFlag );
+    initializeReDebug( svrComm );
 
     return 0;
 }
@@ -1379,7 +1379,7 @@ insertMSrvcsIntoDB( msrvcStruct_t *coreMsrvcStruct,
 
 int
 writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
-                    ruleExecInfo_t *rei ) {
+                    ruleExecInfo_t* ) {
 
     int i;
     FILE *file;
@@ -1426,7 +1426,7 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
 
 int
 writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
-                     ruleExecInfo_t *rei ) {
+                     ruleExecInfo_t* ) {
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
@@ -1469,7 +1469,7 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
 
 int
 writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
-                     ruleExecInfo_t *rei ) {
+                     ruleExecInfo_t* ) {
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
@@ -1512,7 +1512,7 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
 
 int
 writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
-                     ruleExecInfo_t *rei ) {
+                     ruleExecInfo_t* ) {
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
@@ -1552,7 +1552,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
 }
 
 int
-finalzeRuleEngine( rsComm_t *rsComm ) {
+finalizeRuleEngine() {
     if ( GlobalREDebugFlag > 5 ) {
         _writeXMsg( GlobalREDebugFlag, "idbug", "PROCESS END" );
     }

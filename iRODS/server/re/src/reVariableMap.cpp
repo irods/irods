@@ -376,8 +376,7 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 *****************/
 
 int
-getAllSessionVarValue( char *action, ruleExecInfo_t *rei,
-                       keyValPair_t *varKeyVal ) {
+getAllSessionVarValue( ruleExecInfo_t *rei, keyValPair_t *varKeyVal ) {
     int i, status;
     char *varValue;
     char *lastVar = NULL; 	/* last var that has data */

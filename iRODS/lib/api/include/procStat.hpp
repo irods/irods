@@ -44,10 +44,10 @@ int
 _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
              genQueryOut_t **procStatOut );
 int
-_rsProcStatAll( rsComm_t *rsComm, procStatInp_t *procStatInp,
+_rsProcStatAll( rsComm_t *rsComm,
                 genQueryOut_t **procStatOut );
 int
-localProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
+localProcStat( procStatInp_t *procStatInp,
                genQueryOut_t **procStatOut );
 int
 remoteProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,

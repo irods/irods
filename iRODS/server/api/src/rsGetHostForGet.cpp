@@ -179,7 +179,7 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, 0 );
+    sortObjInfoForOpen( &dataObjInfoHead, &dataObjInp->condInput, 0 );
     if ( dataObjInfoHead != NULL && dataObjInfoHead->rescInfo != NULL ) {
         if ( hostSearchStat->numHost >= MAX_HOST_TO_SEARCH ||
                 hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH ) {

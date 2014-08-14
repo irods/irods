@@ -70,8 +70,7 @@ extern "C" {
     getLastPathElement( char *inPath, char *lastElement );
 
     int
-    resolveRodsTarget( rcComm_t *conn, rodsEnv *myRodsEnv,
-                       rodsPathInp_t *rodsPathInp, int oprType );
+    resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType );
     int
     getFileType( rodsPath_t *rodsPath );
     void

@@ -31,7 +31,7 @@ int
 rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
 
 int
-_rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp );
+_rsGeneralUpdate( generalUpdateInp_t *generalUpdateInp );
 #else
 #define RS_GENERAL_UPDATE NULL
 #endif

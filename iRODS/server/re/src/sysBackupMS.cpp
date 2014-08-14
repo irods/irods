@@ -304,7 +304,7 @@ int getDefaultLocalRescInfo( rescInfo_t **rescInfo ) {
  * \sa None
 **/
 int
-msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei ) {
+msiServerBackup( msParam_t*, msParam_t* keyValOut, ruleExecInfo_t* rei ) {
     keyValPair_t *myKeyVal;						/* for storing results */
     collInp_t collInp;							/* for creating and opening collections */
 

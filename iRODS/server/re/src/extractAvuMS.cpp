@@ -248,7 +248,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
  * \sa none
 **/
 int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
-                                 msParam_t *outValueParam, ruleExecInfo_t *rei ) {
+                                 msParam_t *outValueParam, ruleExecInfo_t* ) {
 
 
     int j;

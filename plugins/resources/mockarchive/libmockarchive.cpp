@@ -156,8 +156,6 @@ irods::error unix_check_params_and_path(
 // =-=-=-=-=-=-=-
 //@brief Recursively make all of the dirs in the path
 irods::error mock_archive_mkdir_r(
-    rsComm_t*                      _comm,
-    const std::string&             _results,
     const std::string& path,
     mode_t mode ) {
     irods::error result = SUCCESS();
@@ -725,7 +723,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _op ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
 

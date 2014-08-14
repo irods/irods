@@ -139,16 +139,15 @@ struct */
     initPackedOutputWithBuf( packedOutput_t *packedOutput, void *buf, int len );
     int
     resolvePackedItem( packItem_t *myPackedItem, void **inPtr,
-                       packInstructArray_t *myPackTable, packOpr_t packOpr );
+                       packOpr_t packOpr );
     int
-    resolveIntDepItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable );
+    resolveIntDepItem( packItem_t *myPackedItem );
     int
-    resolveIntInItem( const char *name, packItem_t *myPackedItem,
-                      packInstructArray_t *myPackTable );
+    resolveIntInItem( const char *name, packItem_t *myPackedItem );
     void *
     matchPackInstruct( char *name, packInstructArray_t *myPackTable );
     int
-    resolveDepInArray( packItem_t *myPackedItem, packInstructArray_t *myPackTable );
+    resolveDepInArray( packItem_t *myPackedItem );
     int
     getNumElement( packItem_t *myPackedItem );
     int
@@ -173,8 +172,7 @@ struct */
     packString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
                 packItem_t *myPackedItem, irodsProt_t irodsProt );
     int
-    packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-                   packItem_t *myPackedItem );
+    packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen );
     int
     packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
                    packItem_t *myPackedItem );
@@ -279,9 +277,9 @@ struct */
     unpackXmlStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
                              packItem_t *myPackedItem );
     int
-    iparseDependent( packItem_t *myPackedItem, packInstructArray_t *myPackTable );
+    iparseDependent( packItem_t *myPackedItem );
     int
-    resolveStrInItem( packItem_t *myPackedItem, packInstructArray_t *myPackTable );
+    resolveStrInItem( packItem_t *myPackedItem );
     int
     packNullString( packedOutput_t *packedOutput );
     int

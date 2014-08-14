@@ -1054,7 +1054,6 @@ extern "C" {
     irods::error compound_file_redirect_create(
         irods::resource_plugin_context& _ctx,
         const std::string&               _operation,
-        const std::string&               _resc_name,
         const std::string*               _curr_host,
         irods::hierarchy_parser*        _out_parser,
         float*                           _out_vote ) {
@@ -1493,7 +1492,7 @@ extern "C" {
                 ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return compound_file_redirect_create( _ctx, ( *_opr ), resc_name, _curr_host, _out_parser, _out_vote );
+            return compound_file_redirect_create( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
 
         }
 
@@ -1559,7 +1558,7 @@ extern "C" {
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& _pdmo ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
             return ERROR( -1, "nop" );
         }
 

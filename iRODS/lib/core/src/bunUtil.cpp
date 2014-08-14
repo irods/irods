@@ -16,8 +16,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp,
-                                         rodsPathInp );
+    int savedStatus = initCondForBunOpr( myRodsEnv, myRodsArgs, &structFileExtAndRegInp );
     if ( savedStatus < 0 ) {
         return savedStatus;
     }
@@ -74,8 +73,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                   structFileExtAndRegInp_t *structFileExtAndRegInp,
-                   rodsPathInp_t *rodsPathInp ) {
+                   structFileExtAndRegInp_t *structFileExtAndRegInp ) {
     if ( structFileExtAndRegInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "initCondForBunOpr: NULL structFileExtAndRegInp input" );
