@@ -8,11 +8,14 @@
 namespace irods {
 
 namespace {
+const SHA256Strategy _sha256;
+const MD5Strategy _md5;
+
 boost::unordered_map<const std::string, const HashStrategy*>
 make_map() {
     boost::unordered_map<const std::string, const HashStrategy*> map;
-    map[ SHA256_NAME ] = new SHA256Strategy();
-    map[ MD5_NAME ] = new MD5Strategy();
+    map[ SHA256_NAME ] = &_sha256;
+    map[ MD5_NAME ] = &_md5;
     return map;
 }
 
