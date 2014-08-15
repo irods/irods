@@ -94,6 +94,7 @@ _rcConnect( char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setUserInfo failed\n" );
         }
+        free( conn->thread_ctx );
         free( conn );
         return NULL;
     }
@@ -108,6 +109,7 @@ _rcConnect( char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setRhostInfo failed\n" );
         }
+        free( conn->thread_ctx );
         free( conn );
         return NULL;
     }
@@ -131,6 +133,7 @@ _rcConnect( char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: connectToRhost failed\n" );
         }
+        free( conn->thread_ctx );
         free( conn );
         return NULL;
     }
