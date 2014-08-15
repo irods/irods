@@ -78,6 +78,10 @@ freeFileDesc( int fileInx ) {
         free( FileDesc[fileInx].fileName );
     }
 
+    if ( FileDesc[fileInx].objPath != NULL ) {
+        free( FileDesc[fileInx].objPath );
+    }
+
     if ( FileDesc[fileInx].rescHier != NULL ) {
         free( FileDesc[fileInx].rescHier );
     }
