@@ -109,7 +109,6 @@ main( int, char ** ) {
 
     if ( status < 0 ) {
         sendVersion( net_obj, status, 0, NULL, 0 );
-        unregister_handlers();
         cleanupAndExit( status );
     }
 
@@ -144,7 +143,6 @@ main( int, char ** ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: getRodsEnv failed" );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
         cleanupAndExit( status );
     }
 
@@ -197,7 +195,6 @@ main( int, char ** ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: initAgent failed: %d", status );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
         cleanupAndExit( status );
     }
 
@@ -211,7 +208,6 @@ main( int, char ** ) {
 
         if ( status < 0 ) {
             sendVersion( net_obj, status, 0, NULL, 0 );
-            unregister_handlers();
             cleanupAndExit( status );
         }
     }
@@ -229,7 +225,6 @@ main( int, char ** ) {
             // or use the error stack rule engine thingie
             irods::log( PASS( ret ) );
             sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-            unregister_handlers();
             cleanupAndExit( ret.code() );
 
         }
@@ -250,7 +245,6 @@ main( int, char ** ) {
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
         cleanupAndExit( status );
     }
 
@@ -284,7 +278,6 @@ main( int, char ** ) {
     }
 
     new_net_obj->to_server( &rsComm );
-    unregister_handlers();
     cleanup();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );

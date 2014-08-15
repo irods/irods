@@ -186,7 +186,6 @@ xmsgServerMain() {
         // or use the error stack rule engine thingie
         irods::log( PASS( ret ) );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
-        unregister_handlers();
         cleanupAndExit( ret.code() );
 
     }

@@ -4,17 +4,10 @@
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
-#if defined(osx_platform)
-#include <sys/malloc.h>
-#else
-#include <malloc.h>
-#endif
 
 // Define signal handlers for irods
 
 extern "C" {
-
-    static struct sigaction* action = 0;
 
     /// @brief Signal handler for seg faults
     static void segv_handler(
@@ -25,19 +18,14 @@ extern "C" {
         exit( signal );
     }
 
-
     void register_handlers( void ) {
-        action = ( struct sigaction* )malloc( sizeof( struct sigaction ) );
-        memset( action, 0, sizeof( struct sigaction ) );
-        action->sa_handler = segv_handler;
+        struct sigaction action;
+        memset( &action, 0, sizeof( action ) );
+        action.sa_handler = segv_handler;
 #ifndef RELEASE_FLAG
-        sigaction( 11, action, 0 );
-        sigaction( 6, action, 0 );
-        sigaction( 2, action, 0 );
+        sigaction( SIGSEGV, &action, 0 );
+        sigaction( SIGABRT, &action, 0 );
+        sigaction( SIGINT, &action, 0 );
 #endif
-    }
-
-    void unregister_handlers() {
-        free( action );
     }
 };
