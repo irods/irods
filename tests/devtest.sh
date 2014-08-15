@@ -112,7 +112,6 @@ else
     $PYTHONCMD $OPTS test_icommands_recursive
     $PYTHONCMD $OPTS test_imeta_set
     $PYTHONCMD $OPTS test_allrules
-    $PYTHONCMD $OPTS rulebase_suite
     $PYTHONCMD $OPTS iadmin_suite
 
     # run DICE developed perl-based devtest suite
@@ -163,6 +162,7 @@ EOF
         ################################################
     fi
 
+    $PYTHONCMD $OPTS rulebase_suite
 fi
 
 
