@@ -10,6 +10,7 @@
 #include "irods_children_parser.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_resource_constants.hpp"
 
 #include <iostream>
 #include <vector>
@@ -236,14 +237,19 @@ void printRescTree( const std::string& node_name, std::string depth ) {
     resc_index = resc_map[node_name];
     std::string& children_str = resc_children[resc_index];
 
-    // if leaf print name
-    if ( children_str.empty() ) {
-        std::cout << node_name << std::endl;
-        return;
+    // print node name, and type if not UFS
+    if (resc_types[resc_index] != irods::RESOURCE_TYPE_NATIVE) {
+    	std::cout << node_name << ":" << resc_types[resc_index] << std::endl;
+    }
+    else {
+    	std::cout << node_name << std::endl;
+
     }
 
-    // print coordinating node name and type
-    std::cout << node_name << ":" << resc_types[resc_index] << std::endl;
+    // if leaf we're done
+    if ( children_str.empty() ) {
+        return;
+    }
 
 
     // print children

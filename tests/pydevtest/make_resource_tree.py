@@ -7,6 +7,7 @@ import random
 import socket
 
 
+EMPTY_CTXT_STR = "''"
 
 def main(width, max_depth):
 	
@@ -36,8 +37,6 @@ def main(width, max_depth):
 	
 	# make nodes
 	for index in range(0, width):
-		resc_type = 'unixfilesystem' # default
-	
 		# name resource
 		name = 'resc{0}'.format(index)
 	
@@ -56,10 +55,15 @@ def main(width, max_depth):
 	
 		# determine if inode or leaf (with 25% and 75% probability)
 		node_type = random.choice(['inode'] + ['leaf']*3)
+		
+		# IF LEAF
+		if node_type == 'leaf':
+			# determine storage resource type (80% probability of UFS, 10% nonblocking, 10% mockarchive)
+			resc_type = random.choice(['unixfilesystem']*8 + ['nonblocking','mockarchive'])
 	
 		# IF INODE
 		if node_type == 'inode':
-			# determine resource type
+			# determine coordinating resource type
 			resc_type = random.choice(['replication','random','roundrobin','passthru'])
 	
 			# determine if resource should be added to inodes (available as parent)
@@ -85,8 +89,8 @@ def main(width, max_depth):
 	# MAKE RESOURCES
 	for name in tree.keys():
 		# test
-		print "iadmin mkresc {0} {1} {2}:/tmp/{0}".format(name, tree[name][0], hostname)
-		args = ['/usr/bin/iadmin', 'mkresc', name, tree[name][0], "{0}:/tmp/{1}".format(hostname, name)]
+		print "iadmin mkresc {0} {1} {2}:/tmp/{0} {3}".format(name, tree[name][0], hostname, EMPTY_CTXT_STR)
+		args = ['/usr/bin/iadmin', 'mkresc', name, tree[name][0], "{0}:/tmp/{1}".format(hostname, name), EMPTY_CTXT_STR]
 		#print args
 	
 		# run command
