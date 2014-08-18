@@ -16,7 +16,7 @@
 char cwd[BIG_STR];
 
 int debug = 0;
-int testMode = 0; /* some some particular internal tests */
+int testMode = 0; /* some particular internal tests */
 int longMode = 0; /* more detailed listing */
 int upperCaseFlag = 0;
 
@@ -1419,7 +1419,7 @@ main( int argc, char **argv ) {
     j = 0;
     for ( i = argOffset; i < argc; i++ ) {
         if ( j >= maxCmdTokens ) {
-            printf( "Unrecognzied input, too many input tokens\n" );
+            printf( "Unrecognized input, too many input tokens\n" );
             exit( 4 );
         }
         cmdToken[j++] = argv[i];
