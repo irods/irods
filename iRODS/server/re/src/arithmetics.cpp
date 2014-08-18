@@ -838,6 +838,8 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
     }
 }
 
+
+
 /**
  * execute micro service msiName
  */
@@ -983,14 +985,13 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     /* params */
     for ( i = 0; i < numOfStrArgs; i++ ) {
         if ( myArgv[i] != NULL ) {
-            int ret =
-                convertMsParamToResAndFreeNonIRODSType( myArgv[i], args[i], errmsg, r );
-            if ( ret != 0 ) {
+			res = convertMsParamToRes(myArgv[i], errmsg, r);
+            if(res != NULL && getNodeType(res) == N_ERROR) {
                 generateErrMsg( "execMicroService3: error converting arguments from MsParam", NODE_EXPR_POS( node ), node->base, errbuf );
                 addRErrorMsg( errmsg, ret, errbuf );
-                res = newErrorRes( r, ret );
                 RETURN;
             }
+            args[i] = res;
         }
         else {
             args[i] = NULL;
