@@ -1907,8 +1907,23 @@ Zone
 Known Issues
 ------------
 
-.. include:: KNOWN_ISSUES
-    :literal:
+Marked as "bug"
+---------------
+
+All existing issues marked as "bug" are tracked at github:
+
+  https://github.com/irods/irods/labels/bug
+
+Using 3.x iCommands with a 4.0+ iRODS Server
+--------------------------------------------
+
+3.x iCommands retain basic functionality when speaking with a 4.0+ iRODS Server.
+
+However, operations much more complicated than simple puts and gets are likely to hit cases where the 3.x iCommands do not have sufficient information to continue or they do not recognize the results returned by the Server.
+
+This is largely due to the SSL handshaking and resource hierarchies in 4.0+.
+
+It is recommended to use the supported iCommands from 4.0+.
 
 -------------------
 History of Releases
