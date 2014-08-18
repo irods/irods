@@ -12,6 +12,7 @@ import datetime
 import time
 import shutil
 import random
+import subprocess
 
 class ChunkyDevTest(ResourceBase):
 
@@ -81,6 +82,12 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest/foo1", "LIST", ["180"] )
         assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest/foo1", "LIST", ["cm"] )
         assertiCmd(s.adminsession,"icp -K -R "+self.testresc+" "+irodshome+"/icmdtest/foo1 "+irodshome+"/icmdtest/foo2" )
+        
+        # test imeta -v
+        imeta_output = subprocess.check_output('echo "ls -d icmdtest/foo1" | imeta -v', shell=True)
+        assert imeta_output.find('testmeta1') > -1
+        assert imeta_output.find('180') > -1
+        assert imeta_output.find('cm') > -1
         
         # new file mode check
         assertiCmd(s.adminsession,"iget -fK --rlock "+irodshome+"/icmdtest/foo2 /tmp/" )

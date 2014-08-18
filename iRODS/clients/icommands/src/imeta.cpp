@@ -1168,6 +1168,10 @@ doCommand( char *cmdToken[] ) {
             strcmp( cmdToken[0], "q" ) == 0 ) {
         return -1;
     }
+    if ( strcmp( cmdToken[0], "-v" ) == 0 ||
+            strcmp( cmdToken[0], "-V" ) == 0 ) {
+        return -3;
+    }
 
     handleMinusL( cmdToken[1] );
     handleMinusL( cmdToken[2] );
@@ -1434,13 +1438,13 @@ main( int argc, char **argv ) {
     if ( cmdToken[0] != NULL && *cmdToken[0] == '-' ) {
         /* args were toggled, switch them back */
         if ( cmdToken[1] != NULL && *cmdToken[1] == '-' ) {
-            cmdToken[0] = argv[argOffset + 2];
-            cmdToken[1] = argv[argOffset];
-            cmdToken[2] = argv[argOffset + 1];
+            if (argv[argOffset + 2]) cmdToken[0] = argv[argOffset + 2];
+            if (argv[argOffset]) cmdToken[1] = argv[argOffset];
+            if (argv[argOffset + 1]) cmdToken[2] = argv[argOffset + 1];
         }
         else {
-            cmdToken[0] = argv[argOffset + 1];
-            cmdToken[1] = argv[argOffset];
+            if (argv[argOffset + 1]) cmdToken[0] = argv[argOffset + 1];
+            if (argv[argOffset]) cmdToken[1] = argv[argOffset];
         }
     }
 #else
