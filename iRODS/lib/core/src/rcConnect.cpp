@@ -282,9 +282,6 @@ int rcDisconnect(
         boost::system_time until = boost::get_system_time() + boost::posix_time::seconds( 2 );
         _conn->thread_ctx->reconnThr->timed_join( until );    // force an interruption point
     }
-    delete  _conn->thread_ctx->reconnThr;
-    delete  _conn->thread_ctx->lock;
-    delete  _conn->thread_ctx->cond;
 
     status = freeRcComm( _conn );
     return status;
@@ -319,6 +316,13 @@ cleanRcComm( rcComm_t *conn ) {
         free( conn->svrVersion );
         conn->svrVersion = NULL;
     }
+    if ( conn->thread_ctx != NULL ) {
+        delete  conn->thread_ctx->reconnThr;
+        delete  conn->thread_ctx->lock;
+        delete  conn->thread_ctx->cond;
+    }
+    free( conn->thread_ctx );
+    conn->thread_ctx = NULL;
 
     return 0;
 }

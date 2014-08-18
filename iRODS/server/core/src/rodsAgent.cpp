@@ -285,10 +285,10 @@ main( int, char ** ) {
 
     new_net_obj->to_server( &rsComm );
     unregister_handlers();
-    cleanupAndExit( status );
-
+    cleanup();
     free( rsComm.thread_ctx );
-
+    free( rsComm.auth_scheme );
+    rodsLog( LOG_NOTICE, "Agent exiting with status = %d", status );
     return status;
 }
 

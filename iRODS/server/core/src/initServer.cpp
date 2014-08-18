@@ -1393,10 +1393,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
 }
 
 void
-cleanupAndExit( int status ) {
-    rodsLog( LOG_NOTICE,
-             "Agent exiting with status = %d", status );
-
+cleanup() {
 #ifdef RODS_CAT
     disconnectRcat();
 #endif
@@ -1410,6 +1407,14 @@ cleanupAndExit( int status ) {
         /* close any opened server to server connection */
         disconnectAllSvrToSvrConn();
     }
+}
+
+void
+cleanupAndExit( int status ) {
+    rodsLog( LOG_NOTICE,
+             "Agent exiting with status = %d", status );
+
+    cleanup();
 
     if ( status >= 0 ) {
         exit( 0 );

@@ -183,6 +183,7 @@ int
 setExecArg( char *commandArgv, char *av[] );
 int
 initAgent( int processType, rsComm_t *rsComm );
+void cleanup();
 void cleanupAndExit( int status );
 void signalExit( int );
 void
