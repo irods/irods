@@ -91,8 +91,9 @@ cd $IRODSROOT
 $IRODSROOT/iRODS/irodsctl restart
 
 # run core.re fastswap test
-cd $IRODSROOT/tests/pydevtest
-./rulebase_fastswap_test_2276.sh
+# uncomment this once file hash fix committed #2279
+#cd $IRODSROOT/tests/pydevtest
+#./rulebase_fastswap_test_2276.sh
 
 # run RENCI developed python-based devtest suite (or just specified tests)
 # ( equivalent of original icommands and irules )

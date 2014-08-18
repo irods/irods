@@ -9,6 +9,7 @@ import pydevtest_sessions as s
 import commands
 import os
 import socket
+import time # remove once file hash fix is commited #2279
 
 class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
 
@@ -34,7 +35,9 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
 
         # add acPostProcForPut replication rule
         os.system('''sed -e '/^acPostProcForPut/i acPostProcForPut { replicateMultiple( "r1,r2" ); }' /etc/irods/core.re > /tmp/irods/core.re''')
+        time.sleep(1) # remove once file hash fix is commited #2279
         os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
 
         # add new rule to end of core.re
         newrule = """
@@ -63,7 +66,9 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
         f.write(newrule)
         f.close()
         os.system("cat /etc/irods/core.re /tmp/irods/newrule > /tmp/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
         os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
 
         # put data
         tfile = "rulebasetestfile"
@@ -81,4 +86,6 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc r2")
 
         # restore core.re
+        time.sleep(1) # remove once file hash fix is commited #2279
         os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
