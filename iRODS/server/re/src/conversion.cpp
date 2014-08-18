@@ -211,12 +211,12 @@ int convertMsParamToRes( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) 
 
 }
 Res* convertMsParamToRes(msParam_t* myArgv, rError_t* errmsg, Region* r) {
-	Res* res = newRes(r); /* we need to create a new res here to make keep all res'es immutable */
-	int ret = convertMsParamToResAndFreeNonIRODSType(myArgv, res, errmsg, r);
-	if (ret != 0) {
-		res = newErrorRes(r, ret);
-	}
-	return res;
+    Res* res = newRes(r); /* we need to create a new res here to make keep all res'es immutable */
+    int ret = convertMsParamToResAndFreeNonIRODSType(myArgv, res, errmsg, r);
+    if (ret != 0) {
+        res = newErrorRes(r, ret);
+    }
+    return res;
 }
 int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, rError_t *errmsg, Region *r ) {
 #ifdef DEBUG
