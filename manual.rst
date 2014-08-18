@@ -1932,6 +1932,11 @@ History of Releases
 ==========   =========    ======================================================
 Date         Version      Description
 ==========   =========    ======================================================
+2014-08-20   4.0.3        Third Point Release
+                            More flexible installation options (service
+                            account name/group), block storage operation fix,
+                            impostor resource, memory leak fixes,
+                            and security fixes.
 2014-06-17   4.0.2        Second Point Release
                             Random and RoundRobin resource plugin fix, memory
                             leak fixes, microservice fixes, security fixes,
