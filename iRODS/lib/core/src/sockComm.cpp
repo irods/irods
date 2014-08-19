@@ -10,6 +10,7 @@
 #include "getHostForPut.hpp"
 #include "getHostForGet.hpp"
 #include "QUANTAnet_rbudpBase_c.hpp"
+#include "rcConnect.hpp"
 
 #ifdef windows_platform
 #include "irodsntutil.hpp"
@@ -1360,7 +1361,7 @@ rods_inet_ntoa( struct in_addr in ) {
 
     clHostAddr = inet_ntoa( in );
 
-    if ( strcmp( clHostAddr, "127.0.0.1" ) == 0 ||
+    if ( isLoopbackAddress( clHostAddr ) ||
             strcmp( clHostAddr, "0.0.0.0" ) == 0 ) { /* localhost */
         char sb[LONG_NAME_LEN];
         struct hostent *phe;

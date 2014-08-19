@@ -21,6 +21,7 @@
 #include "dataObjWrite.hpp"
 #include "dataObjRead.hpp"
 #include "rcPortalOpr.hpp"
+#include "rcConnect.hpp"
 #include "initServer.hpp"
 #include "reFuncDefs.hpp"
 #ifdef PARA_OPR
@@ -2401,7 +2402,7 @@ svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     }
 
     if ( addr != NULL && *addr != NULL &&
-            ( strcmp( *addr, "127.0.0.1" ) == 0 || strcmp( *addr, "0.0.0.0" ) == 0 ||
+            ( isLoopbackAddress( *addr ) || strcmp( *addr, "0.0.0.0" ) == 0 ||
               strcmp( *addr, "localhost" ) == 0 ) ) {
         /* localhost */
         char *myaddr;
@@ -2438,7 +2439,7 @@ _getSvrAddr( rodsServerHost_t *rodsServerHost ) {
     tmpHostName = rodsServerHost->hostName;
     while ( tmpHostName != NULL ) {
         if ( strcmp( tmpHostName->name, "localhost" ) != 0 &&
-                strcmp( tmpHostName->name, "127.0.0.1" ) != 0 &&
+                !isLoopbackAddress( tmpHostName->name ) &&
                 strcmp( tmpHostName->name, "0.0.0.0" ) != 0 &&
                 strchr( tmpHostName->name, '.' ) != NULL ) {
             return tmpHostName->name;

@@ -9,10 +9,10 @@
 # The third and fourth columns specify the address and the address mask.
 # Together, they define the client IP addresses/domains that are permitted
 # to connect to the iRODS server. The address column specifies the IP
-# address and the Mask column specifies which bits that will be ignored. 
-# i.e., after those bits are taken out, the connection address 
+# address and the Mask column specifies which bits that will be ignored.
+# i.e., after those bits are taken out, the connection address
 # must match the address in the address column.
 #
 # <name>   <group>   <address>     <mask>
 #
-#all all 127.0.0.1 255.255.255.255
+#all all 127.0.0.0 255.0.0.0

@@ -277,6 +277,8 @@ extern "C" {
     cliChkReconnAtReadStart( rcComm_t *conn );
     int
     cliChkReconnAtReadEnd( rcComm_t *conn );
+    int
+    isLoopbackAddress( const char* ip_address );
 
 #ifdef __cplusplus
 }

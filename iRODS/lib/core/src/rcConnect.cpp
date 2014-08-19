@@ -13,6 +13,7 @@
 #endif
 
 #include <boost/thread/thread_time.hpp>
+#include <boost/asio.hpp>
 
 // =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"
@@ -142,7 +143,7 @@ _rcConnect( char *rodsHost, int rodsPort,
     if ( reconnFlag == RECONN_TIMEOUT &&
             conn->svrVersion != NULL &&
             conn->svrVersion->reconnPort > 0 ) {
-        if ( strcmp( conn->svrVersion->reconnAddr, "127.0.0.1" ) == 0 ||
+        if ( isLoopbackAddress( conn->svrVersion->reconnAddr ) ||
                 strcmp( conn->svrVersion->reconnAddr , "0.0.0.0" ) == 0 ||
                 strcmp( conn->svrVersion->reconnAddr , "localhost" ) ) {
             /* localhost. just use conn->host */
@@ -550,4 +551,11 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
     return 0;
 }
 
-
+int
+isLoopbackAddress( const char * ip_address ) {
+    try {
+        return boost::asio::ip::address_v4::from_string( ip_address ).is_loopback();
+    } catch ( ... ) {
+        return false;
+    }
+}
