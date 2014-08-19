@@ -983,10 +983,14 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
         if( _rodsArgs->force == True ) {
+            int path_index = 1;
+#ifdef osx_platform
+            path_index = 2;
+#endif
             generalAdmin( 0, "add", "dir",
-                          cmdToken[1], cmdToken[2],
-                          cmdToken[3], cmdToken[4],
-                          cmdToken[5], cmdToken[6],
+                          cmdToken[path_index], "",
+                          "", "",
+                          "", "",
                           "", "" );
         } else {
             usage( "mkdir" );
@@ -1360,6 +1364,21 @@ main( int argc, char **argv ) {
     int firstTime;
 
     status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
+
+#ifdef osx_platform
+    // getopt has different behavior on OSX, we work around this for
+    // the one specific instance where mkdir is use with a force flag
+    // this will be refactored in the future to use the boost::program_options
+    // to remove the need for this gratuitous hack
+    if( argc > 2 ) {
+	    std::string sub_cmd   = argv[1];
+	    std::string force_flg = argv[2];
+	    if( "mkdir" == sub_cmd && "-f" == force_flg ) {
+		myRodsArgs.force = True;
+	    }
+    } // if argc
+#endif
+
 
     if ( status ) {
         printf( "Use -h for help.\n" );
