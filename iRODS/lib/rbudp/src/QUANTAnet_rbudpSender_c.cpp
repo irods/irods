@@ -296,31 +296,32 @@ int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
                  char *fname ) {
     int tcpSockfd = rbudpSender->rbudpBase.tcpSockfd;
     int verbose = rbudpSender->rbudpBase.verbose;
-    int status;
 
     // Receive the getfile message
-    char fnameRead[SIZEOFFILENAME];
-    if ( fname == ( char * ) 0 ) {
+    std::string filename_string;
+    if ( fname ) {
+        filename_string = std::string( fname );
+    }
+    else {
+        char fnameRead[SIZEOFFILENAME];
         int n = readn( tcpSockfd, fnameRead, SIZEOFFILENAME );
         if ( n < 0 ) {
             fprintf( stderr, "read error.\n" );
             return FAILED;
         }
-        else {
-            fname = fnameRead;
-        }
+        filename_string = std::string( fnameRead, n );
     }
 
     if ( verbose > 0 ) {
-        fprintf( stderr, "Send file %s\n", fname );
+        fprintf( stderr, "Send file %s\n", filename_string.c_str() );
     }
 
-    int fd = open( fname, O_RDONLY );
+    int fd = open( filename_string.c_str(), O_RDONLY );
     if ( fd < 0 ) {
         fprintf( stderr, "open file failed.\n" );
         return FAILED;
     }
-    status = sendfileByFd( rbudpSender, sendRate, packetSize, fd );
+    int status = sendfileByFd( rbudpSender, sendRate, packetSize, fd );
     close( fd );
 
     return status;
