@@ -1133,7 +1133,8 @@ sub stopIrods
         system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
         # remove shared memory mutex and semaphore
         # this will be handled more cleanly when servers can be gracefully shutdown
-        system( "rm -f /var/run/shm/*var_lib_irods_iRODS_server_config*" );
+        system( "rm -f /var/run/shm/*re_cache_*iRODS*" ); # ubuntu
+        system( "rm -f /dev/shm/*re_cache_*iRODS*" );     # centos, suse, arch
 
 	# Report if there are any left.
 	my $didNotDie = 0;
