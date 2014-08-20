@@ -38,7 +38,7 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     tar xf $UNITTEST2VERSION.tar
     cd $UNITTEST2VERSION
     $PYTHON setup.py build
-    cd ..
+    cd -
     PYTHONCMD="./unit2"
 else
     # python 2.7+
@@ -87,17 +87,15 @@ set -e
 set -x
 
 # restart the server, to exercise that code
-cd $IRODSROOT
 $IRODSROOT/iRODS/irodsctl restart
 
 # run core.re fastswap test
 # uncomment this once file hash fix committed #2279
-#cd $IRODSROOT/tests/pydevtest
+cd $IRODSROOT/tests/pydevtest
 #./rulebase_fastswap_test_2276.sh
 
 # run RENCI developed python-based devtest suite (or just specified tests)
 # ( equivalent of original icommands and irules )
-cd $IRODSROOT/tests/pydevtest
 if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
@@ -121,19 +119,16 @@ else
 
     # run DICE developed perl-based devtest suite
     if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then
-        cd $IRODSROOT
         $IRODSROOT/iRODS/irodsctl devtesty
     fi
 
     # run authentication tests
     if [ "$IRODSDEVTESTCI" == "true" ] ; then
-        cd $IRODSROOT/tests/pydevtest
         $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
     fi
 
     # run OSAuth test by itself
     if [ "$IRODSDEVTESTCI" == "true" ] ; then
-        cd $IRODSROOT/tests/pydevtest
         set +e
         passwd <<EOF
 temporarypasswordforci
@@ -154,7 +149,6 @@ EOF
             exit $PASSWDRESULT
         fi
         set -e
-        cd $IRODSROOT/tests/pydevtest
         $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
         ################################################
         # note:
