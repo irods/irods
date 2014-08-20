@@ -24,6 +24,7 @@
 #include "rodsErrorTable.hpp"
 
 #include <stdarg.h>
+#include <string>
 
 // If you want to output debug info on terminals when running, put
 //  fprintf(stderr, __VA_ARGS__);
@@ -398,63 +399,61 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
     int verbose = rbudpSender->rbudpBase.verbose;
 
     // Receive the getfile message
-    char fname[SIZEOFFILENAME];
-    int isFinished = 0;
 
-    while ( !isFinished ) {
+    while ( true ) {
+        char fname[SIZEOFFILENAME];
         int n = readn( tcpSockfd, fname, SIZEOFFILENAME );
         if ( n <= 0 ) {
             fprintf( stderr, "read error.\n" );
             return FAILED;
         }
 
-        // If not "finish" signal (All zero), continue to send.
+        // If "finish" signal (All zero), return success.
         char test[SIZEOFFILENAME];
-        bzero( ( void* )test, SIZEOFFILENAME );
-        if ( strcmp( test, fname ) != 0 ) {
+        memset( ( void* )test, 0, SIZEOFFILENAME );
+        if ( memcmp( test, fname, SIZEOFFILENAME ) == 0 ) {
+            return RB_SUCCESS;
+        }
+        //otherwise, get the filename
+        std::string filename_string( fname, n );
 
-            if ( verbose > 0 ) {
-                fprintf( stderr, "Send file %s\n", fname );
-            }
+        if ( verbose > 0 ) {
+            fprintf( stderr, "Send file %s\n", filename_string.c_str() );
+        }
 
-            struct stat filestat;
-            if ( stat( fname, &filestat ) < 0 ) {
-                fprintf( stderr, "stat error.\n" );
+        struct stat filestat;
+        if ( stat( filename_string.c_str(), &filestat ) < 0 ) {
+            fprintf( stderr, "stat error.\n" );
+            return FAILED;
+        }
+
+        long long filesize = filestat.st_size;
+        if ( verbose > 0 ) {
+            fprintf( stderr, "The size of the file is %lld\n", filesize );
+        }
+
+        long long nfilesize = rb_htonll( filesize );
+
+        // Send the file size to the receiver.
+        if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
+            {
+                fprintf( stderr, "tcp send failed.\n" );
                 return FAILED;
             }
-
-            long long filesize = filestat.st_size;
-            if ( verbose > 0 ) {
-                fprintf( stderr, "The size of the file is %lld\n", filesize );
-            }
-
-            long long nfilesize = rb_htonll( filesize );
-
-            // Send the file size to the receiver.
-            if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
-                {
-                    fprintf( stderr, "tcp send failed.\n" );
-                    return FAILED;
-                }
-            }
-
-            int fd = open( fname, O_RDONLY );
-            if ( fd < 0 ) {
-                fprintf( stderr, "open file failed.\n" );
-                return FAILED;
-            }
-            char *buf = ( char * )mmap( NULL, filesize, PROT_READ, MAP_SHARED, fd, 0 );
-
-            sendBuf( rbudpSender, buf, filesize, sendRate, packetSize );
-
-            munmap( buf, filesize );
-            close( fd );
         }
-        else {
-            isFinished = 1;
+
+        int fd = open( filename_string.c_str(), O_RDONLY );
+        if ( fd < 0 ) {
+            fprintf( stderr, "open file failed.\n" );
+            return FAILED;
         }
+        char *buf = ( char * )mmap( NULL, filesize, PROT_READ, MAP_SHARED, fd, 0 );
+
+        sendBuf( rbudpSender, buf, filesize, sendRate, packetSize );
+
+        munmap( buf, filesize );
+        close( fd );
     }
-    return RB_SUCCESS;
 }
 
 /* sendRate: Kbps */
