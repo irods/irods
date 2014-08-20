@@ -514,7 +514,7 @@ extern "C" {
         if ( _protocol == XML_PROT &&
                 getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "received msg: \n%s\n",
-                    ( char* ) _buffer->buf );
+                    std::string( ( char* )_buffer->buf, _buffer->len ).c_str() );
         }
 
         // =-=-=-=-=-=-=-
