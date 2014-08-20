@@ -430,33 +430,30 @@ obfiGetTv( char *fileName ) {
 
 int
 obfiGetPw( char *fileName, char *pw ) {
-    int fd_in, rval;
-    char buf1[500];
-
 #ifdef windows_platform
-    fd_in = iRODSNt_open( fileName, O_RDONLY, 1 );
+    int fd_in = iRODSNt_open( fileName, O_RDONLY, 1 );
 #else
-    fd_in = open( fileName, O_RDONLY, 0 );
+    int fd_in = open( fileName, O_RDONLY, 0 );
 #endif
 
     if ( fd_in < 0 ) {
         return FILE_OPEN_ERR;
     }
 
-    rval = read( fd_in, buf1, 500 );
+    char buf[MAX_PASSWORD_LEN + 1];
+    memset( buf, 0, sizeof( buf ) );
+    int rval = read( fd_in, buf, MAX_PASSWORD_LEN );
     close( fd_in );
 
     if ( rval < 0 ) {
         return FILE_READ_ERR;
     }
-    if ( strlen( buf1 ) < MAX_PASSWORD_LEN ) {
-        strcpy( pw, buf1 );
-        return 0;
-    }
-    else {
+    if ( strlen( buf ) >= MAX_PASSWORD_LEN ) {
         return PASSWORD_EXCEEDS_MAX_SIZE;
     }
 
+    snprintf( pw, MAX_PASSWORD_LEN, "%s", buf );
+    return 0;
 }
 
 int
