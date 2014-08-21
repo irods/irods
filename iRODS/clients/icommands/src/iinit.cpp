@@ -10,6 +10,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"
 #include "irods_pam_auth_object.hpp"
+#include "irods_gsi_object.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_client_api_table.hpp"
@@ -218,14 +219,6 @@ main( int argc, char **argv ) {
       Now, get the password
      */
     doPassword = 1;
-#if defined(GSI_AUTH)
-    if ( strncmp( "GSI", myEnv.rodsAuthScheme, 3 ) == 0 ) {
-        useGsi = 1;
-        doPassword = 0;
-    }
-#endif
-
-
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
     std::string lower_scheme = myEnv.rodsAuthScheme;;
@@ -234,6 +227,11 @@ main( int argc, char **argv ) {
         lower_scheme.end(),
         lower_scheme.begin(),
         ::tolower );
+
+    if ( irods::AUTH_GSI_SCHEME == lower_scheme ) {
+        useGsi = 1;
+        doPassword = 0;
+    }
 
     if ( irods::AUTH_PAM_SCHEME == lower_scheme ) {
         doPassword = 0;
