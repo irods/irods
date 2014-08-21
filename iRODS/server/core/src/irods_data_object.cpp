@@ -47,6 +47,7 @@ data_object::data_object(
 // public - cctor
 data_object::data_object(
     const data_object& _rhs ) :
+    first_class_object( _rhs ),
     physical_path_( _rhs.physical_path_ ),
     resc_hier_( _rhs.resc_hier_ ),
     mode_( _rhs.mode_ ),

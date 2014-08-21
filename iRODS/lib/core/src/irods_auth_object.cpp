@@ -12,7 +12,8 @@ auth_object::~auth_object() {
 }
 
 auth_object::auth_object(
-    const auth_object& _rhs ) {
+    const auth_object& _rhs ) :
+    first_class_object( _rhs ) {
     r_error_        = _rhs.r_error();
     request_result_ = _rhs.request_result();
     context_        = _rhs.context();

@@ -30,7 +30,8 @@ network_object::network_object(
 // =-=-=-=-=-=-=-
 // public - cctor
 network_object::network_object(
-    const network_object& _rhs ) {
+    const network_object& _rhs ) :
+    first_class_object( _rhs ) {
     socket_handle_ = _rhs.socket_handle_;
 
 } // cctor

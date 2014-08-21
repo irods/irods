@@ -14,7 +14,8 @@ database_object::database_object() {
 // =-=-=-=-=-=-=-
 // public - cctor
 database_object::database_object(
-    const database_object& ) {
+    const database_object& _rhs ) :
+    first_class_object( _rhs ) {
 
 
 } // cctor
