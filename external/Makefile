@@ -179,6 +179,12 @@ boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
 		./bjam link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
+	@sed "99s/return.*\;/return *((atomic_type *)reinterpret_cast< const void * >(\\&(flag.storage)))\;/" $(BOOSTVERSION)/boost/thread/pthread/once_atomic.hpp > /tmp/once_atomic.hpp
+	@rsync -c /tmp/once_atomic.hpp $(BOOSTVERSION)/boost/thread/pthread/once_atomic.hpp
+	@rm -f /tmp/once_atomic.hpp
+	@sed "723s/)\;/) \;/" $(BOOSTVERSION)/boost/lexical_cast.hpp > /tmp/lexical_cast.hpp
+	@rsync -c /tmp/lexical_cast.hpp $(BOOSTVERSION)/boost/lexical_cast.hpp
+	@rm /tmp/lexical_cast.hpp
 
 $(HDF5VERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(HDF5VERSIONARCHIVE) 2>&1
