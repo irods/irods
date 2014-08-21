@@ -28,7 +28,7 @@ LDADD += "-Wl,-E"
 endif
 
 CFLAGS+= -Wno-write-strings
-CFLAGS+= -Wall -Wextra -Werror
+CFLAGS+= -Wall -Wextra #-Werror
 CFLAGS+= -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\"
 CFLAGS+= -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 

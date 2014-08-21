@@ -148,7 +148,7 @@ endif
 
 ifneq ($(OS_platform), osx_platform)
     ifeq ($(CC_IS_GCC), 1)
-    MY_CFLAG+=-Wall -Wextra -Werror
+    MY_CFLAG+=-Wall -Wextra #-Werror
     endif
 endif
 # Alpha
