@@ -769,8 +769,7 @@ initServer( rsComm_t *svrComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
 
 #ifdef windows_platform
-    status = startWinsock();
-    if ( status != 0 ) {
+    if ( int status startWinsock() ) {
         rodsLog( LOG_NOTICE, "initServer: startWinsock() failed. status=%d", status );
         return -1;
     }
@@ -868,14 +867,8 @@ recordServerProcess( rsComm_t *svrComm ) {
 
 int
 initServerMain( rsComm_t *svrComm ) {
-    int status;
-    rodsServerHost_t *reServerHost = NULL;
-    rodsServerHost_t *xmsgServerHost = NULL;
-
-    bzero( svrComm, sizeof( rsComm_t ) );
-
-    status = getRodsEnv( &svrComm->myEnv );
-
+    memset( svrComm, 0, sizeof( *svrComm ) );
+    int status = getRodsEnv( &svrComm->myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "initServerMain: getRodsEnv error. status = %d",
                  status );
@@ -912,6 +905,7 @@ initServerMain( rsComm_t *svrComm ) {
     recordServerProcess( svrComm );
     /* start the irodsReServer */
 #ifndef windows_platform   /* no reServer for Windows yet */
+    rodsServerHost_t *reServerHost = NULL;
     getReHost( &reServerHost );
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
         if ( RODS_FORK() == 0 ) { /* child */
@@ -935,6 +929,7 @@ initServerMain( rsComm_t *svrComm ) {
     else {
         rodsLog( LOG_ERROR, "Cannot open shared memory." );
     }
+    rodsServerHost_t *xmsgServerHost = NULL;
     getXmsgHost( &xmsgServerHost );
     if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {
         if ( RODS_FORK() == 0 ) { /* child */
@@ -950,7 +945,7 @@ initServerMain( rsComm_t *svrComm ) {
     }
 #endif
 
-    return status;
+    return 0;
 }
 
 /* add incoming connection request to the bottom of the link list */
