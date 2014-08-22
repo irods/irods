@@ -1538,16 +1538,16 @@ extern "C" {
             return PASS( ret );
         }
         structFileInx = rsMssoStructFileOpen( _ctx.comm(), fco, 1 );
-        strncpy( MssoStructFileDesc[structFileInx].location,
-                 location.c_str(),
-                 NAME_LEN );
-
         if ( structFileInx < 0 ) {
             std::stringstream msg;
             msg << "mssoSubStructFileOpen: rsMssoStructFileOpen error for ["
                 << specColl->objPath << "]";
             return ERROR( structFileInx, msg.str() );
         }
+
+        strncpy( MssoStructFileDesc[structFileInx].location,
+                 location.c_str(),
+                 NAME_LEN );
 
         /* use the cached specColl. specColl may have changed */
         specColl = MssoStructFileDesc[structFileInx].specColl;
