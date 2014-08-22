@@ -221,7 +221,7 @@ main( int argc, char **argv ) {
     doPassword = 1;
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
-    std::string lower_scheme = myEnv.rodsAuthScheme;;
+    std::string lower_scheme = myEnv.rodsAuthScheme;
     std::transform(
         lower_scheme.begin(),
         lower_scheme.end(),
