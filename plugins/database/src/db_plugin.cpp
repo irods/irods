@@ -2301,9 +2301,8 @@ extern "C" {
         char newCopy[NAME_LEN];
         int adminMode = 0;
 
-        int maxCols = 90;
-        char *updateCols[90];
-        char *updateVals[90];
+        std::vector<char *> updateCols;
+        std::vector<char *> updateVals;
 
         /* regParamNames has the argument names (in _reg_param) that this
            routine understands and colNames has the corresponding column
@@ -2349,14 +2348,11 @@ extern "C" {
         }
 
         /* Set up the updateCols and updateVals arrays */
-        for ( i = 0, j = 0; i < maxCols; i++ ) {
-            if ( strcmp( regParamNames[i], "END" ) == 0 ) {
-                break;
-            }
+        for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
             theVal = getValByKey( _reg_param, regParamNames[i] );
             if ( theVal != NULL ) {
-                updateCols[j] = colNames[i];
-                updateVals[j] = theVal;
+                updateCols.push_back( colNames[i] );
+                updateVals.push_back( theVal );
                 if ( i == DATA_EXPIRY_TS_IX ) {
                     /* if data_expiry, make sure it's
                                                    in the standard time-stamp
@@ -2618,8 +2614,8 @@ extern "C" {
             }
             status = cmlModifySingleTable(
                          "R_DATA_MAIN",
-                         updateCols,
-                         updateVals,
+                         &( updateCols[0] ),
+                         &( updateVals[0] ),
                          whereColsAndConds,
                          whereValues,
                          upCols,
@@ -2638,8 +2634,8 @@ extern "C" {
             }
             status = cmlModifySingleTable(
                          "R_DATA_MAIN",
-                         updateCols,
-                         updateVals,
+                         &( updateCols[0] ),
+                         &( updateVals[0] ),
                          whereColsAndConds,
                          whereValues,
                          upCols,
@@ -2657,7 +2653,7 @@ extern "C" {
                 if ( logSQL != 0 ) {
                     rodsLog( LOG_SQL, "chlModDataObjMeta SQL 6" );
                 }
-                status2 = cmlModifySingleTable( "R_DATA_MAIN", updateCols, updateVals,
+                status2 = cmlModifySingleTable( "R_DATA_MAIN", &( updateCols[0] ), &( updateVals[0] ),
                                                 whereColsAndConds, whereValues, 1,
                                                 numConditions, &icss );
 
@@ -3642,8 +3638,6 @@ extern "C" {
         char tSQL[MAX_SQL_SIZE];
         char *theVal = 0;
 
-        int maxCols = 90;
-
         /* regParamNames has the argument names (in regParam) that this
            routine understands and colNames has the corresponding column
            names; one for one. */
@@ -3669,10 +3663,7 @@ extern "C" {
 
         snprintf( tSQL, MAX_SQL_SIZE, "update R_RULE_EXEC set " );
 
-        for ( i = 0, j = 0; i < maxCols; i++ ) {
-            if ( strcmp( regParamNames[i], "END" ) == 0 ) {
-                break;
-            }
+        for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
             theVal = getValByKey( _reg_param, regParamNames[i] );
             if ( theVal != NULL ) {
                 if ( j > 0 ) {
