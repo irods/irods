@@ -291,7 +291,7 @@ int createMacorsIndex() {
     assert( 0 );
 }
 /* find the ith RuleIndexListNode */
-int findNextRuleFromIndex( Env *ruleIndex, char *action, int i, RuleIndexListNode **node ) {
+int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexListNode **node ) {
     int k = i;
     if ( ruleIndex != NULL ) {
         FunctionDesc *fd = ( FunctionDesc * )lookupFromHashTable( ruleIndex->current, action );
