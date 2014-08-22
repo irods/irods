@@ -1046,21 +1046,17 @@ int
 getRule( int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
          char *ruleAction, char *ruleRecovery, int rSize ) {
 
-    if ( ri < CORE_RULE_INDEX_OFF ) {
-        rstrcpy( ruleBase , appRuleStrct.ruleBase[ri], rSize );
-        rstrcpy( ruleHead , appRuleStrct.ruleHead[ri], rSize );
-        rstrcpy( ruleCondition , appRuleStrct.ruleCondition[ri], rSize );
-        rstrcpy( ruleAction , appRuleStrct.ruleAction[ri], rSize );
-        rstrcpy( ruleRecovery , appRuleStrct.ruleRecovery[ri], rSize );
+    ruleStruct_t& ruleStruct = ri < CORE_RULE_INDEX_OFF ? appRuleStrct : coreRuleStrct;
+    int rule_index = ri < CORE_RULE_INDEX_OFF ? ri : ri - CORE_RULE_INDEX_OFF;
+    if ( rule_index >= MAX_NUM_OF_RULES ) {
+        rodsLog( LOG_ERROR, "Failed to get rule at %d", ri );
+        return SYS_RULE_NOT_FOUND;
     }
-    else {
-        ri = ri - CORE_RULE_INDEX_OFF;
-        rstrcpy( ruleBase , coreRuleStrct.ruleBase[ri], rSize );
-        rstrcpy( ruleHead , coreRuleStrct.ruleHead[ri], rSize );
-        rstrcpy( ruleCondition , coreRuleStrct.ruleCondition[ri], rSize );
-        rstrcpy( ruleAction , coreRuleStrct.ruleAction[ri], rSize );
-        rstrcpy( ruleRecovery , coreRuleStrct.ruleRecovery[ri], rSize );
-    }
+    rstrcpy( ruleBase , ruleStruct.ruleBase[rule_index], rSize );
+    rstrcpy( ruleHead , ruleStruct.ruleHead[rule_index], rSize );
+    rstrcpy( ruleCondition , ruleStruct.ruleCondition[rule_index], rSize );
+    rstrcpy( ruleAction , ruleStruct.ruleAction[rule_index], rSize );
+    rstrcpy( ruleRecovery , ruleStruct.ruleRecovery[rule_index], rSize );
     return 0;
 }
 
