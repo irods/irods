@@ -26,7 +26,7 @@ int readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapD
 
 int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef );
 
-int findNextRule( char *action,  int *ruleInx );
+int findNextRule( const char *action,  int *ruleInx );
 
 int getRule( int ri, char *ruleBase, char *ruleHead, char *ruleCondition,
              char *ruleAction, char *ruleRecovery, int rSize );

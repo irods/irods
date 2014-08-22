@@ -994,7 +994,7 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
 }
 
 int
-findNextRule( char *action,  int *ruleInx ) {
+findNextRule( const char *action,  int * ruleInx ) {
     int i;
     i = *ruleInx;
     i++;
@@ -1003,7 +1003,7 @@ findNextRule( char *action,  int *ruleInx ) {
         i = 0;
     }
     if ( i < APP_RULE_INDEX_OFF ) {
-        for ( ; i < appRuleStrct.MaxNumOfRules; i++ ) {
+        for ( ; i < appRuleStrct.MaxNumOfRules && i < MAX_NUM_OF_RULES; i++ ) {
             if ( !strcmp( appRuleStrct.action[i], action ) ) {
                 *ruleInx = i;
                 return 0;
@@ -1013,7 +1013,7 @@ findNextRule( char *action,  int *ruleInx ) {
     }
     i  = i - APP_RULE_INDEX_OFF;
     if ( i < CORE_RULE_INDEX_OFF ) {
-        for ( ; i < appRuleStrct.MaxNumOfRules; i++ ) {
+        for ( ; i < appRuleStrct.MaxNumOfRules && i < MAX_NUM_OF_RULES; i++ ) {
             if ( !strcmp( appRuleStrct.action[i], action ) ) {
                 *ruleInx = i;
                 return 0;
@@ -1022,7 +1022,7 @@ findNextRule( char *action,  int *ruleInx ) {
         i = CORE_RULE_INDEX_OFF;
     }
     i  = i - CORE_RULE_INDEX_OFF;
-    for ( ; i < coreRuleStrct.MaxNumOfRules; i++ ) {
+    for ( ; i < coreRuleStrct.MaxNumOfRules && i < MAX_NUM_OF_RULES; i++ ) {
         if ( !strcmp( coreRuleStrct.action[i], action ) ) {
             *ruleInx = i + APP_RULE_INDEX_OFF;
             return 0;
