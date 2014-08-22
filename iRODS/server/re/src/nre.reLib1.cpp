@@ -525,9 +525,8 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
     addInxIval( &genQueryInp.selectInp, COL_RULE_BODY, 1 );
     addInxIval( &genQueryInp.selectInp, COL_RULE_RECOVERY, 1 );
     addInxIval( &genQueryInp.selectInp, COL_RULE_ID, 1 );
-    l = inRuleStrct->MaxNumOfRules;
-    status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
-    while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    int continueInx = 1;
+    while ( continueInx > 0 && rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut ) >= 0 && genQueryOut->rowCnt > 0 ) {
         r[0] = getSqlResultByInx( genQueryOut, COL_RULE_BASE_MAP_BASE_NAME );
         r[1] = getSqlResultByInx( genQueryOut, COL_RULE_NAME );
         r[2] = getSqlResultByInx( genQueryOut, COL_RULE_EVENT );
@@ -536,26 +535,18 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
         r[5] = getSqlResultByInx( genQueryOut, COL_RULE_RECOVERY );
         r[6] = getSqlResultByInx( genQueryOut, COL_RULE_ID );
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-            inRuleStrct->ruleBase[l] = strdup( &r[0]->value[r[0]->len * i] );
-            inRuleStrct->action[l]   = strdup( &r[1]->value[r[1]->len * i] );
-            inRuleStrct->ruleHead[l] = strdup( &r[2]->value[r[2]->len * i] );
-            inRuleStrct->ruleCondition[l] = strdup( &r[3]->value[r[3]->len * i] );
-            inRuleStrct->ruleAction[l]    = strdup( &r[4]->value[r[4]->len * i] );
-            inRuleStrct->ruleRecovery[l]  = strdup( &r[5]->value[r[5]->len * i] );
-            inRuleStrct->ruleId[l] = atol( &r[6]->value[r[6]->len * i] );
-            l++;
+            inRuleStrct->ruleBase[inRuleStrct->MaxNumOfRules] = strdup( &r[0]->value[r[0]->len * i] );
+            inRuleStrct->action[inRuleStrct->MaxNumOfRules]   = strdup( &r[1]->value[r[1]->len * i] );
+            inRuleStrct->ruleHead[inRuleStrct->MaxNumOfRules] = strdup( &r[2]->value[r[2]->len * i] );
+            inRuleStrct->ruleCondition[inRuleStrct->MaxNumOfRules] = strdup( &r[3]->value[r[3]->len * i] );
+            inRuleStrct->ruleAction[inRuleStrct->MaxNumOfRules]    = strdup( &r[4]->value[r[4]->len * i] );
+            inRuleStrct->ruleRecovery[inRuleStrct->MaxNumOfRules]  = strdup( &r[5]->value[r[5]->len * i] );
+            inRuleStrct->ruleId[inRuleStrct->MaxNumOfRules] = atol( &r[6]->value[r[6]->len * i] );
+            inRuleStrct->MaxNumOfRules++;
         }
-        genQueryInp.continueInx =  genQueryOut->continueInx;
+        continueInx = genQueryInp.continueInx =  genQueryOut->continueInx;
         freeGenQueryOut( &genQueryOut );
-        if ( genQueryInp.continueInx  > 0 ) {
-            /* More to come */
-            status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
-        }
-        else {
-            break;
-        }
     }
-    inRuleStrct->MaxNumOfRules = l;
     return 0;
 }
 
