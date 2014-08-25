@@ -127,7 +127,7 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     }
 
     /* below is for backward compatibility */
-    while ( status == SYS_SVR_TO_CLI_MSI_REQUEST ) {
+    while ( status == SYS_SVR_TO_CLI_MSI_REQUEST && outParamArray != NULL ) {
         /* it is a server request */
         msParam_t *myMsParam;
         dataObjInp_t *dataObjInp = NULL;
@@ -194,12 +194,13 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
                 rcOprComplete( conn, SYS_SVR_TO_CLI_MSI_NO_EXIST );
             }
         }
-        /* free outParamArray */
         if ( dataObjInp != NULL ) {
             clearKeyVal( &dataObjInp->condInput );
         }
+        /* free outParamArray */
         clearMsParamArray( outParamArray, 1 );
         free( outParamArray );
+        outParamArray = NULL;
 
         /* read the reply from the eariler call */
 
