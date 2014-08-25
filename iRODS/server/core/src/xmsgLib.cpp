@@ -573,20 +573,18 @@ startXmsgThreads() {
 
 void
 procReqRoutine() {
-    xmsgReq_t *myXmsgReq = NULL;
-    startupPack_t *startupPack;
-    rsComm_t rsComm;
-    int status;
-    fd_set sockMask;
     struct timeval msgTimeout;
+    memset( &msgTimeout, 0, sizeof( msgTimeout ) );
+    msgTimeout.tv_sec = REQ_MSG_TIMEOUT_TIME;
 
     while ( 1 ) {
-        myXmsgReq = getReqFromQue();
+        xmsgReq_t * myXmsgReq = getReqFromQue();
         if ( myXmsgReq == NULL ) {
             /* someone else took care of it */
             continue;
         }
 
+        rsComm_t rsComm;
         memset( &rsComm, 0, sizeof( rsComm ) );
         rsComm.sock = myXmsgReq->sock;
 
@@ -598,7 +596,8 @@ procReqRoutine() {
             irods::log( PASS( ret ) );
         }
 
-        status = readStartupPack( net_obj, &startupPack, NULL );
+        startupPack_t *startupPack;
+        int status = readStartupPack( net_obj, &startupPack, NULL );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "procReqRoutine: readStartupPack error, status = %d", status );
@@ -606,12 +605,7 @@ procReqRoutine() {
             continue;
         }
         initRsCommWithStartupPack( &rsComm, startupPack );
-        /***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
-        if ( startupPack != NULL ) {
-            free( startupPack );
-        }
-        /***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
-
+        free( startupPack );
 
         ret = sendVersion( net_obj, 0, 0, NULL, 0 );
         if ( !ret.ok() ) {
@@ -619,9 +613,8 @@ procReqRoutine() {
             free( myXmsgReq );
             continue;
         }
+        fd_set sockMask;
         FD_ZERO( &sockMask );
-        memset( &msgTimeout, 0, sizeof( msgTimeout ) );
-        msgTimeout.tv_sec = REQ_MSG_TIMEOUT_TIME;
         while ( 1 ) {
             int numSock;
 
