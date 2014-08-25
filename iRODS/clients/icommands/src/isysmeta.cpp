@@ -390,14 +390,7 @@ main( int argc, char **argv ) {
 
     didOne = 0;
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
-        int longOption;
-        if ( myRodsArgs.longOption ) {
-            longOption = 1;
-        }
-        if ( myRodsArgs.verbose ) {
-            longOption = 1;
-        }
-        doLs( Conn, objPath, longOption );
+        doLs( Conn, objPath, myRodsArgs.longOption || myRodsArgs.verbose );
         didOne = 1;
     }
     if ( strcmp( cmdToken[0], "ldt" ) == 0 ) {
