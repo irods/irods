@@ -250,25 +250,22 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             }
 
             queDataObjInfo( &otherDataObjInfo, nextDataObjInfo, 0, 1 ); // JMC - backport 4542
-            L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
+            if ( l1descInx >= 0 ) {
+                L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
 
-            if ( writeFlag > 0 ) {
-                L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
-            }
-            else {
-                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
-            }
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4604
-            if ( lockFd >= 0 ) {
-                if ( l1descInx >= 0 ) {
-                    L1desc[l1descInx].lockFd = lockFd;
+                if ( writeFlag > 0 ) {
+                    L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
                 }
                 else {
-                    rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+                    L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
+                }
+                if ( lockFd >= 0 ) {
+                    L1desc[l1descInx].lockFd = lockFd;
                 }
             }
-            // =-=-=-=-=-=-=-
+            else if ( lockFd >= 0 ) {
+                rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+            }
             return l1descInx;
 
         } // if status >= 0
