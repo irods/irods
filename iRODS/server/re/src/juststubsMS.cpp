@@ -133,7 +133,7 @@ msiInheritDescriptiveMetadataFromColl( ruleExecInfo_t *rei ) {
     if ( reTestFlag > 0 ) {
         if ( reTestFlag == LOG_TEST_1 ) {
             splitPathByKey( rei->doi->objPath,
-                            logicalDirName, logicalFileName, '/' );
+                            logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
             rodsLog( LOG_NOTICE, "   Calling chlInheritDescriptiveMetadataFromColl\n" );
             rodsLog( LOG_NOTICE, "     From Coll = %s\n", logicalDirName );
         }
