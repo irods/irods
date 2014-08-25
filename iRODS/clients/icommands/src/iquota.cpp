@@ -14,7 +14,7 @@
 #define QUOTA_APPROACH_WARNING_SIZE -10000000000LL
 
 int debug = 0;
-char quotaTime[20] = "";
+char quotaTime[TIME_LEN] = "";
 int printedFlag[3] = {0, 0, 0};
 rcComm_t *Conn;
 rodsEnv myEnv;
