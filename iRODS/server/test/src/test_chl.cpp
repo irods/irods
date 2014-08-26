@@ -297,16 +297,6 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 
 }
 
-int testDelUser( char *name, char *zone ) {
-    userInfo_t userInfo;
-
-    strncpy( userInfo.userName, name, sizeof userInfo.userName );
-    strncpy( userInfo.rodsZone, zone, sizeof userInfo.rodsZone );
-
-    /* no more  return(chlDelUser(rsComm, &userInfo)); */
-    return 0;
-}
-
 int testDelFile( rsComm_t *rsComm, char *name, char *replica ) {
     dataObjInfo_t dataObjInfo;
     keyValPair_t *condInput;
@@ -1008,11 +998,6 @@ main( int argc, char **argv ) {
       didOne=1;
       }
     */
-
-    if ( strcmp( argv[1], "rmuser" ) == 0 ) {
-        status = testDelUser( argv[2], argv[3] );
-        didOne = 1;
-    }
 
     if ( strcmp( argv[1], "mkdir" ) == 0 ) {
         status = testRegColl( Comm, argv[2] );
