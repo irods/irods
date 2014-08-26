@@ -96,8 +96,8 @@ _removeChildFromResource(
     int result = 0;
     rescInfo_t rescInfo;
 
-    strncpy( rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName );
-    strncpy( rescInfo.rescChildren, _generalAdminInp->arg3, sizeof rescInfo.rescChildren );
+    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
+    snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", _generalAdminInp->arg3 );
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescInfo.rescChildren,
              rescInfo.rescName );
