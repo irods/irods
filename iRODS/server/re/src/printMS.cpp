@@ -145,16 +145,12 @@ int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
 }
 
 int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
-    msParamArray_t *inMsParamArray;
-    msParam_t *mP;
-    execCmdOut_t *myExecCmdOut;
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4619
     dataObjInp_t dataObjInp;
     openedDataObjInp_t openedDataObjInp;
     bytesBuf_t tmpBBuf;
-    fileLseekOut_t *dataObjLseekOut = NULL;
     int fd, i;
     // =-=-=-=-=-=-=-
 
@@ -186,7 +182,9 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         openedDataObjInp.l1descInx = fd;
         openedDataObjInp.offset = 0;
         openedDataObjInp.whence = SEEK_END;
+        fileLseekOut_t *dataObjLseekOut = NULL;
         i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
+        free( dataObjLseekOut );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
             return i;
@@ -210,8 +208,9 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
 
     // =-=-=-=-=-=-=-
 
-    mP = NULL;
-    inMsParamArray = rei->msParamArray;
+    msParam_t * mP = NULL;
+    msParamArray_t * inMsParamArray = rei->msParamArray;
+    execCmdOut_t *myExecCmdOut;
     if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
             ( mP->inOutStruct != NULL ) ) {
         if ( !strcmp( mP->type, STR_MS_T ) ) {
