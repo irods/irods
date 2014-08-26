@@ -716,7 +716,6 @@ dataObjOpenForRepl(
     char * rescGroupName,
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
-    dataObjInfo_t *myDestDataObjInfo = 0, *srcDataObjInfo = NULL;
     rescInfo_t *myDestRescInfo = 0;
     int destL1descInx = 0;
     int srcL1descInx = 0;
@@ -739,7 +738,7 @@ dataObjOpenForRepl(
         return SYS_RESC_IS_DOWN;
     }
 
-    srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
+    dataObjInfo_t * srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     if ( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
         return -1;
@@ -769,7 +768,8 @@ dataObjOpenForRepl(
     // use for redirect
     std::string op_name;
 
-    myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
+    dataObjInfo_t * myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
+    myDestDataObjInfo->rescInfo = NULL;
     if ( updateFlag > 0 ) {
         // =-=-=-=-=-=-=-
         // set a open operation
@@ -831,6 +831,11 @@ dataObjOpenForRepl(
             msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dest_inp.objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
+
+            delete srcDataObjInfo->rescInfo;
+            free( srcDataObjInfo );
+            delete myDestDataObjInfo->rescInfo;
+            free( myDestDataObjInfo );
             return ret.code();
         }
 
@@ -942,6 +947,8 @@ dataObjOpenForRepl(
         msg << "\" was modified.";
         ret = PASSMSG( msg.str(), ret );
         irods::log( ret );
+        delete srcDataObjInfo->rescInfo;
+        free( srcDataObjInfo );
         return ret.code();
     }
 
