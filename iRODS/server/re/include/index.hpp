@@ -43,7 +43,7 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct1, Hashtable **ruleIndex );
 
 int mapExternalFuncToInternalProc2( char *funcName );
 int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexListNode **node );
-int findNextRule2( char *action,  int i, RuleIndexListNode **node );
+int findNextRule2( const char *action,  int i, RuleIndexListNode **node );
 int actionTableLookUp2( char *action );
 int createMacorsIndex();
 void deleteCondIndexVal( CondIndexVal *h );

@@ -323,7 +323,7 @@ int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexL
 /**
  * adapted from original code
  */
-int findNextRule2( char *action,  int i, RuleIndexListNode **node ) {
+int findNextRule2( const char *action,  int i, RuleIndexListNode **node ) {
     if ( isComponentInitialized( ruleEngineConfig.extFuncDescIndexStatus ) ) {
         int ii = findNextRuleFromIndex( ruleEngineConfig.extFuncDescIndex, action, i, node );
         if ( ii != NO_MORE_RULES_ERR ) {

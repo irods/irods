@@ -116,7 +116,6 @@ int processXMsg( int streamId, char *readmsg,
     char myhdr[HEADER_TYPE_LEN];
     char mymsg[MAX_NAME_LEN];
     char *outStr = NULL;
-    char *ptr;
     int i, n;
     int iLevel, wCnt;
     int  ruleInx = 0;
@@ -161,19 +160,19 @@ int processXMsg( int streamId, char *readmsg,
     }
     else {
         breakPoints[breakPointsInx2].actionName = fn;
-        ptr = NULL;
+        char * base_ptr = NULL;
         TRY( loc )
         TTYPE( TK_TEXT );
-        ptr = ( char * ) malloc( sizeof( token->text ) + 2 );
-        ptr[0] = 'f';
-        strcpy( ptr + 1, token->text );
+        base_ptr = ( char * ) malloc( sizeof( token->text ) + 2 );
+        base_ptr[0] = 'f';
+        strcpy( base_ptr + 1, token->text );
         TTEXT( ":" );
         TTYPE( TK_INT );
-        breakPoints[breakPointsInx2].base = ptr;
+        breakPoints[breakPointsInx2].base = strdup( base_ptr );
         breakPoints[breakPointsInx2].line = atoi( token->text );
         rodsLong_t range[2];
         char rulesFileName[MAX_NAME_LEN];
-        getRuleBasePath( ptr, rulesFileName );
+        getRuleBasePath( base_ptr, rulesFileName );
 
         FILE *file;
         /* char errbuf[ERR_MSG_LEN]; */
@@ -181,7 +180,7 @@ int processXMsg( int streamId, char *readmsg,
         if ( file == NULL ) {
             return RULES_FILE_READ_ERROR;
         }
-        Pointer *p = newPointer( file, ptr );
+        Pointer *p = newPointer( file, base_ptr );
 
 
         if ( getLineRange( p, breakPoints[breakPointsInx2].line, range ) == 0 ) {
@@ -215,9 +214,7 @@ int processXMsg( int streamId, char *readmsg,
         /* breakPoints[breakPointsInx].base = NULL; */
         END_TRY( loc )
 
-        if ( ptr != NULL && breakPoints[breakPointsInx2].base == NULL ) {
-            free( ptr );
-        }
+        free( base_ptr );
         if ( breakPoints[breakPointsInx2].actionName != NULL )
             snprintf( mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx2,
                       breakPoints[breakPointsInx2].actionName );
@@ -277,14 +274,13 @@ int processXMsg( int streamId, char *readmsg,
     TTEXT2( "r", "rule" );
     TRY( ParamParam )
     TTYPE( TK_TEXT );
-    ptr = strdup( token->text );
 
     mymsg[0] = '\n';
     mymsg[1] = '\0';
-    snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s", ptr );
+    snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug: Listing %s", token->text );
     RuleIndexListNode *node;
     found = 0;
-    while ( findNextRule2( ptr, ruleInx, &node ) != NO_MORE_RULES_ERR ) {
+    while ( findNextRule2( token->text, ruleInx, &node ) != NO_MORE_RULES_ERR ) {
         found = 1;
         if ( node->secondaryIndex ) {
             n = node->condIndex->valIndex->len;
@@ -309,7 +305,7 @@ int processXMsg( int streamId, char *readmsg,
         ruleInx ++;
     }
     if ( !found ) {
-        snprintf( mymsg, MAX_NAME_LEN, "Rule %s not found\n", ptr );
+        snprintf( mymsg, MAX_NAME_LEN, "Rule %s not found\n", token->text );
     }
     _writeXMsg( streamId, myhdr, mymsg );
     cmd = REDEBUG_WAIT;
@@ -424,7 +420,7 @@ int processXMsg( int streamId, char *readmsg,
     }
     else {
         snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing " );
-        ptr = myhdr + strlen( myhdr );
+        char * ptr = myhdr + strlen( myhdr );
         i = HEADER_TYPE_LEN - 1 - strlen( myhdr );
         termToString( &ptr, &i, 0, MIN_PREC, n, 0 );
         snprintf( ptr, i, "\n" );
