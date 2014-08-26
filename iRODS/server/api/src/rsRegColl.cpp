@@ -30,8 +30,8 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
                 return SYS_REG_OBJ_IN_SPEC_COLL;
             }
         }
-        freeRodsObjStat( rodsObjStatOut );
     }
+    freeRodsObjStat( rodsObjStatOut );
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, regCollInp->collName,
                                  &rodsServerHost );
