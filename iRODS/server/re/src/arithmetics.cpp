@@ -763,18 +763,15 @@ Res* evaluateVar3( char* vn, Node *node, ruleExecInfo_t *rei, Env *env, rError_t
  *        otherwise success
  */
 Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *rei, rError_t *errmsg, Region *r ) {
-    char *varMap;
-    Res *varValue = NULL;
-    int i, vinx;
-    varValue = NULL;
-
     /* Maps varName to the standard name and make varMap point to it. */
     /* It seems that for each pair of varName and standard name there is a list of actions that are supported. */
     /* vinx stores the index of the current pair so that we can start for the next pair if the current pair fails. */
-    vinx = getVarMap( action, varName, &varMap, 0 ); /* reVariableMap.c */
-    while ( vinx >= 0 ) {
+    char *varMap;
+    for ( int vinx = getVarMap( action, varName, &varMap, 0 ); vinx >= 0;
+            vinx = getVarMap( action, varName, &varMap, vinx + 1 ) ) {
         /* Get the value of session variable referenced by varMap. */
-        i = getVarValue( varMap, rei, &varValue, r ); /* reVariableMap.c */
+        Res *varValue = NULL;
+        int i = getVarValue( varMap, rei, &varValue, r ); /* reVariableMap.c */
         if ( i >= 0 ) {
 
             FunctionDesc *fd = ( FunctionDesc * ) lookupFromEnv( ruleEngineConfig.extFuncDescIndex, varMap );
@@ -786,18 +783,14 @@ Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *r
             free( varMap );
             return varValue;
         }
-        else if ( i == NULL_VALUE_ERR ) { /* Try next varMap, starting from vinx+1. */
+        else if ( i != NULL_VALUE_ERR ) {  /* On error, return 0. */
             free( varMap );
-            vinx = getVarMap( action, varName, &varMap, vinx + 1 );
-        }
-        else {   /* On error, return 0. */
-            free( varMap );
-            if ( varValue != NULL ) {
-                free( varValue );
-            }
             return NULL;
         }
+        free( varMap );
+        /* Try next varMap */
     }
+    free( varMap );
     return NULL;
 }
 
