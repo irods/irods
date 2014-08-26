@@ -178,6 +178,8 @@ int processXMsg( int streamId, char *readmsg,
         /* char errbuf[ERR_MSG_LEN]; */
         file = fopen( rulesFileName, "r" );
         if ( file == NULL ) {
+            free( context );
+            deletePointer( e );
             return RULES_FILE_READ_ERROR;
         }
         Pointer *p = newPointer( file, base_ptr );
@@ -454,6 +456,7 @@ int processXMsg( int streamId, char *readmsg,
     freeRErrorContent( &errmsg );
     region_free( r );
     deletePointer( e );
+    free( context );
     return cmd;
 }
 
