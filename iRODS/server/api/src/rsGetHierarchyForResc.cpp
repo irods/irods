@@ -33,7 +33,7 @@ int _rsGetHierarchyForResc(
                      _inp->resc_name_,
                      zone_name,
                      hier );
-    strncpy( ( *_out )->resc_hier_, hier.c_str(), MAX_NAME_LEN );
+    snprintf( ( *_out )->resc_hier_, MAX_NAME_LEN, "%s", hier.c_str() );
 
     return status;
 #else
