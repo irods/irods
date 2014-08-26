@@ -70,14 +70,14 @@ _addChildToResource(
     int result = 0;
     rescInfo_t rescInfo;
     memset( &rescInfo, 0, sizeof( rescInfo ) );
-    strncpy( rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName );
+    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
     std::string rescChild( _generalAdminInp->arg3 );
     std::string rescContext( _generalAdminInp->arg4 );
     irods::children_parser parser;
     parser.add_child( rescChild, rescContext );
     std::string rescChildren;
     parser.str( rescChildren );
-    strncpy( rescInfo.rescChildren, rescChildren.c_str(), sizeof rescInfo.rescChildren );
+    snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", rescChildren.c_str() );
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
              rescInfo.rescName );
