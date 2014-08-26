@@ -27,8 +27,6 @@ extern icatSessionStruct *chlGetRcs();
   }
 */
 
-rodsEnv myEnv;
-
 int testRegRule( rsComm_t *rsComm, char *name ) {
     ruleExecSubmitInp_t ruleInfo;
 
@@ -62,7 +60,7 @@ int testRename( rsComm_t *rsComm, char *id, char *newName ) {
     return chlCommit( rsComm );
 }
 
-int testLogin( char *User, char *pw, char *pw1 ) {
+int testLogin( char *User, char *pw, char *pw1, rodsEnv& myEnv ) {
     int status;
     rcComm_t *Conn;
     rErrMsg_t errMsg;
@@ -891,6 +889,7 @@ main( int argc, char **argv ) {
         exit( 3 );
     }
 
+    rodsEnv myEnv;
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
@@ -1036,7 +1035,7 @@ main( int argc, char **argv ) {
 
     if ( strcmp( argv[1], "login" ) == 0 ) {
         printf( "login - 2 [%s] 3 [%s] 4 [%s]\n", argv[2], argv[3], argv[4] );
-        status = testLogin( argv[2], argv[3], argv[4] );
+        status = testLogin( argv[2], argv[3], argv[4], myEnv );
         didOne = 1;
     }
 
