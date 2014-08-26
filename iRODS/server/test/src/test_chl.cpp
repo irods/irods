@@ -29,18 +29,6 @@ extern icatSessionStruct *chlGetRcs();
 
 rodsEnv myEnv;
 
-int testRegUser( char *name, char *zone, char *userType, char *dn ) {
-    userInfo_t userInfo;
-
-    strncpy( userInfo.userName, name, sizeof userInfo.userName );
-    strncpy( userInfo.rodsZone, zone, sizeof userInfo.rodsZone );
-    strncpy( userInfo.userType, userType, sizeof userInfo.userType );
-    strncpy( userInfo.authInfo.authStr, dn, sizeof userInfo.authInfo.authStr );
-
-    /* no longer used   return(chlRegUser(rsComm, &userInfo)); */
-    return 0;
-}
-
 int testRegRule( rsComm_t *rsComm, char *name ) {
     ruleExecSubmitInp_t ruleInfo;
 
