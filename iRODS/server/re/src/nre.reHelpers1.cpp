@@ -147,7 +147,6 @@ int processXMsg( int streamId, char *readmsg,
     TTEXT2( "b", "break" );
     TRY( Param )
     TTYPE( TK_TEXT );
-    char *fn = strdup( token->text );
     int breakPointsInx2;
     for ( breakPointsInx2 = 0; breakPointsInx2 < 100; breakPointsInx2++ ) {
         if ( breakPoints[breakPointsInx2].actionName == NULL ) {
@@ -159,7 +158,7 @@ int processXMsg( int streamId, char *readmsg,
         cmd = REDEBUG_WAIT;
     }
     else {
-        breakPoints[breakPointsInx2].actionName = fn;
+        breakPoints[breakPointsInx2].actionName = strdup( token->text );
         char * base_ptr = NULL;
         TRY( loc )
         TTYPE( TK_TEXT );
