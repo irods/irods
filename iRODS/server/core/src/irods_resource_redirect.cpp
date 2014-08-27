@@ -417,16 +417,12 @@ error resolve_resource_hierarchy(
     if ( spec_stat >= 0 ) {
         if ( rodsObjStatOut->specColl != NULL ) {
             _out_hier = rodsObjStatOut->specColl->rescHier;
-            free( rodsObjStatOut );
+            freeRodsObjStat( rodsObjStatOut );
             return SUCCESS();
         }
 
     }
-    else {
-        if ( rodsObjStatOut ) {
-            free( rodsObjStatOut );
-        }
-    }
+    freeRodsObjStat( rodsObjStatOut );
 
     // =-=-=-=-=-=-=-
     // extract the resc name keyword from the conditional input
