@@ -722,7 +722,6 @@ extern "C" {
         dataObjInp_t dataObjInp;
         portalOprOut_t *portalOprOut = NULL;
         bytesBuf_t dataObjOutBBuf;
-        rodsObjStat_t *rodsObjStatOut;
         int localTime;
         struct stat statbuf;
         int inputHasChanged = 0;
@@ -761,14 +760,17 @@ extern "C" {
                     snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s", checkForChange[cfcCnt] );
                     dataObjInp.openFlags = O_RDONLY;
                     snprintf( mvstr, MAX_NAME_LEN, "%s/%s", stageArea, stagefilename );
+                    rodsObjStat_t *rodsObjStatOut;
                     status  = rsObjStat( rsComm, &dataObjInp,  &rodsObjStatOut );
                     if ( status < 0 ) {
                         rodsLog( LOG_NOTICE,
                                  "Failure in extractMssoFile at rsDataObjStat when stating files checking execution: %d\n",
                                  status );
+                        freeRodsObjStat( rodsObjStatOut );
                         return status;
                     }
                     localTime = atoi( rodsObjStatOut->modifyTime );
+                    freeRodsObjStat( rodsObjStatOut );
                     rodsLog( LOG_NOTICE, "Timings for %s:rodsTime=%d and oldRunDirTime= %d",
                              dataObjInp.objPath, localTime, oldRunDirTime );
                     if ( localTime > oldRunDirTime ) {
@@ -1077,7 +1079,6 @@ extern "C" {
             }
         }
 
-
         /* what is the showfile */
         cleanOutStageArea( stageArea );
         i = popOutStackInfo();
@@ -1085,7 +1086,6 @@ extern "C" {
             rodsLog( LOG_ERROR, "PopOutStackInfo Error:%i\n", i );
             return i;
         }
-
 
         return 0;
     }
