@@ -140,6 +140,7 @@ int _getAndUseIFuseConn( iFuseConn_t **iFuseConn ) {
                     /* get here when nothing free. make one */
                     tmpIFuseConn = newIFuseConn( &status );
                     if ( status < 0 ) {
+                        _freeIFuseConn( tmpIFuseConn );
                         return status;
                     }
 
