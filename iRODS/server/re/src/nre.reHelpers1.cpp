@@ -179,6 +179,7 @@ int processXMsg( int streamId, char *readmsg,
         if ( file == NULL ) {
             free( context );
             deletePointer( e );
+            free( base_ptr );
             return RULES_FILE_READ_ERROR;
         }
         Pointer *p = newPointer( file, base_ptr );
