@@ -278,19 +278,17 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     // addKeyVal(&dataObjInp.condInput, VERIFY_CHKSUM_KW, getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW));
 
     status = unbunBulkBuf( rsComm, &dataObjInp, bulkOprInp, bulkOprInpBBuf );
-    if ( status < 0 ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
 
+    freeRodsObjStat( myRodsObjStat );
+    delete myRescGrpInfo->rescInfo;
+    delete myRescGrpInfo;
+
+    if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "_rsBulkDataObjPut: unbunBulkBuf for dir %s. stat = %d",
                  phyBunDir, status );
         return status;
     }
-
-    freeRodsObjStat( myRodsObjStat );
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
 
     return status;
 }
