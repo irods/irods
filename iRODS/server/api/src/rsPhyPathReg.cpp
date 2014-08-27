@@ -773,6 +773,7 @@ int mountFileDir( rsComm_t*     rsComm,
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 || NULL == rodsObjStatOut ) {
+        freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_NOTICE, "mountFileDir collstat failed." );
         return status; // JMC cppcheck - nullptr
     }
