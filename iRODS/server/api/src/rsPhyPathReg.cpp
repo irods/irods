@@ -1166,6 +1166,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 ) {
+        freeRodsObjStat( rodsObjStatOut );
         /* does not exist. make one */
         collInp_t collCreateInp;
         memset( &collCreateInp, 0, sizeof( collCreateInp ) );
@@ -1179,6 +1180,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         }
         status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
         if ( status < 0 ) {
+            freeRodsObjStat( rodsObjStatOut );
             return status;
         }
 
