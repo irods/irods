@@ -30,6 +30,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
 
     status = collStat( rsComm, syncMountedCollInp, &rodsObjStatOut );
     if ( status < 0 || NULL == rodsObjStatOut ) {
+        freeRodsObjStat( rodsObjStatOut );
         return status;    // JMC cppcheck - nullptr
     }
 
@@ -48,6 +49,7 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
                                        REMOTE_OPEN );
 
     if ( remoteFlag < 0 ) {
+        freeRodsObjStat( rodsObjStatOut );
         return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
