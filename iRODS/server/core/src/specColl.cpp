@@ -502,6 +502,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             freeRodsObjStat( rodsObjStatOut );
             return COLL_OBJ_T;
         }
+        freeRodsObjStat( rodsObjStatOut );
 
         /* data object */
         if ( specCollPerm == READ_COLL_PERM ) {
