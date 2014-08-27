@@ -285,6 +285,8 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
             sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
                          NULL, NULL, status, rsComm->irodsProt );
             svrChkReconnAtSendEnd( rsComm );
+            freeBBuf( outStructBBuf );
+            freeBBuf( rErrorBBuf );
             return status;
         }
 
