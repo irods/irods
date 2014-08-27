@@ -15,7 +15,6 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
     int status;
     int handleInx;
     collHandle_t *collHandle;
-    rodsObjStat_t *rodsObjStatOut = NULL;
 
     handleInx = allocCollHandle();
 
@@ -37,8 +36,10 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
         replKeyVal( &openCollInp->condInput, &collHandle->dataObjInp.condInput );
     }
 
+    rodsObjStat_t *rodsObjStatOut = NULL;
     status = rsObjStat( rsComm, &collHandle->dataObjInp, &rodsObjStatOut );
     if ( status < 0 ) {
+        freeRodsObjStat( rodsObjStatOut );
         rsCloseCollection( rsComm, &handleInx );
         return status;
     }
