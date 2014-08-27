@@ -253,6 +253,9 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
                  dataObjCopyInp.destDataObjInp.objPath, status );
+        free( srcChksumStr );
+        free( destChksumStr );
+        clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
         clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
         return status;
     }
@@ -268,13 +271,9 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     addKeyVal( &dataObjCopyInp.destDataObjInp.condInput, REG_CHKSUM_KW,
                srcChksumStr );
     status = rsDataObjCopy( rsComm, &dataObjCopyInp, &transStat );
-    if ( transStat != NULL ) {
-        free( transStat );
-    }
+    free( transStat );
     free( srcChksumStr );
-    if ( destChksumStr != NULL ) {
-        free( destChksumStr );
-    }
+    free( destChksumStr );
     clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );
     clearKeyVal( &dataObjCopyInp.srcDataObjInp.condInput );
 
