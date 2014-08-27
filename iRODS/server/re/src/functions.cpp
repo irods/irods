@@ -1892,7 +1892,6 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
     dataObjInp_t dataObjInp;
     openedDataObjInp_t openedDataObjInp;
     bytesBuf_t tmpBBuf;
-    fileLseekOut_t *dataObjLseekOut = NULL;
     int fd, i;
 #endif
 
@@ -1923,7 +1922,9 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
         openedDataObjInp.l1descInx = fd;
         openedDataObjInp.offset = 0;
         openedDataObjInp.whence = SEEK_END;
+        fileLseekOut_t *dataObjLseekOut = NULL;
         i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
+        free( dataObjLseekOut );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
             return i;
