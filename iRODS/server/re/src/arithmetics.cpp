@@ -766,7 +766,7 @@ Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *r
     /* Maps varName to the standard name and make varMap point to it. */
     /* It seems that for each pair of varName and standard name there is a list of actions that are supported. */
     /* vinx stores the index of the current pair so that we can start for the next pair if the current pair fails. */
-    char *varMap;
+    char *varMap = NULL;
     for ( int vinx = getVarMap( action, varName, &varMap, 0 ); vinx >= 0;
             vinx = getVarMap( action, varName, &varMap, vinx + 1 ) ) {
         /* Get the value of session variable referenced by varMap. */
@@ -788,6 +788,7 @@ Res* getSessionVar( char *action,  Node *node, char *varName,  ruleExecInfo_t *r
             return NULL;
         }
         free( varMap );
+        varMap = NULL;
         /* Try next varMap */
     }
     free( varMap );
