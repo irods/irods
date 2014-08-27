@@ -468,6 +468,7 @@ getDataObjInfo(
             msg << "failed to get resource info [";
             msg << dataObjInfo->rescName << "]";
             irods::log( PASSMSG( msg.str(), err ) );
+            freeDataObjInfo( dataObjInfo );
             return err.code();
         }
 
