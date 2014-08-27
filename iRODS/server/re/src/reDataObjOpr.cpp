@@ -2530,7 +2530,6 @@ int
 msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    rodsObjStat_t *rodsObjStatOut = NULL;
 
     RE_TEST_MACRO( "    Calling msiObjStat" )
 
@@ -2552,6 +2551,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
         return rei->status;
     }
 
+    rodsObjStat_t *rodsObjStatOut = NULL;
     rei->status = rsObjStat( rsComm, myDataObjInp, &rodsObjStatOut );
 
     if ( rei->status >= 0 ) {
@@ -2563,6 +2563,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
                             myDataObjInp->objPath,
                             rei->status );
     }
+    freeRodsObjStat( rodsObjStatOut );
 
     return rei->status;
 }
