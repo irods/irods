@@ -437,6 +437,7 @@ irods::error writeMsgHeader(
     irods::plugin_ptr p_ptr;
     irods::error ret = _ptr->resolve( irods::NETWORK_INTERFACE, p_ptr );
     if ( !ret.ok() ) {
+        freeBBuf( header_buf );
         return PASSMSG( "failed to resolve network interface", ret );
     }
 
