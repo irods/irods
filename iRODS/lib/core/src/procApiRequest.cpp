@@ -159,6 +159,7 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
     irods::network_object_ptr net_obj;
     irods::error ret = irods::network_factory( conn, net_obj );
     if ( !ret.ok() ) {
+        freeBBuf( inputStructBBuf );
         irods::log( PASS( ret ) );
         return ret.code();
     }
