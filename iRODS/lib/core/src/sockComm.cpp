@@ -1223,6 +1223,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     irods::error ret = irods::network_factory( conn, net_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
+        freeBBuf( startupPackBBuf );
         return ret.code();
     }
 
