@@ -458,7 +458,6 @@ printZoneInfo() {
 
 int
 initRcatServerHostByFile() {
-    FILE *fptr;
     char inbuf[MAX_NAME_LEN];
     rodsHostAddr_t addr;
     rodsServerHost_t *tmpRodsServerHost;
@@ -482,9 +481,9 @@ initRcatServerHostByFile() {
     }
 
 #ifndef windows_platform
-    fptr = fopen( cfg_file.c_str(), "r" );
+    FILE * fptr = fopen( cfg_file.c_str(), "r" );
 #else
-    fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
+    FILE * fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
 #endif
 
     if ( fptr == NULL ) {
@@ -506,6 +505,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -515,6 +515,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -524,6 +525,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -533,6 +535,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -544,6 +547,7 @@ initRcatServerHostByFile() {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
+                        fclose( fptr );
                         return remoteFlag;
                     }
                     tmpRodsServerHost->rcatEnabled = LOCAL_ICAT;
@@ -553,6 +557,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -564,6 +569,7 @@ initRcatServerHostByFile() {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
+                        fclose( fptr );
                         return remoteFlag;
                     }
                     tmpRodsServerHost->reHostFlag = 1;
@@ -572,6 +578,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -583,6 +590,7 @@ initRcatServerHostByFile() {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
+                        fclose( fptr );
                         return remoteFlag;
                     }
                     tmpRodsServerHost->xmsgHostFlag = 1;
@@ -591,6 +599,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
@@ -602,6 +611,7 @@ initRcatServerHostByFile() {
                         rodsLog( LOG_SYS_FATAL,
                                  "initRcatServerHostByFile: resolveHost error for %s, status = %d",
                                  addr.hostAddr, remoteFlag );
+                        fclose( fptr );
                         return remoteFlag;
                     }
                     tmpRodsServerHost->rcatEnabled = LOCAL_SLAVE_ICAT;
@@ -610,6 +620,7 @@ initRcatServerHostByFile() {
                     rodsLog( LOG_SYS_FATAL,
                              "initRcatServerHostByFile: parsing error for keywd %s",
                              keyWdName );
+                    fclose( fptr );
                     return SYS_CONFIG_FILE_ERR;
                 }
             }
