@@ -566,6 +566,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                 rstrcpy( fileRenameInp.rescHier, myDataObjInfo.rescHier, MAX_NAME_LEN );
                 fileRenameOut_t* ren_out = 0;
                 status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
+                free( ren_out );
 
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
@@ -699,7 +700,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
         fileRenameOut_t* ren_out = 0;
         status = rsFileRename( rsComm, fileRenameInp, &ren_out );
         strncpy( new_fn, ren_out->file_name, MAX_NAME_LEN );
-        free( ren_out->file_name );
+        free( ren_out );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "renameFilePathToNewDir:rsFileRename from %s to %s failed,stat=%d",
@@ -841,6 +842,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog( LOG_ERROR,
                  "syncDataObjPhyPath:rsFileRename from %s to %s failed,status=%d",
                  fileRenameInp.oldFileName, fileRenameInp.newFileName, status );
+        free( ren_out );
         return status;
     }
 
@@ -851,6 +853,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* register the change */
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, FILE_PATH_KW, ren_out->file_name );
+    free( ren_out );
     if ( acLCollection != NULL ) {
         addKeyVal( &regParam, ACL_COLLECTION_KW, acLCollection );
     }
@@ -870,6 +873,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( fileRenameInp.newFileName, tmpPath, MAX_NAME_LEN );
         fileRenameOut_t* ren_out = 0;
         status1 = rsFileRename( rsComm, &fileRenameInp, &ren_out );
+        free( ren_out );
 
         if ( status1 < 0 ) {
             rodsLog( LOG_ERROR,
