@@ -716,13 +716,8 @@ dataObjOpenForRepl(
     char * rescGroupName,
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
-    rescInfo_t *myDestRescInfo = 0;
-    int destL1descInx = 0;
-    int srcL1descInx = 0;
-    int status = 0;
-    int replStatus = 0;
 
-    dataObjInp_t myDataObjInp, *l1DataObjInp = 0;
+    rescInfo_t *myDestRescInfo = 0;
     if ( destRescInfo == NULL ) {
         myDestRescInfo = inpDestDataObjInfo->rescInfo;
     }
@@ -753,13 +748,13 @@ dataObjOpenForRepl(
 
 
     /* open the dest */
-    myDataObjInp = *dataObjInp;
+    dataObjInp_t myDataObjInp = *dataObjInp;
     myDataObjInp.dataSize = inpSrcDataObjInfo->dataSize;
 
-    destL1descInx = allocL1desc();
+    int destL1descInx = allocL1desc();
 
     if ( destL1descInx < 0 ) {
-        free( srcDataObjInfo );
+        freeDataObjInfo( srcDataObjInfo );
         return destL1descInx;
     }
 
@@ -770,6 +765,7 @@ dataObjOpenForRepl(
 
     dataObjInfo_t * myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     myDestDataObjInfo->rescInfo = NULL;
+    int replStatus;
     if ( updateFlag > 0 ) {
         // =-=-=-=-=-=-=-
         // set a open operation
@@ -779,8 +775,8 @@ dataObjOpenForRepl(
         if ( inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0 ) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
                      srcDataObjInfo->objPath );
-            free( myDestDataObjInfo );
-            free( srcDataObjInfo );
+            freeDataObjInfo( myDestDataObjInfo );
+            freeDataObjInfo( srcDataObjInfo );
             return SYS_UPDATE_REPL_INFO_ERR;
         }
         /* inherit the replStatus of the src */
@@ -832,10 +828,8 @@ dataObjOpenForRepl(
             msg << dest_inp.objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
 
-            delete srcDataObjInfo->rescInfo;
-            free( srcDataObjInfo );
-            delete myDestDataObjInfo->rescInfo;
-            free( myDestDataObjInfo );
+            freeDataObjInfo( srcDataObjInfo );
+            freeDataObjInfo( myDestDataObjInfo );
             return ret.code();
         }
 
@@ -856,7 +850,7 @@ dataObjOpenForRepl(
     // addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() ); // <===============
     fillL1desc( destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize );
 
-    l1DataObjInp = L1desc[destL1descInx].dataObjInp;
+    dataObjInp_t * l1DataObjInp = L1desc[destL1descInx].dataObjInp;
     if ( l1DataObjInp->oprType == PHYMV_OPR ) {
         L1desc[destL1descInx].oprType = PHYMV_DEST;
         myDestDataObjInfo->replNum = srcDataObjInfo->replNum;
@@ -886,6 +880,7 @@ dataObjOpenForRepl(
     if ( ( l1DataObjInp->numThreads > 0 ||
             l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
+        int status = 0;
         if ( updateFlag > 0 ) {
             status = dataOpen( rsComm, destL1descInx );
         }
@@ -898,14 +893,16 @@ dataObjOpenForRepl(
 
         if ( status < 0 ) {
             freeL1desc( destL1descInx );
+            freeDataObjInfo( srcDataObjInfo );
             return status;
         }
     }
     else {
         if ( updateFlag == 0 ) {
-            status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
+            int status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status < 0 ) {
                 freeL1desc( destL1descInx );
+                freeDataObjInfo( srcDataObjInfo );
                 return status;
             }
         }
@@ -947,15 +944,14 @@ dataObjOpenForRepl(
         msg << "\" was modified.";
         ret = PASSMSG( msg.str(), ret );
         irods::log( ret );
-        delete srcDataObjInfo->rescInfo;
-        free( srcDataObjInfo );
+        freeDataObjInfo( srcDataObjInfo );
         return ret.code();
     }
 
     /* open the src */
     rstrcpy( srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN );
 
-    srcL1descInx = allocL1desc();
+    int srcL1descInx = allocL1desc();
     if ( srcL1descInx < 0 ) {
         return srcL1descInx;
     }
@@ -979,7 +975,7 @@ dataObjOpenForRepl(
         openedDataObjInp_t dataObjCloseInp;
 
         l1DataObjInp->openFlags = O_RDONLY;
-        status = dataOpen( rsComm, srcL1descInx );
+        int status = dataOpen( rsComm, srcL1descInx );
         if ( status < 0 ) {
             freeL1desc( srcL1descInx );
             memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
