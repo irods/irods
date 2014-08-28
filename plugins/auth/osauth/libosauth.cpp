@@ -417,7 +417,6 @@ extern "C" {
         int status;
         char *bufp;
         authCheckInp_t authCheckInp;
-        authCheckOut_t *authCheckOut = NULL;
         rodsServerHost_t *rodsServerHost;
 
         char digest[RESPONSE_LEN + 2];
@@ -454,6 +453,7 @@ extern "C" {
                                _resp->response;
         authCheckInp.response = const_cast<char*>( resp_str.c_str() );
 
+        authCheckOut_t *authCheckOut = NULL;
         if ( rodsServerHost->localFlag == LOCAL_HOST ) {
             status = rsAuthCheck( _comm, &authCheckInp, &authCheckOut );
         }
@@ -464,6 +464,10 @@ extern "C" {
             rodsServerHost->conn = NULL;
         }
         if ( status < 0 || authCheckOut == NULL ) { // JMC cppcheck
+            if ( authCheckOut != NULL ) {
+                free( authCheckOut->serverResponse );
+            }
+            free( authCheckOut );
             return ERROR(
                        status,
                        "rxAuthCheck failed" );
@@ -473,6 +477,7 @@ extern "C" {
             if ( authCheckOut->serverResponse == NULL ) {
                 rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
                 if ( requireServerAuth ) {
+                    free( authCheckOut );
                     return ERROR(
                                REMOTE_SERVER_AUTH_NOT_PROVIDED,
                                "Authentication disallowed, no serverResponse field" );
@@ -484,6 +489,8 @@ extern "C" {
                 if ( *authCheckOut->serverResponse == '\0' ) {
                     rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty" );
                     if ( requireServerAuth ) {
+                        free( authCheckOut->serverResponse );
+                        free( authCheckOut );
                         return ERROR(
                                    REMOTE_SERVER_AUTH_EMPTY,
                                    "Authentication disallowed, empty serverResponse" );
@@ -500,6 +507,8 @@ extern "C" {
                     if ( len <= 0 ) {
                         rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status );
                         if ( requireServerAuth ) {
+                            free( authCheckOut->serverResponse );
+                            free( authCheckOut );
                             return ERROR(
                                        REMOTE_SERVER_SID_NOT_DEFINED,
                                        "Authentication disallowed, no RemoteZoneSID defined" );
@@ -526,6 +535,8 @@ extern "C" {
                         }
                         rodsLog( LOG_DEBUG, "serverResponse is OK/Not: %d", OK );
                         if ( OK == 0 ) {
+                            free( authCheckOut->serverResponse );
+                            free( authCheckOut );
                             return ERROR(
                                        REMOTE_SERVER_AUTHENTICATION_FAILURE,
                                        "Server response incorrect, authentication disallowed" );
@@ -540,6 +551,7 @@ extern "C" {
             zoneInfo_t *tmpZoneInfo;
             status = getLocalZoneInfo( &tmpZoneInfo );
             if ( status < 0 ) {
+                free( authCheckOut->serverResponse );
                 free( authCheckOut );
                 return ERROR(
                            status,
@@ -572,6 +584,7 @@ extern "C" {
                 zoneInfo_t *tmpZoneInfo;
                 status = getLocalZoneInfo( &tmpZoneInfo );
                 if ( status < 0 ) {
+                    free( authCheckOut->serverResponse );
                     free( authCheckOut );
                     return ERROR(
                                status,
@@ -607,6 +620,7 @@ extern "C" {
         status = check_proxy_user_privileges( _comm, authCheckOut->privLevel );
 
         if ( status < 0 ) {
+            free( authCheckOut->serverResponse );
             free( authCheckOut );
             return ERROR(
                        status,
@@ -630,13 +644,8 @@ extern "C" {
                 _comm->clientUser.authInfo.authFlag = authCheckOut->privLevel;
         }
 
-        /*** Added by RAJA Nov 16 2010 **/
-        if ( authCheckOut->serverResponse != NULL ) {
-            free( authCheckOut->serverResponse );
-        }
-        /*** Added by RAJA Nov 16 2010 **/
+        free( authCheckOut->serverResponse );
         free( authCheckOut );
-
         return SUCCESS();
 
     } // osauth_auth_agent_response
