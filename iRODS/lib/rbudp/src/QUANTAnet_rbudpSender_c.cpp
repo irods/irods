@@ -402,12 +402,13 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
     // Receive the getfile message
 
     while ( true ) {
-        char fname[SIZEOFFILENAME];
+        char fname[SIZEOFFILENAME + 1];
         int n = readn( tcpSockfd, fname, SIZEOFFILENAME );
         if ( n <= 0 ) {
             fprintf( stderr, "read error.\n" );
             return FAILED;
         }
+        fname[n] = '\0';
 
         // If "finish" signal (All zero), return success.
         char test[SIZEOFFILENAME];
@@ -416,14 +417,13 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             return RB_SUCCESS;
         }
         //otherwise, get the filename
-        std::string filename_string( fname, n );
 
         if ( verbose > 0 ) {
-            fprintf( stderr, "Send file %s\n", filename_string.c_str() );
+            fprintf( stderr, "Send file %s\n", fname );
         }
 
         struct stat filestat;
-        if ( stat( filename_string.c_str(), &filestat ) < 0 ) {
+        if ( stat( fname, &filestat ) < 0 ) {
             fprintf( stderr, "stat error.\n" );
             return FAILED;
         }
@@ -443,7 +443,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             }
         }
 
-        int fd = open( filename_string.c_str(), O_RDONLY );
+        int fd = open( fname, O_RDONLY );
         if ( fd < 0 ) {
             fprintf( stderr, "open file failed.\n" );
             return FAILED;
