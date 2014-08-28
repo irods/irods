@@ -500,7 +500,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // allocate and read buffer
         int bytes_read = 0;
-        _buffer->buf = malloc( _length );
+        _buffer->buf = malloc( _length + 1 );
         irods::error ret = tcp_socket_read(
                                _socket_handle,
                                _buffer->buf,
@@ -508,13 +508,13 @@ extern "C" {
                                bytes_read,
                                _time_val );
         _buffer->len = bytes_read;
+        ( ( char* )_buffer->buf )[_buffer->len] = '\0';
 
         // =-=-=-=-=-=-=-
         // log transaction if requested
         if ( _protocol == XML_PROT &&
                 getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "received msg: \n%s\n",
-                    std::string( ( char* )_buffer->buf, _buffer->len ).c_str() );
+            printf( "received msg: \n%s\n", ( char* )_buffer->buf );
         }
 
         // =-=-=-=-=-=-=-
