@@ -94,20 +94,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 int
 _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
-    int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *otherDataObjInfo = NULL;
-    dataObjInfo_t *nextDataObjInfo = NULL;
-    dataObjInfo_t *tmpDataObjInfo;
-    dataObjInfo_t *compDataObjInfo = NULL;
-    dataObjInfo_t *cacheDataObjInfo = NULL;
-    rescInfo_t *compRescInfo = NULL;
-    int l1descInx = 0;
-    int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
-    char *lockType = NULL; // JMC - backport 4604
-    int lockFd = -1; // JMC - backport 4604
-
     if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != NULL ) {
         phyOpenFlag = DO_NOT_PHYOPEN;
     }
@@ -117,7 +104,8 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
-    lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
+    char * lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
+    int lockFd = -1; // JMC - backport 4604
     if ( lockType != NULL ) {
         lockFd = rsDataObjLock( rsComm, dataObjInp );
         if ( lockFd > 0 ) {
@@ -134,11 +122,13 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     // =-=-=-=-=-=-=-
     /* query rcat for dataObjInfo and sort it */
-    status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, &dataObjInfoHead );
+    dataObjInfo_t *dataObjInfoHead = NULL;
+    int status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, &dataObjInfoHead );
 
-    writeFlag = getWriteFlag( dataObjInp->openFlags );
+    int writeFlag = getWriteFlag( dataObjInp->openFlags );
 
     if ( status < 0 ) {
+        int l1descInx = 0;
         if ( dataObjInp->openFlags & O_CREAT && writeFlag > 0 ) {
             l1descInx = rsDataObjCreate( rsComm, dataObjInp );
             status = l1descInx; // JMC - backport 4604
@@ -154,7 +144,6 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             }
         }
         return status;
-        // =-=-=-=-=-=-=-
     }
     else {
         /* screen out any stale copies */
@@ -179,6 +168,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
     }
 
+    dataObjInfo_t * compDataObjInfo = NULL;
     if ( getStructFileType( dataObjInfoHead->specColl ) >= 0 ) {
         /* special coll. Nothing to do */
     }
@@ -215,65 +205,41 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
     }
 
-    /* If cacheDataObjInfo != NULL, this is the staged copy of
-     * the compound obj. This copy must be opened.
-     * If compDataObjInfo != NULL, an existing COMPOUND_CL DataObjInfo exist.
+    /* If compDataObjInfo != NULL, an existing COMPOUND_CL DataObjInfo exist.
      * Need to replicate to * this DataObjInfo in rsdataObjClose.
-     * At this point, cacheDataObjInfo is left in the dataObjInfoHead queue
-     * but not compDataObjInfo.
-     * If compRescInfo != NULL, writing to a compound resource where there
-     * is no existing copy in the resource. Need to replicate to this
-     * resource in rsdataObjClose.
-     * For read, both compDataObjInfo and compRescInfo should be NULL.
-     */
-    tmpDataObjInfo = dataObjInfoHead;
+     * For read, compDataObjInfo should be NULL. */
+    dataObjInfo_t * tmpDataObjInfo = dataObjInfoHead;
 
     while ( tmpDataObjInfo != NULL ) {
-        nextDataObjInfo = tmpDataObjInfo->next;
+        dataObjInfo_t * nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
-        if ( writeFlag > 0 && cacheDataObjInfo != NULL &&
-                tmpDataObjInfo != cacheDataObjInfo ) {
-            /* skip anything that does not match cacheDataObjInfo */
-            queDataObjInfo( &otherDataObjInfo, tmpDataObjInfo, 1, 1 );
-            tmpDataObjInfo = nextDataObjInfo;
-            continue;
-        }
 
-        status = l1descInx = _rsDataObjOpenWithObjInfo( rsComm, dataObjInp, phyOpenFlag, tmpDataObjInfo );
+        int l1descInx = status = _rsDataObjOpenWithObjInfo( rsComm, dataObjInp, phyOpenFlag, tmpDataObjInfo );
 
-        if ( status >= 0 ) {
+        if ( l1descInx >= 0 ) {
             if ( compDataObjInfo != NULL ) {
                 L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
             }
-            else if ( compRescInfo != NULL ) {
-                L1desc[l1descInx].replRescInfo = compRescInfo;
-            }
 
+            dataObjInfo_t *otherDataObjInfo = NULL;
             queDataObjInfo( &otherDataObjInfo, nextDataObjInfo, 0, 1 ); // JMC - backport 4542
-            if ( l1descInx >= 0 ) {
-                L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
+            L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
 
-                if ( writeFlag > 0 ) {
-                    L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
-                }
-                else {
-                    L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
-                }
-                if ( lockFd >= 0 ) {
-                    L1desc[l1descInx].lockFd = lockFd;
-                }
+            if ( writeFlag > 0 ) {
+                L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
             }
-            else if ( lockFd >= 0 ) {
-                rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+            else {
+                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
+            }
+            if ( lockFd >= 0 ) {
+                L1desc[l1descInx].lockFd = lockFd;
             }
             return l1descInx;
 
-        } // if status >= 0
+        } // if l1descInx >= 0
 
         tmpDataObjInfo = nextDataObjInfo;
     } // while
-
-    freeAllDataObjInfo( otherDataObjInfo );
 
     return status;
 } // BAD
