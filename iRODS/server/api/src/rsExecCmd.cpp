@@ -232,6 +232,7 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
+        ExecCmdMutex.unlock();
         return SYS_PIPE_ERROR - errno;
     }
 
@@ -243,6 +244,7 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
+        ExecCmdMutex.unlock();
         return SYS_PIPE_ERROR - errno;
     }
 
@@ -254,6 +256,7 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     {
         rodsLog( LOG_ERROR,
                  "_rsExecCmd: pipe create failed. errno = %d", errno );
+        ExecCmdMutex.unlock();
         return SYS_PIPE_ERROR - errno;
     }
 
