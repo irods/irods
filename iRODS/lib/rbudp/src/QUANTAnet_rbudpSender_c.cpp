@@ -303,13 +303,14 @@ int  rbSendfile( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
         filename_string = std::string( fname );
     }
     else {
-        char fnameRead[SIZEOFFILENAME];
+        char fnameRead[SIZEOFFILENAME + 1];
         int n = readn( tcpSockfd, fnameRead, SIZEOFFILENAME );
         if ( n < 0 ) {
             fprintf( stderr, "read error.\n" );
             return FAILED;
         }
-        filename_string = std::string( fnameRead, n );
+        fnameRead[n] = '\0';
+        filename_string = std::string( fnameRead );
     }
 
     if ( verbose > 0 ) {
