@@ -143,26 +143,26 @@ _addResource(
         if ( 2 == tok.size() ) {
             // =-=-=-=-=-=-=-
             // location is index 0, path is index 1
-            strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
-            strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
+            snprintf( rescInfo.rescLoc, sizeof( rescInfo.rescLoc ), "%s", tok[0].c_str() );
+            snprintf( rescInfo.rescVaultPath, sizeof( rescInfo.rescVaultPath ), "%s", tok[1].c_str() );
         }
 
     }
     else {
-        strncpy( rescInfo.rescLoc,       irods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
-        strncpy( rescInfo.rescVaultPath, irods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
+        snprintf( rescInfo.rescLoc, sizeof( rescInfo.rescLoc ), "%s", irods::EMPTY_RESC_HOST.c_str() );
+        snprintf( rescInfo.rescVaultPath, sizeof( rescInfo.rescVaultPath ), "%s", irods::EMPTY_RESC_PATH.c_str() );
 
     }
 
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
-    strncpy( rescInfo.rescName,     _generalAdminInp->arg2, sizeof rescInfo.rescName );
-    strncpy( rescInfo.rescType,     _generalAdminInp->arg3, sizeof rescInfo.rescType );
-    strncpy( rescInfo.rescContext,  _generalAdminInp->arg5, sizeof rescInfo.rescContext );
-    strncpy( rescInfo.rescClass,    "cache",                sizeof rescInfo.rescClass );
-    strncpy( rescInfo.zoneName,     _generalAdminInp->arg6, sizeof rescInfo.zoneName );
-    strncpy( rescInfo.rescChildren, "", 1 );
-    strncpy( rescInfo.rescParent,   "", 1 );
+    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
+    snprintf( rescInfo.rescType, sizeof( rescInfo.rescType ), "%s", _generalAdminInp->arg3 );
+    snprintf( rescInfo.rescContext, sizeof( rescInfo.rescContext ), "%s", _generalAdminInp->arg5 );
+    snprintf( rescInfo.rescClass, sizeof( rescInfo.rescClass ), "%s", "cache" );
+    snprintf( rescInfo.zoneName, sizeof( rescInfo.zoneName ), "%s", _generalAdminInp->arg6 );
+    rescInfo.rescChildren[0] = '\0';
+    rescInfo.rescParent[0] = '\0';
 
     // =-=-=-=-=-=-=-
     // RAJA ADDED June 1 2009 for pre-post processing rule hooks
