@@ -504,7 +504,6 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
 
 int
 readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei ) {
-    int i, l, status;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
@@ -534,7 +533,7 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
         r[4] = getSqlResultByInx( genQueryOut, COL_RULE_BODY );
         r[5] = getSqlResultByInx( genQueryOut, COL_RULE_RECOVERY );
         r[6] = getSqlResultByInx( genQueryOut, COL_RULE_ID );
-        for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
+        for ( int i = 0; i < genQueryOut->rowCnt; i++ ) {
             inRuleStrct->ruleBase[inRuleStrct->MaxNumOfRules] = strdup( &r[0]->value[r[0]->len * i] );
             inRuleStrct->action[inRuleStrct->MaxNumOfRules]   = strdup( &r[1]->value[r[1]->len * i] );
             inRuleStrct->ruleHead[inRuleStrct->MaxNumOfRules] = strdup( &r[2]->value[r[2]->len * i] );
