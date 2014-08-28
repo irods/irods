@@ -464,32 +464,23 @@ int
 processBreakPoint( int streamId, RuleEngineEventParam *param,
                     Node *node, int curStat ) {
 
-    int i;
     char myhdr[HEADER_TYPE_LEN];
-    char mymsg[MAX_NAME_LEN];
-
     snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s", param->actionName );
 
-
-    if ( breakPointsInx > 0 ) {
-        for ( i = 0; i < breakPointsInx; i++ ) {
-            if ( breakPoints[i].actionName != NULL ) {
-                int len = strlen( breakPoints[i].actionName );
-
-                if ( strncmp( param->actionName, breakPoints[i].actionName, len ) == 0 ) {
-                    if ( breakPoints[i].base != NULL &&
-                            ( node == NULL || node->expr < breakPoints[i].start || node->expr >= breakPoints[i].finish ||
-                              strcmp( node->base, breakPoints[i].base ) != 0 ) ) {
-                        continue;
-                    }
-                    char buf[MAX_NAME_LEN];
-                    snprintf( buf, MAX_NAME_LEN, "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName );
-                    generateErrMsg( buf, node->expr, node->base, mymsg );
-                    _writeXMsg( streamId, myhdr, mymsg );
-                    snprintf( mymsg, MAX_NAME_LEN, "%s\n", param->actionName );
-                    _writeXMsg( streamId, myhdr, mymsg );
-                    return REDEBUG_WAIT;
-                }
+    if ( breakPointsInx > 0 && node != NULL ) {
+        for ( int i = 0; i < breakPointsInx; i++ ) {
+            if ( breakPoints[i].base != NULL && breakPoints[i].actionName != NULL &&
+                    node->expr >= breakPoints[i].start && node->expr < breakPoints[i].finish &&
+                    strcmp( node->base, breakPoints[i].base ) == 0 &&
+                    strncmp( param->actionName, breakPoints[i].actionName, strlen( breakPoints[i].actionName ) ) == 0 ) {
+                char buf[MAX_NAME_LEN];
+                snprintf( buf, MAX_NAME_LEN, "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName );
+                char mymsg[MAX_NAME_LEN];
+                generateErrMsg( buf, node->expr, node->base, mymsg );
+                _writeXMsg( streamId, myhdr, mymsg );
+                snprintf( mymsg, MAX_NAME_LEN, "%s\n", param->actionName );
+                _writeXMsg( streamId, myhdr, mymsg );
+                return REDEBUG_WAIT;
             }
         }
     }
