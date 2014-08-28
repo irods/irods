@@ -441,13 +441,13 @@ obfiGetPw( char *fileName, char *pw ) {
     }
 
     char buf[MAX_PASSWORD_LEN + 1];
-    memset( buf, 0, sizeof( buf ) );
     int rval = read( fd_in, buf, MAX_PASSWORD_LEN );
     close( fd_in );
 
     if ( rval < 0 ) {
         return FILE_READ_ERR;
     }
+    buf[rval] = '\0';
     if ( strlen( buf ) >= MAX_PASSWORD_LEN ) {
         return PASSWORD_EXCEEDS_MAX_SIZE;
     }
