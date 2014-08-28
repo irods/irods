@@ -46,22 +46,6 @@ extern "C" {
         msParam_t*      inCacheFilename,
         msParam_t*      inFileSize,
         ruleExecInfo_t* rei ) {
-        char *reqStr;
-        char *str, *t;
-        char *cacheFilename;
-        rodsLong_t dataSize;
-        int status, i;
-        int srcFd;
-        char *myBuf;
-        int bytesRead;
-        openedDataObjInp_t dataObjWriteInp;
-        int bytesWritten;
-        openedDataObjInp_t dataObjCloseInp;
-        dataObjInp_t dataObjInp;
-        int outDesc;
-        bytesBuf_t writeBuf;
-        int writeBufLen;
-        rsComm_t *rsComm;
 
         RE_TEST_MACRO( "    Calling msiobjput_slink" );
 
@@ -84,62 +68,61 @@ extern "C" {
             return USER_PARAM_TYPE_ERR;
         }
 
-
         /*  coerce input to local variables */
-        str = strdup( ( char * ) inMSOPath->inOutStruct );
-        if ( ( t = strstr( str, ":" ) ) != NULL ) {
-            reqStr = t + 1;
-        }
-        else {
+        char * str = strdup( ( char * ) inMSOPath->inOutStruct );
+        char * reqStr = strstr( str, ":" );
+        if ( reqStr == NULL ) {
             free( str );
             return USER_INPUT_FORMAT_ERR;
         }
+        reqStr = reqStr + 1;
 
-        cacheFilename = ( char * ) inCacheFilename->inOutStruct;
-        dataSize  = atol( ( char * ) inFileSize->inOutStruct );
-        rsComm = rei->rsComm;
-
-        /* Read the cache and Do the upload*/
-        srcFd = open( cacheFilename, O_RDONLY, 0 );
-        if ( srcFd < 0 ) {
-            status = UNIX_FILE_OPEN_ERR - errno;
-            printf( "msiputobj_slink: open error for %s, status = %d\n",
-                    cacheFilename, status );
-            free( str );
-            return status;
-        }
-
-        bzero( &dataObjInp, sizeof( dataObjInp_t ) );
-        bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-        bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
-
+        dataObjInp_t dataObjInp;
+        memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
         rstrcpy( dataObjInp.objPath, reqStr, MAX_NAME_LEN );
         addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
         free( str );
 
-        outDesc = rsDataObjCreate( rsComm, &dataObjInp );
+        rsComm_t * rsComm = rei->rsComm;
+        int outDesc = rsDataObjCreate( rsComm, &dataObjInp );
         if ( outDesc < 0 ) {
             printf( "msiputobj_slink: Unable to open file %s:%i\n", dataObjInp.objPath, outDesc );
             return outDesc;
         }
 
+        /* Read the cache and Do the upload*/
+        char * cacheFilename = ( char * ) inCacheFilename->inOutStruct;
+        int srcFd = open( cacheFilename, O_RDONLY, 0 );
+        if ( srcFd < 0 ) {
+            int status = UNIX_FILE_OPEN_ERR - errno;
+            printf( "msiputobj_slink: open error for %s, status = %d\n",
+                    cacheFilename, status );
+            return status;
+        }
+
+        size_t dataSize  = atol( ( char * ) inFileSize->inOutStruct );
+        if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
+            dataSize = MAX_SZ_FOR_SINGLE_BUF;
+        }
+
+        openedDataObjInp_t dataObjWriteInp;
+        memset( &dataObjWriteInp, 0, sizeof( dataObjWriteInp ) );
         dataObjWriteInp.l1descInx = outDesc;
+
+        openedDataObjInp_t dataObjCloseInp;
+        memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
         dataObjCloseInp.l1descInx = outDesc;
 
-        if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
-            writeBufLen = MAX_SZ_FOR_SINGLE_BUF;
-        }
-        else {
-            writeBufLen = dataSize;
-        }
-
-        myBuf = ( char * ) malloc( writeBufLen );
+        char * myBuf = ( char * ) malloc( dataSize );
+        bytesBuf_t writeBuf;
         writeBuf.buf = myBuf;
 
-        while ( ( bytesRead = read( srcFd, ( void * ) myBuf, writeBufLen ) ) > 0 ) {
+        int bytesRead;
+        for ( bytesRead = read( srcFd, ( void * ) myBuf, dataSize ); bytesRead > 0;
+                bytesRead = read( srcFd, ( void * ) myBuf, dataSize ) ) {
             writeBuf.len = bytesRead;
             dataObjWriteInp.len = bytesRead;
-            bytesWritten = rsDataObjWrite( rsComm, &dataObjWriteInp, &writeBuf );
+            int bytesWritten = rsDataObjWrite( rsComm, &dataObjWriteInp, &writeBuf );
             if ( bytesWritten != bytesRead ) {
                 free( myBuf );
                 close( srcFd );
@@ -151,9 +134,7 @@ extern "C" {
         }
         free( myBuf );
         close( srcFd );
-        i = rsDataObjClose( rsComm, &dataObjCloseInp );
-
-        return i;
+        return rsDataObjClose( rsComm, &dataObjCloseInp );
     }
 
 
