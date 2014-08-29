@@ -596,6 +596,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
         freeRodsObjStat( rodsObjStatOut );
+        rodsObjStatOut = NULL;
         memset( &collCreateInp, 0, sizeof( collCreateInp ) );
         rstrcpy( collCreateInp.collName, phyPathRegInp->objPath,
                  MAX_NAME_LEN );
@@ -636,6 +637,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
+    rodsObjStatOut = NULL;
 
     memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
 
@@ -785,6 +787,7 @@ int mountFileDir( rsComm_t*     rsComm,
         return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
+    rodsObjStatOut = NULL;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
@@ -905,6 +908,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     freeRodsObjStat( rodsObjStatOut );
+    rodsObjStatOut = NULL;
 
     memset( &modCollInp, 0, sizeof( modCollInp ) );
     rstrcpy( modCollInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN );
@@ -981,6 +985,7 @@ int structFileReg(
     }
 
     freeRodsObjStat( rodsObjStatOut );
+    rodsObjStatOut = NULL;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
@@ -1167,6 +1172,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 ) {
         freeRodsObjStat( rodsObjStatOut );
+        rodsObjStatOut = NULL;
         /* does not exist. make one */
         collInp_t collCreateInp;
         memset( &collCreateInp, 0, sizeof( collCreateInp ) );
@@ -1197,6 +1203,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     freeRodsObjStat( rodsObjStatOut );
+    rodsObjStatOut = NULL;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
