@@ -19,10 +19,12 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
 
         if ( ( myParam = putParam = getMsParamByLabel( *outParamArray, CL_PUT_ACTION ) ) ||
                 ( myParam = getMsParamByLabel( *outParamArray, CL_GET_ACTION ) ) ) {
-            dataObjInp_t *dataObjInp = NULL;
-            dataObjInp = ( dataObjInp_t * ) myParam->inOutStruct;
+            //putParam is non-null if it's a put, null if it's a get
+            dataObjInp_t * dataObjInp = ( dataObjInp_t * ) myParam->inOutStruct;
             char * locFilePath;
             char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+            // locFilePath should be the return of getValByKey if it exists,
+            // otherwise use the filename from splitPathByKey
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput, LOCAL_PATH_KW ) ) ||
                     ( ( status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) >= 0 ) &&
                     ( locFilePath = ( char * ) myFile ) ) {
