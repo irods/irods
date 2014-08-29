@@ -191,7 +191,7 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache );
 int ifuseFileCacheSwapOut( fileCache_t *fileCache );
 /* close any open files inside the file cache */
 int ifuseFileCacheClose( fileCache_t *fileCache );
-int getFileCachePath( const char *inPath, char *cacehPath );
+int getFileCachePath( const char *inPath, char *cachePath );
 int setAndMkFileCacheDir();
 int ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t offset );
 int ifuseFileCacheRead( fileCache_t *fileCache, char *buf, size_t size, off_t offset );

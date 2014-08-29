@@ -215,7 +215,7 @@ extern "C" {
     int
     irodsOpenWithFileCache( iFuseConn_t *iFuseConn, char *path, int flags );
     int
-    getFileCachePath( const char *inPath, char *cacehPath );
+    getFileCachePath( const char *inPath, char *cachePath );
     int
     setAndMkFileCacheDir();
     int

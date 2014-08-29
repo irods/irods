@@ -276,21 +276,21 @@ fileCache_t *addFileCache( int iFd, char *objPath, char *localPath, char *cacheP
 }
 
 int
-getFileCachePath( const char *inPath, char *cacehPath ) {
+getFileCachePath( const char *inPath, char *cachePath ) {
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     struct stat statbuf;
 
-    if ( inPath == NULL || cacehPath == NULL ) {
+    if ( inPath == NULL || cachePath == NULL ) {
         rodsLog( LOG_ERROR,
-                 "getFileCachePath: input inPath or cacehPath is NULL" );
+                 "getFileCachePath: input inPath or cachePath is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     splitPathByKey( ( char * ) inPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
 
     while ( 1 ) {
-        snprintf( cacehPath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,
+        snprintf( cachePath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,
                   myFile, ( int ) random() );
-        if ( stat( cacehPath, &statbuf ) < 0 ) {
+        if ( stat( cachePath, &statbuf ) < 0 ) {
             break;
         }
     }
