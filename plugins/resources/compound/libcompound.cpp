@@ -1436,8 +1436,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the context validity
 
-        ( *_out_vote ) = 0.0f;
-
         irods::error ret = _ctx.valid< irods::file_object >();
         if ( !ret.ok() ) {
             std::stringstream msg;
@@ -1459,6 +1457,8 @@ extern "C" {
         if ( !_out_vote ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null outgoing vote" );
         }
+
+        ( *_out_vote ) = 0.0f;
 
         // =-=-=-=-=-=-=-
         // get the name of this resource
