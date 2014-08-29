@@ -256,6 +256,10 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                  dataObjInfo->objPath, status );
         return status;
     }
+    if ( outChksumStr == NULL ) {
+        rodsLog( LOG_ERROR, "verifyDatObjChksum: outChkSumStr is null." );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     if ( strcmp( *outChksumStr, dataObjInfo->chksum ) != 0 ) {
         rodsLog( LOG_ERROR,
