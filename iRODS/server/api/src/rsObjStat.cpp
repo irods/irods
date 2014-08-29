@@ -69,7 +69,7 @@ rsObjStat(
         }
         /* not in cache, need to do a remote call */
         status = rcObjStat( rodsServerHost->conn, dataObjInp, rodsObjStatOut );
-        if ( status >= 0 && ( *rodsObjStatOut )->specColl != NULL ) {
+        if ( status >= 0 && *rodsObjStatOut != NULL && ( *rodsObjStatOut )->specColl != NULL ) {
             /* queue it in cache */
             queueSpecCollCacheWithObjStat( *rodsObjStatOut );
         }
