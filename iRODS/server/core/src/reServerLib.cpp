@@ -26,13 +26,10 @@ using namespace boost::filesystem;
 
 int
 getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
-    genQueryInp_t genQueryInp;
-    int status;
 
-    *genQueryOut = NULL;
+    genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
 
-    /*    addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_ID, 1); Raja Sep 8 2010 */
     addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ID, ORDER_BY );
     addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_REI_FILE_PATH, 1 );
@@ -48,21 +45,16 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
-
-    if ( status >= 0 ) {
-        svrCloseQueryOut( rsComm, *genQueryOut );
-    }
+    *genQueryOut = NULL;
+    int status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
     clearGenQueryInp( &genQueryInp );
-    /* take care of mem leak */
-    if ( *genQueryOut != NULL ) {
-        if ( status < 0 ) {
-            free( *genQueryOut );
-            *genQueryOut = NULL;
-        }
-        else {
-            svrCloseQueryOut( rsComm, *genQueryOut );
-        }
+
+    if ( status < 0 ) {
+        free( *genQueryOut );
+        *genQueryOut = NULL;
+    }
+    else if ( *genQueryOut != NULL ) {
+        svrCloseQueryOut( rsComm, *genQueryOut );
     }
     return status;
 }
