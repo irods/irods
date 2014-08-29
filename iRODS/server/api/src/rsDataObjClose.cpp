@@ -823,6 +823,10 @@ procChksumForClose(
                     return status;
                 }
             }
+            else if ( *chksumStr == NULL ) {
+                rodsLog( LOG_ERROR, "chksumStr is NULL" );
+                return SYS_INTERNAL_NULL_INPUT_ERR;
+            }
             else {
                 rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
                 if ( strcmp( srcDataObjInfo->chksum, *chksumStr ) != 0 ) {
@@ -885,6 +889,10 @@ procChksumForClose(
             if ( status < 0 ) {
                 return status;
             }
+            if ( *chksumStr == NULL ) {
+                rodsLog( LOG_ERROR, "chksumStr is NULL" );
+                return SYS_INTERNAL_NULL_INPUT_ERR;
+            }
 
             if ( strlen( dataObjInfo->chksum ) > 0 ) {
                 rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
@@ -924,6 +932,10 @@ procChksumForClose(
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
             if ( status < 0 ) {
                 return status;
+            }
+            if ( *chksumStr == NULL ) {
+                rodsLog( LOG_ERROR, "chkSumStr is null." );
+                return SYS_INTERNAL_NULL_INPUT_ERR;
             }
             if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
                 rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
