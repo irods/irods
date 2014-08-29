@@ -9,65 +9,40 @@
 int
 rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
               msParamArray_t **outParamArray ) {
-    int status;
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
-    status = procApiRequest( conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL,
+    int status = procApiRequest( conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL,
                              ( void ** )outParamArray, NULL );
 
     while ( status == SYS_SVR_TO_CLI_MSI_REQUEST ) {
         /* it is a server request */
-        char *locFilePath;
-        msParam_t *myMsParam;
-        dataObjInp_t *dataObjInp = NULL;
+        msParam_t *myParam = NULL, *putParam = NULL;
 
-
-        if ( ( myMsParam = getMsParamByLabel( *outParamArray, CL_PUT_ACTION ) )
-                != NULL ) {
-
-            dataObjInp = ( dataObjInp_t * ) myMsParam->inOutStruct;
-            if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                              LOCAL_PATH_KW ) ) == NULL ) {
-                if ( ( status = splitPathByKey( dataObjInp->objPath,
-                                                myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
-                    rodsLogError( LOG_ERROR, status,
-                                  "rcExecMyRule: splitPathByKey for %s error",
-                                  dataObjInp->objPath );
-                    rcOprComplete( conn, USER_FILE_DOES_NOT_EXIST );
-                }
-                else {
-                    locFilePath = ( char * ) myFile;
-                }
+        if ( ( myParam = putParam = getMsParamByLabel( *outParamArray, CL_PUT_ACTION ) ) ||
+                ( myParam = getMsParamByLabel( *outParamArray, CL_GET_ACTION ) ) ) {
+            dataObjInp_t *dataObjInp = NULL;
+            dataObjInp = ( dataObjInp_t * ) myParam->inOutStruct;
+            char * locFilePath;
+            char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+            if ( ( locFilePath = getValByKey( &dataObjInp->condInput, LOCAL_PATH_KW ) ) ||
+                    ( ( status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) >= 0 ) &&
+                    ( locFilePath = ( char * ) myFile ) ) {
+                status = putParam ?
+                    rcDataObjPut( conn, dataObjInp, locFilePath ) :
+                    rcDataObjGet( conn, dataObjInp, locFilePath );
+                rcOprComplete( conn, status );
             }
-            status = rcDataObjPut( conn, dataObjInp, locFilePath );
-            rcOprComplete( conn, status );
-        }
-        else if ( ( myMsParam = getMsParamByLabel( *outParamArray,
-                                CL_GET_ACTION ) ) != NULL ) {
-            dataObjInp = ( dataObjInp_t * ) myMsParam->inOutStruct;
-            if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                              LOCAL_PATH_KW ) ) == NULL ) {
-                if ( ( status = splitPathByKey( dataObjInp->objPath,
-                                                myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
-                    rodsLogError( LOG_ERROR, status,
-                                  "rcExecMyRule: splitPathByKey for %s error",
-                                  dataObjInp->objPath );
-                    rcOprComplete( conn, USER_FILE_DOES_NOT_EXIST );
-                }
-                else {
-                    locFilePath = ( char * ) myFile;
-                }
+            else {
+                rodsLogError( LOG_ERROR, status,
+                                "rcExecMyRule: splitPathByKey for %s error",
+                                dataObjInp->objPath );
+                rcOprComplete( conn, USER_FILE_DOES_NOT_EXIST );
             }
-            status = rcDataObjGet( conn, dataObjInp, locFilePath );
-            rcOprComplete( conn, status );
+            clearKeyVal( &dataObjInp->condInput );
         }
         else {
             rcOprComplete( conn, SYS_SVR_TO_CLI_MSI_NO_EXIST );
         }
         /* free outParamArray */
-        if ( dataObjInp != NULL ) {
-            clearKeyVal( &dataObjInp->condInput );
-        }
         clearMsParamArray( *outParamArray, 1 );
         free( *outParamArray );
         *outParamArray = NULL;
@@ -82,7 +57,6 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
                           status );
         }
     }
-
 
     return status;
 }
