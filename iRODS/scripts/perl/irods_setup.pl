@@ -1976,7 +1976,7 @@ sub configureIrodsUser
 	else
 	{
 		# Resource doesn't appear to exist.  Create it.
-		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unixfilesystem' $thisHost:$RESOURCE_DIR \"\" $ZONE_NAME" );
+		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unixfilesystem' $thisHost:$RESOURCE_DIR \"\"" );
 		if ( $status != 0 )
 		{
 			printError( "\nInstall problem:\n" );
