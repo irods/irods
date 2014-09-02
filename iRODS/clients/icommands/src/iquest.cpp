@@ -12,6 +12,8 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
+#include <boost/format.hpp>
+
 void usage();
 
 
@@ -84,41 +86,11 @@ usage() {
 
 void
 printFormatted( char *format, char *args[], int nargs ) {
-    if ( nargs == 1 ) {
-        printf( format, args[0] );
+    boost::format formatter( format );
+    for ( int i = 0; i < nargs; i++ ) {
+        formatter % args[i];
     }
-    if ( nargs == 2 ) {
-        printf( format, args[0], args[1] );
-    }
-    if ( nargs == 3 ) {
-        printf( format, args[0], args[1], args[2] );
-    }
-    if ( nargs == 4 ) {
-        printf( format, args[0], args[1], args[2], args[3] );
-    }
-    if ( nargs == 5 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4] );
-    }
-    if ( nargs == 6 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4],
-                args[5] );
-    }
-    if ( nargs == 7 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4],
-                args[5], args[6] );
-    }
-    if ( nargs == 8 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4],
-                args[5], args[6], args[7] );
-    }
-    if ( nargs == 9 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4],
-                args[5], args[6], args[7], args[8] );
-    }
-    if ( nargs == 10 ) {
-        printf( format, args[0], args[1], args[2], args[3], args[4],
-                args[5], args[6], args[7], args[8], args[9] );
-    }
+    std::cout << formatter;
 }
 
 void
