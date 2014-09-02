@@ -1,5 +1,5 @@
 # Data Variable Mapping
-# DVN provides a mapping from an external variable name (logical)
+# DVM provides a mapping from an external variable name (logical)
 # to  an internal variable name in the Session Memory $
 # Each mapping consists of three parts separated by  |
 # The three parts are: external variable name, action-list, and internal variable name
