@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <vector>
 
 #include "rodsClient.hpp"
 
@@ -39,13 +40,13 @@ main( int argc, char *argv[] ) {
 
     /* read the challenge from stdin */
     int challenge_len;
-    if ( sizeof( int ) != read( 0, ( void* )&challenge_len, sizeof( int ) ) ) {
+    if ( sizeof( challenge_len ) != read( 0, ( void* )&challenge_len, sizeof( challenge_len ) ) ) {
         printf( "Couldn't read challenge length from stdin: %s",
                 strerror( errno ) );
         return 1;
     }
-    char * challenge = ( char* )malloc( challenge_len );
-    if ( challenge_len != read( 0, challenge, challenge_len ) ) {
+    std::vector<char> challenge( challenge_len );
+    if ( challenge_len != read( 0, &challenge[0], challenge_len ) ) {
         printf( "Couldn't read challenge from stdin: %s",
                 strerror( errno ) );
         return 1;
@@ -60,7 +61,7 @@ main( int argc, char *argv[] ) {
     }
 
     char authenticator[16];  /* hard coded at 16 bytes .. size of an md5 hash */
-    if ( osauthGenerateAuthenticator( username, uid, challenge, keybuf, key_len, authenticator, 16 ) ) {
+    if ( osauthGenerateAuthenticator( username, uid, &challenge[0], keybuf, key_len, authenticator, 16 ) ) {
         printf( "Could not generate the authenticator" );
         return 1;
     }
