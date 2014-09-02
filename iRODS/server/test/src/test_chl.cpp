@@ -16,6 +16,8 @@
 
 #include <string.h>
 #include <string>
+#include <boost/lexical_cast.hpp>
+#include <limits>
 
 extern icatSessionStruct *chlGetRcs();
 
@@ -429,27 +431,31 @@ int testRegDataObj( rsComm_t *rsComm, char *name,
 */
 int testRegDataMulti( rsComm_t *rsComm, char *count,
                       char *nameBase,  char *dataType, char *filePath ) {
-    int status;
-    int myCount = 100;
-    int i;
-    char myName[MAX_NAME_LEN];
 
-    myCount = atoi( count );
-    if ( myCount <= 0 ) {
+    try {
+
+        const unsigned int myCount = boost::lexical_cast<unsigned int>( count );
+        if ( myCount > std::numeric_limits<int>::max() ) {
+            printf( "Invalid input: count\n" );
+            return USER_INPUT_OPTION_ERR;
+        }
+
+        for ( unsigned int i = 0; i < myCount; i++ ) {
+            char myName[MAX_NAME_LEN];
+            snprintf( myName, sizeof myName, "%s.%d", nameBase, i );
+            int status = testRegDataObj( rsComm, myName, dataType, filePath );
+            if ( status ) {
+                return status;
+            }
+        }
+
+        return chlCommit( rsComm );
+
+    } catch ( ... ) {
         printf( "Invalid input: count\n" );
         return USER_INPUT_OPTION_ERR;
     }
 
-    for ( i = 0; i < myCount; i++ ) {
-        snprintf( myName, sizeof myName, "%s.%d", nameBase, i );
-        status = testRegDataObj( rsComm, myName, dataType, filePath );
-        if ( status ) {
-            return status;
-        }
-    }
-
-    status = chlCommit( rsComm );
-    return status;
 }
 
 int testModDataObjMeta( rsComm_t *rsComm, char *name,
