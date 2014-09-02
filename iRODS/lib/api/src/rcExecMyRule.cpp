@@ -26,8 +26,8 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
             // locFilePath should be the return of getValByKey if it exists,
             // otherwise use the filename from splitPathByKey
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput, LOCAL_PATH_KW ) ) ||
-                    ( ( status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) >= 0 ) &&
-                    ( locFilePath = ( char * ) myFile ) ) {
+                    ( ( status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) >= 0 &&
+                    ( locFilePath = ( char * ) myFile ) ) ) {
                 status = putParam ?
                     rcDataObjPut( conn, dataObjInp, locFilePath ) :
                     rcDataObjGet( conn, dataObjInp, locFilePath );
