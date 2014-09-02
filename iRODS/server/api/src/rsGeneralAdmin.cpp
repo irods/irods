@@ -70,6 +70,9 @@ _addChildToResource(
     int result = 0;
     rescInfo_t rescInfo;
     memset( &rescInfo, 0, sizeof( rescInfo ) );
+    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
     std::string rescChild( _generalAdminInp->arg3 );
     std::string rescContext( _generalAdminInp->arg4 );
@@ -77,6 +80,9 @@ _addChildToResource(
     parser.add_child( rescChild, rescContext );
     std::string rescChildren;
     parser.str( rescChildren );
+    if ( strlen( rescChildren.c_str() ) >= sizeof( rescInfo.rescChildren ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", rescChildren.c_str() );
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
@@ -96,7 +102,13 @@ _removeChildFromResource(
     int result = 0;
     rescInfo_t rescInfo;
 
+    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
+    if ( strlen( _generalAdminInp->arg3 ) >= sizeof( rescInfo.rescChildren ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", _generalAdminInp->arg3 );
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescInfo.rescChildren,
@@ -143,7 +155,13 @@ _addResource(
         if ( 2 == tok.size() ) {
             // =-=-=-=-=-=-=-
             // location is index 0, path is index 1
+            if ( strlen( tok[0].c_str() ) >= sizeof( rescInfo.rescLoc ) ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             snprintf( rescInfo.rescLoc, sizeof( rescInfo.rescLoc ), "%s", tok[0].c_str() );
+            if ( strlen( tok[1].c_str() ) >= sizeof( rescInfo.rescVaultPath ) ) {
+                return SYS_INVALID_INPUT_PARAM;
+            }
             snprintf( rescInfo.rescVaultPath, sizeof( rescInfo.rescVaultPath ), "%s", tok[1].c_str() );
         }
 
@@ -156,10 +174,26 @@ _addResource(
 
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
+
+    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
+    if ( strlen( _generalAdminInp->arg3 ) >= sizeof( rescInfo.rescType ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescType, sizeof( rescInfo.rescType ), "%s", _generalAdminInp->arg3 );
+    if ( strlen( _generalAdminInp->arg5 ) >= sizeof( rescInfo.rescContext ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescContext, sizeof( rescInfo.rescContext ), "%s", _generalAdminInp->arg5 );
+    if ( strlen( "cache" ) >= sizeof( rescInfo.rescClass ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.rescClass, sizeof( rescInfo.rescClass ), "%s", "cache" );
+    if ( strlen( _generalAdminInp->arg6 ) >= sizeof( rescInfo.zoneName ) ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
     snprintf( rescInfo.zoneName, sizeof( rescInfo.zoneName ), "%s", _generalAdminInp->arg6 );
     rescInfo.rescChildren[0] = '\0';
     rescInfo.rescParent[0] = '\0';
