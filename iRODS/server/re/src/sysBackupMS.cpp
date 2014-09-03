@@ -23,6 +23,10 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+#include <boost/system/error_code.hpp>
+
 
 /*
  * \fn 		loadDirToLocalResc(ruleExecInfo_t *rei, char *dirPath, size_t offset,
@@ -119,26 +123,26 @@ int loadDirToLocalResc( ruleExecInfo_t *rei, char *dirPath, size_t offset,
         }
         else {
             /* Copy file to new dir on resource */
-            memset( sysCopyCmd, 0, 2 * MAX_NAME_LEN );
+            std::string destPath = boost::str ( boost::format( "%s/%s/%s/%s_%s/%s/%s" ) %
+                                                resDirPath %
+                                                subPath %
+                                                BCKP_COLL_NAME %
+                                                rei->rsComm->myEnv.rodsHost %
+                                                timestamp %
+                                                ( dirPath + offset ) %
+                                                de->d_name );
 
-            snprintf( sysCopyCmd, 2 * MAX_NAME_LEN, "cp \"%s\" \"%s/%s/%s/%s_%s/%s/%s\"",
-                      absPath, resDirPath, subPath, BCKP_COLL_NAME, rei->rsComm->myEnv.rodsHost,
-                      timestamp, dirPath + offset, de->d_name );
-
-            status = system( sysCopyCmd );
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", status );
-                rei->status = status + FILE_OPEN_ERR; /* Meh... */
+            boost::system::error_code error;
+            boost::filesystem::copy( boost::filesystem::path( absPath ), boost::filesystem::path( destPath ), error );
+            if ( error ) {
+                rodsLog( LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", error );
+                rei->status = FILE_OPEN_ERR;
             }
 
             filecount++;
         }
 
-
-
     }
-
-
 
     closedir( myDir );
 
