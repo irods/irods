@@ -112,7 +112,7 @@ else
     $PYTHONCMD $OPTS test_resource_tree
     $PYTHONCMD $OPTS test_xmsg
     $PYTHONCMD $OPTS test_load_balanced_suite
-    $PYTHONCMD $OPTS test_icommands_recursive
+    $PYTHONCMD $OPTS test_icommands_file_operations
     $PYTHONCMD $OPTS test_imeta_set
     $PYTHONCMD $OPTS test_allrules
     $PYTHONCMD $OPTS iadmin_suite

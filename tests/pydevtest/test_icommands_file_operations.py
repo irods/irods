@@ -12,7 +12,7 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdO
 from resource_suite import ResourceBase
 
 def make_file(f_name, f_size, source='/dev/zero'):
-    output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=' + str(f_size) + ' bs=1')
+    output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
     if output[0] != 0:
         sys.stderr.write(output[1] + '\n')
         raise OSError(output[0], "call to dd returned non-zero")
@@ -45,7 +45,7 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
     return local_files
 
 
-class Test_ICommands_Recursive(unittest.TestCase, ResourceBase):
+class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup":[],"teardown":[]}
 
@@ -227,3 +227,16 @@ class Test_ICommands_Recursive(unittest.TestCase, ResourceBase):
                         msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync_source) + "\n\n" + \
                             "Extra files in vault:\n" + str(vault_files_post_irsync_source-file_names))
 
+    @unittest.skip("Activate test after #2313 is fixed")
+    def test_cancel_large_iput(self):
+        base_name = 'test_cancel_large_put'
+        user_session = s.sessions[1]
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        file_size = pow(2, 30)
+        file_name = make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
+        file_local_full_path = os.path.join(local_dir, file_name)
+        iput_cmd = "iput '" + file_local_full_path + "'"
+        file_vault_full_path = os.path.join(get_vault_session_path(user_session), file_name)
+        interruptiCmd(user_session, iput_cmd, file_vault_full_path, 10)
+        file_vault_size = os.path.getsize(file_vault_full_path)
+        assertiCmd(user_session, 'ils -l', 'STDOUT', [file_name, str(file_vault_size)])
