@@ -54,6 +54,8 @@
 #include "rcGlobalExtern.hpp"
 #endif
 
+#include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #define TMP_FLAG "%TEMPORARY_PW%"
@@ -203,48 +205,32 @@ obfGetPw( char *pw ) {
 */
 int
 obfRmPw( int opt ) {
-    int i;
     char fileName[MAX_NAME_LEN + 10];
     char inbuf[MAX_NAME_LEN + 10];
-    int fd;
 
-    i = obfiGetFilename( fileName );
-    if ( i != 0 ) {
-        return i;
+    if ( int status = obfiGetFilename( fileName ) ) {
+        return status;
     }
-
-#ifdef windows_platform
-    fd = iRODSNt_open( fileName, O_RDONLY, 1 );
-#else
-    fd = open( fileName, O_RDONLY, 0 );
-#endif
-    if ( fd < 0 ) {
+    boost::filesystem::path filePath( fileName );
+    if ( !boost::filesystem::exists( filePath ) ) {
         if ( opt == 0 ) {
             printf( "%s does not exist\n", fileName );
         }
         return AUTH_FILE_DOES_NOT_EXIST;
     }
-    close( fd );
     if ( opt == 0 ) {
         printf( "Remove %s?:", fileName );
-        if ( NULL == fgets( inbuf, MAX_NAME_LEN, stdin ) ) {
-            // end of line reached or no input
-        }
-        i = strlen( inbuf );
-        if ( i < 2 ) {
+        fgets( inbuf, MAX_NAME_LEN, stdin );
+        if ( strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
             return 0;
         }
-        if ( inbuf[0] == 'y' ) {
-            i = unlink( fileName );
-        }
     }
-    else {
-        i = unlink( fileName );
+    boost::system::error_code error;
+    boost::filesystem::remove( filePath, error );
+    if ( error.value() ) {
+        return UNLINK_FAILED;
     }
-    if ( i == 0 ) {
-        return 0;
-    }
-    return UNLINK_FAILED;
+    return 0;
 }
 
 /* Set timeVal from a fstat of the file after writing to it.
