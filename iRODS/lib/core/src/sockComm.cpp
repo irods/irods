@@ -316,11 +316,12 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
      */
 
     if ( *portNum <= 0 && ( tmpPtr = getenv( "svrPortRangeStart" ) ) != NULL ) {
-        int portRangeCount;
-        int bindCnt = 0;
-        int myPortNum;
 
         svrPortRangeStart = atoi( tmpPtr );
+        if ( svrPortRangeStart < 1 || svrPortRangeStart > 65535 ) {
+            rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svrPortRangeStart );
+            return SYS_INVALID_INPUT_PARAM;
+        }
         if ( ( tmpPtr = getenv( "svrPortRangeEnd" ) ) != NULL ) {
             svrPortRangeEnd = atoi( tmpPtr );
             if ( svrPortRangeEnd < svrPortRangeStart ) {
@@ -329,13 +330,21 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
                          svrPortRangeStart, svrPortRangeEnd );
                 svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
             }
+            if ( svrPortRangeEnd > 65535 ) {
+                rodsLog( LOG_ERROR,
+                         "sockOpenForInConn: PortRangeEnd %d > 65535",
+                         svrPortRangeStart, svrPortRangeEnd );
+                svrPortRangeEnd = 65535;
+            }
         }
         else {
             svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
         }
-        portRangeCount = svrPortRangeEnd - svrPortRangeStart + 1;
+        svrPortRangeEnd = svrPortRangeEnd < 65535 ? svrPortRangeEnd : 65535;
+        int portRangeCount = svrPortRangeEnd - svrPortRangeStart + 1;
 
-        myPortNum = svrPortRangeStart + random() % portRangeCount;
+        int myPortNum = svrPortRangeStart + random() % portRangeCount;
+        int bindCnt = 0;
         while ( bindCnt < portRangeCount ) {
             if ( myPortNum > svrPortRangeEnd ) {
                 myPortNum = svrPortRangeStart;
