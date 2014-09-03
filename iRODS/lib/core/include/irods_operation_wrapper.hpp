@@ -96,7 +96,7 @@ public:
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
