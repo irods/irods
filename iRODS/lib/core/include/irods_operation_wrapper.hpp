@@ -90,7 +90,7 @@ public:
             error op_err = ( *operation_ )( _ctx );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
@@ -138,13 +138,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -186,13 +186,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -235,13 +235,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -285,13 +285,13 @@ public:
             error op_err =  operation_( _ctx, _t1, _t2, _t3, _t4 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -337,13 +337,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -389,13 +389,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -442,13 +442,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -497,13 +497,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -552,13 +552,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -608,13 +608,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
@@ -665,13 +665,13 @@ public:
             error op_err = ( *operation_ )( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11 );
 
             // =-=-=-=-=-=-=-
-            // if the op failed, notifity the post rule
+            // if the op failed, notify the post rule
             if ( !op_err.ok() ) {
                 _ctx.rule_results( OP_FAILED );
             }
 
             // =-=-=-=-=-=-=-
-            // call the poste-rule for this op
+            // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
             rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
