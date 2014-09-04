@@ -25,6 +25,9 @@
 #include "irods_threads.hpp"
 #include "irods_server_properties.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
+
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
 
@@ -2588,7 +2591,8 @@ purgeLockFileDir( int chkLockFlag ) {
                      "purgeLockFileDir: stat error for %s, errno = %d",
                      lockFilePath, errno );
             savedStatus = UNIX_FILE_STAT_ERR - errno;
-            unlink( lockFilePath );
+            boost::system::error_code err;
+            boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
             continue;
         }
         if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
@@ -2614,7 +2618,8 @@ purgeLockFileDir( int chkLockFlag ) {
                 continue;
             }
         }
-        unlink( lockFilePath );
+        boost::system::error_code err;
+        boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
     }
     closedir( dirPtr );
 
