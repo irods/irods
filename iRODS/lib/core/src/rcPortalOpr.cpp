@@ -1281,16 +1281,10 @@ int getFileToPortalRbudp(
 
     rbudpReceiver.rbudpBase.verbose = veryVerbose;
 
-    if ( packetSize <= 0 ) {
-        if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-            mypacketSize = atoi( tmpStr );
-        }
-        else {
-            mypacketSize = DEF_UDP_PACKET_SIZE;
-        }
-    }
-    else {
-        mypacketSize = packetSize;
+    if ( ( mypacketSize = packetSize ) < 1 &&
+            ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) ||
+            ( mypacketSize = atoi( tmpStr ) ) < 1 ) {
+        mypacketSize = DEF_UDP_PACKET_SIZE;
     }
 
     rodsEnv rods_env;
