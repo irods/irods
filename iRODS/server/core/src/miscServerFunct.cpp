@@ -2090,11 +2090,8 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         return SYS_UDP_CONNECT_ERR;
     }
 
-    if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput,
-                                 RBUDP_PACK_SIZE_KW ) ) != NULL ) {
-        packetSize = atoi( tmpStr );
-    }
-    else {
+    if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_PACK_SIZE_KW ) ) == NULL ||
+            ( packetSize = atoi( tmpStr ) ) < 1 ) {
         packetSize = DEF_UDP_PACKET_SIZE;
     }
 
@@ -2173,11 +2170,8 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         }
         rbudpSender.rbudpBase.udpServerAddr.sin_port =
             htons( rbudpSender.rbudpBase.udpRemotePort );
-        if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput,
-                                     RBUDP_SEND_RATE_KW ) ) != NULL ) {
-            sendRate = atoi( tmpStr );
-        }
-        else {
+        if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_SEND_RATE_KW ) ) == NULL ||
+                ( sendRate = atoi( tmpStr ) ) < 1 ) {
             sendRate = DEF_UDP_SEND_RATE;
         }
 
