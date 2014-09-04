@@ -32,11 +32,9 @@ getLogfileName( char **logFile, char *logDir, char *logFileName ) {
 
     LogfileLastChkTime = myTime = time( 0 );
     mytm = localtime( &myTime );
-    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ) {
+    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
+            ( logfileInt = atoi( logfileIntStr ) ) < 1 ) {
         logfileInt = DEF_LOGFILE_INT;
-    }
-    else {
-        logfileInt = atoi( logfileIntStr );
     }
 
     tm_mday = ( mytm->tm_mday / logfileInt ) * logfileInt + 1;
