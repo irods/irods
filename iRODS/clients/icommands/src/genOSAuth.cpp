@@ -45,8 +45,12 @@ main( int argc, char *argv[] ) {
                 strerror( errno ) );
         return 1;
     }
-    std::vector<char> challenge( challenge_len );
-    if ( challenge_len != read( 0, &challenge[0], challenge_len ) ) {
+    if ( challenge_len != CHALLENGE_LEN ) {
+        printf( "Challenge length must be %ju", ( uintmax_t )CHALLENGE_LEN );
+        return 1;
+    }
+    std::vector<char> challenge( CHALLENGE_LEN );
+    if ( CHALLENGE_LEN != read( 0, &challenge[0], CHALLENGE_LEN ) ) {
         printf( "Couldn't read challenge from stdin: %s",
                 strerror( errno ) );
         return 1;
