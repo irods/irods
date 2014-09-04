@@ -415,6 +415,7 @@ rsAcceptConn( rsComm_t *svrComm ) {
         rodsLogError( LOG_NOTICE, status,
                       "rsAcceptConn: accept error for socket %d, status = %d",
                       svrComm->sock, status );
+        return newSock;
     }
     rodsSetSockOpt( newSock, svrComm->windowSize );
 
