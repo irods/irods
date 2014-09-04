@@ -6,6 +6,7 @@
 
 #include "rodsClient.hpp"
 #include "parseCommandLine.hpp"
+#include <string>
 
 char *icmds[] = {
     "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
@@ -104,69 +105,54 @@ printMainHelp() {
 
 int
 main( int argc, char **argv ) {
-    int status;
-    rodsArguments_t myRodsArgs;
-    char *optStr;
-    char myExe[100];
-    int i;
 
-    optStr = "ah";
-    status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
+    char * optStr = "ah";
+    rodsArguments_t myRodsArgs;
+    int status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
 
     if ( status < 0 ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
 
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     if ( myRodsArgs.all == True ) {
-        for ( i = 0;; i++ ) {
-            if ( strlen( icmds[i] ) == 0 ) {
-                break;
-            }
-            strncpy( myExe, icmds[i], 40 );
-            strncat( myExe, " -h", 40 );
-            status = system( myExe );
-            if ( status ) {
-                printf( "error %d running %s\n", status, myExe );
+        for ( int i = 0; strlen( icmds[i] ); i++ ) {
+            if ( strcmp( argv[1], icmds[i] ) == 0 ) {
+                std::string myExe( icmds[i] );
+                myExe += " -h";
+                status = system( myExe.c_str() );
+                if ( status ) {
+                    printf( "error %d running %s\n", status, myExe.c_str() );
+                }
             }
         }
-        exit( 0 );
+        return 0;
     }
 
     if ( argc == 1 ) {
         printMainHelp();
     }
-    if ( argc == 2 ) {
-        int OK = 0;
-        for ( i = 0;; i++ ) {
-            if ( strlen( icmds[i] ) == 0 ) {
-                break;
-            }
+    else if ( argc == 2 ) {
+        for ( int i = 0; strlen( icmds[i] ); i++ ) {
             if ( strcmp( argv[1], icmds[i] ) == 0 ) {
-                OK = 1;
-                break;
+                std::string myExe( icmds[i] );
+                myExe += " -h";
+                status = system( myExe.c_str() );
+                if ( status ) {
+                    printf( "error %d running %s\n", status, myExe.c_str() );
+                }
+                return 0;
             }
         }
-        if ( OK == 0 ) {
-            printf( "%s is not an i-command\n", argv[1] );
-        }
-        else {
-            strncpy( myExe, argv[1], 40 );
-            myExe[ strlen( argv[1] ) ] = '\0'; // JMC cppcheck
-            strncat( myExe, " -h", 40 );
-            status = system( myExe );
-            if ( status ) {
-                printf( "error %d running %s\n", status, myExe );
-            }
-        }
+        printf( "%s is not an i-command\n", argv[1] );
     }
 
-    exit( 0 );
+    return 0;
 }
 
 void
