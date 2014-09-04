@@ -434,13 +434,13 @@ int testRegDataMulti( rsComm_t *rsComm, char *count,
 
     try {
 
-        const unsigned int myCount = boost::lexical_cast<unsigned int>( count );
-        if ( myCount > std::numeric_limits<int>::max() ) {
+        const int myCount = boost::lexical_cast<int>( count );
+        if ( myCount <= 0 || myCount > std::numeric_limits<int>::max() ) {
             printf( "Invalid input: count\n" );
             return USER_INPUT_OPTION_ERR;
         }
 
-        for ( unsigned int i = 0; i < myCount; i++ ) {
+        for ( int i = 0; i < myCount; i++ ) {
             char myName[MAX_NAME_LEN];
             snprintf( myName, sizeof myName, "%s.%d", nameBase, i );
             int status = testRegDataObj( rsComm, myName, dataType, filePath );
