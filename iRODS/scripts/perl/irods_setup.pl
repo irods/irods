@@ -3341,7 +3341,7 @@ sub MySQL_CreateDatabase()
     print ( NEWCONFIGFILE "[mysql]\n" .
             "Driver=$mysqlOdbcLib\n" .
             "Database=$DB_NAME\n" .
-            "Servername=$DATABASE_HOST\n" .
+            "Server=$DATABASE_HOST\n" .
             "Option=2\n" .
             "Port=$DATABASE_PORT\n" );
 
@@ -3789,7 +3789,7 @@ sub MySQL_sql($$)
 	chomp $MYSQL;
 	$MYSQL=$MYSQL . "/mysql";
 	my ($databaseName,$sqlFilename) = @_;
-	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
+	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --host=$DATABASE_HOST --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
 
 

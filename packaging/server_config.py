@@ -135,25 +135,18 @@ class Server_Config:
             print("find_bin_mysql.sh failed")
             return
 
-        db_host = self.values['Servername']
+        db_host = self.values['Server']
         db_port = self.values['Port']
         db_name = self.values['Database']
         db_user = self.values['DBUsername']
         db_pass = self.get_db_pass()
-        if db_host == 'localhost':
-            run_str = sqlclient + \
-                " -u " + db_user + \
-                " --password=" + db_pass + \
-                " -P " + db_port + \
-                " " + db_name + \
-                " < " + sql
-        else:
-            run_str = sqlclient + \
-                " -h " + db_host + \
-                " -u " + db_user + \
-                " -P " + db_port + \
-                " " + db_name + \
-                " < " + sql
+        run_str = sqlclient + \
+                  " -h " + db_host + \
+                  " -u " + db_user + \
+                  " --password=" + db_pass + \
+                  " -P " + db_port + \
+                  " " + db_name + \
+                  " < " + sql
 
         p = subprocess.Popen(
             run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
