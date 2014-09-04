@@ -74,10 +74,20 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
                 }
 
                 if ( counter == 1 ) {
-                    strcpy( attr, substring );
+                    if ( strlen( substring ) >= sizeof( attr ) ) {
+                        rodsLog( LOG_ERROR,
+                                "attr: [%s] is too long for attr, which may only be %ju characters in length.",
+                                ( uintmax_t )sizeof( attr ) );
+                    }
+                    snprintf( attr, sizeof( attr ), "%s", substring );
                 }
                 if ( flag == 2 && counter == 2 ) {
-                    strcpy( value, substring );
+                    if ( strlen( substring ) >= sizeof( value ) ) {
+                        rodsLog( LOG_ERROR,
+                                "value: [%s] is too long for value, which may only be %ju characters in length.",
+                                ( uintmax_t )sizeof( value ) );
+                    }
+                    snprintf( value, sizeof( value ), "%s", substring );
                     /*Call the function to insert metadata here.*/
                     modAVUMetadataInp.arg1 = "-d";
                     modAVUMetadataInp.arg2 = rei->doi->objPath;
