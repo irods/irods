@@ -86,11 +86,13 @@ usage() {
 
 void
 printFormatted( char *format, char *args[], int nargs ) {
-    boost::format formatter( format );
-    for ( int i = 0; i < nargs; i++ ) {
-        formatter % args[i];
-    }
-    std::cout << formatter;
+    try {
+        boost::format formatter( format );
+        for ( int i = 0; i < nargs; i++ ) {
+            formatter % args[i];
+        }
+        std::cout << formatter;
+    } catch ( ... ) {}
 }
 
 void
