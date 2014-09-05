@@ -41,8 +41,6 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
                dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo );
 int
 rmLinkedFilesInUnixDir( char *phyBunDir );
-int
-rmUnlinkedFilesInUnixDir( char *phyBunDir ); // JMC _ backport 4657
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif

@@ -534,8 +534,6 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     structFileOprInp_t structFileOprInp;
     int status = 0;
     char *dataType; // JMC - backport 4633
-    int myOprType = oprType; // JMC - backport 4657
-
 
     dataType = dataObjInfo->dataType;
 
@@ -558,7 +556,7 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     rstrcpy( structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN );
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
-    structFileOprInp.oprType = NO_REG_COLL_INFO | myOprType; // JMC - backport 4657
+    structFileOprInp.oprType = NO_REG_COLL_INFO | oprType; // JMC - backport 4657
     if ( dataType != NULL && // JMC - backport 4633
             ( strstr( dataType, GZIP_TAR_DT_STR )  != NULL || // JMC - backport 4658
               strstr( dataType, BZIP2_TAR_DT_STR ) != NULL ||
@@ -569,10 +567,6 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     status = rsStructFileSync( rsComm, &structFileOprInp );
 
     free( structFileOprInp.specColl );
-    /* rm the the exsisting files in the original tar files */
-    if ( ( oprType & ADD_TO_TAR_OPR ) != 0 && ( myOprType & ADD_TO_TAR_OPR ) == 0 ) { // JMC - backport 4657
-        rmUnlinkedFilesInUnixDir( phyBunDir ); // JMC - backport 4666
-    }
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
