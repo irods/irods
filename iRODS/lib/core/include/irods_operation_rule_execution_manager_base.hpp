@@ -3,6 +3,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
+#include "rcConnect.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -35,12 +36,14 @@ public:
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for pre operation
     virtual error exec_pre_op(
+        rsComm_t*,          // server connection
         keyValPair_t&,      // vars from fco
         std::string& ) = 0; // rule results
 
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     virtual error exec_post_op(
+        rsComm_t*,          // server connection
         keyValPair_t&,      // vars from fco
         std::string& ) = 0; // rule results
 
@@ -48,6 +51,7 @@ protected:
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     virtual error exec_op(
+        rsComm_t*,          // server connection
         keyValPair_t&,      // vars from fco
         const std::string&, // rule name
         std::string& ) = 0; // results of call to rule

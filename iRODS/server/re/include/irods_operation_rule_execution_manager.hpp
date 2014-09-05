@@ -38,13 +38,15 @@ public:
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for pre operation
     virtual error exec_pre_op(
-        keyValPair_t&,      // vars from fco
+        rsComm_t*,      // server connection
+        keyValPair_t&,  // vars from fco
         std::string& ); // results of call to rule
 
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     virtual error exec_post_op(
-        keyValPair_t&,      // vars from fco
+        rsComm_t*,      // server connection
+        keyValPair_t&,  // vars from fco
         std::string& ); // results of call to rule
 
 protected:
@@ -56,6 +58,7 @@ protected:
     /// =-=-=-=-=-=-=-
     /// @brief execute rule for post operation
     virtual error exec_op(
+        rsComm_t*,          // server connection
         keyValPair_t&,      // vars from fco
         const std::string&, // rule name
         std::string& );     // results of call to rule

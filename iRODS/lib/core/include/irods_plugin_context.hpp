@@ -20,6 +20,21 @@ public:
         plugin_property_map&   _prop_map,
         first_class_object_ptr _fco,
         const std::string&     _results )  :
+        comm_( 0 ),
+        prop_map_( _prop_map ),
+        fco_( _fco ),
+        results_( _results )  {
+
+    } // ctor
+
+    // =-=-=-=-=-=-=-
+    // ctor
+    plugin_context(
+        rsComm_t*              _comm,
+        plugin_property_map&   _prop_map,
+        first_class_object_ptr _fco,
+        const std::string&     _results )  :
+        comm_( _comm ),
         prop_map_( _prop_map ),
         fco_( _fco ),
         results_( _results )  {
@@ -65,6 +80,10 @@ public:
 
     // =-=-=-=-=-=-=-
     // accessors
+    virtual rsComm_t* comm() {
+        return comm_;
+    }
+
     virtual plugin_property_map&   prop_map()     {
         return prop_map_;
     }
@@ -77,6 +96,10 @@ public:
 
     // =-=-=-=-=-=-=-
     // mutators
+    virtual void comm( rsComm_t* _c ) {
+        comm_ = _c;
+    }
+
     virtual void rule_results( const std::string& _s ) {
         results_ = _s;
     }
@@ -84,6 +107,7 @@ public:
 protected:
     // =-=-=-=-=-=-=-
     // attributes
+    rsComm_t*              comm_;      // server connection handle
     plugin_property_map&   prop_map_;  // resource property map
     first_class_object_ptr fco_;       // first class object in question
     std::string            results_;   // results from the pre op rule call

@@ -23,9 +23,10 @@ public:
         plugin_property_map&    _prop_map,
         first_class_object_ptr  _fco,
         const std::string&      _results,
-        rsComm_t*              _comm,
-        resource_child_map&    _child_map )  :
-        plugin_context( _prop_map,
+        rsComm_t*               _comm,
+        resource_child_map&     _child_map )  :
+        plugin_context( _comm,
+                        _prop_map,
                         _fco,
                         _results ),
         comm_( _comm ),
@@ -69,9 +70,6 @@ public:
 
     // =-=-=-=-=-=-=-
     // accessors
-    virtual rsComm_t*            comm()      {
-        return comm_;
-    }
     virtual resource_child_map&  child_map() {
         return child_map_;
     }

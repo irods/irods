@@ -82,7 +82,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -98,7 +98,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -130,7 +130,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -146,7 +146,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -178,7 +178,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -194,7 +194,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -227,7 +227,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -243,7 +243,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -277,7 +277,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -293,7 +293,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -329,7 +329,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -345,7 +345,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -381,7 +381,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -397,7 +397,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -434,7 +434,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -450,7 +450,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -489,7 +489,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -505,7 +505,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -544,7 +544,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -560,7 +560,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -600,7 +600,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -616,7 +616,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct
@@ -657,7 +657,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the pre-rule for this op
             std::string pre_results;
-            rule_exec_mgr_->exec_pre_op( kvp, pre_results );
+            rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
 
             // =-=-=-=-=-=-=-
             // call the actual operation
@@ -673,7 +673,7 @@ public:
             // =-=-=-=-=-=-=-
             // call the post-rule for this op
             std::string rule_results =  _ctx.rule_results();
-            rule_exec_mgr_->exec_post_op( kvp, rule_results );
+            rule_exec_mgr_->exec_post_op( _ctx.comm(), kvp, rule_results );
 
             // =-=-=-=-=-=-=-
             // clean up kvp struct

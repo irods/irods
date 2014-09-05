@@ -22,6 +22,7 @@ operation_rule_execution_manager::operation_rule_execution_manager(
 // =-=-=-=-=-=-=-
 // public - execute rule for pre operation
 error operation_rule_execution_manager::exec_pre_op(
+    rsComm_t*     _comm,
     keyValPair_t& _kvp,
     std::string&  _res ) {
     // =-=-=-=-=-=-=-
@@ -30,13 +31,14 @@ error operation_rule_execution_manager::exec_pre_op(
 
     // =-=-=-=-=-=-=-
     // execute the rule
-    return exec_op( _kvp, pre_name, _res );
+    return exec_op( _comm, _kvp, pre_name, _res );
 
 } // exec_post_op
 
 // =-=-=-=-=-=-=-
 // public - execute rule for post operation
 error operation_rule_execution_manager::exec_post_op(
+    rsComm_t*     _comm,
     keyValPair_t& _kvp,
     std::string&  _res ) {
     // =-=-=-=-=-=-=-
@@ -45,13 +47,14 @@ error operation_rule_execution_manager::exec_post_op(
 
     // =-=-=-=-=-=-=-
     // execute the rule
-    return exec_op( _kvp, post_name, _res );
+    return exec_op( _comm, _kvp, post_name, _res );
 
 } // exec_post_op
 
 // =-=-=-=-=-=-=-
 // private - execute rule for pre operation
 error operation_rule_execution_manager::exec_op(
+    rsComm_t*          _comm,
     keyValPair_t&      _kvp,
     const std::string& _name,
     std::string&       _res ) {
@@ -73,6 +76,7 @@ error operation_rule_execution_manager::exec_op(
     // manufacture an rei for the applyRule
     ruleExecInfo_t rei;
     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
+    rei.rsComm        = _comm;
     rei.condInputData = &_kvp; // give rule scope to our key value pairs
     rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 

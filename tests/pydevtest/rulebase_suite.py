@@ -90,7 +90,6 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
         os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
         time.sleep(1) # remove once file hash fix is commited #2279
 
-    @unittest.skip("[#2316] skipping until fixed")
     def test_dynamic_pep_with_rscomm_usage(self):
         # save original core.re
         os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
