@@ -29,8 +29,9 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 use File::Basename;
+use File::Path;
 
-$version{"irods_setup.pl"} = "Mar 2014";
+$version{"irods_setup.pl"} = "Sept 2014";
 
 # =-=-=-=-=-=-=-
 # detect the running environment (usually the service account user)
@@ -1962,35 +1963,57 @@ sub configureIrodsUser
 	}
 
 
-	# Create the default resource, if needed.
-	printStatus( "Creating default resource...\n" );
-	printLog( "\nCreating default resource...\n" );
+        # Create the default resource, if needed.
+        printStatus( "Creating default resource...\n" );
+        printLog( "\nCreating default resource...\n" );
 
-	# List existing resources first to see if it already exists.
-	my ($status,$output) = run( "$iadmin lr" );
-	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
-	{
-		printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
-		printLog( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
-	}
-	else
-	{
-		# Resource doesn't appear to exist.  Create it.
-		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unixfilesystem' $thisHost:$RESOURCE_DIR \"\"" );
-		if ( $status != 0 )
-		{
-			printError( "\nInstall problem:\n" );
-			printError( "    Cannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
-			printError( "        ", $output );
-			printLog( "\nCannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
-			printLog( "    ", $output );
-			cleanAndExit( 1 );
-		}
-		else {
-                      	printStatus( "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
+        # List existing resources first to see if it already exists.
+        my ($status,$output) = run( "$iadmin lr" );
+        if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
+        {
+                printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
+                printLog( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
+        }
+        else
+        {
+                # Create vault path if it does not exist
+                if (! -e "$RESOURCE_DIR") {
+                        mkpath( "$RESOURCE_DIR", {error => \my $err} );
+                        if (@$err) {
+                            printError( "\nInstall problem:\n" );
+                            printError( "    Cannot create default resource vault path:\n" );
+                            foreach $e (@$err) {
+                                while (($k, $v) = each ($e)) {
+                                    printError( "        '$k' => '$v'\n" );
+                                }
+                            }
+                            printError( "\n" );
+                            printLog( "\nInstall problem:\n" );
+                            printLog( "    Cannot create default resource vault path:\n" );
+                            foreach $e (@$err) {
+                                while (($k, $v) = each ($e)) {
+                                    printLog( "        '$k' => '$v'\n" );
+                                }
+                            }
+                            cleanAndExit( 1 );
+                        }
+                }
+                # Create new default resource
+                ($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME unixfilesystem $thisHost:$RESOURCE_DIR \"\"" );
+                if ( $status != 0 )
+                {
+                        printError( "\nInstall problem:\n" );
+                        printError( "    Cannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
+                        printError( "        ", $output );
+                        printLog( "\nCannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
+                        printLog( "    ", $output );
+                        cleanAndExit( 1 );
+                }
+                else {
+                        printStatus( "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
                         printLog(    "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
-		}
-	}
+                }
+        }
 
 
 	# Test it to be sure it is working by putting a

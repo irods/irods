@@ -17,6 +17,14 @@ source $SERVICE_ACCOUNT_CONFIG_FILE
 # configure irods
 sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_configuration.sh"
 
+# if default vault path does not exist, create it with proper permissions
+MYIRODSCONFIG=/etc/irods/irods.config
+MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
+if [ ! -e $MYRESOURCEDIR ] ; then
+    mkdir -p $MYRESOURCEDIR
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $MYRESOURCEDIR
+fi
+
 # setup database script or resource server script
 if [ -e "$DETECTEDDIR/setup_irods_database.sh" ] ; then
   sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_database.sh"
