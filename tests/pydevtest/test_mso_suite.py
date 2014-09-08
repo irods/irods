@@ -57,6 +57,7 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         test_file_path = "/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmd( s.adminsession, 'ireg -D mso -R archiveResc "//http://people.renci.org/~jasonc/irods/http_mso_test_file.txt" '+test_file_path+'/test_file.txt')
         assertiCmd( s.adminsession, 'iget -f '+test_file_path+'/test_file.txt')
+        assertiCmdFail( s.adminsession, 'ils -L '+test_file_path+'/test_file.txt', 'STDOUT', ' -99 ')
         os.remove( 'test_file.txt' )
         # unregister the object
         assertiCmd( s.adminsession, 'irm -U '+test_file_path+'/test_file.txt')

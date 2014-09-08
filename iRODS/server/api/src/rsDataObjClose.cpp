@@ -292,6 +292,28 @@ logTransfer( char *oprType, char *objPath, rodsLong_t fileSize,
 }
 #endif
 
+int _modDataObjSize(
+    rsComm_t* _comm,
+    dataObjInfo_t* _info ) {
+
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+    memset( &regParam, 0, sizeof( regParam ) );
+    char tmpStr[MAX_NAME_LEN];
+    snprintf( tmpStr, sizeof( tmpStr ), "%ji", ( intmax_t ) _info->dataSize );
+    addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
+    addKeyVal( &regParam, IN_PDMO_KW, _info->rescHier ); // to stop resource hierarchy recursion
+    modDataObjMetaInp.dataObjInfo = _info;
+    modDataObjMetaInp.regParam = &regParam;
+    int status = rsModDataObjMeta( _comm, &modDataObjMetaInp );
+    if ( status < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "_modDataObjSize: rsModDataObjMeta failed, dataSize [%d] status = %d",
+                 _info->dataSize, status );
+    }
+    return status;
+}
+
 int
 _rsDataObjClose(
     rsComm_t *rsComm,
@@ -374,44 +396,36 @@ _rsDataObjClose(
         noChkCopyLenFlag = 1;
     }
 
-    if ( L1desc[l1descInx].stageFlag == NO_STAGING ) {
-        /* don't check for size if it is DO_STAGING type because the
-         * fileStat call may not be supported */
-        newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
+    newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
 
-        /* check for consistency of the write operation */
+    /* check for consistency of the write operation */
 
-        if ( newSize < 0 ) {
-            status = ( int ) newSize;
-            rodsLog( LOG_ERROR,
-                     "_rsDataObjClose: getSizeInVault error for %s, status = %d",
-                     L1desc[l1descInx].dataObjInfo->objPath, status );
-            return status;
-        }
-        else if ( L1desc[l1descInx].dataSize > 0 ) {
-            if ( newSize != L1desc[l1descInx].dataSize && noChkCopyLenFlag == 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "_rsDataObjClose: size in vault %lld != target size %lld",
-                         newSize, L1desc[l1descInx].dataSize );
-                return SYS_COPY_LEN_ERR;
-            }
-        }
+    if ( newSize < 0 ) {
+        status = ( int ) newSize;
+        rodsLog( LOG_ERROR,
+                 "_rsDataObjClose: getSizeInVault error for %s, status = %d",
+                 L1desc[l1descInx].dataObjInfo->objPath, status );
+        return status;
     }
-    else {
-        /* SYNC_DEST or STAGE_SRC operation */
-        /* newSize = L1desc[l1descInx].bytesWritten; */
-        newSize = L1desc[l1descInx].dataSize;
+    else if ( L1desc[l1descInx].dataSize > 0 ) {
+        if ( newSize != L1desc[l1descInx].dataSize && noChkCopyLenFlag == 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "_rsDataObjClose: size in vault %lld != target size %lld",
+                     newSize, L1desc[l1descInx].dataSize );
+            return SYS_COPY_LEN_ERR;
+        }
     }
 
     // If an object with a checksum was written to, checksum needs updating
     if ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType
-            && strlen(L1desc[l1descInx].dataObjInfo->chksum) > 0) {
+            && strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
 
         L1desc[l1descInx].chksumFlag = REG_CHKSUM;
         updateChksumFlag = 1;
 
     }
 
+    // need a checksum check
     if ( !noChkCopyLenFlag || updateChksumFlag ) {
         status = procChksumForClose( rsComm, l1descInx, &chksumStr );
         if ( status < 0 ) {
@@ -541,9 +555,32 @@ _rsDataObjClose(
 
             status = rsRegReplica( rsComm, &regReplicaInp );
             clearKeyVal( &regReplicaInp.condInput );
+
+            // update datasize in catalog if there is a mismatch between
+            // what is expected and what was actually written to the resource
+            if ( srcDataObjInfo->dataSize != newSize ) {
+                srcDataObjInfo->dataSize = newSize;
+                status = _modDataObjSize( rsComm, srcDataObjInfo );
+                if ( status < 0 ) {
+                    rodsLog( LOG_NOTICE,
+                             "_rsDataObjClose: _modDataObjSize srcDataObjInfo failed, status = [%d]", status );
+                    return status;
+                }
+            }
+            if ( destDataObjInfo->dataSize != newSize ) {
+                destDataObjInfo->dataSize = newSize;
+                status = _modDataObjSize( rsComm, destDataObjInfo );
+                if ( status < 0 ) {
+                    rodsLog( LOG_NOTICE,
+                             "_rsDataObjClose: _modDataObjSize destDataObjInfo failed, status = [%d]", status );
+                    return status;
+                }
+            }
+
             /* update quota overrun */
             updatequotaOverrun( destDataObjInfo->rescInfo,
                                 destDataObjInfo->dataSize, ALL_QUOTA );
+
         }
         if ( chksumStr != NULL ) {
             free( chksumStr );
@@ -584,8 +621,7 @@ _rsDataObjClose(
             }
         }
 
-        if ( L1desc[l1descInx].dataObjInfo == NULL ||
-                L1desc[l1descInx].dataObjInfo->dataSize != newSize ) {
+        if ( L1desc[l1descInx].dataObjInfo->dataSize != newSize ) {
             snprintf( tmpStr, MAX_NAME_LEN, "%lld", newSize );
             addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
             /* update this in case we need to replicate it */
@@ -644,8 +680,6 @@ _rsDataObjClose(
                           L1desc[l1descInx].dataObjInfo->objPath );
         }
     }
-
-    /* XXXXXX need to replicate to moreRescGrpInfo */
 
     /* for post processing */
     L1desc[l1descInx].bytesWritten =
@@ -845,7 +879,7 @@ procChksumForClose(
     }
 
     /* overwriting an old copy. need to verify the chksum again */
-    if ( strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 && !L1desc[l1descInx].chksumFlag) {
+    if ( strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 && !L1desc[l1descInx].chksumFlag ) {
         L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
     }
 
