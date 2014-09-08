@@ -2071,30 +2071,6 @@ sub configureIrodsUser
 	unlink( $tmpPutFile );
 	unlink( $tmpGetFile );
 
-# No longer do the 'iexit full' ICAT-enable Servers either since the
-# auth file is needed for server to server connections.
-#	if ($DATABASE_TYPE ne "") {
-#		($status,$output) = run( "$iexit full" );
-#		if ( $status != 0 )
-#		{
-#			printError( "\nInstall problem:\n" );
-#			printError( "    Cannot close iRODS connection:\n" );
-#			printError( "        ", $output );
-#			printLog( "\nCannot close iRODS connection:\n" );
-#			printLog( "    ", $output );
-#			cleanAndExit( 1 );
-#		}
-#	}
-
-
-	# Stop iRODS.
-# Leave the iRODS server running.
-#	printStatus( "Stopping iRODS...\n" );
-#	printLog( "Stopping iRODS...\n" );
-#	if ( stopIrods( ) == 0 )
-#	{
-#		cleanAndExit( 1 );
-#	}
 }
 
 
@@ -2322,11 +2298,6 @@ sub stopIrods
 	# Design Notes:  The current version of this uses a file created
 	# 	by the irods server which records its PID and then finds
 	# 	the children, which should work well in most cases. 
-	# 	The previous version (irods 1.0) would use ps
-	# 	to find processes of the right name.  See the old version
-	#       from CVS for the limitations of that approach.  
-	#       This should work better, in most situations, and will
-	# 	allow us to run multiple systems on a host.
 	#
 	# Find and kill the server process IDs
 	$parentPid=getIrodsServerPid();
