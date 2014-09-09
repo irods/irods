@@ -347,6 +347,22 @@ _rsDataObjClose(
     }
 
     if ( L1desc[l1descInx].oprStatus < 0 ) {
+        const rodsLong_t vault_size = getSizeInVault(
+                                          rsComm,
+                                          L1desc[l1descInx].dataObjInfo );
+        if ( L1desc[l1descInx].dataObjInfo->dataSize != vault_size ) {
+            L1desc[l1descInx].dataObjInfo->dataSize = vault_size;
+            int status = _modDataObjSize(
+                             rsComm,
+                             L1desc[l1descInx].dataObjInfo );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "_rsDataObjClose - _modDataObjSize failed [%d]",
+                         status );
+                return status;
+            }
+        }
+
         /* an error has occurred */
         return L1desc[l1descInx].oprStatus;
     }

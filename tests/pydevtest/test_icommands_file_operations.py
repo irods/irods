@@ -10,6 +10,7 @@ import psutil
 import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
 from resource_suite import ResourceBase
+import time
 
 def make_file(f_name, f_size, source='/dev/zero'):
     output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
@@ -227,7 +228,6 @@ class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
                         msg="Files missing from vault:\n" + str(file_names-vault_files_post_irsync_source) + "\n\n" + \
                             "Extra files in vault:\n" + str(vault_files_post_irsync_source-file_names))
 
-    @unittest.skip("Activate test after #2313 is fixed")
     def test_cancel_large_iput(self):
         base_name = 'test_cancel_large_put'
         user_session = s.sessions[1]
@@ -238,5 +238,17 @@ class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
         iput_cmd = "iput '" + file_local_full_path + "'"
         file_vault_full_path = os.path.join(get_vault_session_path(user_session), file_name)
         interruptiCmd(user_session, iput_cmd, file_vault_full_path, 10)
-        file_vault_size = os.path.getsize(file_vault_full_path)
-        assertiCmd(user_session, 'ils -l', 'STDOUT', [file_name, str(file_vault_size)])
+
+        # multiple threads could still be writing on the server side, so we need to wait for
+        # the size in the vault to converge - then were done.
+        old_size = None
+        new_size = os.path.getsize(file_vault_full_path)
+        while old_size != new_size :
+            time.sleep(1)
+            old_size = new_size
+            new_size = os.path.getsize(file_vault_full_path)
+
+        assertiCmd(user_session, 'ils -l', 'STDOUT', [file_name, str(new_size)])
+
+
+

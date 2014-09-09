@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsAgent.c - The main code for rodsAgent
+/* rodsAgent.cpp - The main code for rodsAgent
  */
 
 #include <syslog.h>
@@ -75,7 +75,7 @@ main( int, char ** ) {
      * call returns real values instead of 1 */
     signal( SIGCHLD, SIG_DFL );
     signal( SIGUSR1, signalExit );
-    signal( SIGPIPE, rsPipSigalHandler );
+    signal( SIGPIPE, SIG_IGN );
 
     // register irods signal handlers
     register_handlers();
