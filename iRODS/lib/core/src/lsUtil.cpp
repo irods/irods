@@ -9,11 +9,6 @@ char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
 int
 lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    int i = 0;
-    int status = 0;
-    int savedStatus = 0;
-    genQueryInp_t genQueryInp;
-
 
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -30,9 +25,12 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
     }
 
+    genQueryInp_t genQueryInp;
     initCondForLs( &genQueryInp );
 
-    for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
+    int savedStatus = 0;
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        int status = 0;
         rstrcpy( zoneHint, rodsPathInp->srcPath[i].inPath, MAX_NAME_LEN ); // // JMC - backport 4416
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ||
                 rodsPathInp->srcPath[i].objState == UNKNOWN_ST ) {
@@ -72,16 +70,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             savedStatus = status;
         }
     }
-    if ( savedStatus < 0 ) {
-        return savedStatus;
-    }
-    else if ( status == CAT_NO_ROWS_FOUND ||
-              status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return 0;
-    }
-    else {
-        return status;
-    }
+    return savedStatus;
 }
 
 int
