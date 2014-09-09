@@ -1105,7 +1105,15 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
 #endif
 
     ruleInx = 0; /* new rule */
-    strcpy( ruleName, ruleNameInp );
+    if ( strlen( ruleNameInp ) < sizeof( ruleName ) ) {
+        snprintf( ruleName, sizeof( ruleName ), "%s", ruleNameInp );
+    }
+    else {
+        rodsLog( LOG_ERROR, "ruleName: [%s] must be fewer than %ju characters in length.",
+                ruleNameInp, sizeof( ruleName ) );
+        ruleName[0] = '\0';
+    }
+
     mapExternalFuncToInternalProc2( ruleName );
 
     int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
