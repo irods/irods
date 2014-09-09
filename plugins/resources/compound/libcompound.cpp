@@ -918,7 +918,7 @@ extern "C" {
     } // compound_file_stage_to_cache
 
     /// =-=-=-=-=-=-=-
-    /// @brief Move data from a the cache leaf node to a local archive leaf node
+    /// @brief Move data from a cache leaf node to a local archive leaf node
     ///        This routine is not supported from a coordinating node's perspective
     ///        the coordinating node would be calling this on a leaf when necessary
     irods::error compound_file_sync_to_arch(

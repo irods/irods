@@ -9,7 +9,7 @@
   the API routine names start with 'chl' for Catalog High Level.
   Others are internal.
 
-  Also see icatGeneralQuery.c for chlGeneralQuery, the other ICAT high
+  Also see icatGeneralQuery.cpp for chlGeneralQuery, the other ICAT high
   level API call.
 
 **************************************************************************/

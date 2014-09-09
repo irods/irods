@@ -1457,9 +1457,6 @@ The following keywords are used to set values for PAM server configuration.  The
 - pam_password_min_time
 - pam_password_max_time
 
-Descriptions of these values can be found in `iRODS/server/icat/src/icatHighLevelRoutines.c`.
-
-
 Server SSL Setup
 ****************
 
