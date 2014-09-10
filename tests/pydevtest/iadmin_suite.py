@@ -11,6 +11,8 @@ import os
 import shutil
 import time
 import subprocess
+import distutils.spawn
+import stat
 
 # =-=-=-=-=-=-=-
 # build path magic to import server_config.py 
@@ -656,7 +658,18 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assert( -1 !=  out_str.find( largefilename ) )
 
 
-    
+    def test_fusermount_permissions(self):
+        # Check that fusermount is configured correctly for irodsFs
+        fusermount_path = distutils.spawn.find_executable('fusermount')
+        assert fusermount_path is not None, 'fusermount binary not found'
+        assert os.stat(fusermount_path).st_mode & stat.S_ISUID, 'fusermount setuid bit not set'
+        p = subprocess.Popen(['fusermount -V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        stdoutdata, stderrdata = p.communicate()
+        assert p.returncode == 0, '\n'.join(['fusermount not executable',
+                                             'return code: '+str(p.returncode),
+                                             'stdout: '+stdoutdata,
+                                             'stderr: '+stderrdata])
+        
     def test_irodsFs(self):
         # =-=-=-=-=-=-=-
         # set up a fuse mount
