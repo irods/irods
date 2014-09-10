@@ -331,35 +331,37 @@ getObjType( rsComm_t *rsComm, char *objName, char * objType ) {
 int
 addAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP ) {
-    int i, j;
     char  objType[10];
-    modAVUMetadataInp_t modAVUMetadataInp;
-
-    bzero( &modAVUMetadataInp, sizeof( modAVUMetadataInp ) );
     if ( strcmp( inObjType, "-1" ) ) {
+        if ( strlen( inObjType ) >= sizeof( objType ) ) {
+            rodsLog( LOG_ERROR, "inObjType: [%s] must be fewer than %ju characters", inObjType, ( uintmax_t )sizeof( objType ) );
+            return SYS_INVALID_INPUT_PARAM;
+        }
         strcpy( objType, inObjType );
     }
     else {
-        i = getObjType( rsComm, objName, objType );
-        if ( i < 0 ) {
-            return i;
+        int status = getObjType( rsComm, objName, objType );
+        if ( status < 0 ) {
+            return status;
         }
     }
 
-    modAVUMetadataInp.arg0 = "add";
-    for ( i = 0; i < kVP->len ; i++ ) {
+    for ( int i = 0; i < kVP->len ; i++ ) {
         /* Call rsModAVUMetadata to call chlAddAVUMetadata.
            rsModAVUMetadata connects to the icat-enabled server if the
            local host isn't.
         */
+        modAVUMetadataInp_t modAVUMetadataInp;
+        memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+        modAVUMetadataInp.arg0 = "add";
         modAVUMetadataInp.arg1 = objType;
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
         modAVUMetadataInp.arg5 = "";
-        j = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
-        if ( j < 0 ) {
-            return j;
+        int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
+        if ( status < 0 ) {
+            return status;
         }
     }
     return 0;
