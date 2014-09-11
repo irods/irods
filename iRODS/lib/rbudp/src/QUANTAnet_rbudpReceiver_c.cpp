@@ -320,9 +320,7 @@ int  getfile( rbudpReceiver_t *rbudpReceiver, char * origFName,
 int
 getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
     long long filesize;
-    int status = 0;
     int verbose = rbudpReceiver->rbudpBase.verbose;
-    long long remaining;
     long long offset = 0;
 
     int n = readn( rbudpReceiver->rbudpBase.tcpSockfd,
@@ -332,7 +330,6 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
         return errno ? ( -1 * errno ) : -1;
     }
 
-    /* Can't use ntohl() on long longs! */
     filesize = rb_ntohll( filesize );
     if ( verbose > 0 ) {
         fprintf( stderr, "The size of the file is %lld.\n", filesize );
@@ -341,8 +338,11 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
     if ( ftruncate( fd, filesize ) != 0 ) {
         fprintf( stderr, "Truncation failed." );
     }
-
-    remaining = filesize;
+    if ( filesize < 0 || filesize > std::numeric_limits<long long>::max() ) {
+        fprintf( stderr, "Invalid file size %ji. File size must be no less than zero and no greater than %ji.",
+                ( intmax_t )filesize, ( intmax_t )std::numeric_limits<long long>::max() );
+    }
+    long long remaining = filesize;
     while ( remaining > 0 ) {
         uint toRead;
         char *buf;
@@ -366,19 +366,19 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
             return errno ? ( -1 * errno ) : -1;
         }
 
-        status = receiveBuf( rbudpReceiver, buf, toRead, packetSize );
+        int status = receiveBuf( rbudpReceiver, buf, toRead, packetSize );
 
         munmap( buf, toRead );
         if ( status < 0 ) {
             fprintf( stderr, "receiveBuf error, status = %d\n", status );
-            break;
+            return status;
         }
         remaining -= toRead;
         offset += toRead;
     }
 
 
-    return status;
+    return 0;
 }
 
 int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
