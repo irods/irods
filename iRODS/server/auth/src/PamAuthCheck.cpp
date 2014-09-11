@@ -42,16 +42,63 @@
 #include <string>
 #include <iostream>
 #include <stdint.h>
+#include <map>
 
-static const char pam_service[] = "irods";
-static pam_response *reply_global;
+namespace {
+    const char pam_service[] = "irods";
 
+    struct AppData {
+        bool debug_mode;
+    };
 
-int
-null_conv( int num_msg, const struct pam_message **msg,
-           struct pam_response **resp, void *appdata_ptr ) {
-    *resp = reply_global;
-    return PAM_SUCCESS;
+    int
+    null_conv( int num_msg, const struct pam_message **msg,
+               struct pam_response **resp, void *appdata_ptr ) {
+
+        const AppData &appdata = *static_cast<AppData*>(appdata_ptr);
+        if ( appdata.debug_mode ) {
+            std::map<int, const char*> pam_message_types;
+            pam_message_types[PAM_PROMPT_ECHO_OFF] = "PAM_PROMPT_ECHO_OFF";
+            pam_message_types[PAM_PROMPT_ECHO_ON] = "PAM_PROMPT_ECHO_ON";
+            pam_message_types[PAM_ERROR_MSG] = "PAM_ERROR_MSG";
+            pam_message_types[PAM_TEXT_INFO] = "PAM_TEXT_INFO";
+
+            printf( "null_conv: num_msg: %d\n", num_msg );
+            for (int i = 0; i < num_msg; ++i) {
+                const int msg_style = msg[i]->msg_style;
+                printf( "  null_conv: msg index: %d\n", i );
+                printf( "    null_conv: msg_style: %d -> %s\n", msg_style, pam_message_types[msg_style] );
+                printf( "    null_conv: msg: %s\n", msg[i]->msg );
+            }
+        }
+
+        if ( num_msg < 1 ) {
+            return PAM_SUCCESS;
+        }
+
+        // read the password from stdin
+        std::string password;
+        std::getline( std::cin, password );
+        if ( appdata.debug_mode ) {
+            printf( "null_conv: password bytes: %ju\n", (uintmax_t)password.size() );
+        }
+
+        *resp = static_cast<pam_response*>( malloc( sizeof( **resp ) ) );
+        if ( *resp == NULL ) {
+            fprintf( stderr, "null_conv: PamAuthCheck: malloc error\n" );
+            return PAM_BUF_ERR;
+        }
+
+        (*resp)->resp = strdup( password.c_str() );
+        if ( (*resp)->resp == NULL ) {
+            free( *resp );
+            fprintf( stderr, "PamAuthCheck: malloc error\n" );
+            return PAM_BUF_ERR;
+        }
+
+        (*resp)->resp_retcode = 0;
+        return PAM_SUCCESS;
+    }
 }
 
 int main( int argc, char *argv[] ) {
@@ -65,58 +112,42 @@ int main( int argc, char *argv[] ) {
         return 2;
     }
 
-    bool debug = false;
-    if ( argc == 3 ) {
-        debug = true;
-    }
+    const bool debug_mode = argc == 3;
 
-    /* read the pw from stdin */
-    std::string password;
-    std::getline( std::cin, password );
-    if ( debug ) {
-        printf( "nb=%ju\n", (uintmax_t)password.size() );
-    }
-
+    AppData appdata;
+    appdata.debug_mode = debug_mode;
+    pam_conv conv = { null_conv, &appdata };
     pam_handle_t *pamh = NULL;
-    pam_conv conv = { null_conv, NULL };
-    int retval = pam_start( pam_service, username, &conv, &pamh );
-    if ( debug ) {
-        printf( "retval 1=%d\n", retval );
+    const int retval_pam_start = pam_start( pam_service, username, &conv, &pamh );
+    if ( debug_mode ) {
+        printf( "retval_pam_start: %d\n", retval_pam_start );
     }
 
-    if ( retval != PAM_SUCCESS ) {
+    if ( retval_pam_start != PAM_SUCCESS ) {
         fprintf( stderr, "PamAuthCheck: pam_start error\n" );
         return 3;
     }
-
-    reply_global = ( pam_response* )malloc( sizeof( *reply_global ) );
-    if ( reply_global == NULL ) {
-        fprintf( stderr, "PamAuthCheck: malloc error\n" );
-        return 4;
+    
+    // check username-password
+    const int retval_pam_authenticate = pam_authenticate( pamh, 0 );
+    if ( debug_mode ) {
+        printf( "retval_pam_authenticate: %d\n", retval_pam_authenticate );
     }
 
-    reply_global[0].resp = strdup( password.c_str() );
-    reply_global[0].resp_retcode = 0;
-
-    retval = pam_authenticate( pamh, 0 );  /* check username-password */
-    if ( debug ) {
-        printf( "retval 2=%d\n", retval );
-    }
-
-    if ( retval == PAM_SUCCESS ) {
+    if ( retval_pam_authenticate == PAM_SUCCESS ) {
         fprintf( stdout, "Authenticated\n" );
     }
     else {
         fprintf( stdout, "Not Authenticated\n" );
     }
 
-    if ( pam_end( pamh, retval ) != PAM_SUCCESS ) { /* close Linux-PAM */
+    // close Linux-PAM
+    if ( pam_end( pamh, retval_pam_authenticate ) != PAM_SUCCESS ) {
         pamh = NULL;
         fprintf( stderr, "PamAuthCheck: failed to release authenticator\n" );
-        return 5;
+        return 4;
     }
 
-    return ( retval == PAM_SUCCESS ? 0 : 1 );   /* indicate success (valid
-						 username and password) or
-						 not */
+    // indicate success (valid username and password) or not
+    return retval_pam_authenticate == PAM_SUCCESS ? 0 : 1;
 }
