@@ -29,8 +29,6 @@ main( int argc, char **argv ) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
 
-
-
     // -=-=-=-=-=- JMC - backport 4536 -=-=-=-=-=-
     optStr = "hArlLvt:VZ";
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );

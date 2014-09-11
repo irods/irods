@@ -101,6 +101,62 @@ error server_properties::capture() {
         result = properties.set<bool>( PAM_NO_EXTEND_KW, false );
         result = properties.set<size_t>( PAM_PW_LEN_KW, 20 );
 
+        key = strstr( buf, ICAT_HOST_KW );
+        if ( key != NULL ) {
+            len = strlen( ICAT_HOST_KW );
+
+            // Set property name and setting
+            prop_name.assign( ICAT_HOST_KW );
+            prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+            // Update properties table
+            result = properties.set<std::string>( prop_name, prop_setting );
+
+            rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+        } // ICAT_HOST_KW
+
+        key = strstr( buf, RE_RULESET_KW );
+        if ( key != NULL ) {
+            len = strlen( RE_RULESET_KW );
+
+            // Set property name and setting
+            prop_name.assign( RE_RULESET_KW );
+            prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+            // Update properties table
+            result = properties.set<std::string>( prop_name, prop_setting );
+
+            rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+        } // RE_RULESET_KW
+
+        key = strstr( buf, RE_FUNCMAPSET_KW );
+        if ( key != NULL ) {
+            len = strlen( RE_FUNCMAPSET_KW );
+
+            // Set property name and setting
+            prop_name.assign( RE_FUNCMAPSET_KW );
+            prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+            // Update properties table
+            result = properties.set<std::string>( prop_name, prop_setting );
+
+            rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+        } // RE_FUNCMAPSET_KW
+
+        key = strstr( buf, RE_VARIABLEMAPSET_KW );
+        if ( key != NULL ) {
+            len = strlen( RE_VARIABLEMAPSET_KW );
+
+            // Set property name and setting
+            prop_name.assign( RE_VARIABLEMAPSET_KW );
+            prop_setting.assign( findNextTokenAndTerm( key + len ) );
+
+            // Update properties table
+            result = properties.set<std::string>( prop_name, prop_setting );
+
+            rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
+        } // RE_VARIABLEMAPSET_KW
+
         key = strstr( buf, DB_USERNAME_KW );
         if ( key != NULL ) {
             len = strlen( DB_USERNAME_KW );
@@ -332,29 +388,32 @@ error server_properties::capture() {
 
         key = strstr( buf, REMOTE_ZONE_SID_KW );
         if ( key != NULL ) {
-            result = SUCCESS();
             len = strlen( REMOTE_ZONE_SID_KW );
 
             // Set property name and setting
             prop_name.assign( REMOTE_ZONE_SID_KW );
             prop_setting.assign( findNextTokenAndTerm( key + len ) );
-            rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
             // Update properties table
-            std::vector<std::string> rem_sids;
+            std::vector<std::string>           rem_sids;
+            std::vector<std::string>::iterator sid_itr;
             if( properties.has_entry( prop_name ) ) {
                 result = properties.get< std::vector< std::string > >( prop_name, rem_sids );
-                if( result.ok() ) {
-                    rem_sids.push_back( prop_setting );
-                }
+           
+                // do not want duplicate entries 
+                sid_itr = std::find( 
+                              rem_sids.begin(),
+                              rem_sids.end(),
+                              prop_setting );
+
             }
 
-            if( result.ok() ) {
+            if( sid_itr == rem_sids.end() ) {
                 rem_sids.push_back( prop_setting );
                 result = properties.set< std::vector< std::string > >( prop_name, rem_sids );
-            } else {
-                irods::log( PASS( result ) );
             }
+             
+            rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
         } // REMOTE_ZONE_SID_KW
 

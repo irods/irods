@@ -85,7 +85,8 @@ OBJS =		\
 		$(objDir)/genOSAuth.o \
 		$(objDir)/iticket.o \
 		$(objDir)/igroupadmin.o \
-		$(objDir)/iapitest.o
+		$(objDir)/iapitest.o \
+		$(objDir)/igridreport.o
 
 
 BINS =		\
@@ -136,7 +137,8 @@ BINS =		\
 		$(binDir)/genOSAuth \
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin  \
-		$(binDir)/iapitest 
+		$(binDir)/iapitest  \
+		$(binDir)/igridreport 
 
 # Compile and link flags
 

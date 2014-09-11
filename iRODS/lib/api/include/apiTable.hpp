@@ -15,8 +15,17 @@
 #include "apiNumber.hpp"
 #include "rodsUser.hpp"
 
+
+
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"
+
+
+#include "server_report.hpp"
+#include "grid_report.hpp"
+
+
+
 #if defined(RODS_SERVER)
 static irods::apidef_t server_api_table_inp[] = {
 #else	/* client */
@@ -607,7 +616,17 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         GET_HIER_FOR_RESC_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         "getHierarchyForRescInp_PI", 0, "getHierarchyForRescOut_PI", 0, ( funcPtr ) RS_GET_HIER_FOR_RESC, irods::clearInStruct_noop
-    }
+    },
+    {
+        GRID_REPORT_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_GRID_REPORT, irods::clearInStruct_noop
+    },
+    {
+        SERVER_REPORT_AN, RODS_API_VERSION, REMOTE_PRIV_USER_AUTH, REMOTE_PRIV_USER_AUTH,
+        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_SERVER_REPORT, irods::clearInStruct_noop
+    },
+
+
 }; // _api_table_inp
 
 

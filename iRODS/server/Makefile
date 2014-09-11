@@ -425,6 +425,11 @@ test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
 
 
 
+# temp include jansson for gridreport
+CFLAGS += -I../../external/jansson-2.5/src/
+AG_LDADD += ../../external/jansson-2.5/src/.libs/libjansson.a
+LDFLAGS += ../../external/jansson-2.5/src/.libs/libjansson.a
+
 
 
 # Clean

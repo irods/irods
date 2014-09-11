@@ -65,6 +65,15 @@ public:
         }
     }
 
+    typedef lookup_table<boost::any>::iterator iterator;
+    iterator begin() {
+        return properties.begin();
+    }
+
+    iterator end() {
+        return properties.end();
+    }
+
 private:
     // Disable constructors
     server_properties(): captured_( false ) {};

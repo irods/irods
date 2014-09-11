@@ -397,3 +397,11 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetLimitedPassword.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGetHierarchyForResc.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetHierarchyForResc.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsServerReport.o
+LIB_API_OBJS += $(libApiObjDir)/rcServerReport.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGridReport.o
+LIB_API_OBJS += $(libApiObjDir)/rcGridReport.o
+
+

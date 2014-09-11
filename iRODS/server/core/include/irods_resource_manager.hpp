@@ -145,6 +145,10 @@ public:
 
     } // resolve_from_property
 
+    typedef lookup_table< resource_ptr >::iterator iterator;
+    iterator begin() { return resources_.begin(); }
+    iterator end()   { return resources_.end();   }
+
 private:
     // =-=-=-=-=-=-=-
     /// @brief take results from genQuery, extract values and create resources

@@ -292,9 +292,6 @@ clean:
 	@rm -f $(LIBRARY)
 	@rm -f $(LOG_SRC)
 
-
-
-
 #
 # Compilation Targets
 #
