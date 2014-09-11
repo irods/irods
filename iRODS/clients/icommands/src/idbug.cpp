@@ -159,7 +159,7 @@ int sendIDebugCommand( char *buf, char *hdr ) {
         for ( ii = 0; ii < sendAddrInx ; ii++ ) {
             if ( sendAddr[ii] != NULL ) {
                 snprintf( hdr, HEADER_TYPE_LEN, "CMSG:%s", sendAddr[ii] );
-                strcpy( sendXmsgInp.sendXmsgInfo.msgType, hdr );
+                snprintf( sendXmsgInp.sendXmsgInfo.msgType, sizeof( sendXmsgInp.sendXmsgInfo.msgType ), "%s", hdr );
                 /*	printf("*** Sending:%s::%s::%i\n",sendXmsgInp.sendXmsgInfo.msgType,sendXmsgInp.sendXmsgInfo.msg,sendXmsgInp.sendXmsgInfo.numRcv);*/
                 status = rcSendXmsg( conn, &sendXmsgInp );
                 if ( status < 0 ) {
