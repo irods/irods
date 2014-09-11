@@ -22,6 +22,7 @@
 
 #include "QUANTAnet_rbudpReceiver_c.hpp"
 #include "irods_log.hpp"
+#include <limits>
 
 #include <stdarg.h>
 
@@ -240,7 +241,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
     char *buf = 0;
     int ok = RB_SUCCESS;
 
-    for ( ;; ) {
+    while ( true ) {
 
         long long nbufSize, bufSize;
         int n = readn( rbudpReceiver->rbudpBase.tcpSockfd,
@@ -261,8 +262,12 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
         }
 
         if ( buf == NULL || bufSize != curSize ) {
-            if ( buf ) {
-                free( buf );
+            free( buf );
+            if ( bufSize < 1 || bufSize > std::numeric_limits<long long>::max() ) {
+                fprintf( stderr, "bufSize %ji must be greater than zero and no more than %ji\n",
+                        ( intmax_t )bufSize, ( intmax_t )std::numeric_limits<long long>::max() );
+                ok = FAILED;
+                break;
             }
             buf = ( char * )malloc( bufSize );
             if ( buf == 0 ) {
