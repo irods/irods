@@ -515,7 +515,9 @@ main( int argc, char **argv ) {
     /* switch off blocking for stdin */
     stdinflags = fcntl( 0, F_GETFL, 0 ); /* get current file status flags */
     stdinflags |= O_NONBLOCK;/* turn off blocking flag */
-    fcntl( 0, F_SETFL, stdinflags ); /* set up non-blocking read */
+    if ( int status = fcntl( 0, F_SETFL, stdinflags ) ) { /* set up non-blocking read */
+        fprintf( stderr, "fcntl failed with status: %d", status );
+    }
 
     /* print to stdout */
     /*    printf("idbug> ");*/
