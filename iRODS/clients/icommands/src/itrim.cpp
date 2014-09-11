@@ -99,7 +99,7 @@ usage() {
     char *msgs[] = {
         "Usage : itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
         " ",
-        "Trim down the number of replica of a file in iRODS by deleting some replicas.",
+        "Reduce the number of replicas of a dataObject in iRODS by deleting some replicas.",
         "Nothing will be done if this is less than or equal to numCopies. The -n and",
         "the -S options are used to specified which copies to delete. If neither of",
         "these options are used, the replicas will be trimmed until there are",
@@ -113,7 +113,7 @@ usage() {
         "     value is 2.",
         " -r  recursive - trim the whole subtree",
         " -S  srcResource - specifies the resource of the replica to be deleted.",
-        "     If specified, only copies stored in this resource will be condidate",
+        "     If specified, only copies stored in this resource will be candidate",
         "     for the deletion.",
         " -v  verbose",
         " -V  Very verbose",
