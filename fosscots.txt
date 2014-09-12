@@ -12,17 +12,20 @@ Oracle
 
 iRODS FOSS
 ------------------
+bash
 boost
 c
 c++
 doxygen
 hdf5
 jansson
+javascript
 lib_mysqludf_preg
 libarchive
 libs3
 mysql
 netcdf
+nodejs
 openssl
 perl
 postgresql
@@ -37,7 +40,6 @@ PACKAGING COTS
 
 PACKAGING FOSS
 --------------
-bash
 cmake
 dpkg
 epm
@@ -49,9 +51,10 @@ rpmtools
 
 DEVELOPMENT COTS
 ----------------
-Microsoft Windows
+Coverity
 github.com
 Mac OS X
+Microsoft Windows
 VMWare VSphere
 
 DEVELOPMENT FOSS
@@ -60,11 +63,16 @@ archlinux
 chromeos
 centos
 cppcheck
+docker
+eclipse
+emacs
 g++
 gcc
 git
 hudson
 ssh
+stack
 suse
 ubuntu
 valgrind
+vim
