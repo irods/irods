@@ -15,10 +15,6 @@
 #include "reVariableMap.hpp"
 #include "debug.hpp"
 
-
-
-
-
 //    #include "irods_ms_plugin.hpp"
 //    extern irods::ms_table MicrosTable;
 //    extern int NumOfAction;
@@ -802,7 +798,7 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     char buf2[ERR_MSG_LEN];
     char action[MAX_NAME_LEN];
-    strcpy( action, actionName );
+    snprintf( action, sizeof( action ), "%s", actionName );
     mapExternalFuncToInternalProc2( action );
 
     /* no action (microservice) found, try to lookup a rule */
