@@ -1890,9 +1890,7 @@ Metadata Harvesting
     The process of extraction of existing Metadata from a remote information resource and subsequent addition to the iRODS iCAT.  The harvested Metadata could be related to certain Data Objects, Collections, or any other iRODS entity.
 
 Microservice
-    A set of operations performed on a Collection at a remote storage location.
-
-    Microservices are small, well-defined procedures/functions that perform a certain server-side task and are compiled into the iRODS server code. Rules invoke Microservices to implement Management Policies.  Microservices can be chained to implement larger macro-level functionality, called an Action. By having more than one chain of Microservices for an Action, a system can have multiple ways of performing the Action. At runtime, using priorities and validation conditions, the system chooses the "best" microservice chain to be executed.
+    Microservices are small, well-defined procedures/functions that perform a certain server-side task and are either compiled into the iRODS server code or packaged independently as shared objects (`Pluggable Microservices`_). Rules invoke Microservices to implement Management Policies.  Microservices can be chained to implement larger macro-level functionality, called an Action. By having more than one chain of Microservices for an Action, a system can have multiple ways of performing the Action. At runtime, using priorities and validation conditions, the system chooses the "best" microservice chain to be executed.
 
 Migration
     The process of moving digital Collections to new hardware and/or software as technology evolves.  Separately, Transformative Migration may be used to mean the process of manipulating a Data Object into a new format (e.g. gif to png) for preservation purposes.
