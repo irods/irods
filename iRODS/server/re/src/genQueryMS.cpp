@@ -1175,9 +1175,14 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     char filename[7];
     memset( filename, 'X', sizeof( filename ) );
     filename[sizeof( filename ) - 1] = '\0';
-    stream = fdopen( mkstemp( filename ), "w" );
-    if ( !stream ) { /* Since it won't be caught by printGenQueryOut */
+    int fd = mkstemp( filename );
+    if ( fd < 0 ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed." );
+        return( FILE_OPEN_ERR ); /* accurate enough */
+    }
+    stream = fdopen( fd, "w" );
+    if ( !stream ) { /* Since it won't be caught by printGenQueryOut */
+        rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: fdopen() failed." );
         return( FILE_OPEN_ERR ); /* accurate enough */
     }
 
