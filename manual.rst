@@ -258,7 +258,7 @@ The `setup_irods.sh` script will ask for the following twelve pieces of informat
 8) agent_key
 9) iRODS Administrator Username
 
-10) iCAT Hostname or IP
+10) iCAT Host
 11) iCAT Zone
 
 12) iRODS Administrator Password
@@ -455,7 +455,7 @@ Add additional resource(s)
 
 The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path::
 
- irods@hostname:~/ $ iadmin mkresc <newrescname> 'unixfilesystem' <fully.qualified.domain.name>:</full/path/to/new/vault>
+ irods@hostname:~/ $ iadmin mkresc <newrescname> unixfilesystem <fully.qualified.domain.name>:</full/path/to/new/vault>
  
 Additional information about creating resources can be found with::
 
@@ -629,12 +629,6 @@ And one or more 'RemoteZoneSID' items for the remote zones, for example::
 When tempZone users connect, the system will then confirm that tempZone's LocalZoneSID is 'qwerty123'.
 
 Mutual authentication between servers is always on across Federations.
-
-If you want, you can also scramble the SIDs in the `/etc/irods/server.config` file. Use the 'iadmin spass' to scramble and enter the key used in the `/etc/irods/server.config` file:
-
-  SIDKey 456
-
-This makes it a little more secure by keeping plain text passwords (although not encrypted) out of text files on your host.
 
 -------------------------
 Federation with iRODS 3.x
@@ -1874,8 +1868,8 @@ Jargon
 iCAT
     The iCAT, or iRODS Metadata Catalog, stores descriptive state metadata about the Data Objects in iRODS Collections in a DBMS database (e.g. PostgreSQL, MySQL, Oracle). The iCAT can keep track of both system-level metadata and user-defined metadata.  There is one iCAT database per iRODS Zone.
 
-IES (iCAT-Enabled Server)
-    A machine that runs both an iRODS server and the iCAT database for a particular Zone.
+iCAT Server (IES, or iCAT-Enabled Server)
+    The iRODS server in a grid that holds the database connection to the (possibly remote) iCAT.
 
 iCommands
     iCommands are Unix utilities that give users a command-line interface to operate on data in the iRODS system. There are commands related to the logical hierarchical filesystem, metadata, data object information, administration, rules, and the rule engine. iCommands provide the most comprehensive set of client-side standard iRODS manipulation functions.
@@ -1908,6 +1902,9 @@ Physical Resource
 
 Resource
     A resource, or storage resource, is a software/hardware system that stores digital data. iRODS clients can operate on local or remote data stored on different types of resources through a common interface.
+
+Resource Server
+    An iRODS server in a Zone that is *not* the iCAT Server.  There can be zero to many Resource Servers in a Zone.
 
 Rules
     Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes across hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (via Microservices) of all data access and manipulation operations, with the capability of verifying these operations.
