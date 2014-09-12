@@ -20,6 +20,8 @@ static pthread_mutex_t my_mutex;
 #endif
 
 #include "irods_get_full_path_for_config_file.hpp"
+#include <boost/system/error_code.hpp>
+#include <boost/asio.hpp>
 
 short threadIsAlive[MAX_NSERVERS];
 
@@ -312,43 +314,13 @@ void *startMonScript( void *arg ) {
 #endif
 }
 
-int checkIPaddress( char *IP, unsigned char IPcomp[IPV4] ) {
-    /* function to check if the input string is a valid IP address */
-    const char *delimIP = ".";
-    char *eltstrIP, IPclone[MAX_NAME_LEN];
-    int i, nelt = 0;
-
-    strcpy( IPclone, IP );
-    i = atoi( strtok( IPclone, delimIP ) );
-    if ( i < 0 || i > 255 ) {
-        return -1;
-    }
-    IPcomp[0] = i;
-    while ( ( eltstrIP = strtok( NULL, delimIP ) ) ) {
-        nelt++;
-        i = atoi( eltstrIP );
-        if ( i < 0 || i > 255 ) {
-            return -1;
-        }
-        IPcomp[nelt] = i;
-    }
-    if ( ( nelt + 1 ) != IPV4 ) {
-        return -1;
-    }
-    return 0;
-
-}
-
 int checkHostAccessControl( char *username, char *hostclient, char *groupsname ) {
 
     //char *configDir;
     //char* hostControlAccessFile[LONG_NAME_LEN];
     char grouplist[MAX_SQL_ROWS][MAXSTR];
     const char *delim = " \t\n";
-    int groupok, i, indxc, iok, nelt;
-    char line[MAXLEN], *eltstr, tempArr[NFIELDS][MAXLEN];
-    unsigned char result, IPEntry[IPV4], subnetEntry[IPV4], visitorIP[IPV4];
-    FILE *fp;
+    char *eltstr, tempArr[NFIELDS][MAXLEN];
 
     /* try to open the HostControlAccess if it exists. */
     //configDir = getConfigDir();
@@ -361,14 +333,14 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
         return ret.code();
     }
 
-    fp = fopen( cfg_file.c_str(), "r" );
+    FILE *fp = fopen( cfg_file.c_str(), "r" );
     if ( fp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "hostAuthCheck: can't open HostControlAccess file %s", cfg_file.c_str() );
         return UNIX_FILE_OPEN_ERR - errno;
     }
     /* parse the list of groups for the user from the groupsname char */
-    nelt = 0;
+    int nelt = 0;
     strncpy( grouplist[0], strtok( groupsname, delim ), MAXSTR );
     while ( ( eltstr = strtok( NULL, delim ) ) ) {
         nelt++;
@@ -376,7 +348,8 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
     }
     /* parse HostControlAccess and check if <user,IP,group> is allowed to access this server. */
     while ( !feof( fp ) ) {
-        indxc = 0;
+        int indxc = 0;
+        char line[MAX_NAME_LEN];
         if ( fgets( line, MAXLEN, fp ) ) {
             if ( line[0] != '#' && line[0] != '\n' ) {  /* Comment or empty line, ignore */
                 eltstr = strtok( line, delim );
@@ -385,12 +358,23 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
                     indxc++;
                     strncpy( tempArr[indxc], eltstr, MAXSTR );
                 }
-                if ( ( indxc + 1 ) == NFIELDS && checkIPaddress( tempArr[2], IPEntry ) == 0 &&
-                        checkIPaddress( tempArr[3], subnetEntry ) == 0 &&
-                        checkIPaddress( hostclient, visitorIP ) == 0 ) {
+                if ( ( indxc + 1 ) == NFIELDS ) {
+                    boost::system::error_code error_code;
+                    boost::asio::ip::address_v4 IPEntry( boost::asio::ip::address_v4::from_string( tempArr[2], error_code ) );
+                    if ( error_code.value() ) {
+                        continue;
+                    }
+                    boost::asio::ip::address_v4 subnetEntry( boost::asio::ip::address_v4::from_string( tempArr[3], error_code ) );
+                    if ( error_code.value() ) {
+                        continue;
+                    }
+                    boost::asio::ip::address_v4 visitorIP( boost::asio::ip::address_v4::from_string( hostclient, error_code ) );
+                    if ( error_code.value() ) {
+                        continue;
+                    }
                     /* check through if one of the group does correspond to the one allowed */
-                    groupok = 1;
-                    for ( i = 0; i <= nelt; i++ ) {
+                    int groupok = 1;
+                    for ( int i = 0; i <= nelt; i++ ) {
                         if ( strcmp( tempArr[1], grouplist[i] ) == 0 ) {
                             groupok = 0;
                             break;
@@ -398,16 +382,9 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
                     }
                     if ( strcmp( tempArr[1], "all" ) == 0 || groupok == 0 ) {
                         if ( strcmp( tempArr[0], "all" ) == 0 || strcmp( tempArr[0], username ) == 0 ) {
-                            iok = 1;
-                            /* check if <client, group, clientIP> match this entry of the control access file
-                               (iok=1). Get out immediatly from this function: client is allowed to proceed. */
-                            for ( i = 0; i < IPV4; i++ ) {
-                                result = ~( visitorIP[i]  ^ IPEntry[i] ) | subnetEntry[i];
-                                if ( result != 255 ) {
-                                    iok = 0;
-                                }
-                            }
-                            if ( iok == 1 ) {
+                            /* check if <client, group, clientIP> match this entry of the control access file.
+                             * Get out immediately from this function: client is allowed to proceed. */
+                            if ( ( visitorIP.to_ulong() ^ IPEntry.to_ulong() ) & ~subnetEntry.to_ulong() == 0 ) {
                                 fclose( fp );    // JMC cppcheck - resource
                                 return 0;
                             }

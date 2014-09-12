@@ -27,7 +27,6 @@
 #define MAXLEN 100
 #define MAXSTR 30
 #define MAXLIST 40 /* max number of entries in the access list tab. */
-#define IPV4 4 /* IP address: 4 bytes. */
 
 #define HOST_ACCESS_CONTROL_FILE "HostAccessControl"
 
@@ -63,7 +62,6 @@ typedef struct {
     char vaultPath[LONG_NAME_LEN];
 } monInfo_t;
 
-int checkIPaddress( char *IP, unsigned char IPcomp[IPV4] );
 int checkHostAccessControl( char *username, char *hostclient, char *groupsname );
 int strSplit( char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN] );
 int msiCheckHostAccessControl( ruleExecInfo_t *rei );
