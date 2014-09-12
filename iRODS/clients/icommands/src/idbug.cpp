@@ -145,7 +145,7 @@ int sendIDebugCommand( char *buf, char *hdr ) {
         mNum++;
     }
     else if ( strstr( hdr, "ALL" ) == NULL ) {
-        strcpy( sendXmsgInp.sendXmsgInfo.msgType, hdr );
+        snprintf( sendXmsgInp.sendXmsgInfo.msgType, sizeof( sendXmsgInp.sendXmsgInfo.msgType ), "%s", hdr );
         /*	printf("*** Sending:%s::%s::%i\n",sendXmsgInp.sendXmsgInfo.msgType,sendXmsgInp.sendXmsgInfo.msg,sendXmsgInp.sendXmsgInfo.numRcv);*/
         status = rcSendXmsg( conn, &sendXmsgInp );
         if ( status < 0 ) {
