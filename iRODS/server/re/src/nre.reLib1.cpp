@@ -338,7 +338,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
     }
     /*strcpy(r2,r3);
     }*/
-    strcpy( r2, dvmSet );
+    snprintf( r2, sizeof( r2 ), "%s", dvmSet );
     coreRuleVarDef.MaxNumOfDVars = 0;
     appRuleVarDef.MaxNumOfDVars = 0;
 
@@ -350,9 +350,9 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
         if ( i < 0 ) {
             return i;
         }
-        strcpy( r2, r3 );
+        snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
-    strcpy( r2, fnmSet );
+    snprintf( r2, sizeof( r2 ), "%s", fnmSet );
     coreRuleFuncMapDef.MaxNumOfFMaps = 0;
     appRuleFuncMapDef.MaxNumOfFMaps = 0;
 
@@ -364,7 +364,7 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
         if ( i < 0 ) {
             return i;
         }
-        strcpy( r2, r3 );
+        snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
 
     if ( getenv( RETESTFLAG ) != NULL ) {
