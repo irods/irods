@@ -554,6 +554,46 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 #. Sunset 3.3.x server(s)
 #. Close Maintenance Window
 
+---------------
+Zone Federation
+---------------
+
+iRODS Zones are independent administrative grids.  When federated, users of one Zone may grant access to authenticated users from the other Zone on some of their dataObjects, Collections, and Metadata.  Each Zone will authenticate its own users before a Federated Zone will allow access.  User passwords are never exchanged between Zones.
+
+Primary reasons for using Zone Federation include:
+
+#. Local control. Some iRODS sites want to share resources and collections, yet maintain more local control over those resources, data objects, and collections. Rather than a single iRODS Zone managed by one administrator, they may need two (or more) cooperating iRODS systems managed locally, primarily for security and/or authorization reasons.
+#. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast for a simple query is often 1-2 seconds. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
+
+Setup
+-----
+
+To federate Zone A and Zone B, administrators in each zone must 1) share and properly define their RemoteZoneSID values `Between Two Zones`_, 2) define remote zones in their respective iCAT, and 3) define remote users in their respective iCAT before any access permissions can be granted.
+
+
+In Zone A, add Zone B and define a remote user::
+
+ ZoneA $ iadmin mkzone ZoneB remote zoneB-iCAT.hostname.example.org:ZoneBPort
+ ZoneA $ iadmin mkuser bobby#ZoneB rodsuser
+
+In Zone B, add Zone A, but skip adding any remote users at this time::
+
+ ZoneB $ iadmin mkzone ZoneA remote zoneB-iCAT.hostname.example.org:ZoneAPort
+
+Then, any user of Zone A will be able to grant permissions to `bobby#ZoneB`::
+
+ ZoneA $ ichmod read bobby#ZoneB myFile
+
+Once permission is granted, it will appear like any other ACL::
+
+ ZoneA $ ils -A myFile
+   /ZoneA/home/rods/myFile
+         ACL - bobby#ZoneB:read object   rods#ZoneA:own
+
+If all the `Server Authentication`_ and the networking is set up correctly, Bobby can now ``iget`` the shared Zone A file from Zone B::
+
+ ZoneB $ iget /ZoneA/home/rods/myFile
+
 ---------------------
 Server Authentication
 ---------------------
