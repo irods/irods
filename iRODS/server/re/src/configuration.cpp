@@ -314,7 +314,7 @@ int createRuleIndex( ruleStruct_t *inRuleStruct ) {
 
 int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRuleStruct ) {
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    rstrcpy( r2, irbSet, RULE_SET_DEF_LENGTH );
+    snprintf( r2, sizeof( r2 ), "%s", irbSet );
     int res = 0;
 
 #ifdef DEBUG
@@ -336,9 +336,9 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
 #if defined(DEBUG) && !defined(USE_BOOST)
         printf( "last modified time, %ld\n", timestamp );
 #endif
-        strcpy( r2, r3 );
+        snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
-    strcpy( r2, irbSet );
+    snprintf( r2, sizeof( r2 ), "%s", irbSet );
 
 #ifdef CACHE_ENABLE
 
@@ -416,13 +416,13 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
             res = i;
             RETURN;
         }
-        strcpy( r2, r3 );
+        snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
 
     createRuleIndex( inRuleStruct );
     /* set max timestamp */
     time_type_set( ruleEngineConfig.timestamp, timestamp );
-    rstrcpy( ruleEngineConfig.ruleBase, irbSet, RULE_SET_DEF_LENGTH );
+    snprintf( ruleEngineConfig.ruleBase, sizeof( ruleEngineConfig.ruleBase ), "%s", irbSet );
 
 #ifdef CACHE_ENABLE
     if ( ( processType == RULE_ENGINE_INIT_CACHE || update ) && inRuleStruct == &coreRuleStrct ) {
