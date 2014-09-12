@@ -239,7 +239,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
     else {
         sendXmsgInp->sendXmsgInfo.msgNumber = CAST_PTR_INT inMsgNumber->inOutStruct;
     }
-    strcpy( sendXmsgInp->sendXmsgInfo.msgType, ( char* )inMsgType->inOutStruct );
+    snprintf( sendXmsgInp->sendXmsgInfo.msgType, sizeof( sendXmsgInp->sendXmsgInfo.msgType ), "%s", ( char* )inMsgType->inOutStruct );
     if ( !strcmp( inNumberOfReceivers->type, STR_MS_T ) ) {
         sendXmsgInp->sendXmsgInfo.numRcv = ( uint ) atoi( ( char* )inNumberOfReceivers->inOutStruct );
     }
