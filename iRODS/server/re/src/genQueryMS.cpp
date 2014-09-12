@@ -1175,6 +1175,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     char filename[7];
     memset( filename, 'X', sizeof( filename ) );
     filename[sizeof( filename ) - 1] = '\0';
+    umask( S_IRUSR | S_IWUSR );
     int fd = mkstemp( filename );
     if ( fd < 0 ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed." );
