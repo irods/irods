@@ -1172,9 +1172,12 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     /********************************** EXTRACT SQL RESULTS  *********************************/
 
     /* Let's use printGenQueryOut() here for the sake of consistency over efficiency (somewhat). It needs a stream. */
-    stream = tmpfile();
+    char filename[7];
+    memset( filename, 'X', sizeof( filename ) );
+    filename[sizeof( filename ) - 1] = '\0';
+    stream = fdopen( mkstemp( filename ), "w" );
     if ( !stream ) { /* Since it won't be caught by printGenQueryOut */
-        rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: tmpfile() failed." );
+        rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed." );
         return( FILE_OPEN_ERR ); /* accurate enough */
     }
 
