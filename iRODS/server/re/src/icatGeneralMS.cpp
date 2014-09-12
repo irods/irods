@@ -528,7 +528,7 @@ int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
         }
     }
 
-    strcpy( rei->doi->rescName, rescName );
+    snprintf( rei->doi->rescName, sizeof( rei->doi->rescName ), "%s", rescName );
     return 0;
 }
 
