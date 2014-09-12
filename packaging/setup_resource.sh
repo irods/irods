@@ -28,7 +28,7 @@ fi
 SETUP_RESOURCE_FLAG="/tmp/$USER/setup_resource.flag"
 if [ -f $SETUP_RESOURCE_FLAG ] ; then
     # have run this before, read the existing config file
-    ICATHOSTORIP=`grep "IRODS_ICAT_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    ICATHOST=`grep "IRODS_ICAT_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     ICATZONE=`grep "ZONE_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     STATUS="loop"
 else
@@ -46,20 +46,20 @@ while [ "$STATUS" != "complete" ] ; do
 
   # set default values from an earlier loop
   if [ "$STATUS" != "firstpass" ] ; then
-    LASTICATHOSTORIP=$ICATHOSTORIP
+    LASTICATHOST=$ICATHOST
     LASTICATZONE=$ICATZONE
   fi
 
   # get host
-  echo -n "iCAT server's hostname or IP address"
-  if [ "$LASTICATHOSTORIP" ] ; then echo -n " [$LASTICATHOSTORIP]"; fi
+  echo -n "iCAT server's hostname"
+  if [ "$LASTICATHOST" ] ; then echo -n " [$LASTICATHOST]"; fi
   echo -n ": "
-  read ICATHOSTORIP
-  if [ "$ICATHOSTORIP" == "" ] ; then
-    if [ "$LASTICATHOSTORIP" ] ; then ICATHOSTORIP=$LASTICATHOSTORIP; fi
+  read ICATHOST
+  if [ "$ICATHOST" == "" ] ; then
+    if [ "$LASTICATHOST" ] ; then ICATHOST=$LASTICATHOST; fi
   fi
   # strip all forward slashes
-  ICATHOSTORIP=`echo "${ICATHOSTORIP}" | sed -e "s/\///g"`
+  ICATHOST=`echo "${ICATHOST}" | sed -e "s/\///g"`
   echo ""
 
   # get zone
@@ -76,8 +76,8 @@ while [ "$STATUS" != "complete" ] ; do
 
   # confirm
   echo "-------------------------------------------"
-  echo "Hostname or IP:   $ICATHOSTORIP"
-  echo "iCAT Zone:        $ICATZONE"
+  echo "iCAT Host:    $ICATHOST"
+  echo "iCAT Zone:    $ICATZONE"
   echo "-------------------------------------------"
   echo -n "Please confirm these settings [yes]: "
   read CONFIRM
@@ -102,7 +102,7 @@ IRODS_CONFIG_TEMPFILE="/tmp/tmp.irods.config"
 SERVER_CONFIG_TEMPFILE="/tmp/tmp.server.config"
 
 echo "Updating irods.config..."
-sed -e "/^\$IRODS_ICAT_HOST/s/^.*$/\$IRODS_ICAT_HOST = '$ICATHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+sed -e "/^\$IRODS_ICAT_HOST/s/^.*$/\$IRODS_ICAT_HOST = '$ICATHOST';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$ICATZONE';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
