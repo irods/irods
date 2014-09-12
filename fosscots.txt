@@ -20,6 +20,7 @@ doxygen
 hdf5
 jansson
 javascript
+lex
 lib_mysqludf_preg
 libarchive
 libs3
@@ -32,6 +33,7 @@ postgresql
 python
 restructuredtext
 unixodbc
+yacc
 
 ----------------------------------------------
 
@@ -44,6 +46,7 @@ cmake
 dpkg
 epm
 lintian
+make
 rpmlint
 rpmtools
 
@@ -52,7 +55,7 @@ rpmtools
 DEVELOPMENT COTS
 ----------------
 Coverity
-github.com
+GitHub
 Mac OS X
 Microsoft Windows
 VMWare VSphere
@@ -66,13 +69,18 @@ cppcheck
 docker
 eclipse
 emacs
+fish
 g++
 gcc
 git
 hudson
+jenkins
+mosh
+screen
 ssh
 stack
 suse
+tmux
 ubuntu
 valgrind
 vim
