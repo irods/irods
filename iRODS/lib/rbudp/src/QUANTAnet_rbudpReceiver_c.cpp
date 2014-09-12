@@ -334,13 +334,14 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
     if ( verbose > 0 ) {
         fprintf( stderr, "The size of the file is %lld.\n", filesize );
     }
-
-    if ( ftruncate( fd, filesize ) != 0 ) {
-        fprintf( stderr, "Truncation failed." );
-    }
     if ( filesize < 0 || filesize > std::numeric_limits<long long>::max() ) {
         fprintf( stderr, "Invalid file size %ji. File size must be no less than zero and no greater than %ji.",
                 ( intmax_t )filesize, ( intmax_t )std::numeric_limits<long long>::max() );
+        return -1;
+    }
+
+    if ( ftruncate( fd, filesize ) != 0 ) {
+        fprintf( stderr, "Truncation failed." );
     }
     long long remaining = filesize;
     while ( remaining > 0 ) {
