@@ -677,7 +677,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
     int status;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
-    if( !rescGrpInfo || !rescGrpInfo->rescInfo ) {
+    if ( !rescGrpInfo || !rescGrpInfo->rescInfo ) {
         return SYS_NULL_INPUT;
     }
 

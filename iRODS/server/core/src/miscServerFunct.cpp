@@ -598,7 +598,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
 
     if ( myInput->offset != 0 ) {
         myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
-                myInput->offset, SEEK_SET );
+                             myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
@@ -840,7 +840,7 @@ void partialDataGet(
 
     if ( myInput->offset != 0 ) {
         myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
-                myInput->offset, SEEK_SET );
+                             myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
@@ -1147,7 +1147,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
         if ( myHeader.offset != curOffset ) {
             curOffset = myHeader.offset;
             myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
-                    myHeader.offset, SEEK_SET );
+                                 myHeader.offset, SEEK_SET );
             if ( myOffset < 0 ) {
                 myInput->status = myOffset;
                 rodsLog( LOG_NOTICE,
@@ -1668,7 +1668,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
 
     if ( myInput->offset != 0 ) {
         myOffset = _l3Lseek( myInput->rsComm, destL3descInx,
-                myInput->offset, SEEK_SET );
+                             myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
@@ -1681,7 +1681,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
             return;
         }
         myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
-                myInput->offset, SEEK_SET );
+                             myInput->offset, SEEK_SET );
         if ( myOffset < 0 ) {
             myInput->status = myOffset;
             rodsLog( LOG_NOTICE,
@@ -1727,7 +1727,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
         }
 
         bytesWritten = _l3Write( myInput->rsComm, destL3descInx,
-                buf, bytesRead );
+                                 buf, bytesRead );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_NOTICE,
@@ -1833,7 +1833,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
         if ( myHeader.offset != curOffset ) {
             curOffset = myHeader.offset;
             myOffset = _l3Lseek( myInput->rsComm, srcL3descInx,
-                    myHeader.offset, SEEK_SET );
+                                 myHeader.offset, SEEK_SET );
             if ( myOffset < 0 ) {
                 myInput->status = myOffset;
                 rodsLog( LOG_NOTICE,
@@ -2566,7 +2566,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     while ( ( bytesRead = rsDataObjRead( rsComm, &dataObjReadInp,
                                          &dataObjReadInpBBuf ) ) > 0 ) {
         bytesWritten = _l3Write( rsComm, destL3descInx,
-                dataObjReadInpBBuf.buf, bytesRead );
+                                 dataObjReadInpBBuf.buf, bytesRead );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_ERROR,
@@ -2620,7 +2620,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataObjWriteInp.l1descInx = l1descInx;
 
     while ( ( bytesRead = _l3Read( rsComm, srcL3descInx,
-                    dataObjWriteInpBBuf.buf, TRANS_BUF_SZ ) ) > 0 ) {
+                                   dataObjWriteInpBBuf.buf, TRANS_BUF_SZ ) ) > 0 ) {
         dataObjWriteInp.len =  dataObjWriteInpBBuf.len = bytesRead;
         bytesWritten = rsDataObjWrite( rsComm, &dataObjWriteInp,
                                        &dataObjWriteInpBBuf );
@@ -3028,7 +3028,7 @@ checkModArgType( char *arg ) {
     if ( ':' != arg[1] ) {
         return 0;
     }
-    switch( arg[0] ) {
+    switch ( arg[0] ) {
     case 'n':
         return 1;
     case 'v':
@@ -3106,7 +3106,7 @@ irods::error get_current_resource_object_count(
     // =-=-=-=-=-=-=-
     // loop over result sets
     int num_data_obj = 0;
-    while( status >= 0 ) {
+    while ( status >= 0 ) {
         // =-=-=-=-=-=-=-
         // accumulate the row counts
         num_data_obj += gen_out->rowCnt;
@@ -3116,11 +3116,12 @@ irods::error get_current_resource_object_count(
         // results to be had
         int cont_inx = gen_out->continueInx;
         freeGenQueryOut( &gen_out );
-        if( cont_inx > 0 ) {
+        if ( cont_inx > 0 ) {
             gen_inp.continueInx = cont_inx;
             status = rsGenQuery( _comm, &gen_inp, &gen_out );
 
-        } else {
+        }
+        else {
             status = -1;
         }
 
@@ -3148,7 +3149,7 @@ irods::error update_resource_object_count(
     irods::error ret = _prop_map.get< std::string >(
                            irods::RESOURCE_NAME,
                            resc_name );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
 
@@ -3158,12 +3159,12 @@ irods::error update_resource_object_count(
     ret = _prop_map.get< std::string >(
               irods::RESOURCE_OBJCOUNT,
               resc_objcount );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
 
     int old_obj_count = 0;
-    if( !resc_objcount.empty() )  {
+    if ( !resc_objcount.empty() )  {
         old_obj_count = boost::lexical_cast<int>( resc_objcount );
     }
 
@@ -3175,14 +3176,14 @@ irods::error update_resource_object_count(
               _comm,
               resc_name,
               new_obj_count );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
 
     // =-=-=-=-=-=-=-
     // issue a a warning that we are making a
     // change
-    if( old_obj_count != new_obj_count ) {
+    if ( old_obj_count != new_obj_count ) {
         rodsLog(
             LOG_NOTICE,
             "rebalance for [%s] - updating object count from [%d] to [%d]",
@@ -3214,13 +3215,14 @@ irods::error update_resource_object_count(
         int status = rsGeneralAdmin(
                          _comm,
                          &gen_inp );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return ERROR(
                        status,
                        "rsGeneralAdmin failed" );
         }
 
-    } else {
+    }
+    else {
         rodsLog(
             LOG_NOTICE,
             "rebalance for [%s] - matching old count: %d to new count %d",

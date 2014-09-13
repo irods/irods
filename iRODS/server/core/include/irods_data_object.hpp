@@ -13,96 +13,96 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // base class for all object types
-class data_object : public first_class_object {
-public:
-    // =-=-=-=-=-=-=-
-    // Constructors
-    data_object();
-    data_object(
-        const std::string&,		// phy path
-        const std::string&,		// resc hier
-        int,                	// mode
-        int );					// flags
-    data_object(
-        const std::string&,		// phy path
-        const std::string&,		// resc hier
-        int,                	// mode
-        int,					// flags
-        const keyValPair_t& );	// cond_input
-    data_object( const data_object& );
+    class data_object : public first_class_object {
+    public:
+        // =-=-=-=-=-=-=-
+        // Constructors
+        data_object();
+        data_object(
+            const std::string&,		// phy path
+            const std::string&,		// resc hier
+            int,                	// mode
+            int );					// flags
+        data_object(
+            const std::string&,		// phy path
+            const std::string&,		// resc hier
+            int,                	// mode
+            int,					// flags
+            const keyValPair_t& );	// cond_input
+        data_object( const data_object& );
 
-    // =-=-=-=-=-=-=-
-    // Destructor
-    virtual ~data_object();
+        // =-=-=-=-=-=-=-
+        // Destructor
+        virtual ~data_object();
 
-    // =-=-=-=-=-=-=-
-    // Operators
-    virtual data_object& operator=( const data_object& );
+        // =-=-=-=-=-=-=-
+        // Operators
+        virtual data_object& operator=( const data_object& );
 
-    // =-=-=-=-=-=-=-
-    // plugin resolution operators
-    virtual error resolve(
-        const std::string&, // plugin interface name
-        plugin_ptr& ) = 0;  // resolved plugin instance
+        // =-=-=-=-=-=-=-
+        // plugin resolution operators
+        virtual error resolve(
+            const std::string&, // plugin interface name
+            plugin_ptr& ) = 0;  // resolved plugin instance
 
-    // =-=-=-=-=-=-=-
-    // accessor for rule engine variables
-    virtual error get_re_vars( keyValPair_t& );
+        // =-=-=-=-=-=-=-
+        // accessor for rule engine variables
+        virtual error get_re_vars( keyValPair_t& );
 
-    // =-=-=-=-=-=-=-
-    // Accessors
+        // =-=-=-=-=-=-=-
+        // Accessors
 
-    virtual std::string physical_path()   const {
-        return physical_path_;
-    }
-    virtual std::string resc_hier()       const {
-        return resc_hier_;
-    }
-    virtual int         mode()            const {
-        return mode_;
-    }
-    virtual int         flags()           const {
-        return flags_;
-    }
-    virtual const keyValPair_t& cond_input()	const {
-        return cond_input_;
-    }
+        virtual std::string physical_path()   const {
+            return physical_path_;
+        }
+        virtual std::string resc_hier()       const {
+            return resc_hier_;
+        }
+        virtual int         mode()            const {
+            return mode_;
+        }
+        virtual int         flags()           const {
+            return flags_;
+        }
+        virtual const keyValPair_t& cond_input()	const {
+            return cond_input_;
+        }
 
-    // =-=-=-=-=-=-=-
-    // Mutators
-    virtual void physical_path( const std::string& _path ) {
-        physical_path_   = _path;
-    }
-    virtual void resc_hier( const std::string& _hier )     {
-        resc_hier_       = _hier;
-    }
-    virtual void mode( int _m )                         {
-        mode_            = _m;
-    }
-    virtual void flags( int _f )                         {
-        flags_           = _f;
-    }
-    virtual void cond_input( const keyValPair_t& _cond_input ) {
-        replKeyVal( &_cond_input, &cond_input_ );
-    }
+        // =-=-=-=-=-=-=-
+        // Mutators
+        virtual void physical_path( const std::string& _path ) {
+            physical_path_   = _path;
+        }
+        virtual void resc_hier( const std::string& _hier )     {
+            resc_hier_       = _hier;
+        }
+        virtual void mode( int _m )                         {
+            mode_            = _m;
+        }
+        virtual void flags( int _f )                         {
+            flags_           = _f;
+        }
+        virtual void cond_input( const keyValPair_t& _cond_input ) {
+            replKeyVal( &_cond_input, &cond_input_ );
+        }
 
-protected:
-    // =-=-=-=-=-=-=-
-    // Attributes
-    // NOTE :: These are not guaranteed to be properly populated right now
-    //      :: that will need be done later when these changes are pushed
-    //      :: higher in the original design
-    std::string physical_path_;		// full physical path in the vault
-    std::string resc_hier_;			// where this lives in the resource hierarchy
-    int         mode_;				// mode when opened or modified
-    int         flags_;				// flags for object operations
-    keyValPair_t cond_input_;		// input key-value pairs
+    protected:
+        // =-=-=-=-=-=-=-
+        // Attributes
+        // NOTE :: These are not guaranteed to be properly populated right now
+        //      :: that will need be done later when these changes are pushed
+        //      :: higher in the original design
+        std::string physical_path_;		// full physical path in the vault
+        std::string resc_hier_;			// where this lives in the resource hierarchy
+        int         mode_;				// mode when opened or modified
+        int         flags_;				// flags for object operations
+        keyValPair_t cond_input_;		// input key-value pairs
 
-}; // class data_object
+    }; // class data_object
 
 /// =-=-=-=-=-=-=-
 /// @brief typedef for managed data object pointer
-typedef boost::shared_ptr< data_object > data_object_ptr;
+    typedef boost::shared_ptr< data_object > data_object_ptr;
 
 }; // namespace irods
 

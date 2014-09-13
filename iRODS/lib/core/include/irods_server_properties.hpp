@@ -15,79 +15,80 @@
 namespace irods {
 
 /// @brief kw for server property map stating this is an agent-agent conn
-const std::string AGENT_CONN_KW( "agent_conn" );
+    const std::string AGENT_CONN_KW( "agent_conn" );
 
 /// @brief kw for server property map for encryption key
-const std::string AGENT_KEY_KW( "agent_key" );
+    const std::string AGENT_KEY_KW( "agent_key" );
 
-class server_properties {
+    class server_properties {
 
-public:
-    /**
-     * @brief Access method for the singleton
-     */
-    static server_properties& getInstance();
+    public:
+        /**
+         * @brief Access method for the singleton
+         */
+        static server_properties& getInstance();
 
-    /**
-     * @brief Read server configuration and fill server_properties::properties
-     */
-    error capture();
+        /**
+         * @brief Read server configuration and fill server_properties::properties
+         */
+        error capture();
 
-    /**
-     * @brief Read server configuration if it has not been read already.
-     **/
-    error capture_if_needed();
+        /**
+         * @brief Read server configuration if it has not been read already.
+         **/
+        error capture_if_needed();
 
-    /**
-     * @brief Get a property from the map if it exists.  catch the exception in the case where
-     * the template types may not match and return success/fail
-     */
-    template< typename T >
-    error get_property( const std::string& _key, T& _val ) {
-        error ret = properties.get< T >( _key, _val );
-        return PASS( ret );
-    }
-
-    template< typename T >
-    error set_property( const std::string& _key, const T& _val ) {
-        error ret = properties.set< T >( _key, _val );
-        return PASS( ret );
-    }
-
-    error delete_property( const std::string& _key ) {
-        size_t n = properties.erase( _key );
-        if( n != 1 ) {
-            std::string msg( "failed to erase key: ");
-            msg += _key;
-            return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
-        } else {
-            return SUCCESS();
+        /**
+         * @brief Get a property from the map if it exists.  catch the exception in the case where
+         * the template types may not match and return success/fail
+         */
+        template< typename T >
+        error get_property( const std::string& _key, T& _val ) {
+            error ret = properties.get< T >( _key, _val );
+            return PASS( ret );
         }
-    }
 
-    typedef lookup_table<boost::any>::iterator iterator;
-    iterator begin() {
-        return properties.begin();
-    }
+        template< typename T >
+        error set_property( const std::string& _key, const T& _val ) {
+            error ret = properties.set< T >( _key, _val );
+            return PASS( ret );
+        }
 
-    iterator end() {
-        return properties.end();
-    }
+        error delete_property( const std::string& _key ) {
+            size_t n = properties.erase( _key );
+            if ( n != 1 ) {
+                std::string msg( "failed to erase key: " );
+                msg += _key;
+                return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
+            }
+            else {
+                return SUCCESS();
+            }
+        }
 
-private:
-    // Disable constructors
-    server_properties(): captured_( false ) {};
-    server_properties( server_properties const& );
-    void operator=( server_properties const& );
+        typedef lookup_table<boost::any>::iterator iterator;
+        iterator begin() {
+            return properties.begin();
+        }
 
-    /**
-     * @brief properties lookup table
-     */
-    lookup_table<boost::any> properties;
+        iterator end() {
+            return properties.end();
+        }
 
-    bool captured_;
+    private:
+        // Disable constructors
+        server_properties(): captured_( false ) {};
+        server_properties( server_properties const& );
+        void operator=( server_properties const& );
 
-}; // class server_properties
+        /**
+         * @brief properties lookup table
+         */
+        lookup_table<boost::any> properties;
+
+        bool captured_;
+
+    }; // class server_properties
 
 
 } // namespace irods

@@ -93,7 +93,7 @@ getPhyPath(
     // ask the resource composition to pick a valid hier for open
     std::string  resc_hier;
 
-    if( 0 == strlen( _resc_hier ) ) {
+    if ( 0 == strlen( _resc_hier ) ) {
         dataObjInp_t data_inp;
         memset( &data_inp, 0, sizeof( data_inp ) );
         strncpy( data_inp.objPath, _obj_name, MAX_NAME_LEN );

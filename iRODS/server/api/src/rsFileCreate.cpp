@@ -228,7 +228,7 @@ int _rsFileCreate(
     // percolate possible change in phy path up
     ( *_out ) = ( fileCreateOut_t* ) malloc( sizeof( fileCreateOut_t ) );
     rstrcpy(
-        (*_out)->file_name,
+        ( *_out )->file_name,
         file_obj->physical_path().c_str(),
         MAX_NAME_LEN );
 

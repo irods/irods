@@ -84,7 +84,7 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 srcPath->rodsObjStat->specColl != NULL ) {
             if ( srcPath->rodsObjStat->specColl->collClass == LINKED_COLL ) {
                 lsDataObjUtilLong( conn, srcPath->rodsObjStat->specColl->objPath,
-                        rodsArgs, genQueryInp );
+                                   rodsArgs, genQueryInp );
             }
             else {
                 lsSpecDataObjUtilLong( srcPath, rodsArgs );

@@ -72,7 +72,7 @@ _rcConnect( char *rodsHost, int rodsPort,
     conn = ( rcComm_t* )malloc( sizeof( rcComm_t ) );
     memset( conn, 0, sizeof( rcComm_t ) );
 
-    conn->thread_ctx = (thread_context*) malloc( sizeof( thread_context ) );
+    conn->thread_ctx = ( thread_context* ) malloc( sizeof( thread_context ) );
     memset( conn->thread_ctx, 0, sizeof( thread_context ) );
 
     if ( errMsg != NULL ) {
@@ -555,7 +555,8 @@ int
 isLoopbackAddress( const char * ip_address ) {
     try {
         return boost::asio::ip::address_v4::from_string( ip_address ).is_loopback();
-    } catch ( ... ) {
+    }
+    catch ( ... ) {
         return false;
     }
 }

@@ -25,7 +25,7 @@ extern "C" {
                    rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
     int
     initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
-                    collInp_t *collInp );
+                   collInp_t *collInp );
     int
     rmCollUtil( rcComm_t *conn, char *srcColl,
                 rodsArguments_t *rodsArgs, collInp_t *collInp );

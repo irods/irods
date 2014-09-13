@@ -6,10 +6,10 @@
 
 namespace irods {
 
-error getHasher( const std::string& name, Hasher& hasher );
-error get_hash_scheme_from_checksum(
-    const std::string& checksum,
-    std::string& scheme);
+    error getHasher( const std::string& name, Hasher& hasher );
+    error get_hash_scheme_from_checksum(
+        const std::string& checksum,
+        std::string& scheme );
 
 }; // namespace irods
 

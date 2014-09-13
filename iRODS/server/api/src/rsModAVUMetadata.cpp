@@ -95,27 +95,30 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     args[3] = modAVUMetadataInp->arg3; /* attr name */
     args[4] = modAVUMetadataInp->arg4; /* attr val */
     args[5] = modAVUMetadataInp->arg5;
-    if(args[5] == NULL) args[5] = ""; /* attr unit */
-    if(strcmp(args[0], "mod") == 0) {
+    if ( args[5] == NULL ) { args[5] = ""; } /* attr unit */
+    if ( strcmp( args[0], "mod" ) == 0 ) {
         argc = 9;
 #define ARG(arg) { int ix; if( ( ix = checkModArgType(arg) ) >= 0 ) avu[ix] = arg; }
-        if(checkModArgType(modAVUMetadataInp->arg5) != 0) {
+        if ( checkModArgType( modAVUMetadataInp->arg5 ) != 0 ) {
             char *avu[4] = {"", "", "", ""};
-            ARG(modAVUMetadataInp->arg5);
-            ARG(modAVUMetadataInp->arg6);
-            ARG(modAVUMetadataInp->arg7);
+            ARG( modAVUMetadataInp->arg5 );
+            ARG( modAVUMetadataInp->arg6 );
+            ARG( modAVUMetadataInp->arg7 );
             args[5] = "";
-            memcpy(args+6, avu+1, sizeof(char *[3]));
-        } else {
-            char *avu[4] = {"", "", "", ""};
-            ARG(modAVUMetadataInp->arg6); /* new attr */
-            ARG(modAVUMetadataInp->arg7); /* new val */
-            ARG(modAVUMetadataInp->arg8); /* new unit */
-            memcpy(args+6, avu+1, sizeof(char *[3]));
+            memcpy( args + 6, avu + 1, sizeof( char *[3] ) );
         }
-    } else if(strcmp(args[0], "cp") == 0) {
+        else {
+            char *avu[4] = {"", "", "", ""};
+            ARG( modAVUMetadataInp->arg6 ); /* new attr */
+            ARG( modAVUMetadataInp->arg7 ); /* new val */
+            ARG( modAVUMetadataInp->arg8 ); /* new unit */
+            memcpy( args + 6, avu + 1, sizeof( char *[3] ) );
+        }
+    }
+    else if ( strcmp( args[0], "cp" ) == 0 ) {
         argc = 5;
-    } else {
+    }
+    else {
         argc = 6;
     }
 

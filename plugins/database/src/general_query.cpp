@@ -964,11 +964,11 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         char* andptr = strstr( condPart1, "&&" );
         char *cptr = NULL;
         int type = 0;
-        if( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
+        if ( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
             cptr = orptr;
             type = 1;
         }
-        else if( andptr != NULL && ( orptr == NULL || andptr < orptr ) ) {
+        else if ( andptr != NULL && ( orptr == NULL || andptr < orptr ) ) {
             cptr = andptr;
             type = 2;
         }
@@ -991,7 +991,7 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         if ( type == 1 ) {
             rstrcat( whereSQL, " OR ", MAX_SQL_SIZE_GQ );
         }
-        else if (type == 2) {
+        else if ( type == 2 ) {
             rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ );
         }
     }

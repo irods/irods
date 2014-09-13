@@ -982,7 +982,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "mkdir" ) == 0 ) {
-        if( _rodsArgs->force == True ) {
+        if ( _rodsArgs->force == True ) {
             int path_index = 1;
 #ifdef osx_platform
             path_index = 2;
@@ -992,7 +992,8 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                           "", "",
                           "", "",
                           "", "" );
-        } else {
+        }
+        else {
             usage( "mkdir" );
         }
 
@@ -1370,12 +1371,12 @@ main( int argc, char **argv ) {
     // the one specific instance where mkdir is use with a force flag
     // this will be refactored in the future to use the boost::program_options
     // to remove the need for this gratuitous hack
-    if( argc > 2 ) {
-	    std::string sub_cmd   = argv[1];
-	    std::string force_flg = argv[2];
-	    if( "mkdir" == sub_cmd && "-f" == force_flg ) {
-		myRodsArgs.force = True;
-	    }
+    if ( argc > 2 ) {
+        std::string sub_cmd   = argv[1];
+        std::string force_flg = argv[2];
+        if ( "mkdir" == sub_cmd && "-f" == force_flg ) {
+            myRodsArgs.force = True;
+        }
     } // if argc
 #endif
 

@@ -58,7 +58,7 @@ main( int, char** ) {
     }
     else {
         bytesBuf_t* bbuf = static_cast< bytesBuf_t* >( tmp_out );
-        printf( "\n\n%s\n\n", (char*)bbuf->buf );
+        printf( "\n\n%s\n\n", ( char* )bbuf->buf );
     }
 
     rcDisconnect( conn );

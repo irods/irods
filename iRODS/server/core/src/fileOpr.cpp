@@ -148,24 +148,24 @@ int mkFileDirR(
     int                 mode ) {
 
     std::string physical_directory_prefix;
-    if( destDir.empty() ) {
+    if ( destDir.empty() ) {
         rodsLog( LOG_ERROR, "mkFileDirR called with empty dest directory" );
         return SYS_INVALID_INPUT_PARAM ;
     }
-    if( destDir.size() < startDirLen ) {
+    if ( destDir.size() < startDirLen ) {
         rodsLog( LOG_ERROR, "mkFileDirR called with a destDir: [%s]"
                  "shorter than its startDirLen: [%ju]",
-                 destDir.c_str(), (uintmax_t)startDirLen );
+                 destDir.c_str(), ( uintmax_t )startDirLen );
         return SYS_INVALID_INPUT_PARAM;
     }
     if ( !rsComm ) {
         rodsLog( LOG_ERROR, "mkFileDirR called with null rsComm" );
         return SYS_INVALID_INPUT_PARAM;
     }
-    if( isValidFilePath( destDir ) ) {
+    if ( isValidFilePath( destDir ) ) {
         std::string vault_path;
         irods::error err = irods::get_vault_path_for_hier_string( hier, vault_path );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             rodsLog( LOG_ERROR, err.result().c_str() );
             return err.code();
         }
@@ -182,7 +182,7 @@ int mkFileDirR(
     if ( physical_directory[ physical_directory.size() - 1 ] == '/' ) {
         physical_directory.erase( physical_directory.size() - 1 );
     }
-    while (physical_directory.size() > startDirLen ) {
+    while ( physical_directory.size() > startDirLen ) {
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
                 physical_directory,
@@ -210,7 +210,7 @@ int mkFileDirR(
 
         /* Go backward */
         size_t index_of_last_slash = physical_directory.rfind( '/', physical_directory.size() - 1 );
-        if( std::string::npos != index_of_last_slash ) {
+        if ( std::string::npos != index_of_last_slash ) {
             physical_directory = physical_directory.substr( 0, index_of_last_slash );
         }
         else {
@@ -447,9 +447,8 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 int
 isValidFilePath( const std::string& path ) {
 
-    if( path.find( "/../" ) != std::string::npos ||
-            path.compare( path.size() - 3, path.size(), "/.." ) == 0)
-    {
+    if ( path.find( "/../" ) != std::string::npos ||
+            path.compare( path.size() - 3, path.size(), "/.." ) == 0 ) {
         /* "/../" or end with "/.."  */
         rodsLog( LOG_ERROR, "isValidFilePath: inp fileName %s contains /../ or ends with /..", path.c_str() );
         return SYS_INVALID_FILE_PATH;

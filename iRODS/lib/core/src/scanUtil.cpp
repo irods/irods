@@ -43,7 +43,7 @@ scanObj( rcComm_t *conn,
         }
         if ( lenInpPath >= LONG_NAME_LEN ) {
             rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in scanObj",
-                     inpPathO, (intmax_t) LONG_NAME_LEN );
+                     inpPathO, ( intmax_t ) LONG_NAME_LEN );
             return USER_STRLEN_TOOLONG;
         }
 

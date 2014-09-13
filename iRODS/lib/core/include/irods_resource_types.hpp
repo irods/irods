@@ -8,12 +8,12 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // resource plugin pointer type
-class resource;
-typedef boost::shared_ptr< resource > resource_ptr;
+    class resource;
+    typedef boost::shared_ptr< resource > resource_ptr;
 
 // =-=-=-=-=-=-=-
 // fwd decl of resource manager for fco etc
-class resource_manager;
+    class resource_manager;
 
 }; // namespace
 

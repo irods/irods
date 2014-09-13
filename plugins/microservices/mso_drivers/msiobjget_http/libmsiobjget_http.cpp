@@ -111,7 +111,7 @@ long http_code = 0;
 curl_easy_getinfo( curl, CURLINFO_RESPONSE_CODE, &http_code );
 curl_easy_cleanup( curl );
 
-if( 200 != http_code ) {
+if ( 200 != http_code ) {
     rodsLog( LOG_ERROR, "msigetobj_http: Curl Error for %s:ErrNum=%ld\n", reqStr, http_code );
     free( reqStr );
     return MSO_OBJ_GET_FAILED;

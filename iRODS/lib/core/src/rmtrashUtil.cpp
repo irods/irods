@@ -11,7 +11,7 @@
 
 int
 rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
-        rodsPathInp_t *rodsPathInp ) {
+             rodsPathInp_t *rodsPathInp ) {
     int i = 0;
     int status = 0;
     int savedStatus = 0;
@@ -200,7 +200,7 @@ initCondForRmtrash( rodsArguments_t *rodsArgs,
 
 int
 rmtrashCollUtil( rcComm_t *conn, char *srcColl,
-        rodsArguments_t *rodsArgs, collInp_t *collInp ) {
+                 rodsArguments_t *rodsArgs, collInp_t *collInp ) {
     int status;
 
     if ( srcColl == NULL ) {

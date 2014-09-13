@@ -472,7 +472,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
             }
 
             status = getDataObjUtil( conn, srcChildPath, targChildPath, mySize,
-                    collEnt.dataMode, rodsArgs, dataObjOprInp );
+                                     collEnt.dataMode, rodsArgs, dataObjOprInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "getCollUtil: getDataObjUtil failed for %s. status = %d",

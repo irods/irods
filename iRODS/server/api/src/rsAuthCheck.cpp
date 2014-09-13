@@ -60,7 +60,8 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
             }
 
         }
-    } else {
+    }
+    else {
         response.assign( authCheckInp->response, RESPONSE_LEN + 2 );
 
     }

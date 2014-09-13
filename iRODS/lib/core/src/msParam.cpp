@@ -927,7 +927,7 @@ parseMspForStr( msParam_t * inpParam ) {
         return NULL;
     }
 
-    return  ( char * )( inpParam->inOutStruct );
+    return ( char * )( inpParam->inOutStruct );
 }
 
 int

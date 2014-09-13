@@ -507,7 +507,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 
     // update the dataObjInfo with the potential changes made by the resource - hcj
     rstrcpy( dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN );
-    if( put_out ) {
+    if ( put_out ) {
         rstrcpy( dataObjInfo->filePath, put_out->file_name, MAX_NAME_LEN );
         free( put_out );
     }
@@ -527,7 +527,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf, &put_out );
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy( dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN );
-        if( put_out ) {
+        if ( put_out ) {
             rstrcpy( dataObjInfo->filePath, put_out->file_name, MAX_NAME_LEN );
             free( put_out );
         }

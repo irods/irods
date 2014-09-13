@@ -5,7 +5,7 @@
 //
 void thread_wait(
     thread_context* _ctx ) {
-    if( !_ct ) {
+    if ( !_ct ) {
         return;
     }
 #ifdef __cplusplus
@@ -17,7 +17,7 @@ void thread_wait(
 //
 void thread_notify(
     thread_context* _ctx ) {
-    if( !_ct ) {
+    if ( !_ct ) {
         return;
     }
 #ifdef __cplusplus
@@ -29,7 +29,7 @@ void thread_notify(
 //
 void thread_lock(
     thread_context* _ctx ) {
-    if( !_ct ) {
+    if ( !_ct ) {
         return;
     }
 #ifdef __cplusplus
@@ -43,7 +43,7 @@ void thread_lock(
 //
 void thread_unlock(
     thread_context* _ctx ) {
-    if( !_ct ) {
+    if ( !_ct ) {
         return;
     }
 #ifdef __cplusplus
@@ -65,8 +65,8 @@ int thread_alloc(
     _ctx->cond      = new boost::condition_variable;
     _ctx->reconnThr = new boost::thread( _proc, _data );
 #else  // __cplusplus
-    pthread_mutex_init( &_ctx->lock, NULL);
-    pthread_cond_init (&_ctx->cond, NULL);
+    pthread_mutex_init( &_ctx->lock, NULL );
+    pthread_cond_init( &_ctx->cond, NULL );
     result = pthread_create(
                  &_ctx->reconnThr,
                  pthread_attr_default,
@@ -80,7 +80,7 @@ int thread_alloc(
 //
 void thread_free(
     thread_context* _ctx ) {
-    if( !_ctx ) {
+    if ( !_ctx ) {
         return;
     }
 #ifdef __cplusplus
@@ -88,10 +88,10 @@ void thread_free(
     delete conn->lock;
     delete conn->cond;
 #else  // __cplusplus
-    pthread_cancel(conn->reconnThr);
-    pthread_detach(conn->reconnThr);
-    pthread_mutex_destroy(&conn->lock);
-    pthread_cond_destroy(&conn->cond);
+    pthread_cancel( conn->reconnThr );
+    pthread_detach( conn->reconnThr );
+    pthread_mutex_destroy( &conn->lock );
+    pthread_cond_destroy( &conn->cond );
 #endif // __cplusplus
 }
 
@@ -99,7 +99,7 @@ void thread_free(
 //
 void thread_interrupt(
     thread_context* _ctx ) {
-    if( !_ct ) {
+    if ( !_ct ) {
         return;
     }
     _ctx->exit_flg = true; // signal an exit

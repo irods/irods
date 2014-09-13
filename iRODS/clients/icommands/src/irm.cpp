@@ -82,7 +82,7 @@ main( int argc, char **argv ) {
     printErrorStack( conn->rError );
     rcDisconnect( conn );
 
-    if ( (USER_SOCK_CONNECT_ERR - 1000) < status && status <= USER_SOCK_CONNECT_ERR ) {
+    if ( ( USER_SOCK_CONNECT_ERR - 1000 ) < status && status <= USER_SOCK_CONNECT_ERR ) {
         printf( "Remote resource may be unavailable.\n" );
     }
 

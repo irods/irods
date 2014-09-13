@@ -146,10 +146,10 @@ rSplitStr( const char *inStr, char* outStr1, size_t maxOutLen1,
         index_of_first_key = base_string.size();
     }
     strncpy( outStr1, base_string.substr( 0, index_of_first_key ).c_str(), maxOutLen1 );
-    if( maxOutLen1 > 0 ) {
+    if ( maxOutLen1 > 0 ) {
         outStr1[ maxOutLen1 - 1 ] = '\0';
     }
-    if( index_of_first_key >= maxOutLen1 ) {
+    if ( index_of_first_key >= maxOutLen1 ) {
         return USER_STRLEN_TOOLONG;
     }
 
@@ -235,7 +235,7 @@ splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
                 char * file, size_t maxFileLen, char key ) {
     std::string srcPathString( srcPath );
 
-    if( maxDirLen == 0 || maxFileLen == 0 ) {
+    if ( maxDirLen == 0 || maxFileLen == 0 ) {
         rodsLog( LOG_ERROR, "splitPathByKey called with buffers of size 0" );
         return SYS_INVALID_INPUT_PARAM;
     }
@@ -247,7 +247,7 @@ splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
     }
 
     size_t index_of_last_key = srcPathString.rfind( key );
-    if( std::string::npos == index_of_last_key ) {
+    if ( std::string::npos == index_of_last_key ) {
         *dir = '\0';
         rstrcpy( file, srcPathString.c_str(), maxFileLen );
         return SYS_INVALID_FILE_PATH;
@@ -255,13 +255,13 @@ splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
 
     // If dir is the root directory, we want to return the single-character
     // string consisting of the key, NOT the empty string.
-    std::string dirPathString = srcPathString.substr(0, std::max< size_t >( index_of_last_key, 1 ) );
-    std::string filePathString = srcPathString.substr( index_of_last_key + 1) ;
+    std::string dirPathString = srcPathString.substr( 0, std::max< size_t >( index_of_last_key, 1 ) );
+    std::string filePathString = srcPathString.substr( index_of_last_key + 1 ) ;
 
-    rstrcpy( dir, dirPathString.c_str(), maxDirLen);
-    rstrcpy( file, filePathString.c_str(), maxFileLen);
+    rstrcpy( dir, dirPathString.c_str(), maxDirLen );
+    rstrcpy( file, filePathString.c_str(), maxFileLen );
 
-    if( dirPathString.size() >= maxDirLen || filePathString.size() >= maxFileLen ) {
+    if ( dirPathString.size() >= maxDirLen || filePathString.size() >= maxFileLen ) {
         rodsLog( LOG_ERROR, "splitPathByKey called with buffers of insufficient size" );
         return USER_STRLEN_TOOLONG;
     }
@@ -310,7 +310,7 @@ checkStringForSystem( const char * inString ) {
     if ( inString == NULL ) {
         return 0;
     }
-    if ( boost::regex_match( inString, boost::regex("[a-zA-Z0-9,./ ]*") ) ) {
+    if ( boost::regex_match( inString, boost::regex( "[a-zA-Z0-9,./ ]*" ) ) ) {
         return 0;
     }
     return USER_INPUT_STRING_ERR;
@@ -327,7 +327,7 @@ checkStringForEmailAddress( const char * inString ) {
     if ( inString == NULL ) {
         return 0;
     }
-    if ( boost::regex_match( inString, boost::regex("[-a-zA-Z0-9,./+*_@]*") ) ) {
+    if ( boost::regex_match( inString, boost::regex( "[-a-zA-Z0-9,./+*_@]*" ) ) ) {
         return 0;
     }
     return USER_INPUT_STRING_ERR;

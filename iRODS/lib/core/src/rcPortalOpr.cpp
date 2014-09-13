@@ -1210,12 +1210,12 @@ int putFileToPortalRbudp(
     rbudpSender.rbudpBase.verbose = veryVerbose;
     if ( ( mysendRate = sendRate ) < 1 &&
             ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) == NULL ||
-            ( mysendRate = atoi( tmpStr ) ) < 1 ) ) {
+              ( mysendRate = atoi( tmpStr ) ) < 1 ) ) {
         mysendRate = DEF_UDP_SEND_RATE;
     }
     if ( ( mypacketSize = packetSize ) < 1 &&
             ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == NULL ||
-            ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
+              ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
         mypacketSize = DEF_UDP_PACKET_SIZE;
     }
 
@@ -1283,7 +1283,7 @@ int getFileToPortalRbudp(
 
     if ( ( mypacketSize = packetSize ) < 1 &&
             ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == NULL ||
-            ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
+              ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
         mypacketSize = DEF_UDP_PACKET_SIZE;
     }
 

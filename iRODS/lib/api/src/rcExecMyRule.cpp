@@ -11,7 +11,7 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
               msParamArray_t **outParamArray ) {
 
     int status = procApiRequest( conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL,
-                             ( void ** )outParamArray, NULL );
+                                 ( void ** )outParamArray, NULL );
 
     while ( status == SYS_SVR_TO_CLI_MSI_REQUEST ) {
         /* it is a server request */
@@ -27,16 +27,16 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
             // otherwise use the filename from splitPathByKey
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput, LOCAL_PATH_KW ) ) ||
                     ( ( status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) >= 0 &&
-                    ( locFilePath = ( char * ) myFile ) ) ) {
+                      ( locFilePath = ( char * ) myFile ) ) ) {
                 status = putParam ?
-                    rcDataObjPut( conn, dataObjInp, locFilePath ) :
-                    rcDataObjGet( conn, dataObjInp, locFilePath );
+                         rcDataObjPut( conn, dataObjInp, locFilePath ) :
+                         rcDataObjGet( conn, dataObjInp, locFilePath );
                 rcOprComplete( conn, status );
             }
             else {
                 rodsLogError( LOG_ERROR, status,
-                                "rcExecMyRule: splitPathByKey for %s error",
-                                dataObjInp->objPath );
+                              "rcExecMyRule: splitPathByKey for %s error",
+                              dataObjInp->objPath );
                 rcOprComplete( conn, USER_FILE_DOES_NOT_EXIST );
             }
             clearKeyVal( &dataObjInp->condInput );

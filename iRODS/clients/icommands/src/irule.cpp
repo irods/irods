@@ -623,7 +623,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                     return CAT_INVALID_ARGUMENT;
                 }
                 size_t line_len = strlen( line );
-                if( line_len > 0 && '\n' == line[line_len - 1] ) {
+                if ( line_len > 0 && '\n' == line[line_len - 1] ) {
                     line[line_len - 1] = '\0';
                     line_len--;
                 }
@@ -640,7 +640,7 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
                     return CAT_INVALID_ARGUMENT;
                 }
                 size_t line_len = strlen( line );
-                if( line_len > 0 && '\n' == line[line_len - 1] ) {
+                if ( line_len > 0 && '\n' == line[line_len - 1] ) {
                     line[line_len - 1] = '\0';
                     line_len--;
                 }

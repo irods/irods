@@ -2622,7 +2622,7 @@ extern "C" {
     // tar_file_notify - code which would notify the subtree of a change
     irods::error tar_file_notify(
         irods::resource_plugin_context&,
-        const std::string*             ) {
+        const std::string* ) {
         return SUCCESS();
 
     } // tar_file_rebalance

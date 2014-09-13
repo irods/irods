@@ -1237,10 +1237,10 @@ chkOrphanFile(
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error get_err;
     irods::error err = props.capture_if_needed();
-    if( err.ok() ) {
+    if ( err.ok() ) {
         std::string svr_sid;
         get_err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-        if( !get_err.ok() ) {
+        if ( !get_err.ok() ) {
             std::string tmp( "StrictACLOverride" );
             props.set_property< std::string >( irods::AGENT_CONN_KW, tmp );
         }
@@ -1252,7 +1252,7 @@ chkOrphanFile(
 
     // =-=-=-=-=-=-=-
     // remove the agent-agent conn flag
-    if( !get_err.ok() ) {
+    if ( !get_err.ok() ) {
         props.delete_property( irods::AGENT_CONN_KW );
     }
 

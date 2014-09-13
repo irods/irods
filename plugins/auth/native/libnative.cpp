@@ -382,7 +382,7 @@ extern "C" {
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
                     //null-terminate the response for rsAuthCheck
-                    _resp->response = (char *)realloc( _resp->response, RESPONSE_LEN + 1 );
+                    _resp->response = ( char * )realloc( _resp->response, RESPONSE_LEN + 1 );
                     _resp->response[ RESPONSE_LEN ] = 0;
                     authCheckInp.response = _resp->response;
                     authCheckInp.username = _resp->username;

@@ -14,16 +14,16 @@
 #include <sys/time.h>
 
 namespace irods {
-class error;
+    class error;
 // =-=-=-=-=-=-=-
 // provide our own interface which will take our error which can
 // be refactored later
-void log( error );
+    void log( error );
 
 // =-=-=-=-=-=-=-
 // provide our own interface which will take stl types which can
 // be refactored later
-void log( int, std::string );
+    void log( int, std::string );
 
 }; // namespace irods
 

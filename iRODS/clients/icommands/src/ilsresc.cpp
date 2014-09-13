@@ -238,7 +238,7 @@ void printRescTree( const std::string& node_name, std::string depth ) {
     std::string& children_str = resc_children[resc_index];
 
     // print node name, and type if not UFS
-    if (resc_types[resc_index] != irods::RESOURCE_TYPE_NATIVE) {
+    if ( resc_types[resc_index] != irods::RESOURCE_TYPE_NATIVE ) {
         std::cout << node_name << ":" << resc_types[resc_index] << std::endl;
     }
     else {

@@ -606,12 +606,14 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                     res = ( Res * )argsProcessed[i];
                     RETURN;
                 }
-            } else {
+            }
+            else {
                 argsProcessed[i] = args[i];
             }
         }
-    } else {
-        memcpy(argsProcessed, args, sizeof(Res *) * n);
+    }
+    else {
+        memcpy( argsProcessed, args, sizeof( Res * ) * n );
     }
 
 
@@ -672,7 +674,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                 res = ( Res * )argsProcessed[i];
                 RETURN ;
             }
-            if(( ioParam[i] & IO_TYPE_INPUT ) == 0 || !definitelyEq(args[i], argsProcessed[i])) {
+            if ( ( ioParam[i] & IO_TYPE_INPUT ) == 0 || !definitelyEq( args[i], argsProcessed[i] ) ) {
                 resp = setVariableValue( appArgs[i]->text, argsProcessed[i], nodeArgs[i], rei, env, errmsg, r );
             }
             /*char *buf = convertResToString(args[i]);
@@ -973,8 +975,8 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     /* params */
     for ( i = 0; i < numOfStrArgs; i++ ) {
         if ( myArgv[i] != NULL ) {
-            res = convertMsParamToRes(myArgv[i], r);
-            if(res != NULL && getNodeType(res) == N_ERROR) {
+            res = convertMsParamToRes( myArgv[i], r );
+            if ( res != NULL && getNodeType( res ) == N_ERROR ) {
                 generateErrMsg( "execMicroService3: error converting arguments from MsParam", NODE_EXPR_POS( node ), node->base, errbuf );
                 addRErrorMsg( errmsg, ret, errbuf );
                 RETURN;
@@ -1106,22 +1108,23 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
     }
     else {
         rodsLog( LOG_ERROR, "ruleName: [%s] must be fewer than %ju characters in length.",
-                ruleNameInp, sizeof( ruleName ) );
+                 ruleNameInp, sizeof( ruleName ) );
         ruleName[0] = '\0';
     }
 
     mapExternalFuncToInternalProc2( ruleName );
 
-    int systemSpaceRuleFlag = (reiSaveFlag & SYSTEM_SPACE_RULE) != 0 || lookupFromHashTable(ruleEngineConfig.coreFuncDescIndex->current, ruleName) != NULL ? SYSTEM_SPACE_RULE : 0;
+    int systemSpaceRuleFlag = ( reiSaveFlag & SYSTEM_SPACE_RULE ) != 0 || lookupFromHashTable( ruleEngineConfig.coreFuncDescIndex->current, ruleName ) != NULL ? SYSTEM_SPACE_RULE : 0;
     int _reiSaveFlag = reiSaveFlag & SAVE_REI;
 
     RuleIndexListNode *ruleIndexListNode;
     int success = 0;
     int first = 1;
     while ( 1 ) {
-        if(systemSpaceRuleFlag != 0) {
-            statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode);
-        } else {
+        if ( systemSpaceRuleFlag != 0 ) {
+            statusI = findNextRuleFromIndex( ruleEngineConfig.coreFuncDescIndex, ruleName, ruleInx, &ruleIndexListNode );
+        }
+        else {
             statusI = findNextRule2( ruleName, ruleInx, &ruleIndexListNode );
         }
 
@@ -1518,9 +1521,9 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
     char *varMap;
     char errbuf[ERR_MSG_LEN];
     if ( varName[0] == '$' ) {
-        char *arg = varName+1;
-        if((i = applyRuleArg("acPreProcForWriteSessionVariable", &arg, 1, rei, 0)) < 0) {
-            return newErrorRes(r, i);
+        char *arg = varName + 1;
+        if ( ( i = applyRuleArg( "acPreProcForWriteSessionVariable", &arg, 1, rei, 0 ) ) < 0 ) {
+            return newErrorRes( r, i );
         }
         i = getVarMap( "", varName, &varMap, 0 );
         if ( i < 0 ) {
@@ -1565,29 +1568,29 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
     return newIntRes( r, 0 );
 }
 
-int definitelyEq(Res *a, Res *b) {
-    if(a != b && TYPE(a) == TYPE(b)) {
-        switch(TYPE(a)) {
+int definitelyEq( Res *a, Res *b ) {
+    if ( a != b && TYPE( a ) == TYPE( b ) ) {
+        switch ( TYPE( a ) ) {
         case T_INT:
-            return RES_INT_VAL(a) == RES_INT_VAL(b);
+            return RES_INT_VAL( a ) == RES_INT_VAL( b );
         case T_DOUBLE:
-            return RES_DOUBLE_VAL(a) == RES_DOUBLE_VAL(b);
+            return RES_DOUBLE_VAL( a ) == RES_DOUBLE_VAL( b );
         case T_STRING:
-            return strcmp(a->text, b->text) == 0 ? 1 : 0;
+            return strcmp( a->text, b->text ) == 0 ? 1 : 0;
         case T_DATETIME:
-            return RES_TIME_VAL(a) == RES_TIME_VAL(b);
+            return RES_TIME_VAL( a ) == RES_TIME_VAL( b );
         case T_BOOL:
-            return RES_BOOL_VAL(a) == RES_BOOL_VAL(b);
+            return RES_BOOL_VAL( a ) == RES_BOOL_VAL( b );
         case T_IRODS:
-            return RES_UNINTER_STRUCT(a) == RES_UNINTER_STRUCT(b) && RES_UNINTER_BUFFER(a) == RES_UNINTER_BUFFER(b);
+            return RES_UNINTER_STRUCT( a ) == RES_UNINTER_STRUCT( b ) && RES_UNINTER_BUFFER( a ) == RES_UNINTER_BUFFER( b );
         case T_PATH:
-            return strcmp(a->text, b->text) == 0 ? 1 : 0;
+            return strcmp( a->text, b->text ) == 0 ? 1 : 0;
         case T_CONS:
-            if(a->degree == b->degree) {
-                if(a->text == b->text || strcmp(a->text, b->text) == 0) {
+            if ( a->degree == b->degree ) {
+                if ( a->text == b->text || strcmp( a->text, b->text ) == 0 ) {
                     int res = 1;
-                    for(int i=0; i<a->degree; i++) {
-                        if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+                    for ( int i = 0; i < a->degree; i++ ) {
+                        if ( !definitelyEq( a->subtrees[i], b->subtrees[i] ) ) {
                             res = 0;
                             break;
                         }
@@ -1597,10 +1600,10 @@ int definitelyEq(Res *a, Res *b) {
             }
             return 0;
         case T_TUPLE:
-            if(a->degree == b->degree) {
+            if ( a->degree == b->degree ) {
                 int res = 1;
-                for(int i=0; i<a->degree; i++) {
-                    if(!definitelyEq(a->subtrees[i], b->subtrees[i])) {
+                for ( int i = 0; i < a->degree; i++ ) {
+                    if ( !definitelyEq( a->subtrees[i], b->subtrees[i] ) ) {
                         res = 0;
                         break;
                     }

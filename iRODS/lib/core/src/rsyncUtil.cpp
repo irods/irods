@@ -891,7 +891,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             getRodsObjType( conn, &myTargPath );
 
             status = rsyncDataToDataUtil( conn, &mySrcPath, &myTargPath,
-                                            rodsArgs, dataObjCopyInp );
+                                          rodsArgs, dataObjCopyInp );
             if ( myTargPath.rodsObjStat != NULL ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
                 myTargPath.rodsObjStat = NULL;

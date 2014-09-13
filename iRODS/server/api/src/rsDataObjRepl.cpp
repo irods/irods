@@ -120,11 +120,11 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // make sure tmp_dest_resc exists and is available
-    if (!tmp_dest_resc.empty()) {
+    if ( !tmp_dest_resc.empty() ) {
         rescInfo_t resc_info;
         irods::error resc_err = irods::get_resc_info( tmp_dest_resc, resc_info );
         if ( !resc_err.ok() ) {
-            irods::log(resc_err);
+            irods::log( resc_err );
             return resc_err.code();
         }
     }
@@ -913,8 +913,8 @@ dataObjOpenForRepl(
         *inpDestDataObjInfo = *myDestDataObjInfo;
 
         // deep copy of rescInfo
-        inpDestDataObjInfo->rescInfo = (rescInfo_t*)calloc(1, sizeof(rescInfo_t));
-        memcpy(inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof(rescInfo_t));
+        inpDestDataObjInfo->rescInfo = ( rescInfo_t* )calloc( 1, sizeof( rescInfo_t ) );
+        memcpy( inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
 
         // =-=-=-=-=-=-=-
         // JMC :: deep copy of condInput - necessary for preventing a double-free

@@ -55,7 +55,7 @@ namespace {
     null_conv( int num_msg, const struct pam_message **msg,
                struct pam_response **resp, void *appdata_ptr ) {
 
-        const AppData &appdata = *static_cast<AppData*>(appdata_ptr);
+        const AppData &appdata = *static_cast<AppData*>( appdata_ptr );
         if ( appdata.debug_mode ) {
             std::map<int, const char*> pam_message_types;
             pam_message_types[PAM_PROMPT_ECHO_OFF] = "PAM_PROMPT_ECHO_OFF";
@@ -64,7 +64,7 @@ namespace {
             pam_message_types[PAM_TEXT_INFO] = "PAM_TEXT_INFO";
 
             printf( "null_conv: num_msg: %d\n", num_msg );
-            for (int i = 0; i < num_msg; ++i) {
+            for ( int i = 0; i < num_msg; ++i ) {
                 const int msg_style = msg[i]->msg_style;
                 printf( "  null_conv: msg index: %d\n", i );
                 printf( "    null_conv: msg_style: %d -> %s\n", msg_style, pam_message_types[msg_style] );
@@ -80,7 +80,7 @@ namespace {
         std::string password;
         std::getline( std::cin, password );
         if ( appdata.debug_mode ) {
-            printf( "null_conv: password bytes: %ju\n", (uintmax_t)password.size() );
+            printf( "null_conv: password bytes: %ju\n", ( uintmax_t )password.size() );
         }
 
         *resp = static_cast<pam_response*>( malloc( sizeof( **resp ) ) );
@@ -89,14 +89,14 @@ namespace {
             return PAM_BUF_ERR;
         }
 
-        (*resp)->resp = strdup( password.c_str() );
-        if ( (*resp)->resp == NULL ) {
+        ( *resp )->resp = strdup( password.c_str() );
+        if ( ( *resp )->resp == NULL ) {
             free( *resp );
             fprintf( stderr, "PamAuthCheck: malloc error\n" );
             return PAM_BUF_ERR;
         }
 
-        (*resp)->resp_retcode = 0;
+        ( *resp )->resp_retcode = 0;
         return PAM_SUCCESS;
     }
 }
@@ -127,7 +127,7 @@ int main( int argc, char *argv[] ) {
         fprintf( stderr, "PamAuthCheck: pam_start error\n" );
         return 3;
     }
-    
+
     // check username-password
     const int retval_pam_authenticate = pam_authenticate( pamh, 0 );
     if ( debug_mode ) {

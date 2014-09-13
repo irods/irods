@@ -7,105 +7,105 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - ctor
-mysql_object::mysql_object() {
+    mysql_object::mysql_object() {
 
-} // ctor
+    } // ctor
 
 // =-=-=-=-=-=-=-
 // public - cctor
-mysql_object::mysql_object(
-    const mysql_object& _rhs ) :
-    database_object( _rhs ) {
+    mysql_object::mysql_object(
+        const mysql_object& _rhs ) :
+        database_object( _rhs ) {
 
-} // cctor
+    } // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-mysql_object::~mysql_object() {
-} // dtor
+    mysql_object::~mysql_object() {
+    } // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator
-mysql_object& mysql_object::operator=(
-    const mysql_object& ) {
+    mysql_object& mysql_object::operator=(
+        const mysql_object& ) {
 
-    return *this;
+        return *this;
 
-} // operator=
+    } // operator=
 
 // =-=-=-=-=-=-=-
 // public - equivalence operator
-bool mysql_object::operator==(
-    const mysql_object& ) const {
-    return false;
+    bool mysql_object::operator==(
+        const mysql_object& ) const {
+        return false;
 
-} // operator==
+    } // operator==
 
 // =-=-=-=-=-=-=-
 // plugin resolution operation
-error mysql_object::resolve(
-    const std::string& _interface,
-    plugin_ptr&        _ptr ) {
-    // =-=-=-=-=-=-=-
-    // check the interface type and error out if it
-    // isnt a database interface
-    if ( DATABASE_INTERFACE != _interface ) {
-        std::stringstream msg;
-        msg << "mysql_object does not support a [";
-        msg << _interface;
-        msg << "] plugin interface";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-
-    }
-
-    // =-=-=-=-=-=-=-
-    // ask the database manager for a mysql resource
-    database_ptr db_ptr;
-    error ret = db_mgr.resolve( MYSQL_DATABASE_PLUGIN, db_ptr );
-    if ( !ret.ok() ) {
+    error mysql_object::resolve(
+        const std::string& _interface,
+        plugin_ptr&        _ptr ) {
         // =-=-=-=-=-=-=-
-        // attempt to load the plugin, in this case the type,
-        // instance name, key etc are all tcp as there is only
-        // the need for one instance of a tcp object, etc.
-        std::string empty_context( "" );
-        ret = db_mgr.init_from_type(
-                  MYSQL_DATABASE_PLUGIN,
-                  MYSQL_DATABASE_PLUGIN,
-                  MYSQL_DATABASE_PLUGIN,
-                  empty_context,
-                  db_ptr );
+        // check the interface type and error out if it
+        // isnt a database interface
+        if ( DATABASE_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "mysql_object does not support a [";
+            msg << _interface;
+            msg << "] plugin interface";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // ask the database manager for a mysql resource
+        database_ptr db_ptr;
+        error ret = db_mgr.resolve( MYSQL_DATABASE_PLUGIN, db_ptr );
         if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-        else {
             // =-=-=-=-=-=-=-
-            // upcast for out variable
-            _ptr = boost::dynamic_pointer_cast< plugin_base >( db_ptr );
-            return SUCCESS();
+            // attempt to load the plugin, in this case the type,
+            // instance name, key etc are all tcp as there is only
+            // the need for one instance of a tcp object, etc.
+            std::string empty_context( "" );
+            ret = db_mgr.init_from_type(
+                      MYSQL_DATABASE_PLUGIN,
+                      MYSQL_DATABASE_PLUGIN,
+                      MYSQL_DATABASE_PLUGIN,
+                      empty_context,
+                      db_ptr );
+            if ( !ret.ok() ) {
+                return PASS( ret );
 
-        }
+            }
+            else {
+                // =-=-=-=-=-=-=-
+                // upcast for out variable
+                _ptr = boost::dynamic_pointer_cast< plugin_base >( db_ptr );
+                return SUCCESS();
 
-    } // if !ok
+            }
 
-    // =-=-=-=-=-=-=-
-    // upcast for out variable
-    _ptr = boost::dynamic_pointer_cast< plugin_base >( db_ptr );
+        } // if !ok
 
-    return SUCCESS();
+        // =-=-=-=-=-=-=-
+        // upcast for out variable
+        _ptr = boost::dynamic_pointer_cast< plugin_base >( db_ptr );
 
-} // resolve
+        return SUCCESS();
+
+    } // resolve
 
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
-error mysql_object::get_re_vars(
-    keyValPair_t& ) {
+    error mysql_object::get_re_vars(
+        keyValPair_t& ) {
 
-    //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
+        //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 
-    return SUCCESS();
+        return SUCCESS();
 
-} // get_re_vars
+    } // get_re_vars
 
 }; // namespace irods
 

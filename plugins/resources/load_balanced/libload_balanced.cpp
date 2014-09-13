@@ -926,7 +926,7 @@ extern "C" {
             }
         }
 
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             return PASS( result );
         }
 

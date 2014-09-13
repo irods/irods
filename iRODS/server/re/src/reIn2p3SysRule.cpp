@@ -168,7 +168,7 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
      ***********************************************************/
     int i, j, k, index[MAX_NSERVERS], l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut=NULL;
+    genQueryOut_t *genQueryOut = NULL;
     char condStr[MAX_NAME_LEN];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -183,7 +183,7 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
     addInxVal( &genQueryInp.sqlCondInp, COL_R_LOC, "!='EMPTY_RESC_HOST'" );
     addInxVal( &genQueryInp.sqlCondInp, COL_R_VAULT_PATH, "!='EMPTY_RESC_PATH'" );
     snprintf( condStr, MAX_NAME_LEN, "!='%s'", BUNDLE_RESC );
-    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condStr);
+    addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condStr );
 
     status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status < 0 ) {

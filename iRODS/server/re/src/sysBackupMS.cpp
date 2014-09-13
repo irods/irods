@@ -123,14 +123,14 @@ int loadDirToLocalResc( ruleExecInfo_t *rei, char *dirPath, size_t offset,
         }
         else {
             /* Copy file to new dir on resource */
-            std::string destPath = boost::str ( boost::format( "%s/%s/%s/%s_%s/%s/%s" ) %
-                                                resDirPath %
-                                                subPath %
-                                                BCKP_COLL_NAME %
-                                                rei->rsComm->myEnv.rodsHost %
-                                                timestamp %
-                                                ( dirPath + offset ) %
-                                                de->d_name );
+            std::string destPath = boost::str( boost::format( "%s/%s/%s/%s_%s/%s/%s" ) %
+                                               resDirPath %
+                                               subPath %
+                                               BCKP_COLL_NAME %
+                                               rei->rsComm->myEnv.rodsHost %
+                                               timestamp %
+                                               ( dirPath + offset ) %
+                                               de->d_name );
 
             boost::system::error_code error;
             boost::filesystem::copy( boost::filesystem::path( absPath ), boost::filesystem::path( destPath ), error );

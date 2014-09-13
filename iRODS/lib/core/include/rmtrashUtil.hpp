@@ -23,7 +23,7 @@ extern "C" {
                         collInp_t *collInp );
     int
     rmtrashCollUtil( rcComm_t *conn, char *srcColl,
-            rodsArguments_t *rodsArgs, collInp_t *collInp );
+                     rodsArguments_t *rodsArgs, collInp_t *collInp );
 
 #ifdef __cplusplus
 }

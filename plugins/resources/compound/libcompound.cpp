@@ -1479,7 +1479,7 @@ extern "C" {
         if ( irods::OPEN_OPERATION == ( *_opr ) ||
                 irods::WRITE_OPERATION  == ( *_opr ) ) {
 
-            if( irods::WRITE_OPERATION  == ( *_opr ) ) {
+            if ( irods::WRITE_OPERATION  == ( *_opr ) ) {
                 _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
             }
 
@@ -1524,7 +1524,7 @@ extern "C" {
             }
         }
 
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             return PASS( result );
         }
 

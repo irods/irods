@@ -16,12 +16,12 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // auth plugin pointer type
-class auth;
-typedef boost::shared_ptr< auth > auth_ptr;
+    class auth;
+    typedef boost::shared_ptr< auth > auth_ptr;
 
 // =-=-=-=-=-=-=-
 // fwd decl of network manager for fco resolve
-class auth_manager;
+    class auth_manager;
 
 }; // namespace
 

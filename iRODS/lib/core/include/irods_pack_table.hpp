@@ -5,7 +5,7 @@
 
 namespace irods {
 
-irods::pack_entry_table& get_pack_table();
+    irods::pack_entry_table& get_pack_table();
 
 
 }; // namespace irods

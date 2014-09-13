@@ -5,76 +5,76 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // database manager singleton
-database_manager db_mgr;
+    database_manager db_mgr;
 
 // =-=-=-=-=-=-=-
 // public - Constructor
-database_manager::database_manager() {
+    database_manager::database_manager() {
 
-} // ctor
+    } // ctor
 
 // =-=-=-=-=-=-=-
 // public - Copy Constructor
-database_manager::database_manager( const database_manager& _rhs ) {
-    plugins_ = _rhs.plugins_;
+    database_manager::database_manager( const database_manager& _rhs ) {
+        plugins_ = _rhs.plugins_;
 
-} // cctor
+    } // cctor
 
 // =-=-=-=-=-=-=-
 // public - Destructor
-database_manager::~database_manager( ) {
+    database_manager::~database_manager( ) {
 
-} // dtor
+    } // dtor
 
 // =-=-=-=-=-=-=-
 // public - retrieve a database plugin given its key
-error database_manager::resolve(
-    std::string  _key,
-    database_ptr& _value ) {
+    error database_manager::resolve(
+        std::string  _key,
+        database_ptr& _value ) {
 
-    if ( _key.empty() ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
-    }
+        if ( _key.empty() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
+        }
 
-    if ( plugins_.has_entry( _key ) ) {
-        _value = plugins_[ _key ];
-        return SUCCESS();
+        if ( plugins_.has_entry( _key ) ) {
+            _value = plugins_[ _key ];
+            return SUCCESS();
 
-    }
-    else {
-        std::stringstream msg;
-        msg << "no database plugin found for name ["
-            << _key
-            << "]";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        }
+        else {
+            std::stringstream msg;
+            msg << "no database plugin found for name ["
+                << _key
+                << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
 
-    }
+        }
 
-} // resolve
+    } // resolve
 
 // =-=-=-=-=-=-=-
 // public - given a type, load up a database plugin
-error database_manager::init_from_type(
-    const std::string& _type,
-    const std::string& _key,
-    const std::string& _inst,
-    const std::string& _ctx,
-    database_ptr&      _db ) {
-    // =-=-=-=-=-=-=-
-    // create the database plugin and add it to the table
-    database_ptr ptr;
-    error ret = load_database_plugin( ptr, _type, _inst, _ctx );
-    if ( !ret.ok() ) {
-        return PASSMSG( "Failed to load database plugin", ret );
-    }
+    error database_manager::init_from_type(
+        const std::string& _type,
+        const std::string& _key,
+        const std::string& _inst,
+        const std::string& _ctx,
+        database_ptr&      _db ) {
+        // =-=-=-=-=-=-=-
+        // create the database plugin and add it to the table
+        database_ptr ptr;
+        error ret = load_database_plugin( ptr, _type, _inst, _ctx );
+        if ( !ret.ok() ) {
+            return PASSMSG( "Failed to load database plugin", ret );
+        }
 
-    plugins_[ _key ] = ptr;
+        plugins_[ _key ] = ptr;
 
-    _db = plugins_[ _key ];
+        _db = plugins_[ _key ];
 
-    return SUCCESS();
+        return SUCCESS();
 
-} // init_from_type
+    } // init_from_type
 
 }; // namespace irods
 

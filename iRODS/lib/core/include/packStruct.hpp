@@ -41,7 +41,7 @@ struct */
     typedef struct {
         char *name;
         char *packInstruct;
-        void(*clearInStruct)( void* );
+        void( *clearInStruct )( void* );
         // XXXX - JMC :: boost::function<void( void* )> clearInStruct;
     } packInstructArray_t;
 

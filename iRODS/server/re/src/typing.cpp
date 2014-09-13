@@ -795,7 +795,8 @@ ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
                 disjunctsElem[i] = getElemType( T_VAR_DISJUNCT( unified, i ), r );
             }
             return newTVar2( T_VAR_NUM_DISJUNCTS( unified ), disjunctsElem, r );
-        } else {
+        }
+        else {
             return getElemType( unified, r );
         }
 

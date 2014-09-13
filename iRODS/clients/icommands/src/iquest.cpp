@@ -92,7 +92,8 @@ printFormatted( char *format, char *args[], int nargs ) {
             formatter % args[i];
         }
         std::cout << formatter;
-    } catch ( ... ) {}
+    }
+    catch ( ... ) {}
 }
 
 void

@@ -84,8 +84,7 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
-        if ( SYS_INVALID_SERVER_HOST == status )
-        {
+        if ( SYS_INVALID_SERVER_HOST == status ) {
             rodsLogError( LOG_ERROR, status,
                           "rcProcStat for at least one of the servers failed. "
                           "Check to make sure you did not call this on a "
@@ -93,8 +92,7 @@ main( int argc, char **argv ) {
                           "virtual and have no host to query." );
             return 3;
         }
-        else
-        {
+        else {
             rodsLogError( LOG_ERROR, status,
                           "rcProcStat for at least one of the servers failed." );
             return 3;

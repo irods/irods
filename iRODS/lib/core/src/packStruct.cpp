@@ -799,8 +799,8 @@ resolveDepInArray( packItem_t *myPackedItem ) {
             openSymbol = '\0';
 
             int& dimSize = ( ']' == c ) ?
-                        myPackedItem->dimSize[myPackedItem->dim++] :
-                        myPackedItem->hintDimSize[myPackedItem->hintDim++];
+                           myPackedItem->dimSize[myPackedItem->dim++] :
+                           myPackedItem->hintDimSize[myPackedItem->hintDim++];
             if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem ) ) < 0 ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
                          myPackedItem->name, buffer.c_str() );
@@ -2041,8 +2041,8 @@ unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
     if ( packTypeTable[myPackedItem->typeInx].number == PACK_BIN_TYPE ) {
         /* bin type. need to decode */
         unsigned long outLen = len;
-        if( int status = base64_decode( ( const unsigned char * ) * inPtr,
-                                        inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
+        if ( int status = base64_decode( ( const unsigned char * ) * inPtr,
+                                         inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
             return status;
         }
         if ( ( int ) outLen != len ) {
@@ -2829,7 +2829,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
             return 0;
         }
     }
-    else if( myDim < 0 ) {
+    else if ( myDim < 0 ) {
         return SYS_NEGATIVE_SIZE;
     }
 

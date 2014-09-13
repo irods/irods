@@ -141,7 +141,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
             std::string svr_sid;
             irods::error err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-            if( !err.ok() ) {
+            if ( !err.ok() ) {
                 rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
 
             }

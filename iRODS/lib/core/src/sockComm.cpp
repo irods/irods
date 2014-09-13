@@ -1581,8 +1581,8 @@ int cliSwitchConnect( rcComm_t *conn ) {
         close( conn->sock );
         conn->sock = conn->reconnectedSock;
         conn->reconnectedSock = 0;
-        fprintf(stderr,
-                "The client/server socket connection has been renewed\n" );
+        fprintf( stderr,
+                 "The client/server socket connection has been renewed\n" );
         return 1;
     }
     else {

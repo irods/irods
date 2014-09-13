@@ -1505,7 +1505,7 @@ findOrInsertAVU( char *attribute, char *value, char *units ) {
 /* create a path name with escaped SQL special characters (% and _) */
 void
 makeEscapedPath( const std::string &inPath, char *outPath, int size ) {
-    snprintf(outPath, size, "%s", boost::regex_replace( inPath, boost::regex("[%_]"), "\\$&" ).c_str() );
+    snprintf( outPath, size, "%s", boost::regex_replace( inPath, boost::regex( "[%_]" ), "\\$&" ).c_str() );
     return;
 }
 
@@ -6909,7 +6909,7 @@ extern "C" {
             status = cmlGetIntegerValueFromSql( "select count(UP.user_id) from R_USER_PASSWORD UP, R_USER_MAIN where user_name=?",
                                                 &MAX_PASSWORDS, userName2, 0, 0, 0, 0, &icss );
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR, "cmlGetIntegerValueFromSql failed in db_check_auth_op with status %d", status);
+                rodsLog( LOG_ERROR, "cmlGetIntegerValueFromSql failed in db_check_auth_op with status %d", status );
             }
             nPasswords = MAX_PASSWORDS;
             pwInfoArray.resize( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
@@ -6920,7 +6920,7 @@ extern "C" {
                      MAX_PASSWORDS * 4, /* four strings per password returned */
                      userName2, myUserZone, 0, &icss );
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR, "cmlGetMultiRowStringValuesFromSql failed in db_check_auth_op with status %d", status);
+                rodsLog( LOG_ERROR, "cmlGetMultiRowStringValuesFromSql failed in db_check_auth_op with status %d", status );
             }
         }
 
@@ -8431,7 +8431,7 @@ checkLevel:
                           _resc_name,
                           zone,
                           amt );
-            if( ret != 0 ) {
+            if ( ret != 0 ) {
                 rodsLog(
                     LOG_ERROR,
                     "failed in _updateRescObjCount %d",

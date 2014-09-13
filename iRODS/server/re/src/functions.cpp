@@ -2890,7 +2890,7 @@ Node *construct( char *fn, Node** args, int argc, Node *constype, Region* r ) {
     Node *res = newRes( r );
     res->text = cpStringExt( fn, r );
     res->degree = argc;
-    res->subtrees = ( Node**  )region_alloc( r, sizeof( Node * ) * argc );
+    res->subtrees = ( Node** )region_alloc( r, sizeof( Node * ) * argc );
     memcpy( res->subtrees, args, sizeof( Node * )*argc );
     res->exprType = constype;
     return res;

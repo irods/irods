@@ -265,7 +265,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
             free( buf );
             if ( bufSize < 1 || bufSize > std::numeric_limits<long long>::max() ) {
                 fprintf( stderr, "bufSize %ji must be greater than zero and no more than %ji\n",
-                        ( intmax_t )bufSize, ( intmax_t )std::numeric_limits<long long>::max() );
+                         ( intmax_t )bufSize, ( intmax_t )std::numeric_limits<long long>::max() );
                 ok = FAILED;
                 break;
             }
@@ -336,7 +336,7 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
     }
     if ( filesize < 0 || filesize > std::numeric_limits<long long>::max() ) {
         fprintf( stderr, "Invalid file size %ji. File size must be no less than zero and no greater than %ji.",
-                ( intmax_t )filesize, ( intmax_t )std::numeric_limits<long long>::max() );
+                 ( intmax_t )filesize, ( intmax_t )std::numeric_limits<long long>::max() );
         return -1;
     }
 

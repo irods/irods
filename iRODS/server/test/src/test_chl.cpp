@@ -451,7 +451,8 @@ int testRegDataMulti( rsComm_t *rsComm, char *count,
 
         return chlCommit( rsComm );
 
-    } catch ( ... ) {
+    }
+    catch ( ... ) {
         printf( "Invalid input: count\n" );
         return USER_INPUT_OPTION_ERR;
     }
@@ -1213,6 +1214,6 @@ main( int argc, char **argv ) {
 /* This is a dummy version of icatApplyRule for this test program so
 -   the rule-engine is not needed in this ICAT test. */
 int
-icatApplyRule( rsComm_t*, char*, char*) {
+icatApplyRule( rsComm_t*, char*, char* ) {
     return 0;
 }

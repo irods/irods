@@ -17,7 +17,7 @@ main( int argc, char *argv[] ) {
     /* make sure the provided username matches what the OS thinks */
     char * username = getenv( OS_AUTH_ENV_USER );
     if ( username == NULL ) {
-        if ( argc > 0) {
+        if ( argc > 0 ) {
             /* probably means someone has run from command-line */
             printf( "%s is run through an iRODS library call, and probably won't do anything useful for you.\n",
                     argv[0] );

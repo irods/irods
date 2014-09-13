@@ -4555,7 +4555,7 @@ getRandomArray( int **randomArray, int size ) {
     }
 
     *randomArray = ( int * ) malloc( size * sizeof( int ) );
-    for( int i = 0; i < size; i++ ) {
+    for ( int i = 0; i < size; i++ ) {
         ( *randomArray )[i] = i + 1;
     }
     std::random_shuffle( *randomArray, *randomArray + size );
@@ -4796,13 +4796,13 @@ splitMultiStr( char * strInput, strArray_t * strArray ) {
 }
 
 namespace boost {
-void assertion_failed( char const * expr,
-                       char const * function, char const * file, long line ) {
-    std::cerr <<
-              "***** Internal Program Error - assertion (" << expr << ") failed in "
-              << function << ":\n"
-              << file << '(' << line << "): errno = " << errno << std::endl;
-}
+    void assertion_failed( char const * expr,
+                           char const * function, char const * file, long line ) {
+        std::cerr <<
+                  "***** Internal Program Error - assertion (" << expr << ") failed in "
+                  << function << ":\n"
+                  << file << '(' << line << "): errno = " << errno << std::endl;
+    }
 
 
 } // namespace boost

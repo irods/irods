@@ -519,9 +519,10 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         //update the filename in case of a retry
         rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
         retryCnt++;
-    } while ( getErrno( l3descInx ) == EEXIST &&
-              resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
-              l3descInx <= 2 && retryCnt < 100 );
+    }
+    while ( getErrno( l3descInx ) == EEXIST &&
+            resolveDupFilePath( rsComm, dataObjInfo, dataObjInp ) >= 0 &&
+            l3descInx <= 2 && retryCnt < 100 );
     clearKeyVal( &fileCreateInp.condInput );
     return l3descInx;
 }
@@ -571,8 +572,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
         irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *( *myRescGrpInfo ) );
         if ( !set_err.ok() ) {
-            delete ( *myRescGrpInfo )->rescInfo;
-            delete ( *myRescGrpInfo );
+            delete( *myRescGrpInfo )->rescInfo;
+            delete( *myRescGrpInfo );
             irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
         }
@@ -586,8 +587,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
     if ( status == SYS_RESC_QUOTA_EXCEEDED ) {
         if ( rei.rgi == NULL ) {
-            delete ( *myRescGrpInfo )->rescInfo;
-            delete ( *myRescGrpInfo );
+            delete( *myRescGrpInfo )->rescInfo;
+            delete( *myRescGrpInfo );
         }
         return SYS_RESC_QUOTA_EXCEEDED;
     }

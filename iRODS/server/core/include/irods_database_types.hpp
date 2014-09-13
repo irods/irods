@@ -18,12 +18,12 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // database plugin pointer type
-class database;
-typedef boost::shared_ptr< database > database_ptr;
+    class database;
+    typedef boost::shared_ptr< database > database_ptr;
 
 // =-=-=-=-=-=-=-
 // fwd decl of database manager for fco resolve
-class database_manager;
+    class database_manager;
 
 }; // namespace
 

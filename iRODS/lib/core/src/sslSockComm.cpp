@@ -504,7 +504,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
     }
     if ( msgHeader.bsLen > 0 ) {
         status = sslWrite( byteStreamBBuf->buf, byteStreamBBuf->len,
-                            &bytesWritten, ssl );
+                           &bytesWritten, ssl );
         if ( status < 0 ) {
             return status;
         }

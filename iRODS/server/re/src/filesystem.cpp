@@ -44,11 +44,11 @@ int getModifiedTime( char *fn, time_type *timestamp ) {
 #else
     /* windows platform supported through BOOST */
     struct stat filestat;
-    if(stat(fn, &filestat) == -1) {
-        rodsLog(LOG_ERROR, "error reading file stat %s\n", fn);
+    if ( stat( fn, &filestat ) == -1 ) {
+        rodsLog( LOG_ERROR, "error reading file stat %s\n", fn );
         return RE_FILE_STAT_ERROR - errno;
     }
-    time_type_set(*timestamp, filestat.st_mtim);
+    time_type_set( *timestamp, filestat.st_mtim );
     return 0;
 #endif
 }

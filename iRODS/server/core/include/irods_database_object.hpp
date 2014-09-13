@@ -16,50 +16,50 @@
 namespace irods {
 // =-=-=-=-=-=-=-
 // network object base class
-class database_object : public first_class_object {
-public:
-    // =-=-=-=-=-=-=-
-    // Constructors
-    database_object();
-    database_object( const database_object& );
+    class database_object : public first_class_object {
+    public:
+        // =-=-=-=-=-=-=-
+        // Constructors
+        database_object();
+        database_object( const database_object& );
 
-    // =-=-=-=-=-=-=-
-    // Destructors
-    virtual ~database_object();
+        // =-=-=-=-=-=-=-
+        // Destructors
+        virtual ~database_object();
 
-    // =-=-=-=-=-=-=-
-    // Operators
-    virtual database_object& operator=( const database_object& );
+        // =-=-=-=-=-=-=-
+        // Operators
+        virtual database_object& operator=( const database_object& );
 
-    // =-=-=-=-=-=-=-
-    /// @brief Comparison operator
-    virtual bool operator==( const database_object& _rhs ) const;
+        // =-=-=-=-=-=-=-
+        /// @brief Comparison operator
+        virtual bool operator==( const database_object& _rhs ) const;
 
-    // =-=-=-=-=-=-=-
-    // plugin resolution operation
-    virtual error resolve(
-        const std::string&, // plugin interface
-        plugin_ptr& ) = 0;  // resolved plugin
+        // =-=-=-=-=-=-=-
+        // plugin resolution operation
+        virtual error resolve(
+            const std::string&, // plugin interface
+            plugin_ptr& ) = 0;  // resolved plugin
 
-    // =-=-=-=-=-=-=-
-    // accessor for rule engine variables
-    virtual error get_re_vars( keyValPair_t& );
+        // =-=-=-=-=-=-=-
+        // accessor for rule engine variables
+        virtual error get_re_vars( keyValPair_t& );
 
-    // =-=-=-=-=-=-=-
-    // Accessors
+        // =-=-=-=-=-=-=-
+        // Accessors
 
-    // =-=-=-=-=-=-=-
-    // Mutators
+        // =-=-=-=-=-=-=-
+        // Mutators
 
-private:
-    // =-=-=-=-=-=-=-
-    // Attributes
+    private:
+        // =-=-=-=-=-=-=-
+        // Attributes
 
-}; // database_object
+    }; // database_object
 
 // =-=-=-=-=-=-=-
 // helpful typedef for sock comm interface & factory
-typedef boost::shared_ptr< database_object > database_object_ptr;
+    typedef boost::shared_ptr< database_object > database_object_ptr;
 
 }; // namespace irods
 

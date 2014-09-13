@@ -7,51 +7,51 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - ctor
-database_object::database_object() {
+    database_object::database_object() {
 
-} // ctor
+    } // ctor
 
 // =-=-=-=-=-=-=-
 // public - cctor
-database_object::database_object(
-    const database_object& _rhs ) :
-    first_class_object( _rhs ) {
+    database_object::database_object(
+        const database_object& _rhs ) :
+        first_class_object( _rhs ) {
 
 
-} // cctor
+    } // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-database_object::~database_object() {
-} // dtor
+    database_object::~database_object() {
+    } // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator
-database_object& database_object::operator=(
-    const database_object& ) {
+    database_object& database_object::operator=(
+        const database_object& ) {
 
-    return *this;
+        return *this;
 
-} // operator=
+    } // operator=
 
 // =-=-=-=-=-=-=-
 // public - equivalence operator
-bool database_object::operator==(
-    const database_object& ) const {
-    return false;
+    bool database_object::operator==(
+        const database_object& ) const {
+        return false;
 
-} // operator==
+    } // operator==
 
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
-error database_object::get_re_vars(
-    keyValPair_t& ) {
+    error database_object::get_re_vars(
+        keyValPair_t& ) {
 
-    //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
+        //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 
-    return SUCCESS();
+        return SUCCESS();
 
-} // get_re_vars
+    } // get_re_vars
 
 }; // namespace irods
 

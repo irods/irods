@@ -462,7 +462,7 @@ int processXMsg( int streamId, char *readmsg,
 
 int
 processBreakPoint( int streamId, RuleEngineEventParam *param,
-                    Node *node, int curStat ) {
+                   Node *node, int curStat ) {
 
     char myhdr[HEADER_TYPE_LEN];
     snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s", param->actionName );
@@ -709,7 +709,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESCGRP:%s", rei->rgi->rescGroupName );
                 aNum++;
             }
-            if ( rei->coi != NULL && strlen( rei->coi->collName ) > 0) {
+            if ( rei->coi != NULL && strlen( rei->coi->collName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  COLL:%s", rei->coi->collName );
                 aNum++;
             }
@@ -769,7 +769,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
             if ( status  >= 0 ) {
                 rodsLog( LOG_NOTICE, "Getting XMsg:%i:%s:%s\n", s, readhdr, readmsg );
                 curStat = processXMsg( GlobalREDebugFlag, readmsg,
-                                        param, node, env, rei );
+                                       param, node, env, rei );
                 if ( readhdr != NULL ) {
                     free( readhdr );
                 }

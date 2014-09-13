@@ -92,7 +92,7 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
 
 int
 initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
-                collInp_t *collInp ) {
+               collInp_t *collInp ) {
 
 #ifdef _WIN32
     struct _timeb timebuffer;

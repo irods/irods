@@ -253,13 +253,10 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
 }
 
 int
-getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo  )
-{
+getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo ) {
     int index;
-    for( index = 3; index < NUM_L1_DESC; index++ )
-    {
-        if( L1desc[index].dataObjInfo == dataObjInfo )
-        {
+    for ( index = 3; index < NUM_L1_DESC; index++ ) {
+        if ( L1desc[index].dataObjInfo == dataObjInfo ) {
             return index;
         }
     }
@@ -545,7 +542,7 @@ initDataObjInfoForRepl(
 
     memset( destDataObjInfo, 0, sizeof( dataObjInfo_t ) );
     *destDataObjInfo = *srcDataObjInfo;
-    memset( &destDataObjInfo->condInput, 0, sizeof(destDataObjInfo->condInput) );
+    memset( &destDataObjInfo->condInput, 0, sizeof( destDataObjInfo->condInput ) );
     replKeyVal( &srcDataObjInfo->condInput, &destDataObjInfo->condInput );
 
     destDataObjInfo->filePath[0] = '\0';

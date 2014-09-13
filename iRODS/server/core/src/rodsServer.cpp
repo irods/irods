@@ -66,50 +66,50 @@ namespace {
 // when a running iRODS installation is uncleanly killed (leaving the file system object used to implement
 // boost::named_mutex e.g. in /var/run/shm) and then the iRODS user account is recreated, yielding a different
 // UID. The new iRODS user account is then unable to unlock or remove the existing mutex, blocking the server.
-irods::error createAndSetRECacheSalt() {
-    // Should only ever set the cache salt once
-    irods::server_properties &server_properties = irods::server_properties::getInstance();
-    std::string existing_salt;
-    irods::error ret = server_properties.get_property<std::string>( RE_CACHE_SALT_KW, existing_salt );
-    if ( ret.ok() ) {
-        rodsLog( LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str() );
-        return ERROR( SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set" );
+    irods::error createAndSetRECacheSalt() {
+        // Should only ever set the cache salt once
+        irods::server_properties &server_properties = irods::server_properties::getInstance();
+        std::string existing_salt;
+        irods::error ret = server_properties.get_property<std::string>( RE_CACHE_SALT_KW, existing_salt );
+        if ( ret.ok() ) {
+            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str() );
+            return ERROR( SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set" );
+        }
+
+        irods::buffer_crypt::array_t buf;
+        ret = irods::buffer_crypt::generate_key( buf, RE_CACHE_SALT_NUM_RANDOM_BYTES );
+        if ( !ret.ok() ) {
+            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to generate random bytes" );
+            return PASS( ret );
+        }
+
+        std::string cache_salt_random;
+        ret = irods::buffer_crypt::hex_encode( buf, cache_salt_random );
+        if ( !ret.ok() ) {
+            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to hex encode random bytes" );
+            return PASS( ret );
+        }
+
+        std::stringstream cache_salt;
+        cache_salt << "pid"
+                   << static_cast<intmax_t>( getpid() )
+                   << "_"
+                   << cache_salt_random;
+
+        ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
+        if ( !ret.ok() ) {
+            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
+            return PASS( ret );
+        }
+
+        int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
+        if ( 0 != ret_int ) {
+            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable" );
+            return ERROR( SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable" );
+        }
+
+        return SUCCESS();
     }
-
-    irods::buffer_crypt::array_t buf;
-    ret = irods::buffer_crypt::generate_key( buf, RE_CACHE_SALT_NUM_RANDOM_BYTES );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to generate random bytes" );
-        return PASS( ret );
-    }
-
-    std::string cache_salt_random;
-    ret = irods::buffer_crypt::hex_encode( buf, cache_salt_random );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to hex encode random bytes" );
-        return PASS( ret );
-    }
-
-    std::stringstream cache_salt;
-    cache_salt << "pid"
-               << static_cast<intmax_t>( getpid() )
-               << "_"
-               << cache_salt_random;
-
-    ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
-        return PASS( ret );
-    }
-
-    int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
-    if ( 0 != ret_int ) {
-        rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable" );
-        return ERROR( SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable" );
-    }
-
-    return SUCCESS();
-}
 }
 
 

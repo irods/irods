@@ -210,11 +210,11 @@ int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
 
 
 }
-Res* convertMsParamToRes(msParam_t* myArgv, Region* r) {
-    Res* res = newRes(r); /* we need to create a new res here to make keep all res'es immutable */
-    int ret = convertMsParamToResAndFreeNonIRODSType(myArgv, res, r);
-    if (ret != 0) {
-        res = newErrorRes(r, ret);
+Res* convertMsParamToRes( msParam_t* myArgv, Region* r ) {
+    Res* res = newRes( r ); /* we need to create a new res here to make keep all res'es immutable */
+    int ret = convertMsParamToResAndFreeNonIRODSType( myArgv, res, r );
+    if ( ret != 0 ) {
+        res = newErrorRes( r, ret );
     }
     return res;
 }
@@ -383,7 +383,7 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
         /*var->type = strdup(DATETIME_MS_T); */
         /* Here we pass datatime as an integer to reuse exiting packing instructions. Need to change to long int. */
         var->inOutStruct = ( int* )malloc( sizeof( int ) );
-        *( ( int* )var->inOutStruct ) = (int)RES_TIME_VAL( res );
+        *( ( int* )var->inOutStruct ) = ( int )RES_TIME_VAL( res );
         var->type = strdup( INT_MS_T );
         break;
     case T_CONS:

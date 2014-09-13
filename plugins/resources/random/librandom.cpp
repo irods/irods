@@ -105,7 +105,7 @@ irods::error get_next_child_for_open_or_write(
 
         // =-=-=-=-=-=-=-
         // find this resource in the hier
-        if( !parser.resc_in_hier( _name ) ) {
+        if ( !parser.resc_in_hier( _name ) ) {
             continue;
         }
 
@@ -836,7 +836,7 @@ extern "C" {
             }
         }
 
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             return PASS( result );
         }
 
