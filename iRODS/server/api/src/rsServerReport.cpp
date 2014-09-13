@@ -294,7 +294,7 @@ irods::error convert_server_config(
 
     }
     else {
-        // may not be federeated, but it is required by the spec
+        // may not be federated, but it is required by the spec
         json_t* arr = json_array();
         json_object_set( _svr_cfg, "federation", arr );
     }

@@ -1,5 +1,5 @@
 /*
- * iapitest - test pluggable apis
+ * igridreport - produce json configuration gridreport
 */
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
