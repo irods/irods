@@ -108,6 +108,7 @@ else
     $PYTHONCMD $OPTS test_mso_suite
     $PYTHONCMD $OPTS test_resource_types
     $PYTHONCMD $OPTS catalog_suite
+    $PYTHONCMD $OPTS rulebase_suite
     $PYTHONCMD $OPTS test_workflow_suite
     $PYTHONCMD $OPTS test_resource_tree
     $PYTHONCMD $OPTS test_xmsg
@@ -160,8 +161,6 @@ EOF
         #   sudo passwd -d irods
         ################################################
     fi
-
-    $PYTHONCMD $OPTS rulebase_suite
 fi
 
 
