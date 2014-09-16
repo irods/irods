@@ -245,7 +245,7 @@ int fileChksum(
             msg << " - Failed to read buffer from file: \"";
             msg << fileName;
             msg << "\"";
-            irods::error result = PASSMSG( msg.str(), ret );
+            irods::error result = PASSMSG( msg.str(), read_err );
             irods::log( result );
             return result.code();
         }
