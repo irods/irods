@@ -14,7 +14,7 @@
 
 namespace irods {
 /// =-=-=-=-=-=-=-
-/// @breif function to handle collecting a vote from a resource
+/// @brief function to handle collecting a vote from a resource
 ///        for a given operation and fco
     static
     error request_vote_for_file_object(
@@ -82,7 +82,7 @@ namespace irods {
     } // request_vote_for_file_object
 
 /// =-=-=-=-=-=-=-
-/// @breif function to handle resolving the hier given votes of the
+/// @brief function to handle resolving the hier given votes of the
 ///        root resources for an open operation
     static
     error resolve_hier_for_open_or_write_without_keyword(
@@ -112,7 +112,7 @@ namespace irods {
         } // for i
 
         // =-=-=-=-=-=-=-
-        // grind throught the map and get a vote for each root
+        // grind through the map and get a vote for each root
         // cache that and keep track of the max
         std::string max_hier;
         float       max_vote = -1.0;
@@ -163,7 +163,7 @@ namespace irods {
     } // resolve_hier_for_open_or_write_without_keyword
 
 /// =-=-=-=-=-=-=-
-/// @breif function to handle resolving the hier given the fco and
+/// @brief function to handle resolving the hier given the fco and
 ///        resource keyword
     static
     error resolve_hier_for_open_or_write(
@@ -237,7 +237,7 @@ namespace irods {
     } // resolve_hier_for_open_or_write
 
 /// =-=-=-=-=-=-=-
-/// @breif function to handle resolving the hier given the fco and
+/// @brief function to handle resolving the hier given the fco and
 ///        resource keyword
     static
     error resolve_hier_for_create(
@@ -303,7 +303,7 @@ namespace irods {
     } // resolve_hier_for_create
 
 /// =-=-=-=-=-=-=-
-/// @breif function to handle resolving the hier given the fco and
+/// @brief function to handle resolving the hier given the fco and
 ///        resource keyword for create or open depending on the keyword
     static
     error resolve_hier_for_create_or_open(
@@ -377,7 +377,7 @@ namespace irods {
     } // resolve_hier_for_create_or_open
 
 /// =-=-=-=-=-=-=-
-/// @breif function to query resource for chosen server to which to redirect
+/// @brief function to query resource for chosen server to which to redirect
 ///       for a given operation
     error resolve_resource_hierarchy(
         const std::string&   _oper,
@@ -462,8 +462,8 @@ namespace irods {
             }
 
             // =-=-=-=-=-=-=-
-            // consider force flag - we need to consider the default resc if -f
-            // is specified
+            // consider force flag - we need to consider the default
+            // resc if -f is specified
             char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
             if ( force_flag &&
                     !key_word ) {
