@@ -644,7 +644,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
         *lastElement = '\0';
         return 0;
     }
-    strcpy( inPath, inInPath );
+    snprintf( inPath, sizeof( inPath ), "%s", inInPath );
 #ifdef windows_platform
     iRODSNtPathForwardSlash( inPath );
 #endif
