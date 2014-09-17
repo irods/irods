@@ -20,8 +20,7 @@
 #include "reFuncDefs.hpp"
 
 #ifdef EXTENDED_ICAT
-#define EXTENDED_ICAT_TABLES_1 1 /* have extendedICAT.h 
-set up the set 1 tables */
+#define EXTENDED_ICAT_TABLES_1 1 // have extendedICAT.h set up the set 1 tables
 #include "extendedICAT.hpp"
 #endif
 #include "bulkDataObjPut.hpp"
@@ -2100,7 +2099,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         s = tstr;
         while ( isdigit( *s ) ) {
             s++;
