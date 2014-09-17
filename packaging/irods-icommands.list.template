@@ -3,7 +3,7 @@
 # =-=-=-=-=-=-=-
 %product iRODS - iCommands
 %copyright 2012-2014 by Renaissance Computing Institute, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%vendor Renaissance Computing Institute <info@irods.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System

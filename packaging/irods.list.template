@@ -3,7 +3,7 @@
 # =-=-=-=-=-=-=-
 %product The integrated Rule-Oriented Data System (iRODS)
 %copyright 2005-2014, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%vendor Renaissance Computing Institute <info@irods.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
