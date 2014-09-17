@@ -371,34 +371,33 @@ addAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
 int
 setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP ) {
-    int i, j;
-    char  objType[10];
-    modAVUMetadataInp_t modAVUMetadataInp;
 
-    bzero( &modAVUMetadataInp, sizeof( modAVUMetadataInp ) );
+    char  objType[10];
     if ( strcmp( inObjType, "-1" ) ) {
-        strcpy( objType, inObjType );
+        snprintf( objType, sizeof( objType ), "%s", inObjType );
     }
     else {
-        i = getObjType( rsComm, objName, objType );
-        if ( i < 0 ) {
-            return i;
+        int status = getObjType( rsComm, objName, objType );
+        if ( status < 0 ) {
+            return status;
         }
     }
-    for ( i = 0; i < kVP->len ; i++ ) {
+    for ( int i = 0; i < kVP->len ; i++ ) {
         /* Call rsModAVUMetadata to call chlSetAVUMetadata.
            rsModAVUMetadata connects to the icat-enabled server if the
            local host isn't.
         */
+        modAVUMetadataInp_t modAVUMetadataInp;
+        memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
         modAVUMetadataInp.arg0 = "set";
         modAVUMetadataInp.arg1 = objType;
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
         modAVUMetadataInp.arg5 = NULL;
-        j = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
-        if ( j < 0 ) {
-            return j;
+        int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
+        if ( status < 0 ) {
+            return status;
         }
     }
     return 0;
