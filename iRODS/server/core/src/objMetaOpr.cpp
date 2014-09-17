@@ -420,34 +420,32 @@ getStructFileType( specColl_t *specColl ) {
 int
 removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
                               keyValPair_t *kVP ) {
-    int i, j;
     char  objType[10];
-    modAVUMetadataInp_t modAVUMetadataInp;
-
     if ( strcmp( inObjType, "-1" ) ) {
-        strcpy( objType, inObjType );
+        snprintf( objType, sizeof( objType ), "%s", inObjType );
     }
     else {
-        i = getObjType( rsComm, objName, objType );
-        if ( i < 0 ) {
-            return i;
+        int status = getObjType( rsComm, objName, objType );
+        if ( status < 0 ) {
+            return status;
         }
     }
 
-    modAVUMetadataInp.arg0 = "rm";
-    for ( i = 0; i < kVP->len ; i++ ) {
+    for ( int i = 0; i < kVP->len ; i++ ) {
         /* Call rsModAVUMetadata to call chlAddAVUMetadata.
            rsModAVUMetadata connects to the icat-enabled server if the
            local host isn't.
         */
+        modAVUMetadataInp_t modAVUMetadataInp;
+        modAVUMetadataInp.arg0 = "rm";
         modAVUMetadataInp.arg1 = objType;
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
         modAVUMetadataInp.arg5 = "";
-        j = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
-        if ( j < 0 ) {
-            return j;
+        int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
+        if ( status < 0 ) {
+            return status;
         }
     }
     return 0;
