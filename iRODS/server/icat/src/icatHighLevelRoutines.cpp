@@ -823,18 +823,15 @@ int chlDelRuleExec(
 /// status = chlTest(rsComm, Something->name);
 /// and it tests the chlRegDataObj function.
 int chlTest( rsComm_t *rsComm, char *name ) {
+
     dataObjInfo_t dataObjInfo;
-
-    strcpy( dataObjInfo.objPath, name );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
     dataObjInfo.replNum = 1;
-    strcpy( dataObjInfo.version, "12" );
-    strcpy( dataObjInfo.dataType, "URL" );
+    snprintf( dataObjInfo.version, sizeof( dataObjInfo.version ), "%s", "12" );
+    snprintf( dataObjInfo.dataType, sizeof( dataObjInfo.dataType ), "%s", "URL" );
     dataObjInfo.dataSize = 42;
-
-    strcpy( dataObjInfo.rescName, "resc A" );
-
-    strcpy( dataObjInfo.filePath, "/scratch/slocal/test1" );
-
+    snprintf( dataObjInfo.rescName, sizeof( dataObjInfo.rescName ), "%s", "resc A" );
+    snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", "/scratch/slocal/test1" );
     dataObjInfo.replStatus = 5;
 
     return chlRegDataObj( rsComm, &dataObjInfo );
