@@ -22,41 +22,38 @@
 
 int
 applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, char *objPath ) {
-    int i;
-    ruleExecInfo_t rei2;
-    msParamArray_t msParamArray;
-    int *myInOutStruct;
-
     if ( ReadWriteRuleState != ON_STATE ) {
         return 0;
     }
 
+    ruleExecInfo_t rei2;
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
+    msParamArray_t msParamArray;
     memset( ( char* )&msParamArray, 0, sizeof( msParamArray_t ) );
 
-    rei2.rsComm = rsComm;
     if ( rsComm != NULL ) {
+        rei2.rsComm = rsComm;
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
     rei2.doi = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
-    strcpy( rei2.doi->objPath, objPath );
+    snprintf( rei2.doi->objPath, sizeof( rei2.doi->objPath ), "%s", objPath );
 
-    bzero( &msParamArray, sizeof( msParamArray ) );
-    myInOutStruct = ( int* )malloc( sizeof( int ) );
+    memset( &msParamArray, 0, sizeof( msParamArray ) );
+    int * myInOutStruct = ( int* )malloc( sizeof( int ) );
     *myInOutStruct = dataObjWriteInpBBuf->len;
     addMsParamToArray( &msParamArray, "*WriteBuf", BUF_LEN_MS_T, myInOutStruct,
                        dataObjWriteInpBBuf, 0 );
-    i =  applyRule( "acPostProcForDataObjWrite(*WriteBuf)", &msParamArray, &rei2, NO_SAVE_REI );
+    int status =  applyRule( "acPostProcForDataObjWrite(*WriteBuf)", &msParamArray, &rei2, NO_SAVE_REI );
     free( rei2.doi );
-    if ( i < 0 ) {
+    if ( status < 0 ) {
         if ( rei2.status < 0 ) {
-            i = rei2.status;
+            status = rei2.status;
         }
         rodsLog( LOG_ERROR,
-                 "rsDataObjWrite: acPostProcForDataObjWrite error=%d", i );
+                 "rsDataObjWrite: acPostProcForDataObjWrite error=%d", status );
         clearMsParamArray( &msParamArray, 0 );
-        return i;
+        return status;
     }
     clearMsParamArray( &msParamArray, 0 );
 
