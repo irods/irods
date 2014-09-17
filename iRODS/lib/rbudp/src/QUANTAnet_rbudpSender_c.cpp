@@ -423,16 +423,17 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             fprintf( stderr, "Send file %s\n", fname );
         }
 
-        struct stat filestat;
-        if ( stat( fname, &filestat ) < 0 ) {
-            fprintf( stderr, "stat error.\n" );
+        int fd = open( fname, O_RDONLY );
+        if ( fd < 0 ) {
+            fprintf( stderr, "open file failed.\n" );
             return FAILED;
         }
 
-        long long filesize = filestat.st_size;
+        long long filesize = lseek( fd, 0, SEEK_END );
         if ( verbose > 0 ) {
             fprintf( stderr, "The size of the file is %lld\n", filesize );
         }
+        lseek( fd, 0, SEEK_SET );
 
         long long nfilesize = rb_htonll( filesize );
 
@@ -444,11 +445,6 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             }
         }
 
-        int fd = open( fname, O_RDONLY );
-        if ( fd < 0 ) {
-            fprintf( stderr, "open file failed.\n" );
-            return FAILED;
-        }
         char *buf = ( char * )mmap( NULL, filesize, PROT_READ, MAP_SHARED, fd, 0 );
 
         sendBuf( rbudpSender, buf, filesize, sendRate, packetSize );
