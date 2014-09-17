@@ -1986,7 +1986,7 @@ void termToString( char **p, int *s, int indent, int prec, Node *n, int quote ) 
                 }
             }
             Token t;
-            strcpy( t.text, fn );
+            snprintf( t.text, sizeof( t.text ), "%s", fn );
             if ( isBinaryOp( &t ) ) {
                 int opPrec = getBinaryPrecedence( &t );
                 if ( opPrec < prec ) {
