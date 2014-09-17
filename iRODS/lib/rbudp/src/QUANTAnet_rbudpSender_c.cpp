@@ -25,6 +25,7 @@
 
 #include <stdarg.h>
 #include <string>
+#include <limits>
 
 // If you want to output debug info on terminals when running, put
 //  fprintf(stderr, __VA_ARGS__);
@@ -429,11 +430,29 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             return FAILED;
         }
 
-        long long filesize = lseek( fd, 0, SEEK_END );
+        off_t lseek_return = lseek( fd, 0, SEEK_END );
+        int errsv = errno;
+        if ( ( off_t )-1 == lseek_return ) {
+            fprintf( stderr, "SEEK_END lseek failed with error %d.\n", errsv );
+            close( fd );
+            return FAILED;
+        }
+        if ( lseek_return > std::numeric_limits<long long>::max() ) {
+            fprintf( stderr, "file of size %ju is too large for a long long.\n", ( uintmax_t )lseek_return );
+            close( fd );
+            return FAILED;
+        }
+        long long filesize = ( long long )lseek_return;
         if ( verbose > 0 ) {
             fprintf( stderr, "The size of the file is %lld\n", filesize );
         }
-        lseek( fd, 0, SEEK_SET );
+        lseek_return = lseek( fd, 0, SEEK_SET );
+        errsv = errno;
+        if ( ( off_t )-1 == lseek_return ) {
+            fprintf( stderr, "SEEK_SET lseek failed with error %d.\n", errsv );
+            close( fd );
+            return FAILED;
+        }
 
         long long nfilesize = rb_htonll( filesize );
 
@@ -441,6 +460,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
         if ( writen( tcpSockfd, ( char * )&nfilesize, sizeof( nfilesize ) ) != sizeof( nfilesize ) ) {
             {
                 fprintf( stderr, "tcp send failed.\n" );
+                close( fd );
                 return FAILED;
             }
         }
