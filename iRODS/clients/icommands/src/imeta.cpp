@@ -1556,7 +1556,7 @@ void usageMain() {
         " -z Zonename  work with the specified Zone",
         " -h This help",
         "Commands are:",
-        " add -d|C|R|G|u Name AttName AttValue [AttUnits] (Add new AVU triplet)",
+        " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)",
         " addw -d Name AttName AttValue [AttUnits] (Add new AVU triplet",
         "                                           using Wildcards in Name)",
         " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
