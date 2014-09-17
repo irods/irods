@@ -2584,25 +2584,8 @@ purgeLockFileDir( int chkLockFlag ) {
         }
         snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
                   lockFileDir, myDirent->d_name );
-        status = stat( lockFilePath, &statbuf );
-
-        if ( status != 0 ) {
-            rodsLog( LOG_ERROR,
-                     "purgeLockFileDir: stat error for %s, errno = %d",
-                     lockFilePath, errno );
-            savedStatus = UNIX_FILE_STAT_ERR - errno;
-            boost::system::error_code err;
-            boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
-            continue;
-        }
-        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-            continue;
-        }
         if ( chkLockFlag ) {
             int myFd;
-            if ( ( int )purgeTime < statbuf.st_mtime ) {
-                continue;
-            }
             myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );
             if ( myFd < 0 ) {
                 savedStatus = FILE_OPEN_ERR - errno;
@@ -2617,6 +2600,23 @@ purgeLockFileDir( int chkLockFlag ) {
             if ( myflock.l_type != F_UNLCK ) {
                 continue;
             }
+        }
+        status = stat( lockFilePath, &statbuf );
+
+        if ( status != 0 ) {
+            rodsLog( LOG_ERROR,
+                     "purgeLockFileDir: stat error for %s, errno = %d",
+                     lockFilePath, errno );
+            savedStatus = UNIX_FILE_STAT_ERR - errno;
+            boost::system::error_code err;
+            boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
+            continue;
+        }
+        if ( chkLockFlag && ( int )purgeTime < statbuf.st_mtime ) {
+            continue;
+        }
+        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+            continue;
         }
         boost::system::error_code err;
         boost::filesystem::remove( boost::filesystem::path( lockFilePath ), err );
