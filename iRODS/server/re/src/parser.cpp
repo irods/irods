@@ -1782,7 +1782,7 @@ void patternToString( char **p, int *s, int indent, int prec, Node *n ) {
         if ( getNodeType( n->subtrees[0] ) == TK_TEXT ) {
             char *fn = n->subtrees[0]->text;
             Token t;
-            strcpy( t.text, fn );
+            snprintf( t.text, sizeof( t.text ), "%s", fn );
             if ( isBinaryOp( &t ) ) {
                 int opPrec = getBinaryPrecedence( &t );
                 if ( opPrec < prec ) {
