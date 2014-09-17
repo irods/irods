@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits>
 #ifndef windows_platform
 #include <unistd.h>
 #include <sys/types.h>
@@ -178,7 +179,6 @@ extern "C" {
     osauthGetKey( char **key, int *key_len ) {
 #if defined(OS_AUTH)
         static char fname[] = "osauthGetKey";
-        struct stat stbuf;
         char *keyfile, *keybuf;
         int buflen, key_fd, nb;
 
@@ -191,21 +191,6 @@ extern "C" {
             keyfile = OS_AUTH_KEYFILE;
         }
 
-        if ( stat( keyfile, &stbuf ) < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "%s: couldn't stat %s. errno = %d",
-                     fname, keyfile, errno );
-            return UNABLE_TO_STAT_FILE;
-        }
-        buflen = stbuf.st_size;
-
-        keybuf = ( char* )malloc( buflen );
-        if ( keybuf == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "%s: could not allocate memory for key buffer. errno = %d",
-                     fname, errno );
-            return SYS_MALLOC_ERR;
-        }
         key_fd = open( keyfile, O_RDONLY, 0 );
         if ( key_fd < 0 ) {
             rodsLog( LOG_ERROR,
@@ -213,6 +198,34 @@ extern "C" {
                      fname, keyfile, errno );
             free( keybuf );
             return FILE_OPEN_ERR;
+        }
+        off_t lseek_return = lseek( key_fd, 0, SEEK_END );
+        int errsv = errno;
+        if ( ( off_t )-1 == lseek_return ) {
+            fprintf( stderr, "SEEK_END lseek failed with error %d.\n", errsv );
+            close( key_fd );
+            return UNIX_FILE_LSEEK_ERR;
+        }
+        if ( lseek_return > std::numeric_limits<long long>::max() ) {
+            fprintf( stderr, "file of size %ju is too large for a long long.\n", ( uintmax_t )lseek_return );
+            close( key_fd );
+            return UNIX_FILE_LSEEK_ERR;
+        }
+        buflen = lseek_return;
+        lseek_return = lseek( key_fd, 0, SEEK_SET );
+        errsv = errno;
+        if ( ( off_t )-1 == lseek_return ) {
+            fprintf( stderr, "SEEK_SET lseek failed with error %d.\n", errsv );
+            close( key_fd );
+            return UNIX_FILE_LSEEK_ERR;
+        }
+
+        keybuf = ( char* )malloc( buflen );
+        if ( keybuf == NULL ) {
+            rodsLog( LOG_ERROR,
+                     "%s: could not allocate memory for key buffer. errno = %d",
+                     fname, errno );
+            return SYS_MALLOC_ERR;
         }
         nb = read( key_fd, keybuf, buflen );
         if ( nb < 0 ) {
