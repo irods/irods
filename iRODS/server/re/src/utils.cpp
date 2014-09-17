@@ -680,8 +680,7 @@ ExprType *instantiate( ExprType *type, Hashtable *type_table, int replaceFreeVar
 /** debuggging functions **/
 int writeToTmp( char *fileName, char *text ) {
     char buf[1024];
-    strcpy( buf, "/tmp/" );
-    strcat( buf, fileName );
+    snprintf( buf, sizeof( buf ), "/tmp/%s", fileName );
     FILE *fp = fopen( buf, "a" );
     if ( fp == NULL ) {
         return 0;
