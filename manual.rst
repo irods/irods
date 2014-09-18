@@ -147,14 +147,59 @@ iCAT Server
 
 The irods-icat package installs the iRODS binaries and management scripts.
 
-An additional database plugin is required which installs the dependencies for database connections.  Database connection information about an existing database is expected to be provided to iRODS (see `Database Setup Example`_).  iRODS does not create or manage a database instance itself, just the tables within the database.
+Additionally, an iRODS database plugin is required. iRODS uses this plugin (see `Pluggable Database`_) to communicate with the desired database management system (e.g. Oracle, MySQL, PostgreSQL).
 
-The `setup_irods.sh` script below will prompt for, and then create if necessary, a service account and service group which will own and operate the iRODS server.
+The iRODS installation script (which also configures the iRODS database plugin) requires database connection information about an existing database.  iRODS neither creates nor manages a database instance itself, just the tables within the database. Therefore, the database instance should be created and configured before installing iRODS.
+
+Database Setup
+**********************
+
+iRODS can use many different database configurations.  As an example, a local PostgreSQL database can be configured on Ubuntu 12.04 with the following steps::
+
+ $ (sudo) su - postgres
+ postgres$ psql
+ psql> CREATE USER irods WITH PASSWORD 'testpassword';
+ psql> CREATE DATABASE "ICAT";
+ psql> GRANT ALL PRIVILEGES ON DATABASE "ICAT" TO irods;
+
+Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` console::
+
+ psql> \l
+                                   List of databases
+    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+ -----------+----------+----------+-------------+-------------+-----------------------
+  ICAT      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         +
+            |          |          |             |             | postgres=CTc/postgres+
+            |          |          |             |             | irods=CTc/postgres
+ ...
+ (N rows)
+
+iRODS Setup
+**********************
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
  $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.3.deb
  $ (sudo) apt-get -f install
+
+Once the PostgreSQL database plugin has been installed, the following text will be displayed::
+
+ =======================================================================
+
+ iRODS Postgres Database Plugin installation was successful.
+
+ To configure this plugin, the following prerequisites need to be met:
+  - an existing database user (to be used by the iRODS server)
+  - an existing database (to be used as the iCAT catalog)
+  - permissions for existing user on existing database
+
+ Please run the following setup script:
+   sudo /var/lib/irods/packaging/setup_irods.sh
+
+ =======================================================================
+
+The `setup_irods.sh` script below will prompt for, and then create, if necessary, a service account and service group which will own and operate the iRODS server::
+
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 
 The `setup_irods.sh` script will ask for the following sixteen pieces of information before starting the iRODS server:
@@ -187,48 +232,6 @@ Note: Installing the MySQL database plugin will also require `Installing lib_mys
 Note: When running iRODS on pre-8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available::
 
  irods@hostname:~/ $ iadmin rsq DataObjInCollReCur 
-
-Database Setup Example
-**********************
-
-Once the PostgreSQL database plugin has been installed, the following text will be displayed::
-
- =======================================================================
-
- iRODS Postgres Database Plugin installation was successful.
-
- To configure this plugin, the following prerequisites need to be met:
-  - an existing database user (to be used by the iRODS server)
-  - an existing database (to be used as the iCAT catalog)
-  - permissions for existing user on existing database
-
- Please run the following setup script:
-   sudo /var/lib/irods/packaging/setup_irods.sh
-
- =======================================================================
-
-
-iRODS can use many different database configurations.  As an example, a local
-PostgreSQL database can be configured on Ubuntu 12.04 with the following steps::
-
- $ (sudo) su - postgres
- postgres$ psql
- psql> CREATE USER irods WITH PASSWORD 'testpassword';
- psql> CREATE DATABASE "ICAT";
- psql> GRANT ALL PRIVILEGES ON DATABASE "ICAT" TO irods;
-
-Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` console::
-
- psql> \l
-                                   List of databases
-    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
- -----------+----------+----------+-------------+-------------+-----------------------
-  ICAT      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         +
-            |          |          |             |             | postgres=CTc/postgres+
-            |          |          |             |             | irods=CTc/postgres
- ...
- (N rows)
-
 
 Resource Server
 ---------------
