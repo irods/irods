@@ -1,4 +1,4 @@
-/* base64.c - subroutine to do base64 encoding and decoding. The code came from
+/* base64.cpp - subroutine to do base64 encoding and decoding. The code came from
  * SiFang
  */
 
