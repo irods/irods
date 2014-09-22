@@ -43,12 +43,14 @@
 #include <iostream>
 #include <stdint.h>
 #include <map>
+#include <string>
 
 namespace {
     const char pam_service[] = "irods";
 
     struct AppData {
         bool debug_mode;
+        std::string password;
     };
 
     int
@@ -76,20 +78,13 @@ namespace {
             return PAM_SUCCESS;
         }
 
-        // read the password from stdin
-        std::string password;
-        std::getline( std::cin, password );
-        if ( appdata.debug_mode ) {
-            printf( "null_conv: password bytes: %ju\n", ( uintmax_t )password.size() );
-        }
-
         *resp = static_cast<pam_response*>( malloc( sizeof( **resp ) ) );
         if ( *resp == NULL ) {
             fprintf( stderr, "null_conv: PamAuthCheck: malloc error\n" );
             return PAM_BUF_ERR;
         }
 
-        ( *resp )->resp = strdup( password.c_str() );
+        ( *resp )->resp = strdup( appdata.password.c_str() );
         if ( ( *resp )->resp == NULL ) {
             free( *resp );
             fprintf( stderr, "PamAuthCheck: malloc error\n" );
@@ -112,14 +107,19 @@ int main( int argc, char *argv[] ) {
         return 2;
     }
 
-    const bool debug_mode = argc == 3;
-
     AppData appdata;
-    appdata.debug_mode = debug_mode;
+    appdata.debug_mode = argc == 3;
+
+    // read the password from stdin
+    std::getline( std::cin, appdata.password );
+    if ( appdata.debug_mode ) {
+        printf( "password bytes: %ju\n", ( uintmax_t )appdata.password.size() );
+    }
+
     pam_conv conv = { null_conv, &appdata };
     pam_handle_t *pamh = NULL;
     const int retval_pam_start = pam_start( pam_service, username, &conv, &pamh );
-    if ( debug_mode ) {
+    if ( appdata.debug_mode ) {
         printf( "retval_pam_start: %d\n", retval_pam_start );
     }
 
@@ -130,7 +130,7 @@ int main( int argc, char *argv[] ) {
 
     // check username-password
     const int retval_pam_authenticate = pam_authenticate( pamh, 0 );
-    if ( debug_mode ) {
+    if ( appdata.debug_mode ) {
         printf( "retval_pam_authenticate: %d\n", retval_pam_authenticate );
     }
 
