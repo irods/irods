@@ -30,7 +30,7 @@ extern "C" {
         char md5buffer[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
         char md5digest[RESPONSE_LEN + 2];
         int uid, status, i;
-        char *keybuf;
+        char *keybuf = NULL;
         int key_len;
         MD5_CTX ctx;
 
@@ -179,7 +179,7 @@ extern "C" {
     osauthGetKey( char **key, int *key_len ) {
 #if defined(OS_AUTH)
         static char fname[] = "osauthGetKey";
-        char *keyfile, *keybuf;
+        char *keyfile;
         int buflen, key_fd, nb;
 
         if ( key == NULL || key_len == NULL ) {
@@ -196,7 +196,6 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "%s: couldn't open %s for reading. errno = %d",
                      fname, keyfile, errno );
-            free( keybuf );
             return FILE_OPEN_ERR;
         }
         off_t lseek_return = lseek( key_fd, 0, SEEK_END );
@@ -220,7 +219,7 @@ extern "C" {
             return UNIX_FILE_LSEEK_ERR;
         }
 
-        keybuf = ( char* )malloc( buflen );
+        char * keybuf = ( char* )malloc( buflen );
         if ( keybuf == NULL ) {
             rodsLog( LOG_ERROR,
                      "%s: could not allocate memory for key buffer. errno = %d",
