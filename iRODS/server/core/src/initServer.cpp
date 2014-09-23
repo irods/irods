@@ -25,6 +25,11 @@
 #include "irods_threads.hpp"
 #include "irods_server_properties.hpp"
 
+#include <vector>
+#include <string>
+#include <fstream>
+
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -2470,43 +2475,45 @@ rmProcLog( int pid ) {
 
 int
 readProcLog( int pid, procLog_t *procLog ) {
-    FILE *fptr;
-    char procPath[MAX_NAME_LEN];
-    int status;
 
     if ( procLog == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
+    char procPath[MAX_NAME_LEN];
     snprintf( procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, pid );
 
-    fptr = fopen( procPath, "r" );
+    std::fstream procStream( procPath, std::ios::in );
+    std::vector<std::string> procTokens;
+    while ( !procStream.eof() && procTokens.size() < 7 ) {
+        std::string token;
+        procStream >> token;
+        procTokens.push_back( token );
+    }
 
-    if ( fptr == NULL ) {
+    if( procTokens.size() != 7 ) {
         rodsLog( LOG_ERROR,
-                 "readProcLog: Cannot open input file %s. errno = %d",
-                 procPath, errno );
-        return UNIX_FILE_OPEN_ERR - errno;
+                 "readProcLog: error fscanf file %s. Number of param read = %d",
+                 procPath, procTokens.size() );
+        return UNIX_FILE_READ_ERR;
     }
 
     procLog->pid = pid;
 
-    status = fscanf( fptr, "%s %s %s %s %s %s %u",
-                     procLog->clientName, procLog->clientZone,
-                     procLog->proxyName, procLog->proxyZone,
-                     procLog->progName, procLog->remoteAddr, &procLog->startTime );
+    snprintf( procLog->clientName, sizeof( procLog->clientName ), "%s", procTokens[0].c_str() );
+    snprintf( procLog->clientZone, sizeof( procLog->clientZone ), "%s", procTokens[1].c_str() );
+    snprintf( procLog->proxyName, sizeof( procLog->proxyName ), "%s", procTokens[2].c_str() );
+    snprintf( procLog->proxyZone, sizeof( procLog->proxyZone ), "%s", procTokens[3].c_str() );
+    snprintf( procLog->progName, sizeof( procLog->progName ), "%s", procTokens[4].c_str() );
+    snprintf( procLog->remoteAddr, sizeof( procLog->remoteAddr ), "%s", procTokens[5].c_str() );
+    try {
+        procLog->startTime = boost::lexical_cast<unsigned int>( procTokens[6].c_str() );
+    } catch( ... ) {
+        rodsLog( LOG_ERROR, "Could not convert %s to unsigned int.", procTokens[6].c_str() );
+        return INVALID_LEXICAL_CAST;
+    }
 
-    if ( status == 7 ) { /* 7 parameters */
-        status = 0;
-    }
-    else {
-        rodsLog( LOG_ERROR,
-                 "readProcLog: error fscanf file %s. Number of param read = %d",
-                 procPath, status );
-        status = UNIX_FILE_READ_ERR;
-    }
-    fclose( fptr );
-    return status;
+    return 0;
 }
 
 int
