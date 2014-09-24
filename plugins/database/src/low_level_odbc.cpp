@@ -597,52 +597,47 @@ _cllExecSqlNoResult(
     icatSessionStruct* icss,
     const char*        sql,
     int                option ) {
-    // =-=-=-=-=-=-=-
-    //
-    RETCODE stat = 0;
-    HDBC myHdbc;
-    HSTMT myHstmt;
-    int result  = 0;
-    char *status = 0;
-    SQL_INT_OR_LEN rowCount = 0;
-    int i = 0;
 
-    myHdbc = icss->connectPtr;
     rodsLog( LOG_DEBUG1, sql );
-    stat = SQLAllocStmt( myHdbc, &myHstmt );
+
+    HDBC myHdbc = icss->connectPtr;
+    HSTMT myHstmt;
+    SQLRETURN stat = SQLAllocStmt( myHdbc, &myHstmt );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLAllocStmt failed: %d", stat );
         return -1;
     }
 
-    if ( option == 0 ) {
-        if ( bindTheVariables( myHstmt, sql ) != 0 ) {
+    if ( option == 0 && bindTheVariables( myHstmt, sql ) != 0 ) {
             return -1;
-        }
     }
 
     rodsLogSql( sql );
 
-    stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, SQL_NTS );
+    stat = SQLExecDirect( myHstmt, ( unsigned char * )sql, strlen( sql ) );
+    SQL_INT_OR_LEN rowCount = 0;
     SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
-    status = "UNKNOWN";
-    if ( stat == SQL_SUCCESS ) {
-        status = "SUCCESS";
+    switch ( stat ) {
+        case SQL_SUCCESS:
+        rodsLogSqlResult( "SUCCESS" );
+        break;
+        case SQL_SUCCESS_WITH_INFO:
+        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
+        break;
+        case SQL_NO_DATA_FOUND:
+        rodsLogSqlResult( "NO_DATA" );
+        break;
+        case SQL_ERROR:
+        rodsLogSqlResult( "SQL_ERROR" );
+        break;
+        case SQL_INVALID_HANDLE:
+        rodsLogSqlResult( "HANDLE_ERROR" );
+        break;
+        default:
+        rodsLogSqlResult( "UNKNOWN" );
     }
-    if ( stat == SQL_SUCCESS_WITH_INFO ) {
-        status = "SUCCESS_WITH_INFO";
-    }
-    if ( stat == SQL_NO_DATA_FOUND ) {
-        status = "NO_DATA";
-    }
-    if ( stat == SQL_ERROR ) {
-        status = "SQL_ERROR";
-    }
-    if ( stat == SQL_INVALID_HANDLE ) {
-        status = "HANDLE_ERROR";
-    }
-    rodsLogSqlResult( status );
 
+    int result;
     if ( stat == SQL_SUCCESS ||
             stat == SQL_SUCCESS_WITH_INFO ||
             stat == SQL_NO_DATA_FOUND ) {
@@ -660,8 +655,7 @@ _cllExecSqlNoResult(
                 ! cmp_stmt( sql, "rollback" ) ) {
             /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
             rowCount = 0;
-            i = SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
-            if ( i ) {
+            if ( SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount ) ) {
                 /* error getting rowCount???, just call it no_info */
                 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
             }
