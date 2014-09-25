@@ -384,7 +384,7 @@ int checkHostAccessControl( char *username, char *hostclient, char *groupsname )
                         if ( strcmp( tempArr[0], "all" ) == 0 || strcmp( tempArr[0], username ) == 0 ) {
                             /* check if <client, group, clientIP> match this entry of the control access file.
                              * Get out immediately from this function: client is allowed to proceed. */
-                            if ( ( visitorIP.to_ulong() ^ IPEntry.to_ulong() ) & ~subnetEntry.to_ulong() == 0 ) {
+                            if ( ( ( visitorIP.to_ulong() ^ IPEntry.to_ulong() ) & ~subnetEntry.to_ulong() ) == 0 ) {
                                 fclose( fp );    // JMC cppcheck - resource
                                 return 0;
                             }
