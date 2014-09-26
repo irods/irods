@@ -1983,7 +1983,7 @@ sub configureIrodsUser
                             printError( "\nInstall problem:\n" );
                             printError( "    Cannot create default resource vault path:\n" );
                             foreach $e (@$err) {
-                                while (($k, $v) = each ($e)) {
+                                while (($k, $v) = each (%$e)) {
                                     printError( "        '$k' => '$v'\n" );
                                 }
                             }
@@ -1991,7 +1991,7 @@ sub configureIrodsUser
                             printLog( "\nInstall problem:\n" );
                             printLog( "    Cannot create default resource vault path:\n" );
                             foreach $e (@$err) {
-                                while (($k, $v) = each ($e)) {
+                                while (($k, $v) = each (%$e)) {
                                     printLog( "        '$k' => '$v'\n" );
                                 }
                             }
