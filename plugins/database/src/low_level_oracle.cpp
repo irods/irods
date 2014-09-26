@@ -165,6 +165,8 @@ cllCloseEnv( icatSessionStruct *icss ) {
 
     stat = OCIHandleFree( ( dvoid * ) p_err, OCI_HTYPE_ERROR );
 
+    stat = OCIHandleFree( ( dvoid * ) p_env, OCI_HTYPE_ENV );
+
     icss->connectPtr = 0;
     return 0;
 }
