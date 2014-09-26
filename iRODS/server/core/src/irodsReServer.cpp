@@ -1,6 +1,6 @@
 /*-------------------------------------------------------------------------
  *
- * irodsReServer.c--The irods Rule Execution server
+ * irodsReServer.cpp -- The iRODS Rule Execution server
  *
  *
  *-------------------------------------------------------------------------
