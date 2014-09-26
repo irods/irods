@@ -197,17 +197,6 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
             if ( status != CAT_NO_ROWS_FOUND ) {
                 rodsLog( LOG_ERROR,
                          "reServerMain: getReInfo error. status = %d", status );
-#ifdef ORA_ICAT // JMC - backport 4520
-                /* For Oracle, since we don't disconnect (to avoid a
-                   memory leak in the OCI library), we do want to
-                   disconnect when there are repeated errors so we can
-                   reconnect and possibly recover from an Oracle
-                   outage. */
-                if ( repeatedQueryErrorCount > 3 ) { // JMC - backport 4520
-                    disconnectRcat();
-                    repeatedQueryErrorCount = 0;
-                }
-#endif
             }
             else {   // JMC - backport 4520
                 repeatedQueryErrorCount++;
@@ -257,7 +246,6 @@ reSvrSleep( rsComm_t *rsComm ) {
     int status = disconnRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
-#ifndef ORA_ICAT
         /* For Oracle, we don't disconnect.  This is to avoid a
            memory leak in the OCI library */
         status = disconnectRcat();
@@ -265,7 +253,6 @@ reSvrSleep( rsComm_t *rsComm ) {
             rodsLog( LOG_ERROR,
                      "reSvrSleep: disconnectRcat error. status = %d", status );
         }
-#endif
 #endif
     }
     rodsSleep( RE_SERVER_SLEEP_TIME, 0 );
