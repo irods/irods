@@ -246,8 +246,6 @@ reSvrSleep( rsComm_t *rsComm ) {
     int status = disconnRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        /* For Oracle, we don't disconnect.  This is to avoid a
-           memory leak in the OCI library */
         status = disconnectRcat();
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
