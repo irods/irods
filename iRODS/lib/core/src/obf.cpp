@@ -220,8 +220,8 @@ obfRmPw( int opt ) {
     }
     if ( opt == 0 ) {
         printf( "Remove %s?:", fileName );
-        fgets( inbuf, MAX_NAME_LEN, stdin );
-        if ( strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
+        const char *fgets_ret = fgets( inbuf, MAX_NAME_LEN, stdin );
+        if ( fgets_ret == NULL || strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
             return 0;
         }
     }
