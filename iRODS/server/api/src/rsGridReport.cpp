@@ -198,7 +198,7 @@ int _rsGridReport(
     }
 
     json_object_set( grid, "schema_version", json_string( "1" ) );
-    json_object_set( grid, "grids", grid_arr );
+    json_object_set( grid, "zones", grid_arr );
 
     char* tmp_buf = json_dumps( grid, JSON_INDENT( 4 ) );
 

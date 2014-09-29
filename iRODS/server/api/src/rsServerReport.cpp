@@ -29,6 +29,8 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/ostream_iterator.hpp>
 
+#include <sys/utsname.h>
+
 const std::string HOST_ACCESS_CONTROL_FILE( "HostAccessControl" );
 
 
@@ -990,6 +992,38 @@ irods::error get_database_config(
 #endif
 
 
+
+irods::error get_os_string( 
+    std::string& _str ) {
+
+    struct utsname os_name;
+    memset( &os_name, 0, sizeof( os_name ) );
+    int status = uname( &os_name );
+    if( status != 0 ) {
+        return ERROR( 
+                   status,
+                   "uname failed" );
+    }
+
+    _str.clear();
+    _str += "SYS_NAME=" ;
+    _str += os_name.sysname;
+    _str += ";NODE_NAME="; 
+    _str += os_name.nodename;
+    _str += ";RELEASE="; 
+    _str += os_name.release;
+    _str += ";VERSION="; 
+    _str += os_name.version;
+    _str += ";MACHINE="; 
+    _str += os_name.machine;
+
+    return SUCCESS();
+
+} // get_os_string
+
+
+
+
 int _rsServerReport(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf ) {
@@ -1012,12 +1046,19 @@ int _rsServerReport(
 
 
     json_t* resc_svr = json_object();
-    json_object_set( resc_svr, "commit_id", json_string( "092a4501b5af6c5c4bf21de48c32a6a23a9dd843" ) );
-    json_object_set( resc_svr, "os", json_string( "LinuxAndStuff" ) );
+    json_object_set( resc_svr, "commit_id", json_string( "0000000000000000000000000000000000000000" ) );
+
+    std::string os_string;
+    irods::error ret = get_os_string( os_string );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+    json_object_set( resc_svr, "os", json_string( os_string.c_str() ) );
+
 
 
     json_t* svr_cfg = 0;
-    irods::error ret = convert_server_config( svr_cfg );
+    ret = convert_server_config( svr_cfg );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
