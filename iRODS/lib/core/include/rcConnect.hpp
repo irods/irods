@@ -21,12 +21,6 @@
 #include "dataObjInpOut.hpp"
 #include "irodsGuiProgressCallback.hpp"
 
-#if 0 // XXXX - Opaque thread type
-#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#endif
-
 // =-=-=-=-=-=-=-
 // forard del of thread context
 struct thread_context;
@@ -122,13 +116,7 @@ extern "C" {
         int                        reconnectedSock;
         time_t                     reconnTime;
         volatile int		       exit_flg;
-#if 0 // XXXX - Opaque thread context
-        boost::thread*             reconnThr;
-        boost::mutex*              lock;
-        boost::condition_variable* cond;
-#else
         struct thread_context*     thread_ctx;
-#endif
         procState_t                agentState;
         procState_t                clientState;
         procState_t                reconnThrState;
@@ -184,13 +172,7 @@ extern "C" {
         char *reconnAddr;
         int cookie;
 
-#if 0 // XXXX - Opaque thread context
-        boost::thread*              reconnThr;
-        boost::mutex*               lock;
-        boost::condition_variable*  cond;
-#else
         struct thread_context* thread_ctx;
-#endif
 
         procState_t agentState;
         procState_t clientState;

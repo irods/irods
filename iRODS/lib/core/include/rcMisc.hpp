@@ -13,7 +13,6 @@
 #include "rodsError.hpp"
 #include "objInfo.hpp"
 #include "dataObjCopy.hpp"
-// XXXX - JMC :: #include "execCmd.hpp"
 #include "rodsPath.hpp"
 #include "bulkDataObjPut.hpp"
 

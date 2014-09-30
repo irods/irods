@@ -11,10 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-// XXXX - JMC :: #include <boost/function.hpp>
-
 #include "rods.hpp"
-// XXXX - JMC :: #include "sockComm.hpp"
 #include "packStruct.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"
@@ -49,7 +46,6 @@ namespace irods {
                                         * client */
 
         void ( *clearInStruct )( void* ); // free input struct function
-        // XXXX - JMC :: boost::function<void( void* )> clearInStruct;		//free input struct function
 
     }; // struct apidef_t
 

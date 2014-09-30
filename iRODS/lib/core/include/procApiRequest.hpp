@@ -10,7 +10,6 @@
 #define PROC_API_REQUEST_HPP
 
 #include "rods.hpp"
-// XXXX - JMC :: #include "apiHandler.hpp"
 
 #ifdef __cplusplus
 extern "C" {

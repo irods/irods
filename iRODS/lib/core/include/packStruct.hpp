@@ -8,8 +8,6 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-// XXXX - JMC :: #include <boost/function.hpp>
-
 #include "rodsDef.hpp"
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
@@ -42,7 +40,6 @@ struct */
         char *name;
         char *packInstruct;
         void( *clearInStruct )( void* );
-        // XXXX - JMC :: boost::function<void( void* )> clearInStruct;
     } packInstructArray_t;
 
     typedef struct {
