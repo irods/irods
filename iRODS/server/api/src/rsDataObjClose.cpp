@@ -46,9 +46,7 @@
 
 int
 rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp ) {
-    int status;
-
-    status = irsDataObjClose( rsComm, dataObjCloseInp, NULL );
+    int status = irsDataObjClose( rsComm, dataObjCloseInp, NULL );
 
     return status;
 }
@@ -412,11 +410,18 @@ _rsDataObjClose(
         noChkCopyLenFlag = 1;
     }
 
+    dataObjInfo_t* my_info =  L1desc[l1descInx].dataObjInfo;
     newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
 
+    // since we are not filtering out writes to archive resources, the
+    // archive plugins report UNKNOWN_FILE_SZ as their size since they may
+    // not be able to stat the file.  filter that out and trust the plugin
+    // in this instance
+    if( newSize == UNKNOWN_FILE_SZ && L1desc[l1descInx].dataSize > 0 ) {
+        newSize = L1desc[l1descInx].dataSize;
+    }
     /* check for consistency of the write operation */
-
-    if ( newSize < 0 ) {
+    else if ( newSize < 0 && newSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) newSize;
         rodsLog( LOG_ERROR,
                  "_rsDataObjClose: getSizeInVault error for %s, status = %d",
@@ -518,7 +523,6 @@ _rsDataObjClose(
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
         if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
-
             /* repl to an existing copy */
             snprintf( tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus );
             addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );
