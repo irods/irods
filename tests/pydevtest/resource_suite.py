@@ -374,9 +374,9 @@ class ResourceSuite(ResourceBase):
         output = commands.getstatusoutput( 'cat '+rf )
         print "  restartfile ["+rf+"] contents --> ["+output[1]+"]"
         today = datetime.date.today()
-        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",[" 0 "+today.isoformat(),datafilename]) # will have zero length
-        assertiCmd(s.adminsession,iputcmd,"LIST",datafilename+" was restarted successfully") # confirm the restart
         assertiCmdFail(s.adminsession,"ils -L "+datafilename,"LIST",[" 0 "+today.isoformat(),datafilename]) # length should not be zero
+        assertiCmd(s.adminsession,iputcmd,"LIST",datafilename+" was restarted successfully") # confirm the restart
+        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",[" "+str(os.stat(datafilename).st_size)+" "+today.isoformat(),datafilename]) # length should be size on disk
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
         output = commands.getstatusoutput( 'rm '+rf )
