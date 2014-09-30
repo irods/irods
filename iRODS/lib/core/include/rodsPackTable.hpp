@@ -58,7 +58,7 @@ packConstantArray_t PackConstantTable[] = {
 };
 
 
-packInstructArray_t RodsPackTable[] = {
+const packInstructArray_t RodsPackTable[] = {
     {"STR_PI", STR_PI, NULL},
     {"IRODS_STR_PI", IRODS_STR_PI, NULL},
     {"STR_PTR_PI", STR_PTR_PI, NULL},

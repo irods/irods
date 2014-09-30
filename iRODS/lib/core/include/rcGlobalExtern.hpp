@@ -12,7 +12,7 @@
 #include "irodsGuiProgressCallback.hpp"
 
 extern packConstantArray_t PackConstantTable[];
-extern packInstructArray_t RodsPackTable[];
+extern const packInstructArray_t RodsPackTable[];
 extern int ProcessType;
 extern packType_t packTypeTable[];
 extern int NumOfPackTypes;
