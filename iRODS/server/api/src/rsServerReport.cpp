@@ -926,7 +926,7 @@ irods::error get_config_dir(
             if ( !f_obj ) {
                 return ERROR(
                            SYS_MALLOC_ERR,
-                           "failed to alloate f_obj" );
+                           "failed to allocate f_obj" );
             }
 
             json_object_set( f_obj, "name", json_string( name.c_str() ) );

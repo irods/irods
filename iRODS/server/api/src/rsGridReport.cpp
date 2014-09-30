@@ -172,7 +172,7 @@ int _rsGridReport(
     if ( !grid_obj ) {
         rodsLog(
             LOG_ERROR,
-            "failed to allocat json_object" );
+            "failed to allocate json_object" );
         return SYS_MALLOC_ERR;
     }
 
@@ -183,7 +183,7 @@ int _rsGridReport(
     if ( !grid_arr ) {
         rodsLog(
             LOG_ERROR,
-            "failed to allocat json_array" );
+            "failed to allocate json_array" );
         return SYS_MALLOC_ERR;
     }
 
@@ -193,7 +193,7 @@ int _rsGridReport(
     if ( !grid ) {
         rodsLog(
             LOG_ERROR,
-            "failed to allocat json_object" );
+            "failed to allocate json_object" );
         return SYS_MALLOC_ERR;
     }
 
