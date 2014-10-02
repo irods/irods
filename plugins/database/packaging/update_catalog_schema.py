@@ -72,17 +72,24 @@ def get_current_schema_version(cfg):
         # use default value
         current_schema_version = 1
     else:
-        # postgres as default
-        resultline = 2
-        if (dbtype == "mysql"):
-            resultline = 1
-        if (dbtype == "oracle"):
-            resultline = 12
-        current_schema_version = int(
-            result[1].decode('utf-8').split("\n")[resultline].strip())
+        sql_output_lines = result[1].decode('utf-8').split('\n')
+        for i, line in enumerate(sql_output_lines):
+            if 'option_value' in line.lower():
+                result_line = i+1
+                # oracle and postgres have line of "------" seperating column title from entry
+                if '-' in sql_output_lines[result_line]:
+                    result_line += 1
+                break
+        else:
+            raise RuntimeError('get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
+
+        try:
+            current_schema_version = int(sql_output_lines[result_line])
+        except ValueError:
+            print('Failed to convert [' + sql_output_lines[result_line] + '] to an int')
+            raise RuntimeError('get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
     if DEBUG:
         print("current_schema_version: %d" % current_schema_version)
-
 
     return current_schema_version
 
