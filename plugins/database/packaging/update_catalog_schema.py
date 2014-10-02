@@ -76,7 +76,7 @@ def get_current_schema_version(cfg):
         for i, line in enumerate(sql_output_lines):
             if 'option_value' in line.lower():
                 result_line = i+1
-                # oracle and postgres have line of "------" seperating column title from entry
+                # oracle and postgres have line of "------" separating column title from entry
                 if '-' in sql_output_lines[result_line]:
                     result_line += 1
                 break
