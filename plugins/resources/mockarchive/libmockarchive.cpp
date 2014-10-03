@@ -268,7 +268,7 @@ extern "C" {
             // return an error if necessary
             result.code( status );
             int err_status = UNIX_FILE_MKDIR_ERR - errno;
-            if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Mkdir error for \"%s\", errno = \"%s\", status = %d.",
+            if ( ( result = ASSERT_ERROR( status >= 0, err_status, "mkdir error for [%s], errno = [%s], status = %d.",
                                           fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
                 result.code( status );
             }
@@ -276,6 +276,26 @@ extern "C" {
         return result;
 
     } // mock_archive_mkdir_plugin
+
+
+
+    irods::error mock_archive_stat_plugin(
+        irods::resource_plugin_context& ,
+        struct stat*                    _statbuf ) {
+        irods::error result = SUCCESS();
+        // =-=-=-=-=-=-=-
+        // manufacture a stat as we do not have a
+        // microservice to perform this duty
+        _statbuf->st_mode  = S_IFREG;
+        _statbuf->st_nlink = 1;
+        _statbuf->st_uid   = getuid();
+        _statbuf->st_gid   = getgid();
+        _statbuf->st_atime = _statbuf->st_mtime = _statbuf->st_ctime = time( 0 );
+        _statbuf->st_size  = UNKNOWN_FILE_SZ;
+        return SUCCESS();
+
+    } // mock_archive_stat_plugin
+
 
 
     // =-=-=-=-=-=-=-
@@ -499,6 +519,15 @@ extern "C" {
                 rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
                          fco->physical_path().c_str(), path.c_str() );
 
+                // =-=-=-=-=-=-=-
+                // make the directories in the path to the new file
+                std::string new_path = path;
+                std::size_t last_slash = new_path.find_last_of( '/' );
+                new_path.erase( last_slash );
+                ret = mock_archive_mkdir_r( new_path.c_str(), 0750 );
+                if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
+
+                }
                 // =-=-=-=-=-=-=-
                 // make the copy to the 'archive'
                 int status = mockArchiveCopyPlugin( fco->mode(), _cache_file_name, path.c_str() );
@@ -753,6 +782,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,         "mock_archive_rebalance" );
         resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mock_archive_mkdir_plugin" );
         resc->add_operation( irods::RESOURCE_OP_RENAME,            "mock_archive_rename_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,              "mock_archive_stat_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
