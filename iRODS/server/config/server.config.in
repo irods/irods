@@ -10,28 +10,28 @@
 #   specified, no irodsXmsgServer will be started.
 # The same configuration needs to be applied to all servers.
 #
-# For RCAT-Enabled hosts:
+# For iCAT-Enabled hosts:
 # DBPassword - the database password
 # DBUsername - the database admin username
-#
+
 # More keywords will be supported as we move forward.
 icatHost TEMPLATE_ICAT_HOSTNAME
 # slaveIcatHost slaveicat.example.org
 # reHost ruleenginehost.example.org
 # xmsgHost xmsghost.example.org
 DBUsername TEMPLATE_DB_USERNAME
-#
+
 # The following keywords are needed for Rule Engine Initialization.
-# reRuleSet holds a comma-separated list of iRODS Rule Base (.irb) files 
-#    to be used by the Rule Engine
-# reFuncMapSet  holds a comma-separated list of Function Name Mapping (.fnm) 
-#    files to be used by the Rule Engine
-# reVariableMapSet  holds a comma-separated list of Data Variable Mapping (.dvm)
-#    files to be used by the Rule Engine
-reRuleSet   core
-reFuncMapSet  core
+# reRuleSet holds a comma-separated list of iRODS Rule Base (.re) files
+#    to be used by the Rule Engine.
+# reFuncMapSet holds a comma-separated list of Function Name Mapping (.fnm) 
+#    files to be used by the Rule Engine.
+# reVariableMapSet holds a comma-separated list of Data Variable Mapping (.dvm)
+#    files to be used by the Rule Engine.
+reRuleSet         core
+reFuncMapSet      core
 reVariableMapSet  core
-#
+
 # For Kerberos, define the principal name in the server-side Keytab file
 # For example, for host krbhost.example.org in the Kerberos domain EXAMPLE.ORG:
 # KerberosName irods/krbhost.example.org@EXAMPLE.ORG
