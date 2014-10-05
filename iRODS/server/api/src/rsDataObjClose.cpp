@@ -410,7 +410,6 @@ _rsDataObjClose(
         noChkCopyLenFlag = 1;
     }
 
-    dataObjInfo_t* my_info =  L1desc[l1descInx].dataObjInfo;
     newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
 
     // since we are not filtering out writes to archive resources, the
