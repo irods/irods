@@ -1182,7 +1182,14 @@ extern "C" {
         // and will need refactored later with an improved object model
         std::string arch_hier;
         arch_check_parser.str( arch_hier );
+
+        irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast< 
+                                           irods::data_object >( f_ptr );  
         f_ptr->resc_hier( arch_hier );
+        add_key_val( 
+            d_ptr, 
+            NO_CHK_COPY_LEN_KW, 
+            "prefer_archive_policy" );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then we do a wholesale stage, not an update
@@ -1195,6 +1202,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // restore repl requested
         f_ptr->repl_requested( repl_requested );
+        remove_key_val( 
+            d_ptr,
+            NO_CHK_COPY_LEN_KW );
 
         // =-=-=-=-=-=-=-
         // get the parent name

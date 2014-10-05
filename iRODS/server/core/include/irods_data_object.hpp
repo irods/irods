@@ -11,6 +11,12 @@
 
 
 namespace irods {
+
+/// =-=-=-=-=-=-=-
+/// @brief typedef for managed data object pointer
+    class data_object;
+    typedef boost::shared_ptr< data_object > data_object_ptr;
+
 // =-=-=-=-=-=-=-
 // base class for all object types
     class data_object : public first_class_object {
@@ -86,6 +92,15 @@ namespace irods {
             replKeyVal( &_cond_input, &cond_input_ );
         }
 
+        friend void add_key_val( 
+            data_object_ptr&   _do,
+            const std::string& _k,
+            const std::string& _v );
+
+        friend void remove_key_val( 
+            data_object_ptr&   _do,
+            const std::string& _k );
+
     protected:
         // =-=-=-=-=-=-=-
         // Attributes
@@ -99,10 +114,6 @@ namespace irods {
         keyValPair_t cond_input_;		// input key-value pairs
 
     }; // class data_object
-
-/// =-=-=-=-=-=-=-
-/// @brief typedef for managed data object pointer
-    typedef boost::shared_ptr< data_object > data_object_ptr;
 
 }; // namespace irods
 
