@@ -463,6 +463,8 @@ extern "C" {
                             bzero( &data_obj_inp, sizeof( data_obj_inp ) );
                             rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
                             data_obj_inp.createMode = obj->mode();
+
+                            replKeyVal( (keyValPair_t*)&obj->cond_input(), &data_obj_inp.condInput );
                             addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
                             addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
                             addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
@@ -1183,9 +1185,9 @@ extern "C" {
         std::string arch_hier;
         arch_check_parser.str( arch_hier );
 
+        f_ptr->resc_hier( arch_hier );
         irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast< 
                                            irods::data_object >( f_ptr );  
-        f_ptr->resc_hier( arch_hier );
         add_key_val( 
             d_ptr, 
             NO_CHK_COPY_LEN_KW, 
