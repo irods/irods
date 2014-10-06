@@ -86,8 +86,7 @@ remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     }
 
     status = rcExecMyRule( rodsServerHost->conn, execMyRuleInp, outParamArray );
-    
-    rcDisconnect( rodsServerHost->conn );
+
     return status;
 }
 
