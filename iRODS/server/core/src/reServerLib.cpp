@@ -421,12 +421,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
             if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
                 status = postForkExecProc( rsComm,
                                            &reExec->reExecProc[thrInx] );
-                if ( status >= 0 ) {
-                    exit( 0 );
-                }
-                else {
-                    exit( 1 );
-                }
+                cleanupAndExit ( status );
 #endif
             }
             else {
