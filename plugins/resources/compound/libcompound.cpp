@@ -464,7 +464,11 @@ extern "C" {
                             rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
                             data_obj_inp.createMode = obj->mode();
 
-                            replKeyVal( (keyValPair_t*)&obj->cond_input(), &data_obj_inp.condInput );
+                            char* no_chk = getValByKey( (keyValPair_t*)&obj->cond_input(), NO_CHK_COPY_LEN_KW );
+                            if( no_chk ) {
+                                addKeyVal( &data_obj_inp.condInput, NO_CHK_COPY_LEN_KW, no_chk );
+                            }
+
                             addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
                             addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
                             addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
