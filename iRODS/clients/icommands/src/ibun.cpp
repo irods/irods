@@ -141,7 +141,7 @@ usage() {
         "Again, if the -D flag is not used, the bundling will be done using tar.",
         " ",
         "The -b option when used with the -x option, specifies bulk registration",
-        "which does up to 50 rgistrations at a time to reduce overhead.",
+        "which does up to 50 registrations at a time to reduce overhead.",
         " ",
         "Options are:",
         " -b  bulk registration when used with -x to reduce overhead",
