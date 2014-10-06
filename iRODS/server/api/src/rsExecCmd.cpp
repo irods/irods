@@ -364,9 +364,9 @@ execCmd( execCmd_t *execCmdInp, int stdOutFd, int stdErrFd ) {
     char *av[LONG_NAME_LEN];
     int status;
 
-    rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
 
     snprintf( cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd );
+    rodsLog( LOG_NOTICE, "execCmd:%s argv:%s", cmdPath, execCmdInp->cmdArgv );
     initCmdArg( av, execCmdInp->cmdArgv, cmdPath );
 
     closeAllL1desc( ThisComm );
