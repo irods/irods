@@ -21,6 +21,9 @@
 
 #include "rcMisc.hpp"
 
+#include <vector>
+#include <string>
+
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
@@ -161,11 +164,7 @@ int cmlGetOneRowFromSqlBV( char *sql,
                            char *cVal[],
                            int cValSize[],
                            int numOfCols,
-                           const char *bindVar1,
-                           const char *bindVar2,
-                           const char *bindVar3,
-                           const char *bindVar4,
-                           const char *bindVar5,
+                           std::vector<std::string> &bindVars,
                            icatSessionStruct *icss ) {
     int stmtNum;
     char updatedSql[MAX_SQL_SIZE + 1];
@@ -185,8 +184,7 @@ int cmlGetOneRowFromSqlBV( char *sql,
     }
 #endif
     int status = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
-                                         bindVar1, bindVar2, bindVar3, bindVar4,
-                                         bindVar5, 0 );
+                                         bindVars );
     if ( status != 0 ) {
         if ( status <= CAT_ENV_ERR ) {
             return status;    /* already an iRODS error code */
@@ -235,8 +233,9 @@ int cmlGetOneRowFromSql( char *sql,
     }
 #endif
 
+    std::vector<std::string> emptyBindVars;
     i = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
-                                0, 0, 0, 0, 0, 0 );
+                                emptyBindVars );
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
@@ -267,8 +266,7 @@ int cmlGetOneRowFromSql( char *sql,
 int cmlGetOneRowFromSqlV2( char *sql,
                            char *cVal[],
                            int maxCols,
-                           char *bindVar1,
-                           char *bindVar2,
+                           std::vector<std::string> &bindVars,
                            icatSessionStruct *icss ) {
     int i, j, stmtNum;
     char updatedSql[MAX_SQL_SIZE + 1];
@@ -289,7 +287,7 @@ int cmlGetOneRowFromSqlV2( char *sql,
 #endif
 
     i = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
-                                bindVar1, bindVar2, 0, 0, 0, 0 );
+                                bindVars );
 
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
@@ -378,15 +376,12 @@ int cmlGetFirstRowFromSql( char *sql,
                            int *statement,
                            int skipCount,
                            icatSessionStruct *icss ) {
-    int i, stmtNum;
-#ifdef ORA_ICAT
-    int j;
-#endif
-    *statement = 0;
 
-    i = cllExecSqlWithResult( icss, &stmtNum, sql );
+    int stmtNum;
+    int i = cllExecSqlWithResult( icss, statement, sql );
 
     if ( i != 0 ) {
+        *statement = 0;
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
         }
@@ -395,63 +390,59 @@ int cmlGetFirstRowFromSql( char *sql,
 
 #ifdef ORA_ICAT
     if ( skipCount > 0 ) {
-        for ( j = 0; j < skipCount; j++ ) {
-            i = cllGetRow( icss, stmtNum );
+        for ( int j = 0; j < skipCount; j++ ) {
+            i = cllGetRow( icss, *statement );
             if ( i != 0 )  {
-                cllFreeStatement( icss, stmtNum );
+                cllFreeStatement( icss, *statement );
+                *statement = 0;
                 return CAT_GET_ROW_ERR;
             }
             if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
-                i = cllFreeStatement( icss, stmtNum );
+                i = cllFreeStatement( icss, *statement );
+                *statement = 0;
                 return CAT_NO_ROWS_FOUND;
             }
         }
     }
 #endif
 
-    i = cllGetRow( icss, stmtNum );
+    i = cllGetRow( icss, *statement );
     if ( i != 0 )  {
-        cllFreeStatement( icss, stmtNum );
+        cllFreeStatement( icss, *statement );
+        *statement = 0;
         return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
-        i = cllFreeStatement( icss, stmtNum );
+        i = cllFreeStatement( icss, *statement );
+        *statement = 0;
         return CAT_NO_ROWS_FOUND;
     }
 
-    *statement = stmtNum;
     return 0;
 }
 
 /* with bind-variables */
 int cmlGetFirstRowFromSqlBV( char *sql,
-                             char *arg1, char *arg2, char *arg3, char *arg4,
+                             std::vector<std::string> &bindVars,
                              int *statement,
                              icatSessionStruct *icss ) {
-    int i, stmtNum;
-
-    *statement = 0;
-
-    i = cllExecSqlWithResultBV( icss, &stmtNum, sql,
-                                arg1, arg2, arg3, arg4, 0, 0 );
-
-    if ( i != 0 ) {
-        if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+    if ( int status = cllExecSqlWithResultBV( icss, statement, sql, bindVars ) ) {
+        *statement = 0;
+        if ( status <= CAT_ENV_ERR ) {
+            return status;    /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
-    i = cllGetRow( icss, stmtNum );
-    if ( i != 0 )  {
-        cllFreeStatement( icss, stmtNum );
+    if ( cllGetRow( icss, *statement ) ) {
+        cllFreeStatement( icss, *statement );
+        *statement = 0;
         return CAT_GET_ROW_ERR;
     }
-    if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
-        i = cllFreeStatement( icss, stmtNum );
+    if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
+        cllFreeStatement( icss, *statement );
+        *statement = 0;
         return CAT_NO_ROWS_FOUND;
     }
-
-    *statement = stmtNum;
     return 0;
 }
 
@@ -474,9 +465,7 @@ int cmlGetNextRowFromStatement( int stmtNum,
 int cmlGetStringValueFromSql( char *sql,
                               char *cVal,
                               int cValSize,
-                              const char *bindVar1,
-                              const char *bindVar2,
-                              const char *bindVar3,
+                              std::vector<std::string> &bindVars,
                               icatSessionStruct *icss ) {
     int status;
     char *cVals[2];
@@ -486,7 +475,7 @@ int cmlGetStringValueFromSql( char *sql,
     iVals[0] = cValSize;
 
     status = cmlGetOneRowFromSqlBV( sql, cVals, iVals, 1,
-                                    bindVar1, bindVar2, bindVar3, 0, 0, icss );
+                                    bindVars, icss );
     if ( status == 1 ) {
         return 0;
     }
@@ -500,14 +489,11 @@ int cmlGetStringValuesFromSql( char *sql,
                                char *cVal[],
                                int cValSize[],
                                int numberOfStringsToGet,
-                               char *bindVar1,
-                               char *bindVar2,
-                               char *bindVar3,
+                               std::vector<std::string> &bindVars,
                                icatSessionStruct *icss ) {
-    int i;
 
-    i = cmlGetOneRowFromSqlBV( sql, cVal, cValSize, numberOfStringsToGet,
-                               bindVar1, bindVar2, bindVar3, 0, 0, icss );
+    int i = cmlGetOneRowFromSqlBV( sql, cVal, cValSize, numberOfStringsToGet,
+                               bindVars, icss );
     if ( i == numberOfStringsToGet ) {
         return 0;
     }
@@ -521,9 +507,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
                                        char *returnedStrings,
                                        int maxStringLen,
                                        int maxNumberOfStringsToGet,
-                                       char *bindVar1,
-                                       char *bindVar2,
-                                       char *bindVar3,
+                                       std::vector<std::string> &bindVars,
                                        icatSessionStruct *icss ) {
 
     int i, j, stmtNum;
@@ -534,8 +518,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
         return CAT_INVALID_ARGUMENT;
     }
 
-    i = cllExecSqlWithResultBV( icss, &stmtNum, sql,
-                                bindVar1, bindVar2, bindVar3, 0, 0, 0 );
+    i = cllExecSqlWithResultBV( icss, &stmtNum, sql, bindVars );
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
             return( i );    /* already an iRODS error code */
@@ -577,11 +560,7 @@ int cmlGetMultiRowStringValuesFromSql( char *sql,
 
 int cmlGetIntegerValueFromSql( char *sql,
                                rodsLong_t *iVal,
-                               const char *bindVar1,
-                               const char *bindVar2,
-                               const char *bindVar3,
-                               const char *bindVar4,
-                               const char *bindVar5,
+                               std::vector<std::string> &bindVars,
                                icatSessionStruct *icss ) {
     int i, cValSize;
     char *cVal[2];
@@ -591,8 +570,7 @@ int cmlGetIntegerValueFromSql( char *sql,
     cValSize = MAX_INTEGER_SIZE;
 
     i = cmlGetOneRowFromSqlBV( sql, cVal, &cValSize, 1,
-                               bindVar1, bindVar2, bindVar3, bindVar4,
-                               bindVar5, icss );
+                               bindVars, icss );
     if ( i == 1 ) {
         if ( *cVal[0] == '\0' ) {
             return CAT_NO_ROWS_FOUND;
@@ -633,9 +611,12 @@ int cmlCheckNameToken( char *nameSpace, char *tokenName, icatSessionStruct *icss
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckNameToken SQL 1 " );
     }
+    std::vector<std::string> bindVars;
+    bindVars.push_back( nameSpace );
+    bindVars.push_back( tokenName );
     status = cmlGetIntegerValueFromSql(
                  "select token_id from  R_TOKN_MAIN where token_namespace=? and token_name=?",
-                 &iVal, nameSpace, tokenName, 0, 0, 0, icss );
+                 &iVal, bindVars, icss );
     return status;
 
 }
@@ -697,7 +678,8 @@ cmlGetNextSeqVal( icatSessionStruct *icss ) {
     snprintf( sql, STR_LEN, "select %s", nextStr );
 #endif
 
-    status = cmlGetIntegerValueFromSql( sql, &iVal, 0, 0, 0, 0, 0, icss );
+    std::vector<std::string> emptyBindVars;
+    status = cmlGetIntegerValueFromSql( sql, &iVal, emptyBindVars, icss );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetNextSeqVal cmlGetIntegerValueFromSql failure %d", status );
@@ -731,7 +713,8 @@ cmlGetCurrentSeqVal( icatSessionStruct *icss ) {
     snprintf( sql, STR_LEN, "select %s", nextStr );
 #endif
 
-    status = cmlGetIntegerValueFromSql( sql, &iVal, 0, 0, 0, 0, 0, icss );
+    std::vector<std::string> emptyBindVars;
+    status = cmlGetIntegerValueFromSql( sql, &iVal, emptyBindVars, icss );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetCurrentSeqVal cmlGetIntegerValueFromSql failure %d",
@@ -762,7 +745,8 @@ cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss ) {
     snprintf( sql, STR_LEN, "select %s", nextStr );
 #endif
 
-    status = cmlGetStringValueFromSql( sql, seqStr, maxSeqStrLen, 0, 0, 0, icss );
+    std::vector<std::string> emptyBindVars;
+    status = cmlGetStringValueFromSql( sql, seqStr, maxSeqStrLen, emptyBindVars, icss );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "cmlGetNextSeqStr cmlGetStringValueFromSql failure %d", status );
@@ -826,9 +810,14 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
         rodsLog( LOG_SQL, "cmlCheckResc SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( rescName );
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
+    bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
                  "select resc_id from R_RESC_MAIN RM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where RM.resc_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = RM.resc_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, rescName, userName, userZone, accessLevel, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status ) {
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
@@ -837,9 +826,11 @@ cmlCheckResc( char *rescName, char *userName, char *userZone, char *accessLevel,
             rodsLog( LOG_SQL, "cmlCheckResc SQL 2 " );
         }
 
+        bindVars.clear();
+        bindVars.push_back( rescName );
         status = cmlGetIntegerValueFromSql(
                      "select resc_id from R_RESC_MAIN where resc_name=?",
-                     &iVal, rescName, 0, 0, 0, 0, icss );
+                     &iVal, bindVars, icss );
         if ( status ) {
             return CAT_UNKNOWN_RESOURCE;
         }
@@ -865,9 +856,14 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
         rodsLog( LOG_SQL, "cmlCheckDir SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( dirName );
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
+    bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, dirName, userName, userZone, accessLevel, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status ) {
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
@@ -876,9 +872,11 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
             rodsLog( LOG_SQL, "cmlCheckDir SQL 2 " );
         }
 
+        bindVars.clear();
+        bindVars.push_back( dirName );
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_name=?",
-                     &iVal, dirName, 0, 0, 0, 0, icss );
+                     &iVal, bindVars, icss );
         if ( status ) {
             return CAT_UNKNOWN_COLLECTION;
         }
@@ -919,13 +917,23 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 " );
         }
-        status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id", cVal, cValSize, 2, dirName, ticketStr, 0, 0, 0, icss );
+        std::vector<std::string> bindVars;
+        bindVars.push_back( dirName );
+        bindVars.push_back( ticketStr );
+        status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id",
+                cVal, cValSize, 2, bindVars, icss );
     }
     else {
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 " );
         }
-        status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss );
+        std::vector<std::string> bindVars;
+        bindVars.push_back( dirName );
+        bindVars.push_back( userName );
+        bindVars.push_back( userZone );
+        bindVars.push_back( accessLevel );
+        status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+                cVal, cValSize, 2, bindVars, icss );
     }
     if ( status == 2 ) {
         if ( *cVal[0] == '\0' ) {
@@ -946,9 +954,11 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
             rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 3 " );
         }
 
+        std::vector<std::string> bindVars;
+        bindVars.push_back( dirName );
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_name=?",
-                     &iVal, dirName, 0, 0, 0, 0, icss );
+                     &iVal, bindVars, icss );
         if ( status ) {
             return CAT_UNKNOWN_COLLECTION;
         }
@@ -986,9 +996,14 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
+    bindVars.push_back( dirId );
+    bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
                  "select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, userName, userZone, dirId, accessLevel, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status ) {
         /* There was an error, so do another sql to see which
            of the two likely cases is problem. */
@@ -997,9 +1012,11 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
             rodsLog( LOG_SQL, "cmlCheckDirId S-Q-L 2 " );
         }
 
+        std::vector<std::string> bindVars;
+        bindVars.push_back( dirId );
         status = cmlGetIntegerValueFromSql(
                      "select coll_id from R_COLL_MAIN where coll_id=?",
-                     &iVal, dirId, 0, 0, 0, 0, icss );
+                     &iVal, bindVars, icss );
         if ( status ) {
             return CAT_UNKNOWN_COLLECTION;
         }
@@ -1022,9 +1039,13 @@ cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckDirOwn SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( dirName );
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=? and coll_owner_zone=?",
-                 &iVal, dirName, userName, userZone, 0, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status < 0 ) {
         return status;
     }
@@ -1048,10 +1069,15 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
         rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( dataName );
+    bindVars.push_back( dirName );
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
+    bindVars.push_back( accessLevel );
     status = cmlGetIntegerValueFromSql(
                  "select data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                 &iVal, dataName, dirName, userName, userZone,
-                 accessLevel, icss );
+                 &iVal, bindVars, icss );
 
     if ( status ) {
         /* There was an error, so do another sql to see which
@@ -1060,9 +1086,12 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
             rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 2 " );
         }
 
+        bindVars.clear();
+        bindVars.push_back( dataName );
+        bindVars.push_back( dirName );
         status = cmlGetIntegerValueFromSql(
                      "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-                     &iVal, dataName, dirName, 0, 0, 0, icss );
+                     &iVal, bindVars, icss );
         if ( status ) {
             return CAT_UNKNOWN_FILE;
         }
@@ -1086,9 +1115,11 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 1 " );
     }
+    std::vector<std::string> bindVars;
+    bindVars.push_back( dirName );
     status = cmlGetIntegerValueFromSql(
                  "select coll_id from R_COLL_MAIN where coll_name=?",
-                 &iVal, dirName, 0, 0, 0, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status < 0 ) {
         return status;
     }
@@ -1098,9 +1129,14 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckDataObjOwn SQL 2 " );
     }
+    bindVars.clear();
+    bindVars.push_back( dataName );
+    bindVars.push_back( collIdStr );
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
     status = cmlGetIntegerValueFromSql(
                  "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and data_owner_name=? and data_owner_zone=?",
-                 &iVal, dataName, collIdStr, userName, userZone, 0, icss );
+                 &iVal, bindVars, icss );
 
     if ( status ) {
         return status;
@@ -1119,9 +1155,12 @@ int cmlCheckUserInGroup( char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
     status = cmlGetStringValueFromSql(
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
-                 sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
+                 sVal, MAX_NAME_LEN, bindVars, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         return CAT_INVALID_USER;
     }
@@ -1133,9 +1172,12 @@ int cmlCheckUserInGroup( char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckUserInGroup SQL 2 " );
     }
 
+    bindVars.clear();
+    bindVars.push_back( sVal );
+    bindVars.push_back( groupName );
     status = cmlGetIntegerValueFromSql(
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
-                 &iVal, sVal,  groupName, 0, 0, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status ) {
         return status;
     }
@@ -1159,9 +1201,11 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 1" );
     }
+    std::vector<std::string> bindVars;
+    bindVars.push_back( ticketId );
     status = cmlGetFirstRowFromSqlBV(
                  "select host from R_TICKET_ALLOWED_HOSTS where ticket_id=?",
-                 ticketId, "", "", "",  &stmtNum, icss );
+                 bindVars, &stmtNum, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         hostOK = 1;
     }
@@ -1190,9 +1234,11 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 2" );
     }
+    bindVars.clear();
+    bindVars.push_back( ticketId );
     status = cmlGetFirstRowFromSqlBV(
                  "select user_name from R_TICKET_ALLOWED_USERS where ticket_id=?",
-                 ticketId, "", "", "",  &stmtNum, icss );
+                 bindVars,  &stmtNum, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         userOK = 1;
     }
@@ -1231,9 +1277,11 @@ cmlCheckTicketRestrictions( char *ticketId, char *ticketHost,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckTicketRestrictions SQL 3" );
     }
+    bindVars.clear();
+    bindVars.push_back( ticketId );
     status = cmlGetFirstRowFromSqlBV(
                  "select group_name from R_TICKET_ALLOWED_GROUPS where ticket_id=?",
-                 ticketId, "", "", "",  &stmtNum, icss );
+                 bindVars, &stmtNum, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         groupOK = 1;
     }
@@ -1311,10 +1359,13 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         cVal[6] = writeFileLimit;
         cVal[7] = writeByteCount;
         cVal[8] = writeByteLimit;
+        std::vector<std::string> bindVars;
+        bindVars.push_back( ticketStr );
+        bindVars.push_back( dataId );
+        bindVars.push_back( dataId );
         status = cmlGetStringValuesFromSql(
                      "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                     cVal, iVal, 9,
-                     ticketStr, dataId, dataId, icss );
+                     cVal, iVal, 9, bindVars, icss );
 
     }
     else {
@@ -1322,10 +1373,13 @@ int checkObjIdByTicket( char *dataId, char *accessLevel,
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "checkObjIdByTicket SQL 2 " );
         }
+        std::vector<std::string> bindVars;
+        bindVars.push_back( ticketStr );
+        bindVars.push_back( dataId );
+        bindVars.push_back( dataId );
         status = cmlGetStringValuesFromSql(
                      "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                     cVal, iVal, 5,
-                     ticketStr, dataId, dataId, icss );
+                     cVal, iVal, 5, bindVars, icss );
     }
 
     if ( status != 0 ) {
@@ -1465,10 +1519,13 @@ cmlTicketUpdateWriteBytes( char *ticketStr,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 1 " );
     }
+    std::vector<std::string> bindVars;
+    bindVars.push_back( ticketStr );
+    bindVars.push_back( objectId );
+    bindVars.push_back( objectId );
     status = cmlGetStringValuesFromSql(
                  "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                 cVal, iVal, 3,
-                 ticketStr, objectId, objectId, icss );
+                 cVal, iVal, 3, bindVars, icss );
     if ( status != 0 ) {
         return status;
     }
@@ -1524,14 +1581,15 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "cmlCheckDataObjId SQL 1 " );
         }
+        std::vector<std::string> bindVars;
+        bindVars.push_back( dataId );
+        bindVars.push_back( userName );
+        bindVars.push_back( zoneName );
+        bindVars.push_back( accessLevel );
         status = cmlGetIntegerValueFromSql(
                      "select object_id from R_OBJT_ACCESS OA, R_DATA_MAIN DM, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
                      &iVal,
-                     dataId,
-                     userName,
-                     zoneName,
-                     accessLevel,
-                     0,
+                     bindVars,
                      icss );
         if ( iVal == 0 ) {
             return CAT_NO_ACCESS_PERMISSION;
@@ -1558,9 +1616,12 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 " );
     }
 
+    std::vector<std::string> bindVars;
+    bindVars.push_back( userName );
+    bindVars.push_back( userZone );
     status = cmlGetStringValueFromSql(
                  "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='groupadmin'",
-                 sVal, MAX_NAME_LEN, userName, userZone, 0, icss );
+                 sVal, MAX_NAME_LEN, bindVars, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
@@ -1582,9 +1643,12 @@ int cmlCheckGroupAdminAccess( char *userName, char *userZone,
         rodsLog( LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 " );
     }
 
+    bindVars.clear();
+    bindVars.push_back( sVal );
+    bindVars.push_back( groupName );
     status = cmlGetIntegerValueFromSql(
                  "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
-                 &iVal, sVal,  groupName, 0, 0, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
@@ -1602,9 +1666,11 @@ int cmlGetGroupMemberCount( char *groupName, icatSessionStruct *icss ) {
 
     rodsLong_t iVal;
     int status;
+    std::vector<std::string> bindVars;
+    bindVars.push_back( groupName );
     status = cmlGetIntegerValueFromSql(
                  "select count(user_id) from r_user_group where  group_user_id != user_id and group_user_id in (select user_id from r_user_main where user_name=? and user_type_name='rodsgroup')",
-                 &iVal, groupName, 0, 0, 0, 0, icss );
+                 &iVal, bindVars, icss );
     if ( status == 0 ) {
         status = iVal;
     }
