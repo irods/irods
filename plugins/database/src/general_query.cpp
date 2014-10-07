@@ -1995,6 +1995,12 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     }
 
     if ( userIx < 0 || zoneIx < 0 || accessIx < 0 ) {
+        // this function will get called if any condInput is available.  we now have a
+        // case where this kvp is the only option so consider that a success
+        char* disable_acl = getValByKey( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW );
+        if( disable_acl ) {
+            return 0;
+        }
         return CAT_INVALID_ARGUMENT;
     }
 

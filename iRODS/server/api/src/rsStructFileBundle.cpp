@@ -197,7 +197,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     rstrcpy( collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN );
     addKeyVal( &collInp.condInput, RESC_NAME_KW, L1desc[ l1descInx ].dataObjInfo->rescName );
 
-    rodsLog( LOG_NOTICE, "rsStructFileBundle: calling rsOpenCollection for [%s]", structFileBundleInp->collection );
+    rodsLog( LOG_DEBUG, "rsStructFileBundle: calling rsOpenCollection for [%s]", structFileBundleInp->collection );
 
     // =-=-=-=-=-=-=-
     // open the collection from which we will bundle

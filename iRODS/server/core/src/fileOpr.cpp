@@ -96,15 +96,14 @@ freeFileDesc( int fileInx ) {
 int
 getServerHostByFileInx( int fileInx, rodsServerHost_t **rodsServerHost ) {
     int remoteFlag;
-
     if ( fileInx < 3 || fileInx >= NUM_FILE_DESC ) {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "getServerHostByFileInx: Bad fileInx value %d", fileInx );
         return SYS_BAD_FILE_DESCRIPTOR;
     }
 
     if ( FileDesc[fileInx].inuseFlag == 0 ) {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "getServerHostByFileInx: fileInx %d not active", fileInx );
         return SYS_BAD_FILE_DESCRIPTOR;
     }

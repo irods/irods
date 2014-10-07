@@ -18,7 +18,6 @@ rsFileClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int retVal;
-
     remoteFlag = getServerHostByFileInx( fileCloseInp->fileInx,
                                          &rodsServerHost );
 

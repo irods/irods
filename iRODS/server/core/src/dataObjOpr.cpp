@@ -1264,8 +1264,8 @@ chkOrphanFile(
         }
         else {
             rodsLog( LOG_ERROR,
-                     "chkOrphanFile: rsGenQuery error for %s, status = %d",
-                     filePath, status );
+                     "chkOrphanFile: rsGenQuery error for %s, status = %d, rescName %s",
+                     filePath, status, rescName );
             /* we have unexpected query error. Assume the file is not
              * orphan */
             return status;
