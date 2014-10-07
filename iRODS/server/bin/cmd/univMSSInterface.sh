@@ -42,10 +42,16 @@ mkdir () {
 
 # function to modify ACLs $2 (octal) in the MSS logical name space for a given directory $1 
 chmod () {
-	# <your command to modify ACL> $1 $2
+	# <your command to modify ACL> $2 $1
 	# e.g: /usr/local/bin/rfchmod $2 rfioServerFoo:$1
+	############
+	# LEAVING THE PARAMETERS "OUT OF ORDER" ($2 then $1)
+	#    because the driver provides them in this order
+	# $2 is mode
+	# $1 is directory
+	############
         op=`which chmod`
-        `$op $1 $2`
+        `$op $2 $1`
 	return
 }
 
