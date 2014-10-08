@@ -750,10 +750,8 @@ _rsDataObjClose(
 int
 l3Close( rsComm_t *rsComm, int l1descInx ) {
     fileCloseInp_t fileCloseInp;
-    int status;
-
-    dataObjInfo_t *dataObjInfo;
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    int status = 0;
+    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
@@ -776,7 +774,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
         memset( &fileCloseInp, 0, sizeof( fileCloseInp ) );
         fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
         rstrcpy( fileCloseInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN );
-        rsFileClose( rsComm, &fileCloseInp );
+        status = rsFileClose( rsComm, &fileCloseInp );
 
     }
     return status;
