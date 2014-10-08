@@ -7,16 +7,14 @@ SRCS = db_plugin.cpp                \
        mid_level_routines.cpp       \
        low_level_oracle.cpp         \
        irods_catalog_properties.cpp \
-       irods_sql_logger.cpp         \
-       irods_tmp_string.cpp
+       irods_sql_logger.cpp
 
 HEADERS = 
 
 EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o 
 
 CLL_OBJS =	\
-		$(OBJDIR)/low_level_oracle.o \
-		$(OBJDIR)/irods_tmp_string.o  
+		$(OBJDIR)/low_level_oracle.o
 
 GENQ_OBJS = \
         $(OBJDIR)/general_query.o \

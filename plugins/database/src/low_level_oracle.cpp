@@ -14,14 +14,16 @@
 
 #include "low_level_oracle.hpp"
 #include "packStruct.hpp"
-#include "irods_tmp_string.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
+
+#include <vector>
+#include <string>
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
 int cllBindVarCount = 0;
-char *cllBindVars[MAX_BIND_VARS];
+const char *cllBindVars[MAX_BIND_VARS];
 int cllBindVarCountPrev = 0; /* cclBindVarCount earlier in processing */
 
 char bindName[MAX_BIND_VARS * 5] = "";
@@ -930,58 +932,10 @@ int
 cllExecSqlWithResultBV(
     icatSessionStruct *icss,
     int *stmtNum, char *sql,
-    const char *bindVar1,
-    const char *bindVar2,
-    const char *bindVar3,
-    const char *bindVar4,
-    const char *bindVar5,
-    const char *bindVar6 ) {
+    std::vector<std::string> &bindVars ) {
 
-    irods::tmp_string tmp_string1( bindVar1 );
-    irods::tmp_string tmp_string2( bindVar2 );
-    irods::tmp_string tmp_string3( bindVar3 );
-    irods::tmp_string tmp_string4( bindVar4 );
-    irods::tmp_string tmp_string5( bindVar5 );
-    irods::tmp_string tmp_string6( bindVar6 );
-
-
-    int done;
-    done = 0;
-    if ( bindVar1 != NULL && strlen( bindVar1 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string1.str();
-    }
-    else {
-        done = 1;
-    }
-    if ( !done && bindVar2 != NULL && strlen( bindVar2 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string2.str();
-    }
-    else {
-        done = 1;
-    }
-    if ( !done && bindVar3 != NULL && strlen( bindVar3 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string3.str();
-    }
-    else {
-        done = 1;
-    }
-    if ( !done && bindVar4 != NULL && strlen( bindVar4 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string4.str();
-    }
-    else {
-        done = 1;
-    }
-    if ( !done && bindVar5 != NULL && strlen( bindVar5 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string5.str();
-    }
-    else {
-        done = 1;
-    }
-    if ( !done && bindVar6 != NULL && strlen( bindVar6 ) > 0 ) {
-        cllBindVars[cllBindVarCount++] = tmp_string6.str();
-    }
-    else {
-        done = 1;
+    for ( int i = 0; i < bindVars.size() && !bindVars[i].empty(); i++ ) {
+        cllBindVars[cllBindVarCount++] = bindVars[i].c_str();
     }
     return cllExecSqlWithResult( icss, stmtNum, sql );
 }

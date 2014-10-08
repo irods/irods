@@ -14,10 +14,13 @@
 #include "rods.hpp"
 #include "mid_level.hpp"
 
+#include <vector>
+#include <string>
+
 #define MAX_BIND_VARS  120 // JMC - backport 4848 ( 40->120 )
 
 extern int cllBindVarCount;
-extern char *cllBindVars[MAX_BIND_VARS];
+extern const char *cllBindVars[MAX_BIND_VARS];
 
 
 /* The name in the various 'odbc.ini' files for the catalog: */
@@ -39,9 +42,7 @@ int cllDisconnect( icatSessionStruct *icss );
 int cllExecSqlNoResult( icatSessionStruct *icss, const char *sql );
 int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql );
 int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, char *sql,
-                            const char *bindVar1, const char *bindVar2,
-                            const char *bindVar3, const char *bindVar4,
-                            const char *bindVar5, const char *bindVar6 );
+                            std::vector<std::string> &bindVars );
 int cllGetRow( icatSessionStruct *icss, int statementNumber );
 int cllFreeStatement( icatSessionStruct *icss, int statementNumber );
 int cllNextValueString( char *itemName, char *outString, int maxSize );
