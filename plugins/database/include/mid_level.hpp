@@ -12,9 +12,6 @@
 #include "rodsType.hpp"
 #include "icatStructs.hpp"
 
-#include <vector>
-#include <string>
-
 int cmlOpen( icatSessionStruct *icss );
 
 int cmlClose( icatSessionStruct *icss );
@@ -31,7 +28,8 @@ int cmlGetRowFromSql( char *sql,
 int cmlGetOneRowFromSqlV2( char *sql,
                            char *cVal[],
                            int maxCols,
-                           std::vector<std::string> &bindVars,
+                           char *bindVar1,
+                           char *bindVar2,
                            icatSessionStruct *icss );
 
 int cmlGetRowFromSqlV3( char *sql,
@@ -49,7 +47,10 @@ int cmlGetFirstRowFromSql( char *sql,
                            icatSessionStruct *icss );
 
 int cmlGetFirstRowFromSqlBV( char *sql,
-                             std::vector<std::string> &bindVars,
+                             char *arg1,
+                             char *arg2,
+                             char *arg3,
+                             char *arg4,
                              int *statement,
                              icatSessionStruct *icss );
 
@@ -59,26 +60,36 @@ int cmlGetNextRowFromStatement( int stmtNum,
 int cmlGetStringValueFromSql( char *sql,
                               char *cVal,
                               int cValSize,
-                              std::vector<std::string> &bindVars,
+                              const char *bindVar1,
+                              const char *bindVar2,
+                              const char *bindVar3,
                               icatSessionStruct *icss );
 
 int cmlGetStringValuesFromSql( char *sql,
                                char *cVal[],
                                int cValSize[],
                                int numberOfStringsToGet,
-                               std::vector<std::string> &bindVars,
+                               char *bindVar1,
+                               char *bindVar2,
+                               char *bindVar3,
                                icatSessionStruct *icss );
 
 int cmlGetMultiRowStringValuesFromSql( char *sql,
                                        char *returnedStrings,
                                        int maxStringLen,
                                        int maxNumberOfStringsToGet,
-                                       std::vector<std::string> &bindVars,
+                                       char *bindVar1,
+                                       char *bindVar2,
+                                       char *bindVar3,
                                        icatSessionStruct *icss );
 
 int cmlGetIntegerValueFromSql( char *sql,
                                rodsLong_t *iVal,
-                               std::vector<std::string> &bindVars,
+                               const char *bindVar1,
+                               const char *bindVar2,
+                               const char *bindVar3,
+                               const char *bindVar4,
+                               const char *bindVar5,
                                icatSessionStruct *icss );
 
 int cmlGetIntegerValueFromSqlV3( char *sql,
@@ -130,7 +141,11 @@ int cmlGetOneRowFromSqlBV( char *sql,
                            char *cVal[],
                            int cValSize[],
                            int numOfCols,
-                           std::vector<std::string> &bindVars,
+                           const char *bindVar1,
+                           const char *bindVar2,
+                           const char *bindVar3,
+                           const char *bindVar4,
+                           const char *bindVar5,
                            icatSessionStruct *icss );
 
 int cmlGetOneRowFromSql( char *sql,

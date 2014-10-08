@@ -27,7 +27,9 @@ int cllExecSqlNoResultBV( icatSessionStruct *icss, char *sql, char *bindVar1,
                           char *bindVar2, char *bindVar3 );
 int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql );
 int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, char *sql,
-                            std::vector<std::string> &bindVars );
+                            const char *bindVar1, const char *bindVar2,
+                            const char *bindVar3, const char *bindVar4,
+                            const char *bindVar5, const char *bindVar6 );
 int cllGetRow( icatSessionStruct *icss, int statementNumber );
 int cllFreeStatement( icatSessionStruct *icss, int statementNumber );
 int cllNextValueString( char *itemName, char *outString, int maxSize );

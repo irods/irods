@@ -54,12 +54,9 @@ namespace irods {
             return ERROR( SYS_MALLOC_ERR, "(x_x)" );
         }
 
-        {
-            std::vector<std::string> bindVars;
-            // Main query to get settings
-            status = cmlGetMultiRowStringValuesFromSql( "select name, setting from pg_settings",
-                    sql_out, MAX_NAME_LEN, row_count * col_nbr, bindVars, _icss );
-        }
+        // Main query to get settings
+        status = cmlGetMultiRowStringValuesFromSql( "select name, setting from pg_settings",
+                 sql_out, MAX_NAME_LEN, row_count * col_nbr, NULL, NULL, NULL, _icss );
 
         if ( status < 0 ) {
             free( sql_out );

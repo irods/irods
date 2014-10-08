@@ -42,7 +42,7 @@ _cllExecSqlNoResult( icatSessionStruct *icss, const char *sql, int option );
 
 int cllBindVarCount = 0;
 char *cllBindVars[MAX_BIND_VARS];
-int cllBindVarCountPrev = 0; /* cllBindVarCount earlier in processing */
+int cllBindVarCountPrev = 0; /* cclBindVarCount earlier in processing */
 
 SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
 
@@ -65,9 +65,6 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 #include <stdio.h>
 #include <pwd.h>
 #include <ctype.h>
-
-#include <vector>
-#include <string>
 
 static int didBegin = 0;
 static int noResultRowCount = 0;
@@ -120,10 +117,13 @@ cllGetLastErrorMessage( char *msg, int maxChars ) {
 */
 int
 cllOpenEnv( icatSessionStruct *icss ) {
+    RETCODE stat;
 
     HENV myHenv;
-    if ( SQLAllocHandle( SQL_HANDLE_ENV, SQL_NULL_HANDLE, &myHenv ) != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllOpenEnv: SQLAllocHandle failed for env" );
+    stat = SQLAllocEnv( &myHenv );
+
+    if ( stat != SQL_SUCCESS ) {
+        rodsLog( LOG_ERROR, "cllOpenEnv: SQLAllocEnv failed" );
         return -1;
     }
 
@@ -137,12 +137,14 @@ cllOpenEnv( icatSessionStruct *icss ) {
 */
 int
 cllCloseEnv( icatSessionStruct *icss ) {
+    RETCODE stat;
+    HENV myHenv;
 
-    HENV myHenv = icss->environPtr;
-    SQLRETURN stat = SQLFreeHandle( SQL_HANDLE_ENV, myHenv );
+    myHenv = icss->environPtr;
+    stat = SQLFreeEnv( myHenv );
 
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllCloseEnv: SQLFreeHandle failed for env" );
+        rodsLog( LOG_ERROR, "cllCloseEnv: SQLFreeEnv failed" );
     }
     return stat;
 }
@@ -152,12 +154,19 @@ cllCloseEnv( icatSessionStruct *icss ) {
 */
 int
 cllConnect( icatSessionStruct *icss ) {
+    RETCODE stat;
+
+    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
+    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
+    SQLINTEGER      sqlcode;
+    SQLSMALLINT     length;
 
     HDBC myHdbc;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DESC, icss->environPtr,
-                                        &myHdbc );
+
+    stat = SQLAllocConnect( icss->environPtr,
+                            &myHdbc );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLAllocHandle failed for connect: %d, stat" );
+        rodsLog( LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat" );
         return -1;
     }
 
@@ -185,10 +194,6 @@ cllConnect( icatSessionStruct *icss ) {
                  "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
                  odbcEntryName,
                  icss->databaseUsername );
-        SQLCHAR sqlstate[SQL_SQLSTATE_SIZE + 1];
-        SQLINTEGER sqlcode;
-        SQLCHAR buffer[SQL_MAX_MESSAGE_LENGTH + 1];
-        SQLSMALLINT length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
@@ -197,7 +202,7 @@ cllConnect( icatSessionStruct *icss ) {
         }
 
         SQLDisconnect( myHdbc );
-        SQLFreeHandle( SQL_HANDLE_DESC, myHdbc );
+        SQLFreeConnect( myHdbc );
         return -1;
     }
 
@@ -223,11 +228,19 @@ cllConnect( icatSessionStruct *icss ) {
 */
 int
 cllConnectRda( icatSessionStruct *icss ) {
+    RETCODE stat;
+
+    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
+    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
+    SQLINTEGER      sqlcode;
+    SQLSMALLINT     length;
+
     HDBC myHdbc;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DESC, icss->environPtr,
+
+    stat = SQLAllocConnect( icss->environPtr,
                             &myHdbc );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLAllocHandle failed for connect: %d, stat" );
+        rodsLog( LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat" );
         return -1;
     }
 
@@ -246,10 +259,6 @@ cllConnectRda( icatSessionStruct *icss ) {
         rodsLog( LOG_ERROR,
                  "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
                  RDA_ODBC_ENTRY_NAME, icss->databaseUsername );
-        SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
-        SQLINTEGER      sqlcode;
-        SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
-        SQLSMALLINT     length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
@@ -258,7 +267,7 @@ cllConnectRda( icatSessionStruct *icss ) {
         }
 
         SQLDisconnect( myHdbc );
-        SQLFreeHandle( SQL_HANDLE_DESC, myHdbc );
+        SQLFreeConnect( myHdbc );
         return -1;
     }
 
@@ -283,12 +292,19 @@ cllConnectRda( icatSessionStruct *icss ) {
 */
 int
 cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
+    RETCODE stat;
+
+    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
+    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
+    SQLINTEGER      sqlcode;
+    SQLSMALLINT     length;
 
     HDBC myHdbc;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DESC, icss->environPtr,
+
+    stat = SQLAllocConnect( icss->environPtr,
                             &myHdbc );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLAllocHandle failed for connect: %d, stat" );
+        rodsLog( LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat" );
         return -1;
     }
 
@@ -307,10 +323,6 @@ cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
         rodsLog( LOG_ERROR,
                  "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
                  odbcEntryName, icss->databaseUsername );
-        SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
-        SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
-        SQLINTEGER      sqlcode;
-        SQLSMALLINT     length;
         while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
@@ -319,7 +331,7 @@ cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
         }
 
         SQLDisconnect( myHdbc );
-        SQLFreeHandle( SQL_HANDLE_DESC, myHdbc );
+        SQLFreeConnect( myHdbc );
         return -1;
     }
 
@@ -388,6 +400,8 @@ cllCheckPending( const char *sql, int option, int dbType ) {
 
     /* if there are some non-Audit pending SQL, log them */
     if ( pendingCount > pendingAudits ) {
+        int i, max;
+        int skip;
         /* but ignore a single pending "begin" which can be normal */
         if ( pendingIx == 1 ) {
             if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
@@ -397,15 +411,15 @@ cllCheckPending( const char *sql, int option, int dbType ) {
         if ( dbType == DB_TYPE_MYSQL ) {
             /* For mySQL, may have a few SET SESSION sql too, which we
                should ignore */
-            int skip = 1;
+            skip = 1;
             if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
                 skip = 0;
             }
-            int max = maxPendingToRecord;
+            max = maxPendingToRecord;
             if ( pendingIx < max ) {
                 max = pendingIx;
             }
-            for ( int i = 1; i < max && skip == 1; i++ ) {
+            for ( i = 1; i < max && skip == 1; i++ ) {
                 if ( strncmp( ( char * )&pBuffer[i * pendingRecordSize],
                               "SET SESSION", 11 ) != 0 ) {
                     skip = 0;
@@ -418,11 +432,11 @@ cllCheckPending( const char *sql, int option, int dbType ) {
 
         rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
                  pendingCount );
-        int max = maxPendingToRecord;
+        max = maxPendingToRecord;
         if ( pendingIx < max ) {
             max = pendingIx;
         }
-        for ( int i = 0; i < max; i++ ) {
+        for ( i = 0; i < max; i++ ) {
             rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
                      ( char * )&pBuffer[i * pendingRecordSize] );
         }
@@ -444,11 +458,13 @@ cllCheckPending( const char *sql, int option, int dbType ) {
 */
 int
 cllDisconnect( icatSessionStruct *icss ) {
-
+    RETCODE stat;
     HDBC myHdbc;
+    int i;
+
     myHdbc = icss->connectPtr;
 
-    int i = cllCheckPending( "", 1, icss->databaseType );
+    i = cllCheckPending( "", 1, icss->databaseType );
     if ( i == 1 ) {
         i = cllExecSqlNoResult( icss, "commit" ); /* auto commit any
                                                    pending SQLs, including
@@ -456,15 +472,15 @@ cllDisconnect( icatSessionStruct *icss ) {
         /* Nothing to do if it fails */
     }
 
-    SQLRETURN stat = SQLDisconnect( myHdbc );
+    stat = SQLDisconnect( myHdbc );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllDisconnect: SQLDisconnect failed: %d", stat );
         return -1;
     }
 
-    stat = SQLFreeHandle( SQL_HANDLE_DESC, myHdbc );
+    stat = SQLFreeConnect( myHdbc );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllDisconnect: SQLFreeHandle failed for connect: %d", stat );
+        rodsLog( LOG_ERROR, "cllDisconnect: SQLFreeConnect failed: %d", stat );
         return -2;
     }
 
@@ -479,6 +495,7 @@ cllDisconnect( icatSessionStruct *icss ) {
 */
 int
 cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
+    int status;
 
     if ( strncmp( sql, "commit", 6 ) == 0 ||
             strncmp( sql, "rollback", 8 ) == 0 ) {
@@ -486,7 +503,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
     }
     else {
         if ( didBegin == 0 ) {
-            int status = _cllExecSqlNoResult( icss, "begin", 1 );
+            status = _cllExecSqlNoResult( icss, "begin", 1 );
             if ( status != SQL_SUCCESS ) {
                 return status;
             }
@@ -520,7 +537,7 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
 
     if ( myBindVarCount > 0 ) {
         rodsLogSql( "SQLPrepare" );
-        SQLRETURN stat = SQLPrepare( myHstmt, ( unsigned char * )sql, SQL_NTS );
+        RETCODE stat = SQLPrepare( myHstmt, ( unsigned char * )sql, SQL_NTS );
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "bindTheVariables: SQLPrepare failed: %d",
                      stat );
@@ -585,9 +602,9 @@ _cllExecSqlNoResult(
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT myHstmt;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &myHstmt );
+    SQLRETURN stat = SQLAllocStmt( myHdbc, &myHstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLAllocHandle failed for statement: %d", stat );
+        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLAllocStmt failed: %d", stat );
         return -1;
     }
 
@@ -657,9 +674,9 @@ _cllExecSqlNoResult(
                               icss->databaseType );
     }
 
-    stat = SQLFreeHandle( SQL_HANDLE_STMT, myHstmt );
+    stat = SQLFreeStmt( myHstmt, SQL_DROP );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLFreeHandle for statement error: %d", stat );
+        rodsLog( LOG_ERROR, "_cllExecSqlNoResult: SQLFreeStmt error: %d", stat );
     }
 
     noResultRowCount = rowCount;
@@ -675,6 +692,24 @@ _cllExecSqlNoResult(
 int
 cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 
+    RETCODE stat;
+    HDBC myHdbc;
+    HSTMT hstmt;
+    SQLSMALLINT numColumns;
+
+    SQLCHAR         colName[MAX_TOKEN] = "";
+    SQLSMALLINT     colType;
+    SQLSMALLINT     colNameLen;
+    SQL_UINT_OR_ULEN precision;
+    SQLSMALLINT     scale;
+    SQL_INT_OR_LEN  displaysize;
+    static SQLINTEGER resultDataSize;
+
+    icatStmtStrct *myStatement;
+
+    int i;
+    int statementNumber;
+    char *status;
 
     /* In 2.2 and some versions before, this would call
        _cllExecSqlNoResult with "begin", similar to how cllExecSqlNoResult
@@ -682,19 +717,18 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
        needed here, and in fact causes postgres processes to be in the
        'idle in transaction' state which prevents some operations (such as
        backup).  So this was removed. */
-    rodsLog( LOG_DEBUG1, sql );
 
-    HDBC myHdbc = icss->connectPtr;
-    HSTMT hstmt;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &hstmt );
+    myHdbc = icss->connectPtr;
+    rodsLog( LOG_DEBUG1, sql );
+    stat = SQLAllocStmt( myHdbc, &hstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLAllocHandle failed for statement: %d",
+        rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLAllocStmt failed: %d",
                  stat );
         return -1;
     }
 
-    int statementNumber = -1;
-    for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
+    statementNumber = -1;
+    for ( i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
         }
@@ -705,7 +739,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         return -2;
     }
 
-    icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
     icss->stmtPtr[statementNumber] = myStatement;
 
     myStatement->stmtPtr = hstmt;
@@ -717,29 +751,29 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
     rodsLogSql( sql );
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
 
-    switch ( stat ) {
-        case SQL_SUCCESS:
-        rodsLogSqlResult( "SUCCESS" );
-        break;
-        case SQL_SUCCESS_WITH_INFO:
-        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
-        break;
-        case SQL_NO_DATA_FOUND:
-        rodsLogSqlResult( "NO_DATA" );
-        break;
-        case SQL_ERROR:
-        rodsLogSqlResult( "SQL_ERROR" );
-        break;
-        case SQL_INVALID_HANDLE:
-        rodsLogSqlResult( "HANDLE_ERROR" );
-        break;
-        default:
-        rodsLogSqlResult( "UNKNOWN" );
+    status = "UNKNOWN";
+    if ( stat == SQL_SUCCESS ) {
+        status = "SUCCESS";
     }
+    if ( stat == SQL_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == SQL_NO_DATA_FOUND ) {
+        status = "NO_DATA";
+    }
+    if ( stat == SQL_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == SQL_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
+    rodsLogSqlResult( status );
 
-    if ( stat != SQL_SUCCESS &&
-            stat != SQL_SUCCESS_WITH_INFO &&
-            stat != SQL_NO_DATA_FOUND ) {
+    if ( stat == SQL_SUCCESS ||
+            stat == SQL_SUCCESS_WITH_INFO ||
+            stat == SQL_NO_DATA_FOUND ) {
+    }
+    else {
         logTheBindVariables( LOG_NOTICE );
         rodsLog( LOG_NOTICE,
                  "cllExecSqlWithResult: SQLExecDirect error: %d, sql:%s",
@@ -749,20 +783,14 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         return -1;
     }
 
-    SQLSMALLINT numColumns;
-    stat = SQLNumResultCols( hstmt, &numColumns );
+    stat =  SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLNumResultCols failed: %d",
                  stat );
         return -2;
     }
     myStatement->numOfCols = numColumns;
-    for ( int i = 0; i < numColumns; i++ ) {
-        SQLCHAR colName[MAX_TOKEN] = "";
-        SQLSMALLINT colNameLen;
-        SQLSMALLINT colType;
-        SQL_UINT_OR_ULEN precision;
-        SQLSMALLINT scale;
+    for ( i = 0; i < numColumns; i++ ) {
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
                                &colNameLen, &colType, &precision, &scale, NULL );
         if ( stat != SQL_SUCCESS ) {
@@ -772,7 +800,6 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
         }
         /*  printf("colName='%s' precision=%d\n",colName, precision); */
         columnLength[i] = precision;
-        SQL_INT_OR_LEN displaysize;
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
                                 NULL, 0, NULL, &displaysize ); // JMC :: fixed for odbc
         if ( stat != SQL_SUCCESS ) {
@@ -821,11 +848,23 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 void
 logBindVars(
     int level,
-    std::vector<std::string> &bindVars ) {
-    for ( int i = 0; i < bindVars.size(); i++ ) {
-        if ( !bindVars[i].empty() ) {
-            rodsLog( level, "bindVar%d=%s", i + 1, bindVars[i].c_str() );
-        }
+    const char *bindVar1,
+    const char *bindVar2,
+    const char *bindVar3,
+    const char *bindVar4,
+    const char *bindVar5,
+    const char *bindVar6 ) {
+    if ( bindVar1 != 0 && *bindVar1 != '\0' ) {
+        rodsLog( level, "bindVar1=%s", bindVar1 );
+    }
+    if ( bindVar2 != 0 && *bindVar2 != '\0' ) {
+        rodsLog( level, "bindVar2=%s", bindVar2 );
+    }
+    if ( bindVar3 != 0 && *bindVar3 != '\0' ) {
+        rodsLog( level, "bindVar3=%s", bindVar3 );
+    }
+    if ( bindVar4 != 0 && *bindVar4 != '\0' ) {
+        rodsLog( level, "bindVar4=%s", bindVar4 );
     }
 }
 
@@ -839,21 +878,50 @@ cllExecSqlWithResultBV(
     icatSessionStruct *icss,
     int *stmtNum,
     char *sql,
-    std::vector< std::string > &bindVars ) {
+    const char *bindVar1,
+    const char *bindVar2,
+    const char *bindVar3,
+    const char *bindVar4,
+    const char *bindVar5,
+    const char *bindVar6 ) {
 
-    rodsLog( LOG_DEBUG1, sql );
-
-    HDBC myHdbc = icss->connectPtr;
+    RETCODE stat;
+    HDBC myHdbc;
     HSTMT hstmt;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_STMT, myHdbc, &hstmt );
+    SQLSMALLINT numColumns;
+
+    SQLCHAR         colName[MAX_TOKEN] = "";
+    SQLSMALLINT     colType;
+    SQLSMALLINT     colNameLen;
+    SQL_UINT_OR_ULEN precision;
+    SQLSMALLINT     scale;
+    SQL_INT_OR_LEN  displaysize;
+    static SQLINTEGER resultDataSize;
+
+    icatStmtStrct *myStatement;
+
+    int i;
+    int statementNumber;
+    char *status;
+    char tmpStr[TMP_STR_LEN + 2];
+
+    irods::tmp_string tmp_string1( bindVar1 );
+    irods::tmp_string tmp_string2( bindVar2 );
+    irods::tmp_string tmp_string3( bindVar3 );
+    irods::tmp_string tmp_string4( bindVar4 );
+    irods::tmp_string tmp_string5( bindVar5 );
+
+    myHdbc = icss->connectPtr;
+    rodsLog( LOG_DEBUG1, sql );
+    stat = SQLAllocStmt( myHdbc, &hstmt );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLAllocHandle failed for statement: %d",
+        rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLAllocStmt failed: %d",
                  stat );
         return -1;
     }
 
-    int statementNumber = -1;
-    for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
+    statementNumber = -1;
+    for ( i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
         }
@@ -864,72 +932,117 @@ cllExecSqlWithResultBV(
         return -2;
     }
 
-    icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
     icss->stmtPtr[statementNumber] = myStatement;
 
     myStatement->stmtPtr = hstmt;
 
-    std::vector<irods::tmp_string> inOutBindStrings;
-    for( int i = 0; i < bindVars.size(); i++ ) {
-        if ( !bindVars[i].empty() ) {
-            //first time binding parameters?
-            if ( inOutBindStrings.empty() ) {
-                rodsLogSql( "SQLPrepare" );
-                stat = SQLPrepare( hstmt, ( unsigned char * )sql, strlen( sql ) );
-                if ( stat != SQL_SUCCESS ) {
-                    rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
-                            stat );
-                    return -1;
-                }
-            }
+    if ( ( bindVar1 != 0 && *bindVar1 != '\0' )  ||
+            ( bindVar2 != 0 && *bindVar2 != '\0' )  ||
+            ( bindVar3 != 0 && *bindVar3 != '\0' )  ||
+            ( bindVar4 != 0 && *bindVar4 != '\0' ) ) {
 
-            inOutBindStrings.push_back( bindVars[i].c_str() );
-            stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, inOutBindStrings.back().str(), 0, 0 );
-            char tmpStr[TMP_STR_LEN + 2];
+        rodsLogSql( "SQLPrepare" );
+        stat = SQLPrepare( hstmt, ( unsigned char * )sql, SQL_NTS );
+        if ( stat != SQL_SUCCESS ) {
+            rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
+                     stat );
+            return -1;
+        }
+
+        if ( bindVar1 != 0 && *bindVar1 != '\0' ) {
+            stat = SQLBindParameter( hstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                     SQL_C_CHAR, 0, 0, tmp_string1.str(), 0, 0 );
             snprintf( tmpStr, TMP_STR_LEN,
-                    "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+                      "bindVar1=%s", bindVar1 );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
                 rodsLog( LOG_ERROR,
-                        "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
+                         "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
                 return -1;
             }
         }
-    }
-    rodsLogSql( sql );
-    //did we bind parameters?
-    if ( !inOutBindStrings.empty() ) {
+        if ( bindVar2 != 0 && *bindVar2 != '\0' ) {
+            stat = SQLBindParameter( hstmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                     SQL_C_CHAR, 0, 0, tmp_string2.str(), 0, 0 );
+            snprintf( tmpStr, TMP_STR_LEN,
+                      "bindVar2=%s", bindVar2 );
+            rodsLogSql( tmpStr );
+            if ( stat != SQL_SUCCESS ) {
+                rodsLog( LOG_ERROR,
+                         "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
+                return -1;
+            }
+        }
+        if ( bindVar3 != 0 && *bindVar3 != '\0' ) {
+            stat = SQLBindParameter( hstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                     SQL_C_CHAR, 0, 0, tmp_string3.str(), 0, 0 );
+            snprintf( tmpStr, TMP_STR_LEN,
+                      "bindVar3=%s", bindVar3 );
+            rodsLogSql( tmpStr );
+            if ( stat != SQL_SUCCESS ) {
+                rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
+                         stat );
+                return -1;
+            }
+        }
+        if ( bindVar4 != 0 && *bindVar4 != '\0' ) {
+            stat = SQLBindParameter( hstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                     SQL_C_CHAR, 0, 0, tmp_string4.str(), 0, 0 );
+            snprintf( tmpStr, TMP_STR_LEN,
+                      "bindVar4=%s", bindVar4 );
+            rodsLogSql( tmpStr );
+            if ( stat != SQL_SUCCESS ) {
+                rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
+                         stat );
+                return -1;
+            }
+        }
+        if ( bindVar5 != 0 && *bindVar5 != '\0' ) {
+            stat = SQLBindParameter( hstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                     SQL_C_CHAR, 0, 0, tmp_string5.str(), 0, 0 );
+            snprintf( tmpStr, TMP_STR_LEN,
+                      "bindVar5=%s", bindVar5 );
+            rodsLogSql( tmpStr );
+            if ( stat != SQL_SUCCESS ) {
+                rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLBindParameter failed: %d",
+                         stat );
+                return -1;
+            }
+        }
+        rodsLogSql( sql );
         stat = SQLExecute( hstmt );
     }
     else {
+        rodsLogSql( sql );
         stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
     }
 
-    switch ( stat ) {
-        case SQL_SUCCESS:
-        rodsLogSqlResult( "SUCCESS" );
-        break;
-        case SQL_SUCCESS_WITH_INFO:
-        rodsLogSqlResult( "SUCCESS_WITH_INFO" );
-        break;
-        case SQL_NO_DATA_FOUND:
-        rodsLogSqlResult( "NO_DATA" );
-        break;
-        case SQL_ERROR:
-        rodsLogSqlResult( "SQL_ERROR" );
-        break;
-        case SQL_INVALID_HANDLE:
-        rodsLogSqlResult( "HANDLE_ERROR" );
-        break;
-        default:
-        rodsLogSqlResult( "UNKNOWN" );
+    status = "UNKNOWN";
+    if ( stat == SQL_SUCCESS ) {
+        status = "SUCCESS";
     }
+    if ( stat == SQL_SUCCESS_WITH_INFO ) {
+        status = "SUCCESS_WITH_INFO";
+    }
+    if ( stat == SQL_NO_DATA_FOUND ) {
+        status = "NO_DATA";
+    }
+    if ( stat == SQL_ERROR ) {
+        status = "SQL_ERROR";
+    }
+    if ( stat == SQL_INVALID_HANDLE ) {
+        status = "HANDLE_ERROR";
+    }
+    rodsLogSqlResult( status );
 
-    if ( stat != SQL_SUCCESS &&
-            stat != SQL_SUCCESS_WITH_INFO &&
-            stat != SQL_NO_DATA_FOUND ) {
-        logBindVars( LOG_NOTICE, bindVars );
+    if ( stat == SQL_SUCCESS ||
+            stat == SQL_SUCCESS_WITH_INFO ||
+            stat == SQL_NO_DATA_FOUND ) {
+    }
+    else {
+        logBindVars( LOG_NOTICE, bindVar1, bindVar2, bindVar3, bindVar4,
+                     bindVar5, bindVar6 );
         rodsLog( LOG_NOTICE,
                  "cllExecSqlWithResultBV: SQLExecDirect error: %d, sql:%s",
                  stat, sql );
@@ -938,8 +1051,7 @@ cllExecSqlWithResultBV(
         return -1;
     }
 
-    SQLSMALLINT numColumns;
-    stat = SQLNumResultCols( hstmt, &numColumns );
+    stat =  SQLNumResultCols( hstmt, &numColumns );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLNumResultCols failed: %d",
                  stat );
@@ -947,12 +1059,7 @@ cllExecSqlWithResultBV(
     }
     myStatement->numOfCols = numColumns;
 
-    for ( int i = 0; i < numColumns; i++ ) {
-        SQLCHAR colName[MAX_TOKEN] = "";
-        SQLSMALLINT colNameLen;
-        SQLSMALLINT colType;
-        SQL_UINT_OR_ULEN precision;
-        SQLSMALLINT scale;
+    for ( i = 0; i < numColumns; i++ ) {
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
                                &colNameLen, &colType, &precision, &scale, NULL );
         if ( stat != SQL_SUCCESS ) {
@@ -962,7 +1069,6 @@ cllExecSqlWithResultBV(
         }
         /*  printf("colName='%s' precision=%d\n",colName, precision); */
         columnLength[i] = precision;
-        SQL_INT_OR_LEN  displaysize;
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
                                 NULL, 0, NULL, &displaysize ); // JMC :: changed to SQLColAttribute for odbc update
         if ( stat != SQL_SUCCESS ) {
@@ -982,7 +1088,7 @@ cllExecSqlWithResultBV(
 
         myStatement->resultValue[i] = ( char* )malloc( ( int )columnLength[i] );
 
-        myStatement->resultValue[i][0] = '\0';
+        strcpy( ( char * )myStatement->resultValue[i], "" );
         // =-=-=-=-=-=-=-
         // JMC :: added static array to catch the result set size.  this was necessary to
         stat = SQLBindCol( hstmt, i + 1, SQL_C_CHAR, myStatement->resultValue[i], columnLength[i], &resultDataSizeArray[i] );
@@ -1013,7 +1119,7 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
     for ( int i = 0; i < myStatement->numOfCols; i++ ) {
         strcpy( ( char * )myStatement->resultValue[i], "" );
     }
-    SQLRETURN stat =  SQLFetch( myStatement->stmtPtr );
+    RETCODE stat =  SQLFetch( myStatement->stmtPtr );
     if ( stat != SQL_SUCCESS && stat != SQL_NO_DATA_FOUND ) {
         rodsLog( LOG_ERROR, "cllGetRow: SQLFetch failed: %d", stat );
         return -1;
@@ -1041,16 +1147,19 @@ cllNextValueString( char *itemName, char *outString, int maxSize ) {
 
 int
 cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
+    int i;
+    HSTMT hstmt;
+    icatStmtStrct *myStatement;
+    SQL_INT_OR_LEN RowCount;
 
     if ( statementNumber < 0 ) {
         return noResultRowCount;
     }
 
-    icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
-    HSTMT hstmt = myStatement->stmtPtr;
+    myStatement = icss->stmtPtr[statementNumber];
+    hstmt = myStatement->stmtPtr;
 
-    SQL_INT_OR_LEN RowCount;
-    int i = SQLRowCount( hstmt, ( SQL_INT_OR_LEN * )&RowCount );
+    i = SQLRowCount( hstmt, ( SQL_INT_OR_LEN * )&RowCount );
     if ( i ) {
         return i;
     }
@@ -1073,21 +1182,26 @@ cllCurrentValueString( char *itemName, char *outString, int maxSize ) {
 */
 int
 cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
+    HSTMT hstmt;
+    RETCODE stat;
+    int i;
 
-    icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
+    icatStmtStrct *myStatement;
+
+    myStatement = icss->stmtPtr[statementNumber];
     if ( myStatement == NULL ) { /* already freed */
         return 0;
     }
-    HSTMT hstmt = myStatement->stmtPtr;
+    hstmt = myStatement->stmtPtr;
 
-    for ( int i = 0; i < myStatement->numOfCols; i++ ) {
+    for ( i = 0; i < myStatement->numOfCols; i++ ) {
         free( myStatement->resultValue[i] );
         free( myStatement->resultColName[i] );
     }
 
-    SQLRETURN stat = SQLFreeHandle( SQL_HANDLE_STMT, hstmt );
+    stat = SQLFreeStmt( hstmt, SQL_DROP );
     if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllFreeStatement SQLFreeHandle for statement error: %d", stat );
+        rodsLog( LOG_ERROR, "cllFreeStatement SQLFreeStmt error: %d", stat );
     }
 
     free( myStatement );
@@ -1103,10 +1217,13 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
 */
 int
 _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
+    int i;
 
-    icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
+    icatStmtStrct *myStatement;
 
-    for ( int i = 0; i < myStatement->numOfCols; i++ ) {
+    myStatement = icss->stmtPtr[statementNumber];
+
+    for ( i = 0; i < myStatement->numOfCols; i++ ) {
         free( myStatement->resultValue[i] );
         free( myStatement->resultColName[i] );
     }
@@ -1118,8 +1235,16 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
   the database via ODBC).
 */
 extern "C" int cllTest( char *userArg, char *pwArg ) {
+    int i;
+    int j, k;
+    int OK;
+    int stmt;
+    int numOfCols;
+    char userName[500];
 
+    struct passwd *ppasswd;
     icatSessionStruct icss;
+
     icss.stmtPtr[0] = 0;
     strncpy( icss.database_plugin_type, "postgres", DB_TYPENAME_LEN );
     icss.databaseType = DB_TYPE_POSTGRES; // JMC - backport 4712
@@ -1129,11 +1254,13 @@ extern "C" int cllTest( char *userArg, char *pwArg ) {
 #endif
 
     rodsLogSqlReq( 1 );
-    int OK = !cllOpenEnv( &icss );
+    OK = 1;
+    i = cllOpenEnv( &icss );
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
-    char userName[500];
     if ( userArg == 0 || *userArg == '\0' ) {
-        struct passwd *ppasswd;
         ppasswd = getpwuid( getuid() );  /* get user passwd entry             */
         strcpy( userName, ppasswd->pw_name ); /* get user name                  */
     }
@@ -1152,80 +1279,122 @@ extern "C" int cllTest( char *userArg, char *pwArg ) {
         strncpy( icss.databasePassword, pwArg, DB_PASSWORD_LEN );
     }
 
-    int status = cllConnect( &icss );
-    if ( status != 0 ) {
-        printf( "cllConnect failed with error %d.\n", status );
-        return status;
+    i = cllConnect( &icss );
+    if ( i != 0 ) {
+        printf( "cllConnect failed with error %d.\n", i );
+        return i;
     }
 
-    status = cllExecSqlNoResult( &icss, "create table test (i integer, j integer, a varchar(32))" );
-    OK &= ( status == 0 || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
-    OK &= !cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
-    OK &= !cllExecSqlNoResult( &icss, "commit" );
-    OK &= !!cllExecSqlNoResult( &icss, "bad sql" ); /* should fail, if not it's not OK */
-    OK &= !cllExecSqlNoResult( &icss, "rollback" ); /* close the bad transaction*/
-    status = cllExecSqlNoResult( &icss, "delete from test where i = 1" );
-    OK &= ( status == 0 || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
-    OK &= !cllExecSqlNoResult( &icss, "commit" );
+    i = cllExecSqlNoResult( &icss, "create table test (i integer, j integer, a varchar(32))" );
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
 
-    int stmt;
-    std::vector<std::string> bindVars;
-    bindVars.push_back( "a" );
-    status = cllExecSqlWithResultBV( &icss, &stmt, "select * from test where a = ?", bindVars );
-    OK &= !status;
-    if ( status == 0 ) {
-        int numOfCols = 1;
-        for ( int i = 0; i < 10 && numOfCols > 0; i++ ) {
-            status = cllGetRow( &icss, stmt );
-            OK &= !status;
-            if ( status == 0 ) {
+    i = cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    i = cllExecSqlNoResult( &icss, "commit" );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    i = cllExecSqlNoResult( &icss, "bad sql" );
+    if ( i == 0 ) {
+        OK = 0;    /* should fail, if not it's not OK */
+    }
+    i = cllExecSqlNoResult( &icss, "rollback" ); /* close the bad transaction*/
+
+    i = cllExecSqlNoResult( &icss, "delete from test where i = 1" );
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
+
+    i = cllExecSqlNoResult( &icss, "commit" );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    i = cllExecSqlWithResultBV( &icss, &stmt,
+                                "select * from test where a = ?",
+                                "a", 0 , 0, 0, 0, 0 );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    if ( i == 0 ) {
+        numOfCols = 1;
+        for ( j = 0; j < 10 && numOfCols > 0; j++ ) {
+            i = cllGetRow( &icss, stmt );
+            if ( i != 0 ) {
+                OK = 0;
+            }
+            else {
                 numOfCols = icss.stmtPtr[stmt]->numOfCols;
                 if ( numOfCols == 0 ) {
                     printf( "No more rows returned\n" );
-                    cllFreeStatement( &icss, stmt );
+                    i = cllFreeStatement( &icss, stmt );
                 }
                 else {
-                    for ( int j = 0; j < numOfCols || j < icss.stmtPtr[stmt]->numOfCols; j++ ) {
-                        printf( "resultValue[%d]=%s\n", j,
-                                icss.stmtPtr[stmt]->resultValue[j] );
+                    for ( k = 0; k < numOfCols || k < icss.stmtPtr[stmt]->numOfCols; k++ ) {
+                        printf( "resultValue[%d]=%s\n", k,
+                                icss.stmtPtr[stmt]->resultValue[k] );
                     }
                 }
             }
         }
     }
 
-    bindVars.clear();
-    bindVars.push_back( "2" );
-    status = cllExecSqlWithResultBV( &icss, &stmt,
+    i = cllExecSqlWithResultBV( &icss, &stmt,
                                 "select * from test where i = ?",
-                                bindVars );
-    OK &= !status;
-    if ( status == 0 ) {
-        int numOfCols = 1;
-        for ( int i = 0; i < 10 && numOfCols > 0; i++ ) {
-            status = cllGetRow( &icss, stmt );
-            OK &= !status;
-            if ( status == 0 ) {
+                                "2", 0, 0, 0, 0, 0 );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    if ( i == 0 ) {
+        numOfCols = 1;
+        for ( j = 0; j < 10 && numOfCols > 0; j++ ) {
+            i = cllGetRow( &icss, stmt );
+            if ( i != 0 ) {
+                OK = 0;
+            }
+            else {
                 numOfCols = icss.stmtPtr[stmt]->numOfCols;
                 if ( numOfCols == 0 ) {
                     printf( "No more rows returned\n" );
-                    cllFreeStatement( &icss, stmt );
+                    i = cllFreeStatement( &icss, stmt );
                 }
                 else {
-                    for ( int j = 0; j < numOfCols || j < icss.stmtPtr[stmt]->numOfCols; j++ ) {
-                        printf( "resultValue[%d]=%s\n", j,
-                                icss.stmtPtr[stmt]->resultValue[j] );
+                    for ( k = 0; k < numOfCols || k < icss.stmtPtr[stmt]->numOfCols; k++ ) {
+                        printf( "resultValue[%d]=%s\n", k,
+                                icss.stmtPtr[stmt]->resultValue[k] );
                     }
                 }
             }
         }
     }
 
-    status = cllExecSqlNoResult( &icss, "drop table test;" );
-    OK &= ( status == 0 || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
-    OK &= !cllExecSqlNoResult( &icss, "commit" );
-    OK &= !cllDisconnect( &icss );
-    OK &= !cllCloseEnv( &icss );
+    i = cllExecSqlNoResult( &icss, "drop table test;" );
+    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+        OK = 0;
+    }
+
+    i = cllExecSqlNoResult( &icss, "commit" );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    i = cllDisconnect( &icss );
+    if ( i != 0 ) {
+        OK = 0;
+    }
+
+    i = cllCloseEnv( &icss );
+    if ( i != 0 ) {
+        OK = 0;
+    }
 
     if ( OK ) {
         printf( "The tests all completed normally\n" );

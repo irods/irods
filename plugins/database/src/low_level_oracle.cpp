@@ -18,9 +18,6 @@
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 
-#include <vector>
-#include <string>
-
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
 int cllBindVarCount = 0;
@@ -933,13 +930,58 @@ int
 cllExecSqlWithResultBV(
     icatSessionStruct *icss,
     int *stmtNum, char *sql,
-    std::vector<std::string> &bindVars ) {
+    const char *bindVar1,
+    const char *bindVar2,
+    const char *bindVar3,
+    const char *bindVar4,
+    const char *bindVar5,
+    const char *bindVar6 ) {
 
-    std::vector<irods::tmp_string> inOutBindStrings;
+    irods::tmp_string tmp_string1( bindVar1 );
+    irods::tmp_string tmp_string2( bindVar2 );
+    irods::tmp_string tmp_string3( bindVar3 );
+    irods::tmp_string tmp_string4( bindVar4 );
+    irods::tmp_string tmp_string5( bindVar5 );
+    irods::tmp_string tmp_string6( bindVar6 );
 
-    for ( int i = 0; i < bindVars.size() && !bindVars[i].empty(); i++ ) {
-        inOutBindStrings.push_back( irods::tmp_string( bindVars[i].c_str() );
-        cllBindVars[cllBindVarCount++] = inOutBindStrings.back().str();
+
+    int done;
+    done = 0;
+    if ( bindVar1 != NULL && strlen( bindVar1 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string1.str();
+    }
+    else {
+        done = 1;
+    }
+    if ( !done && bindVar2 != NULL && strlen( bindVar2 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string2.str();
+    }
+    else {
+        done = 1;
+    }
+    if ( !done && bindVar3 != NULL && strlen( bindVar3 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string3.str();
+    }
+    else {
+        done = 1;
+    }
+    if ( !done && bindVar4 != NULL && strlen( bindVar4 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string4.str();
+    }
+    else {
+        done = 1;
+    }
+    if ( !done && bindVar5 != NULL && strlen( bindVar5 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string5.str();
+    }
+    else {
+        done = 1;
+    }
+    if ( !done && bindVar6 != NULL && strlen( bindVar6 ) > 0 ) {
+        cllBindVars[cllBindVarCount++] = tmp_string6.str();
+    }
+    else {
+        done = 1;
     }
     return cllExecSqlWithResult( icss, stmtNum, sql );
 }
