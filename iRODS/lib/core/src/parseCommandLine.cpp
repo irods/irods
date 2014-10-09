@@ -34,14 +34,14 @@ CommandLineOptions document so we can keep it all consistent.
    the rodsArg structure is returned
  */
 int
-parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
+parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                  rodsArguments_t *rodsArgs ) {
     char opt;
 
     int i;
 
     char fullOpts[] = "aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
-    char *opts;
+    const char *opts;
     int VCount = 0;
 
     /* Set all flags and pointers to false/null */

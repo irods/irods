@@ -8,7 +8,7 @@
 #include "parseCommandLine.hpp"
 #include <string>
 
-char *icmds[] = {
+const char * const icmds[] = {
     "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
     /*    "idbo", */
     "idbug", "ienv",
@@ -19,15 +19,14 @@ char *icmds[] = {
     "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-    "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "ixmsg",
-    ""
+    "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "ixmsg"
 };
 
 void usage();
 
 void
 printMainHelp() {
-    char *msgs[] = {
+    const char * const msgs[] = {
         "The following is a list of the icommands and a brief description of",
         "what each does:",
         " ",
@@ -90,14 +89,9 @@ printMainHelp() {
         "and iexit.",
         " ",
         "For more information, run the icommand with '-h' or run ",
-        "'ihelp icommand'.",
-        ""
+        "'ihelp icommand'."
     };
-    int i;
-    for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) {
-            break;
-        }
+    for ( unsigned int i = 0; i < sizeof( msgs ) / sizeof( msgs[0] ); ++i ) {
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ihelp" );
@@ -106,7 +100,7 @@ printMainHelp() {
 int
 main( int argc, char **argv ) {
 
-    char * optStr = "ah";
+    const char * optStr = "ah";
     rodsArguments_t myRodsArgs;
     int status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
 
@@ -121,7 +115,7 @@ main( int argc, char **argv ) {
     }
 
     if ( myRodsArgs.all == True ) {
-        for ( int i = 0; strlen( icmds[i] ); i++ ) {
+        for ( unsigned int i = 0; i < sizeof( icmds ) / sizeof( icmds[0] ); ++i ) {
             std::string myExe( icmds[i] );
             myExe += " -h";
             status = system( myExe.c_str() );
@@ -136,7 +130,7 @@ main( int argc, char **argv ) {
         printMainHelp();
     }
     else if ( argc == 2 ) {
-        for ( int i = 0; strlen( icmds[i] ); i++ ) {
+        for ( unsigned int i = 0; i < sizeof( icmds ) / sizeof( icmds[0] ); ++i ) {
             if ( strcmp( argv[1], icmds[i] ) == 0 ) {
                 std::string myExe( icmds[i] );
                 myExe += " -h";
@@ -155,21 +149,17 @@ main( int argc, char **argv ) {
 
 void
 usage() {
-    char *msgs[] = {
+    const char * const msgs[] = {
         "Usage : ihelp [-ah] [icommand]",
         "Display i-commands synopsis or a particular i-command help text",
         "Options are:",
         " -h  this help",
         " -a  print the help text for all the i-commands",
         " ",
-        "Run with no options to display a synopsis of the i-commands",
-        ""
+        "Run with no options to display a synopsis of the i-commands"
     };
-    int i;
-    for ( i = 0;; i++ ) {
-        if ( strlen( msgs[i] ) == 0 ) {
-            break;
-        }
+
+    for ( unsigned int i = 0; i < sizeof( msgs ) / sizeof( msgs[0] ); ++i ) {
         printf( "%s\n", msgs[i] );
     }
     printReleaseInfo( "ihelp" );

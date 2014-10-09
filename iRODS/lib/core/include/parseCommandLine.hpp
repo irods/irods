@@ -143,7 +143,7 @@ extern "C" {
     } rodsArguments_t;
 
     int
-    parseCmdLineOpt( int argc, char **argv, char *optString, int includeLong,
+    parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                      rodsArguments_t *rodsArgs );
 
 #ifdef __cplusplus
