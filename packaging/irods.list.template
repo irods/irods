@@ -169,13 +169,7 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   mkdir -p $IRODS_HOME_DIR
   # write version information down for postinstall
   UPGRADE_TEMP_FILE="$IRODS_HOME_DIR/upgrade.tmp"
-  if [ -f $IRODS_HOME_DIR/VERSION ] ; then
-    cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
-  else
-    touch $$UPGRADE_TEMP_FILE
-    echo "IRODSVERSION=3.0" >> $$UPGRADE_TEMP_FILE
-    echo "IRODSVERSIONINT=300005" >> $$UPGRADE_TEMP_FILE
-  fi
+  cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
 
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
@@ -308,7 +302,6 @@ f 755 root root ${IRODS_HOME_DIR}/tests/pydevtest/run_pydevtest_coverage.sh ./te
 
 d 755 root root ${IRODS_HOME_DIR}/packaging -
 f 755 root root ${IRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
-f 755 root root ${IRODS_HOME_DIR}/packaging/post30upgrade.sh ./packaging/post30upgrade.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods.sh ./packaging/setup_irods.sh
