@@ -14,6 +14,8 @@
 
 namespace irods {
 
+    const std::string STRICT_ACL_KW( "strict_acls" );
+
 /// @brief kw for server property map stating this is an agent-agent conn
     const std::string AGENT_CONN_KW( "agent_conn" );
 

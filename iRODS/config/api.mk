@@ -404,4 +404,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcServerReport.o
 SVR_API_OBJS += $(svrApiObjDir)/rsGridReport.o
 LIB_API_OBJS += $(libApiObjDir)/rcGridReport.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsClientHints.o
+LIB_API_OBJS += $(libApiObjDir)/rcClientHints.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsIESClientHints.o
+LIB_API_OBJS += $(libApiObjDir)/rcIESClientHints.o
 

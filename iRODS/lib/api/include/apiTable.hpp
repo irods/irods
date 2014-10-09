@@ -23,6 +23,8 @@
 
 #include "server_report.hpp"
 #include "grid_report.hpp"
+#include "client_hints.hpp"
+#include "ies_client_hints.hpp"
 
 
 
@@ -625,7 +627,14 @@ static irods::apidef_t client_api_table_inp[] = {
         SERVER_REPORT_AN, RODS_API_VERSION, REMOTE_PRIV_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_SERVER_REPORT, irods::clearInStruct_noop
     },
-
+    {
+        CLIENT_HINTS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_CLIENT_HINTS, irods::clearInStruct_noop
+    },
+    {
+        IES_CLIENT_HINTS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_IES_CLIENT_HINTS, irods::clearInStruct_noop
+    },
 
 }; // _api_table_inp
 

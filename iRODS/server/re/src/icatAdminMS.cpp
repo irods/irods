@@ -9,6 +9,7 @@
 #include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "generalAdmin.hpp"
+#include "irods_server_properties.hpp"
 
 
 /**
@@ -503,19 +504,30 @@ int
 msiAclPolicy( msParam_t *msParam, ruleExecInfo_t* ) {
     char *inputArg;
 
+    std::string strict = "off";
     inputArg = ( char * ) msParam->inOutStruct;
     if ( inputArg != NULL ) {
         if ( strncmp( inputArg, "STRICT", 6 ) == 0 ) {
 #ifdef RODS_CAT
             chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
+            strict = "on";
 #endif
         }
     }
     else {
 #ifdef RODS_CAT
         chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
+
 #endif
     }
+    
+    // capture the server properties and set a strict acl prop
+    irods::server_properties& props = irods::server_properties::getInstance();
+    props.capture_if_needed();
+    irods::error ret = props.set_property<std::string>( 
+                           irods::STRICT_ACL_KW, 
+                           strict );
+
     return 0;
 }
 
