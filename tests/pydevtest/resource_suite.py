@@ -370,6 +370,7 @@ class ResourceSuite(ResourceBase):
         iputcmd = "iput --lfrestart "+rf+" "+datafilename
         if os.path.exists(rf): os.unlink(rf)
         interruptiCmd(s.adminsession,iputcmd,rf,10) # once restartfile reaches 10 bytes
+        time.sleep(2) # wait for all interrupted threads to exit
         assert os.path.exists(rf), rf+" should now exist, but did not"
         output = commands.getstatusoutput( 'cat '+rf )
         print "  restartfile ["+rf+"] contents --> ["+output[1]+"]"
