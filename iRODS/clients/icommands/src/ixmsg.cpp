@@ -14,7 +14,7 @@ void
 printIxmsgHelp( const char *cmd ) {
 
     printf( "usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd );
-    printf( "usage: %s r [-n NumberOfMessages] [-t tickefStreamtNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
+    printf( "usage: %s r [-n NumberOfMessages] [-t ticketNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
     printf( "usage: %s t \n" , cmd );
     printf( "usage: %s d -t ticketNum \n" , cmd );
     printf( "usage: %s c -t ticketNum \n" , cmd );
