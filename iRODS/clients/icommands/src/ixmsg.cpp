@@ -9,8 +9,9 @@
 rodsEnv myRodsEnv;
 rErrMsg_t errMsg;
 int  connectFlag = 0;
-int
-printIxmsgHelp( char *cmd ) {
+
+void
+printIxmsgHelp( const char *cmd ) {
 
     printf( "usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd );
     printf( "usage: %s r [-n NumberOfMessages] [-t tickefStreamtNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
@@ -25,7 +26,6 @@ printIxmsgHelp( char *cmd ) {
     printf( "    c: clear message Stream \n" );
     printf( "    e: erase a message \n" );
     printReleaseInfo( "ixmsg" );
-    exit( 1 );
 }
 
 
@@ -33,9 +33,8 @@ int
 sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp ) {
     int status;
     int sleepSec = 1;
-    rcComm_t *conn;
 
-    conn = *inconn;
+    rcComm_t *conn = *inconn;
 
     while ( connectFlag == 0 ) {
         conn = rcConnectXmsg( &myRodsEnv, &errMsg );
@@ -94,21 +93,20 @@ main( int argc, char **argv ) {
     rcvXmsgOut_t *rcvXmsgOut = NULL;
 
     msgBuf[0] = '\0';
-    strcpy( msgHdr, "ixmsg" );;
+    strcpy( msgHdr, "ixmsg" );
     myHostName[0] = '\0';
     condStr[0] = '\0';
 
-
     if ( argc < 2 ) {
         printIxmsgHelp( argv[0] );
-        exit( 1 );
+        return 0;
     }
 
     strncpy( cmd, argv[1], 9 );
     status = getRodsEnv( &myRodsEnv );
     if ( status < 0 ) {
         fprintf( stderr, "getRodsEnv error, status = %d\n", status );
-        exit( 1 );
+        return 1;
     }
 
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
@@ -141,11 +139,11 @@ main( int argc, char **argv ) {
             break;
         case 'h':
             printIxmsgHelp( argv[0] );
-            exit( 0 );
+            return 0;
             break;
         default:
             fprintf( stderr, "Error: Unknown Option\n" );
-            exit( 1 );
+            return 1;
             break;
         }
     }
@@ -171,9 +169,9 @@ main( int argc, char **argv ) {
                 rcDisconnect( conn );
             }
             if ( status < 0 ) {
-                exit( 8 );
+                return 8;
             }
-            exit( 0 );
+            return 0;
         }
         printf( "Message Header : %s\n", msgHdr );
         printf( "Message Address: %s\n", sendXmsgInp.sendAddr );
@@ -182,7 +180,7 @@ main( int argc, char **argv ) {
                 if ( connectFlag == 1 ) {
                     rcDisconnect( conn );
                 }
-                exit( 0 );
+                return 0;
             }
             sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
             if ( mNum != 0 ) {
@@ -194,7 +192,7 @@ main( int argc, char **argv ) {
                 if ( connectFlag == 1 ) {
                     rcDisconnect( conn );
                 }
-                exit( 8 );
+                return 8;
             }
         }
         if ( connectFlag == 1 ) {
@@ -282,19 +280,19 @@ main( int argc, char **argv ) {
         conn = rcConnectXmsg( &myRodsEnv, &errMsg );
         if ( conn == NULL ) {
             fprintf( stderr, "rcConnect error\n" );
-            exit( 1 );
+            return 1;
         }
         status = clientLogin( conn );
         if ( status != 0 ) {
             fprintf( stderr, "clientLogin error\n" );
             rcDisconnect( conn );
-            exit( 7 );
+            return 7;
         }
         status = rcGetXmsgTicket( conn, &getXmsgTicketInp, &outXmsgTicketInfo );
         rcDisconnect( conn );
         if ( status != 0 ) {
             fprintf( stderr, "rcGetXmsgTicket error. status = %d\n", status );
-            exit( 8 );
+            return 8;
         }
         printf( "Send Ticket Number= %i\n", outXmsgTicketInfo->sendTicket );
         printf( "Recv Ticket Number= %i\n", outXmsgTicketInfo->rcvTicket );
@@ -332,14 +330,14 @@ main( int argc, char **argv ) {
             rcDisconnect( conn );
         }
         if ( status < 0 ) {
-            exit( 8 );
+            return 8;
         }
-        exit( 0 );
+        return 0;
     }
     else {
         fprintf( stderr, "wrong option. Check with -h\n" );
-        exit( 9 );
+        return 9;
     }
 
-    exit( 0 );
+    return 0;
 }
