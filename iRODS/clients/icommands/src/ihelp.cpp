@@ -122,13 +122,11 @@ main( int argc, char **argv ) {
 
     if ( myRodsArgs.all == True ) {
         for ( int i = 0; strlen( icmds[i] ); i++ ) {
-            if ( strcmp( argv[1], icmds[i] ) == 0 ) {
-                std::string myExe( icmds[i] );
-                myExe += " -h";
-                status = system( myExe.c_str() );
-                if ( status ) {
-                    printf( "error %d running %s\n", status, myExe.c_str() );
-                }
+            std::string myExe( icmds[i] );
+            myExe += " -h";
+            status = system( myExe.c_str() );
+            if ( status ) {
+                printf( "error %d running %s\n", status, myExe.c_str() );
             }
         }
         return 0;
