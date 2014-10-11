@@ -2,49 +2,90 @@ import time
 import os
 import subprocess
 import re
+import json
 
 class Server_Config:
     values = {}
 
     def __init__(self):
-        thefile = "/etc/irods/server.config"
+        thefile = "/etc/irods/server_config.json"
         if os.path.isfile(thefile):
-                cfg_file = thefile
+	    self.capture( '/etc/irods/server_config.json', ' ')
+	    self.capture( '/etc/irods/database_config.json', ' ')
         else:
+            cfg_file = os.path.dirname(
+                    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server_config.json"
+            if os.path.isfile(thefile):
+                cfg_file = thefile 
+                self.capture( thefile, ' ' )
                 cfg_file = os.path.dirname(
-                    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
-        self.capture(cfg_file, ' ')
+                        os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/database_config.json"
+                self.capture( thefile, ' ' )
+            else:
+		thefile = "/etc/irods/server.config"
+		if os.path.isfile(thefile):
+			cfg_file = thefile
+		else:
+			cfg_file = os.path.dirname(
+			    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
+	        self.capture(cfg_file, ' ')
 
         thefile = "/var/lib/irods/.odbc.ini"
         if os.path.isfile(thefile):
-                cfg_file = thefile
-        else:
-                cfg_file = os.environ['HOME'] + "/.odbc.ini"
+            cfg_file = thefile
+	else:
+            cfg_file = os.environ['HOME'] + "/.odbc.ini"
         self.capture(cfg_file, '=')
+   
+        # old-key to new-key map
+        self.key_map = { 'DBPassword' : 'db_username', 'DBUsername' : 'db_username' }
+
+ 
+    def get(self, key):
+        if key in self.values:
+            return self.values[key]
+        elif key in self.key_map:
+            return self.values[ self.key_map[ key ] ]
+        else:
+            return 'KEY_NOT_FOUND'
+
 
     def capture(self, cfg_file, sep):
         # NOTE:: we want to make this programmatically detected
         cfg_file = os.path.abspath(cfg_file)
+        #print "cfg_file = ", cfg_file
+        name, ext = os.path.splitext( cfg_file )
         f = open(cfg_file, 'r')
-        try:
-            for i, row in enumerate(f):
-                columns = row.split(sep)
-                # print columns
-                col_0 = columns[0]
-                if(col_0[0] == '#'):
-                    continue
-                elif len(columns) > 1:
-                    self.values[columns[0] .rstrip()] = columns[1].rstrip()
-        finally:
-            f.close()
+        if( ".json" == ext ):
+            try:
+                self.values = json.load( f )
+                #print json.dumps( self.values, indent=4, sort_keys=True )
+            finally:
+                f.close()
+        else: 
+            try:
+                for i, row in enumerate(f):
+                    columns = row.split(sep)
+                    # print columns
+                    col_0 = columns[0]
+                    if(col_0[0] == '#'):
+                        continue
+                    elif len(columns) > 1:
+                        self.values[columns[0] .rstrip()] = columns[1].rstrip()
+            finally:
+                f.close()
 
     def get_db_pass(self):
         db_key = self.values['DBKey']
-        db_obf_pass = self.values['DBPassword']
-        run_str = "iadmin dspass '" + db_obf_pass + "' " + db_key
-        p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (db_pass, db_err) = p.communicate()
-        return db_pass.split(":")[1].rstrip()
+
+        if 'KEY_NOT_FOUND' == db_key:
+            return self.values['DBPassword']
+        else:
+            db_obf_pass = self.values['DBPassword']
+            run_str = "iadmin dspass '" + db_obf_pass + "' " + db_key
+            p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (db_pass, db_err) = p.communicate()
+            return db_pass.split(":")[1].rstrip()
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # POSTGRES

@@ -2081,18 +2081,25 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        // =-=-=-=-=-=-=-
         // cache db creds
-        irods::server_properties::getInstance().get_property<std::string>( DB_USERNAME_KW, prop );
+        irods::server_properties& props = irods::server_properties::getInstance();
+        ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+        if( !ret.ok() ) {
+            ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+            
+        }
         strncpy( icss.databaseUsername, prop.c_str(), DB_USERNAME_LEN );
 
-        irods::server_properties::getInstance().get_property<std::string>( DB_PASSWORD_KW, prop );
+        ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+        if( !ret.ok() ) {
+            ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+        }  
         strncpy( icss.databasePassword, prop.c_str(), DB_PASSWORD_LEN );
 
-        irods::server_properties::getInstance().get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+        ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+        if( !ret.ok() ) {
+            ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+        }  
         strncpy( icss.database_plugin_type, prop.c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-

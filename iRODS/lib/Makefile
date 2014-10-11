@@ -23,6 +23,10 @@ extendedICAT.hpp =	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
+# jansson support
+CFLAGS += -I../../external/jansson-2.5/src/
+AG_LDADD += ../../external/jansson-2.5/src/.libs/libjansson.a
+LDFLAGS += ../../external/jansson-2.5/src/.libs/libjansson.a
 
 #
 # Source files
@@ -105,6 +109,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_client_api_table.o \
 		$(libCoreObjDir)/irods_pack_table.o \
 		$(libCoreObjDir)/irods_get_full_path_for_config_file.o \
+		$(libCoreObjDir)/irods_configuration_parser.o \
 		$(libCoreObjDir)/irods_server_properties.o \
 		$(libCoreObjDir)/list.o \
 		$(libCoreObjDir)/hashtable.o \

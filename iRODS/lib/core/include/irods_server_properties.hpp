@@ -10,7 +10,8 @@
 
 
 #include "irods_lookup_table.hpp"
-
+#include "irods_configuration_parser.hpp"
+#include "irods_configuration_keywords.hpp"
 
 namespace irods {
 
@@ -33,7 +34,17 @@ namespace irods {
         /**
          * @brief Read server configuration and fill server_properties::properties
          */
-        error capture();
+        error capture( );
+
+        /**
+         * @brief capture the legacy version: server.config
+         */
+        error capture_legacy();
+
+        /**
+         * @brief capture the new json version: server_config.json
+         */
+        error capture_json( const std::string& );
 
         /**
          * @brief Read server configuration if it has not been read already.
@@ -46,18 +57,24 @@ namespace irods {
          */
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
-            error ret = properties.get< T >( _key, _val );
+            error ret = config_props_.get< T >( _key, _val );
+            if( !ret.ok() ) {
+                ret = config_props_.get< T >( key_map_[ _key ], _val );
+            }
             return PASS( ret );
         }
 
         template< typename T >
         error set_property( const std::string& _key, const T& _val ) {
-            error ret = properties.set< T >( _key, _val );
+            error ret = config_props_.set< T >( _key, _val );
+            if( !ret.ok() ) {
+                ret = config_props_.set< T >( key_map_[ _key ], _val );
+            }
             return PASS( ret );
         }
 
         error delete_property( const std::string& _key ) {
-            size_t n = properties.erase( _key );
+            size_t n = config_props_.erase( _key );
             if ( n != 1 ) {
                 std::string msg( "failed to erase key: " );
                 msg += _key;
@@ -68,26 +85,19 @@ namespace irods {
             }
         }
 
-        typedef lookup_table<boost::any>::iterator iterator;
-        iterator begin() {
-            return properties.begin();
-        }
-
-        iterator end() {
-            return properties.end();
-        }
-
     private:
         // Disable constructors
-        server_properties(): captured_( false ) {};
         server_properties( server_properties const& );
+        server_properties( );
         void operator=( server_properties const& );
 
         /**
          * @brief properties lookup table
          */
-        lookup_table<boost::any> properties;
+        configuration_parser config_props_;
 
+        /// @brief map of old keys to new keys
+        lookup_table< std::string > key_map_;
         bool captured_;
 
     }; // class server_properties

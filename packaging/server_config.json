@@ -1,0 +1,26 @@
+{
+	"icat_host": "localhost",
+        "re_rulebase_set": [
+		{
+			"filename": "core"
+		}
+	],
+		"re_function_name_mapping_set": [
+		{
+			"filename": "core"
+		}
+	],
+		"re_data_variable_mapping_set": [
+		{
+			"filename": "core"
+		}
+	],
+		"run_server_as_root": "false",
+		"default_dir_mode": "0700",
+		"default_file_mode": "0600",
+		"default_hash_scheme": "SHA256",
+		"zone_id": "TEMP_LOCAL_ZONE_SID",
+		"negotiation_key": "temp_32_byte_key_for_agent__conn",
+		"match_hash_policy": "not_strict",
+}
+

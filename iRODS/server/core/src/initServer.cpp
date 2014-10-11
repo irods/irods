@@ -38,9 +38,9 @@ static int BrokenPipeCnt = 0;
 
 int
 resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
-    rodsServerHost_t *tmpRodsServerHost;
-    char *myHostAddr;
-    char *myZoneName;
+    rodsServerHost_t *tmpRodsServerHost = 0;
+    char *myHostAddr = 0;
+    char *myZoneName = 0;
 
     /* check if host exist */
 
@@ -192,6 +192,7 @@ initServerInfo( rsComm_t *rsComm ) {
                  status );
         return status;
     }
+
     status = initRcatServerHostByFile();
     if ( status < 0 ) {
         rodsLog( LOG_SYS_FATAL,
@@ -203,9 +204,15 @@ initServerInfo( rsComm_t *rsComm ) {
 #ifdef RODS_CAT
     status = connectRcat();
     if ( status < 0 ) {
+        rodsLog( 
+            LOG_SYS_FATAL,
+            "initServerInfo: connectRcat failed, status = %d",
+            status );
+
         return status;
     }
 #endif
+
     status = initZone( rsComm );
     if ( status < 0 ) {
         rodsLog( LOG_SYS_FATAL,
@@ -213,20 +220,6 @@ initServerInfo( rsComm_t *rsComm ) {
                  status );
         return status;
     }
-
-    /*status = initResc (rsComm);
-      if (status < 0) {
-      if (status == CAT_NO_ROWS_FOUND) {
-      rodsLog (LOG_NOTICE,
-      "initServerInfo: No resource is configured in ICAT");
-      status = 0;
-      } else {
-      rodsLog (LOG_SYS_FATAL,
-      "initServerInfo: initResc error, status = %d",
-      status);
-      return status;
-      }
-      }*/
 
     irods::error ret = resc_mgr.init_from_catalog( rsComm );
     if ( !ret.ok() ) {
@@ -466,216 +459,230 @@ printZoneInfo() {
 
 int
 initRcatServerHostByFile() {
-    char inbuf[MAX_NAME_LEN];
-    rodsHostAddr_t addr;
-    rodsServerHost_t *tmpRodsServerHost;
-    int lineLen, bytesCopied, remoteFlag;
-    char keyWdName[MAX_NAME_LEN];
-    int gptRcatFlag = 0;
-    int remoteSidCount = 0;
-    char sidKey[MAX_PASSWORD_LEN] = "";
-    int i;
-
-    localSID[0] = '\0';
-    for ( i = 0; i < MAX_FED_RSIDS; i++ ) {
-        remoteSID[i][0] = '\0';
-    }
-
-    std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( RCAT_HOST_FILE, cfg_file );
-    if ( !ret.ok() ) {
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-#ifndef windows_platform
-    FILE * fptr = fopen( cfg_file.c_str(), "r" );
-#else
-    FILE * fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
-#endif
+    std::string prop_str;
 
-    if ( fptr == NULL ) {
-        rodsLog( LOG_SYS_FATAL,
-                 "Cannot open RCAT_HOST_FILE  file %s. errno = %d\n",
-                 cfg_file.c_str(), errno );
-        return SYS_CONFIG_FILE_ERR;
+    irods::configuration_parser::array_t prop_arr;
+    ret = props.get_property< 
+              irods::configuration_parser::array_t >(
+                  irods::CFG_RE_RULEBASE_SET_KW,
+                  prop_arr );
+
+    if( ret.ok() ) {
+        std::string rule_arr;
+        for( size_t i = 0;
+             i < prop_arr.size();
+             ++i ) {
+            rule_arr += boost::any_cast< std::string >( 
+                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            rule_arr += prop_str + ",";
+        }
+
+        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+
+        strncpy( 
+            reRuleStr, 
+            rule_arr.c_str(), 
+            LONG_NAME_LEN );
+
+    } else {
+        std::string prop_str;
+        ret = props.get_property< std::string >(
+                  RE_RULESET_KW,
+                  prop_str );
+        if( ret.ok() ) {
+            strncpy( 
+                reRuleStr, 
+                prop_str.c_str(), 
+                LONG_NAME_LEN );
+
+        } else {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+
     }
 
-    memset( &addr, 0, sizeof( addr ) );
-    while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
-        char *inPtr = inbuf;
-        if ( ( bytesCopied = getStrInBuf( &inPtr, keyWdName,
-                                          &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-            /* advance inPtr */
-            if ( strcmp( keyWdName, RE_RULESET_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, reRuleStr,
-                                                  &lineLen, LONG_NAME_LEN ) ) < 0 ) {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, RE_FUNCMAPSET_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, reFuncMapStr,
-                                                  &lineLen, LONG_NAME_LEN ) ) < 0 ) {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, RE_VARIABLEMAPSET_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, reVariableMapStr,
-                                                  &lineLen, LONG_NAME_LEN ) ) < 0 ) {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, KERBEROS_NAME_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, KerberosName,
-                                                  &lineLen, LONG_NAME_LEN ) ) < 0 ) {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, ICAT_HOST_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, addr.hostAddr,
-                                                  &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-                    remoteFlag = resolveHost( &addr, &tmpRodsServerHost );
-                    if ( remoteFlag < 0 ) {
-                        rodsLog( LOG_SYS_FATAL,
-                                 "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                                 addr.hostAddr, remoteFlag );
-                        fclose( fptr );
-                        return remoteFlag;
-                    }
-                    tmpRodsServerHost->rcatEnabled = LOCAL_ICAT;
-                    gptRcatFlag = 1;
-                }
-                else {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, RE_HOST_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, addr.hostAddr,
-                                                  &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-                    remoteFlag = resolveHost( &addr, &tmpRodsServerHost );
-                    if ( remoteFlag < 0 ) {
-                        rodsLog( LOG_SYS_FATAL,
-                                 "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                                 addr.hostAddr, remoteFlag );
-                        fclose( fptr );
-                        return remoteFlag;
-                    }
-                    tmpRodsServerHost->reHostFlag = 1;
-                }
-                else {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, XMSG_HOST_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, addr.hostAddr,
-                                                  &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-                    remoteFlag = resolveHost( &addr, &tmpRodsServerHost );
-                    if ( remoteFlag < 0 ) {
-                        rodsLog( LOG_SYS_FATAL,
-                                 "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                                 addr.hostAddr, remoteFlag );
-                        fclose( fptr );
-                        return remoteFlag;
-                    }
-                    tmpRodsServerHost->xmsgHostFlag = 1;
-                }
-                else {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, SLAVE_ICAT_HOST_KW ) == 0 ) {
-                if ( ( bytesCopied = getStrInBuf( &inPtr, addr.hostAddr,
-                                                  &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-                    remoteFlag = resolveHost( &addr, &tmpRodsServerHost );
-                    if ( remoteFlag < 0 ) {
-                        rodsLog( LOG_SYS_FATAL,
-                                 "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                                 addr.hostAddr, remoteFlag );
-                        fclose( fptr );
-                        return remoteFlag;
-                    }
-                    tmpRodsServerHost->rcatEnabled = LOCAL_SLAVE_ICAT;
-                }
-                else {
-                    rodsLog( LOG_SYS_FATAL,
-                             "initRcatServerHostByFile: parsing error for keywd %s",
-                             keyWdName );
-                    fclose( fptr );
-                    return SYS_CONFIG_FILE_ERR;
-                }
-            }
-            else if ( strcmp( keyWdName, LOCAL_ZONE_SID_KW ) == 0 ) {
-                getStrInBuf( &inPtr, localSID, &lineLen, MAX_PASSWORD_LEN );
-            }
-            else if ( strcmp( keyWdName, REMOTE_ZONE_SID_KW ) == 0 ) {
-                if ( remoteSidCount < MAX_FED_RSIDS ) {
-                    getStrInBuf( &inPtr, remoteSID[remoteSidCount],
-                                 &lineLen, MAX_PASSWORD_LEN );
-                    remoteSidCount++;
-                }
-            }
-            else if ( strcmp( keyWdName, SID_KEY_KW ) == 0 ) {
-                getStrInBuf( &inPtr, sidKey, &lineLen, MAX_PASSWORD_LEN );
-            }
+    ret = props.get_property< 
+              irods::configuration_parser::array_t >(
+                  irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
+                  prop_arr );
+    if( ret.ok() ) {
+        std::string rule_arr;
+        for( size_t i = 0;
+             i < prop_arr.size();
+             ++i ) {
+            rule_arr += boost::any_cast< std::string >( 
+                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            rule_arr += prop_str + ",";
         }
-    }
-    fclose( fptr );
 
-    /* Possibly descramble the Server ID strings */
-    if ( strlen( sidKey ) > 0 ) {
-        char SID[MAX_PASSWORD_LEN + 10];
-        int i;
-        if ( strlen( localSID ) > 0 ) {
-            strncpy( SID, localSID, MAX_PASSWORD_LEN );
-            obfDecodeByKey( SID, sidKey, localSID );
-        }
-        for ( i = 0; i < MAX_FED_RSIDS; i++ ) {
-            if ( strlen( remoteSID[i] ) > 0 ) {
-                strncpy( SID, remoteSID[i], MAX_PASSWORD_LEN );
-                obfDecodeByKey( SID,
-                                sidKey,
-                                remoteSID[i] );
-            }
-            else {
-                break;
-            }
+        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+
+        strncpy( 
+            reFuncMapStr, 
+            rule_arr.c_str(), 
+            LONG_NAME_LEN );
+
+    } else {
+        ret = props.get_property< std::string >(
+                  RE_FUNCMAPSET_KW,
+                  prop_str );
+        if( ret.ok() ) {
+            strncpy( 
+                reFuncMapStr, 
+                prop_str.c_str(), 
+                LONG_NAME_LEN );
+
+        } else {
+            irods::log( PASS( ret ) );
+            return ret.code();
         }
     }
 
-    if ( gptRcatFlag <= 0 ) {
-        rodsLog( LOG_SYS_FATAL,
-                 "initRcatServerHostByFile: icatHost entry missing in %s.\n",
-                 RCAT_HOST_FILE );
-        return SYS_CONFIG_FILE_ERR;
+    ret = props.get_property< 
+              irods::configuration_parser::array_t >(
+                  irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
+                  prop_arr );
+    if( ret.ok() ) {
+        std::string rule_arr;
+         for( size_t i = 0;
+             i < prop_arr.size();
+             ++i ) {
+            rule_arr = boost::any_cast< std::string >( 
+                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            rule_arr += prop_str + ",";
+        }
+
+        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+
+        strncpy( 
+            reVariableMapStr, 
+            rule_arr.c_str(), 
+            LONG_NAME_LEN );
+
+    } else {
+        ret = props.get_property< std::string >(
+                  RE_VARIABLEMAPSET_KW,
+                  prop_str );
+        if( ret.ok() ) {
+            strncpy( 
+                reVariableMapStr, 
+                prop_str.c_str(), 
+                LONG_NAME_LEN );
+
+        } else {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
     }
+
+    ret = props.get_property< std::string >(
+              KERBEROS_NAME_KW,
+              prop_str );
+    if( ret.ok() ) {
+        strncpy( 
+            KerberosName, 
+            prop_str.c_str(), 
+            LONG_NAME_LEN );
+
+    } 
+
+    ret = props.get_property< std::string >(
+              ICAT_HOST_KW,
+              prop_str );
+    if( ret.ok() ) {
+        rodsHostAddr_t    addr;
+        memset( &addr, 0, sizeof( addr ) );
+        rodsServerHost_t* tmp_host = 0;
+        strncpy( 
+            addr.hostAddr, 
+            prop_str.c_str(), 
+            LONG_NAME_LEN );
+        int rem_flg = resolveHost( 
+                          &addr, 
+                          &tmp_host );
+        if ( rem_flg < 0 ) {
+            rodsLog( LOG_SYS_FATAL,
+                     "initRcatServerHostByFile: resolveHost error for %s, status = %d",
+                     addr.hostAddr, 
+                     rem_flg );
+            return rem_flg;
+        }
+        tmp_host->rcatEnabled = LOCAL_ICAT;
+
+    } else {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // re host 
+    // xmsg host 
+    // slave icat host
+ 
+    ret = props.get_property< std::string >(
+              LOCAL_ZONE_SID_KW,
+              prop_str );
+    if( ret.ok() ) {
+        strncpy( 
+            localSID, 
+            prop_str.c_str(), 
+            LONG_NAME_LEN );
+
+    } else {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // try for new federation config
+    irods::configuration_parser::array_t fed_arr;
+    ret = props.get_property< 
+              irods::configuration_parser::array_t >(
+                  irods::CFG_NEGOTIATION_KEY_KW,
+                  fed_arr );
+    if( ret.ok() ) {
+        for( size_t i = 0;
+             i < fed_arr.size();
+             ++i ) {
+            std::string fed_zone_id   = boost::any_cast< std::string >( 
+                                            fed_arr[ i ][ irods::CFG_ZONE_ID_KW ] );
+            std::string fed_zone_name = boost::any_cast< std::string >( 
+                                            fed_arr[ i ][ irods::CFG_ZONE_NAME_KW ] );
+            std::string fed_sid = fed_zone_name + "-" + fed_zone_id;
+            strncpy( 
+                remoteSID[ i ], 
+                fed_sid.c_str(), 
+                LONG_NAME_LEN );
+
+        }
+
+    } else {
+        // try the old remote sid config
+        std::vector< std::string > rem_sids;
+        ret = props.get_property<
+                  std::vector< std::string > >( 
+                      REMOTE_ZONE_SID_KW,
+                      rem_sids ); 
+        if( ret.ok() ) {
+             for( size_t i = 0;
+                 i < rem_sids.size();
+                 ++i ) {
+                strncpy( 
+                    remoteSID[ i ], 
+                    rem_sids[ i ].c_str(), 
+                    LONG_NAME_LEN );
+            }
+               
+       } 
+
+    } // else
+
 
     return 0;
 }
@@ -1342,7 +1349,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
 //    initStructFileDesc ();
 //    initTarSubFileDesc ();
 #endif
-
     status = initRuleEngine( processType, rsComm, reRuleStr, reFuncMapStr, reVariableMapStr );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

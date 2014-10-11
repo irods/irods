@@ -15,15 +15,26 @@ DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ $RUNINPLACE -eq 1 ] ; then
     MYIRODSCONFIG=$DETECTEDDIR/../iRODS/config/irods.config
     MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server.config
+    #MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server_config.json
     MYICATSYSINSERTS=$DETECTEDDIR/../iRODS/server/icat/src/icatSysInserts.sql
     # clean full paths
     MYIRODSCONFIG="$(cd "$( dirname $MYIRODSCONFIG )" && pwd)"/"$( basename $MYIRODSCONFIG )"
     MYSERVERCONFIG="$(cd "$( dirname $MYSERVERCONFIG )" && pwd)"/"$( basename $MYSERVERCONFIG )"
+    if [ ! -f $MYSERVERCONFIG ]; then
+        echo ">>> Copying new server_config.json to /etc/irods"
+        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIG
+    fi
+
     MYICATSYSINSERTS="$(cd "$( dirname $MYICATSYSINSERTS )" && pwd)"/"$( basename $MYICATSYSINSERTS )"
     DEFAULTRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
 else
     MYIRODSCONFIG=/etc/irods/irods.config
-    MYSERVERCONFIG=/etc/irods/server.config
+    #MYSERVERCONFIG=/etc/irods/server.config
+    MYSERVERCONFIG=/etc/irods/server_config.json
+    if [ ! -f $MYSERVERCONFIG ]; then
+        echo ">>> Copying new server_config.json to /etc/irods"
+        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIG
+    fi
     MYICATSYSINSERTS=/var/lib/irods/iRODS/server/icat/src/icatSysInserts.sql
     DEFAULTRESOURCEDIR=/var/lib/irods/iRODS/Vault
 fi
@@ -51,14 +62,27 @@ fi
         MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYLOCALZONESID=`grep "^LocalZoneSID " $MYSERVERCONFIG | awk '{print $2}'`
-        MYAGENTKEY=`grep "^agent_key " $MYSERVERCONFIG | awk '{print $2}'`
+        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIG | head -n1 | awk '{print $2}'`
+        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIG | head -n1 | awk '{print $2}'`
         MYADMINNAME=`grep "IRODS_ADMIN_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         STATUS="loop"
     else
         # no temp file, this is the first run
         STATUS="firstpass"
     fi
+
+    # strip cruft from sid
+    tmp=${MYLOCALZONESID#\"}
+    tmp=${tmp%\,}
+    MYLOCALZONESID=${tmp%\"}
+
+    # strip cruft from sid
+    tmp=${MYAGENTKEY#\"}
+    tmp=${tmp%\,}
+    MYAGENTKEY=${tmp%\"}
+
+    PREVIOUSSID=$MYLOCALZONESID
+    PREVIOUSKEY=$MYAGENTKEY
 
     # ask human for irods environment
     echo "==================================================================="
@@ -205,10 +229,10 @@ fi
       MYLOCALZONESID=`echo "${MYLOCALZONESID}" | sed -e "s/\///g"`
       echo ""
 
-      # get agent_key
+      # get negotation_key
       AGENTKEYLENGTH=0
       while [ $AGENTKEYLENGTH -ne 32 ] ; do
-          echo -n "iRODS server's agent_key"
+          echo -n "iRODS server's negotation_key"
           if [ "$LASTMYAGENTKEY" ] ; then
             echo -n " [$LASTMYAGENTKEY]"
           else
@@ -229,7 +253,7 @@ fi
           # check length (must equal 32)
           AGENTKEYLENGTH=${#MYAGENTKEY}
           if [ $AGENTKEYLENGTH -ne 32 ] ; then
-              echo "   *** agent_key must be exactly 32 bytes ***"
+              echo "   *** negotation_key must be exactly 32 bytes ***"
               echo ""
               echo "   $MYAGENTKEY <- $AGENTKEYLENGTH bytes"
               echo "   ________________________________ <- 32 bytes"
@@ -274,8 +298,8 @@ fi
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
-      echo "LocalZoneSID:           $MYLOCALZONESID"
-      echo "agent_key:              $MYAGENTKEY"
+      echo "zone_id:                $MYLOCALZONESID"
+      echo "negotation_key:         $MYAGENTKEY"
       echo "Administrator Username: $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "Administrator Password: Not Shown"
@@ -345,11 +369,11 @@ fi
     # update existing server.config
     TMPFILE="/tmp/$USER/setupserverconfig.txt"
     echo "Updating $MYSERVERCONFIG..."
-    if [ $(grep -c "^LocalZoneSID " $MYSERVERCONFIG) -eq 0 ] ; then
-        echo "LocalZoneSID DEFAULT" >> $MYSERVERCONFIG
-    fi
-    sed -e "/^LocalZoneSID /s/^.*$/LocalZoneSID $MYLOCALZONESID/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
-    if [ $(grep -c "^agent_key " $MYSERVERCONFIG) -eq 0 ] ; then
-        echo "agent_key DEFAULT" >> $MYSERVERCONFIG
-    fi
-    sed -e "/^agent_key /s/^.*$/agent_key $MYAGENTKEY/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
+    sed -e "/\"zone_id\": \"$PREVIOUSSID\",/s/^.*$/    \"zone_id\": \"$MYLOCALZONESID\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
+    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
+
+
+
+
+
+

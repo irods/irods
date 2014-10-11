@@ -19,8 +19,6 @@ include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
 CFLAGS += `../../../packaging/compiler_check.sh 4 2`
-
-
 #
 # Directories
 #
@@ -156,6 +154,11 @@ LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 
 
 LDFLAGS += $(BOOST_LIBS)
+
+CFLAGS += -I../../../external/jansson-2.5/src/
+AG_LDADD += ../../../external/jansson-2.5/src/.libs/libjansson.a
+LDFLAGS += ../../../external/jansson-2.5/src/.libs/libjansson.a
+
 
 ifneq (${OS_platform}, osx_platform)
 LDFLAGS += -lrt

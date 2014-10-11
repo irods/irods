@@ -18,7 +18,7 @@ DATABASEPASSWORD="DEFAULTPASSWORD"
 # get into the top level directory
 # detect run-in-place installation
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ -e /etc/irods/server.config ] ;  then
+if [ -e /etc/irods/server_config.json ] ;  then
     RUNINPLACE=0
     cd $DETECTEDDIR/../
 else
@@ -208,14 +208,22 @@ fi
 # =-=-=-=-=-=-=-
 # update database flavor
 if [ "$RUNINPLACE" == "1" ] ;  then
-    server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server.config
+    db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to /etc/irods"
+        cp $DETECTEDDIR/database_config.json $db_config
+    fi
+
 else
-    server_config="/etc/irods/server.config"
+    db_config="/etc/irods/database_config.json"
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to /etc/irods"
+        cp $DETECTEDDIR/database_config.json $db_config
+    fi
 fi
 
-echo ""
-echo "# configuration of icat database plugin - e.g. postgres, mysql, or oracle" >> $server_config
-echo "catalog_database_type $DATABASETYPE" >> $server_config 
+TMPFILE="/tmp/$USER/setupdatabaseconfiguration.txt"
+sed -e "/^catalog_database_type /s/^.*$/catalog_database_type: \"$DATABASETYPE\",/" $db_config > $TMPFILE ; mv $TMPFILE $db_config
 echo ""
 
 # =-=-=-=-=-=-=-

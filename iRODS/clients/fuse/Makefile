@@ -18,9 +18,6 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-
-
-
 #
 # Directories
 #
@@ -182,6 +179,12 @@ endif
 
 
 CFLAGS:=$(filter-out -DUSE_BOOST,$(CFLAGS))
+
+CFLAGS += -I../../../external/jansson-2.5/src/
+AG_LDADD += ../../../external/jansson-2.5/src/.libs/libjansson.a
+LDFLAGS += ../../../external/jansson-2.5/src/.libs/libjansson.a
+
+
 
 #
 # Principal Targets

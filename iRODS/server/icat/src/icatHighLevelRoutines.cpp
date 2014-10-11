@@ -96,15 +96,23 @@ int chlOpen() {
 
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
-//    database_plugin_type = _cfg->catalog_database_type;
-    irods::server_properties::getInstance().get_property<std::string>( CATALOG_DATABASE_TYPE_KW, database_plugin_type );
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.get_property< std::string >( 
+                           "catalog_database_type", 
+                           database_plugin_type );
+    if( !ret.ok() ) {
+        rodsLog( 
+            LOG_ERROR,
+            "catalog_database_type not defined" );
+        return ret.code();
+    }
 
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
+    ret = irods::database_factory(
+              database_plugin_type,
+              db_obj_ptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

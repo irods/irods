@@ -34,7 +34,7 @@ connectRcat() {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
 
                 // capture server properties
-                irods::error result = irods::server_properties::getInstance().capture();
+                irods::error result = irods::server_properties::getInstance().capture_if_needed();
                 if ( !result.ok() ) {
                     irods::log( PASSMSG( "failed to read server configuration", result ) );
                 }

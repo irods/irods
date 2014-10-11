@@ -1,0 +1,6 @@
+{
+    "catalog_database_type": "postgres",
+    "db_username": "irods",
+    "db_password": "testpassword"
+}
+

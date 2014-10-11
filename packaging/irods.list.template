@@ -319,6 +319,9 @@ f 644 root root ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/server_config.py ./packaging/server_config.py
 
+f 644 root root ${IRODS_HOME_DIR}/packaging/server_config.json ./packaging/server_config.json
+f 644 root root ${IRODS_HOME_DIR}/packaging/database_config.json ./packaging/database_config.json
+
 %if DEB
 c 755 root root /etc/init.d/irods ./packaging/irods
 %else
@@ -361,7 +364,8 @@ c 644 root root /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 c 644 root root /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
 c 644 root root /etc/irods/irodsHost ./iRODS/server/config/irodsHost
 c 644 root root /etc/irods/irods.config ./iRODS/config/irods.config
-c 644 root root /etc/irods/server.config ./iRODS/server/config/server.config.in
+#c 644 root root /etc/irods/server.config ./iRODS/server/config/server.config.in
+
 
 
 d 755 root root ${IRODS_HOME}/installLogs -

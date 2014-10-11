@@ -22,6 +22,7 @@ INC = -I${IRODSDIR}/lib/core/include/ \
       -I${IRODSDIR}/lib/rbudp/include \
       -I${IRODSDIR}/../plugins/api/include \
       -I$(LIBARCHIVE_DIR)/libarchive/ \
+      -I../../../external/jansson-2.5/src/ \
       -I$(BOOST_DIR) 
 
 MY_CFLAG += ${INC}
@@ -32,6 +33,7 @@ else
 LDADD += "-Wl,-E"
 endif
 
+LDADD += ../../../external/jansson-2.5/src/.libs/libjansson.a
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov

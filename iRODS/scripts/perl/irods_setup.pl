@@ -131,6 +131,36 @@ require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
 
 
+use lib qw(..);
+use JSON qw( );
+
+sub update_json_configuration_file {
+    my ($filename, %values) = @_;
+
+    my $json_text = do {
+           open(my $json_fh, "<:encoding(UTF-8)", $filename)
+                 or die("Can't open \$filename\": $!\n");
+                    local $/;
+                       <$json_fh>
+    };
+
+    my $json = JSON->new;
+    my $data = $json->decode($json_text);
+
+    # loop over key-val array and repave
+	foreach $key (keys %values) {
+        $data->{ $k } = $values{$key};
+    }
+
+    my $new_string = $json->pretty->encode( $data );
+
+    open( my $new_fh, $filename ) or die( "cant open file $filename" );
+    print $new_fh "$new_string";
+    close $new_fh;
+
+    return 1;
+}
+
 
 
 
@@ -1222,7 +1252,7 @@ sub testDatabase()
 #
 # @brief	Configure iRODS.
 #
-# Update the iRODS server.config file and create the default
+# Update the iRODS server_config.json file and create the default
 # directories.
 #
 # This is made more complicated by a lot of error checking to
@@ -1250,22 +1280,22 @@ sub configureIrodsServer
 
 
 
-	printStatus( "Updating iRODS server.config...\n" );
-	printLog( "Updating iRODS server.config...\n" );
+	printStatus( "Updating iRODS server_config.json...\n" );
+	printLog( "Updating iRODS server_config.json...\n" );
 
 	# Generate the MD5 scrambled form of the database password.
 	#	We will be setting database connections to use MD5
 	#	scrambling below.  From then on, we'll need the
 	#	scrambling password.
 	printLog( "    Getting scrambled admin password...\n" );
-	my $scrambledPassword = scramblePassword( $DATABASE_ADMIN_PASSWORD );
-	if ( !defined( $scrambledPassword ) )
-	{
-		printError( "\nInstall problem:\n" );
-		printError( "    Cannot scramble administrator password.\n" );
-		printLog( "\nCannot scramble adminstrator password.\n" );
-		cleanAndExit( 1 );
-	}
+	#my $scrambledPassword = scramblePassword( $DATABASE_ADMIN_PASSWORD );
+	#if ( !defined( $scrambledPassword ) )
+	#{
+	#	printError( "\nInstall problem:\n" );
+	#	printError( "    Cannot scramble administrator password.\n" );
+	#	printLog( "\nCannot scramble adminstrator password.\n" );
+	#	cleanAndExit( 1 );
+	#}
 
 
 	# Update/set the iRODS server configuration.
@@ -1277,37 +1307,46 @@ sub configureIrodsServer
 	#	may already be updated.  It's so small there is
 	#	little point in checking for this first.  Just
 	#	overwrite it with the correct values.
-    my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server.config" );
+    my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server_config.json" );
+    my $databaseConfigFile = File::Spec->catfile( $serverConfigDir,"database_config.json" );
     unless( -e $serverConfigFile ) {
-	     $serverConfigFile = File::Spec->catfile( "/etc/irods/","server.config" );
+	     $serverConfigFile = File::Spec->catfile( "/etc/irods/","server_config.json" );
+         $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
          unless( -e $serverConfigFile ) {
-              print( "server.config not found\n" );
+              print( "server_config.json not found\n" );
          }
 	}	
-	copyTemplateIfNeeded( $serverConfigFile );
+	#copyTemplateIfNeeded( $serverConfigFile );
 
 #	my $host = ($IRODS_ICAT_HOST eq "") ? $DATABASE_HOST : $IRODS_ICAT_HOST;
 	my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
 
-	my %variables = (
-		"icatHost",	$host,
-		"DBKey",	$DB_KEY,
-		"DBUsername",	$DATABASE_ADMIN_NAME,
-		"DBPassword",	$scrambledPassword );
-	printLog( "    Updating server.config....\n" );
-	printLog( "        icatHost   = $host\n" );
-	printLog( "        DBKey      = $DB_KEY\n" );
-	printLog( "        DBUsername = $DATABASE_ADMIN_NAME\n" );
-	printLog( "        DBPassword = $scrambledPassword\n" );
+	my %svr_variables = (
+		"icat_host",	$host );
+        my %db_variaibles = (
+		"db_username",	$DATABASE_ADMIN_NAME,
+		"db_password",	$DATABASE_ADMIN_PASSWORD );
+	printLog( "    Updating server_config.json....\n" );
+	printLog( "        icat_host   = $host\n" );
+	printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
+	printLog( "        db_password = $DATABASE_ADMIN_PASSWORD\n" );
 
-	($status,$output) = replaceVariablesInFile( $serverConfigFile,
-		"config", 1, %variables );
+	#($status,$output) = replaceVariablesInFile( $serverConfigFile,
+	#	"config", 1, %variables );
+
+        $status = update_json_configuration_file(
+                  $serverConfigFile,
+                  $svr_variarbles );
+
+        $status = update_json_configuration_file(
+                  $databaseConfigFile,
+                  $db_variarbles );
 	if ( $status == 0 )
 	{
 		printError( "\nInstall problem:\n" );
-		printError( "    Updating of iRODS server.config failed.\n" );
+		printError( "    Updating of iRODS server_config.json failed.\n" );
 		printError( "        ", $output );
-		printLog( "\nCannot update variables in server.config.\n" );
+		printLog( "\nCannot update variables in server_config.json.\n" );
 		printLog( "    ", $output );
 		cleanAndExit( 1 );
 	}
