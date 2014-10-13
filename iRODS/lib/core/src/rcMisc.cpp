@@ -1066,15 +1066,18 @@ resizeStrArray( strArray_t *strArray, int newSize ) {
 
 int
 clearKeyVal( keyValPair_t *condInput ) {
-    int i;
 
     if ( condInput == NULL || condInput->len < 1 ) {
         return 0;
     }
 
-    for ( i = 0; i < condInput->len; i++ ) {
-        free( condInput->keyWord[i] );
-        free( condInput->value[i] );
+    for ( int i = 0; i < condInput->len; i++ ) {
+        if ( condInput->keyWord != NULL ) {
+            free( condInput->keyWord[i] );
+        }
+        if ( condInput->value != NULL ) {
+            free( condInput->value[i] );
+        }
     }
 
     free( condInput->keyWord );
