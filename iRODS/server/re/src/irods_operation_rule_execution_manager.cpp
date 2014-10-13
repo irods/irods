@@ -33,7 +33,7 @@ namespace irods {
         // execute the rule
         return exec_op( _comm, _kvp, pre_name, _res );
 
-    } // exec_post_op
+    } // exec_pre_op
 
 // =-=-=-=-=-=-=-
 // public - execute rule for post operation
