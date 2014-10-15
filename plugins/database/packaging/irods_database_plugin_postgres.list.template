@@ -103,8 +103,6 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
-# irods_setup.pl expects this file to exist
-touch $IRODS_HOME_DIR/.odbc.ini
 # =-=-=-=-=-=-=-
 # detect whether this is an upgrade
 UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/upgrade.tmp

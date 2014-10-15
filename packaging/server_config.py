@@ -30,11 +30,7 @@ class Server_Config:
                             os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
                 self.capture(cfg_file, ' ')
 
-        thefile = "/var/lib/irods/.odbc.ini"
-        if os.path.isfile(thefile):
-            cfg_file = thefile
-        else:
-            cfg_file = os.environ['HOME'] + "/.odbc.ini"
+        cfg_file = os.path.join(os.environ['HOME'], ".odbc.ini")
         self.capture(cfg_file, '=')
 
         # old-key to new-key map
