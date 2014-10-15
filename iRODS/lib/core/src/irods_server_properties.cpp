@@ -74,7 +74,6 @@ namespace irods {
                                "server_config.json",
                                svr_cfg );
         if( ret.ok() ) {
-            config_props_.clear();
             ret = capture_json( svr_cfg );
             if ( !ret.ok() ) {
                 return PASS( ret );
