@@ -169,7 +169,8 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   mkdir -p $IRODS_HOME_DIR
   # write version information down for postinstall
   UPGRADE_TEMP_FILE="$IRODS_HOME_DIR/upgrade.tmp"
-  cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+#  cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+  echo "*** need to wrap version information in new VERSION.json file ***"
 
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
@@ -272,7 +273,7 @@ END_POSTREMOVE
 # Full File Listing
 # =-=-=-=-=-=-=-
 
-f 644 root root ${IRODS_HOME_DIR}/VERSION ./VERSION
+f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json.dist
 
 d 755 root root ${IRODS_HOME_DIR}/tests -
 d 755 root root ${IRODS_HOME_DIR}/tests/pydevtest -
