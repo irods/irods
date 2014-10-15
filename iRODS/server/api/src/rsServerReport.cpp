@@ -13,6 +13,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
+#include "irods_home_directory.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "server_report.hpp"
@@ -520,7 +521,7 @@ irods::error convert_service_account(
 
     json_object_set( _svc_acct, "irods_log_level", json_integer( my_env.rodsPort ) );
 
-    json_object_set( _svc_acct, "irods_auth_file_name", json_string( my_env.rodsAuthFileName ) );
+    json_object_set( _svc_acct, "irods_authentication_file_name", json_string( my_env.rodsAuthFileName ) );
 
     json_object_set( _svc_acct, "irods_debug", json_string( my_env.rodsDebug ) );
 
@@ -528,7 +529,7 @@ irods::error convert_service_account(
 
     json_object_set( _svc_acct, "irods_cwd", json_string( my_env.rodsCwd ) );
 
-    json_object_set( _svc_acct, "irods_auth_scheme", json_string( my_env.rodsAuthScheme ) );
+    json_object_set( _svc_acct, "irods_authentication_scheme", json_string( my_env.rodsAuthScheme ) );
 
     json_object_set( _svc_acct, "irods_user_name", json_string( my_env.rodsUserName ) );
 
@@ -701,7 +702,113 @@ irods::error get_plugin_array(
 
 } // get_plugin_array
 
+irods::error get_uname_string( 
+    std::string& _str ) {
 
+    struct utsname os_name;
+    memset( &os_name, 0, sizeof( os_name ) );
+    const int status = uname( &os_name );
+    if( status != 0 ) {
+        return ERROR( 
+                   status,
+                   "uname failed" );
+    }
+
+    _str.clear();
+    _str += "SYS_NAME=" ;
+    _str += os_name.sysname;
+    _str += ";NODE_NAME="; 
+    _str += os_name.nodename;
+    _str += ";RELEASE="; 
+    _str += os_name.release;
+    _str += ";VERSION="; 
+    _str += os_name.version;
+    _str += ";MACHINE="; 
+    _str += os_name.machine;
+
+    return SUCCESS();
+
+} // get_uname_string
+
+irods::error get_script_output_single_line(const std::string& script_language, const std::string& script_name, const std::vector<std::string>& args, std::string& output) {
+    output.clear();
+    std::stringstream exec;
+    exec << script_language << " " << irods::IRODS_HOME_DIRECTORY << "/iRODS/scripts/" << script_language << "/" << script_name;
+    for (std::vector<std::string>::size_type i=0; i<args.size(); ++i) {
+        exec << " " << args[i];
+    }
+
+    FILE *fp = popen(exec.str().c_str(), "r");
+    if (fp == NULL) {
+        return ERROR( SYS_FORK_ERROR, "popen() failed" );
+    }
+
+    std::vector<char> buf(1000);
+    const char* fgets_ret = fgets(&buf[0], buf.size(), fp);
+    if (fgets_ret == NULL) {
+        const int pclose_ret = pclose(fp);
+        std::stringstream msg;
+        msg << "fgets() failed. feof[" << std::feof(fp) << "] ferror[" << std::ferror(fp) << "] pclose[" << pclose_ret << "]";
+        return ERROR( FILE_READ_ERR,
+                      msg.str() );
+    }
+
+    const int pclose_ret = pclose(fp);
+    if (pclose_ret == -1) {
+        return ERROR( SYS_FORK_ERROR,
+                      "pclose() failed." );
+    }
+
+    output = &buf[0];
+    // Remove trailing newline
+    const std::string::size_type size = output.size();
+    if (size > 0 && output[size-1] == '\n') {
+        output.resize(size-1);
+    }
+
+    return SUCCESS();
+
+}  // get_script_output
+
+irods::error get_host_system_information(
+    json_t*& _host_system_information ) {
+
+    _host_system_information = json_object();
+    if ( !_host_system_information ) {
+        return ERROR(
+                   SYS_MALLOC_ERR,
+                   "json_object() failed" );
+    }
+
+
+    std::string uname_string;
+    irods::error ret = get_uname_string( uname_string );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+    json_object_set( _host_system_information, "uname", json_string( uname_string.c_str() ) );
+
+    std::vector<std::string> args;
+    args.push_back("os_distribution_name");
+    std::string os_distribution_name;
+    ret = get_script_output_single_line("python", "system_identification.py", args, os_distribution_name);
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+    json_object_set( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
+
+    args.clear();
+    args.push_back("os_distribution_version");
+    std::string os_distribution_version;
+    ret = get_script_output_single_line("python", "system_identification.py", args, os_distribution_version);
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+    json_object_set( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
+
+    return SUCCESS();
+
+} // get_host_system_information
 
 irods::error get_resource_array(
     json_t*& _resources ) {
@@ -710,7 +817,7 @@ irods::error get_resource_array(
     if ( !_resources ) {
         return ERROR(
                    SYS_MALLOC_ERR,
-                   "json_object() failed" );
+                   "json_array() failed" );
     }
 
     rodsEnv my_env;
@@ -991,39 +1098,6 @@ irods::error get_database_config(
 
 #endif
 
-
-
-irods::error get_os_string( 
-    std::string& _str ) {
-
-    struct utsname os_name;
-    memset( &os_name, 0, sizeof( os_name ) );
-    int status = uname( &os_name );
-    if( status != 0 ) {
-        return ERROR( 
-                   status,
-                   "uname failed" );
-    }
-
-    _str.clear();
-    _str += "SYS_NAME=" ;
-    _str += os_name.sysname;
-    _str += ";NODE_NAME="; 
-    _str += os_name.nodename;
-    _str += ";RELEASE="; 
-    _str += os_name.release;
-    _str += ";VERSION="; 
-    _str += os_name.version;
-    _str += ";MACHINE="; 
-    _str += os_name.machine;
-
-    return SUCCESS();
-
-} // get_os_string
-
-
-
-
 int _rsServerReport(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf ) {
@@ -1035,7 +1109,7 @@ int _rsServerReport(
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( bytesBuf_t ) );
+    ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( **_bbuf ) );
     if ( !( *_bbuf ) ) {
         rodsLog(
             LOG_ERROR,
@@ -1048,14 +1122,12 @@ int _rsServerReport(
     json_t* resc_svr = json_object();
     json_object_set( resc_svr, "commit_id", json_string( "0000000000000000000000000000000000000000" ) );
 
-    std::string os_string;
-    irods::error ret = get_os_string( os_string );
-    if( !ret.ok() ) {
+    json_t* host_system_information = 0;
+    irods::error ret = get_host_system_information( host_system_information );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "os", json_string( os_string.c_str() ) );
-
-
+    json_object_set( resc_svr, "host_system_information", host_system_information );
 
     json_t* svr_cfg = 0;
     ret = convert_server_config( svr_cfg );
@@ -1064,14 +1136,12 @@ int _rsServerReport(
     }
     json_object_set( resc_svr, "server_config", svr_cfg );
 
-
     json_t* host_ctrl = 0;
     ret = convert_host_access_control( host_ctrl );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( resc_svr, "host_access_control_config", host_ctrl );
-
 
     json_t* irods_host = 0;
     ret = convert_irods_host( irods_host );
@@ -1080,14 +1150,12 @@ int _rsServerReport(
     }
     json_object_set( resc_svr, "hosts_config", irods_host );
 
-
     json_t* svc_acct = 0;
     ret = convert_service_account( svc_acct );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( resc_svr, "service_account_environment", svc_acct );
-
 
     json_t* plugins = 0;
     ret = get_plugin_array( plugins );
@@ -1096,14 +1164,12 @@ int _rsServerReport(
     }
     json_object_set( resc_svr, "plugins", plugins );
 
-
     json_t* resources = 0;
     ret = get_resource_array( resources );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( resc_svr, "resources", resources );
-
 
     json_t* cfg_dir = 0;
     ret = get_config_dir( cfg_dir );
