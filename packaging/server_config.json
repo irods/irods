@@ -21,6 +21,6 @@
 		"default_hash_scheme": "SHA256",
 		"zone_id": "TEMP_LOCAL_ZONE_SID",
 		"negotiation_key": "temp_32_byte_key_for_agent__conn",
-		"match_hash_policy": "not_strict",
+		"match_hash_policy": "not_strict"
 }
 
