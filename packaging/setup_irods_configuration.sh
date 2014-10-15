@@ -229,10 +229,10 @@ fi
       MYLOCALZONESID=`echo "${MYLOCALZONESID}" | sed -e "s/\///g"`
       echo ""
 
-      # get negotation_key
+      # get negotiation_key
       AGENTKEYLENGTH=0
       while [ $AGENTKEYLENGTH -ne 32 ] ; do
-          echo -n "iRODS server's negotation_key"
+          echo -n "iRODS server's negotiation_key"
           if [ "$LASTMYAGENTKEY" ] ; then
             echo -n " [$LASTMYAGENTKEY]"
           else
@@ -253,7 +253,7 @@ fi
           # check length (must equal 32)
           AGENTKEYLENGTH=${#MYAGENTKEY}
           if [ $AGENTKEYLENGTH -ne 32 ] ; then
-              echo "   *** negotation_key must be exactly 32 bytes ***"
+              echo "   *** negotiation_key must be exactly 32 bytes ***"
               echo ""
               echo "   $MYAGENTKEY <- $AGENTKEYLENGTH bytes"
               echo "   ________________________________ <- 32 bytes"
@@ -299,7 +299,7 @@ fi
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
       echo "zone_id:                $MYLOCALZONESID"
-      echo "negotation_key:         $MYAGENTKEY"
+      echo "negotiation_key:        $MYAGENTKEY"
       echo "Administrator Username: $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "Administrator Password: Not Shown"
@@ -370,7 +370,7 @@ fi
     TMPFILE="/tmp/$USER/setupserverconfig.txt"
     echo "Updating $MYSERVERCONFIG..."
     sed -e "/\"zone_id\": \"$PREVIOUSSID\",/s/^.*$/    \"zone_id\": \"$MYLOCALZONESID\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
-    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
+    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotiation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
 
 
 
