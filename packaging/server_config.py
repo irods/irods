@@ -10,37 +10,37 @@ class Server_Config:
     def __init__(self):
         thefile = "/etc/irods/server_config.json"
         if os.path.isfile(thefile):
-	    self.capture( '/etc/irods/server_config.json', ' ')
-	    self.capture( '/etc/irods/database_config.json', ' ')
+            self.capture( '/etc/irods/server_config.json', ' ')
+            self.capture( '/etc/irods/database_config.json', ' ')
         else:
             cfg_file = os.path.dirname(
                     os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server_config.json"
             if os.path.isfile(thefile):
-                cfg_file = thefile 
+                cfg_file = thefile
                 self.capture( thefile, ' ' )
                 cfg_file = os.path.dirname(
                         os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/database_config.json"
                 self.capture( thefile, ' ' )
             else:
-		thefile = "/etc/irods/server.config"
-		if os.path.isfile(thefile):
-			cfg_file = thefile
-		else:
-			cfg_file = os.path.dirname(
-			    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
-	        self.capture(cfg_file, ' ')
+                thefile = "/etc/irods/server.config"
+                if os.path.isfile(thefile):
+                        cfg_file = thefile
+                else:
+                        cfg_file = os.path.dirname(
+                            os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
+                self.capture(cfg_file, ' ')
 
         thefile = "/var/lib/irods/.odbc.ini"
         if os.path.isfile(thefile):
             cfg_file = thefile
-	else:
+        else:
             cfg_file = os.environ['HOME'] + "/.odbc.ini"
         self.capture(cfg_file, '=')
-   
+
         # old-key to new-key map
         self.key_map = { 'DBPassword' : 'db_username', 'DBUsername' : 'db_username' }
 
- 
+
     def get(self, key):
         if key in self.values:
             return self.values[key]
@@ -62,7 +62,7 @@ class Server_Config:
                 #print json.dumps( self.values, indent=4, sort_keys=True )
             finally:
                 f.close()
-        else: 
+        else:
             try:
                 for i, row in enumerate(f):
                     columns = row.split(sep)
