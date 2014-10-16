@@ -24,6 +24,7 @@ ret=${elf_links[0]}
 if [ "$ret" == "" ]; then
     echo "No MySQL [mysql] found.  Aborting." 1>&2
     ret="FAIL/FAIL"
+    exit 1
 fi
 
 # =-=-=-=-=-=-=-

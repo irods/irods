@@ -1,142 +1,107 @@
-import time
-import os
-import subprocess
-import re
+from __future__ import print_function
+
 import json
+import os
+import re
+import subprocess
+import time
 
-class Server_Config:
-    values = {}
+def get_install_dir():
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
+class ServerConfig(object):
     def __init__(self):
-        thefile = "/etc/irods/server_config.json"
-        if os.path.isfile(thefile):
-            self.capture( '/etc/irods/server_config.json', ' ')
-            self.capture( '/etc/irods/database_config.json', ' ')
+        if os.path.isfile('/etc/irods/server_config.json'):
+            self.capture('/etc/irods/server_config.json', ' ')
+            self.capture('/etc/irods/database_config.json', ' ')
+        # Run in place
+        elif os.path.isfile(get_install_dir() + '/iRODS/server/config/server_config.json'):
+            self.capture(get_install_dir() + '/iRODS/server/config/server_config.json', ' ')
+            self.capture(get_install_dir() + '/iRODS/server/config/database_config.json', ' ')
+        # Support deprecated pre-json config files through 4.1.x
         else:
-            cfg_file = os.path.dirname(
-                    os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server_config.json"
+            thefile = '/etc/irods/server.config'
             if os.path.isfile(thefile):
                 cfg_file = thefile
-                self.capture( thefile, ' ' )
-                cfg_file = os.path.dirname(
-                        os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/database_config.json"
-                self.capture( thefile, ' ' )
             else:
-                thefile = "/etc/irods/server.config"
-                if os.path.isfile(thefile):
-                        cfg_file = thefile
-                else:
-                        cfg_file = os.path.dirname(
-                            os.path.dirname(os.path.realpath(__file__))) + "/iRODS/server/config/server.config"
-                self.capture(cfg_file, ' ')
+                cfg_file = get_install_dir() + '/iRODS/server/config/server.config'
+            self.capture(cfg_file, ' ')
 
-        cfg_file = os.path.join(os.environ['HOME'], ".odbc.ini")
-        self.capture(cfg_file, '=')
-
-        # old-key to new-key map
-        self.key_map = { 'DBPassword' : 'db_username', 'DBUsername' : 'db_username' }
-
+        self.capture(os.path.join(os.environ['HOME'], '.odbc.ini'), '=')
 
     def get(self, key):
+        # old-key to new-key map
+        map_deprecated_keys = {'DBPassword': 'db_password', 'DBUsername': 'db_username'}
         if key in self.values:
             return self.values[key]
-        elif key in self.key_map:
-            return self.values[ self.key_map[ key ] ]
+        elif key in map_deprecated_keys:
+            return self.values[map_deprecated_keys[key]]
         else:
-            return 'KEY_NOT_FOUND'
-
+            raise KeyError(key)
 
     def capture(self, cfg_file, sep):
         # NOTE:: we want to make this programmatically detected
         cfg_file = os.path.abspath(cfg_file)
-        #print "cfg_file = ", cfg_file
-        name, ext = os.path.splitext( cfg_file )
-        f = open(cfg_file, 'r')
-        if( ".json" == ext ):
-            try:
-                self.values = json.load( f )
-                #print json.dumps( self.values, indent=4, sort_keys=True )
-            finally:
-                f.close()
-        else:
-            try:
+        name, ext = os.path.splitext(cfg_file)
+        with open(cfg_file, 'r') as f:
+            if '.json' == ext:
+                self.values = json.load(f)
+            else:
                 for i, row in enumerate(f):
                     columns = row.split(sep)
                     # print columns
-                    col_0 = columns[0]
-                    if(col_0[0] == '#'):
+                    if columns[0] == '#':
                         continue
                     elif len(columns) > 1:
-                        self.values[columns[0] .rstrip()] = columns[1].rstrip()
-            finally:
-                f.close()
+                        self.values[columns[0].rstrip()] = columns[1].rstrip()
 
-    def get_db_pass(self):
-        db_key = self.values['DBKey']
+    def get_db_password(self):
+        try:
+            db_key = self.values['DBKey']
+        except KeyError:
+            return self.values['db_password']
 
-        if 'KEY_NOT_FOUND' == db_key:
-            return self.values['DBPassword']
-        else:
-            db_obf_pass = self.values['DBPassword']
-            run_str = "iadmin dspass '" + db_obf_pass + "' " + db_key
-            p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            (db_pass, db_err) = p.communicate()
-            return db_pass.split(":")[1].rstrip()
+        obfuscated_password = self.values['db_password']
+        p = subprocess.Popen(['iadmin', obfuscated_password, db_key],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        db_pass, db_err = p.communicate()
+        if p.returncode != 0:
+            raise RuntimeError('Failed to decode db password. stdout[{0}], stderr[{1}]'.format(stdout, stderr))
+        return db_pass.split(':')[1].rstrip()
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # POSTGRES
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_pgsql_cmd(self, sql):
         sql = sql.strip()
-        if( not sql.endswith( ';' ) ):
-            sql = sql + ";"
+        if not sql.endswith(';'):
+            sql += ';'
 
-        sqlfile = "tmpsqlfile"
-        f = open(sqlfile, 'w+')
-        f.write(sql)
-        f.close()
-        (returncode, myout, myerr) = self.exec_pgsql_file(sqlfile)
+        sqlfile = 'tmpsqlfile'
+        with open(sqlfile, 'w+') as f:
+            f.write(sql)
+        returncode, myout, myerr = self.exec_pgsql_file(sqlfile)
         os.unlink(sqlfile)
         return (returncode, myout, myerr)
 
-    def exec_pgsql_file(self, sql):
-        fbp = os.path.dirname(
-            os.path.realpath(__file__)) + "/find_bin_postgres.sh"
-        if( not os.path.isfile(fbp) ):
-                fbp = os.path.dirname( os.path.dirname(
-                        os.path.realpath(__file__))) + "/plugins/database/packaging/find_bin_postgres.sh"
-        p = subprocess.Popen(
-            fbp,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-
-        sqlclient = ""
-        for line in p.stdout:
-            sqlclient = line.decode('utf-8').rstrip() + "/psql"
-        retval = p.wait()
-        if retval != 0:
-            print("find_bin_postgres.sh failed")
-            return
-
+    def exec_pgsql_file(self, sql_filename):
+        fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_postgres.sh'
+        if not os.path.isfile(fbp):
+            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_postgres.sh'
+        p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            raise RuntimeError('Failed to find postgres binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
+        sqlclient = stdout.strip().decode('utf-8').rstrip() + '/psql'
         db_host = self.values['Servername']
         db_port = self.values['Port']
         db_name = self.values['Database']
         if db_host == 'localhost':
-            run_str = sqlclient + \
-            " -p " + db_port + \
-            " " + db_name + \
-            " < " + sql
+            run_str = '{sqlclient} -p {db_port} {db_name} < {sql_filename}'.format(**vars())
         else:
-            run_str = sqlclient + \
-            " -h " + db_host + \
-            " -p " + db_port + \
-            " " + db_name + \
-            " < " + sql
-
-        p = subprocess.Popen(
-            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (myout, myerr) = p.communicate()
+            run_str = '{sqlclient} -h {db_host} -p {db_port} {db_name} < {sql_filename}'.format(**vars())
+        p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -144,50 +109,31 @@ class Server_Config:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_mysql_cmd(self, sql):
         sql = sql.strip()
-        if( not sql.endswith( ';' ) ):
-            sql = sql + ";"
+        if not sql.endswith(';'):
+            sql += ';'
 
-        sqlfile = "tmpsqlfile"
-        f = open(sqlfile, 'w+')
-        f.write(sql)
-        f.close()
-        (returncode, myout, myerr) = self.exec_mysql_file(sqlfile)
+        sqlfile = 'tmpsqlfile'
+        with open(sqlfile, 'w+') as f:
+            f.write(sql)
+        returncode, myout, myerr = self.exec_mysql_file(sqlfile)
         os.unlink(sqlfile)
         return (returncode, myout, myerr)
 
-    def exec_mysql_file(self, sql):
-        fbp = os.path.dirname(
-            os.path.realpath(__file__)) + "/find_bin_mysql.sh"
-        p = subprocess.Popen(
-            fbp,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-
-        sqlclient = ""
-        for line in p.stdout:
-            sqlclient = line.decode('utf-8').rstrip() + "/mysql"
-        retval = p.wait()
-        if retval != 0:
-            print("find_bin_mysql.sh failed")
-            return
-
+    def exec_mysql_file(self, sql_filename):
+        fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_mysql.sh'
+        p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            raise RuntimeError('Failed to find mysql binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
+        sqlclient = stdout.strip().decode('utf-8').rstrip() + '/mysql'
         db_host = self.values['Server']
         db_port = self.values['Port']
         db_name = self.values['Database']
         db_user = self.values['DBUsername']
-        db_pass = self.get_db_pass()
-        run_str = sqlclient + \
-                  " -h " + db_host + \
-                  " -u " + db_user + \
-                  " --password=" + db_pass + \
-                  " -P " + db_port + \
-                  " " + db_name + \
-                  " < " + sql
-
-        p = subprocess.Popen(
-            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (myout, myerr) = p.communicate()
+        db_pass = self.get_db_password()
+        run_str = '{sqlclient} -h {db_host} -u {db_user} --password={db_pass} -P {db_port} {db_name} < {sql_filename}'.format(**vars())
+        p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -195,47 +141,30 @@ class Server_Config:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_oracle_cmd(self, sql):
         sql = sql.strip()
-        if( not sql.endswith( ';' ) ):
-            sql = sql + ";"
+        if not sql.endswith(';'):
+            sql += ';'
 
-        sqlfile = "tmpsqlfile"
-        f = open(sqlfile, 'w+')
-        f.write(sql)
-        f.close()
-        (returncode, myout, myerr) = self.exec_oracle_file(sqlfile)
+        sqlfile = 'tmpsqlfile'
+        with open(sqlfile, 'w+') as f:
+            f.write(sql)
+        returncode, myout, myerr = self.exec_oracle_file(sqlfile)
         os.unlink(sqlfile)
         return (returncode, myout, myerr)
 
-    def exec_oracle_file(self, sql):
-        fbp = os.path.dirname(
-            os.path.realpath(__file__)) + "/find_bin_oracle.sh"
-        p = subprocess.Popen(
-            fbp,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-
-        sqlclient = ""
-        for line in p.stdout:
-            sqlclient = line.decode('utf-8').rstrip()
-        retval = p.wait()
-        if retval != 0:
-            print("find_bin_oracle.sh failed")
-            return
-
+    def exec_oracle_file(self, sql_filename):
+        fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_oracle.sh'
+        p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            raise RuntimeError('Failed to find oracle binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
+        sqlclient = stdout.strip().decode('utf-8').rstrip()
         db_port = self.values['Port']
-        db_user = self.values['DBUsername'].split("@")[0]
-        db_host = self.values['DBUsername'].split("@")[1]
-        db_pass = self.get_db_pass()
-        run_str = sqlclient + \
-            " " + db_user + \
-            "/" + db_pass + \
-            "@" + db_host + \
-            " < " + sql
-
-        p = subprocess.Popen(
-            run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (myout, myerr) = p.communicate()
+        db_user = self.values['DBUsername'].split('@')[0]
+        db_host = self.values['DBUsername'].split('@')[1]
+        db_pass = self.get_db_password()
+        run_str = '{sqlclient} {db_user}/{db_pass}@{db_host} < {sql_filename}'.format(**vars())
+        p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -248,8 +177,7 @@ class Server_Config:
             return self.exec_mysql_cmd(sql)
         if self.values['catalog_database_type'] == 'oracle':
             return self.exec_oracle_cmd(sql)
-        print( "exec_sql_cmd: unknown database type [%s]", self.values['catalog_database_type'])
-        return
+        print('exec_sql_cmd: unknown database type [{0}]'.format(self.values['catalog_database_type']))
 
     def exec_sql_file(self, sql):
         if self.values['catalog_database_type'] == 'postgres':
@@ -258,5 +186,4 @@ class Server_Config:
             return self.exec_mysql_file(sql)
         if self.values['catalog_database_type'] == 'oracle':
             return self.exec_oracle_file(sql)
-        print( "exec_sql_file: unknown determine database type [%s]", self.values['catalog_database_type'])
-        return
+        print('exec_sql_file: unknown database type [{0}]'.format(self.values['catalog_database_type']))

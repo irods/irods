@@ -18,7 +18,7 @@ pydevtestdir = os.path.realpath(__file__)
 topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
 packagingdir = os.path.join(topdir,"packaging")
 sys.path.append(packagingdir)
-from server_config import Server_Config
+from server_config import ServerConfig
 
 class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
   
@@ -61,7 +61,7 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
     def test_load_balanced(self):
        # =-=-=-=-=-=-=-
        # read server.config and .odbc.ini
-       cfg = Server_Config() 
+       cfg = ServerConfig() 
     
        if cfg.values[ 'catalog_database_type' ] == "postgres" :
            # =-=-=-=-=-=-=-

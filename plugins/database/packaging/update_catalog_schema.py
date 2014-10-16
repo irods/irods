@@ -1,6 +1,6 @@
 import time
 import os
-from server_config import Server_Config
+from server_config import ServerConfig
 import subprocess
 
 schema_directory = "schema_updates"
@@ -156,7 +156,7 @@ def get_update_files(version, dbtype):
 
 def update_database_to_latest_version():
     # get config
-    cfg = Server_Config()
+    cfg = ServerConfig()
     # get current version
     current_schema_version = get_current_schema_version(cfg)
     # get target version

@@ -20,7 +20,7 @@ pydevtestdir = os.path.realpath(__file__)
 topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
 packagingdir = os.path.join(topdir,"packaging")
 sys.path.append(packagingdir)
-from server_config import Server_Config
+from server_config import ServerConfig
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -342,7 +342,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_rebalance_for_object_count(self):
         # =-=-=-=-=-=-=-
         # read server.config and .odbc.ini
-        cfg = Server_Config()
+        cfg = ServerConfig()
  
         root_dir = "/tmp/irods/big_dir"
         if os.path.exists( root_dir ):
