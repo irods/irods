@@ -1375,10 +1375,10 @@ sub configureIrodsServer
 		# Set the four key irods user env variables so iinit
 		# will not attempt to create .irodsEnv (and prompt and
 		# hang).  The .irodsEnv is created properly later.
-		$ENV{"irodsHost"}=$thisHost;
-		$ENV{"irodsPort"}=$IRODS_PORT;
-		$ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
-		$ENV{"irodsZone"}=$ZONE_NAME;
+		$ENV{"IRODS_HOST"}=$thisHost;
+		$ENV{"IRODS_PORT"}=$IRODS_PORT;
+		$ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
+		$ENV{"IRODS_ZONE"}=$ZONE_NAME;
 
 		printStatus( "Running 'iinit' to enable server to server connections...\n" );
 		printLog( "Running 'iinit' to enable server to server connections...\n" );
@@ -1388,10 +1388,10 @@ sub configureIrodsServer
 		printLog( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
 
 		# Unset environment variables temporarily set above.
-		delete $ENV{"irodsHost"};
-		delete $ENV{"irodsPort"};
-		delete $ENV{"irodsUserName"};
-		delete $ENV{"irodsZone"};
+		delete $ENV{"IRODS_HOST"};
+		delete $ENV{"IRODS_PORT"};
+		delete $ENV{"IRODS_USER_NAME"};
+		delete $ENV{"IRODS_ZONE"};
 		return;
 	}
 
@@ -1425,14 +1425,14 @@ sub configureIrodsServer
 	#	directories.
 	printStatus( "Starting iRODS server with boot environment...\n" );
 	printLog( "\nStarting iRODS server with boot environment...\n" );
-	printLog( "    Setting irodsEnvFile to $bootEnv\n" );
-	$ENV{"irodsEnvFile"} = $bootEnv;
+	printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
+	$ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
 	open( BOOTENV, "<$bootEnv" );
 	my $line;
 	foreach $line (<BOOTENV>)
 	{
 		printLog( "    ", $line );
-		if ( $line =~ "irodsPort") {
+		if ( $line =~ "irods_port") {
 			$currentPort = substr($line, 10);
 			chomp($currentPort);
 		}
@@ -1478,12 +1478,13 @@ sub configureIrodsServer
                 printLog( "\nOpening iRODS connection using admin password...\n" );
 
                 # Delete the in-flight boot envfile;
-                delete $ENV{"irodsEnvFile"};
+                delete $ENV{"IRODS_ENVIRONMENT_FILE"};
                 # Set up admin environment
-                $ENV{"irodsHost"}=$thisHost;
-                $ENV{"irodsPort"}=$IRODS_PORT;
-                $ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
-                $ENV{"irodsZone"}=$ZONE_NAME;
+                $ENV{"IRODS_HOST"}=$thisHost;
+                $ENV{"IRODS_PORT"}=$IRODS_PORT;
+                $ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
+                $ENV{"IRODS_ZONE"}=$ZONE_NAME;
+                $ENV{"IRODS_AUTHENTICATION_SCHEME"}="native";
                 # Restart the server with admin credentials
                 if ( stopIrods( ) == 0 )
                 {
@@ -1759,10 +1760,11 @@ sub configureIrodsServer
 
                                 # restart server as non-boot admin
                                 stopIrods();
-                                $ENV{"irodsHost"}=$thisHost;
-                                $ENV{"irodsPort"}=$IRODS_PORT;
-                                $ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
-                                $ENV{"irodsZone"}=$ZONE_NAME;
+                                $ENV{"IRODS_HOST"}=$thisHost;
+                                $ENV{"IRODS_PORT"}=$IRODS_PORT;
+                                $ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
+                                $ENV{"IRODS_ZONE"}=$ZONE_NAME;
+                                $ENV{"IRODS_AUTHENTICATION_SCHEME"}="native";
                                 startIrods();
                                 # login
                                 $command = "$iinit $IRODS_ADMIN_PASSWORD";
@@ -1792,7 +1794,7 @@ sub configureIrodsServer
 	# Clean up.  Stop using the boot environment and delete
 	# the authorization file.
 	runIcommand( "$iexit full" );
-	$ENV{"irodsEnvFile"} = undef;
+	$ENV{"IRODS_ENVIRONMENT_FILE"} = undef;
 	if ( -e $authFile )
 	{
 		unlink( $authFile );
@@ -1892,88 +1894,26 @@ sub configureIrodsUser
 		chmod( 0600, $userIrodsFile . ".orig" );
 	}
 
-	if( 1 == $icatInstall ) {
-		# this is an instance of an iCAT installation as 
-		# determined by the passing of configuration parameters ( database info ).
-		printToFile( $userIrodsFile,
-			"# iRODS personal configuration file.\n" .
-			"#\n" .
-			"# This file was automatically created during iRODS installation.\n" .
-			"#   Created " . getCurrentDateTime( ) . "\n" .
-			"#\n" .
-			"# iRODS server host name:\n" .
-			"irodsHost '$thisHost'\n" .
-			"# iRODS server port number:\n" .
-			"irodsPort $IRODS_PORT\n" .
-			"# Default storage resource name:\n" .
-			"irodsDefResource '$RESOURCE_NAME'\n" .
-			"# Home directory in iRODS:\n" .
-			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-			"# Current directory in iRODS:\n" .
-			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-			"# Account name:\n" .
-			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
-			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n" .
-			"# Enable Advanced Client-Server negotiation:\n" .
-			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
-			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
-			"# Client-Server Encryption Key Size In Bytes:\n" .
-			"irodsEncryptionKeySize '32'\n" .
-			"# Client-Server Encryption Salt Size In Bytes:\n" .
-			"irodsEncryptionSaltSize '8'\n" .
-			"# Client-Server Encryption Number of Hash Rounds:\n" .
-			"irodsEncryptionNumHashRounds '16'\n" .
-			"# Client-Server Encryption Algorithm:\n" .
-			"irodsEncryptionAlgorithm 'AES-256-CBC'\n".
-			"# Client requested hash scheme:\n".
-            "irodsDefaultHashScheme 'SHA256'\n".
-            "# Hash Matching Policy:\n".
-            "#irodsMatchHashPolicy 'strict'\n"
-             );
-
-	} else {
-		# this is an instance of a Resource Server installation as
-		# determined by the lack of database info passed to the script.
-		# this info will be temp. until setup_resource.sh is run by the DGA.
-
-		printToFile( $userIrodsFile,
-			"# iRODS personal configuration file.\n" .
-			"#\n" .
-			"# This file was automatically created during iRODS installation.\n" .
-			"#   Created " . getCurrentDateTime( ) . "\n" .
-			"#\n" .
-			"# iRODS server host name:\n" .
-			"irodsHost '$thisHost'\n" .
-			"# iRODS server port number:\n" .
-			"irodsPort $IRODS_PORT\n" .
-			"# Default storage resource name:\n" .
-			"irodsDefResource '$RESOURCE_NAME'\n" .
-			"# Home directory in iRODS:\n" .
-			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-			"# Current directory in iRODS:\n" .
-			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-			"# Account name:\n" .
-			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
-			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n".
-			"# Enable Advanced Client-Server negotiation:\n" .
-			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
-			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" .
-			"# Client-Server Encryption Key Size In Bytes:\n" .
-			"irodsEncryptionKeySize '32'\n" .
-			"# Client-Server Encryption Salt Size In Bytes:\n" .
-			"irodsEncryptionSaltSize '8'\n" .
-			"# Client-Server Encryption Number of Hash Rounds:\n" .
-			"irodsEncryptionNumHashRounds '16'\n" .
-			"# Client-Server Encryption Algorithm:\n" .
-			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n"
-		);
-	}
-
-
+    # populate the irods environment for this server instance
+    printToFile( $userIrodsFile,
+        "{\n" .
+        "\"irods_host\": \"$thisHost\",\n" .
+        "\"irods_port\": \"$IRODS_PORT\",\n" .
+        "\"irods_default_resource\": \"$RESOURCE_NAME\",\n" .
+        "\"irods_home\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
+        "\"irods_cwd\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
+        "\"irods_user_name\": \"$IRODS_ADMIN_NAME\",\n" .
+        "\"irods_zone\": \"$ZONE_NAME\",\n" .
+        "\"irods_client_server_negotiation\": \"request_server_negotiation\",\n" .
+        "\"irods_client_server_policy\": \"CS_NEG_REFUSE\",\n" .
+        "\"irods_encryption_key_size\": 32,\n" .
+        "\"irods_encryption_salt_size\": 8,\n" .
+        "\"irods_encryption_num_hash_rounds\": 16,\n" .
+        "\"irods_encryption_algorithm\": \"AES-256-CBC\",\n" .
+        "\"irods_default_hash_scheme\": \"SHA256\",\n" .
+        "\"irods_match_hash_policy\": \"not_strict\"\n" .
+        "}\n"
+         );
 
 
 	chmod( 0600, $userIrodsFile );

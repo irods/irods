@@ -96,6 +96,9 @@ namespace irods {
 
         }
 
+        // set the captured flag so we no its already been captured
+        captured_ = true;
+
         return SUCCESS();
 
     } // capture
@@ -538,9 +541,6 @@ namespace irods {
         prop_setting.assign( DBKey );
         result = config_props_.set<std::string>( prop_name, prop_setting );
         rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
-
-        // set the captured flag so we no its already been captured
-        captured_ = true;
 
         return result;
 

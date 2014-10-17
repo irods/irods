@@ -5,6 +5,7 @@
 #include "irods_log.hpp"
 
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -82,22 +83,7 @@ namespace irods {
                        "file is empty" );
         }
      
-        fs::path ext_path = fs::path( _file ).extension(); 
-        std::string ext = ext_path.string();
-
-        irods::error ret;
-        std::string::size_type pos = ext.find( "json" );
-        if( std::string::npos != pos ) {
-            ret = load_json_object( _file );
-
-        } else {
-            std::string msg( "file type not supported [" );
-            msg += ext;
-            msg += "]";
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
-        }
+        error ret = load_json_object( _file );
 
         return ret;
 
@@ -199,6 +185,12 @@ namespace irods {
         return SUCCESS();
 
     } // parse_json_object
+
+    std::string to_env( 
+        const std::string& _v ) {
+        return boost::to_upper_copy<
+                   std::string >( _v );
+    }
 
 }; // namespace irods
 

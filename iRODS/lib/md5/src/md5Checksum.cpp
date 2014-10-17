@@ -106,7 +106,6 @@ int chksumLocFile(
 
     }
 
-
     // =-=-=-=-=-=-=-
     // verify checksum scheme against configuration
     // if requested

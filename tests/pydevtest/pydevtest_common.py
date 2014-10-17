@@ -4,6 +4,7 @@ import socket
 import shlex
 import time
 import psutil
+import json
 from signal import signal, SIGPIPE, SIG_DFL
 
 # Ignore SIG_PIPE and don't throw exceptions on it...
@@ -26,6 +27,16 @@ RUN_AS_RESOURCE_SERVER=False;
 if os.name != "nt":
     import fcntl
     import struct
+
+def mod_json_file(fn,new_dict):
+        with open(fn) as f:
+            env = json.load( f )
+
+        for k,v in new_dict.items():
+            env[k] = v
+
+        with open(fn, 'w') as f:
+            json.dump(env, f)
 
 def get_interface_ip(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

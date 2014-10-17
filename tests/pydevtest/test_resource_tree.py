@@ -35,8 +35,12 @@ class Test_ilsresc(unittest.TestCase):
         # Run ilsresc --tree
         output = getiCmdOutput(s.adminsession, "ilsresc --tree")
         
-        # Print tree (might as well...)
-        print output[0]
+        # Check that stderr is empty
+        assert len(output[1]) == 0
+
+    def test_ilsresc_tree_with_ascii_output(self):
+        # Run ilsresc --tree with ascii output
+        output = getiCmdOutput(s.adminsession, "ilsresc --tree --ascii")
         
         # Check that stderr is empty
         assert len(output[1]) == 0

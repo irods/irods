@@ -358,7 +358,7 @@ int clientLogin(
             char* auth_env_var = getenv( "irodsAuthScheme" );
             if ( !auth_env_var ) {
                 rodsEnv rods_env;
-                if ( getRodsEnv( &rods_env ) ) {
+                if ( getRodsEnv( &rods_env ) >= 0 ) {
                     if ( strlen( rods_env.rodsAuthScheme ) > 0 ) {
                         auth_scheme = rods_env.rodsAuthScheme;
 

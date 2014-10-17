@@ -56,7 +56,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST","notaresource")
 
     def test_list_users(self):
-        assertiCmd(s.adminsession,"iadmin lu","LIST",s.adminsession.getUserName()+"#"+s.adminsession.getZoneName())
+        assertiCmd(s.adminsession,"iadmin lu","LIST",[s.adminsession.getUserName()+"#"+s.adminsession.getZoneName()])
         assertiCmdFail(s.adminsession,"iadmin lu","LIST","notauser")
 
     def test_list_groups(self):
@@ -296,12 +296,12 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
-        assertiCmdFail(s.adminsession,"iadmin lu","LIST",testuser1+"#"+s.adminsession.getZoneName()) # should not be listed
+        assertiCmdFail(s.adminsession,"iadmin lu","LIST",[testuser1+"#"+s.adminsession.getZoneName()]) # should not be listed
         assertiCmd(s.adminsession,"iadmin mkuser "+testuser1+" rodsuser") # add rodsuser
-        assertiCmd(s.adminsession,"iadmin lu","LIST",testuser1+"#"+s.adminsession.getZoneName()) # should be listed
+        assertiCmd(s.adminsession,"iadmin lu","LIST",[testuser1+"#"+s.adminsession.getZoneName()]) # should be listed
         assertiCmdFail(s.adminsession,"iadmin rmuser notauser") # bad remove
         assertiCmd(s.adminsession,"iadmin rmuser "+testuser1) # good remove
-        assertiCmdFail(s.adminsession,"iadmin lu","LIST",testuser1+"#"+s.adminsession.getZoneName()) # should be gone
+        assertiCmdFail(s.adminsession,"iadmin lu","LIST",[testuser1+"#"+s.adminsession.getZoneName()]) # should be gone
 
     def test_iadmin_mkuser(self):
 
@@ -322,9 +322,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # Test valid names
         for name in valid:
             assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser") # should be accepted
-            assertiCmd(s.adminsession,"iadmin lu","LIST",name+"#"+s.adminsession.getZoneName()) # should be listed
+            assertiCmd(s.adminsession,"iadmin lu","LIST",[name+"#"+s.adminsession.getZoneName()]) # should be listed
             assertiCmd(s.adminsession,"iadmin rmuser "+name) # remove user
-            assertiCmdFail(s.adminsession,"iadmin lu","LIST",name+"#"+s.adminsession.getZoneName()) # should be gone
+            assertiCmdFail(s.adminsession,"iadmin lu","LIST",[name+"#"+s.adminsession.getZoneName()]) # should be gone
 
         # Test invalid names
         for name in invalid:

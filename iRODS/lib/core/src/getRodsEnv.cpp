@@ -26,22 +26,19 @@
 */
 
 #include "rods.hpp"
-
+#include "rodsErrorTable.hpp"
 #include "getRodsEnv.hpp"
 #include "rodsLog.hpp"
+#include "irods_log.hpp"
+#include "irods_environment_properties.hpp"
+#include "irods_configuration_keywords.hpp"
 
-#ifdef windows_platform
-#include "irodsntutil.hpp"
-#else
-#ifdef UNI_CODE
-#include <locale.h>
-#endif
-#endif
+#include "irods_stacktrace.hpp"
 
 #define BUF_LEN 100
 #define LARGE_BUF_LEN MAX_NAME_LEN+20
 
-#define RODS_ENV_FILE "/.irods/.irodsEnv"  /* under the HOME directory */
+#define RODS_ENV_FILE "/.irods/irods_environment.json"  /* under the HOME directory */
 extern "C" {
 
     extern int ProcessType;
@@ -49,13 +46,12 @@ extern "C" {
 
     char *findNextTokenAndTerm( char *inPtr );
 
-    int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel );
+    int getRodsEnvFromFile( rodsEnv *rodsEnvArg );
     int getRodsEnvFromEnv( rodsEnv *rodsEnvArg );
     int createRodsEnvDefaults( rodsEnv *rodsEnvArg );
 
-    static char configFileName[LONG_NAME_LEN];
-    static char authFileName[LONG_NAME_LEN] = "";
-    static int irodsEnvFile = 0;
+    static char authFileName  [ LONG_NAME_LEN ] = "";
+    static char configFileName[ LONG_NAME_LEN ] = "";
 
     char *
     getRodsEnvFileName() {
@@ -110,562 +106,395 @@ extern "C" {
     }
 
     int getRodsEnv( rodsEnv *rodsEnvArg ) {
-        char *getVar = NULL;
-        int ppid;
-        char ppidStr[BUF_LEN];
-
-#ifdef windows_platform
-        /* we handle env file differently in Windows */
-        if ( ProcessType != CLIENT_PT ) {
-            char rodsEnvFilenameWP[1024];
-            char *tmpstr1;
-            int t;
-            tmpstr1 = iRODSNtGetServerConfigPath();
-            sprintf( rodsEnvFilenameWP, "%s\\irodsEnv.txt", tmpstr1 );
-            t = getRodsEnvFromFile( rodsEnvFilenameWP, rodsEnvArg, LOG_DEBUG );
-            if ( t < 0 ) {
-                return t;
-            }
-            return createRodsEnvDefaults( rodsEnvArg );
-        }
-
-        getVar = iRODSNt_gethome();
-#else
-#ifdef UNI_CODE
-        setlocale( LC_ALL, "" );
-#endif
-        getVar = getenv( "HOME" );
-#endif
-        if ( getVar == NULL ) {
-            rstrcpy( configFileName, "", LONG_NAME_LEN );
-        }
-        else {
-            rstrcpy( configFileName, getVar, LONG_NAME_LEN );
-        }
-        rstrcat( configFileName, RODS_ENV_FILE, LONG_NAME_LEN );
-
-        getVar = getenv( "irodsEnvFile" );
-        if ( getVar != NULL && *getVar != '\0' ) {
-#ifdef windows_platform
-            getVar = strdup( getenv( "irodsEnvFile" ) );
-#endif
-            rstrcpy( configFileName, findNextTokenAndTerm( getVar ), LONG_NAME_LEN );
-            rodsLog( LOG_NOTICE,
-                     "environment variable set, irodsEnvFile=%s",
-                     configFileName );
-            irodsEnvFile = 1; /* indicate that this was set */
+        if( !rodsEnvArg ) {
+            printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
+            fflush( stdout );
+            return SYS_INVALID_INPUT_PARAM;
         }
 
         memset( rodsEnvArg, 0, sizeof( rodsEnv ) );
-
-        /* RAJA CHANGED Feb 1, 207  from LOG_NOTICE to LOG_DEBUG */
-        getRodsEnvFromFile( configFileName, rodsEnvArg, LOG_DEBUG );
+        getRodsEnvFromFile( rodsEnvArg );
         getRodsEnvFromEnv( rodsEnvArg );
         createRodsEnvDefaults( rodsEnvArg );
 
-        /* Only client processes will do this, otherwise a lot of errors */
-        if ( ProcessType == CLIENT_PT ) {
-#ifdef windows_platform
-            /* windows only allow one session per user. This is because there is no ppid.*/
-            char tmpCfg[LONG_NAME_LEN];
-            sprintf( tmpCfg, "%s.cwd", configFileName );
-            strcpy( configFileName, tmpCfg );
-#else
-            if ( irodsEnvFile == 0 ) {
-                /* For normal case, use the ppid as part of the session file name */
-                ppid = getppid();
-                sprintf( ppidStr, ".%d", ppid );
-            }
-            else {
-                /* When irodsEnvFile set, use a fixed string so that all the
-                   children processes (with inherited env) will find the same
-                   one.  This is useful when running scripts. */
-                sprintf( ppidStr, ".%s", "cwd" );
-            }
-            rstrcat( configFileName, ppidStr, LONG_NAME_LEN );
-#endif
-            getRodsEnvFromFile( configFileName, rodsEnvArg, LOG_DEBUG );
-        }
-
-        // Prevent the iRODS environment from being printed multiple times
-        unsetenv( PRINT_RODS_ENV_STR );
-
-
-#ifdef windows_platform
-        if ( getVar != NULL ) {
-            free( getVar );
-        }
-#endif
-
         return 0;
     }
 
-    int getRodsEnvFromFile( char *fileName, rodsEnv *rodsEnvArg, int errorLevel ) {
-        FILE *file;
-        char buf[LARGE_BUF_LEN];
-        char *fchar;
-        char *key;
-        int msgLevel;
-
-        msgLevel = LOG_DEBUG;
-//    if ( ProcessType == AGENT_PT ) {
-//        /* For an Agent process, make the LOG_NOTICE messages an even lower
-//           priority (LOG_DEBUG) so that by default the log file will be
-//           shorter.  The Server will log the environment values at startup
-//           but these will almost always be redundant for the Agent.  */
-//        msgLevel = LOG_DEBUG;
-//    }
-
-        if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
-            msgLevel = LOG_NOTICE;
-        }
-
-        /*
-          Read and process the env file
-        */
-#ifdef windows_platform
-        file = iRODSNt_fopen( fileName, "r" );
-#else
-        file = fopen( fileName, "r" );
-#endif
-        if ( file != NULL ) {
-            buf[LARGE_BUF_LEN - 1] = '\0';
-            fchar = fgets( buf, LARGE_BUF_LEN - 1, file );
-            for ( ; fchar != '\0'; ) {
-                if ( buf[0] == '#' || buf[0] == '/' ) {
-                    buf[0] = '\0'; /* Comment line, ignore */
-                }
-                key = strstr( buf, "irodsUserName" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsUserName, findNextTokenAndTerm( key + 13 ),
-                             NAME_LEN );
-                    rodsLog( msgLevel, "irodsUserName=%s", rodsEnvArg->rodsUserName );
-                }
-                key = strstr( buf, "irodsHost" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsHost, findNextTokenAndTerm( key + 9 ),
-                             NAME_LEN );
-                    rodsLog( msgLevel, "irodsHost=%s", rodsEnvArg->rodsHost );
-                }
-                /* add xmsgHost. mw */
-                key = strstr( buf, "xmsgHost" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->xmsgHost, findNextTokenAndTerm( key + 9 ),
-                             NAME_LEN );
-                    rodsLog( msgLevel, "xmsgHost=%s", rodsEnvArg->xmsgHost );
-                }
-                key = strstr( buf, "irodsPort" );
-                if ( key != NULL ) {
-                    rodsEnvArg->rodsPort = atoi( findNextTokenAndTerm( key + 9 ) );
-                    rodsLog( msgLevel, "irodsPort=%d", rodsEnvArg->rodsPort );
-                }
-                /* add xmsgPort. mw */
-                key = strstr( buf, "xmsgPort" );
-                if ( key != NULL ) {
-                    rodsEnvArg->xmsgPort = atoi( findNextTokenAndTerm( key + 8 ) );
-                    rodsLog( msgLevel, "xmsgPort=%d", rodsEnvArg->xmsgPort );
-                }
-                key = strstr( buf, "irodsHome" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsHome, findNextTokenAndTerm( key + 9 ),
-                             MAX_NAME_LEN );
-                    rodsLog( msgLevel, "irodsHome=%s", rodsEnvArg->rodsHome );
-                }
-                key = strstr( buf, "irodsCwd" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsCwd, findNextTokenAndTerm( key + 8 ),
-                             MAX_NAME_LEN );
-                    rodsLog( msgLevel, "irodsCwd=%s", rodsEnvArg->rodsCwd );
-                }
-                key = strstr( buf, "irodsAuthScheme" );
-                if ( key != NULL ) {
-                    static char tmpStr1[120];
-                    char *getVar;
-
-                    rstrcpy( rodsEnvArg->rodsAuthScheme, findNextTokenAndTerm( key + 15 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsAuthScheme=%s",
-                             rodsEnvArg->rodsAuthScheme );
-                    /* Also put it into the environment for easy access,
-                       unless there already is one (which should be used instead) */
-                    getVar = getenv( "irodsAuthScheme" );
-                    if ( getVar == NULL ) {
-                        snprintf( tmpStr1, 100, "irodsAuthScheme=%s",
-                                  rodsEnvArg->rodsAuthScheme );
-                        putenv( tmpStr1 );
-                    }
-                }
-                key = strstr( buf, "irodsDefResource" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsDefResource, findNextTokenAndTerm( key + 16 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsDefResource=%s",
-                             rodsEnvArg->rodsDefResource );
-                }
-                key = strstr( buf, "irodsZone" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsZone, findNextTokenAndTerm( key + 9 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsZone=%s",
-                             rodsEnvArg->rodsZone );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable for client - server negotiations
-                key = strstr( buf, "irodsClientServerPolicy" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsClientServerPolicy,
-                             findNextTokenAndTerm( key + 24 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsClientServerPolicy=%s",
-                             rodsEnvArg->rodsClientServerPolicy );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to enable client - server negotiations
-                key = strstr( buf, "irodsClientServerNegotiation" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsClientServerNegotiation,
-                             findNextTokenAndTerm( key + 29 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsClientServerNegotiation=%s",
-                             rodsEnvArg->rodsClientServerNegotiation );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define encryption parameters
-                key = strstr( buf, "irodsEncryptionKeySize" );
-                if ( key != NULL ) {
-                    rodsEnvArg->rodsEncryptionKeySize = atoi( findNextTokenAndTerm( key + 22 ) );
-                    rodsLog( msgLevel, "irodsEncryptionKeySize=%d", rodsEnvArg->rodsEncryptionKeySize );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define encryption parameters
-                key = strstr( buf, "irodsEncryptionSaltSize" );
-                if ( key != NULL ) {
-                    rodsEnvArg->rodsEncryptionSaltSize = atoi( findNextTokenAndTerm( key + 23 ) );
-                    rodsLog( msgLevel, "irodsEncryptionSaltSize=%d", rodsEnvArg->rodsEncryptionSaltSize );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define encryption parameters
-                key = strstr( buf, "irodsEncryptionNumHashRounds" );
-                if ( key != NULL ) {
-                    rodsEnvArg->rodsEncryptionNumHashRounds = atoi( findNextTokenAndTerm( key + 28 ) );
-                    rodsLog( msgLevel, "irodsEncryptionNumHashRounds=%d", rodsEnvArg->rodsEncryptionNumHashRounds );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define encryption parameters
-                key = strstr( buf, "irodsEncryptionAlgorithm" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsEncryptionAlgorithm,
-                             findNextTokenAndTerm( key + 24 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsEncryptionAlgorithm=%s",
-                             rodsEnvArg->rodsEncryptionAlgorithm );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define default hash scheme
-                key = strstr( buf, "irodsDefaultHashScheme" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsDefaultHashScheme,
-                             findNextTokenAndTerm( key + 22 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsDefaultHashScheme=%s",
-                             rodsEnvArg->rodsDefaultHashScheme );
-                }
-
-                // =-=-=-=-=-=-=-
-                // variable to define hash scheme matching policy
-                key = strstr( buf, "irodsMatchHashPolicy" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsMatchHashPolicy,
-                             findNextTokenAndTerm( key + 20 ),
-                             LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsMatchHashPolicy=%s",
-                             rodsEnvArg->rodsMatchHashPolicy );
-                }
-
-                key = strstr( buf, "irodsServerDn" );
-                if ( key != NULL ) {
-                    char *myStr;
-                    char *getVar;
-                    myStr = ( char * )malloc( LONG_NAME_LEN );
-                    rstrcpy( myStr, findNextTokenAndTerm( key + 13 ),
-                             LONG_NAME_LEN );
-                    rodsEnvArg->rodsServerDn = myStr;
-                    rodsLog( msgLevel, "irodsServerDn=%s",
-                             rodsEnvArg->rodsServerDn );
-                    /* Also put it into the environment for easy access,
-                       unless there already is one (which should be used instead) */
-                    getVar = getenv( "irodsServerDn" );
-                    if ( getVar == NULL ) {
-                        char *tmpStr2;
-                        int tmpLen;
-                        tmpLen = strlen( myStr ) + 40;
-                        tmpStr2 = ( char * )malloc( tmpLen );
-                        snprintf( tmpStr2, tmpLen, "irodsServerDn=%s",
-                                  rodsEnvArg->rodsServerDn );
-                        putenv( tmpStr2 );
-                        //free( tmpStr2 ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
-                    }
-                }
-                key = strstr( buf, "irodsLogLevel" );
-                if ( key != NULL ) {
-                    char *levelStr;
-                    levelStr = findNextTokenAndTerm( key + 13 );
-                    rodsEnvArg->rodsLogLevel = convertLogLevel( levelStr );
-                    if ( rodsEnvArg->rodsLogLevel ) {
-                        rodsLogLevel( rodsEnvArg->rodsLogLevel ); /* process it */
-                    }
-                    rodsLog( msgLevel,
-                             "environment variable set, irodsLogLevel(input)=%s, value=%d",
-                             levelStr, rodsEnvArg->rodsLogLevel );
-                }
-                key = strstr( buf, "irodsAuthFileName" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsAuthFileName,
-                             findNextTokenAndTerm( key + 17 ), LONG_NAME_LEN );
-                    rodsLog( msgLevel, "irodsAuthFileName=%s",
-                             rodsEnvArg->rodsAuthFileName );
-                    rstrcpy( authFileName, rodsEnvArg->rodsAuthFileName, LONG_NAME_LEN );
-                }
-                key = strstr( buf, "irodsDebug" );
-                if ( key != NULL ) {
-                    rstrcpy( rodsEnvArg->rodsDebug, findNextTokenAndTerm( key + 10 ),
-                             NAME_LEN );
-                    rodsLog( msgLevel, "irodsDebug=%s", rodsEnvArg->rodsDebug );
-                }
-                fchar = fgets( buf, LARGE_BUF_LEN - 1, file );
-            }
-            fclose( file );
-        }
-        else {
-            rodsLog( errorLevel,
-                     "getRodsEnv() could not open environment file %s",
-                     fileName );
-#ifdef windows_platform
+    static
+    int capture_string_property(
+        irods::environment_properties& _props,
+        const std::string&             _key,
+        char*                          _val ) {
+        std::string prop_str;
+        irods::error ret = _props.get_property< 
+                               std::string >( 
+                                   _key,
+                                   prop_str );
+        if( !ret.ok() ) {
+            rodsLog(
+                LOG_DEBUG,
+                "env key [%s] not defined",
+                _key.c_str() );
             return -1;
-#endif
+        } else {
+            rodsLog( 
+                LOG_DEBUG, 
+                "captured env [%s]-[%s]",
+                _key.c_str(),
+                prop_str.c_str() );
+            strncpy( 
+                _val,
+                prop_str.c_str(), 
+                prop_str.size()+1 );
+            return 0; 
         }
+
+    } // capture_string_property
+
+    static
+    int capture_integer_property(
+        irods::environment_properties& _props,
+        const std::string&             _key,
+        int&                           _val ) {
+        irods::error ret = _props.get_property< int >( 
+                               _key,
+                               _val );
+        if( !ret.ok() ) {
+            rodsLog(
+                LOG_DEBUG,
+                "env key [%s] not defined",
+                _key.c_str() );
+            return ret.code();
+        }
+        rodsLog( 
+            LOG_DEBUG, 
+            "captured env [%s]-[%d]",
+            _key.c_str(),
+            _val );
+        
+        return 0; 
+
+    } // capture_integer_property
+
+    int getRodsEnvFromFile( 
+        rodsEnv* _env ) {
+        if( !_env ) {
+            printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
+            fflush( stdout );
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        irods::environment_properties& props = 
+            irods::environment_properties::getInstance();
+        irods::error ret = props.capture_if_needed();
+        if( !ret.ok() ) {
+            // irods::log( PASS( ret ) );
+            // legacy code doesnt error out 
+            // return  ret.code();
+        }
+
+         // default auth scheme
+         strncpy(
+             _env->rodsAuthScheme,
+             "native",
+             6 );
+
+        capture_string_property( 
+            props, 
+            irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, 
+             configFileName );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_USER_NAME_KW, 
+             _env->rodsUserName );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_HOST_KW, 
+             _env->rodsHost );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_XMSG_HOST_KW, 
+             _env->xmsgHost );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_HOME_KW, 
+             _env->rodsHome );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_CWD_KW, 
+             _env->rodsCwd );
+         
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW, 
+             _env->rodsAuthScheme );
+
+         capture_integer_property( 
+             props, 
+             irods::CFG_IRODS_PORT_KW, 
+             _env->rodsPort );
+
+         capture_integer_property( 
+             props, 
+             irods::CFG_IRODS_XMSG_PORT_KW, 
+             _env->xmsgPort );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_DEFAULT_RESOURCE_KW, 
+             _env->rodsDefResource );
+ 
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_ZONE_KW, 
+             _env->rodsZone );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW, 
+             _env->rodsClientServerPolicy );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW, 
+             _env->rodsClientServerNegotiation );
+
+         capture_integer_property( 
+             props, 
+             irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW, 
+             _env->rodsEncryptionKeySize );
+
+         capture_integer_property( 
+             props, 
+             irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW, 
+             _env->rodsEncryptionSaltSize );
+
+         capture_integer_property( 
+             props, 
+             irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW, 
+             _env->rodsEncryptionNumHashRounds );
+ 
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW, 
+             _env->rodsEncryptionAlgorithm );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW, 
+             _env->rodsDefaultHashScheme );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_MATCH_HASH_POLICY_KW, 
+             _env->rodsMatchHashPolicy );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_GSI_SERVER_DN_KW, 
+             _env->rodsServerDn );
+
+         capture_string_property( 
+             props, 
+             irods::CFG_IRODS_DEBUG_KW, 
+             _env->rodsDebug );
+
+        _env->rodsLogLevel = 0;
+        int status = capture_integer_property( 
+                         props, 
+                         irods::CFG_IRODS_LOG_LEVEL_KW, 
+                         _env->rodsLogLevel );
+        if( status == 0 ) {
+            rodsLogLevel( _env->rodsLogLevel ); 
+
+        }
+
+        memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
+        status = capture_string_property( 
+                     props, 
+                     irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW, 
+                     _env->rodsAuthFileName );
+        if( status == 0 ) {
+            rstrcpy( 
+                authFileName, 
+                _env->rodsAuthFileName, 
+                LONG_NAME_LEN - 1);
+        }
+        
         return 0;
     }
+
+
+    static
+    void capture_string_env_var(
+        const std::string& _key,
+        char*              _val ) {
+        char* env = getenv( 
+                        irods::to_env( _key ).c_str() );
+        if( env ) {
+            strncpy(
+                _val,
+                env,
+                strlen(env)+1 );
+            rodsLog( 
+                LOG_DEBUG,
+                "captured env [%s]-[%s]",
+                _key.c_str(),
+                _val );
+        }
+          
+    } // capture_string_env_var
+
+    static
+    void capture_integer_env_var(
+        const std::string& _key,
+        int&               _val ) {
+        char* env = getenv( 
+                        irods::to_env( _key ).c_str() );
+        if( env ) {
+            _val = atoi( env );
+            rodsLog( 
+                LOG_DEBUG,
+                "captured env [%s]-[%d]",
+                _key.c_str(),
+                _val );
+        }
+                
+    } // capture_integer_env_var
 
     int
-    getRodsEnvFromEnv( rodsEnv *rodsEnvArg ) {
-        int msgLevel = LOG_DEBUG;
-
-        if ( getenv( PRINT_RODS_ENV_STR ) && atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
-            msgLevel = LOG_NOTICE;
+    getRodsEnvFromEnv( 
+        rodsEnv* _env ) {
+        if( !_env ) {
+            printf( "ERROR - getRodsEnvFromEnv :: null rodsEnv\n" );
+            fflush( stdout );
+            return SYS_INVALID_INPUT_PARAM;
         }
 
-        /*
-          Check for and process the environment variables
-        */
-        char *getVar;
+        std::string env_var = irods::CFG_IRODS_USER_NAME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsUserName );
 
-        getVar = getenv( "irodsUserName" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsUserName, findNextTokenAndTerm( getVar ), NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsUserName=%s",
-                     rodsEnvArg->rodsUserName );
-        }
-        getVar = getenv( "irodsHost" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsHost, findNextTokenAndTerm( getVar ), NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsHost=%s",
-                     rodsEnvArg->rodsHost );
-        }
-        /* add xmsgHost. mw */
-        getVar = getenv( "xmsgHost" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->xmsgHost, findNextTokenAndTerm( getVar ), NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, xmsgHost=%s",
-                     rodsEnvArg->xmsgHost );
-        }
+        env_var = irods::CFG_IRODS_HOST_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsHost );
 
-        getVar = getenv( "irodsPort" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->rodsPort = atoi( findNextTokenAndTerm( getVar ) );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsPort=%d",
-                     rodsEnvArg->rodsPort );
-        }
+        env_var = irods::CFG_IRODS_XMSG_HOST_KW;
+        capture_string_env_var(
+            env_var,
+            _env->xmsgHost );
 
-        /* add xmsgPort. mw */
+        env_var = irods::CFG_IRODS_PORT_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->rodsPort );
 
-        getVar = getenv( "xmsgPort" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->xmsgPort = atoi( findNextTokenAndTerm( getVar ) );
-            rodsLog( msgLevel,
-                     "environment variable set, xmsgPort=%d",
-                     rodsEnvArg->xmsgPort );
-        }
+        env_var = irods::CFG_IRODS_XMSG_PORT_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->xmsgPort );
 
-        getVar = getenv( "irodsHome" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsHome, findNextTokenAndTerm( getVar ), MAX_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsHome=%s",
-                     rodsEnvArg->rodsHome );
-        }
-        getVar = getenv( "irodsCwd" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsCwd, findNextTokenAndTerm( getVar ), MAX_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsCwd=%s",
-                     rodsEnvArg->rodsCwd );
-        }
-        getVar = getenv( "irodsAuthScheme" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsAuthScheme, findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsAuthScheme=%s",
-                     rodsEnvArg->rodsAuthScheme );
-        }
-        getVar = getenv( "irodsDefResource" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsDefResource, findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsDefResource=%s",
-                     rodsEnvArg->rodsDefResource );
-        }
-        getVar = getenv( "irodsZone" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsZone, findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsZone=%s",
-                     rodsEnvArg->rodsZone );
-        }
+        env_var = irods::CFG_IRODS_HOME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsHome );
 
-        // =-=-=-=-=-=-=-
-        // variable for client - server negotiations
-        getVar = getenv( "irodsClientServerPolicy" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsClientServerPolicy,
-                     findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsClientServerPolicy=%s",
-                     rodsEnvArg->rodsClientServerPolicy );
-        }
+        env_var = irods::CFG_IRODS_CWD_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsCwd );
 
-        // =-=-=-=-=-=-=-
-        // variable to enable client - server negotiations
-        getVar = getenv( "irodsClientServerNegotiation" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsClientServerNegotiation,
-                     findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsClientServerNegotiation=%s",
-                     rodsEnvArg->rodsClientServerNegotiation );
+        env_var = irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsAuthScheme );
+
+        env_var = irods::CFG_IRODS_DEFAULT_RESOURCE_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsDefResource );
+
+        env_var = irods::CFG_IRODS_ZONE_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsZone );
+
+        env_var = irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsClientServerPolicy );
+
+        env_var = irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsClientServerNegotiation );
+
+        env_var = irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->rodsEncryptionKeySize );
+        
+        env_var = irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->rodsEncryptionSaltSize );
+
+        env_var = irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->rodsEncryptionNumHashRounds );
+
+        env_var = irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsEncryptionAlgorithm );
+
+        env_var = irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsDefaultHashScheme );
+
+        env_var = irods::CFG_IRODS_MATCH_HASH_POLICY_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsMatchHashPolicy );
+
+        env_var = irods::CFG_IRODS_GSI_SERVER_DN_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsServerDn );
+
+        _env->rodsLogLevel = 0;
+        env_var = irods::CFG_IRODS_LOG_LEVEL_KW;
+        capture_integer_env_var(
+            env_var,
+            _env->rodsLogLevel );
+        if ( _env->rodsLogLevel ) {
+            rodsLogLevel( _env->rodsLogLevel ); /* go ahead and process it */
         }
 
-        // =-=-=-=-=-=-=-
-        // variable to define encryption parameters
-        getVar = getenv( "irodsEncryptionKeySize" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->rodsEncryptionKeySize = atoi( findNextTokenAndTerm( getVar ) );
-            rodsLog( msgLevel, "irodsEncryptionKeySize=%d",
-                     rodsEnvArg->rodsEncryptionKeySize );
+        memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
+        env_var = irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsAuthFileName );
+        if( strlen( _env->rodsAuthFileName ) > 0 ) {
+            rstrcpy( authFileName, _env->rodsAuthFileName, LONG_NAME_LEN );
+
         }
 
-        // =-=-=-=-=-=-=-
-        // variable to define encryption parameters
-        getVar = getenv( "irodsEncryptionSaltSize" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->rodsEncryptionSaltSize = atoi( findNextTokenAndTerm( getVar ) );
-            rodsLog( msgLevel, "irodsEncryptionSaltSize=%d",
-                     rodsEnvArg->rodsEncryptionSaltSize );
-        }
+        env_var = irods::CFG_IRODS_DEBUG_KW;
+        capture_string_env_var(
+            env_var,
+            _env->rodsDebug );
 
-        // =-=-=-=-=-=-=-
-        // variable to define encryption parameters
-        getVar = getenv( "irodsEncryptionNumHashRounds" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->rodsEncryptionNumHashRounds = atoi( findNextTokenAndTerm( getVar ) );
-            rodsLog( msgLevel, "irodsEncryptionNumHashRounds=%d",
-                     rodsEnvArg->rodsEncryptionNumHashRounds );
-        }
-
-        // =-=-=-=-=-=-=-
-        // variable to define encryption parameters
-        getVar = getenv( "irodsEncryptionAlgorithm" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsEncryptionAlgorithm,
-                     findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel, "irodsEncryptionAlgorithm=%s",
-                     rodsEnvArg->rodsEncryptionAlgorithm );
-        }
-
-        // =-=-=-=-=-=-=-
-        // variable to define hash scheme
-        getVar = getenv( "irodsDefaultHashScheme" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsDefaultHashScheme,
-                     findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel, "irodsDefaultHashScheme=%s",
-                     rodsEnvArg->rodsDefaultHashScheme );
-        }
-
-        // =-=-=-=-=-=-=-
-        // variable to define hash matching policy
-        getVar = getenv( "irodsMatchHashPolicy" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsMatchHashPolicy,
-                     findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel, "irodsMatchHashPolicy=%s",
-                     rodsEnvArg->rodsMatchHashPolicy );
-        }
-
-        getVar = getenv( "irodsServerDn" );
-        if ( getVar != NULL ) {
-            char *myStr;
-            myStr = ( char * )malloc( strlen( getVar ) + 10 );
-            strcpy( myStr, findNextTokenAndTerm( getVar ) );
-            rodsEnvArg->rodsServerDn = myStr;
-            rodsLog( msgLevel, "environment variable set, irodsServerDn=%s",
-                     rodsEnvArg->rodsServerDn );
-        }
-        getVar = getenv( "irodsLogLevel" );
-        if ( getVar != NULL ) {
-            rodsEnvArg->rodsLogLevel = convertLogLevel( getVar );
-            if ( rodsEnvArg->rodsLogLevel ) {
-                rodsLogLevel( rodsEnvArg->rodsLogLevel ); /* go ahead and process it */
-            }
-            rodsLog( msgLevel,
-                     "environment variable set, irodsLogLevel(input)=%s, value=%d",
-                     getVar, rodsEnvArg->rodsLogLevel );
-        }
-        getVar = getenv( "irodsAuthFileName" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsAuthFileName, findNextTokenAndTerm( getVar ),
-                     LONG_NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsAuthFileName=%s",
-                     rodsEnvArg->rodsAuthFileName );
-            rstrcpy( authFileName, rodsEnvArg->rodsAuthFileName, LONG_NAME_LEN );
-        }
-        getVar = getenv( "irodsDebug" );
-        if ( getVar != NULL ) {
-            rstrcpy( rodsEnvArg->rodsDebug, findNextTokenAndTerm( getVar ), NAME_LEN );
-            rodsLog( msgLevel,
-                     "environment variable set, irodsDebug=%s",
-                     rodsEnvArg->rodsDebug );
-        }
         return 0;
     }
 
@@ -773,25 +602,9 @@ extern "C" {
     int appendRodsEnv( char *appendText ) {
         FILE *fptr;
         char *getVar = NULL;
-
-#ifdef windows_platform
-        getVar = iRODSNt_gethome();
-#else
-        getVar = getenv( "HOME" );
-#endif
-        if ( getVar == NULL ) {
-            rstrcpy( configFileName, "", LONG_NAME_LEN );
-        }
-        else {
-            rstrcpy( configFileName, getVar, LONG_NAME_LEN );
-        }
-        rstrcat( configFileName, RODS_ENV_FILE, LONG_NAME_LEN );
-
-        getVar = getenv( "irodsEnvFile" );
+printf( "XXXX - appendRodsEnv :: FIXME!!!!!!!!!!!!!\n" );
+        getVar = getenv( irods::to_env( irods::CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
         if ( getVar != NULL && *getVar != '\0' ) {
-#ifdef windows_platform
-            getVar = strdup( getenv( "irodsEnvFile" ) );
-#endif
             rstrcpy( configFileName, findNextTokenAndTerm( getVar ), LONG_NAME_LEN );
         }
         fptr = fopen( configFileName, "a" );

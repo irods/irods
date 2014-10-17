@@ -4,12 +4,11 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
 import pydevtest_sessions as s
 import commands
 import os
 import time
-import json
 
 class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
@@ -32,12 +31,15 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin mkuser %s rodsuser" % authTestUser)
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        clientEnvFile = s.adminsession.sessionDir+"/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-        os.system("echo \"irodsAuthScheme 'OSAuth'\" >> %s" % clientEnvFile)
-        os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
+
+        env = {}
+        env['irods_auth_scheme'] = "OSAuth"
+        env['irods_user_name'] = authTestUser
+        env['irods_home'] = '/tempZone/home/'+authTestUser 
+        env['irods_cwd'] = '/tempZone/home/'+authTestUser 
+        mod_json_file(clientEnvFile,env);
 
         # setup the irods.key file necessary for OSAuth
         keyfile = get_irods_config_dir() + "/irods.key"
@@ -100,13 +102,16 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        clientEnvFile = s.adminsession.sessionDir+"/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-#        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile) # commented out to test legacy SSL path
-        os.system("echo \"irodsAuthScheme 'PaM'\" >> %s" % clientEnvFile) # check for auth to_lower
-        os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
+
+        # does not use our SSL to test legacy SSL code path
+        env = {}
+        env['irods_auth_scheme'] = "PaM"
+        env['irods_user_name'] = authTestUser
+        env['irods_home'] = '/tempZone/home/'+authTestUser 
+        env['irods_cwd'] = '/tempZone/home/'+authTestUser 
+        mod_json_file(clientEnvFile,env);
 
         # server reboot to pick up new irodsEnv settings
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
@@ -153,13 +158,16 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        clientEnvFile = s.adminsession.sessionDir+"/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
-        os.system("echo \"irodsAuthScheme 'PaM'\" >> %s" % clientEnvFile) # check for auth to_lower
-        os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
-        os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
+
+        env = {}
+        env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
+        env['irods_auth_scheme'] = "PaM"
+        env['irods_user_name'] = authTestUser
+        env['irods_home'] = '/tempZone/home/'+authTestUser 
+        env['irods_cwd'] = '/tempZone/home/'+authTestUser 
+        mod_json_file(clientEnvFile,env);
 
         # add server_config.json settings
         serverConfigFile = get_irods_config_dir() + "/server_config.json"

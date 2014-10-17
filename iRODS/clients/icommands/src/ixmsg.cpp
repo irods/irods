@@ -5,7 +5,7 @@
 #include "rodsClient.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
-
+#include "irods_configuration_keywords.hpp"
 rodsEnv myRodsEnv;
 rErrMsg_t errMsg;
 int  connectFlag = 0;
@@ -110,7 +110,15 @@ main( int argc, char **argv ) {
     }
 
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
-    char env_var[] = "irodsClientServerNegotiation='NO_NEG'";
+    std::string neg_env;
+    std::transform(
+        irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW.begin(),
+        irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW.end(),
+        neg_env.begin(),
+        ::toupper);
+
+    char env_var[NAME_LEN];// = { "IRODS_CLIENT_SERVER_NEGOTIATION='NO_NEG'" }; 
+    sprintf( env_var, "%s='NO_NEG'", neg_env.c_str() );
     putenv( env_var );
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
 

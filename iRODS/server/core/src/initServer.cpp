@@ -625,7 +625,7 @@ initRcatServerHostByFile() {
     // re host
     // xmsg host
     ret = props.get_property< std::string >(
-              XMSG_HOST_KW,
+              irods::CFG_IRODS_XMSG_HOST_KW,
               prop_str );
     if( ret.ok() ) {
         rodsHostAddr_t    addr;

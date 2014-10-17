@@ -3,7 +3,7 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, create_local_largefile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, create_local_largefile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir, mod_json_file
 import pydevtest_sessions as s
 import commands
 import os
@@ -228,9 +228,11 @@ class ResourceSuite(ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir+"/.irodsEnv"
+        clientEnvFile = s.adminsession.sessionDir+"/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-        os.system("echo \"irodsClientServerPolicy 'CS_NEG_REQUIRE'\" >> %s" % clientEnvFile)
+        env = {}
+        env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
+        mod_json_file(clientEnvFile, env)
 
         # server reboot to pick up new irodsEnv settings
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")

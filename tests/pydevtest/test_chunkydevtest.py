@@ -32,23 +32,23 @@ class ChunkyDevTest(ResourceBase):
         myldir = dir_w+"/ldir"
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
-        assertiCmd(s.adminsession,"imkdir icmdtest")
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtest")
         
         # test basic informational commands
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getUserName() )
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getZoneName() )
         assertiCmd(s.adminsession,"iinit -l", "LIST", s.adminsession.getDefResource() )
         res = s.adminsession.runCmd('ils', ['-V'])
-        assert (res[0].count('NOTICE: irodsHost') == 1
-                and res[0].count('NOTICE: irodsPort') == 1
-                and res[0].count('NOTICE: irodsDefResource') == 1)
+        assert (res[0].count('irods_host') == 1
+                and res[0].count('irods_port') == 1
+                and res[0].count('irods_default_resource') == 1)
     
         # begin original devtest
         assertiCmd(s.adminsession,"ilsresc", "LIST", self.testresc)
         assertiCmd(s.adminsession,"ilsresc -l", "LIST", self.testresc)
         assertiCmd(s.adminsession,"imiscsvrinfo", "LIST", ["relVersion"] )
         assertiCmd(s.adminsession,"iuserinfo", "LIST", "name: "+username )
-        assertiCmd(s.adminsession,"ienv", "LIST", "irodsZone" )
+        assertiCmd(s.adminsession,"ienv", "LIST", "irods_zone" )
         assertiCmd(s.adminsession,"ipwd", "LIST", "home" )
         assertiCmd(s.adminsession,"ihelp ils", "LIST", "ils" )
         assertiCmd(s.adminsession,"ierror -14000", "LIST", "SYS_API_INPUT_ERR" )
@@ -73,7 +73,7 @@ class ChunkyDevTest(ResourceBase):
     
         # overwrite a copy
         assertiCmd(s.adminsession,"itrim -S "+irodsdefresource+" -N1 "+irodshome+"/icmdtest/foo1" )
-        assertiCmdFail(s.adminsession,"ils -L "+irodshome+"/icmdtest/foo1", "LIST", irodsdefresource )
+        assertiCmdFail(s.adminsession,"ils -L "+irodshome+"/icmdtest/foo1", "LIST", [irodsdefresource] )
         assertiCmd(s.adminsession,"iphymv -R "+irodsdefresource+" "+irodshome+"/icmdtest/foo1" )
         assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", irodsdefresource[0:19] )
         # basic metadata shuffle

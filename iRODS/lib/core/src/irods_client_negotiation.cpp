@@ -472,8 +472,8 @@ namespace irods {
                     msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
                     msg << "\t*** Advanced negotiation is enabled in this iRODS environment   ***\n";
                     msg << "\t*** which is most likely not supported by the server.           ***\n";
-                    msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
-                    msg << "\t*** file to disable.                                            ***\n";
+                    msg << "\t*** Comment out irods_client_server_negotiation in the          ***\n";
+                    msg << "\t*** irods_environment.json file to disable.                     ***\n";
                     return ERROR( ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
                 }
 

@@ -60,7 +60,7 @@ $logDir           = File::Spec->catdir( $IRODS_HOME, "installLogs" );
 # iRODS user directories
 #
 $userIrodsDir     = File::Spec->catfile( $ENV{"HOME"}, ".irods" );
-$userIrodsFile    = File::Spec->catfile( $userIrodsDir, ".irodsEnv" );
+$userIrodsFile    = File::Spec->catfile( $userIrodsDir, "irods_environment.json" );
 
 
 

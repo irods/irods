@@ -168,15 +168,19 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    rodsEnv env;
-    int ret = getRodsEnv( &env );
-    if ( ret < 0 ) {
-        rodsLogError( LOG_ERROR, ret, "rsyncUtil: getRodsEnv failed" );
-        return ret;
-    }
     if ( myRodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
         bzero( &conn->transStat, sizeof( transStat_t ) );
+    }
+   
+    rodsEnv env; 
+    int ret = getRodsEnv( &env );
+    if( ret < 0 ) {
+        rodsLogError( 
+            LOG_ERROR, 
+            ret,
+            "rsyncDataToFileUtil: getRodsEnv failed" );
+        return ret;
     }
 
     if ( targPath->objState == NOT_EXIST_ST ) {
@@ -314,12 +318,6 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
 
-    rodsEnv env;
-    int ret = getRodsEnv( &env );
-    if ( ret < 0 ) {
-        rodsLogError( LOG_ERROR, ret, "rsyncUtil: getRodsEnv failed" );
-        return ret;
-    }
     if ( targPath->objState == NOT_EXIST_ST ) {
         putFlag = 1;
     }

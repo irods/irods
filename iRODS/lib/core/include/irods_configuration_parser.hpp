@@ -24,6 +24,8 @@ namespace irods {
         configuration_parser& operator=( const configuration_parser& );
         void clear();
         error load( const std::string& );
+        error write( const std::string& );
+        error write( );
 
         bool has_entry(
             const std::string& ); // key
@@ -82,10 +84,12 @@ namespace irods {
         error copy_and_swap(
             const object_t& );    // object to swap in
 
-        object_t root_;           // root config object
+        std::string file_name_;   // full path to file
+        object_t    root_;        // root config object
 
     }; // class configuraiton_parser
 
+    std::string to_env( const std::string& );
 
 }; // namespace irods
 

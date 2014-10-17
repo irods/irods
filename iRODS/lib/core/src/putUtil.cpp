@@ -245,6 +245,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         // set the expected flag to indicate that we want a server-side
         // checksum computed and stored in the catalog
         addKeyVal( &dataObjOprInp->condInput, REG_CHKSUM_KW, "" );
+
     }
     else if ( rodsArgs->verifyChecksum == True ) {
         rodsEnv env;

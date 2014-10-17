@@ -6,6 +6,7 @@
 #include <string>
 
 namespace irods {
+    // server_config.json keywords
     const std::string CFG_FILENAME_KW( "filename" );
     const std::string CFG_KERBEROS_NAME_KW( "kerberos_name" );
     const std::string CFG_KERBEROS_KEYTAB_KW( "kerberos_keytab" );
@@ -30,6 +31,35 @@ namespace irods {
     const std::string CFG_DEFAULT_HASH_SCHEME_KW( "default_hash_scheme" );
     const std::string CFG_MATCH_HASH_POLICY_KW( "match_hash_policy" );
     const std::string CFG_FEDERATION_KW( "federation" );
+    
+    
+    
+    // service_account_environment.json keywords
+    const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
+    const std::string CFG_IRODS_HOST_KW( "irods_host" );
+    const std::string CFG_IRODS_PORT_KW( "irods_port" );
+    const std::string CFG_IRODS_XMSG_HOST_KW( "xmsg_host" );
+    const std::string CFG_IRODS_XMSG_PORT_KW( "xmsg_port" );
+    const std::string CFG_IRODS_HOME_KW( "irods_home" );
+    const std::string CFG_IRODS_CWD_KW( "irods_cwd" );
+    const std::string CFG_IRODS_AUTHENTICATION_SCHEME_KW( "irods_authentication_scheme" );
+    const std::string CFG_IRODS_DEFAULT_RESOURCE_KW( "irods_default_resource" );
+    const std::string CFG_IRODS_ZONE_KW( "irods_zone" );
+    const std::string CFG_IRODS_GSI_SERVER_DN_KW( "irods_gsi_server_dn" );
+    const std::string CFG_IRODS_LOG_LEVEL_KW( "irods_log_level" );
+    const std::string CFG_IRODS_AUTHENTICATION_FILE_NAME_KW( "irods_authentication_file_name" );
+    const std::string CFG_IRODS_DEBUG_KW( "irods_debug" );
+    const std::string CFG_IRODS_CLIENT_SERVER_POLICY_KW( "irods_client_server_policy" );
+    const std::string CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW( "irods_client_server_negotiation" );
+    const std::string CFG_IRODS_ENCRYPTION_KEY_SIZE_KW( "irods_encryption_key_size" );
+    const std::string CFG_IRODS_ENCRYPTION_SALT_SIZE_KW( "irods_encryption_salt_size" );
+    const std::string CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW( "irods_encryption_num_hash_rounds" );
+    const std::string CFG_IRODS_ENCRYPTION_ALGORITHM_KW( "irods_encryption_algorithm" );
+    const std::string CFG_IRODS_DEFAULT_HASH_SCHEME_KW( "irods_default_hash_scheme" );
+    const std::string CFG_IRODS_MATCH_HASH_POLICY_KW( "irods_match_hash_policy" );
+
+    const std::string CFG_IRODS_ENVIRONMENT_FILE_KW( "irods_environment_file" );
+    const std::string CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW( "irods_session_environment_file" );
 
 }; // namespace irods
 
