@@ -2,6 +2,7 @@ import time
 import os
 from server_config import ServerConfig
 import subprocess
+import json
 
 schema_directory = "schema_updates"
 
@@ -97,23 +98,19 @@ def get_current_schema_version(cfg):
 def get_target_schema_version():
     # default
     target_schema_version = 2
-    # read version value from VERSION file
-    if os.path.isfile( "/var/lib/irods/VERSION" ):
-        version_file = os.path.abspath("/var/lib/irods/VERSION")
+    # read version value from VERSION.json file
+    if os.path.isfile( "/var/lib/irods/VERSION.json" ):
+        version_file = os.path.abspath("/var/lib/irods/VERSION.json")
     else:
-        version_file = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/VERSION"
-    lines = [line.rstrip('\n') for line in open(version_file)]
-    for line in lines:
-        (name, value) = line.split("=")
-        if (name.strip() == "CATALOG_SCHEMA_VERSION"):
-            if DEBUG:
-                print("CATALOG_SCHEMA_VERSION found in %s..." % version_file)
-            target_schema_version = int(value.strip())
-            if DEBUG:
-                print("CATALOG_SCHEMA_VERSION: %d" % target_schema_version)
-    # return it
+        version_file = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/VERSION.json"
+    with open(version_file) as fh:
+        data = json.load(fh)
     if DEBUG:
-        print("target_schema_version: %d" % target_schema_version)
+        print("catalog_schema_version found in %s..." % version_file)
+    target_schema_version = data['catalog_schema_version']
+    if DEBUG:
+        print("catalog_schema_version: %d" % target_schema_version)
+    # return it
     return target_schema_version
 
 
