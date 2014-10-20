@@ -242,10 +242,9 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     /* have to take care of checksum here since it needs to be recalcuated */
     if ( rodsArgs->checksum == True ) {
-        status = rcChksumLocFile( srcPath,
-                                  REG_CHKSUM_KW,
-                                  &dataObjOprInp->condInput,
-                                  rodsArgs->hashValue );
+        // set the expected flag to indicate that we want a server-side
+        // checksum computed and stored in the catalog
+        addKeyVal( &dataObjOprInp->condInput, REG_CHKSUM_KW, "" );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",
