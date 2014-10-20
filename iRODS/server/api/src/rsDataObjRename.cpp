@@ -177,7 +177,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     int multiCopyFlag;
     int acPreProcFromRenameFlag = 0;
 
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
     ruleExecInfo_t rei2;
 

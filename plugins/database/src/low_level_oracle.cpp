@@ -301,7 +301,7 @@ cllConnectRda( icatSessionStruct *icss ) {
   Connect to the DBMS for DBR
 */
 int
-cllConnectDbr( icatSessionStruct *icss, char *unused ) {
+cllConnectDbr( icatSessionStruct *icss, const char *unused ) {
     int stat;
     OCIEnv           *p_env;
     OCISvcCtx        *p_svc;
@@ -379,7 +379,7 @@ cllDisconnect( icatSessionStruct *icss ) {
 /* Convert postgres style Bind Variable sql statements into
    Oracle, ? becomes :1, :2, etc. */
 int
-convertSqlToOra( char *sql, char *sqlOut ) {
+convertSqlToOra( const char *sql, char *sqlOut ) {
     char *cp1, *cp2, *cpEnd;
     int i, hundreds, tens, ones;
     cp1 = sql;
@@ -488,7 +488,7 @@ bindTheVariables( OCIStmt *p_statement, const char *sql ) {
 }
 
 int
-logExecuteStatus( int stat, char *sql, char *funcName ) {
+logExecuteStatus( int stat, const char *sql, const char *funcName ) {
     char * status;
     int stat2;
     status = "UNKNOWN";
@@ -689,7 +689,7 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
    (if any).
 */
 int
-cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
+cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     OCIEnv           *p_env;
     OCISvcCtx        *p_svc;
     static OCIStmt          *p_statement;
@@ -931,7 +931,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
 int
 cllExecSqlWithResultBV(
     icatSessionStruct *icss,
-    int *stmtNum, char *sql,
+    int *stmtNum, const char *sql,
     std::vector<std::string> &bindVars ) {
 
     for ( int i = 0; i < bindVars.size() && !bindVars[i].empty(); i++ ) {
@@ -945,13 +945,13 @@ cllExecSqlWithResultBV(
    The syntax varies between RDBMSes, so it is here, in the DBMS-specific code.
 */
 int
-cllNextValueString( char *itemName, char *outString, int maxSize ) {
+cllNextValueString( const char *itemName, char *outString, int maxSize ) {
     snprintf( outString, maxSize, "%s.nextval", itemName );
     return 0;
 }
 
 int
-cllCurrentValueString( char *itemName, char *outString, int maxSize ) {
+cllCurrentValueString( const char *itemName, char *outString, int maxSize ) {
     snprintf( outString, maxSize, "%s.currval", itemName );
     return 0;
 }
@@ -1071,7 +1071,7 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
   A few tests to verify basic functionality (including talking with
   the database via ODBC).
 */
-int cllTest( char *userArg, char *pwArg ) {
+int cllTest( const char *userArg, const char *pwArg ) {
     int i;
     int j, k;
     int OK;

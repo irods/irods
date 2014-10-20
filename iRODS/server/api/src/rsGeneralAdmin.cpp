@@ -132,7 +132,7 @@ _addResource(
     bzero( &rescInfo, sizeof( rescInfo ) );
 
     static const unsigned int argc = 7;
-    char *args[argc];
+    const char *args[argc];
 
     // =-=-=-=-=-=-=-
     // capture all the parameters
@@ -284,7 +284,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     collInfo_t collInfo;
     rescInfo_t rescInfo;
     ruleExecInfo_t rei;
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
     ruleExecInfo_t rei2;
 
@@ -301,7 +301,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
              generalAdminInp->arg0 );
 
     if ( strcmp( generalAdminInp->arg0, "pvacuum" ) == 0 ) {
-        char *args[2];
+        const char *args[1];
         char argStr[128];    /* argument string */
         memset( ( char* )&rei, 0, sizeof( rei ) );
         rei.rsComm = rsComm;
@@ -324,7 +324,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
             /* run the acCreateUser rule */
-            char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             userInfo_t userInfo;
@@ -352,7 +351,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.uoio = &userInfo;
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
-            status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
+            status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
@@ -604,7 +603,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "localzonename" ) == 0 ) {
             /* run the acRenameLocalZone rule */
-            char *args[2];
+            const char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             memset( ( char* )&rei, 0, sizeof( rei ) );
@@ -702,7 +701,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     if ( strcmp( generalAdminInp->arg0, "rm" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
             /* run the acDeleteUser rule */
-            char *args[2];
+            const char *args[2];
             memset( ( char* )&rei, 0, sizeof( rei ) );
             rei.rsComm = rsComm;
             userInfo_t userInfo;

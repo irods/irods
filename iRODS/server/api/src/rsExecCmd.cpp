@@ -219,14 +219,12 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     execCmdOut_t *myExecCmdOut;
     bytesBuf_t statusBuf;
     int status, childStatus;
-#ifdef windows_platform
-    int pipe_buf_size = META_STR_LEN;
-#endif
 
 #ifndef windows_platform    /* UNIX */
     ExecCmdMutex.lock();
     if ( pipe( stdoutFd ) < 0 )
 #else
+    int pipe_buf_size = META_STR_LEN;
     if ( _pipe( stdoutFd, pipe_buf_size, O_BINARY ) < 0 )
 #endif
     {

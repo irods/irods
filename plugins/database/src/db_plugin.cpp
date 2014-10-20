@@ -1196,7 +1196,7 @@ icatScramble( char *pw ) {
   This isn't real encryption, but does obfuscate the pw on the network.
   Called internally, from chlModUser.
 */
-int decodePw( rsComm_t *rsComm, char *in, char *out ) {
+int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
     int status;
     char *cp;
     char password[MAX_PASSWORD_LEN];
@@ -1280,7 +1280,7 @@ irods::error validate_user_name( std::string _user_name ) {
 } // validate_user_name
 
 int
-convertTypeOption( char *typeStr ) {
+convertTypeOption( const char *typeStr ) {
     if ( strcmp( typeStr, "-d" ) == 0 ) {
         return( 1 );    /* dataObj */
     }
@@ -1315,9 +1315,9 @@ convertTypeOption( char *typeStr ) {
 rodsLong_t checkAndGetObjectId(
     rsComm_t*                   rsComm,
     irods::plugin_property_map& _prop_map,
-    char*                       type,
-    char*                       name,
-    char*                       access ) {
+    const char*                 type,
+    const char*                 name,
+    const char*                 access ) {
     int itype;
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -2358,16 +2358,16 @@ extern "C" {
         char *theVal = 0;
         char replNum1[MAX_NAME_LEN];
 
-        char* whereColsAndConds[10];
-        char* whereValues[10];
+        const char* whereColsAndConds[10];
+        const char* whereValues[10];
         char idVal[MAX_NAME_LEN];
         int numConditions = 0;
         char oldCopy[NAME_LEN];
         char newCopy[NAME_LEN];
         int adminMode = 0;
 
-        std::vector<char *> updateCols;
-        std::vector<char *> updateVals;
+        std::vector<const char *> updateCols;
+        std::vector<const char *> updateVals;
 
         /* regParamNames has the argument names (in _reg_param) that this
            routine understands and colNames has the corresponding column

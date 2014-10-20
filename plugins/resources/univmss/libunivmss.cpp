@@ -29,6 +29,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+#include <boost/algorithm/string.hpp>
 
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
@@ -190,7 +191,6 @@ extern "C" {
         int i, status;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
-        char splchain1[13][MAX_NAME_LEN], splchain2[4][MAX_NAME_LEN], splchain3[3][MAX_NAME_LEN];
         char *outputStr;
         const char *delim1 = ":\n";
         const char *delim2 = "-";
@@ -212,29 +212,29 @@ extern "C" {
         if ( status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
             if ( execCmdOut->stdoutBuf.buf != NULL ) {
                 outputStr = ( char* )execCmdOut->stdoutBuf.buf;
-                memset( &splchain1, 0, sizeof( splchain1 ) );
-                strSplit( outputStr, delim1, splchain1 );
-                _statbuf->st_dev = atoi( splchain1[0] );
-                _statbuf->st_ino = atoi( splchain1[1] );
-                _statbuf->st_mode = atoi( splchain1[2] );
-                _statbuf->st_nlink = atoi( splchain1[3] );
-                _statbuf->st_uid = atoi( splchain1[4] );
-                _statbuf->st_gid = atoi( splchain1[5] );
-                _statbuf->st_rdev = atoi( splchain1[6] );
-                _statbuf->st_size = atoll( splchain1[7] );
-                _statbuf->st_blksize = atoi( splchain1[8] );
-                _statbuf->st_blocks = atoi( splchain1[9] );
+                std::vector<std::string> output_tokens;
+                boost::algorithm::split( output_tokens, outputStr, boost::is_any_of( delim1 ) );
+                _statbuf->st_dev = atoi( output_tokens[0].c_str() );
+                _statbuf->st_ino = atoi( output_tokens[1].c_str() );
+                _statbuf->st_mode = atoi( output_tokens[2].c_str() );
+                _statbuf->st_nlink = atoi( output_tokens[3].c_str() );
+                _statbuf->st_uid = atoi( output_tokens[4].c_str() );
+                _statbuf->st_gid = atoi( output_tokens[5].c_str() );
+                _statbuf->st_rdev = atoi( output_tokens[6].c_str() );
+                _statbuf->st_size = atoll( output_tokens[7].c_str() );
+                _statbuf->st_blksize = atoi( output_tokens[8].c_str() );
+                _statbuf->st_blocks = atoi( output_tokens[9].c_str() );
                 for ( i = 0; i < 3; i++ ) {
-                    memset( &splchain2, 0, sizeof( splchain2 ) );
-                    memset( &splchain3, 0, sizeof( splchain3 ) );
-                    strSplit( splchain1[10 + i], delim2, splchain2 );
-                    mytm.tm_year = atoi( splchain2[0] ) - 1900;
-                    mytm.tm_mon = atoi( splchain2[1] ) - 1;
-                    mytm.tm_mday = atoi( splchain2[2] );
-                    strSplit( splchain2[3], delim3, splchain3 );
-                    mytm.tm_hour = atoi( splchain3[0] );
-                    mytm.tm_min = atoi( splchain3[1] );
-                    mytm.tm_sec = atoi( splchain3[2] );
+                    std::vector<std::string> date_tokens;
+                    boost::algorithm::split( date_tokens, output_tokens[10 + i], boost::is_any_of( delim2 ) );
+                    mytm.tm_year = atoi( date_tokens[0].c_str() ) - 1900;
+                    mytm.tm_mon = atoi( date_tokens[1].c_str() ) - 1;
+                    mytm.tm_mday = atoi( date_tokens[2].c_str() );
+                    std::vector<std::string> time_tokens;
+                    boost::algorithm::split( time_tokens, date_tokens[3], boost::is_any_of( delim3 ) );
+                    mytm.tm_hour = atoi( time_tokens[0].c_str() );
+                    mytm.tm_min = atoi( time_tokens[1].c_str() );
+                    mytm.tm_sec = atoi( time_tokens[2].c_str() );
                     myTime = mktime( &mytm );
                     switch ( i ) {
                     case 0:

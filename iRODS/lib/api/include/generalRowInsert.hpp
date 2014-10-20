@@ -21,17 +21,17 @@
 #include "icatDefines.hpp"
 
 typedef struct {
-    char *tableName;
-    char *arg1;
-    char *arg2;
-    char *arg3;
-    char *arg4;
-    char *arg5;
-    char *arg6;
-    char *arg7;
-    char *arg8;
-    char *arg9;
-    char *arg10;
+    const char *tableName;
+    const char *arg1;
+    const char *arg2;
+    const char *arg3;
+    const char *arg4;
+    const char *arg5;
+    const char *arg6;
+    const char *arg7;
+    const char *arg8;
+    const char *arg9;
+    const char *arg10;
 } generalRowInsertInp_t;
 
 #define generalRowInsertInp_PI "str *tableName; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7;  str *arg8;  str *arg9;"

@@ -38,8 +38,9 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include "boost/filesystem.hpp"
-#include "boost/lexical_cast.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
@@ -196,31 +197,15 @@ freeRErrorContent( rError_t *myError ) {
    and the input string is at most that long.
  */
 int
-parseUserName( char *fullUserNameIn, char *userName, char *userZone ) {
-    char *cp;
-    int ix;
-    cp = strstr( fullUserNameIn, "#" );
-    ix = cp - fullUserNameIn;
-    if ( cp != NULL && ix > 0 && ix < NAME_LEN - 1 ) {
-        strncpy( userName, fullUserNameIn, ix );
-        *( userName + ix ) = '\0';
-        strncpy( userZone, fullUserNameIn + ix + 1, NAME_LEN );
-        if ( strstr( userZone, "#" ) ) {
-            return USER_INVALID_USERNAME_FORMAT;
-        }
+parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
+    std::string input( fullUserNameIn );
+    boost::smatch matches;
+    bool matched = boost::regex_match( input, matches, boost::regex( "([^#@]+(@[^#@]*)?)(#([^#]*))?" ) );
+    if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(4).size() >= NAME_LEN ) {
+        return USER_INVALID_USERNAME_FORMAT;
     }
-    else {
-        strncpy( userName, fullUserNameIn, NAME_LEN );
-        strncpy( userZone, "", NAME_LEN );
-    }
-    cp = strstr( userName, "@" );
-    if ( cp ) {
-        char *cp2;
-        cp2 = strstr( cp + 1, "@" );
-        if ( cp2 ) {
-            return USER_INVALID_USERNAME_FORMAT;
-        }
-    }
+    snprintf( userName, NAME_LEN, "%s", matches.str(1).c_str() );
+    snprintf( userZone, NAME_LEN, "%s", matches.str(4).c_str() );
     return 0;
 }
 

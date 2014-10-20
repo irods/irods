@@ -54,7 +54,7 @@ _rsModAccessControl( rsComm_t *rsComm,
                      modAccessControlInp_t *modAccessControlInp ) {
     int status, status2;
 
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int argc;
     ruleExecInfo_t rei2;
     char rFlag[15];

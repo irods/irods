@@ -22,19 +22,19 @@ int cmlClose( icatSessionStruct *icss );
 int cmlExecuteNoAnswerSql( const char *sql,
                            icatSessionStruct *icss );
 
-int cmlGetRowFromSql( char *sql,
+int cmlGetRowFromSql( const char *sql,
                       char *cVal[],
                       int cValSize[],
                       int numOfCols,
                       icatSessionStruct *icss );
 
-int cmlGetOneRowFromSqlV2( char *sql,
+int cmlGetOneRowFromSqlV2( const char *sql,
                            char *cVal[],
                            int maxCols,
                            std::vector<std::string> &bindVars,
                            icatSessionStruct *icss );
 
-int cmlGetRowFromSqlV3( char *sql,
+int cmlGetRowFromSqlV3( const char *sql,
                         char *cVal[],
                         int cValSize[],
                         int numOfCols,
@@ -43,12 +43,12 @@ int cmlGetRowFromSqlV3( char *sql,
 int cmlFreeStatement( int statementNumber,
                       icatSessionStruct *icss );
 
-int cmlGetFirstRowFromSql( char *sql,
+int cmlGetFirstRowFromSql( const char *sql,
                            int *statement,
                            int skipCount,
                            icatSessionStruct *icss );
 
-int cmlGetFirstRowFromSqlBV( char *sql,
+int cmlGetFirstRowFromSqlBV( const char *sql,
                              std::vector<std::string> &bindVars,
                              int *statement,
                              icatSessionStruct *icss );
@@ -56,84 +56,84 @@ int cmlGetFirstRowFromSqlBV( char *sql,
 int cmlGetNextRowFromStatement( int stmtNum,
                                 icatSessionStruct *icss );
 
-int cmlGetStringValueFromSql( char *sql,
+int cmlGetStringValueFromSql( const char *sql,
                               char *cVal,
                               int cValSize,
                               std::vector<std::string> &bindVars,
                               icatSessionStruct *icss );
 
-int cmlGetStringValuesFromSql( char *sql,
+int cmlGetStringValuesFromSql( const char *sql,
                                char *cVal[],
                                int cValSize[],
                                int numberOfStringsToGet,
                                std::vector<std::string> &bindVars,
                                icatSessionStruct *icss );
 
-int cmlGetMultiRowStringValuesFromSql( char *sql,
+int cmlGetMultiRowStringValuesFromSql( const char *sql,
                                        char *returnedStrings,
                                        int maxStringLen,
                                        int maxNumberOfStringsToGet,
                                        std::vector<std::string> &bindVars,
                                        icatSessionStruct *icss );
 
-int cmlGetIntegerValueFromSql( char *sql,
+int cmlGetIntegerValueFromSql( const char *sql,
                                rodsLong_t *iVal,
                                std::vector<std::string> &bindVars,
                                icatSessionStruct *icss );
 
-int cmlGetIntegerValueFromSqlV3( char *sql,
+int cmlGetIntegerValueFromSqlV3( const char *sql,
                                  rodsLong_t *iVal,
                                  icatSessionStruct *icss );
 
-int cmlCheckNameToken( char *nameSpace,
-                       char *tokenName,
+int cmlCheckNameToken( const char *nameSpace,
+                       const char *tokenName,
                        icatSessionStruct *icss );
 
-int cmlGetRowFromSingleTable( char *tableName,
+int cmlGetRowFromSingleTable( const char *tableName,
                               char *cVal[],
                               int cValSize[],
-                              char *selectCols[],
-                              char *whereCols[],
-                              char *whereConds[],
+                              const char *selectCols[],
+                              const char *whereCols[],
+                              const char *whereConds[],
                               int numOfSels,
                               int numOfConds,
                               icatSessionStruct *icss );
 
-int cmlModifySingleTable( char *tableName,
-                          char *updateCols[],
-                          char *updateValues[],
-                          char *whereColsAndConds[],
-                          char *whereValues[],
+int cmlModifySingleTable( const char *tableName,
+                          const char *updateCols[],
+                          const char *updateValues[],
+                          const char *whereColsAndConds[],
+                          const char *whereValues[],
                           int numOfUpdates,
                           int numOfConds,
                           icatSessionStruct *icss );
 
-int cmlDeleteFromSingleTable( char *tableName,
-                              char *selectCols[],
-                              char *selectConds[],
+int cmlDeleteFromSingleTable( const char *tableName,
+                              const char *selectCols[],
+                              const char *selectConds[],
                               int numOfConds,
                               icatSessionStruct *icss );
 
-int cmlInsertIntoSingleTable( char *tableName,
-                              char *insertCols[],
-                              char *insertValues[],
+int cmlInsertIntoSingleTable( const char *tableName,
+                              const char *insertCols[],
+                              const char *insertValues[],
                               int numOfCols,
                               icatSessionStruct *icss );
 
-int cmlInsertIntoSingleTableV2( char *tableName,
-                                char *insertCols,
-                                char *insertValues[],
+int cmlInsertIntoSingleTableV2( const char *tableName,
+                                const char *insertCols,
+                                const char *insertValues[],
                                 int numOfCols,
                                 icatSessionStruct *icss );
 
-int cmlGetOneRowFromSqlBV( char *sql,
+int cmlGetOneRowFromSqlBV( const char *sql,
                            char *cVal[],
                            int cValSize[],
                            int numOfCols,
                            std::vector<std::string> &bindVars,
                            icatSessionStruct *icss );
 
-int cmlGetOneRowFromSql( char *sql,
+int cmlGetOneRowFromSql( const char *sql,
                          char *cVal[],
                          int cValSize[],
                          int numOfCols,
@@ -145,59 +145,58 @@ rodsLong_t cmlGetCurrentSeqVal( icatSessionStruct *icss );
 
 int cmlGetNextSeqStr( char *seqStr, int maxSeqStrLen, icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDir( char *dirName, char *userName, char *userZone,
-                        char *accessLevel, icatSessionStruct *icss );
+rodsLong_t cmlCheckDir( const char *dirName, const char *userName, const char *userZone,
+                        const char *accessLevel, icatSessionStruct *icss );
 
-rodsLong_t cmlCheckResc( char *rescName, char *userName, char *userZone,
-                         char *accessLevel, icatSessionStruct *icss );
+rodsLong_t cmlCheckResc( const char *rescName, const char *userName, const char *userZone,
+                         const char *accessLevel, icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDirAndGetInheritFlag( char *dirName, char *userName,
-        char *userZone, char *accessLevel,
-        int *inheritFlag, char *ticketStr, char *ticketHost,
+rodsLong_t cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName,
+        const char *userZone, const char *accessLevel,
+        int *inheritFlag, const char *ticketStr, const char *ticketHost,
         icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDirId( char *dirId, char *userName, char *userZone,
-                          char *accessLevel, icatSessionStruct *icss );
+rodsLong_t cmlCheckDirId( const char *dirId, const char *userName, const char *userZone,
+                          const char *accessLevel, icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
+rodsLong_t cmlCheckDirOwn( const char *dirName, const char *userName, const char *userZone,
                            icatSessionStruct *icss );
 
-int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
-                       char *accessLevel, char *ticketStr,
-                       char *ticketHost,
+int cmlCheckDataObjId( const char *dataId, const char *userName, const char *zoneName,
+                       const char *accessLevel, const char *ticketStr,
+                       const char *ticketHost,
                        icatSessionStruct *icss );
 
-int cmlTicketUpdateWriteBytes( char *ticketStr,
-                               char *dataSize, char *objectId,
+int cmlTicketUpdateWriteBytes( const char *ticketStr,
+                               const char *dataSize, const char *objectId,
                                icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
-                                char *userZone,
-                                char *accessLevel, icatSessionStruct *icss );
+rodsLong_t cmlCheckDataObjOnly( const char *dirName, const char *dataName, const char *userName,
+                                const char *userZone, const char *accessLevel, icatSessionStruct *icss );
 
-rodsLong_t cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
-                               char *userZone, icatSessionStruct *icss );
+rodsLong_t cmlCheckDataObjOwn( const char *dirName, const char *dataName, const char *userName,
+                               const char *userZone, icatSessionStruct *icss );
 
-int cmlCheckGroupAdminAccess( char *userName, char *userZone,
-                              char *groupName, icatSessionStruct *icss );
+int cmlCheckGroupAdminAccess( const char *userName, const char *userZone,
+                              const char *groupName, icatSessionStruct *icss );
 
-int cmlGetGroupMemberCount( char *groupName, icatSessionStruct *icss );
+int cmlGetGroupMemberCount( const char *groupName, icatSessionStruct *icss );
 
 int cmlDebug( int mode );
 
-int cmlAudit1( int actionId, char *clientUser, char *zone, char *targetUser,
-               char *comment, icatSessionStruct *icss );
+int cmlAudit1( int actionId, const char *clientUser, const char *zone, const char *targetUser,
+               const char *comment, icatSessionStruct *icss );
 
-int cmlAudit2( int actionId, char *dataID, char *userName, char *zoneName,
-               char *accessLevel, icatSessionStruct *icss );
+int cmlAudit2( int actionId, const char *dataID, const char *userName, const char *zoneName,
+               const char *accessLevel, icatSessionStruct *icss );
 
-int cmlAudit3( int actionId, char *dataId, char *clientUser, char *zone,
-               char *comment, icatSessionStruct *icss );
+int cmlAudit3( int actionId, const char *dataId, const char *clientUser, const char *zone,
+               const char *comment, icatSessionStruct *icss );
 
-int cmlAudit4( int actionId, char *sql, char *sqlParm, char *clientUser,
-               char *zone, char *comment, icatSessionStruct *icss );
+int cmlAudit4( int actionId, const char *sql, const char *sqlParm, const char *clientUser,
+               const char *zone, const char *comment, icatSessionStruct *icss );
 
-int cmlAudit5( int actionId, char *objId, char *userID, char *comment,
+int cmlAudit5( int actionId, const char *objId, const char *userID, const char *comment,
                icatSessionStruct *icss );
 
 #endif /* ICAT_MIDLEVEL_ROUTINES_H */

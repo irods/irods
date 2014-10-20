@@ -37,17 +37,17 @@ int cllOpenEnv( icatSessionStruct *icss );
 int cllCloseEnv( icatSessionStruct *icss );
 int cllConnect( icatSessionStruct *icss );
 int cllConnectRda( icatSessionStruct *icss );
-int cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName );
+int cllConnectDbr( icatSessionStruct *icss, const char *odbcEntryName );
 int cllDisconnect( icatSessionStruct *icss );
 int cllExecSqlNoResult( icatSessionStruct *icss, const char *sql );
-int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql );
-int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, char *sql,
+int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql );
+int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, const char *sql,
                             std::vector<std::string> &bindVars );
 int cllGetRow( icatSessionStruct *icss, int statementNumber );
 int cllFreeStatement( icatSessionStruct *icss, int statementNumber );
-int cllNextValueString( char *itemName, char *outString, int maxSize );
-extern "C" int cllTest( char *userArg, char *pwArg );
-int cllCurrentValueString( char *itemName, char *outString, int maxSize );
+int cllNextValueString( const char *itemName, char *outString, int maxSize );
+extern "C" int cllTest( const char *userArg, const char *pwArg );
+int cllCurrentValueString( const char *itemName, char *outString, int maxSize );
 int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
 int cllCheckPending( const char *sql, int option, int dbType );
 int cllGetLastErrorMessage( char *msg, int maxChars );

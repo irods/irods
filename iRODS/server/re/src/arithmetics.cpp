@@ -1521,7 +1521,7 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
     char *varMap;
     char errbuf[ERR_MSG_LEN];
     if ( varName[0] == '$' ) {
-        char *arg = varName + 1;
+        const char *arg = varName + 1;
         if ( ( i = applyRuleArg( "acPreProcForWriteSessionVariable", &arg, 1, rei, 0 ) ) < 0 ) {
             return newErrorRes( r, i );
         }

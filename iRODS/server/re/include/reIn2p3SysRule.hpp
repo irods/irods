@@ -63,7 +63,6 @@ typedef struct {
 } monInfo_t;
 
 int checkHostAccessControl( char *username, char *hostclient, char *groupsname );
-int strSplit( char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN] );
 int msiCheckHostAccessControl( ruleExecInfo_t *rei );
 int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght,  msParam_t *swap_wght, msParam_t *runq_wght,
                       msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght,

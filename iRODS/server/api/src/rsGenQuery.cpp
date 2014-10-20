@@ -11,6 +11,9 @@
 #include "rsGlobalExtern.hpp"
 #include "irods_server_properties.hpp"
 
+#include "boost/format.hpp"
+#include <string>
+
 static
 irods::error strip_irods_query_terms(
     genQueryInp_t* _inp ) {
@@ -171,7 +174,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     static int PrePostProcForGenQueryFlag = -2;
     int i, argc;
     ruleExecInfo_t rei2;
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
 
     if ( PrePostProcForGenQueryFlag < 0 ) {
         if ( getenv( "PREPOSTPROCFORGENQUERYFLAG" ) != NULL ) {
@@ -261,11 +264,10 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                            acl_val );
 
     if ( PrePostProcForGenQueryFlag == 1 ) {
-        args[0] = ( char * ) malloc( 300 );
-        sprintf( args[0], "%ld", ( long ) genQueryInp );
+        std::string arg = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
+        args[0] = arg.c_str();
         argc = 1;
         i =  applyRuleArg( "acPreProcForGenQuery", args, argc, &rei2, NO_SAVE_REI );
-        free( args[0] );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR,
                      "rsGenQuery:acPreProcForGenQuery error,stat=%d", i );
@@ -291,17 +293,14 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if ( PrePostProcForGenQueryFlag == 1 ) {
-        args[0] = ( char * ) malloc( 300 );
-        args[1] = ( char * ) malloc( 300 );
-        args[2] = ( char * ) malloc( 300 );
-        sprintf( args[0], "%ld", ( long ) genQueryInp );
-        sprintf( args[1], "%ld", ( long ) *genQueryOut );
-        sprintf( args[2], "%d", status );
+        std::string in_string = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
+        std::string out_string = str( boost::format( "%ld" ) % ( ( long )genQueryOut ) );
+        std::string status_string = str( boost::format( "%d" ) % ( ( long )status) );
+        args[0] = in_string.c_str();
+        args[1] = out_string.c_str();
+        args[2] = status_string.c_str();
         argc = 3;
         i =  applyRuleArg( "acPostProcForGenQuery", args, argc, &rei2, NO_SAVE_REI );
-        free( args[0] );
-        free( args[1] );
-        free( args[2] );
         if ( i < 0 ) {
             rodsLog( LOG_ERROR,
                      "rsGenQuery:acPostProcForGenQuery error,stat=%d", i );

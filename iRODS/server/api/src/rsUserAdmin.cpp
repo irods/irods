@@ -44,7 +44,7 @@ int
 _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     int status, status2;
 
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     char errString1[] =
         "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d";
     char errString2[] =
@@ -140,7 +140,6 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     if ( strcmp( userAdminInp->arg0, "mkuser" ) == 0 ) {
         /* run the acCreateUser rule */
         ruleExecInfo_t rei;
-        char *args[2];
         userInfo_t userInfo;
         memset( ( char* )&rei, 0, sizeof( rei ) );
         memset( ( char* )&userInfo, 0, sizeof( userInfo ) );
@@ -152,7 +151,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
+        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
         if ( status != 0 ) {
             chlRollback( rsComm );
             return status;
@@ -171,7 +170,6 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         /* run the acCreateUser rule */
         ruleExecInfo_t rei;
         userInfo_t userInfo;
-        char *args[2];
         memset( ( char* )&rei, 0, sizeof( rei ) );
         rei.rsComm = rsComm;
         strncpy( userInfo.userName, userAdminInp->arg1,
@@ -185,7 +183,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", args, 0, &rei, SAVE_REI );
+        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
         if ( status != 0 ) {
             chlRollback( rsComm );
         }
@@ -209,7 +207,7 @@ int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
     ruleExecInfo_t rei;
     int status;
-    char *args[2];
+    const char *args[2];
 
     rodsLog( LOG_NOTICE, "icatApplyRule called" );
     memset( ( char* )&rei, 0, sizeof( rei ) );

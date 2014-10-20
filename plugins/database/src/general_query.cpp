@@ -110,7 +110,7 @@ int debug2 = 0;
  value.  Once the table is set up, the code can use the integer
  table1 and table2 values to more quickly compare.
  */
-int fkFindName( char *tableName ) {
+int fkFindName( const char *tableName ) {
     int i;
     for ( i = 0; i < nTables; i++ ) {
         if ( strcmp( Tables[i].tableName, tableName ) == 0 ) {
@@ -127,7 +127,7 @@ routine with various parameters, to set up a table of links between DB
 tables.
  */
 int
-sFklink( char *table1, char *table2, char *connectingSQL ) {
+sFklink( const char *table1, const char *table2, const char *connectingSQL ) {
     if ( nLinks >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "fklink table full %d", CAT_TOO_MANY_TABLES );
         return CAT_TOO_MANY_TABLES;
@@ -172,7 +172,7 @@ sTableInit() {
 
 */
 int
-sTable( char *tableName, char *tableAlias, int cycler ) {
+sTable( const char *tableName, const char *tableAlias, int cycler ) {
     if ( nTables >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
         return CAT_TOO_MANY_TABLES;
@@ -188,7 +188,7 @@ sTable( char *tableName, char *tableAlias, int cycler ) {
 }
 
 int
-sColumn( int defineVal, char *tableName, char *columnName ) {
+sColumn( int defineVal, const char *tableName, const char *columnName ) {
     if ( nColumns >= MAX_LINKS_TABLES_OR_COLUMNS ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
         return CAT_TOO_MANY_TABLES;

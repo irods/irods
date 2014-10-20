@@ -27,7 +27,7 @@
 int processReturnRes( Res *res );
 
 int
-applyRuleArg( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
               ruleExecInfo_t *rei, int reiSaveFlag ) {
 #ifdef DEBUG
     writeToTmp( "entry.log", "applyRuleArg: " );
@@ -46,7 +46,7 @@ applyRuleArg( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
  */
 
 int
-applyRuleArgPA( const char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+applyRuleArgPA( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                 msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
 #ifdef DEBUG
     writeToTmp( "entry.log", "applyRuleArgPa: " );

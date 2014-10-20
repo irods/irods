@@ -22,17 +22,20 @@ static pthread_mutex_t my_mutex;
 #include "irods_get_full_path_for_config_file.hpp"
 #include <boost/system/error_code.hpp>
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
+
+#include <vector>
+#include <string>
 
 short threadIsAlive[MAX_NSERVERS];
 
 int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *rei ) {
 
-    char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE], splc[MAX_VALUE][MAX_NAME_LEN],
-         splresc[MAX_VALUE][MAX_NAME_LEN], spldsk[MAX_VALUE][MAX_NAME_LEN], splmb[MAX_VALUE][MAX_NAME_LEN],
+    char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE],
          monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
     const char *delim1 = "#";
     const char *delim2 = ",";
-    int indx, timestamp, rc1 = 0, rc2 = 0, rc3 = 0, rc4 = 0;
+    int index, timestamp, rc1 = 0, rc2 = 0, rc3 = 0, rc4 = 0;
     FILE *foutput;
     time_t tps;
     generalRowInsertInp_t generalRowInsertInp;
@@ -52,19 +55,23 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
         strncpy( monStatus, RESC_AUTO_UP, MAX_NAME_LEN );
     }
 
-    strSplit( output, delim1, splc );
-    strSplit( resc, delim2, splresc );
-    strSplit( splc[4], delim2, spldsk );
-    strSplit( splc[7], delim2, splmb );
-    indx = 0;
-    while ( strcmp( splresc[indx], "" ) != 0 ) {
+    std::vector<std::string> output_tokens;
+    boost::algorithm::split( output_tokens, output, boost::is_any_of( delim1 ) );
+    std::vector<std::string> resc_tokens;
+    boost::algorithm::split( resc_tokens, resc, boost::is_any_of( delim2 ) );
+    std::vector<std::string> disk_tokens;
+    boost::algorithm::split( disk_tokens, output_tokens[4], boost::is_any_of( delim2 ) );
+    std::vector<std::string> value_tokens;
+    boost::algorithm::split( value_tokens, output_tokens[7], boost::is_any_of( delim2 ) );
+    index = 0;
+    while ( !resc_tokens[index].empty() ) {
         if ( strcmp( monStatus, RESC_AUTO_DOWN ) == 0 ) {
-            rstrcpy( spldsk[indx], "-1", MAX_NAME_LEN );
-            rstrcpy( splmb[indx], "-1", MAX_NAME_LEN );
+            disk_tokens[index] = "-1";
+            value_tokens[index] = "-1";
         }
         sprintf( msg, "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
-                 serverName, splresc[indx], splc[0], splc[1], splc[2],
-                 splc[3], spldsk[indx], splc[5], splc[6], splmb[indx] );
+                 serverName, resc_tokens[index].c_str(), output_tokens[0].c_str(), output_tokens[1].c_str(), output_tokens[2].c_str(),
+                 output_tokens[3].c_str(), disk_tokens[index].c_str(), output_tokens[5].c_str(), output_tokens[6].c_str(), value_tokens[index].c_str() );
         sprintf( suffix, "%d.%d.%d", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday );
         sprintf( fname, "%s.%s", OUTPUT_MON_PERF, suffix );
         /* retrieve the system time */
@@ -73,28 +80,28 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
         /* log the result into the database as well */
         generalRowInsertInp.tableName = "serverload";
         generalRowInsertInp.arg1 = serverName;
-        generalRowInsertInp.arg2 = splresc[indx];
-        generalRowInsertInp.arg3 = splc[0];
-        generalRowInsertInp.arg4 = splc[1];
-        generalRowInsertInp.arg5 = splc[2];
-        generalRowInsertInp.arg6 = splc[3];
-        generalRowInsertInp.arg7 = spldsk[indx];
-        generalRowInsertInp.arg8 = splc[5];
-        generalRowInsertInp.arg9 = splc[6];
+        generalRowInsertInp.arg2 = resc_tokens[index].c_str();
+        generalRowInsertInp.arg3 = output_tokens[0].c_str();
+        generalRowInsertInp.arg4 = output_tokens[1].c_str();
+        generalRowInsertInp.arg5 = output_tokens[2].c_str();
+        generalRowInsertInp.arg6 = output_tokens[3].c_str();
+        generalRowInsertInp.arg7 = disk_tokens[index].c_str();
+        generalRowInsertInp.arg8 = output_tokens[5].c_str();
+        generalRowInsertInp.arg9 = output_tokens[6].c_str();
         /* prepare DB request to modify resource metadata: freespace and status */
         generalAdminInp1.arg0 = "modify";
         generalAdminInp1.arg1 = "resource";
-        generalAdminInp1.arg2 = splresc[indx];
+        generalAdminInp1.arg2 = resc_tokens[index].c_str();
         generalAdminInp1.arg3 = "freespace";
-        generalAdminInp1.arg4 = splmb[indx];
+        generalAdminInp1.arg4 = value_tokens[index].c_str();
         generalAdminInp2.arg0 = "modify";
         generalAdminInp2.arg1 = "resource";
-        generalAdminInp2.arg2 = splresc[indx];
+        generalAdminInp2.arg2 = resc_tokens[index].c_str();
         generalAdminInp2.arg3 = "status";
         generalAdminInp2.arg4 = monStatus;
         memset( &genQueryInp, 0, sizeof( genQueryInp ) );
         addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS, 1 );
-        snprintf( condstr, MAX_NAME_LEN, "= '%s'", splresc[indx] );
+        snprintf( condstr, MAX_NAME_LEN, "= '%s'", resc_tokens[index].c_str() );
         addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condstr );
         genQueryInp.maxRows = MAX_SQL_ROWS;
 #ifndef windows_platform
@@ -117,7 +124,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
             }
         }
         else {
-            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", splresc[indx] );
+            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc_tokens[index].c_str() );
         }
 #ifndef windows_platform
         pthread_mutex_unlock( &my_mutex );
@@ -128,34 +135,17 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
             fclose( foutput );
         }
         if ( rc2 != 0 ) {
-            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", splresc[indx] );
+            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", resc_tokens[index].c_str() );
         }
         if ( rc4 != 0 ) {
-            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", splresc[indx] );
+            rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", resc_tokens[index].c_str() );
         }
-        indx += 1;
+        index += 1;
     }
 
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
 
-    return 0;
-}
-
-int strSplit( char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN] ) {
-    /**********************************************
-     * cut out character strings                   *
-     ***********************************************/
-    int i;
-    char cs[MAX_NAME_LEN];
-
-    if ( s != NULL && ct != NULL ) {
-        for ( i = 0; ( rstrcpy( cs, strtok( s, ct ), MAX_NAME_LEN ) ); i++ ) {
-            /* store the adress returned by strtok */
-            rstrcpy( splchain[i], cs, MAX_NAME_LEN );
-            s = NULL;
-        }
-    }
     return 0;
 }
 
@@ -530,7 +520,7 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
  * \sa N/A
  **/
 int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
-    char buffer[MAX_NAME_LEN], line[MAX_VALUE], splchain[MAX_VALUE][MAX_NAME_LEN], *verbosity;
+    char line[MAX_VALUE], *verbosity;
     char serverList[MAX_VALUE][MAX_NAME_LEN];
     char cmd[MAX_NAME_LEN]; /* cmd => name of the Perl script */
     char probtime[LEN_SECONDS], measTime[LEN_SECONDS];
@@ -584,9 +574,9 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
         while ( fgets( line, sizeof line, filein ) != NULL ) { /* for each line of the file */
             /* if begin of line = # => ignore */
             if ( line[0] != '#' ) {
-                rstrcpy( buffer, strdup( line ), MAX_NAME_LEN );
-                strSplit( buffer, delim, splchain );
-                rstrcpy( serverList[i], splchain[0], MAX_NAME_LEN );
+                std::vector<std::string> tokens;
+                boost::algorithm::split( tokens, line, boost::is_any_of( delim ) );
+                snprintf( serverList[i], MAX_NAME_LEN, "%s", tokens[0].c_str() );
                 i++;
             }
         }

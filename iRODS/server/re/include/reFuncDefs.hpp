@@ -163,9 +163,9 @@ int executeMicroService( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], in
                          ruleExecInfo_t *rei );
 int applyActionCall( char *actionCall,  ruleExecInfo_t *rei, int reiSaveFlag );
 
-int applyRuleArg( char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+int applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                   ruleExecInfo_t *rei, int reiSaveFlag );
-int applyRuleArgPA( const char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+int applyRuleArgPA( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                     msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag );
 int applyRule( char *inAction, msParamArray_t *inMsParamArray,
                ruleExecInfo_t *rei, int reiSaveFlag );

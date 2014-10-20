@@ -331,7 +331,7 @@ int applyRuleForSvrPortal( int sockFd, int oprType, int preOrPost, int load, rsC
     char *pAddr = strdup( inet_ntoa( peer.sa_in.sin_addr ) );
     int peerPort = ntohs( peer.sa_in.sin_port );
     snprintf( pPort, MAX_NAME_LEN, "%d", peerPort );
-    char *args[6] = {oType, lAddr, lPort, pAddr, pPort, lLoad};
+    const char *args[6] = {oType, lAddr, lPort, pAddr, pPort, lLoad};
     ruleExecInfo_t rei;
     memset( &rei, 0, sizeof( rei ) );
     rei.rsComm = rsComm;

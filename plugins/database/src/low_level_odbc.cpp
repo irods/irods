@@ -281,7 +281,7 @@ cllConnectRda( icatSessionStruct *icss ) {
   Connect to the DBMS for database-resource/db-objects access.
 */
 int
-cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
+cllConnectDbr( icatSessionStruct *icss, const char *odbcEntryName ) {
 
     HDBC myHdbc;
     SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DBC, icss->environPtr, &myHdbc );
@@ -297,7 +297,7 @@ cllConnectDbr( icatSessionStruct *icss, char *odbcEntryName ) {
         return -1;
     }
 
-    stat = SQLConnect( myHdbc, ( unsigned char * )odbcEntryName, SQL_NTS,
+    stat = SQLConnect( myHdbc, ( unsigned char * )const_cast<char *>( odbcEntryName ), SQL_NTS,
                        ( unsigned char * )icss->databaseUsername, SQL_NTS,
                        ( unsigned char * )icss->databasePassword, SQL_NTS );
     if ( stat != SQL_SUCCESS ) {
@@ -468,7 +468,6 @@ cllDisconnect( icatSessionStruct *icss ) {
 
     return 0;
 }
-
 /*
   Execute a SQL command which has no resulting table.  Examples include
   insert, delete, update, or ddl.
@@ -670,7 +669,7 @@ _cllExecSqlNoResult(
    This version now uses the global array of bind variables.
 */
 int
-cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, char *sql ) {
+cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
 
     /* In 2.2 and some versions before, this would call
@@ -835,7 +834,7 @@ int
 cllExecSqlWithResultBV(
     icatSessionStruct *icss,
     int *stmtNum,
-    char *sql,
+    const char *sql,
     std::vector< std::string > &bindVars ) {
 
     rodsLog( LOG_DEBUG1, sql );
@@ -1027,7 +1026,7 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
    The syntax varies between RDBMSes, so it is here, in the DBMS-specific code.
 */
 int
-cllNextValueString( char *itemName, char *outString, int maxSize ) {
+cllNextValueString( const char *itemName, char *outString, int maxSize ) {
 #ifdef MY_ICAT
     snprintf( outString, maxSize, "%s_nextval()", itemName );
 #else
@@ -1055,7 +1054,7 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
 }
 
 int
-cllCurrentValueString( char *itemName, char *outString, int maxSize ) {
+cllCurrentValueString( const char *itemName, char *outString, int maxSize ) {
 #ifdef MY_ICAT
     snprintf( outString, maxSize, "%s_currval()", itemName );
 #else
@@ -1112,7 +1111,7 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
   A few tests to verify basic functionality (including talking with
   the database via ODBC).
 */
-extern "C" int cllTest( char *userArg, char *pwArg ) {
+extern "C" int cllTest( const char *userArg, const char *pwArg ) {
 
     icatSessionStruct icss;
     icss.stmtPtr[0] = 0;

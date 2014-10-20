@@ -44,7 +44,7 @@ extern "C" {
     int
     freeRErrorContent( rError_t *myError );
     int
-    parseUserName( char *fullUserNameIn, char *userName, char *userZone );
+    parseUserName( const char *fullUserNameIn, char *userName, char *userZone );
     int
     apiTableLookup( int apiNumber );
     int

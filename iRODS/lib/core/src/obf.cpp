@@ -273,7 +273,7 @@ obfiSetTimeFromFile( int fd ) {
 /* int printOpt; if 1, display an updated file msg on success */
 /* char *pwArg; if non-0-length, this is the new password */
 int
-obfSavePw( int promptOpt, int fileOpt, int printOpt, char *pwArg ) {
+obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     using namespace boost::filesystem;
     char fileName[MAX_NAME_LEN + 10];
     char inbuf[MAX_PASSWORD_LEN + 100];
@@ -415,7 +415,7 @@ obfiGetTv( char *fileName ) {
 }
 
 int
-obfiGetPw( char *fileName, char *pw ) {
+obfiGetPw( const char *fileName, char *pw ) {
 #ifdef windows_platform
     int fd_in = iRODSNt_open( fileName, O_RDONLY, 1 );
 #else
@@ -443,7 +443,7 @@ obfiGetPw( char *fileName, char *pw ) {
 }
 
 int
-obfiOpenOutFile( char *fileName, int fileOpt ) {
+obfiOpenOutFile( const char *fileName, int fileOpt ) {
     char inbuf[MAX_NAME_LEN] = "";
     int i = 0, fd_out = 0;
 
@@ -488,7 +488,7 @@ obfiOpenOutFile( char *fileName, int fileOpt ) {
 }
 
 int
-obfiWritePw( int fd, char *pw ) {
+obfiWritePw( int fd, const char *pw ) {
     int wval, len;
     len = strlen( pw );
     wval = write( fd, pw, len + 1 );
@@ -521,10 +521,10 @@ int obfiTimeval() {
   Obfuscate a password
 */
 void
-obfiEncode( char *in, char *out, int extra ) {
+obfiEncode( const char *in, char *out, int extra ) {
     int i;
     long seq;
-    char *my_in;
+    const char *my_in;
 
     /*   struct timeb timeb_time; */
     struct timeval nowtime;
@@ -729,10 +729,10 @@ obfiTimeCheck( int time1, int time2 ) {
 
 
 int
-obfiDecode( char *in, char *out, int extra ) {
+obfiDecode( const char *in, char *out, int extra ) {
     int i;
     long seq;
-    char *p1;
+    const char *p1;
 
     int rval;
     int wheel_len;
@@ -740,7 +740,8 @@ obfiDecode( char *in, char *out, int extra ) {
     int j, addin, addin_i, kpos, found, nout = 0;
     char headstring[10];
     int ii, too_short;
-    char *my_out, *my_in;
+    char *my_out;
+    const char* my_in;
     int not_en, encodedTime;
 #ifndef _WIN32
     int uid;
@@ -960,7 +961,7 @@ obfGetDefaultHashType() {
 /* Generate a hash string using MD5 or Sha1 */
 void
 obfMakeOneWayHash( int hashType,
-                   unsigned char *inBuf, int inBufSize, unsigned char *outHash ) {
+                   unsigned const char *inBuf, int inBufSize, unsigned char *outHash ) {
 
     MD5_CTX md5Context;
     SHA1Context sha1Context;
@@ -997,7 +998,7 @@ obfMakeOneWayHash( int hashType,
   Obfuscate a string using an input key
 */
 void
-obfEncodeByKey( char *in, char *key, char *out ) {
+obfEncodeByKey( const char *in, const char *key, char *out ) {
     /*
      Set up an array of characters that we will transpose.
     */
@@ -1010,7 +1011,8 @@ obfEncodeByKey( char *in, char *key, char *out ) {
 
     unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
     char keyBuf[100];
-    char *cpIn, *cpOut;
+    char *cpOut;
+    const char *cpIn;
     unsigned char *cpKey;
 
     if ( obfDebug ) {
@@ -1109,7 +1111,7 @@ obfEncodeByKey( char *in, char *key, char *out ) {
 #define V2_Prefix "A.ObfV2"
 
 void
-obfEncodeByKeyV2( char *in, char *key, char *key2, char *out ) {
+obfEncodeByKeyV2( const char *in, const char *key, const char *key2, char *out ) {
     struct timeval nowtime;
     char *myKey2;
     char myKey[200];
@@ -1144,7 +1146,7 @@ obfEncodeByKeyV2( char *in, char *key, char *key2, char *out ) {
   De-obfuscate a string using an input key
 */
 void
-obfDecodeByKey( char *in, char *key, char *out ) {
+obfDecodeByKey( const char *in, const char *key, char *out ) {
     /*
      Set up an array of characters that we will transpose.
     */
@@ -1155,7 +1157,8 @@ obfDecodeByKey( char *in, char *key, char *out ) {
     int pc;
     unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
     char keyBuf[100];
-    char *cpIn, *cpOut;
+    char *cpOut;
+    const char *cpIn;
     unsigned char *cpKey;
 
     int myHashType;
@@ -1256,7 +1259,7 @@ obfDecodeByKey( char *in, char *key, char *out ) {
    If encoding is not V2, handles is at V1 (original)
 */
 void
-obfDecodeByKeyV2( char *in, char *key, char *key2, char *out ) {
+obfDecodeByKeyV2( const char *in, const char *key, const char *key2, char *out ) {
     char *myKey2;
     static char myOut[200];
     int i, len, matches;
@@ -1293,7 +1296,7 @@ obfDecodeByKeyV2( char *in, char *key, char *key2, char *out ) {
   Hash an input string
 */
 char *
-obfGetMD5Hash( char *stringToHash ) {
+obfGetMD5Hash( const char *stringToHash ) {
     /*
       Set up an array of characters that we will transpose.
     */
