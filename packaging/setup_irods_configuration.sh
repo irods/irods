@@ -62,8 +62,8 @@ fi
         MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIG | head -n1 | awk '{print $2}'`
-        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIG | head -n1 | awk '{print $2}'`
+        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIG | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
+        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIG | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
         MYADMINNAME=`grep "IRODS_ADMIN_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         STATUS="loop"
     else
