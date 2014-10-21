@@ -200,7 +200,10 @@ int
 parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     std::string input( fullUserNameIn );
     boost::smatch matches;
-    bool matched = boost::regex_match( input, matches, boost::regex( "([^#@]+(@[^#@]*)?)(#([^#]*))?" ) );
+    // This regex matches usernames with no hashes and optionally one at symbol,
+    // and then optionally a hash followed by a zone name containing no hashes.
+    boost::regex expression( "([^#@]+(@[^#@]*)?)(#([^#]*))?" );
+    bool matched = boost::regex_match( input, matches, expression );
     if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(4).size() >= NAME_LEN ) {
         userName[0] = '\0';
         userZone[0] = '\0';
