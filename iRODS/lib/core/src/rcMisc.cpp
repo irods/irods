@@ -202,6 +202,8 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     boost::smatch matches;
     bool matched = boost::regex_match( input, matches, boost::regex( "([^#@]+(@[^#@]*)?)(#([^#]*))?" ) );
     if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(4).size() >= NAME_LEN ) {
+        userName[0] = '\0';
+        userZone[0] = '\0';
         return USER_INVALID_USERNAME_FORMAT;
     }
     snprintf( userName, NAME_LEN, "%s", matches.str(1).c_str() );
