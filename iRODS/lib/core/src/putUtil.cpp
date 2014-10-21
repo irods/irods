@@ -240,17 +240,11 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         gGuiProgressCB( &conn->operProgress );
     }
 
-    /* have to take care of checksum here since it needs to be recalcuated */
+    /* have to take care of checksum here since it needs to be recalculated */
     if ( rodsArgs->checksum == True ) {
         // set the expected flag to indicate that we want a server-side
         // checksum computed and stored in the catalog
         addKeyVal( &dataObjOprInp->condInput, REG_CHKSUM_KW, "" );
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "putFileUtil: rcChksumLocFile error for %s, status = %d",
-                          srcPath, status );
-            return status;
-        }
     }
     else if ( rodsArgs->verifyChecksum == True ) {
         status = rcChksumLocFile( srcPath,
