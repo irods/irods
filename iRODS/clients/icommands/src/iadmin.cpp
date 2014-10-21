@@ -773,10 +773,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return -1;
     }
     if ( strcmp( cmdToken[0], "lu" ) == 0 ) {
-        char userName[NAME_LEN];
-        char zoneName[NAME_LEN];
-        int status;
-        status = parseUserName( cmdToken[1], userName, zoneName );
+        char userName[NAME_LEN] = "";
+        char zoneName[NAME_LEN] = "";
+        int status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status < 0 ) {
             // error case
         }
