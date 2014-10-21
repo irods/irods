@@ -97,20 +97,22 @@ stat () {
 	# Note 2: the time should have this format: YYYY-MM-dd-hh.mm.ss with: 
 	#                                           YYYY = 1900 to 2xxxx, MM = 1 to 12, dd = 1 to 31,
 	#                                           hh = 0 to 24, mm = 0 to 59, ss = 0 to 59
-        device=`echo $output | awk '{print $13}'`
-        inode=`echo $output | awk '{print $15}'`
-        mode=`echo $output  | awk '{print $19}'`
-        mode=${mode//[^0-9]/}
-        nlink=`echo $output  | awk '{print $17}'`
-        uid="0"
-        gid="0"
-        devid="0"
-        size=`echo $output | awk '{print $4}'`
-        blksize=`echo $output | awk '{print $6}'`
-        blkcnt="0"
-        atime="0"
-        mtime="0"
-        ctime="0"
+
+        
+
+    device=` echo $output | sed -nr 's/.*\<Device: *(\S*)\>.*/\1/p'`
+    inode=`  echo $output | sed -nr 's/.*\<Inode: *(\S*)\>.*/\1/p'`
+    mode=`   echo $output | sed -nr 's/.*\<Access: *\(([0-9]*)\/.*/\1/p'`
+    nlink=`  echo $output | sed -nr 's/.*\<Links: *([0-9]*)\>.*/\1/p'`
+    uid=`    echo $output | sed -nr 's/.*\<Uid: *\( *([0-9]*)\/.*/\1/p'`
+    gid=`    echo $output | sed -nr 's/.*\<Gid: *\( *([0-9]*)\/.*/\1/p'`
+    devid="0"
+    size=`   echo $output | sed -nr 's/.*\<Size: *([0-9]*)\>.*/\1/p'`
+    blksize=`echo $output | sed -nr 's/.*\<IO Block: *([0-9]*)\>.*/\1/p'`
+    blkcnt=` echo $output | sed -nr 's/.*\<Blocks: *([0-9]*)\>.*/\1/p'`
+    atime=`  echo $output | sed -nr 's/.*\<Access: *([0-9]{4,}-[01][0-9]-[0-3][0-9]) *([0-2][0-9]):([0-5][0-9]):([0-6][0-9])\..*/\1-\2.\3.\4/p'`
+    mtime=`  echo $output | sed -nr 's/.*\<Modify: *([0-9]{4,}-[01][0-9]-[0-3][0-9]) *([0-2][0-9]):([0-5][0-9]):([0-6][0-9])\..*/\1-\2.\3.\4/p'`
+    ctime=`  echo $output | sed -nr 's/.*\<Change: *([0-9]{4,}-[01][0-9]-[0-3][0-9]) *([0-2][0-9]):([0-5][0-9]):([0-6][0-9])\..*/\1-\2.\3.\4/p'`
 	echo "$device:$inode:$mode:$nlink:$uid:$gid:$devid:$size:$blksize:$blkcnt:$atime:$mtime:$ctime"
 	return
 }
