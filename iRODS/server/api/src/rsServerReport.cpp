@@ -554,6 +554,33 @@ irods::error convert_service_account(
 } // convert_service_account
 
 
+irods::error add_plugin_type_to_json_array(
+    const std::string& dir_name,
+    const char* plugin_type,
+    json_t*& json_array) {
+
+    irods::plugin_name_generator name_gen;
+    irods::plugin_name_generator::plugin_list_t plugin_list;
+    irods::error ret = name_gen.list_plugins( dir_name, plugin_list );
+    if ( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
+            itr != plugin_list.end();
+            ++itr ) {
+
+        json_t* plug = json_object();
+        json_object_set( plug, "name",     json_string( itr->c_str() ) );
+        json_object_set( plug, "type",     json_string( plugin_type ) );
+        json_object_set( plug, "version",  json_string( "" ) );
+        json_object_set( plug, "checksum_sha256", json_string( "" ) );
+
+        json_array_append( json_array, plug );
+    }
+
+    return SUCCESS();
+}
 
 irods::error get_plugin_array(
     json_t*& _plugins ) {
@@ -565,138 +592,35 @@ irods::error get_plugin_array(
                    "json_object() failed" );
     }
 
-    irods::plugin_name_generator name_gen;
-    irods::plugin_name_generator::plugin_list_t plugin_list;
-    irods::error ret = name_gen.list_plugins( irods::RESOURCES_HOME, plugin_list );
+    irods::error ret = add_plugin_type_to_json_array( irods::RESOURCES_HOME, "resource", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "resource" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for resources
-
-    plugin_list.clear();
-    ret = name_gen.list_plugins( irods::IRODS_DATABASE_HOME, plugin_list );
+    ret = add_plugin_type_to_json_array( irods::IRODS_DATABASE_HOME, "database", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "database" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for database
-
-    plugin_list.clear();
-    ret = name_gen.list_plugins( irods::AUTH_HOME, plugin_list );
+    ret = add_plugin_type_to_json_array( irods::AUTH_HOME, "auth", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "auth" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for auth
-
-    plugin_list.clear();
-    ret = name_gen.list_plugins( irods::NETWORK_HOME, plugin_list );
+    ret = add_plugin_type_to_json_array( irods::NETWORK_HOME, "network", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "network" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for network
-
-    plugin_list.clear();
-    ret = name_gen.list_plugins( irods::API_HOME, plugin_list );
+    ret = add_plugin_type_to_json_array( irods::API_HOME, "api", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "api" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for api
-
-    plugin_list.clear();
-    ret = name_gen.list_plugins( irods::MS_HOME, plugin_list );
+    ret = add_plugin_type_to_json_array( irods::MS_HOME, "microservice", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
-
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-        std::stringstream msg;
-        msg << *itr << std::endl;
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( msg.str().c_str() ) );
-        json_object_set( plug, "type",     json_string( "microservice" ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _plugins, plug );
-
-    } // for ms
 
     return SUCCESS();
 
