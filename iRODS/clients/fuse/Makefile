@@ -180,9 +180,9 @@ endif
 
 CFLAGS:=$(filter-out -DUSE_BOOST,$(CFLAGS))
 
-CFLAGS += -I../../../external/jansson-2.5/src/
-AG_LDADD += ../../../external/jansson-2.5/src/.libs/libjansson.a
-LDFLAGS += ../../../external/jansson-2.5/src/.libs/libjansson.a
+CFLAGS += -I../../../external/jansson-2.7/src/
+AG_LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
+LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
 
 
 
