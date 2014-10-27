@@ -297,6 +297,21 @@ To run iRODS in place, the build script must be called with the appropriate flag
 
  user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
 
+iRODS has several build dependencies (external libraries) which need to be in place before iRODS itself can be compiled successfully.  The following sequence should build the dependencies from source (in `irods/external/`) and guarantee reproducible builds::
+
+ # Populate configuration files (and fail to build)
+ user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
+
+ # Rebuild the external libraries from source
+ user@hostname:~/irods/ $ cd external
+ user@hostname:~/irods/external/ $ make clean
+ user@hostname:~/irods/external/ $ make generate
+
+ # Build iRODS
+ user@hostname:~/irods/external/ $ cd ..
+ user@hostname:~/irods/ $ ./packaging/build.sh clean
+ user@hostname:~/irods/ $ ./packaging/build.sh --run-in-place icat postgres
+
 After the system is built, the setup_irods_database.sh script needs to be run from its original location::
 
  user@hostname:~/irods/ $ ./plugins/database/packaging/setup_irods_database.sh
