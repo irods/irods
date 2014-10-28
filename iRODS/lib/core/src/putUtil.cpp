@@ -247,10 +247,20 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
         addKeyVal( &dataObjOprInp->condInput, REG_CHKSUM_KW, "" );
     }
     else if ( rodsArgs->verifyChecksum == True ) {
+        rodsEnv env;
+        int ret = getRodsEnv( &env );
+        if( ret < 0 ) {
+            rodsLog(
+                LOG_ERROR,
+                "putFileUtil - failed to capture rods env %d",
+                ret );
+            return ret;
+        }
+
         status = rcChksumLocFile( srcPath,
                                   VERIFY_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  rodsArgs->hashValue );
+                                  env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "putFileUtil: rcChksumLocFile error for %s, status = %d",

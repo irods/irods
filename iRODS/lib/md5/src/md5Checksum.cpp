@@ -9,6 +9,10 @@
 #include "getRodsEnv.hpp"
 #include "irods_log.hpp"
 
+#include <fstream>
+#include "irods_stacktrace.hpp"
+
+
 #define MD5_BUF_SZ      (4 * 1024)
 
 #ifdef MD5_TESTING
@@ -37,11 +41,22 @@ int main( int argc, char *argv[] ) {
 
 #endif 	/* MD5_TESTING */
 
-int
-chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
-    FILE *file = 0;
-    int len = 0;
-    char buffer[MD5_BUF_SZ];
+int chksumLocFile(
+   char*       _file_name,
+   char*       _checksum,
+   const char* _hash_scheme ) {
+    if( !_file_name ||
+        !_checksum  ||
+        !_hash_scheme ) {
+        rodsLog(
+            LOG_ERROR,
+            "chksumLocFile :: null input param - %p %p %p",
+            _file_name,
+            _checksum,
+            _hash_scheme );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     // =-=-=-=-=-=-=-
     // capture client side configuration
     rodsEnv env;
@@ -75,10 +90,10 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     // =-=-=-=-=-=-=-
     // capture the incoming scheme if it is valid
     std::string hash_scheme;
-    if ( scheme &&
-            strlen( scheme ) > 0 &&
-            strlen( scheme ) < NAME_LEN ) {
-        hash_scheme = scheme;
+    if ( _hash_scheme &&
+         strlen( _hash_scheme ) > 0 &&
+         strlen( _hash_scheme ) < NAME_LEN ) {
+        hash_scheme = _hash_scheme;
         // =-=-=-=-=-=-=-
         // hash scheme keywords are all lowercase
         std::transform(
@@ -109,37 +124,59 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     }
 
     // =-=-=-=-=-=-=-
-    // open the local file
-    if ( ( file = fopen( fileName, "rb" ) ) == NULL ) {
-        status = UNIX_FILE_OPEN_ERR - errno;
-        rodsLogError( LOG_NOTICE, status,
-                      "chksumFile; fopen failed for %s. status = %d", fileName, status );
-        return status;
-    }
-
-    // =-=-=-=-=-=-=-
     // init the hasher object
     irods::Hasher hasher;
-    irods::error ret = irods::getHasher( final_scheme, hasher );
+    irods::error ret = irods::getHasher(
+                           final_scheme,
+                           hasher );
     if( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
-    while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
-        hasher.update( std::string( buffer, len ) );
+    // =-=-=-=-=-=-=-
+    // open the local file
+    std::ifstream in_file(
+                      _file_name,
+                      std::ios::in | std::ios::binary  );
+    if( !in_file.is_open() ) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLogError(
+            LOG_NOTICE,
+            status,
+            "chksumLocFile - fopen failed for %s, status = %d",
+            _file_name,
+            status );
+        return status;
     }
 
-    fclose( file );
+    char buffer_read[ MD5_BUF_SZ ];
+    std::streamsize bytes_read = in_file.readsome(
+                                     buffer_read,
+                                     MD5_BUF_SZ );
+    while( bytes_read > 0 ) {
+        hasher.update(
+            std::string(
+                buffer_read,
+                bytes_read ) );
+        bytes_read = in_file.readsome(
+                         buffer_read,
+                         MD5_BUF_SZ );
+    }
 
     // =-=-=-=-=-=-=-
     // capture the digest
     std::string digest;
     hasher.digest( digest );
-    strncpy( chksumStr, digest.c_str(), digest.size() + 1 );
+    strncpy(
+        _checksum,
+        digest.c_str(),
+        digest.size() + 1 );
+
     return 0;
-}
+
+} // chksumLocFile
 
 int verifyChksumLocFile(
     char *fileName,
