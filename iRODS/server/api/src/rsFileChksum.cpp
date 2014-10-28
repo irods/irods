@@ -211,6 +211,7 @@ int fileChksum(
     irods::Hasher hasher;
     ret = irods::getHasher( final_scheme, hasher );
     if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
         irods::getHasher( irods::MD5_NAME, hasher );
     }
 
