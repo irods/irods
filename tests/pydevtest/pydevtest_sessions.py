@@ -47,6 +47,7 @@ def admin_up():
                                         "8",
                                         "16",
                                         "AES-256-CBC",
+                                        "SHA256",
                                         )
     global adminsession
     adminsession = icommands.RodsSession(mycwd, icommands_bin, sessionid)
@@ -117,6 +118,7 @@ def user_up(user):
                                         "8",
                                         "16",
                                         "AES-256-CBC",
+                                        "SHA256",
                                         )
     new = icommands.RodsSession(mycwd, icommands_bin, sessionid)
     new.createEnvFiles(myenv)

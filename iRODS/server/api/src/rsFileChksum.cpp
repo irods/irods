@@ -129,6 +129,13 @@ int fileChksum(
         hash_scheme = svr_hash_scheme;
     }
 
+    // make sure the read parameter is lowercased
+    std::transform(
+        hash_scheme.begin(),
+        hash_scheme.end(),
+        hash_scheme.begin(),
+        ::tolower);
+
     std::string svr_hash_policy;
     ret = props.get_property< std::string >(
               MATCH_HASH_POLICY_KW,

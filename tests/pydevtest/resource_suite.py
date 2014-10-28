@@ -303,7 +303,19 @@ class ResourceSuite(ResourceBase):
     def test_local_iput_recursive(self):
         recursivedirname = "dir"
 
-    def test_local_iput_checksum(self):
+    def test_local_iput_lower_checksum(self):
+        # local setup
+        datafilename = "newfile.txt"
+        f = open(datafilename,'wb')
+        f.write("TESTFILE -- ["+datafilename+"]")
+        f.close()
+        # assertions
+        assertiCmd(s.adminsession,"iput -k "+datafilename) # iput
+        assertiCmd(s.adminsession,"ils -L","LIST","sha2:CUQZ6BgbDSDSrpQ6U/WAupR0sdvT9aJorN8hssh2GNM=") # check proper checksum
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+datafilename )
+
+    def test_local_iput_upper_checksum(self):
         # local setup
         datafilename = "newfile.txt"
         f = open(datafilename,'wb')
@@ -311,7 +323,7 @@ class ResourceSuite(ResourceBase):
         f.close()
         # assertions
         assertiCmd(s.adminsession,"iput -K "+datafilename) # iput
-        assertiCmd(s.adminsession,"ils -L","LIST","d60af3eb3251240782712eab3d8ef3b1") # check proper checksum
+        assertiCmd(s.adminsession,"ils -L","LIST","sha2:CUQZ6BgbDSDSrpQ6U/WAupR0sdvT9aJorN8hssh2GNM=") # check proper checksum
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 

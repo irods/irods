@@ -18,7 +18,7 @@ class RodsEnv(object):
     Used as argument for RodsSession.createEnvFiles().
     '''
 
-    def __init__(self, host, port, defRes, homeColl, cwd, username, zone, auth, csnegotiation, cspolicy, enckeysize, encsaltsize, encnumhashrounds, encalgorithm):
+    def __init__(self, host, port, defRes, homeColl, cwd, username, zone, auth, csnegotiation, cspolicy, enckeysize, encsaltsize, encnumhashrounds, encalgorithm, defaulthashscheme):
         self.host = host
         self.port = port
         self.defRes = defRes
@@ -33,6 +33,7 @@ class RodsEnv(object):
         self.encsaltsize = encsaltsize
         self.encnumhashrounds = encnumhashrounds
         self.encalgorithm = encalgorithm
+        self.defaulthashscheme = defaulthashscheme
 
 class RodsSession(object):
     '''A set of methods to start, close and manage multiple
@@ -95,6 +96,7 @@ class RodsSession(object):
         ENVFILE.write("irodsEncryptionSaltSize '%s'\n" % myEnv.encsaltsize)
         ENVFILE.write("irodsEncryptionNumHashRounds '%s'\n" % myEnv.encnumhashrounds)
         ENVFILE.write("irodsEncryptionAlgorithm '%s'\n" % myEnv.encalgorithm)
+        ENVFILE.write("irodsDefaultHashScheme '%s'\n" % myEnv.defaulthashscheme)
         ENVFILE.close()
 
     def deleteEnvFiles(self):
