@@ -435,10 +435,10 @@ _rsDataObjClose(
             return SYS_COPY_LEN_ERR;
         }
     }
-
     // If an object with a checksum was written to, checksum needs updating
-    if ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType
-            && strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
+    if ( ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType || 
+           CREATE_TYPE == L1desc[l1descInx].openType ) &&
+           strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
 
         L1desc[l1descInx].chksumFlag = REG_CHKSUM;
         updateChksumFlag = 1;
@@ -835,6 +835,7 @@ procChksumForClose(
     rsComm_t *rsComm,
     int l1descInx,
     char **chksumStr ) {
+
     int status = 0;
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
     int oprType = L1desc[l1descInx].oprType;
@@ -909,6 +910,7 @@ procChksumForClose(
                 addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, L1desc[l1descInx].chksum );
 
             }
+
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
             rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
             if ( status < 0 ) {

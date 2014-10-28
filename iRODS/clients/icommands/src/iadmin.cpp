@@ -1461,8 +1461,6 @@ main( int argc, char **argv ) {
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();
     init_api_table( api_tbl, pk_tbl );
 
-printf( "XXXXXXXXXXXXXXXXXXXXXXXXXXXX - iadmin :: host [%s]  rodsPort [%d]  un [%s]  zone [%s]\n", myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName, myEnv.rodsZone );
-
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 

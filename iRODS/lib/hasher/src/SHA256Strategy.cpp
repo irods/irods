@@ -29,7 +29,6 @@ namespace irods {
     SHA256Strategy::digest( std::string& _messageDigest, boost::any& _context ) const {
         unsigned char final_buffer[SHA256_DIGEST_LENGTH];
         SHA256_Final( final_buffer, boost::any_cast<SHA256_CTX>( &_context ) );
-
         int len = strlen( SHA256_CHKSUM_PREFIX );
         unsigned long out_len = CHKSUM_LEN - len;
 

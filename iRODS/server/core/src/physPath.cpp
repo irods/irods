@@ -407,7 +407,6 @@ _dataObjChksum(
     rsComm_t*      rsComm,
     dataObjInfo_t* dataObjInfo,
     char**         chksumStr ) { // JMC - backport 4527
-
     fileChksumInp_t fileChksumInp;
     int status = 0;
 

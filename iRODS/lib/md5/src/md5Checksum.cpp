@@ -105,6 +105,20 @@ int chksumLocFile(
         hash_scheme = env_scheme;
 
     }
+    
+    // =-=-=-=-=-=-=-
+    // hash scheme keywords are all lowercase
+    std::transform(
+        hash_scheme.begin(),
+        hash_scheme.end(),
+        hash_scheme.begin(),
+        ::tolower );
+    std::transform(
+        env_scheme.begin(),
+        env_scheme.end(),
+        env_scheme.begin(),
+        ::tolower );
+
 
     // =-=-=-=-=-=-=-
     // verify checksum scheme against configuration

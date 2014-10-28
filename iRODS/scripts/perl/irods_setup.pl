@@ -1373,8 +1373,8 @@ sub configureIrodsServer
 		}
 
 		# Set the four key irods user env variables so iinit
-		# will not attempt to create .irodsEnv (and prompt and
-		# hang).  The .irodsEnv is created properly later.
+		# will not attempt to create irods_environment.json (and prompt and
+		# hang).  The irods_environment.json is created properly later.
 		$ENV{"IRODS_HOST"}=$thisHost;
 		$ENV{"IRODS_PORT"}=$IRODS_PORT;
 		$ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
@@ -1878,8 +1878,8 @@ sub configureIrodsUser
 	#	already matches the current configuration, but that's
 	#	more hassle than it's worth.  Just set it.  If we
 	#	set it to the same values, it doesn't hurt anything.
-	printStatus( "Updating iRODS user's ~/.irods/.irodsEnv...\n" );
-	printLog( "Updating iRODS user's ~/.irods/.irodsEnv...\n" );
+	printStatus( "Updating iRODS user's ~/.irods/irods_environment.json...\n" );
+	printLog( "Updating iRODS user's ~/.irods/irods_environment.json...\n" );
 	if ( ! -e $userIrodsDir )
 	{
 		# User's iRODS configuration directory doesn't exist yet.
@@ -1897,21 +1897,21 @@ sub configureIrodsUser
     # populate the irods environment for this server instance
     printToFile( $userIrodsFile,
         "{\n" .
-        "\"irods_host\": \"$thisHost\",\n" .
-        "\"irods_port\": \"$IRODS_PORT\",\n" .
-        "\"irods_default_resource\": \"$RESOURCE_NAME\",\n" .
-        "\"irods_home\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
-        "\"irods_cwd\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
-        "\"irods_user_name\": \"$IRODS_ADMIN_NAME\",\n" .
-        "\"irods_zone\": \"$ZONE_NAME\",\n" .
-        "\"irods_client_server_negotiation\": \"request_server_negotiation\",\n" .
-        "\"irods_client_server_policy\": \"CS_NEG_REFUSE\",\n" .
-        "\"irods_encryption_key_size\": 32,\n" .
-        "\"irods_encryption_salt_size\": 8,\n" .
-        "\"irods_encryption_num_hash_rounds\": 16,\n" .
-        "\"irods_encryption_algorithm\": \"AES-256-CBC\",\n" .
-        "\"irods_default_hash_scheme\": \"SHA256\",\n" .
-        "\"irods_match_hash_policy\": \"not_strict\"\n" .
+        "    \"irods_host\": \"$thisHost\",\n" .
+        "    \"irods_port\": $IRODS_PORT,\n" .
+        "    \"irods_default_resource\": \"$RESOURCE_NAME\",\n" .
+        "    \"irods_home\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
+        "    \"irods_cwd\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
+        "    \"irods_user_name\": \"$IRODS_ADMIN_NAME\",\n" .
+        "    \"irods_zone\": \"$ZONE_NAME\",\n" .
+        "    \"irods_client_server_negotiation\": \"request_server_negotiation\",\n" .
+        "    \"irods_client_server_policy\": \"CS_NEG_REFUSE\",\n" .
+        "    \"irods_encryption_key_size\": 32,\n" .
+        "    \"irods_encryption_salt_size\": 8,\n" .
+        "    \"irods_encryption_num_hash_rounds\": 16,\n" .
+        "    \"irods_encryption_algorithm\": \"AES-256-CBC\",\n" .
+        "    \"irods_default_hash_scheme\": \"SHA256\",\n" .
+        "    \"irods_match_hash_policy\": \"not_strict\"\n" .
         "}\n"
          );
 

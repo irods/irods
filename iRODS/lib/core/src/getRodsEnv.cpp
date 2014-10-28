@@ -122,6 +122,7 @@ extern "C" {
 
     static
     int capture_string_property(
+        const int                      _msg_lvl,
         irods::environment_properties& _props,
         const std::string&             _key,
         char*                          _val ) {
@@ -132,14 +133,14 @@ extern "C" {
                                    prop_str );
         if( !ret.ok() ) {
             rodsLog(
-                LOG_DEBUG,
-                "env key [%s] not defined",
+                _msg_lvl,
+                "%s is not defined",
                 _key.c_str() );
             return -1;
         } else {
             rodsLog( 
-                LOG_DEBUG, 
-                "captured env [%s]-[%s]",
+                _msg_lvl, 
+                "%s - %s",
                 _key.c_str(),
                 prop_str.c_str() );
             strncpy( 
@@ -153,6 +154,7 @@ extern "C" {
 
     static
     int capture_integer_property(
+        const int                      _msg_lvl,
         irods::environment_properties& _props,
         const std::string&             _key,
         int&                           _val ) {
@@ -161,14 +163,14 @@ extern "C" {
                                _val );
         if( !ret.ok() ) {
             rodsLog(
-                LOG_DEBUG,
-                "env key [%s] not defined",
+                _msg_lvl,
+                "%s is not defined",
                 _key.c_str() );
             return ret.code();
         }
         rodsLog( 
-            LOG_DEBUG, 
-            "captured env [%s]-[%d]",
+            _msg_lvl, 
+            "%s - %d",
             _key.c_str(),
             _val );
         
@@ -193,6 +195,13 @@ extern "C" {
             // return  ret.code();
         }
 
+        int msg_lvl = LOG_DEBUG;
+        if( getenv( PRINT_RODS_ENV_STR ) && 
+            atoi( getenv(PRINT_RODS_ENV_STR ) ) ) {
+            msg_lvl = LOG_NOTICE;
+            unsetenv( PRINT_RODS_ENV_STR );
+        }
+
          // default auth scheme
          strncpy(
              _env->rodsAuthScheme,
@@ -200,112 +209,134 @@ extern "C" {
              6 );
 
         capture_string_property( 
+            msg_lvl,
             props, 
             irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, 
              configFileName );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_USER_NAME_KW, 
              _env->rodsUserName );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_HOST_KW, 
              _env->rodsHost );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_XMSG_HOST_KW, 
              _env->xmsgHost );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_HOME_KW, 
              _env->rodsHome );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_CWD_KW, 
              _env->rodsCwd );
          
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW, 
              _env->rodsAuthScheme );
 
          capture_integer_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_PORT_KW, 
              _env->rodsPort );
 
          capture_integer_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_XMSG_PORT_KW, 
              _env->xmsgPort );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_DEFAULT_RESOURCE_KW, 
              _env->rodsDefResource );
  
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_ZONE_KW, 
              _env->rodsZone );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW, 
              _env->rodsClientServerPolicy );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW, 
              _env->rodsClientServerNegotiation );
 
          capture_integer_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW, 
              _env->rodsEncryptionKeySize );
 
          capture_integer_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW, 
              _env->rodsEncryptionSaltSize );
 
          capture_integer_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW, 
              _env->rodsEncryptionNumHashRounds );
  
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW, 
              _env->rodsEncryptionAlgorithm );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW, 
              _env->rodsDefaultHashScheme );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_MATCH_HASH_POLICY_KW, 
              _env->rodsMatchHashPolicy );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_GSI_SERVER_DN_KW, 
              _env->rodsServerDn );
 
          capture_string_property( 
+            msg_lvl,
              props, 
              irods::CFG_IRODS_DEBUG_KW, 
              _env->rodsDebug );
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property( 
+                         msg_lvl,
                          props, 
                          irods::CFG_IRODS_LOG_LEVEL_KW, 
                          _env->rodsLogLevel );
@@ -316,6 +347,7 @@ extern "C" {
 
         memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
         status = capture_string_property( 
+                     msg_lvl,
                      props, 
                      irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW, 
                      _env->rodsAuthFileName );

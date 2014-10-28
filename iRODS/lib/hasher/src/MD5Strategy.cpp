@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include <string.h>
+#include "irods_stacktrace.hpp"
 
 namespace irods {
 

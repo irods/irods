@@ -89,7 +89,7 @@ main( int argc, char **argv ) {
 
 
     /* open the sessionfile and write or update it */
-    if ( ( fd = open( envFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
+    if ( ( fd = open( envFile, O_CREAT | O_RDWR | O_TRUNC, 0644 ) ) < 0 ) {
         fprintf( stderr, "Unable to open envFile %s\n", envFile );
         exit( 5 );
     }

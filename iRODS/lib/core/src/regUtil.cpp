@@ -40,6 +40,15 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         }
         int status = 0;
         if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
+            rodsEnv env;
+            int ret = getRodsEnv( &env );
+            if( ret < 0 ) {
+                rodsLogError( 
+                    LOG_ERROR, 
+                    ret,
+                    "rsyncDataToFileUtil: getRodsEnv failed" );
+                return ret;
+            }
             status = rcChksumLocFile( srcPath->outPath,
                                       REG_CHKSUM_KW,
                                       &dataObjOprInp.condInput,
