@@ -32,12 +32,18 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return CAT_NAME_EXISTS_AS_DATAOBJ;
         }
 
+        rodsEnv env;
+        int ret = getRodsEnv( &env );
+        if ( ret < 0 ) {
+            rodsLogError( LOG_ERROR, ret, "regUtil: getRodsEnv failed" );
+            return ret;
+        }
         int status = 0;
         if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
             status = rcChksumLocFile( srcPath->outPath,
                                       REG_CHKSUM_KW,
                                       &dataObjOprInp.condInput,
-                                      myRodsArgs->hashValue );
+                                      env.rodsDefaultHashScheme );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "regUtil: rcChksumLocFile error for %s, status = %d",

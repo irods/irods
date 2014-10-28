@@ -168,6 +168,12 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
+    rodsEnv env;
+    int ret = getRodsEnv( &env );
+    if ( ret < 0 ) {
+        rodsLogError( LOG_ERROR, ret, "rsyncUtil: getRodsEnv failed" );
+        return ret;
+    }
     if ( myRodsArgs->verbose == True ) {
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
         bzero( &conn->transStat, sizeof( transStat_t ) );
@@ -187,7 +193,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         status = rcChksumLocFile( targPath->outPath,
                                   RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  myRodsArgs->hashValue );
+                                  env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -205,7 +211,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         /* exist but no chksum */
         status = rcChksumLocFile( targPath->outPath, RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  myRodsArgs->hashValue );
+                                  env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -308,6 +314,12 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
 
+    rodsEnv env;
+    int ret = getRodsEnv( &env );
+    if ( ret < 0 ) {
+        rodsLogError( LOG_ERROR, ret, "rsyncUtil: getRodsEnv failed" );
+        return ret;
+    }
     if ( targPath->objState == NOT_EXIST_ST ) {
         putFlag = 1;
     }
@@ -321,7 +333,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         /* src has a checksum value */
         status = rcChksumLocFile( srcPath->outPath, RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  myRodsArgs->hashValue );
+                                  env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
@@ -344,7 +356,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         /* exist but no chksum */
         status = rcChksumLocFile( srcPath->outPath, RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  myRodsArgs->hashValue );
+                                  env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",

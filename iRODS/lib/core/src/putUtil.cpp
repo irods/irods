@@ -907,7 +907,13 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
             getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
         char chksumStr[NAME_LEN];
 
-        status = chksumLocFile( srcPath, chksumStr, rodsArgs->hashValue );
+        rodsEnv env;
+        int ret = getRodsEnv( &env );
+        if ( ret < 0 ) {
+            rodsLogError( LOG_ERROR, ret, "putUtil: getRodsEnv failed" );
+            return ret;
+        }
+        status = chksumLocFile( srcPath, chksumStr, env.rodsDefaultHashScheme );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "bulkPutFileUtil: chksumLocFile error for %s ", srcPath );
