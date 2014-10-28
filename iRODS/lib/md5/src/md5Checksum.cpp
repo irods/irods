@@ -7,6 +7,7 @@
 #include "irods_hasher_factory.hpp"
 #include "MD5Strategy.hpp"
 #include "getRodsEnv.hpp"
+#include "irods_log.hpp"
 
 #define MD5_BUF_SZ      (4 * 1024)
 
@@ -54,6 +55,7 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     std::string env_scheme( irods::MD5_NAME );
     if ( strlen( env.rodsDefaultHashScheme ) > 0 ) {
         env_scheme = env.rodsDefaultHashScheme;
+
     }
 
     // =-=-=-=-=-=-=-
@@ -61,6 +63,13 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     std::string env_policy;
     if ( strlen( env.rodsMatchHashPolicy ) > 0 ) {
         env_policy = env.rodsMatchHashPolicy;
+        // =-=-=-=-=-=-=-
+        // hash scheme keywords are all lowercase
+        std::transform(
+            env_scheme.begin(),
+            env_scheme.end(),
+            env_scheme.begin(),
+            ::tolower );
     }
 
     // =-=-=-=-=-=-=-
@@ -70,7 +79,18 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
             strlen( scheme ) > 0 &&
             strlen( scheme ) < NAME_LEN ) {
         hash_scheme = scheme;
+        // =-=-=-=-=-=-=-
+        // hash scheme keywords are all lowercase
+        std::transform(
+            hash_scheme.begin(),
+            hash_scheme.end(),
+            hash_scheme.begin(),
+            ::tolower );
+    } else {
+        hash_scheme = env_scheme;
+
     }
+
 
     // =-=-=-=-=-=-=-
     // verify checksum scheme against configuration
@@ -101,10 +121,16 @@ chksumLocFile( char *fileName, char *chksumStr, const char* scheme ) {
     // init the hasher object
     irods::Hasher hasher;
     irods::error ret = irods::getHasher( final_scheme, hasher );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
 
     while ( ( len = fread( buffer, 1, MD5_BUF_SZ, file ) ) > 0 ) {
         hasher.update( std::string( buffer, len ) );
     }
+
     fclose( file );
 
     // =-=-=-=-=-=-=-
@@ -198,7 +224,6 @@ rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, cons
     }
 
     status = chksumLocFile( fileName, chksumStr, _scheme );
-
     if ( status < 0 ) {
         return status;
     }
