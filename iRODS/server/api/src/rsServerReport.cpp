@@ -670,11 +670,11 @@ irods::error get_script_output_single_line(const std::string& script_language, c
     std::vector<char> buf(1000);
     const char* fgets_ret = fgets(&buf[0], buf.size(), fp);
     if (fgets_ret == NULL) {
-        const int pclose_ret = pclose(fp);
         std::stringstream msg;
-        msg << "fgets() failed. feof[" << std::feof(fp) << "] ferror[" << std::ferror(fp) << "] pclose[" << pclose_ret << "]";
-        return ERROR( FILE_READ_ERR,
-                      msg.str() );
+        msg << "fgets() failed. feof[" << std::feof(fp) << "] ferror[" << std::ferror(fp) << "]";
+        const int pclose_ret = pclose(fp);
+        msg << " pclose[" << pclose_ret << "]";
+        return ERROR( FILE_READ_ERR, msg.str() );
     }
 
     const int pclose_ret = pclose(fp);
