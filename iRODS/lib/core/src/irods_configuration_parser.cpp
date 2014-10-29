@@ -136,12 +136,6 @@ namespace irods {
         const char* key = 0;
         json_t*     val = 0;
         json_object_foreach( _obj, key, val ) {
-            if( !val || !key ) {
-                rodsLog(
-                    LOG_NOTICE,
-                    "parse_json_object :: skipping null val" );
-                continue;
-            }
             int type = json_typeof( val );
             if( JSON_INTEGER == type ) {
                 _obj_out.set< int >( key, json_integer_value( val ) );
