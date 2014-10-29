@@ -555,7 +555,7 @@ initRcatServerHostByFile() {
          for( size_t i = 0;
              i < prop_arr.size();
              ++i ) {
-            rule_arr = boost::any_cast< std::string >( 
+            rule_arr += boost::any_cast< std::string >(
                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
