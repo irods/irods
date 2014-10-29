@@ -11,6 +11,8 @@ import shlex
 import datetime
 import time
 import psutil
+import base64
+import hashlib
 
 class ResourceBase(object):
 
@@ -306,24 +308,26 @@ class ResourceSuite(ResourceBase):
     def test_local_iput_lower_checksum(self):
         # local setup
         datafilename = "newfile.txt"
-        f = open(datafilename,'wb')
-        f.write("TESTFILE -- ["+datafilename+"]")
-        f.close()
+        with open(datafilename,'wb') as f:
+            f.write("TESTFILE -- ["+datafilename+"]")
         # assertions
         assertiCmd(s.adminsession,"iput -k "+datafilename) # iput
-        assertiCmd(s.adminsession,"ils -L","LIST","sha2:CUQZ6BgbDSDSrpQ6U/WAupR0sdvT9aJorN8hssh2GNM=") # check proper checksum
+        with open(datafilename) as f:
+            checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+        assertiCmd(s.adminsession,"ils -L","LIST","sha2:"+checksum) # check proper checksum
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 
     def test_local_iput_upper_checksum(self):
         # local setup
         datafilename = "newfile.txt"
-        f = open(datafilename,'wb')
-        f.write("TESTFILE -- ["+datafilename+"]")
-        f.close()
+        with open(datafilename,'wb') as f:
+            f.write("TESTFILE -- ["+datafilename+"]")
         # assertions
         assertiCmd(s.adminsession,"iput -K "+datafilename) # iput
-        assertiCmd(s.adminsession,"ils -L","LIST","sha2:CUQZ6BgbDSDSrpQ6U/WAupR0sdvT9aJorN8hssh2GNM=") # check proper checksum
+        with open(datafilename) as f:
+            checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+        assertiCmd(s.adminsession,"ils -L","LIST","sha2:"+checksum) # check proper checksum
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 
