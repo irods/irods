@@ -168,6 +168,7 @@
 #define SYS_ALREADY_INITIALIZED                     -151000
 #define SYS_SETENV_ERR                              -152000
 #define SYS_GETENV_ERR                              -153000
+#define SYS_INTERNAL_ERR                              -154000
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR                        -300000
