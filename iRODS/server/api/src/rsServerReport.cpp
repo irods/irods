@@ -933,7 +933,10 @@ irods::error get_config_dir(
     std::string cfg_file;
     irods::error ret = irods::get_full_path_for_config_file( SERVER_CONFIG_FILE, cfg_file );
     if ( !ret.ok() ) {
-        return PASS( ret );
+        irods::error ret = irods::get_full_path_for_config_file( LEGACY_SERVER_CONFIG_FILE, cfg_file );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
     }
 
     fs::path p( cfg_file );
@@ -948,7 +951,8 @@ irods::error get_config_dir(
             const fs::path& p = itr->path();
             const std::string& name = p.string();
 
-            if ( std::string::npos != name.find( SERVER_CONFIG_FILE )
+            if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
+                    std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE )
                ) {
                 continue;
             }

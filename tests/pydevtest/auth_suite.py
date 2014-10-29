@@ -9,6 +9,7 @@ import pydevtest_sessions as s
 import commands
 import os
 import time
+import json
 
 class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
@@ -159,15 +160,18 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("echo \"irodsUserName '%s'\" >> %s" % (authTestUser, clientEnvFile))
         os.system("echo \"irodsHome '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
         os.system("echo \"irodsCwd '/tempZone/home/%s'\" >> %s" % (authTestUser, clientEnvFile))
-        
-        # add server.config settings
-        serverConfigFile = get_irods_config_dir() + "/server.config"
-        os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
-        os.system("echo \"pam_password_length 20\" >> %s" % serverConfigFile)
-        os.system("echo \"pam_no_extend false\" >> %s" % serverConfigFile)
-        os.system("echo \"pam_password_min_time 121\" >> %s" % serverConfigFile)
-        os.system("echo \"pam_password_max_time 1209600\" >> %s" % serverConfigFile)
 
+        # add server_config.json settings
+        serverConfigFile = get_irods_config_dir() + "/server_config.json"
+        with open(serverConfigFile) as f:
+            contents = json.load(f)
+        os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
+        contents[pam_password_length] = 20;
+        contents[pam_no_extend] = False;
+        contents[pam_password_min_time] = 121;
+        contents[pam_password_max_time] = 1209600;
+        with open(serverConfigFile, 'w') as f:
+            json.dump(contents, f)
 
         # server reboot to pick up new irodsEnv and server settings
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
@@ -188,8 +192,8 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
         # clean up
         os.system("rm server.key chain.pem dhparams.pem")
-        
-        # reset server.config to original
+
+        # reset server_config.json to original
         os.system("mv %sOrig %s" % (serverConfigFile, serverConfigFile))
         
         # server reboot to revert to previous server configuration

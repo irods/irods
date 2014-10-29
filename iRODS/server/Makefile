@@ -201,7 +201,7 @@ endif
 CFLAGS +=       -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
-# osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported 
+# osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported
 LDADD += -rdynamic -force_flat_namespace
 else
 LDADD +=		-lrt
@@ -266,10 +266,10 @@ endif
 # icat Tests
 ifdef RODS_CAT
 TEST_OBJS =	\
-		$(svrTestObjDir)/test_chl.o 
+		$(svrTestObjDir)/test_chl.o
 
 TEST_BINS =	\
-		$(svrTestBinDir)/test_chl 
+		$(svrTestBinDir)/test_chl
 endif
 
 # reTest only works on Solaris
@@ -284,7 +284,7 @@ OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
 		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBR_OBJS)
 
 # Server configuration
-CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
+CONFIG +=	$(svrConfigDir)/irodsHost
 
 
 # Compilation and link flags
@@ -362,42 +362,23 @@ vpath %cpp %c 	$(svrCoreSrcDir) $(svrDriversSrcDir) $(svrApiSrcDir) \
 
 # Build everything
 all:	server
-#	@true
-
-
-
 
 
 # Build the servers
 servers: server
-#	@true
 
 bin:	server
-#	@true
 
 server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
-#	@true
-
-
-
 
 
 # Server configuration
 config:	$(CONFIG)
-#	@true
-
-$(svrConfigDir)/server.config: $(svrConfigDir)/server.config.in
-	@echo "Warning, using default server.config file"
-	@cp $(svrConfigDir)/server.config.in $(svrConfigDir)/server.config
-	@chmod 600 $(svrConfigDir)/server.config
 
 $(svrConfigDir)/irodsHost: $(svrConfigDir)/irodsHost.in
 	@echo "Note, making irodsHost file from irodsHost.in"
 	@cp $(svrConfigDir)/irodsHost.in $(svrConfigDir)/irodsHost
 	@chmod 600 $(svrConfigDir)/irodsHost
-
-
-
 
 # Show compile flags
 print_cflags:
@@ -415,13 +396,10 @@ print_ldflags:
 
 # Tests
 tests:	test
-#	@true
 
 retest:	test
-#	@true
 
 test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
-#	@true
 
 
 

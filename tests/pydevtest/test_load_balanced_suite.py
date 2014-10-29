@@ -60,7 +60,7 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
 
     def test_load_balanced(self):
        # =-=-=-=-=-=-=-
-       # read server.config and .odbc.ini
+       # read server_config.json and .odbc.ini
        cfg = ServerConfig() 
     
        if cfg.values[ 'catalog_database_type' ] == "postgres" :

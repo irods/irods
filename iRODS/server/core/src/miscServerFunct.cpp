@@ -1957,8 +1957,9 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 }
 
 /*
- Given a zoneName, return the Zone Server ID string (from the server.config
- file) if defined.  If the input zoneName is null, use the local zone.
+ Given a zoneName, return the Zone Server ID string (from the
+ server_config.json file) if defined. If the input zoneName is
+ null, use the local zone.
  Input: zoneName
  Output: zoneSID
  */

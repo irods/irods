@@ -842,7 +842,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char zoneName[NAME_LEN];
         status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status ) {
-            printf( "Invalid user name format" );
+            printf( "Invalid user name format\n" );
             return USER_INVALID_USERNAME_FORMAT;
         }
         status = getLocalZone();

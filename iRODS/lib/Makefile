@@ -202,7 +202,7 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_thread.a
 
 # Server configuration
-CONFIG =	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
+CONFIG =	$(svrConfigDir)/irodsHost
 
 
 # Compilation flags
@@ -224,7 +224,6 @@ ifdef SYSLOG_FACILITY_CODE
 CFLAGS_OPTIONS += -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
 endif
 
-
 #
 # Principal Targets
 #
@@ -232,22 +231,14 @@ endif
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
 		$(libSha1SrcDir) $(libRbudpSrcDir) $(libHasherSrcDir)
 
-
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
              $(BOOST_DIR)/stage/lib/libboost_thread.a 
 
-
-
-
 # Build everything
 all:	libs
 	@true
-
-
-
-
 
 # Build the library
 lib:	libs
@@ -264,20 +255,9 @@ $(LIBRARY): $(OBJS) $(BOOST_LIBS)
 	@$(AR) $(AROPT) $(LIBRARY) $^
 	@$(RANLIB) $(LIBRARY)
 
-
-
-
-
 # Server configuration
 $(svrConfigDir)/irodsHost:
 	@$(MAKE) --no-print-directory -C .. config
-
-$(svrConfigDir)/server.config:
-	@$(MAKE) --no-print-directory -C .. config
-
-
-
-
 
 # Show compile flags
 print_cflags:
@@ -285,10 +265,6 @@ print_cflags:
 	@echo "    $(CFLAGS_OPTIONS)"
 	@echo "MD5-only compile flags:"
 	@echo "    $(MD5_CFLAGS_OPTIONS)"
-
-
-
-
 
 # Clean
 clean:
@@ -304,7 +280,7 @@ clean:
 $(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.hpp): 
+$(extendedICAT.hpp):
 	@touch $(extendedICAT.hpp)
 
 # Build API
@@ -337,15 +313,3 @@ rodslog:  $(LOG_SRC)
 
 $(LOG_SRC):  $(libCoreIncDir)/rodsErrorTable.hpp
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
-
-
-
-
-
-
-
-
-
-
-
-

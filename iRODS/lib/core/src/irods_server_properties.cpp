@@ -15,6 +15,7 @@
 #include "initServer.hpp"
 
 #include <string>
+#include <sstream>
 #include <algorithm>
 
 #include <boost/filesystem.hpp>
@@ -63,14 +64,14 @@ namespace irods {
         key_map_[ MATCH_HASH_POLICY_KW ]     = CFG_MATCH_HASH_POLICY_KW;
         key_map_[ LOCAL_ZONE_SID_KW ]        = CFG_ZONE_ID_KW;
         key_map_[ AGENT_KEY_KW ]             = CFG_NEGOTIATION_KEY_KW;
-         
+
     } // ctor
 
     error server_properties::capture() {
         // if a json version exists, then attempt to capture
         // that
         std::string svr_cfg;
-        irods::error ret = irods::get_full_path_for_config_file( 
+        irods::error ret = irods::get_full_path_for_config_file(
                                "server_config.json",
                                svr_cfg );
         if( ret.ok() ) {
@@ -78,9 +79,9 @@ namespace irods {
             if ( !ret.ok() ) {
                 return PASS( ret );
             }
-            
+
             std::string db_cfg;
-            ret = irods::get_full_path_for_config_file( 
+            ret = irods::get_full_path_for_config_file(
                                    "database_config.json",
                                    db_cfg );
             if ( ret.ok() ) {
@@ -96,7 +97,7 @@ namespace irods {
         }
 
         return SUCCESS();
-    
+
     } // capture
 
     error server_properties::capture_json(
@@ -107,7 +108,7 @@ namespace irods {
 
     } // capture_json
 
-// Read server.config and fill server_properties::properties
+// Read LEGACY_SERVER_CONFIG_FILE and fill server_properties::properties
     error server_properties::capture_legacy() {
         error result = SUCCESS();
         std::string prop_name, prop_setting; // property name and setting
@@ -123,8 +124,8 @@ namespace irods {
         memset( &DBPassword, '\0', MAX_PASSWORD_LEN );
 
         std::string cfg_file;
-        error ret = irods::get_full_path_for_config_file( 
-                        SERVER_CONFIG_FILE, 
+        error ret = irods::get_full_path_for_config_file(
+                        LEGACY_SERVER_CONFIG_FILE,
                         cfg_file );
         if ( !ret.ok() ) {
             return PASS( ret );
@@ -135,9 +136,11 @@ namespace irods {
 
         if ( fptr == NULL ) {
             rodsLog( LOG_DEBUG,
-                     "Cannot open SERVER_CONFIG_FILE file %s. errno = %d\n",
+                     "Cannot open LEGACY_SERVER_CONFIG_FILE file %s. errno = %d\n",
                      cfg_file.c_str(), errno );
-            return ERROR( SYS_CONFIG_FILE_ERR, "server.config file error" );
+            std::stringstream msg;
+            msg << LEGACY_SERVER_CONFIG_FILE << " file error";
+            return ERROR( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
         }
 
         buf[BUF_LEN - 1] = '\0';
@@ -498,10 +501,12 @@ namespace irods {
 
                 if ( 32 != prop_setting.size() ) {
                     rodsLog( LOG_ERROR,
-                             "%s field in server.config must be 32 characters in length (currently %d characters in length).",
-                             prop_name.c_str(), prop_setting.size() );
+                             "%s field in %s must be 32 characters in length (currently %d characters in length).",
+                             prop_name.c_str(), LEGACY_SERVER_CONFIG_FILE, prop_setting.size() );
                     fclose( fptr );
-                    return ERROR( SYS_CONFIG_FILE_ERR, "server.config file error" );
+                    std::stringstream msg;
+                    msg << LEGACY_SERVER_CONFIG_FILE << " file error";
+                    return ERROR( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
                 }
 
                 // Update properties table

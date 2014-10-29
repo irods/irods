@@ -328,11 +328,11 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # Test invalid names
         for name in invalid:
-            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
+            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser","ERROR","Invalid user name format") # should be rejected
 
         # Invalid names with special characters
-        assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
-        assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
+        assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","Invalid user name format") # should be rejected
+        assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","Invalid user name format") # should be rejected
 
 
 
@@ -341,9 +341,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     def test_rebalance_for_object_count(self):
         # =-=-=-=-=-=-=-
-        # read server.config and .odbc.ini
+        # read server_config.json and .odbc.ini
         cfg = ServerConfig()
- 
+
         root_dir = "/tmp/irods/big_dir"
         if os.path.exists( root_dir ):
             shutil.rmtree( root_dir )

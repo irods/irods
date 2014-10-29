@@ -6,7 +6,7 @@
 
 /**
  * The server configuration settings are now stored in a singleton irods::server_properties
- * and server.config is read by irods::server_properties::getInstance().capture()
+ * and server_config.json is read by irods::server_properties::getInstance().capture()
  *
  */
 
@@ -19,7 +19,8 @@
 
 /* server host configuration */
 
-#define SERVER_CONFIG_FILE	"server.config"
+#define LEGACY_SERVER_CONFIG_FILE	"server.config"
+#define SERVER_CONFIG_FILE	"server_config.json"
 
 /* keywords for the ICAT_HOST_FILE */
 #define DB_PASSWORD_KW		"DBPassword"

@@ -505,7 +505,7 @@ extern "C" {
                     getZoneServerId( userZone, serverId );
                     len = strlen( serverId );
                     if ( len <= 0 ) {
-                        rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status );
+                        rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server_config.json", status );
                         if ( requireServerAuth ) {
                             free( authCheckOut->serverResponse );
                             free( authCheckOut );

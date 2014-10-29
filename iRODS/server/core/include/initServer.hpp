@@ -15,7 +15,6 @@
 
 /* server host configuration */
 
-#define RCAT_HOST_FILE  "server.config"
 #ifndef windows_platform
 #define HOST_CONFIG_FILE  "irodsHost"
 #define RE_RULES_FILE   "reRules"
@@ -31,7 +30,7 @@
 #define NO_MAX_CONNECTION_LIMIT	-1
 #define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT
 
-/* keywords for the RCAT_HOST_FILE */
+/* keywords for the server config */
 #define ICAT_HOST_KW		"icatHost"
 #define SLAVE_ICAT_HOST_KW	"slaveIcatHost"
 

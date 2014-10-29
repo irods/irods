@@ -275,7 +275,7 @@ namespace irods {
         std::string cli_msg;
 
         // =-=-=-=-=-=-=-
-        // if we cannot read the server.config file, punt
+        // if we cannot read a server config file, punt
         // as this must be a client-side situation
         server_properties& props = server_properties::getInstance();
         err = props.capture_if_needed();

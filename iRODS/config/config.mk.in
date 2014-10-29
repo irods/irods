@@ -309,9 +309,9 @@ endif
 # RUN_SERVER_AS_ROOT - Defines whether the iRODS server contains code
 # that will allow the iRODS servers to switch between root and service
 # user permissions for specific operations. This is now a runtime option
-# that is turned on by setting run_server_as_root to true in server.config
-# followed by a server restart.
- 
+# that is turned on by setting run_server_as_root to true in
+# server_config.json followed by a server restart.
+
 # USE_BOOST -  specify whether the BOOST library should be used. BOOST_DIR is
 # the directory where the BOOST directory is located, which is normally
 # the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the

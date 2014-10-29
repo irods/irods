@@ -132,7 +132,7 @@ $serverBinDir = File::Spec->catdir( $IRODS_HOME, "server", "bin" );
 # The iRODS server
 $irodsServer  = File::Spec->catfile( $serverBinDir, "irodsServer" );
 
-# Directory containing server configuration 'server.config'.
+# Directory containing server configuration 'server_config.json'.
 $irodsServerConfigDir = File::Spec->catdir( $IRODS_HOME, "server", "config" );
 
 # Directory for the server log.
@@ -193,7 +193,7 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # $svrPortRangeEnd=20199;
 
 # reServerOnIes and reServerOnThisServer have been deplicated.
-# The "reHost" parameter in the server/config/server.config file is now
+# The "reHost" parameter in the server/config/server_config.json file is now
 # used to configure the location of irodsReServer.
 
 # reServerOnThisServer - Specifies that the delayed rule exec server 

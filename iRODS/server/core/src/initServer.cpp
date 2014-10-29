@@ -622,10 +622,34 @@ initRcatServerHostByFile() {
         return ret.code();
     }
 
-    // re host 
-    // xmsg host 
+    // re host
+    // xmsg host
+    ret = props.get_property< std::string >(
+              XMSG_HOST_KW,
+              prop_str );
+    if( ret.ok() ) {
+        rodsHostAddr_t    addr;
+        memset( &addr, 0, sizeof( addr ) );
+        rodsServerHost_t* tmp_host = 0;
+        strncpy(
+            addr.hostAddr,
+            prop_str.c_str(),
+            LONG_NAME_LEN );
+        int rem_flg = resolveHost(
+                          &addr,
+                          &tmp_host );
+        if ( rem_flg < 0 ) {
+            rodsLog( LOG_SYS_FATAL,
+                     "initRcatServerHostByFile: resolveHost error for %s, status = %d",
+                     addr.hostAddr,
+                     rem_flg );
+            return rem_flg;
+        }
+        tmp_host->xmsgHostFlag = 1;
+    }
+
     // slave icat host
- 
+
     ret = props.get_property< std::string >(
               LOCAL_ZONE_SID_KW,
               prop_str );

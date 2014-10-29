@@ -15,25 +15,26 @@ DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ $RUNINPLACE -eq 1 ] ; then
     MYIRODSCONFIG=$DETECTEDDIR/../iRODS/config/irods.config
     MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server.config
-    #MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server_config.json
+    MYSERVERCONFIGJSON=$DETECTEDDIR/../iRODS/server/config/server_config.json
     MYICATSYSINSERTS=$DETECTEDDIR/../iRODS/server/icat/src/icatSysInserts.sql
     # clean full paths
     MYIRODSCONFIG="$(cd "$( dirname $MYIRODSCONFIG )" && pwd)"/"$( basename $MYIRODSCONFIG )"
     MYSERVERCONFIG="$(cd "$( dirname $MYSERVERCONFIG )" && pwd)"/"$( basename $MYSERVERCONFIG )"
-    if [ ! -f $MYSERVERCONFIG ]; then
+    MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
+    if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
         echo ">>> Copying new server_config.json to /etc/irods"
-        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIG
+        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
 
     MYICATSYSINSERTS="$(cd "$( dirname $MYICATSYSINSERTS )" && pwd)"/"$( basename $MYICATSYSINSERTS )"
     DEFAULTRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
 else
     MYIRODSCONFIG=/etc/irods/irods.config
-    #MYSERVERCONFIG=/etc/irods/server.config
-    MYSERVERCONFIG=/etc/irods/server_config.json
-    if [ ! -f $MYSERVERCONFIG ]; then
+    MYSERVERCONFIG=/etc/irods/server.config
+    MYSERVERCONFIGJSON=/etc/irods/server_config.json
+    if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
         echo ">>> Copying new server_config.json to /etc/irods"
-        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIG
+        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
     MYICATSYSINSERTS=/var/lib/irods/iRODS/server/icat/src/icatSysInserts.sql
     DEFAULTRESOURCEDIR=/var/lib/irods/iRODS/Vault
@@ -62,8 +63,8 @@ fi
         MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIG | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
-        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIG | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
+        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIGJSON | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
+        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIGJSON | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
         MYADMINNAME=`grep "IRODS_ADMIN_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
         STATUS="loop"
     else
@@ -366,14 +367,8 @@ fi
         sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
     fi
 
-    # update existing server.config
+    # update existing server_config.json
     TMPFILE="/tmp/$USER/setupserverconfig.txt"
-    echo "Updating $MYSERVERCONFIG..."
-    sed -e "/\"zone_id\": \"$PREVIOUSSID\",/s/^.*$/    \"zone_id\": \"$MYLOCALZONESID\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
-    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotiation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIG > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIG
-
-
-
-
-
-
+    echo "Updating $MYSERVERCONFIGJSON..."
+    sed -e "/\"zone_id\": \"$PREVIOUSSID\",/s/^.*$/    \"zone_id\": \"$MYLOCALZONESID\",/" $MYSERVERCONFIGJSON > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIGJSON
+    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotiation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIGJSON > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIGJSON

@@ -5,7 +5,12 @@ DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
 # detect run-in-place installation
-if [ -e /etc/irods/server.config ] ;  then
+if [ -e /etc/irods/server_config.json ] ;  then
+    RUNINPLACE=0
+    # set configuration file paths
+    IRODS_CONFIG_FILE="/etc/irods/irods.config"
+    SERVER_CONFIG_FILE="/etc/irods/server_config.json"
+elif [ -e /etc/irods/server.config ] ;  then
     RUNINPLACE=0
     # set configuration file paths
     IRODS_CONFIG_FILE="/etc/irods/irods.config"
@@ -14,7 +19,7 @@ else
     RUNINPLACE=1
     # set configuration file paths
     IRODS_CONFIG_FILE=$DETECTEDDIR/../iRODS/config/irods.config
-    SERVER_CONFIG_FILE=$DETECTEDDIR/../iRODS/server/config/server.config
+    SERVER_CONFIG_FILE=$DETECTEDDIR/../iRODS/server/config/server_config.json
     # clean up full paths
     IRODS_CONFIG_FILE="$(cd "$( dirname $IRODS_CONFIG_FILE )" && pwd)"/"$( basename $IRODS_CONFIG_FILE )"
     SERVER_CONFIG_FILE="$(cd "$( dirname $SERVER_CONFIG_FILE )" && pwd)"/"$( basename $SERVER_CONFIG_FILE )"
@@ -99,7 +104,6 @@ LOCAL_RESOURCE_NAME="$FIRSTHALF$SECONDHALF"
 THIRDHALF="Vault"
 LOCAL_VAULT_NAME="$LOCAL_RESOURCE_NAME$THIRDHALF"
 IRODS_CONFIG_TEMPFILE="/tmp/tmp.irods.config"
-SERVER_CONFIG_TEMPFILE="/tmp/tmp.server.config"
 
 echo "Updating irods.config..."
 sed -e "/^\$IRODS_ICAT_HOST/s/^.*$/\$IRODS_ICAT_HOST = '$ICATHOST';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE

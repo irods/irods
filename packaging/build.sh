@@ -489,7 +489,6 @@ if [ "$1" == "clean" ] ; then
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -f iRODS/server/config/scriptMonPerf.config
-    rm -f iRODS/server/config/server.config
     rm -f iRODS/config/irods.config
     rm -f iRODS/lib/core/include/rodsVersion.hpp
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
