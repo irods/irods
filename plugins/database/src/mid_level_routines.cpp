@@ -898,7 +898,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
                               const char *ticketStr, const char *ticketHost,
                               icatSessionStruct *icss ) {
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal = 0;
 
     int cValSize[2];
     char *cVal[3];
