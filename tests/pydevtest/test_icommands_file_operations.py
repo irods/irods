@@ -235,15 +235,9 @@ class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
         file_size = pow(2, 30)
         file_name = make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
         file_local_full_path = os.path.join(local_dir, file_name)
-        restart_file = os.path.join(local_dir, 'restart_file')
-        try:
-            os.unlink(restart_file)
-        except OSError:
-            pass
-        iput_cmd = "iput --lfrestart " + restart_file + " '" + file_local_full_path + "'"
+        iput_cmd = "iput '" + file_local_full_path + "'"
         file_vault_full_path = os.path.join(get_vault_session_path(user_session), file_name)
-        interruptiCmd(user_session, iput_cmd, restart_file, 10)
-        os.unlink(restart_file)
+        interruptiCmd(user_session, iput_cmd, file_vault_full_path, 10)
 
         # multiple threads could still be writing on the server side, so we need to wait for
         # the size in the vault to converge - then were done.
@@ -253,7 +247,7 @@ class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
             time.sleep(1)
             old_size = new_size
             new_size = os.path.getsize(file_vault_full_path)
-        assert(new_size != 0)
+
         assertiCmd(user_session, 'ils -l', 'STDOUT', [file_name, str(new_size)])
 
 
