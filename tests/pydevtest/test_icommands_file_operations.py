@@ -248,7 +248,6 @@ class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
             old_size = new_size
             new_size = os.path.getsize(file_vault_full_path)
 
+        # wait for selet() call to timeout, set to "SELECT_TIMEOUT_FOR_CONN", which is 60 seconds
+        time.sleep(63)
         assertiCmd(user_session, 'ils -l', 'STDOUT', [file_name, str(new_size)])
-
-
-

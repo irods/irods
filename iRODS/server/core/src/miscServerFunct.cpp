@@ -245,33 +245,35 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
 
 int
 acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
-    int myFd = -1;
-    int myCookie;
-    int nbytes;
+    const int sockfd = getTcpSockFromPortList( thisPortList );
+    const int nfds = sockfd + 1;
     fd_set basemask;
-    int nSockets, nSelected;
-    int lsock = getTcpSockFromPortList( thisPortList );
-    struct timeval selectTimeout;
-
-    nSockets = lsock + 1;
     FD_ZERO( &basemask );
-    FD_SET( lsock, &basemask );
+    FD_SET( sockfd, &basemask );
 
-
-
+    struct timeval selectTimeout;
     selectTimeout.tv_sec = SELECT_TIMEOUT_FOR_CONN;
     selectTimeout.tv_usec = 0;
 
-    while ( ( nSelected = select( nSockets, &basemask,
+    int nSelected;
+    while ( ( nSelected = select( nfds, &basemask,
                                   ( fd_set * ) NULL, ( fd_set * ) NULL, &selectTimeout ) ) < 0 ) {
         if ( errno == EINTR ) {
-            rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted\n" );
-            continue;
+            rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted" );
+        } else {
+            rodsLog( LOG_ERROR, "acceptSrvPortal: select failed, errno = %d", errno );
         }
-        rodsLog( LOG_ERROR, "acceptSrvPortal: select select failed, errno = %d",
-                 errno );
     }
-    myFd = accept( lsock, 0, 0 );
+
+    if ( nSelected == 0 ) {
+        rodsLog( LOG_ERROR, "acceptSrvPortal() -- select timed out" );
+        return SYS_SOCK_SELECT_ERR;
+    }
+
+    const int saved_flags = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, saved_flags | O_NONBLOCK);
+
+    const int myFd = accept( sockfd, 0, 0 );
     if ( myFd < 0 ) {
         rodsLog( LOG_NOTICE,
                  "acceptSrvPortal() -- accept() failed: errno=%d",
@@ -281,10 +283,12 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
     else {
         rodsSetSockOpt( myFd, rsComm->windowSize );
     }
+
+    int myCookie;
 #ifdef _WIN32
-    nbytes = recv( myFd, &myCookie, sizeof( myCookie ), 0 );
+    int nbytes = recv( myFd, &myCookie, sizeof( myCookie ), 0 );
 #else
-    nbytes = read( myFd, &myCookie, sizeof( myCookie ) );
+    int nbytes = read( myFd, &myCookie, sizeof( myCookie ) );
 #endif
     myCookie = ntohl( myCookie );
     if ( nbytes != sizeof( myCookie ) || myCookie != thisPortList->cookie ) {
