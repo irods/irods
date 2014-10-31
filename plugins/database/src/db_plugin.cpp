@@ -1363,7 +1363,7 @@ rodsLong_t checkAndGetObjectId(
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             strcpy( logicalParentDirName, "/" );
-            strcpy( logicalEndName, name );
+            snprintf( logicalEndName, sizeof( logicalEndName ), "%s", name );
         }
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "checkAndGetObjectId SQL 1 " );
