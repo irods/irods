@@ -176,9 +176,9 @@ cllConnect( icatSessionStruct *icss ) {
     // initialize a connection to the catalog
     stat = SQLConnect(
                myHdbc,
-               ( unsigned char * )odbcEntryName, SQL_NTS,
-               ( unsigned char * )icss->databaseUsername, SQL_NTS,
-               ( unsigned char * )icss->databasePassword, SQL_NTS );
+               ( unsigned char * )odbcEntryName, strlen( odbcEntryName ),
+               ( unsigned char * )icss->databaseUsername, strlen( icss->databaseUsername ),
+               ( unsigned char * )icss->databasePassword, strlen( icss->databasePassword ) );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
@@ -237,9 +237,9 @@ cllConnectRda( icatSessionStruct *icss ) {
         return -1;
     }
 
-    stat = SQLConnect( myHdbc, ( unsigned char * )RDA_ODBC_ENTRY_NAME, SQL_NTS,
-                       ( unsigned char * )icss->databaseUsername, SQL_NTS,
-                       ( unsigned char * )icss->databasePassword, SQL_NTS );
+    stat = SQLConnect( myHdbc, ( unsigned char * )RDA_ODBC_ENTRY_NAME, strlen( RDA_ODBC_ENTRY_NAME ),
+                       ( unsigned char * )icss->databaseUsername, strlen( icss->databaseUsername ),
+                       ( unsigned char * )icss->databasePassword, strlen( icss->databasePassword ) );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
@@ -297,9 +297,9 @@ cllConnectDbr( icatSessionStruct *icss, const char *odbcEntryName ) {
         return -1;
     }
 
-    stat = SQLConnect( myHdbc, ( unsigned char * )const_cast<char *>( odbcEntryName ), SQL_NTS,
-                       ( unsigned char * )icss->databaseUsername, SQL_NTS,
-                       ( unsigned char * )icss->databasePassword, SQL_NTS );
+    stat = SQLConnect( myHdbc, ( unsigned char * )const_cast<char *>( odbcEntryName ), strlen( odbcEntryName ),
+                       ( unsigned char * )icss->databaseUsername, strlen( icss->databaseUsername ),
+                       ( unsigned char * )icss->databasePassword, strlen( icss->databasePassword ) );
     if ( stat != SQL_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
         rodsLog( LOG_ERROR,
@@ -516,7 +516,7 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
 
     if ( myBindVarCount > 0 ) {
         rodsLogSql( "SQLPrepare" );
-        SQLRETURN stat = SQLPrepare( myHstmt, ( unsigned char * )sql, SQL_NTS );
+        SQLRETURN stat = SQLPrepare( myHstmt, ( unsigned char * )sql, strlen( sql ) );
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "bindTheVariables: SQLPrepare failed: %d",
                      stat );
@@ -711,7 +711,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     }
 
     rodsLogSql( sql );
-    stat = SQLExecDirect( hstmt, ( unsigned char * )sql, SQL_NTS );
+    stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
 
     switch ( stat ) {
         case SQL_SUCCESS:
