@@ -205,7 +205,7 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     const boost::regex expression( "([^#@]+(@[^#@]*)?)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(4).size() >= NAME_LEN ) {
+        if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(1).size() < 3 || matches.str(4).size() >= NAME_LEN ) {
             userName[0] = '\0';
             userZone[0] = '\0';
             return USER_INVALID_USERNAME_FORMAT;
