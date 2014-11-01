@@ -639,7 +639,7 @@ irods::error validate_resource_name( std::string _resc_name ) {
     // Must be between 1 and NAME_LEN-1 characters.
     // Must start and end with a word character.
     // May contain non consecutive dashes.
-    boost::regex re( "^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$" );
+    boost::regex re( "^(?=.{1,63}$)\\w+(-\\w+)*$" );
 
     if ( !boost::regex_match( _resc_name, re ) ) {
         std::stringstream msg;
@@ -651,7 +651,7 @@ irods::error validate_resource_name( std::string _resc_name ) {
 
     return SUCCESS();
 
-} // validate_user_name
+} // validate_resource_name
 
 int
 _removeRescChild(
@@ -1262,7 +1262,7 @@ irods::error validate_user_name( std::string _user_name ) {
     // Must be between 3 and NAME_LEN-1 characters.
     // Must start and end with a word character.
     // May contain non consecutive dashes and dots.
-    boost::regex re( "^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$" );
+    boost::regex re( "^(?=.{3,63}$)\\w+([.-]\\w+)*$" );
 
     // No upper case letters. (TODO: more discussion, group names also affected by this change)
     // boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");

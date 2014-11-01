@@ -15,7 +15,7 @@ import distutils.spawn
 import stat
 
 # =-=-=-=-=-=-=-
-# build path magic to import server_config.py 
+# build path magic to import server_config.py
 pydevtestdir = os.path.realpath(__file__)
 topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
 packagingdir = os.path.join(topdir,"packaging")
@@ -309,14 +309,14 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         valid = ['bob',
                 'jim-bob',
                 'boB',
-                '123.456', 
+                '123.456',
                 '___haysoos___']
 
         invalid = ['bo',
                 '.bob',
                 'bob.',
                 'jim--bob',
-                'jamesbond..007',  
+                'jamesbond..007',
                 '________________________________longer_than_NAME_LEN________________________________________________']
 
         # Test valid names
@@ -328,11 +328,11 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # Test invalid names
         for name in invalid:
-            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser","ERROR","Invalid user name format") # should be rejected
+            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser","LIST","Invalid user name format") # should be rejected
 
         # Invalid names with special characters
-        assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","Invalid user name format") # should be rejected
-        assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","Invalid user name format") # should be rejected
+        assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","LIST","Invalid user name format") # should be rejected
+        assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","LIST","Invalid user name format") # should be rejected
 
 
 

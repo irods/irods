@@ -202,10 +202,10 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     boost::smatch matches;
     // This regex matches usernames with no hashes and optionally one at symbol,
     // and then optionally a hash followed by a zone name containing no hashes.
-    const boost::regex expression( "([^#@]+(@[^#@]*)?)(#([^#]*))?" );
+    const boost::regex expression( "(\\w+([.-]\\w+)*(@([.-]\\w+)*)?)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(1).size() < 3 || matches.str(4).size() >= NAME_LEN ) {
+        if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(1).size() < 3 || matches.str(6).size() >= NAME_LEN ) {
             userName[0] = '\0';
             userZone[0] = '\0';
             return USER_INVALID_USERNAME_FORMAT;
@@ -215,7 +215,7 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     }
 
     snprintf( userName, NAME_LEN, "%s", matches.str(1).c_str() );
-    snprintf( userZone, NAME_LEN, "%s", matches.str(4).c_str() );
+    snprintf( userZone, NAME_LEN, "%s", matches.str(6).c_str() );
     return 0;
 }
 
