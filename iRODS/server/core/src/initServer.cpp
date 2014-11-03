@@ -671,18 +671,13 @@ initRcatServerHostByFile() {
                   irods::CFG_NEGOTIATION_KEY_KW,
                   fed_arr );
     if( ret.ok() ) {
-        for( size_t i = 0;
-             i < fed_arr.size();
-             ++i ) {
+        for( size_t i = 0; i < fed_arr.size(); ++i ) {
             std::string fed_zone_id   = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_ID_KW ] );
             std::string fed_zone_name = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_NAME_KW ] );
             std::string fed_sid = fed_zone_name + "-" + fed_zone_id;
-            strncpy(
-                remoteSID[ i ],
-                fed_sid.c_str(),
-                LONG_NAME_LEN );
+            snprintf( remoteSID[i], sizeof( remoteSID[i] ), "%s", fed_sid.c_str() );
 
         }
 
@@ -697,10 +692,7 @@ initRcatServerHostByFile() {
              for( size_t i = 0;
                  i < rem_sids.size();
                  ++i ) {
-                strncpy(
-                    remoteSID[ i ],
-                    rem_sids[ i ].c_str(),
-                    LONG_NAME_LEN );
+                snprintf( remoteSID[i], sizeof( remoteSID[i] ), "%s", rem_sids[i].c_str() );
             }
 
        }
