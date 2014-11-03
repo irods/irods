@@ -654,11 +654,7 @@ initRcatServerHostByFile() {
               LOCAL_ZONE_SID_KW,
               prop_str );
     if( ret.ok() ) {
-        strncpy(
-            localSID,
-            prop_str.c_str(),
-            LONG_NAME_LEN );
-
+        snprintf( localSID, sizeof( localSID ), "%s", prop_str.c_str() );
     } else {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -689,9 +685,7 @@ initRcatServerHostByFile() {
                       REMOTE_ZONE_SID_KW,
                       rem_sids );
         if( ret.ok() ) {
-             for( size_t i = 0;
-                 i < rem_sids.size();
-                 ++i ) {
+             for( size_t i = 0; i < rem_sids.size(); ++i ) {
                 snprintf( remoteSID[i], sizeof( remoteSID[i] ), "%s", rem_sids[i].c_str() );
             }
 

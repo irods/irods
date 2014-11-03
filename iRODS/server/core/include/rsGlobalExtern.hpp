@@ -67,7 +67,7 @@ int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvm
 int clearCoreRule();
 int finalizeRuleEngine();
 
-extern char localSID[];
+extern char localSID[MAX_PASSWORD_LEN];
 extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];
 
 /* quota for all resources for this user in bytes */
