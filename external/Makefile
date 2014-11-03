@@ -268,9 +268,9 @@ clean :
 	@echo "Cleaning libs3..."
 	@rm -rf $(LIBS3VERSION)
 	@rm -f $(LIBS3VERSIONARCHIVE)
-        @echo "Cleaning avro..."
-        @rm -rf $(AVROVERSION)
-        @rm -f $(AVROVERSIONARCHIVE)
+	@echo "Cleaning avro..."
+	@rm -rf $(AVROVERSION)
+	@rm -f $(AVROVERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
