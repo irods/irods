@@ -26,7 +26,7 @@ extern irods::resource_manager resc_mgr;
 
 extern int LogFd;         		/* the log file descriptor */
 extern char *CurLogfileName;         	/* the path of the current logfile */
-extern char ProcLogDir[];
+extern char ProcLogDir[MAX_NAME_LEN];
 extern irods::api_entry_table RsApiTable;
 extern rodsServerHost_t *LocalServerHost;
 extern rodsServerHost_t *ServerHostHead;
@@ -42,12 +42,12 @@ extern collHandle_t CollHandle[NUM_COLL_HANDLE];
 
 /* global Rule Engine File Initialization String */
 
-extern char reRuleStr[];
-extern char reFuncMapStr[];
-extern char reVariableMapStr[];
+extern char reRuleStr[LONG_NAME_LEN];
+extern char reFuncMapStr[LONG_NAME_LEN];
+extern char reVariableMapStr[LONG_NAME_LEN];
 
 /* Kerberos server name */
-extern char KerberosName[];
+extern char KerberosName[MAX_NAME_LEN];
 
 extern int InitialState;
 extern rsComm_t *ThisComm;
@@ -57,11 +57,6 @@ extern int IcatConnState;
 #endif
 
 extern specCollCache_t *SpecCollCacheHead;
-
-//extern structFileDesc_t StructFileDesc[];
-#ifdef TAR_STRUCT_FILE
-//extern tarSubFileDesc_t TarSubFileDesc[];
-#endif
 
 int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet );
 int clearCoreRule();

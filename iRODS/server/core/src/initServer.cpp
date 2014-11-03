@@ -486,10 +486,11 @@ initRcatServerHostByFile() {
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy(
+        snprintf(
             reRuleStr,
-            rule_arr.c_str(),
-            LONG_NAME_LEN );
+            sizeof( reRuleStr ),
+            "%s",
+            rule_arr.c_str() );
 
     } else {
         std::string prop_str;
@@ -497,10 +498,11 @@ initRcatServerHostByFile() {
                   RE_RULESET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy(
+            snprintf(
                 reRuleStr,
-                prop_str.c_str(),
-                LONG_NAME_LEN );
+                sizeof( reRuleStr ),
+                "%s",
+                prop_str.c_str() );
 
         } else {
             irods::log( PASS( ret ) );
@@ -525,20 +527,22 @@ initRcatServerHostByFile() {
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy(
+        snprintf(
             reFuncMapStr,
-            rule_arr.c_str(),
-            LONG_NAME_LEN );
+            sizeof( reFuncMapStr ),
+            "%s",
+            rule_arr.c_str() );
 
     } else {
         ret = props.get_property< std::string >(
                   RE_FUNCMAPSET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy(
+            snprintf(
                 reFuncMapStr,
-                prop_str.c_str(),
-                LONG_NAME_LEN );
+                sizeof( reFuncMapStr ),
+                "%s",
+                prop_str.c_str() );
 
         } else {
             irods::log( PASS( ret ) );
@@ -562,20 +566,22 @@ initRcatServerHostByFile() {
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy(
+        snprintf(
             reVariableMapStr,
-            rule_arr.c_str(),
-            LONG_NAME_LEN );
+            sizeof( reVariableMapStr ),
+            "%s",
+            rule_arr.c_str() );
 
     } else {
         ret = props.get_property< std::string >(
                   RE_VARIABLEMAPSET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy(
+            snprintf(
                 reVariableMapStr,
-                prop_str.c_str(),
-                LONG_NAME_LEN );
+                sizeof( reVariableMapStr ),
+                "%s",
+                prop_str.c_str() );
 
         } else {
             irods::log( PASS( ret ) );
@@ -587,10 +593,11 @@ initRcatServerHostByFile() {
               KERBEROS_NAME_KW,
               prop_str );
     if( ret.ok() ) {
-        strncpy(
+        snprintf(
             KerberosName,
-            prop_str.c_str(),
-            LONG_NAME_LEN );
+            sizeof( KerberosName ),
+            "%s",
+            prop_str.c_str() );
 
     }
 
@@ -601,10 +608,11 @@ initRcatServerHostByFile() {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
-        strncpy(
+        snprintf(
             addr.hostAddr,
-            prop_str.c_str(),
-            LONG_NAME_LEN );
+            sizeof( addr.hostAddr ),
+            "%s",
+            prop_str.c_str() );
         int rem_flg = resolveHost(
                           &addr,
                           &tmp_host );
@@ -631,10 +639,11 @@ initRcatServerHostByFile() {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
-        strncpy(
+        snprintf(
             addr.hostAddr,
-            prop_str.c_str(),
-            LONG_NAME_LEN );
+            sizeof( addr.hostAddr ),
+            "%s",
+            prop_str.c_str() );
         int rem_flg = resolveHost(
                           &addr,
                           &tmp_host );
