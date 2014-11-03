@@ -35,6 +35,8 @@ LIB_MYSQLUDF_PREG_ARCHIVE=$(LIB_MYSQLUDF_PREG).tar.gz
 LIB_MYSQLUDF_PREG_MAKE=lib_mysqludf_preg/Makefile
 LIBS3VERSIONARCHIVE=$(LIBS3VERSION).tar.gz
 LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
+AVROVERSIONARCHIVE=$(AVROVERSION).tar.gz
+AVROVERSIONMAKE=$(AVROVERSION)/Makefile
 
 FAKETARGETFORMAKE=FakeTargetForMake
 
@@ -77,9 +79,9 @@ $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 ifeq ($(OS_platform), osx_platform)
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check build_database_for_macosx
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro build_database_for_macosx
 else
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro
 endif
 
 generate : build
@@ -173,7 +175,7 @@ $(BOOSTVERSIONARCHIVE) :
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
 	@cd $(BOOSTVERSION) ; \
-		./bootstrap.sh --with-libraries=filesystem,system,thread,regex
+		./bootstrap.sh --with-libraries=filesystem,system,thread,regex,program_options,iostreams
 
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
@@ -208,6 +210,18 @@ $(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
 
 netcdf : $(NETCDFVERSIONMAKE)
 	@$(MAKE) -C $(NETCDFVERSION)
+
+$(AVROVERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(AVROVERSIONARCHIVE) 2>&1
+
+$(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE)
+	@tar zxf $(AVROVERSIONARCHIVE)
+	@cd $(AVROVERSION) ; \
+		mkdir -p build; cd build; \
+		BOOSTROOT=../../$(BOOSTVERSION) ../../$(CMAKEVERSION)/bin/cmake -G "Unix Makefiles" ..
+
+avro : $(AVROVERSIONMAKE)
+	@$(MAKE) -C $(AVROVERSION)/build avrocpp
 
 $(EPMVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_BUILD)/$(EPMVERSIONARCHIVE) 2>&1
@@ -254,6 +268,9 @@ clean :
 	@echo "Cleaning libs3..."
 	@rm -rf $(LIBS3VERSION)
 	@rm -f $(LIBS3VERSIONARCHIVE)
+        @echo "Cleaning avro..."
+        @rm -rf $(AVROVERSION)
+        @rm -f $(AVROVERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
