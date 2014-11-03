@@ -92,22 +92,13 @@ class RodsSession(object):
         ENVFILE.write("    \"irods_cwd\": \"%s\",\n" % myEnv.cwd)
         ENVFILE.write("    \"irods_user_name\": \"%s\",\n" % myEnv.username)
         ENVFILE.write("    \"irods_zone\": \"%s\",\n" % myEnv.zone)
-<<<<<<< HEAD
-        ENVFILE.write("    \"irods_default_hash_scheme\": \"SHA256\",\n" )
-        ENVFILE.write("    \"irods_match_hash_policy\": \"not_strict\",\n" )
-=======
->>>>>>> c3bb2f4... WIP - fix checksum behavior
         ENVFILE.write("    \"irods_client_server_negotiation\": \"%s\",\n" % myEnv.csnegotiation)
         ENVFILE.write("    \"irods_client_server_policy\": \"%s\",\n" % myEnv.cspolicy)
         ENVFILE.write("    \"irods_encryption_key_size\": %s,\n" % myEnv.enckeysize)
         ENVFILE.write("    \"irods_encryption_salt_size\": %s,\n" % myEnv.encsaltsize)
         ENVFILE.write("    \"irods_encryption_num_hash_rounds\": %s,\n" % myEnv.encnumhashrounds)
-<<<<<<< HEAD
         ENVFILE.write("    \"irods_encryption_algorithm\": \"%s\",\n" % myEnv.encalgorithm)
         ENVFILE.write("    \"irods_default_hash_scheme\": \"%s\"\n" % myEnv.defaulthashscheme)
-=======
-        ENVFILE.write("    \"irods_encryption_algorithm\": \"%s\"\n" % myEnv.encalgorithm)
->>>>>>> c3bb2f4... WIP - fix checksum behavior
         ENVFILE.write("}\n")
         ENVFILE.close()
 
