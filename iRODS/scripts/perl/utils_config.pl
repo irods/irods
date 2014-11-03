@@ -26,7 +26,6 @@ $version{"utils_config.pl"} = "September 2011";
 
 
 
-
 #
 # Design Notes:
 #	The irods.config file is used by several iRODS Perl scripts

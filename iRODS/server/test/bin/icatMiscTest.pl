@@ -46,8 +46,9 @@ $logDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "log" );
 # get our zone name
 runCmd(0, "ienv | grep irods_zone | tail -1");
 chomp($cmdStdout);
-$ix = index($cmdStdout,"=");
+$ix = index($cmdStdout,"-");
 $myZone=substr($cmdStdout, $ix+1);
+$myZone =~ s/^\s+//;
 
 $F1="TestFile1";
 $F2="TestFile2";
@@ -147,12 +148,12 @@ runCmd(0, "test_chl modrfs $Resc 987654321 rollback");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
 
 # Mod without commit should auto-commit on normal completion
-# (since auditing is on, via debug (irodsDebug set to CATSQL)
+# (since auditing is on, via debug ( irods_debug set to CATSQL )
 runCmd(0, "test_chl modrfs $Resc 987654321 close");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 
 # Mod without audit should not auto-commit
-$ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
+$ENV{'IRODS_DEBUG'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
 
 do "$configDir/irods.config";

@@ -104,8 +104,9 @@ sub runCmd {
 # get our zone name
 runCmd(0, "ienv | grep irods_zone | tail -1");
 chomp($cmdStdout);
-$ix = index($cmdStdout,"=");
+$ix = index($cmdStdout,"-");
 $myZone=substr($cmdStdout, $ix+1);
+$myZone =~ s/^\s+//;
 
 #`ls -l > $F1`;
 #$F1a = "$F1" . "a";

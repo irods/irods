@@ -822,8 +822,12 @@ sub doTestIcat
 	    $userEnvFile=  $homeDir . "/.irods/irods_environment.json";
 	}
 	$originalEnvText = `cat $userEnvFile`;
-	appendToFile( $userEnvFile, 
-		      "\nirodsDebug CATSQL\n" );
+	#appendToFile( $userEnvFile, 
+	#	      "\nirods_debug CATSQL\n" );
+
+	my %debug_val = ( "irods_debug", "CATSQL" );
+    $status = update_json_configuration_file( $userEnvFile, %debug_val );
+
 
 	# Run tests
 	#	While the output could be put anywhere, the 'checkIcatLog'

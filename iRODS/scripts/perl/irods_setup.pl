@@ -131,38 +131,6 @@ require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
 
 
-use lib qw(..);
-use JSON qw( );
-
-sub update_json_configuration_file {
-    my ($filename, %values) = @_;
-
-    my $json_text = do {
-           open(my $json_fh, "<:encoding(UTF-8)", $filename)
-                 or die("Can't open \$filename\": $!\n");
-                    local $/;
-                       <$json_fh>
-    };
-
-    my $json = JSON->new;
-    my $data = $json->decode($json_text);
-
-    # loop over key-val array and repave
-	foreach $key (keys %values) {
-	$data->{ $key } = $values{$key};
-    }
-
-    my $new_string = $json->pretty->encode( $data );
-
-    open( my $new_fh, ">$filename" ) or die( "Can't open file: $filename" );
-    print $new_fh "$new_string";
-    close $new_fh;
-
-    return 1;
-}
-
-
-
 
 
 # Get the path to Perl.  We'll use it for running other Perl scripts.

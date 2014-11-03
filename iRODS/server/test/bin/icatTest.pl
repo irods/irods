@@ -117,8 +117,9 @@ sub mkfiles {
 # get our zone name
 runCmd(0, "ienv | grep irods_zone | tail -1");
 chomp($cmdStdout);
-$ix = index($cmdStdout,"=");
+$ix = index($cmdStdout,"-");
 $myZone=substr($cmdStdout, $ix+1);
+$myZone =~ s/^\s+//;
 
 # Move/rename tests
 `ls -l > $F1`;
@@ -544,9 +545,11 @@ $MYHOME=$ENV{'HOME'};
 $authFile="$MYHOME/.irods/.irodsA";
 runCmd(0, "ienv | grep irods_authentication_file_name | tail -1");
 chomp($cmdStdout);
-$ix = index($cmdStdout,"=");
+$ix = index($cmdStdout,"-");
 $envAuth=substr($cmdStdout, $ix+1);
-if ($envAuth ne "") {
+$envAuth =~ s/^\s+//;
+#if ($envAuth ne "") {
+if ($ix != -1) {
     $authFile=$envAuth;
 }
 runCmd(1, "mv $authFile $F2"); # save the auth file
