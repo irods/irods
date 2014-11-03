@@ -177,8 +177,8 @@ sTable( const char *tableName, const char *tableAlias, int cycler ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
         return CAT_TOO_MANY_TABLES;
     }
-    strncpy( Tables[nTables].tableName, tableName, NAME_LEN );
-    strncpy( Tables[nTables].tableAlias, tableAlias, MAX_TSQL );
+    snprintf( Tables[nTables].tableName, sizeof( Tables[nTables].tableName ), "%s", tableName );
+    snprintf( Tables[nTables].tableAlias, sizeof( Tables[nTables].tableAlias ), "%s", tableAlias );
     Tables[nTables].cycler = cycler;
     if ( debug > 1 ) {
         printf( "table %d is %s\n", nTables, tableName );
