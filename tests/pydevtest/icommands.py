@@ -309,7 +309,7 @@ class RodsSession(object):
                         'ireg',
                         'imcoll',
                         'irsync',
-			            'ixmsg',
+                        'ixmsg',
                         # added for test_allrules.py
                         'irule',
                         'iqdel',

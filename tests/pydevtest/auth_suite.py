@@ -9,6 +9,7 @@ import pydevtest_sessions as s
 import commands
 import os
 import time
+import json
 
 class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
