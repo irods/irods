@@ -1,5 +1,3 @@
-# This is used by install.pl as the irods_environment.json file when using the admin
-# account created in the RODS database (via rcatSysInserts.sql).
 {
     "irods_host": "localhost",
     "irods_port": 1233,

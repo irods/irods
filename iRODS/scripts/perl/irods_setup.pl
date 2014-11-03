@@ -1404,10 +1404,11 @@ sub configureIrodsServer
 	printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
 	my $bootEnv  = File::Spec->catfile( $IRODS_HOME, "config", "irodsEnv.boot" );
 	my $authFile = File::Spec->catfile( $IRODS_HOME, "config", "auth.tmp" );
-	my %envVariables = ( "irodsAuthFileName", $authFile, "irodsZone", $ZONE_NAME) ;
-	printLog( "    irodsAuthFileName = $authFile\n" );
+	my %envVariables = ( "irods_authentication_file_name", $authFile, "irods_zone", $ZONE_NAME) ;
+	printLog( "    irods_authentication_file_name = $authFile\n" );
 
-	($status,$output) = replaceVariablesInFile( $bootEnv, "config", 1, %envVariables );
+	#($status,$output) = replaceVariablesInFile( $bootEnv, "config", 1, %envVariables );
+	$status = update_json_configuration_file( $bootEnv, %envVariables );
 	if ( $status == 0 )
 	{
 		printError( "\nInstall problem:\n" );

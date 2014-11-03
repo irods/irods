@@ -115,7 +115,7 @@ sub mkfiles {
 }
 
 # get our zone name
-runCmd(0, "ienv | grep irodsZone | tail -1");
+runCmd(0, "ienv | grep irods_zone | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"=");
 $myZone=substr($cmdStdout, $ix+1);
@@ -542,7 +542,7 @@ runCmd(0, "iadmin moduser $U2 type groupadmin");
 unlink($F2);
 $MYHOME=$ENV{'HOME'};
 $authFile="$MYHOME/.irods/.irodsA";
-runCmd(0, "ienv | grep irodsAuthFileName | tail -1");
+runCmd(0, "ienv | grep irods_authentication_file_name | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"=");
 $envAuth=substr($cmdStdout, $ix+1);
