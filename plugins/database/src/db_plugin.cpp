@@ -2121,14 +2121,28 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set pam properties
-        irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, irods_pam_auth_no_extend );
-        irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
+        bool no_ex = false;
+        ret = irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, no_ex );
+        if( ret.ok() ) {
+            irods_pam_auth_no_extend = no_ex;
+        }
 
-        irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
-        strncpy( irods_pam_password_min_time, prop.c_str(), NAME_LEN );
+        size_t pw_len = 0;
+        ret = irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
+        if( ret.ok() ) {
+            irods_pam_password_len = pw_len;
+        }
 
-        irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
-        strncpy( irods_pam_password_max_time, prop.c_str(), NAME_LEN );
+        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
+        if( ret.ok() ) {
+            strncpy( irods_pam_password_min_time, prop.c_str(), NAME_LEN );
+        }
+
+        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
+        if( ret.ok() ) {
+            strncpy( irods_pam_password_max_time, prop.c_str(), NAME_LEN );
+        }
+
         if ( irods_pam_auth_no_extend ) {
             strncpy(
                 irods_pam_password_default_time,
