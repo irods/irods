@@ -1,7 +1,9 @@
-# This is used by install.pl as the .irodsEnv file when using the admin
+# This is used by install.pl as the irods_environment.json file when using the admin
 # account created in the RODS database (via rcatSysInserts.sql).
-irodsHost 'localhost'
-irodsPort 1233
-irodsUserName 'rodsBoot'
-irodsZone tempZone
-irodsAuthFileName /Users/jasonc/irods/iRODS/config/auth.tmp
+{
+    "irods_host": "localhost",
+    "irods_port": 1233,
+    "irods_user_name": "rodsBoot",
+    "irods_zone": "tempZone",
+    "irods_authentication_file_name": "/Users/jasonc/irods/iRODS/config/auth.tmp"
+}

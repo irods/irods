@@ -164,7 +164,7 @@ else {
 #   but postgres does, so check it
     runCmd(2, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
 }
-delete $ENV{'irodsDebug'};
+delete $ENV{'IRODS_DEBUG'};
 
 runCmd(0, "test_chl modrfs $Resc ''");
 
@@ -209,10 +209,10 @@ runCmd(0, "test_chl rm $HOME/$F1 999999"); # 999999 is taken as -1
 runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
-#$ENV{'irodsUserName'}=$User2; 
+#$ENV{'IRODS_USER_NAME'}=$User2; 
 #   $IRODS_ADMIN_PASSWORD is from $configDir/irods.config
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
-#delete $ENV{'irodsUserName'};
+#delete $ENV{'IRODS_USER_NAME'};
 
 # Check non-admin access for deleting a rule
 runCmd(0, "iadmin pv 2030-12-31");
@@ -220,16 +220,16 @@ runCmd(0, "iqstat | grep msiVacuum");
 $ix = index($cmdStdout, " ");
 $id = substr($cmdStdout, 0, $ix);
 chomp($id);
-$ENV{'irodsUserName'}=$User2; 
+$ENV{'IRODS_USER_NAME'}=$User2; 
 runCmd(2, "echo 123 | iqdel $id");
 runCmd(2, "test_chl rmrule $id $User2");
-delete $ENV{'irodsUserName'};
+delete $ENV{'IRODS_USER_NAME'};
 runCmd(0, "iqdel $id");
 
 # Temporary password
-$ENV{'irodsUserName'}=$User2; 
-$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
-$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$ENV{'IRODS_USER_NAME'}=$User2; 
+$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILE_NAME'};  # old one, if any
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 runCmd(0, "test_chl tpw 123 | grep  'temp pw'");
 $temp1=$cmdStdout;
 chomp($temp1);
@@ -239,18 +239,18 @@ unlink($tmpPwFile);
 unlink($tmpAuthFile);
 runCmd(0, "echo $pw > $tmpPwFile");
 runCmd(0, "ils ../$User2 < $tmpPwFile");
-delete $ENV{'irodsUserName'};
+delete $ENV{'IRODS_USER_NAME'};
 if ($prevAuthFileName eq "") {
-    delete $ENV{'irodsAuthFileName'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 }
 else {
-    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$prevAuthFileName;
 }
 unlink($tmpPwFile);
 
 # Temporary password for other
-$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
-$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILE_NAME'};  # old one, if any
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 runCmd(0, "test_chl tpwforother $IRODS_ADMIN_PASSWORD $User2 | grep  'temp pw'");
 $temp1=$cmdStdout;
 chomp($temp1);
@@ -258,7 +258,7 @@ $ixPw=index($temp1,"=");
 $pw=substr($temp1, $ixPw+1);
 unlink($tmpPwFile);
 unlink($tmpAuthFile);
-$ENV{'irodsUserName'}=$User2; 
+$ENV{'IRODS_USER_NAME'}=$User2; 
 runCmd(0, "echo badpw > $tmpPwFile");
 runCmd(2, "ils ../$User2 < $tmpPwFile");  # should fail with a bad pw
 unlink($tmpPwFile);
@@ -266,12 +266,12 @@ runCmd(0, "echo $pw > $tmpPwFile");
 runCmd(0, "ils ../$User2 < $tmpPwFile");  # should work with the temp pw
 printf($cmdStdout);
 runCmd(2, "ils ../$User2 < $tmpPwFile");  # but only once
-delete $ENV{'irodsUserName'};
+delete $ENV{'IRODS_USER_NAME'};
 if ($prevAuthFileName eq "") {
-    delete $ENV{'irodsAuthFileName'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 }
 else {
-    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$prevAuthFileName;
 }
 unlink($tmpPwFile);
 
@@ -340,11 +340,11 @@ $ix2=index($temp2,"pw=");
 $str1=substr($temp2, $ix2+3);
 $ix3=index($str1," ");
 $ipamPw=substr($str1,0,$ix3);
-$ENV{'irodsUserName'}=$User2;
-$ENV{'irodsAuthFileName'}="/tmp/xfile1";
+$ENV{'IRODS_USER_NAME'}=$User2;
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}="/tmp/xfile1";
 runCmd(2, "echo $ipamPw | ils");  # should fail and should do SQL to rm pw
-delete $ENV{'irodsUserName'};
-delete $ENV{'irodsAuthFileName'};
+delete $ENV{'IRODS_USER_NAME'};
+delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 runCmd(0, "test_chl getpampw $User2"); # create a normal one
 runCmd(0, "test_chl getpampw $User2"); # do a second one to get an existing pw
 runCmd(0, "iadmin rpp $User2");   # exercise the remove irods-PAM pw SQL

@@ -102,9 +102,9 @@ cat << EOF | cat
 # for communication with an iRODS server.
 #
 # Place the following configuration information into
-# your .irodsEnv file and edit as appropriate:
+# your irods_environment.json file and edit as appropriate:
 #
-#    ~/.irods/.irodsEnv
+#    ~/.irods/irods_environment.json
 #
 ###########################################################
 

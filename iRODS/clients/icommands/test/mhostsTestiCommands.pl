@@ -20,6 +20,7 @@ use Cwd;
 use Sys::Hostname;
 use File::stat;
 use File::Copy;
+use JSON;
 
 #-- Initialization
 # This test has 3 servers and 3 resources. localHostAddr is the address of
@@ -128,11 +129,11 @@ if ( $host =~ '.' ) {
 	$host  = $words[0];
 }
 my $irodsfile;
-my $irodsEnvFile = $ENV{'irodsEnvFile'};
+my $irodsEnvFile = $ENV{'IRODS_ENVIRONMENT_FILE'};
 if ($irodsEnvFile) {
     $irodsfile = $irodsEnvFile;
 } else {
-    $irodsfile    = "$ENV{HOME}/.irods/.irodsEnv";
+    $irodsfile    = "$ENV{HOME}/.irods/irods_environment.json";
 }
 my $ntests       = 0;
 my $progname     = $0;
@@ -182,9 +183,27 @@ if ( $debug ) {
 }
 
 #-- Dump content of $irodsfile to @list
+# read and parse the irods json environment file
+# and extract useful values
+my $json_text = do {
+   open(my $json_fh, "<:encoding(UTF-8)", $irodsfile)
+	 or die("Can't open \$filename\": $!\n");
+	    local $/;
+	       <$json_fh>
+};
+
+my $json = JSON->new;
+my $data = $json->decode($json_text);
+
+$username   = $data->{ "irods_user_name" };
+$irodshome = $data->{ "irods_home" };
+$irodszone = $data->{ "irods_zone" };
+$irodshost = $data->{ "irods_host" };
+$irodsdefresource = $data->{ "irods_default_resource" };
+
 
 my $tempFile   = "/tmp/iCommand.log";
-@list = dumpFileContent( $irodsfile );
+#@list = dumpFileContent( $irodsfile );
 
 #-- Loop on content of @list
 # The below parsing works in the current environment 
@@ -192,34 +211,34 @@ my $tempFile   = "/tmp/iCommand.log";
 #   1) single quotes are removed, but if there were to be embedded ones,
 #      they would be removed too.
 #   2) if the name and value are separated by =, the line will not split right.
-foreach $line ( @list ) {
- 	chomp( $line );
-	if ( ! $line ) { next; }
- 	if ( $line =~ /irodsUserName/ ) {
-		( $misc, $username ) = split( / /, $line );
-		$username =~ s/\'//g; #remove all ' chars, if any
-		next;
-	}
-	if ( $line =~ /irodsHome/ ) {
-		( $misc, $irodshome ) = split( / /, $line );
-		$irodshome =~ s/\'//g; #remove all ' chars, if any
-		next;
-	}
-	if ( $line =~ /irodsZone/ ) {
-		( $misc, $irodszone ) = split( / /, $line );
-		$irodszone =~ s/\'//g; #remove all ' chars, if any
-		next;
-	}
-	if ( $line =~ /irodsHost/ ) {
-		( $misc, $irodshost ) = split( / /, $line );
-		$irodshost =~ s/\'//g; #remove all ' chars, if any
-		next;
-	}
-	if ( $line =~ /irodsDefResource/ ) {
-		( $misc, $irodsdefresource ) = split( / /, $line );
-		$irodsdefresource =~ s/\'//g; #remove all ' chars, if any
-	}
-}
+#foreach $line ( @list ) {
+# 	chomp( $line );
+#	if ( ! $line ) { next; }
+# 	if ( $line =~ /irodsUserName/ ) {
+#		( $misc, $username ) = split( / /, $line );
+#		$username =~ s/\'//g; #remove all ' chars, if any
+#		next;
+#	}
+#	if ( $line =~ /irodsHome/ ) {
+#		( $misc, $irodshome ) = split( / /, $line );
+#		$irodshome =~ s/\'//g; #remove all ' chars, if any
+#		next;
+##	}
+#	if ( $line =~ /irodsZone/ ) {
+#		( $misc, $irodszone ) = split( / /, $line );
+#		$irodszone =~ s/\'//g; #remove all ' chars, if any
+#		next;
+#	}
+#	if ( $line =~ /irodsHost/ ) {
+#		( $misc, $irodshost ) = split( / /, $line );
+#		$irodshost =~ s/\'//g; #remove all ' chars, if any
+#		next;
+#	}
+#	if ( $line =~ /irodsDefResource/ ) {
+#		( $misc, $irodsdefresource ) = split( / /, $line );
+#		$irodsdefresource =~ s/\'//g; #remove all ' chars, if any
+#	}
+#}
 
 #-- Print debug
 
@@ -278,7 +297,7 @@ runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" )
 foreach $hostAddr (@hostList) {
     print ("CONNECT to host: $hostAddr\n");
     # test small file put/get
-    $ENV{'irodsHost'}  = $hostAddr;
+    $ENV{'IRODS_HOST'}  = $hostAddr;
     runCmd( "iput -KrR $resc2 $progname $irodshome/icmdtest/foo1" );
     runCmd( "iget -f -K $irodshome/icmdtest/foo1 $dir_w" );
     runCmd( "diff  $dir_w/foo1 $progname", "", "NOANSWER" );

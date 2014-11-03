@@ -54,7 +54,7 @@ Running irods Fuse:
 
     mkdir /usr/tmp/fmount
 
-3) Setup the iRODS client env (~/irods/.irodsEnv) so that iCommands will
+3) Setup the iRODS client env (~/irods/irods_environment.json) so that iCommands will
 work. Type in:
     iinit
 

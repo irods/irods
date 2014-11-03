@@ -48,7 +48,7 @@ static   rodsEnv myRodsXmsgEnv;
  *
  * \return integer
  * \retval 0 on success
- * \pre needs the XMessage Server host name in .irodsEnv file
+ * \pre needs the XMessage Server host name in irods_environment.json file
  * \post none
  * \sa none
 **/

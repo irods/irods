@@ -50,8 +50,8 @@ close CFGFILE;
 
 $host = `hostname`;
 $irodsClientDir = "$ldir/../../clients/icommands/bin";
-$irodsEnvFile = "$ENV{'HOME'}/.irods/.irodsEnv"; # default location for the connection params
-# check if an other .irodsEnv is used for this particular installation
+$irodsEnvFile = "$ENV{'HOME'}/.irods/irods_environment.json"; # default location for the connection params
+# check if an other irods_environment.json is used for this particular installation
 $irodsctlFile = "$ldir/../perl/irodsctl.pl";
 open IRODSCTLFILE, $irodsctlFile or die "impossible to open $irodsctlFile \n";
 @lines= <IRODSCTLFILE>;

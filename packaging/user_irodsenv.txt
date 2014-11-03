@@ -8,9 +8,9 @@
 # for communication with an iRODS server.
 #
 # Place the following default administrator configuration
-# information into your .irodsEnv file:
+# information into your irods_environment.json file:
 #
-#    ~/.irods/.irodsEnv
+#    ~/.irods/irods_environment.json
 #
 ###########################################################
 

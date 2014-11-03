@@ -9,6 +9,7 @@ use strict;
 use Cwd;
 use Sys::Hostname;
 use File::Copy;
+use JSON;
 
 #-- Declare variables
 
@@ -64,7 +65,7 @@ my @words;
 #-- Define some
 
 $comment_line = "\#\#\#\#\#\# Command";
-$irodsfile    = "$ENV{HOME}/.irods/.irodsEnv";
+$irodsfile    = "$ENV{HOME}/.irods/irods_environemnt.json";
 
 #-- Get hostname
 
@@ -100,36 +101,59 @@ if ( $progname !~ '/' ) {
 
 #-- Dump content of $irodsfile to @list
 
-@list = dumpFileContent( $irodsfile );
+#@list = dumpFileContent( $irodsfile );
+#
+##-- Loop on content of @list
+#
+#foreach $line ( @list ) {
+# 	chomp( $line );
+#	if ( ! $line ) { next; }
+# 	if ( $line =~ /irodsUserName/ ) {
+#		( $misc, $username ) = split( / /, $line );
+#		$username = substr( $username, 1, -1 );
+#		next;
+#	}
+#	if ( $line =~ /irodsHome/ ) {
+#		( $misc, $irodshome ) = split( /=/, $line );
+#		next;
+#	}
+#	if ( $line =~ /irodsZone/ ) {
+#		( $misc, $irodszone ) = split( / /, $line );
+#		$irodszone = substr( $irodszone, 1, -1 );
+#		next;
+#	}
+##	if ( $line =~ /irodsHost/ ) {
+#		( $misc, $irodshost ) = split( / /, $line );
+#		$irodshost = substr( $irodshost, 1, -1 );
+#		next;
+#	}
+#	if ( $line =~ /irodsDefResource/ ) {
+#		( $misc, $irodsdefresource ) = split( /=/, $line );
+#	}
+#}
+# read and parse the irods json environment file
+# and extract useful values
+my $json_text = do {
+   open(my $json_fh, "<:encoding(UTF-8)", $irodsfile)
+	 or die("Can't open \$filename\": $!\n");
+	    local $/;
+	       <$json_fh>
+};
 
-#-- Loop on content of @list
+my $json = JSON->new;
+my $data = $json->decode($json_text);
 
-foreach $line ( @list ) {
- 	chomp( $line );
-	if ( ! $line ) { next; }
- 	if ( $line =~ /irodsUserName/ ) {
-		( $misc, $username ) = split( / /, $line );
-		$username = substr( $username, 1, -1 );
-		next;
-	}
-	if ( $line =~ /irodsHome/ ) {
-		( $misc, $irodshome ) = split( /=/, $line );
-		next;
-	}
-	if ( $line =~ /irodsZone/ ) {
-		( $misc, $irodszone ) = split( / /, $line );
-		$irodszone = substr( $irodszone, 1, -1 );
-		next;
-	}
-	if ( $line =~ /irodsHost/ ) {
-		( $misc, $irodshost ) = split( / /, $line );
-		$irodshost = substr( $irodshost, 1, -1 );
-		next;
-	}
-	if ( $line =~ /irodsDefResource/ ) {
-		( $misc, $irodsdefresource ) = split( /=/, $line );
-	}
-}
+$username   = $data->{ "irods_user_name" };
+$irodshome = $data->{ "irods_home" };
+$irodszone = $data->{ "irods_zone" };
+$irodshost = $data->{ "irods_host" };
+$irodsdefresource = $data->{ "irods_default_resource" };
+
+
+
+
+
+
 
 #-- Remove previous file if any
 
@@ -172,7 +196,7 @@ for ( $cnt=1; $cnt<=$test_number; $cnt++ ) {
 	$targetname   = $targetfile   . $cnt . ".txt";
 	$outputname   = $outputfile   . $cnt . ".log";
 	$errorname    = $errorfile    . $cnt . ".error";
-	$irodsfile_h  = "/tmp/.irodsEnv_" . $host . "_" . $cnt;
+	$irodsfile_h  = "/tmp/irods_environemnt.json_" . $host . "_" . $cnt;
 	
 	push( @list, $errorname );
 	

@@ -129,7 +129,7 @@ $F1b = "$F1" . "b";
 runCmd(0, "icd");
 # Clean up possible left over sub-process env (pwd) files, if any,
 # to avoid collision if process number matches
-runCmd(1, "rm -rf ~/.irods/.irodsEnv.*");
+runCmd(1, "rm -rf ~/.irods/irods_environment.json.*");
 
 runCmd(1, "irm -f $F1");
 runCmd(0, "iput $F1");
@@ -233,9 +233,9 @@ runCmd(2, "iadmin rmzone $Zone2");
 runCmd(0, "iadmin rmzone $Zone3");
 runCmd(2, "iadmin rmzone $myZone");
 runCmd(0, "echo yes | iadmin modzone $myZone name $Zone3");
-$ENV{'irodsZone'}=$Zone3;
+$ENV{'IRODS_ZONE'}=$Zone3;
 runCmd(0, "echo yes | iadmin modzone $Zone3 name $myZone");
-delete $ENV{'irodsZone'};
+delete $ENV{'IRODS_ZONE'};
 
 # Make another user to test making user and for other tests
 runCmd(1, "iadmin rmuser $U2");
@@ -551,7 +551,7 @@ if ($envAuth ne "") {
 }
 runCmd(1, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
-$ENV{'irodsUserName'}=$U2; 
+$ENV{'IRODS_USER_NAME'}=$U2; 
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(0, "igroupadmin mkgroup $G1");
@@ -564,7 +564,7 @@ runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
 runCmd(0, "iinit --ttl 1 1234"); # also run new SQL for TTL passwords
 runCmd(0, "iexit full");
 runCmd(1, "mv $F2 $authFile"); # restore auth file
-delete $ENV{'irodsUserName'};
+delete $ENV{'IRODS_USER_NAME'};
 runCmd(0, "ils");
 
 # Large numbers of temporary passwords.

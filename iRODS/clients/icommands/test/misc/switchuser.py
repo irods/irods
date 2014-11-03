@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 '''switchuser.py - A simple utility to switch irods user environment files, offsession (ie. after running iexit).
-Asssumes that such files are stored as .irodsEnv_username under ~/.irods
+Asssumes that such files are stored as irods_environment_username.json under ~/.irods
 '''
 
 import os
@@ -16,16 +16,16 @@ if len(sys.argv) != 2:
 irods_dir = os.path.join(os.environ['HOME'], '.irods')
 
 # Do we have a file for this user?
-if '.irodsEnv_' + sys.argv[1] in os.listdir(irods_dir):
+if 'irods_environment_' + sys.argv[1] + ".json" in os.listdir(irods_dir):
     # Save previous environment file
-    if '.irodsEnv' in os.listdir(irods_dir):
-        os.rename(os.path.join(irods_dir, '.irodsEnv'),
-                  os.path.join(irods_dir, '.irodsEnv~'))
+    if 'irods_environment.json' in os.listdir(irods_dir):
+        os.rename(os.path.join(irods_dir, 'irods_environment.json'),
+                  os.path.join(irods_dir, 'irods_environment.json~'))
 
-    # Copy user environment file to .irodsEnv
+    # Copy user environment file to irods_environemnt.json
     shutil.copyfile(os.path.join(
-        irods_dir, '.irodsEnv_' + sys.argv[1]), os.path.join(irods_dir, '.irodsEnv'))
+        irods_dir, 'irods_environment_' + sys.argv[1] + ".json"), os.path.join(irods_dir, 'irods_environment.json'))
 
 else:
-    print 'No .irodsEnv file found for user:', sys.argv[1]
+    print 'No irods_environment.json file found for user:', sys.argv[1]
     sys.exit(1)

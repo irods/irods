@@ -1078,7 +1078,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         if ( strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
                 "If you modify a resource name, you and other users will need to\n" );
-            printf( "change your .irodsEnv files to use it, you may need to update\n" );
+            printf( "change your irods_environment.json files to use it, you may need to update\n" );
             printf( "irods.config and, if rules use the resource name, you'll need to\n" );
             printf( "update the core rules (core.re).  This command will update various\n" );
             printf( "tables with the new name.\n" );
@@ -1120,7 +1120,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
                 "If you modify the local zone name, you and other users will need to\n" );
-            printf( "change your .irodsEnv files to use it, you may need to update\n" );
+            printf( "change your irods_environment.json files to use it, you may need to update\n" );
             printf( "irods.config and, if rules use the zone name, you'll need to update\n" );
             printf( "core.re.  This command will update various tables with the new name\n" );
             printf( "and rename the top-level collection.\n" );

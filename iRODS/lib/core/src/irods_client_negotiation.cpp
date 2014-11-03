@@ -218,7 +218,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // get the irods environment so we can compare the
-        // policy in the .irodsEnv file
+        // policy in the irods_environment.json file
         rodsEnv rods_env;
         int status = getRodsEnv( &rods_env );
         if ( status < 0 ) {

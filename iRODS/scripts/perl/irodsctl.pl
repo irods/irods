@@ -817,7 +817,7 @@ sub doTestIcat
 
 	# Enable CATSQL debug mode in Server by changing user's env file
 	$homeDir=$ENV{'HOME'};
-	$userEnvFile=$ENV{'irods_environment_file'};
+	$userEnvFile=$ENV{'IRODS_ENVIRONMENT_FILE'};
 	if ($userEnvFile eq "") {
 	    $userEnvFile=  $homeDir . "/.irods/irods_environment.json";
 	}

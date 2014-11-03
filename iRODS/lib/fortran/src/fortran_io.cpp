@@ -6,8 +6,8 @@
    irods IO (open, read, write, etc).
 
    The irods environment is assummed.  That is, like i-commands, this
-   library needs to read the user's .irodsEnv and authentication files
-   to be able to connect to an iRODS server.
+   library needs to read the user's irods_environment.json and 
+   authentication files to be able to connect to an iRODS server.
 
    See ../test*.f90 files, and ../Makefile for more information.
 

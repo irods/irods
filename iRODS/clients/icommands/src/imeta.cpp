@@ -1600,7 +1600,7 @@ void usageMain() {
         "Single or double quotes can be used to enter items with blanks.",
         " ",
         "Entered usernames are of the form username[#zone].  If #zone is not",
-        "provided, the zone from your .irodsEnv is assumed.",
+        "provided, the zone from your irods_environment.json is assumed.",
         " ",
         "The appropriate zone (local or remote) is determined from the path names",
         "or via -z Zonename (for 'qu' and when working with resources).",

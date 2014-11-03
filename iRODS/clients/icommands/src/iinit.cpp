@@ -36,7 +36,8 @@ void usageTTL();
 
 /*
  Attempt to make the ~/.irods directory in case it doesn't exist (may
- be needed to write the .irodsA file and perhaps the .irodsEnv file).
+ be needed to write the .irodsA file and perhaps the 
+ irods_environment.json file).
  */
 int
 mkrodsdir() {
@@ -61,7 +62,7 @@ mkrodsdir() {
 
 void
 printUpdateMsg() {
-    printf( "One or more fields in your iRODS environment file (.irodsEnv) are\n" );
+    printf( "One or more fields in your iRODS environment file (irods_environment.json) are\n" );
     printf( "missing; please enter them.\n" );
 }
 int
@@ -344,7 +345,7 @@ main( int argc, char **argv ) {
 
     rcDisconnect( Conn );
 
-    /* Save updates to .irodsEnv. */
+    /* Save updates to irods_environment.json. */
     if ( doingEnvFileUpdate == 1 ) {
         appendRodsEnv( updateText );
     }

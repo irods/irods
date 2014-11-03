@@ -175,7 +175,7 @@ runCmd(0, "icd");
 
 # Clean up possible left over sub-process env (pwd) files, if any,
 # to avoid collision if process number matches
-runCmd(1, "rm -rf ~/.irods/.irodsEnv.*");
+runCmd(1, "rm -rf ~/.irods/irods_environment.json.*");
 
 mkbigfile();
 mkfiles(100, "$D2");

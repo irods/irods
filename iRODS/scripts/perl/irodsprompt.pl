@@ -760,8 +760,8 @@ sub promptForIrodsConfigurationPart2( )
 		"if you are using GSI for other applications, you might want\n",
 		"to include GSI in iRODS.  Both the clients and servers need\n",
 		"to be built with GSI and then users can select it by setting\n",
-		"irodsAuthScheme=GSI in their .irodsEnv files (or still use\n",
-		"the iRODS password system if they want).\n",
+		"irods_autentication_scheme: GSI in their irods_environment.json \n",
+		"files (or still use the iRODS password system if they want).\n",
 		"\n" );
 	# GSI ?
 	$gsiAuth = promptYesNo(

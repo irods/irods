@@ -3,10 +3,10 @@
 
 /*
   This routine sets up the rodsEnv structure using the contents of the
-  .irodsEnv file and possibly some environment variables.  For each of
-  the .irodsEnv items, if an environment variable with the same name
-  exists, it overrides the possible .irodsEnv item.  This is called by
-  the various Rods commands and the agent.
+  irods_environment.json file and possibly some environment variables.  
+  For each of the irods_environment.json  items, if an environment variable 
+  with the same name exists, it overrides the possible environment item.  
+  This is called by the various Rods commands and the agent.
 
   This routine also fills in irodsHome and irodsCwd if they are not
   otherwise defined, and if values needed to create them are available.
@@ -15,8 +15,7 @@
   quotes, but do not need to be.  One or more spaces, or a '=', will
   preceed the item values.
 
-  The items are defined in the rodsEnv struct.  The item names in the
-  .irodsEnv file need to match the item names of the struct.
+  The items are defined in the rodsEnv struct. 
 
   If an error occurs, a message may logged or displayed but the
   structure is filled with whatever values are available.
