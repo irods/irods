@@ -1386,7 +1386,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
     }
 
     if ( strncmp( ticketId, prevTicketId, sizeof( prevTicketId ) ) != 0 ) {
-        strncpy( prevTicketId, ticketId, sizeof( prevTicketId ) );
+        snprintf( prevTicketId, sizeof( prevTicketId ), "%s", ticketId );
         status = cmlAudit3( AU_USE_TICKET, ticketId, userName, userZone,
                             ticketStr, icss );
         if ( status != 0 ) {
