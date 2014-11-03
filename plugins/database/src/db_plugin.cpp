@@ -1445,7 +1445,7 @@ rodsLong_t checkAndGetObjectId(
             if ( !ret.ok() ) {
                 return PASS( ret ).code();
             }
-            strncpy( userZone, zone.c_str(), NAME_LEN );
+            snprintf( userZone, sizeof( userZone ), "%s",  zone.c_str() );
         }
 
         objId = 0;
