@@ -166,9 +166,9 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # here and they'll be used the next time the iRODS servers are started
 # using this script.
 #
-# By default, the user's file in '~/.irods/.irodsEnv' is used.  Override
-# it by setting a file name here.
-# $irodsEnvFile = "/tmp/.irodsEnv";
+# By default, the user's file in '~/.irods/irods_environment_file.json'
+# is used.  Override it by setting a file name here.
+# $IRODS_ENVIRONMENT_FILE = "/tmp/irods_environment.json"
 
 # irodsPort defines the port number the irodsServer is listening on.
 # The default port number is set in the .irodEnv file of the irods
@@ -248,8 +248,8 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 					
 $ENV{'irodsHomeDir'}      = $IRODS_HOME;
 $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
-if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
-if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
+if ($irodsEnvFile)		{ $ENV{'IRODS_ENVIRNOMENT_FILE'} = $irodsEnvFile; }
+if ($irodsPort)			{ $ENV{'IRODS_PORT'}          = $irodsPort; }
 if ($spLogLevel)		{ $ENV{'spLogLevel'}          = $spLogLevel; }
 if ($spLogSql)			{ $ENV{'spLogSql'}            = $spLogSql; }
 if ($SVR_PORT_RANGE_START)	{ $ENV{'svrPortRangeStart'}   = $SVR_PORT_RANGE_START; }
@@ -505,7 +505,7 @@ sub doTest
 	# Note that the tests assume i-commands are in the path so we can too.
 	# Need to re-iinit first for svr to svr connections, non-ICAT hosts.
 	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;  
-	my $outEnv = `ienv | grep irodsHost | tail -1`;
+	my $outEnv = `ienv | grep irods_host | tail -1`;
 	my $outMisc = `imiscsvrinfo`;
         my $myHostName = getCurrentHostName( );
 	if ( $outEnv =~ /$myHostName/ &&
@@ -817,9 +817,9 @@ sub doTestIcat
 
 	# Enable CATSQL debug mode in Server by changing user's env file
 	$homeDir=$ENV{'HOME'};
-	$userEnvFile=$ENV{'irodsEnvFile'};
+	$userEnvFile=$ENV{'irods_environment_file'};
 	if ($userEnvFile eq "") {
-	    $userEnvFile=  $homeDir . "/.irods/.irodsEnv";
+	    $userEnvFile=  $homeDir . "/.irods/irods_environment.json";
 	}
 	$originalEnvText = `cat $userEnvFile`;
 	appendToFile( $userEnvFile, 
