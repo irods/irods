@@ -134,7 +134,7 @@ sFklink( const char *table1, const char *table2, const char *connectingSQL ) {
     }
     Links[nLinks].table1 = fkFindName( table1 );
     Links[nLinks].table2 = fkFindName( table2 );
-    strncpy( Links[nLinks].connectingSQL, connectingSQL, MAX_TSQL );
+    snprintf( Links[nLinks].connectingSQL, sizeof( Links[nLinks].connectingSQL ), "%s", connectingSQL );
     if ( debug > 1 ) printf( "link %d is from %d to %d\n", nLinks,
                                  Links[nLinks].table1,
                                  Links[nLinks].table2 );
