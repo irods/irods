@@ -204,7 +204,7 @@ initServerInfo( rsComm_t *rsComm ) {
 #ifdef RODS_CAT
     status = connectRcat();
     if ( status < 0 ) {
-        rodsLog( 
+        rodsLog(
             LOG_SYS_FATAL,
             "initServerInfo: connectRcat failed, status = %d",
             status );
@@ -469,7 +469,7 @@ initRcatServerHostByFile() {
     std::string prop_str;
 
     irods::configuration_parser::array_t prop_arr;
-    ret = props.get_property< 
+    ret = props.get_property<
               irods::configuration_parser::array_t >(
                   irods::CFG_RE_RULEBASE_SET_KW,
                   prop_arr );
@@ -479,16 +479,16 @@ initRcatServerHostByFile() {
         for( size_t i = 0;
              i < prop_arr.size();
              ++i ) {
-            rule_arr += boost::any_cast< std::string >( 
+            rule_arr += boost::any_cast< std::string >(
                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy( 
-            reRuleStr, 
-            rule_arr.c_str(), 
+        strncpy(
+            reRuleStr,
+            rule_arr.c_str(),
             LONG_NAME_LEN );
 
     } else {
@@ -497,9 +497,9 @@ initRcatServerHostByFile() {
                   RE_RULESET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy( 
-                reRuleStr, 
-                prop_str.c_str(), 
+            strncpy(
+                reRuleStr,
+                prop_str.c_str(),
                 LONG_NAME_LEN );
 
         } else {
@@ -509,7 +509,7 @@ initRcatServerHostByFile() {
 
     }
 
-    ret = props.get_property< 
+    ret = props.get_property<
               irods::configuration_parser::array_t >(
                   irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
                   prop_arr );
@@ -518,16 +518,16 @@ initRcatServerHostByFile() {
         for( size_t i = 0;
              i < prop_arr.size();
              ++i ) {
-            rule_arr += boost::any_cast< std::string >( 
+            rule_arr += boost::any_cast< std::string >(
                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy( 
-            reFuncMapStr, 
-            rule_arr.c_str(), 
+        strncpy(
+            reFuncMapStr,
+            rule_arr.c_str(),
             LONG_NAME_LEN );
 
     } else {
@@ -535,9 +535,9 @@ initRcatServerHostByFile() {
                   RE_FUNCMAPSET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy( 
-                reFuncMapStr, 
-                prop_str.c_str(), 
+            strncpy(
+                reFuncMapStr,
+                prop_str.c_str(),
                 LONG_NAME_LEN );
 
         } else {
@@ -546,7 +546,7 @@ initRcatServerHostByFile() {
         }
     }
 
-    ret = props.get_property< 
+    ret = props.get_property<
               irods::configuration_parser::array_t >(
                   irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
                   prop_arr );
@@ -562,9 +562,9 @@ initRcatServerHostByFile() {
 
         rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
 
-        strncpy( 
-            reVariableMapStr, 
-            rule_arr.c_str(), 
+        strncpy(
+            reVariableMapStr,
+            rule_arr.c_str(),
             LONG_NAME_LEN );
 
     } else {
@@ -572,9 +572,9 @@ initRcatServerHostByFile() {
                   RE_VARIABLEMAPSET_KW,
                   prop_str );
         if( ret.ok() ) {
-            strncpy( 
-                reVariableMapStr, 
-                prop_str.c_str(), 
+            strncpy(
+                reVariableMapStr,
+                prop_str.c_str(),
                 LONG_NAME_LEN );
 
         } else {
@@ -587,12 +587,12 @@ initRcatServerHostByFile() {
               KERBEROS_NAME_KW,
               prop_str );
     if( ret.ok() ) {
-        strncpy( 
-            KerberosName, 
-            prop_str.c_str(), 
+        strncpy(
+            KerberosName,
+            prop_str.c_str(),
             LONG_NAME_LEN );
 
-    } 
+    }
 
     ret = props.get_property< std::string >(
               ICAT_HOST_KW,
@@ -601,17 +601,17 @@ initRcatServerHostByFile() {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
-        strncpy( 
-            addr.hostAddr, 
-            prop_str.c_str(), 
+        strncpy(
+            addr.hostAddr,
+            prop_str.c_str(),
             LONG_NAME_LEN );
-        int rem_flg = resolveHost( 
-                          &addr, 
+        int rem_flg = resolveHost(
+                          &addr,
                           &tmp_host );
         if ( rem_flg < 0 ) {
             rodsLog( LOG_SYS_FATAL,
                      "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                     addr.hostAddr, 
+                     addr.hostAddr,
                      rem_flg );
             return rem_flg;
         }
@@ -654,9 +654,9 @@ initRcatServerHostByFile() {
               LOCAL_ZONE_SID_KW,
               prop_str );
     if( ret.ok() ) {
-        strncpy( 
-            localSID, 
-            prop_str.c_str(), 
+        strncpy(
+            localSID,
+            prop_str.c_str(),
             LONG_NAME_LEN );
 
     } else {
@@ -666,7 +666,7 @@ initRcatServerHostByFile() {
 
     // try for new federation config
     irods::configuration_parser::array_t fed_arr;
-    ret = props.get_property< 
+    ret = props.get_property<
               irods::configuration_parser::array_t >(
                   irods::CFG_NEGOTIATION_KEY_KW,
                   fed_arr );
@@ -674,14 +674,14 @@ initRcatServerHostByFile() {
         for( size_t i = 0;
              i < fed_arr.size();
              ++i ) {
-            std::string fed_zone_id   = boost::any_cast< std::string >( 
+            std::string fed_zone_id   = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_ID_KW ] );
-            std::string fed_zone_name = boost::any_cast< std::string >( 
+            std::string fed_zone_name = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_NAME_KW ] );
             std::string fed_sid = fed_zone_name + "-" + fed_zone_id;
-            strncpy( 
-                remoteSID[ i ], 
-                fed_sid.c_str(), 
+            strncpy(
+                remoteSID[ i ],
+                fed_sid.c_str(),
                 LONG_NAME_LEN );
 
         }
@@ -690,20 +690,20 @@ initRcatServerHostByFile() {
         // try the old remote sid config
         std::vector< std::string > rem_sids;
         ret = props.get_property<
-                  std::vector< std::string > >( 
+                  std::vector< std::string > >(
                       REMOTE_ZONE_SID_KW,
-                      rem_sids ); 
+                      rem_sids );
         if( ret.ok() ) {
              for( size_t i = 0;
                  i < rem_sids.size();
                  ++i ) {
-                strncpy( 
-                    remoteSID[ i ], 
-                    rem_sids[ i ].c_str(), 
+                strncpy(
+                    remoteSID[ i ],
+                    rem_sids[ i ].c_str(),
                     LONG_NAME_LEN );
             }
-               
-       } 
+
+       }
 
     } // else
 
