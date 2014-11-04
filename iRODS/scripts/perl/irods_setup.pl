@@ -1277,9 +1277,12 @@ sub configureIrodsServer
             unless( -e $serverConfigFile ) {
                 print( "server_config.json not found\n" );
             }
-            $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
-            unless( -e $databaseConfigFile ) {
-                print( "database_config.json not found\n" );
+            if ( $IRODS_ICAT_HOST eq "" )
+            {
+                $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
+                unless( -e $databaseConfigFile ) {
+                    print( "database_config.json not found\n" );
+                }
             }
         }
 
@@ -1305,27 +1308,29 @@ sub configureIrodsServer
         }
         chmod( 0600, $serverConfigFile );
 
-        my %db_variables = (
-                "db_username",  $DATABASE_ADMIN_NAME,
-                "db_password",  $DATABASE_ADMIN_PASSWORD );
-        printStatus( "    Updating $databaseConfigFile....\n" );
-        printLog( "    Updating $databaseConfigFile....\n" );
-        printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
-        printLog( "        db_password = $DATABASE_ADMIN_PASSWORD\n" );
-        $status = update_json_configuration_file(
-                  $databaseConfigFile,
-                  %db_variables );
-        if ( $status == 0 )
-	{
-		printError( "\nInstall problem:\n" );
-		printError( "    Updating of iRODS $databaseConfigFile failed.\n" );
-		printError( "        ", $output );
-		printLog( "\nCannot update variables in $databaseConfigFile.\n" );
-		printLog( "    ", $output );
-		cleanAndExit( 1 );
-	}
-	chmod( 0600, $databaseConfigFile );
-
+        if ( $IRODS_ICAT_HOST eq "" )
+        {
+            my %db_variables = (
+                    "db_username",  $DATABASE_ADMIN_NAME,
+                    "db_password",  $DATABASE_ADMIN_PASSWORD );
+            printStatus( "    Updating $databaseConfigFile....\n" );
+            printLog( "    Updating $databaseConfigFile....\n" );
+            printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
+            printLog( "        db_password = $DATABASE_ADMIN_PASSWORD\n" );
+            $status = update_json_configuration_file(
+                    $databaseConfigFile,
+                    %db_variables );
+            if ( $status == 0 )
+            {
+                    printError( "\nInstall problem:\n" );
+                    printError( "    Updating of iRODS $databaseConfigFile failed.\n" );
+                    printError( "        ", $output );
+                    printLog( "\nCannot update variables in $databaseConfigFile.\n" );
+                    printLog( "    ", $output );
+                    cleanAndExit( 1 );
+            }
+            chmod( 0600, $databaseConfigFile );
+        }
 
 	if ( $IRODS_ICAT_HOST ne "" )
 	{
