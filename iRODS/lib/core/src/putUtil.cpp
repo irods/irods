@@ -732,32 +732,8 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     bulkOprInfo.flags = BULK_OPR_SMALL_FILES;
     rstrcpy( dataObjOprInp->objPath, targColl, MAX_NAME_LEN );
     rstrcpy( bulkOprInp->objPath, targColl, MAX_NAME_LEN );
-#ifdef BULK_OPR_WITH_TAR
-    /* set the pwd */
-    if ( *srcDir == '/' ) {
-        /* absolute path */
-        bulkOprInfo.cwd[0] = '\0';
-    }
-    else {
-        if ( getcwd( bulkOprInfo.cwd, MAX_NAME_LEN ) == NULL ) {
-            status = SYS_INVALID_FILE_PATH - errno;
-            rodsLogError( LOG_ERROR, status,
-                          "bulkPutDirUtil: getcwd error for %s", srcDir );
-            return status;
-        }
-    }
-    /* need to make phyBunDir */
-    getPhyBunDir( DEF_PHY_BUN_ROOT_DIR, ( *myConn )->clientUser.userName, bulkOprInfo.phyBunDir );
-
-    if ( ( status = mkdirR( "/", bulkOprInfo.phyBunDir, 0750 ) ) < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "bulkPutDirUtil: mkdirR error for %s", srcDir );
-        return status;
-    }
-#else
     bulkOprInfo.bytesBuf.len = 0;
     bulkOprInfo.bytesBuf.buf = malloc( BULK_OPR_BUF_SIZE );
-#endif
 
     status = putDirUtil( myConn, srcDir, targColl, myRodsEnv, rodsArgs,
                          dataObjOprInp, bulkOprInp, rodsRestart, &bulkOprInfo );
@@ -769,11 +745,7 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     if ( bulkOprInfo.count > 0 ) {
-#ifdef BULK_OPR_WITH_TAR
-        status = tarAndBulkPut( *myConn, bulkOprInp, &bulkOprInfo );
-#else
         status = sendBulkPut( *myConn, bulkOprInp, &bulkOprInfo, rodsArgs );
-#endif
         if ( status >= 0 ) {
             if ( rodsRestart->fd > 0 ) {
                 rodsRestart->curCnt += bulkOprInfo.count;
@@ -793,9 +765,6 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         }
 
     }
-#ifdef BULK_OPR_WITH_TAR
-    rmdir( bulkOprInfo.phyBunDir );
-#endif
     return status;
 }
 
@@ -818,53 +787,6 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
                  rodsArguments_t *rodsArgs, bulkOprInp_t *bulkOprInp,
                  bulkOprInfo_t *bulkOprInfo ) {
     int status;
-#ifdef BULK_OPR_WITH_TAR
-    char tmpSrcPath[MAX_NAME_LEN];
-    char subPhyBunDir[MAX_NAME_LEN];
-    char *mySrcPath;
-    char *phyBunPath;
-
-    phyBunPath =  &bulkOprInfo->phyBunPath[bulkOprInfo->count][0];
-    status = getPhyBunPath( bulkOprInp->objPath, targPath,
-                            bulkOprInfo->phyBunDir, phyBunPath );
-    if ( status < 0 ) {
-        return status;
-    }
-
-    /* need to create the subPhyBunDir */
-    if ( ( status = splitPathByKey( phyBunPath, subPhyBunDir, MAX_NAME_LEN, tmpSrcPath, MAX_NAME_LEN,
-                                    '/' ) ) < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "bulkPutFileUtil: splitPathByKey for %s error",
-                      phyBunPath );
-        return status;
-    }
-
-    if ( strcmp( subPhyBunDir, bulkOprInfo->cachedSubPhyBunDir ) != 0 &&
-            strcmp( subPhyBunDir, bulkOprInfo->phyBunDir ) != 0 ) {
-        mkdirR( bulkOprInfo->phyBunDir, subPhyBunDir, 0750 );
-        rstrcpy( bulkOprInfo->cachedSubPhyBunDir, subPhyBunDir, MAX_NAME_LEN );
-    }
-    /* need to get absolute path for symlink */
-    if ( strlen( bulkOprInfo->cwd ) == 0 ) {
-        mySrcPath = srcPath;
-    }
-    else {
-        snprintf( tmpSrcPath, MAX_NAME_LEN, "%s/%s",
-                  bulkOprInfo->cwd, srcPath );
-        mySrcPath = tmpSrcPath;
-    }
-
-    if ( symlink( tmpSrcPath, phyBunPath ) < 0 ) {
-        status = USER_INPUT_PATH_ERR - errno;
-        rodsLogError( LOG_ERROR, status,
-                      "bulkPutFileUtil: symlink error for %s to %s", tmpSrcPath, phyBunPath );
-        return status;
-    }
-    rstrcpy( bulkOprInfo->cachedTargPath, targPath, MAX_NAME_LEN );
-    bulkOprInfo->count++;
-    bulkOprInfo->size += srcSize;
-#else
     int in_fd;
     int bytesRead = 0;
     /*#ifndef windows_platform
@@ -902,16 +824,15 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     bulkOprInfo->count++;
     bulkOprInfo->size += srcSize;
     bulkOprInfo->bytesBuf.len = bulkOprInfo->size;
-#endif
 
     if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
             getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
         char chksumStr[NAME_LEN];
-        
+
         rodsEnv env;
         int ret = getRodsEnv( &env );
         if( ret < 0 ) {
-            rodsLog( 
+            rodsLog(
                 LOG_ERROR,
                 "bulkPutFileUtil: error getting rods env %d",
                 ret  );
@@ -940,11 +861,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
             bulkOprInfo->size >= BULK_OPR_BUF_SIZE -
             MAX_BULK_OPR_FILE_SIZE ) {
         /* tar send it */
-#ifdef BULK_OPR_WITH_TAR
-        status = tarAndBulkPut( conn, bulkOprInp, bulkOprInfo, rodsArgs );
-#else
         status = sendBulkPut( conn, bulkOprInp, bulkOprInfo, rodsArgs );
-#endif
         if ( status >= 0 ) {
             /* return the count */
             status = bulkOprInfo->count;
@@ -957,30 +874,6 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     }
     return status;
 }
-
-#ifdef BULK_OPR_WITH_TAR
-int
-tarAndBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-               bulkOprInfo_t *bulkOprInfo, rodsArguments_t *rodsArgs ) {
-    int status;
-
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
-        return 0;
-    }
-
-    bulkOprInfo->bytesBuf.len = BULK_OPR_BUF_SIZE;
-    bulkOprInfo->bytesBuf.buf = NULL;
-
-    status = tarToBuf( bulkOprInfo->phyBunDir, &bulkOprInfo->bytesBuf );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "tarAndBulkPut: tarToBuf error for %s", bulkOprInfo->phyBunDir );
-        return status;
-    }
-    status = sendBulkPut( conn, bulkOprInp, bulkOprInfo, rodsArgs );
-    return status;
-}
-#endif
 
 int
 sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
@@ -1032,18 +925,6 @@ clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo ) {
         return 0;
     }
     bulkOprInfo->bytesBuf.len = 0;
-#ifdef BULK_OPR_WITH_TAR
-    if ( bulkOprInfo->bytesBuf.buf != NULL ) {
-        free( bulkOprInfo->bytesBuf.buf );
-        bulkOprInfo->bytesBuf.buf = NULL;
-    }
-    int i;
-    for ( i = 0; i < bulkOprInfo->count; i++ ) {
-        unlink( &bulkOprInfo->phyBunPath[i][0] );
-    }
-    *bulkOprInfo->cachedSubPhyBunDir = '\0';
-    rmSubDir( bulkOprInfo->phyBunDir );
-#endif
     bulkOprInfo->count = bulkOprInfo->size = 0;
     *bulkOprInfo->cachedTargPath = '\0';
 
