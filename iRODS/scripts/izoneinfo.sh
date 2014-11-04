@@ -178,24 +178,6 @@ platform=`grep OS_platform $config | grep = | sed 's/_platform//g'`
 echo $platform | tee -a $outFile
 
 set +e
-gsi=`grep GSI_AUTH $config | grep = | grep -v Uncomment | grep -v "#"`
-set -e
-if [ -z "$gsi" ]; then
-  echo "no GSI" | tee -a $outFile
-else
-  echo "GSI enabled" | tee -a $outFile
-fi
-
-set +e
-krb=`grep KRB_AUTH $config | grep = | grep -v Uncomment | grep -v "#"`
-set -e
-if [ -z "$krb" ]; then
-  echo "no Kerberos" | tee -a $outFile
-else
-  echo "Kerberos enabled" | tee -a $outFile
-fi
-
-set +e
 fuse=`grep IRODS_FS $config | grep = | grep -v Uncomment | grep -v "#"`
 set -e
 if [ -z "$fuse" ]; then

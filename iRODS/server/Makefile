@@ -179,12 +179,6 @@ endif
 ifdef RELEASE_FLAG
 CFLAGS +=       -DRELEASE_FLAG
 endif
-ifdef GSI_AUTH
-CFLAGS +=       -DGSI_AUTH
-endif
-ifdef KRB_AUTH
-CFLAGS +=       -DKRB_AUTH
-endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG
 endif
@@ -298,56 +292,6 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # options) and MODULE_OBJS is just the object files from the
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LIBRARY) $(LDADD) 
-
-ifdef GSI_AUTH
-
-ifeq ($(GSI_INSTALL_TYPE),)
-GSI_INSTALL_TYPE2=
-else
-GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
-endif
-
-# GSI_SSL is set to ssl to use the system's SSL library, else use
-# regular Globus version.
-ifndef GSI_SSL
-GSI_SSL = ssl$(GSI_INSTALL_TYPE2)
-endif
-
-# GSI_CRYPTO is set to crypto to use the system's Crypto library, else
-# use regular Globus version.
-ifndef GSI_CRYPTO
-GSI_CRYPTO = crypto$(GSI_INSTALL_TYPE2)
-endif
-
-LIB_GSI_AUTH = \
-        -L$(GLOBUS_LOCATION)/$(GSI_LIB_DIR) \
-        -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
-	-lglobus_gssapi_gsi$(GSI_INSTALL_TYPE2) \
-        -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
-        -lglobus_gsi_proxy_core$(GSI_INSTALL_TYPE2) \
-	-lglobus_gsi_callback$(GSI_INSTALL_TYPE2) \
-	-lglobus_oldgaa$(GSI_INSTALL_TYPE2) \
-	-lglobus_gsi_sysconfig$(GSI_INSTALL_TYPE2) \
-	-lglobus_gsi_cert_utils$(GSI_INSTALL_TYPE2) \
-	-lglobus_openssl_error$(GSI_INSTALL_TYPE2) \
-	-lglobus_openssl$(GSI_INSTALL_TYPE2) \
-	-lglobus_proxy_ssl$(GSI_INSTALL_TYPE2) \
-	-l$(GSI_SSL) \
-	-l$(GSI_CRYPTO) \
-	-lglobus_common$(GSI_INSTALL_TYPE2) \
-	-lglobus_callout$(GSI_INSTALL_TYPE2) \
-	-lltdl$(GSI_INSTALL_TYPE2) 
-
-LDFLAGS += $(LIB_GSI_AUTH)
-endif
-
-ifdef KRB_AUTH
-LIB_KRB_AUTH = \
-        -L$(KRB_LOC)/lib \
-        -lgssapi_krb5
-
-LDFLAGS += $(LIB_KRB_AUTH)
-endif
 
 #
 # Princpal Targets

@@ -25,8 +25,6 @@
 #include "parseCommandLine.hpp"
 #include "obf.hpp"
 #include "rodsXmsg.hpp"
-#include "igsi.hpp"
-#include "ikrb.hpp"
 #include "rodsQuota.hpp"
 #include "osauth.hpp"
 #include "sslSockComm.hpp"

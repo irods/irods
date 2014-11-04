@@ -262,10 +262,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcSyncMountedColl.o
 SVR_API_OBJS += $(svrApiObjDir)/rsStructFileSync.o
 LIB_API_OBJS += $(libApiObjDir)/rcStructFileSync.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsGsiAuthRequest.o
-LIB_API_OBJS += $(libApiObjDir)/rcGsiAuthRequest.o
-
-
 SVR_API_OBJS += $(svrApiObjDir)/rsOpenCollection.o
 LIB_API_OBJS += $(libApiObjDir)/rcOpenCollection.o
 
@@ -322,9 +318,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowInsert.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGeneralRowPurge.o
 LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowPurge.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsKrbAuthRequest.o
-LIB_API_OBJS += $(libApiObjDir)/rcKrbAuthRequest.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsPhyBundleColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcPhyBundleColl.o

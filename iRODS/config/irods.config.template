@@ -109,10 +109,6 @@ $DATABASE_ADMIN_NAME = '';
 #
 #	$DB_KEY is a numeric key used to encrypt passwords for iRODS.
 #
-#  $GSI_AUTH is 1 if GSI is selected.
-#  $GLOBUS_LOCATION is then the GLOBUS_LOCATION, and
-#  $GSI_INSTALL_TYPE is the Globus/GSI install type to use.
-#
 $IRODS_HOME = '';
 $IRODS_PORT = '1247';
 $SVR_PORT_RANGE_START = '';
@@ -126,11 +122,6 @@ $RESOURCE_NAME = 'demoResc';
 $RESOURCE_DIR  = "$IRODS_HOME/Vault";
 $ZONE_NAME     = 'tempZone';
 $DB_KEY        = '123';		# Arbitrary key used to scramble the db pw
-
-$GSI_AUTH = '';
-$GLOBUS_LOCATION = '';
-$GSI_INSTALL_TYPE = '';
-
 
 # NCCS Audit Extensions
 # $AUDIT_EXT is 1 if these Audit Extensions are selected.

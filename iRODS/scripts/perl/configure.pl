@@ -300,22 +300,6 @@ $irodsConfigVariables{ "DATABASE_PORT" }        = $DATABASE_PORT;
 $irodsConfigVariables{ "DATABASE_ADMIN_NAME" }  = $DATABASE_ADMIN_NAME;
 $irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = $DATABASE_ADMIN_PASSWORD;
 
-if ($GSI_AUTH == 1) {
-	$configMkVariables{ "GSI_AUTH" } = $GSI_AUTH;
-	$configMkVariables{ "GLOBUS_LOCATION" } = $GLOBUS_LOCATION;
-	$configMkVariables{ "GSI_INSTALL_TYPE" } = $GSI_INSTALL_TYPE;
-        # Use system ssl if GSI's ssl lib doesn't exist
-	my $testLib = $GLOBUS_LOCATION . "/lib/libssl_" . $GSI_INSTALL_TYPE . ".a";
-	if ( ! -e $testLib ) {
-	    $configMkVariables{ "GSI_SSL" } = ssl;
-	}
-        # Use system crypto if GSI's crypto lib doesn't exist
-	my $testLib = $GLOBUS_LOCATION . "/lib/libcrypto_" . $GSI_INSTALL_TYPE . ".a";
-	if ( ! -e $testLib ) {
-	    $configMkVariables{ "GSI_CRYPTO" } = crypto;
-	}
-}
-
 if ( $DATABASE_TYPE =~ /postgres/i )
 {
 	# Postgres.

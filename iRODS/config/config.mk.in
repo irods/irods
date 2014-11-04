@@ -264,36 +264,9 @@ endif
 ZIP_EXEC_PATH=/usr/bin/zip
 UNZIP_EXEC_PATH=/usr/bin/unzip
 
-#
-# Grid Security Infrastructure
-# 
-# Uncomment '# GSI_AUTH=1' and specify your GLOBUS_LOCATION and 
-# GSI_INSTALL_TYPE (the examples of these below work at SDSC).
-#
-# Some versions/installations of Globus will use the system SSL and
-# Crypto libraries.  If GSI_SSL and/or GSI_CRYPTO are set, the
-# Makefiles will use system libs instead of the Globus ones.
-# 'configure' will set these if the globus ssl and crypto libraries do
-# not exist in $(GLOBUS_LOCATION)/lib (setting GSI_SSL to ssl and
-# GSI_CRYPTO to crypto).
-#
-#
-# GSI_AUTH = 1
-ifdef GSI_AUTH
-GLOBUS_LOCATION=/usr/local/apps/globus-4.0.1
-GSI_INSTALL_TYPE=gcc32dbg
-GSI_SSL=
-GSI_CRYPTO=
-endif
 
 # UNI_CODE - support UTF-8 on linux and UTF-16 on windows
 # UNI_CODE = 1
-
-# Kerberos authentication
-# KRB_AUTH = 1
-ifdef KRB_AUTH
-KRB_LOC=/usr/kerberos
-endif
 
 # Syslog logging
 # Uncomment this line to log into syslog instead of the usual
@@ -327,11 +300,11 @@ endif
 # =-=-=-=-=-=-=-
 # compile in the sha256 support for the hasher class
 # NOTE:: this should be a build.sh template value
-SHA256_FILE_HASH = 1 
+SHA256_FILE_HASH = 1
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to
-# generate a credential that the user presents to the iRODS server. 
+# generate a credential that the user presents to the iRODS server.
 # You can use this instead of using password authentication.
 OS_AUTH = 1
 ifdef OS_AUTH

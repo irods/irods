@@ -117,16 +117,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/region.o \
 		$(libCoreObjDir)/apiHandler.o 
 
-ifdef GSI_AUTH
-LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
-endif
-ifdef KRB_AUTH
-LIB_CORE_OBJS += $(libCoreObjDir)/ikrb.o
-ifdef GSI_AUTH
-# when using both KRB and GSI, include the KRB wrapper
-LIB_CORE_OBJS += $(libCoreObjDir)/ikrbGSSAPIWrapper.o
-endif
-endif
 INCLUDES +=	-I$(libCoreIncDir)
 
 
@@ -173,16 +163,6 @@ LIB_RBUDP_OBJS =  \
 		$(libRbudpObjDir)/QUANTAnet_rbudpSender_c.o 	\
 		$(libRbudpObjDir)/QUANTAnet_rbudpReceiver_c.o
 
-# GSI
-ifdef GSI_AUTH
-INCLUDES += 	-I$(GLOBUS_LOCATION)/include/$(GSI_INSTALL_TYPE)
-endif
-
-# Kerberos
-ifdef KRB_AUTH
-INCLUDES += 	-I$(KRB_LOC)/include/gssapi -I$(KRB_LOC)/include
-endif
-
 # API (see api.mk, which is automatically generated)
 include $(buildDir)/config/api.mk
 INCLUDES +=	-I$(libApiIncDir)
@@ -212,12 +192,6 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES)
 
 MD5_CFLAGS_OPTIONS := $(CFLAGS_OPTIONS)
 MD5_CFLAGS =	$(CFLAGS)
-ifdef GSI_AUTH
-CFLAGS_OPTIONS += -D GSI_AUTH
-endif
-ifdef KRB_AUTH
-CFLAGS_OPTIONS += -D KRB_AUTH
-endif
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG
 endif

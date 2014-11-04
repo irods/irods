@@ -139,12 +139,10 @@
 #define RULE_EXEC_MOD_AN                            708
 #define GET_TEMP_PASSWORD_AN                        709
 #define GENERAL_UPDATE_AN                           710
-#define GSI_AUTH_REQUEST_AN                         711
 #define READ_COLLECTION_AN                          713
 #define USER_ADMIN_AN                               714
 #define GENERAL_ROW_INSERT_AN                       715
 #define GENERAL_ROW_PURGE_AN                        716
-#define KRB_AUTH_REQUEST_AN                         717
 #define END_TRANSACTION_AN                          718
 #define DATABASE_RESC_OPEN_AN                       719
 #define DATABASE_OBJ_CONTROL_AN                     720

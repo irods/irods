@@ -298,10 +298,6 @@ if ( -e $irodsConfig )
 	$irodsResourceDir  = $RESOURCE_DIR;
 	$irodsZone         = $ZONE_NAME;
 
-	$gsiAuth           = $GSI_AUTH;
-	$globusLocation    = $GLOBUS_LOCATION;
-	$gsiInstallType    = $GSI_INSTALL_TYPE;
-
 	$auditExt          = $AUDIT_EXT;
 
 	$databaseServerType      = $DATABASE_TYPE;
@@ -1808,10 +1804,6 @@ sub configureIrods( )
 		"RESOURCE_NAME",		$irodsResourceName,
 		"RESOURCE_DIR",			$irodsResourceDir,
 		"ZONE_NAME",			$irodsZone,
-
-		"GSI_AUTH",			$gsiAuth,
-		"GLOBUS_LOCATION",		$globusLocation,
-		"GSI_INSTALL_TYPE",		$gsiInstallType,
 
 		"AUDIT_EXT",			$auditExt,
 

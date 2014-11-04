@@ -162,17 +162,6 @@ LDADD+=-lnsl -lsocket -lm -lpthread -lrt
 CL_LDADD+=-lnsl -lsocket -lm -lpthread
 endif
 
-# Authorization
-ifdef GSI_AUTH
-ifeq ($(OS_platform), aix_platform)
-LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
-CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
-else
-LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
-CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
-endif
-endif
-
 ifdef HAAW_STRUCT_FILE
 MY_CFLAG+= -DHAAW_STRUCT_FILE
 endif

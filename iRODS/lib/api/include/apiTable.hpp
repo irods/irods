@@ -227,16 +227,6 @@ static irods::apidef_t client_api_table_inp[] = {
         "authCheckInp_PI", 0,  "authCheckOut_PI", 0, ( funcPtr ) RS_AUTH_CHECK, irods::clearInStruct_noop
     },
     {
-        GSI_AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO,
-        NO_USER_AUTH | XMSG_SVR_ALSO,
-        NULL, 0,  "gsiAuthRequestOut_PI", 0, ( funcPtr ) RS_GSI_AUTH_REQUEST, irods::clearInStruct_noop
-    },
-    {
-        KRB_AUTH_REQUEST_AN, RODS_API_VERSION,
-        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
-        NULL, 0, "krbAuthRequestOut_PI", 0, ( funcPtr ) RS_KRB_AUTH_REQUEST, irods::clearInStruct_noop
-    },
-    {
         END_TRANSACTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "endTransactionInp_PI", 0, NULL, 0, ( funcPtr ) RS_END_TRANSACTION, irods::clearInStruct_noop
     },

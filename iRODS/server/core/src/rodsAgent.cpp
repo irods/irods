@@ -297,15 +297,6 @@ int agentMain(
 
     while ( result.ok() && status >= 0 ) {
 
-        if ( false && rsComm->gsiRequest == 1 ) {
-            status = igsiServersideAuth( rsComm ) ;
-            rsComm->gsiRequest = 0;
-        }
-        if ( false && rsComm->gsiRequest == 2 ) {
-            status = ikrbServersideAuth( rsComm ) ;
-            rsComm->gsiRequest = 0;
-        }
-
         // set default to the native auth scheme here.
         if ( rsComm->auth_scheme == NULL ) {
             rsComm->auth_scheme = strdup( "native" );
