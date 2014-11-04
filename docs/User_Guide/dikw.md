@@ -1,6 +1,5 @@
 # Managing Information & Knowledge
 
-
 |  | Concepts | Implementation |
 | ------- | --------- | --------- | --------- |
 | **Data** | objects | bytes | Storage System |

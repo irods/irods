@@ -450,7 +450,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
 }
 
 /**
- * \fn msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
+ * \fn msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *)
  *
  * \brief   When called (e.g. from acAclPolicy) and with "STRICT" as the
  *    argument, this will set the ACL policy (for GeneralQuery) to be
@@ -469,7 +469,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] msParam - a msParam of type STR_MS_T - can have value 'STRICT'
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

@@ -14,7 +14,7 @@
   - msiAdmChangeCoreRE                          - Changes the core.re file from the client
   - msiAdmAppendToTopOfCoreRE                   - Prepends another re file to the core.re file
   - msiAdmAddAppRuleStruct                      - Adds application level IRB rules and DVM and FNM mappings to the rule engine
-  - #msiAdmClearAppRuleStruct                   - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
+  - msiAdmClearAppRuleStruct                    - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
 
   - msiAdmShowCoreRE                            - Displays the currently loaded rules
   - #msiAdmShowDVM                              - Displays the currently loaded data variable mappings

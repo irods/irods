@@ -162,7 +162,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
 /**
  * \fn msiCreateXmsgInp(msParam_t* inMsgNumber, msParam_t* inMsgType, msParam_t* inNumberOfReceivers, msParam_t* inMsg, msParam_t* inNumberOfDeliverySites,
  *                      msParam_t* inDeliveryAddressList, msParam_t* inDeliveryPortList, msParam_t* inMiscInfo, msParam_t* inXmsgTicketInfoParam,
- *                      msParam_t* outSendXmsgInpParam, ruleExecInfo_t *rei)
+ *                      msParam_t* outSendXmsgInpParam, ruleExecInfo_t *)
  *
  * \brief  Given all information values this microservice creates an Xmsg packet.
  *
@@ -183,7 +183,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
  * \param[in] inMiscInfo - a msParam of type STR_MS_T which is other Information.
  * \param[in] inXmsgTicketInfoParam - a msParam of type XmsgTicketInfo_MS_T which is outXmsgTicketInfoParam from msiXmsgCreateStream
  * \param[out] outSendXmsgInpParam - a msParam of type SendXmsgInp_MS_T which is a Xmsg packet.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

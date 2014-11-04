@@ -166,7 +166,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
 }
 
 /**
- * \fn msiGetTaggedValueFromString (msParam_t *inTagParam, msParam_t *inStrParam, msParam_t *outValueParam, ruleExecInfo_t *rei)
+ * \fn msiGetTaggedValueFromString (msParam_t *inTagParam, msParam_t *inStrParam, msParam_t *outValueParam, ruleExecInfo_t *)
  *
  * \brief   This microservice gets a tagged value from a string; given a tag-name gets the value from a file in tagged-format (pseudo-XML).
  *
@@ -184,7 +184,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
  * \param[in] inTagParam - a msParam of type STR_MS_T
  * \param[in] inStrParam - a msParam of type STR_MS_T
  * \param[out] outValueParam - a msParam of type INT_MS_T
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

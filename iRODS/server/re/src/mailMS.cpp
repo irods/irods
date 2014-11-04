@@ -12,7 +12,7 @@
 #include "irods_log.hpp"
 
 /**
- * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
+ * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *)
  *
  * \brief Sends email
  *
@@ -28,7 +28,7 @@
  * \param[in] xtoAddr - a msParam of type STR_MS_T which is an address of the receiver.
  * \param[in] xsubjectLine - a msParam of type STR_MS_T which is a subject of the message.
  * \param[in] xbody - a msParam of type STR_MS_T which is a body of the message.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

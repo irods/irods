@@ -1,4 +1,4 @@
-# iRODS Administration Manual
+# iRODS Administration Guide
 
 ## Overview
 
@@ -1667,6 +1667,13 @@ This error occurs when one of the iRODS servers fails to recognize itself as loc
 3. a simple typo
 
 Every iRODS server in a Zone needs to be fully routable to and from every other iRODS server in the Zone.
+
+There are two networking requirements for iRODS:
+
+1. Each server in the Zone will be referred to by exactly one hostname, this is the hostname returned by "`hostname`".
+
+2. Each server in the Zone must be able to resolve the hostnames of all servers, including itself, to a routable IP address.
+
 
 !!! error
     USER_RODS_HOSTNAME_ERR -303000

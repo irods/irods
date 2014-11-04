@@ -11,7 +11,7 @@
 #include "objMetaOpr.hpp"
 
 /**
- * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *rei)
+ * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)
  *
  * \brief   This function returns the system time for the iCAT server
  *
@@ -26,7 +26,7 @@
  * \param[in] typeInParam - a msParam of type STR_MS_T
  *    \li "icat" or "unix" will return seconds since epoch
  *    \li otherwise, human friendly
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

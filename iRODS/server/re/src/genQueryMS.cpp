@@ -224,7 +224,7 @@ _makeQuery( char *sel, char *cond, char **sql ) {
 }
 
 /**
- * \fn msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, msParam_t* queryOutParam, ruleExecInfo_t *rei)
+ * \fn msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, msParam_t* queryOutParam, ruleExecInfo_t *)
  *
  * \brief Creates sql query from parameter list and conditions.
  *
@@ -238,7 +238,7 @@ _makeQuery( char *sel, char *cond, char **sql ) {
  * \param[in] selectListParam - a STR_MS_T containing the parameters.
  * \param[in] conditionsParam - a STR_MS_T containing the conditions.
  * \param[out] queryOutParam - a STR_MS_T containing the parameters and conditions as sql.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

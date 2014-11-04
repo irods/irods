@@ -546,7 +546,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
 }
 
 /**
- * \fn msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* rei)
+ * \fn msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* )
  *
  * \brief  Sleep for some amount of time
  *
@@ -559,7 +559,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  *
  * \param[in] secPtr - secPtr is a msParam of type STR_MS_T which is seconds
  * \param[in] microsecPtr - microsecPrt is a msParam of type STR_MS_T which is microseconds
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
@@ -879,7 +879,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
 
 
 /**
- * \fn msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* rei)
+ * \fn msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* )
  *
  * \brief Converts a string to a bytesBuf_t
  *
@@ -894,7 +894,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  *
  * \param[in] str_msp - a STR_MS_T
  * \param[out] buf_msp - a BUF_LEN_MS_T
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out] - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
@@ -936,7 +936,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
 }
 
 /**
- *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t* rei)
+ *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t* )
  *
  * \brief Writes  a bytesBuf_t into a character string
  *
@@ -959,7 +959,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
  *
  * \param[in] buf_msp - a BUF_LEN_MS_T
  * \param[out] str_msp - a STR_MS_T
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ * \param[in,out]  - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *

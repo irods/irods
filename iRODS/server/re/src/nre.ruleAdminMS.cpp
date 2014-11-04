@@ -34,7 +34,7 @@
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] bufP - is a msParam (not used for anything, a dummy parameter)
+ * \param[in] - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -80,7 +80,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
 }
 
 /**
- * \fn msiAdmShowFNM (msParam_t *bufP, ruleExecInfo_t *rei)
+ * \fn msiAdmShowFNM (msParam_t *, ruleExecInfo_t *rei)
  *
  * \brief  This is a microservice that reads the function-name-mapping data structure
  * in the Rule Engine and pretty-prints that structure to the stdout buffer.
@@ -97,7 +97,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] bufP - is a msParam (not used for anything, a dummy parameter)
+ * \param[in] - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -809,7 +809,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] inMsrvcBaseNameParam - a msParam of type STR_MS_T, the name of the target database
+ * \param[in] - a msParam of type STR_MS_T, the name of the target database
  * \param[in] inCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a

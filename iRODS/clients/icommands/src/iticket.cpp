@@ -879,7 +879,7 @@ void usageMain() {
         "Tickets are another way to provide access to iRODS data-objects (files) or",
         "collections (directories or folders).  The 'iticket' command allows you",
         "to create, modify, list, and delete tickets.  When you create a ticket",
-        "it's 16 character string it given to you which you can share with others.",
+        "its 16 character string is given to you which you can share with others.",
         "This is less secure than normal iRODS login-based access control, but",
         "is useful in some situations.  See the 'ticket-based access' page on",
         "irods.org for more information.",
@@ -1024,6 +1024,20 @@ usage( char *subOpt ) {
                 printf( "%s\n", msgs[i] );
             }
         }
+
+        if ( strcmp( subOpt, "quit" ) == 0 ) {
+            char *msgs[] = {
+                " Exits the interactive mode",
+                ""
+            };
+            for ( i = 0;; i++ ) {
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return 0;
+                }
+                printf( "%s\n", msgs[i] );
+            }
+        }
+
         printf( "Sorry, either %s is an invalid command or the help has not been written yet\n",
                 subOpt );
     }

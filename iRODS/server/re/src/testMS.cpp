@@ -125,7 +125,7 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  * 				OUTPUT ruleExecOut
  *
  *
- * \param[out] inParam - A KeyValPair_MS_T (by default).
+ * \param[out] - A KeyValPair_MS_T (by default).
  * \param[out] outParam - A KeyValPair_MS_T (by default).
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
