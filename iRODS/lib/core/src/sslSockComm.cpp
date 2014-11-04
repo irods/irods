@@ -516,22 +516,18 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
 int
 sslRead( int sock, void *buf, int len,
          int *bytesRead, struct timeval *tv, SSL *ssl ) {
-    int nbytes;
-    int toRead;
-    char *tmpPtr;
-    fd_set set;
     struct timeval timeout;
-    int status;
 
     /* Initialize the file descriptor set. */
+    fd_set set;
     FD_ZERO( &set );
     FD_SET( sock, &set );
     if ( tv != NULL ) {
         timeout = *tv;
     }
 
-    toRead = len;
-    tmpPtr = ( char * ) buf;
+    int toRead = len;
+    char *tmpPtr = ( char * ) buf;
 
     if ( bytesRead != NULL ) {
         *bytesRead = 0;
@@ -539,7 +535,7 @@ sslRead( int sock, void *buf, int len,
 
     while ( toRead > 0 ) {
         if ( SSL_pending( ssl ) == 0 && tv != NULL ) {
-            status = select( sock + 1, &set, NULL, NULL, &timeout );
+            const int status = select( sock + 1, &set, NULL, NULL, &timeout );
             if ( status == 0 ) {
                 /* timedout */
                 if ( len - toRead > 0 ) {
@@ -558,7 +554,7 @@ sslRead( int sock, void *buf, int len,
                 }
             }
         }
-        nbytes = SSL_read( ssl, ( void * ) tmpPtr, toRead );
+        int nbytes = SSL_read( ssl, ( void * ) tmpPtr, toRead );
         if ( SSL_get_error( ssl, nbytes ) != SSL_ERROR_NONE ) {
             if ( errno == EINTR ) {
                 /* interrupted */

@@ -422,16 +422,12 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    bzero( &inputStructBBuf, sizeof( bytesBuf_t ) );
-    bzero( &bsBBuf, sizeof( bytesBuf_t ) );
-    bzero( &errorBBuf, sizeof( bytesBuf_t ) );
+    bzero( &inputStructBBuf, sizeof( inputStructBBuf ) );
+    bzero( &bsBBuf, sizeof( bsBBuf ) );
+    bzero( &errorBBuf, sizeof( errorBBuf ) );
 
-//#ifndef windows_platform
     svrChkReconnAtReadStart( rsComm );
-//#endif
     /* everything else are set in readMsgBody */
-
-    memset( &bsBBuf, 0, sizeof( bsBBuf ) );
 
     /* read the header */
 
@@ -442,7 +438,6 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
-
     }
 
     if ( ( flags & READ_HEADER_TIMEOUT ) != 0 ) {
@@ -468,7 +463,6 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
                 }
             }
             break;
-
         } // while 1
     }
     else {
@@ -477,8 +471,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
 
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        /* attempt to accept reconnect. ENOENT result  from
-                     * user cntl-C */
+        /* attempt to accept reconnect. ENOENT result  from * user cntl-C */
         if ( rsComm->reconnSock > 0 ) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */

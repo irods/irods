@@ -309,11 +309,6 @@ serverize( char *logDir ) {
 
 int
 serverMain( char *logDir ) {
-    int status;
-    rsComm_t svrComm;
-    fd_set sockMask;
-    int numSock;
-    int newSock;
     int loopCnt = 0;
     int acceptErrCnt = 0;
 #ifdef SYS_TIMING
@@ -326,7 +321,8 @@ serverMain( char *logDir ) {
         exit( 1 );
     }
 
-    status = initServerMain( &svrComm );
+    rsComm_t svrComm;
+    int status = initServerMain( &svrComm );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "serverMain: initServerMain error. status = %d",
                  status );
@@ -339,11 +335,13 @@ serverMain( char *logDir ) {
 #endif /* RODS_CAT */
 #endif /* SINGLE_SVR_THR */
 
+    fd_set sockMask;
     FD_ZERO( &sockMask );
 
     SvrSock = svrComm.sock;
     while ( 1 ) {		/* infinite loop */
         FD_SET( svrComm.sock, &sockMask );
+        int numSock;
         while ( ( numSock = select( svrComm.sock + 1, &sockMask,
                                     ( fd_set * ) NULL, ( fd_set * ) NULL, ( struct timeval * ) NULL ) ) < 0 ) {
 
@@ -364,8 +362,7 @@ serverMain( char *logDir ) {
         initSysTiming( "irodsServer", "recv connection", 0 );
 #endif
 
-        newSock = rsAcceptConn( &svrComm );
-
+        const int newSock = rsAcceptConn( &svrComm );
         if ( newSock < 0 ) {
             acceptErrCnt ++;
             if ( acceptErrCnt > MAX_ACCEPT_ERR_CNT ) {

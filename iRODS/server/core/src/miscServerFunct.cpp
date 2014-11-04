@@ -270,10 +270,11 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
         return SYS_SOCK_SELECT_ERR;
     }
 
-    const int saved_flags = fcntl(sockfd, F_GETFL);
-    fcntl(sockfd, F_SETFL, saved_flags | O_NONBLOCK);
-
+    const int saved_socket_flags = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, saved_socket_flags | O_NONBLOCK);
     const int myFd = accept( sockfd, 0, 0 );
+    fcntl(sockfd, F_SETFL, saved_socket_flags);
+
     if ( myFd < 0 ) {
         rodsLog( LOG_NOTICE,
                  "acceptSrvPortal() -- accept() failed: errno=%d",
@@ -2200,11 +2201,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 #ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm ) {
-    fd_set basemask;
-    int nSockets, nSelected;
     struct sockaddr_in  remoteAddr;
-    socklen_t len;
-    int newSock;
     reconnMsg_t *reconnMsg;
     int acceptFailCnt = 0;
 
@@ -2214,11 +2211,13 @@ reconnManager( rsComm_t *rsComm ) {
 
     listen( rsComm->reconnSock, 1 );
 
-    nSockets = rsComm->reconnSock + 1;
+    const int nSockets = rsComm->reconnSock + 1;
+    fd_set basemask;
     FD_ZERO( &basemask );
     FD_SET( rsComm->reconnSock, &basemask );
 
     while ( 1 ) {
+        int nSelected;
         while ( ( nSelected = select( nSockets, &basemask,
                                       ( fd_set * ) NULL, ( fd_set * ) NULL, NULL ) ) < 0 ) {
             if ( errno == EINTR ) {
@@ -2226,23 +2225,24 @@ reconnManager( rsComm_t *rsComm ) {
                 continue;
             }
             else {
-                rodsLog( LOG_ERROR, "reconnManager: select failed, errno = %d",
-                         errno );
+                rodsLog( LOG_ERROR, "reconnManager: select failed, errno = %d", errno );
                 boost::unique_lock< boost::mutex > boost_lock( *rsComm->thread_ctx->lock );
                 close( rsComm->reconnSock );
                 rsComm->reconnSock = 0;
                 boost_lock.unlock();
                 return;
-
             } // else
-
         } // while select
 
         /* don't lock it yet until we are done with establishing a connection */
-        len = sizeof( remoteAddr );
+        socklen_t len = sizeof( remoteAddr );
         bzero( &remoteAddr, sizeof( remoteAddr ) );
-        newSock = accept( rsComm->reconnSock, ( struct sockaddr * ) &remoteAddr,
-                          &len );
+
+        const int saved_socket_flags = fcntl(rsComm->reconnSock, F_GETFL);
+        fcntl(rsComm->reconnSock, F_SETFL, saved_socket_flags | O_NONBLOCK);
+        const int newSock = accept( rsComm->reconnSock, ( struct sockaddr * ) &remoteAddr, &len );
+        fcntl(rsComm->reconnSock, F_SETFL, saved_socket_flags);
+
         if ( newSock < 0 ) {
             acceptFailCnt++;
             rodsLog( LOG_ERROR,

@@ -127,7 +127,6 @@ xmsgServerMain() {
 			 * server's listening socket */
     fd_set sockMask;
     int numSock;
-    int newSock;
 
     initThreadEnv();
     initXmsgHashQue();
@@ -225,13 +224,12 @@ xmsgServerMain() {
                 continue;
             }
             else {
-                rodsLog( LOG_NOTICE, "xmsgServerMain: select() error, errno = %d",
-                         errno );
+                rodsLog( LOG_NOTICE, "xmsgServerMain: select() error, errno = %d", errno );
                 return -1;
             }
         }
 
-        newSock = rsAcceptConn( &svrComm );
+        const int newSock = rsAcceptConn( &svrComm );
 
         if ( newSock < 0 ) {
             rodsLog( LOG_NOTICE,

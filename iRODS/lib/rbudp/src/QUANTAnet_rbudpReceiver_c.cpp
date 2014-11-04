@@ -119,74 +119,63 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
     return 0;
 }
 
-int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
-    int done, actualPayloadSize, retval;
-    long long seqno;
-    struct timeval start;
-    char *msg = ( char * ) malloc( rbudpReceiver->rbudpBase.packetSize );
+int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
+    std::vector<char> msg( rbudpReceiver->rbudpBase.packetSize );
     struct timeval timeout;
     fd_set rset;
-    int maxfdpl;
-    float prog;
     int oldprog = 0;
-    done = 0;
-    seqno = 0;
+    bool done = false;
 
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 #define QMAX(x, y) ((x)>(y)?(x):(y))
-    maxfdpl = QMAX( rbudpReceiver->rbudpBase.udpSockfd,
+    const int maxfdpl = QMAX( rbudpReceiver->rbudpBase.udpSockfd,
                     rbudpReceiver->rbudpBase.tcpSockfd ) + 1;
     FD_ZERO( &rset );
-    gettimeofday( &start, NULL );
     while ( !done ) {
         // These two FD_SET cannot be put outside the while, don't why though
         FD_SET( rbudpReceiver->rbudpBase.udpSockfd, &rset );
         FD_SET( rbudpReceiver->rbudpBase.tcpSockfd, &rset );
-        retval = select( maxfdpl, &rset, NULL, NULL, &timeout );
-        if ( retval < 0 ) {
-            irods::log( ERROR( retval, "select failed." ) );
+        const int retval = select( maxfdpl, &rset, NULL, NULL, &timeout );
+        if ( retval <= 0 ) {
+            std::stringstream msg;
+            msg << "select failed. retval [" << retval << "]";
+            irods::log( ERROR( retval, msg.str().c_str() ) );
         }
         // receiving a packet
         if ( FD_ISSET( rbudpReceiver->rbudpBase.udpSockfd, &rset ) ) {
             if ( rbudpReceiver->rbudpBase.udpServerAddr.sin_addr.s_addr == htonl( INADDR_ANY ) ) {
                 // made connect already
-                if ( recv( rbudpReceiver->rbudpBase.udpSockfd, msg,
+                if ( recv( rbudpReceiver->rbudpBase.udpSockfd, &msg[0],
                            rbudpReceiver->rbudpBase.packetSize, 0 ) < 0 ) {
                     perror( "recv" );
                     return errno ? ( -1 * errno ) : -1;
                 }
             }
             else {
-                socklen_t fromlen =
-                    sizeof( rbudpReceiver->rbudpBase.udpServerAddr );
+                socklen_t fromlen = sizeof( rbudpReceiver->rbudpBase.udpServerAddr );
                 if ( recvfrom( rbudpReceiver->rbudpBase.udpSockfd,
-                               msg, rbudpReceiver->rbudpBase.packetSize, 0,
-                               ( struct sockaddr * )
-                               &rbudpReceiver->rbudpBase.udpServerAddr,
+                               &msg[0], rbudpReceiver->rbudpBase.packetSize, 0,
+                               ( struct sockaddr * )&rbudpReceiver->rbudpBase.udpServerAddr,
                                &fromlen ) < 0 ) {
                     perror( "recvfrom" );
                     return errno ? ( -1 * errno ) : -1;
                 }
             }
 
-            bcopy( msg, &rbudpReceiver->recvHeader,
-                   sizeof( struct _rbudpHeader ) );
-            seqno = ptohseq( &rbudpReceiver->rbudpBase,
-                             rbudpReceiver->recvHeader.seq );
+            bcopy( &msg[0], &rbudpReceiver->recvHeader, sizeof( struct _rbudpHeader ) );
+            const long long seqno = ptohseq( &rbudpReceiver->rbudpBase, rbudpReceiver->recvHeader.seq );
 
             // If the packet is the last one,
-            if ( seqno <
-                    rbudpReceiver->rbudpBase.totalNumberOfPackets - 1 ) {
-                actualPayloadSize =
-                    rbudpReceiver->rbudpBase.payloadSize;
+            int actualPayloadSize = 0;
+            if ( seqno < rbudpReceiver->rbudpBase.totalNumberOfPackets - 1 ) {
+                actualPayloadSize = rbudpReceiver->rbudpBase.payloadSize;
             }
             else {
-                actualPayloadSize =
-                    rbudpReceiver->rbudpBase.lastPayloadSize;
+                actualPayloadSize = rbudpReceiver->rbudpBase.lastPayloadSize;
             }
 
-            bcopy( msg + rbudpReceiver->rbudpBase.headerSize,
+            bcopy( &msg[0] + rbudpReceiver->rbudpBase.headerSize,
                    ( char * )rbudpReceiver->rbudpBase.mainBuffer +
                    ( seqno * rbudpReceiver->rbudpBase.payloadSize ) ,
                    actualPayloadSize );
@@ -194,7 +183,7 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
             updateErrorBitmap( &rbudpReceiver->rbudpBase, seqno );
 
             rbudpReceiver->rbudpBase.receivedNumberOfPackets ++;
-            prog = ( float )
+            const float prog = ( float )
                    rbudpReceiver->rbudpBase.receivedNumberOfPackets /
                    ( float ) rbudpReceiver->rbudpBase.totalNumberOfPackets
                    * 100;
@@ -214,16 +203,14 @@ int  udpReceive( rbudpReceiver_t *rbudpReceiver ) {
         }
         //receive end of UDP signal
         else if ( FD_ISSET( rbudpReceiver->rbudpBase.tcpSockfd, &rset ) ) {
-            done = 1;
+            done = true;
             readn( rbudpReceiver->rbudpBase.tcpSockfd,
                    ( char * )&rbudpReceiver->rbudpBase.endOfUdp,
                    sizeof( struct _endOfUdp ) );
         }
         else { // time out
-            //done = 1;
         }
     }
-    free( msg );
 
     return 0;
 }

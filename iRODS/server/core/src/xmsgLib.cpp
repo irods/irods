@@ -562,13 +562,11 @@ getReqFromQue() {
 
 int
 startXmsgThreads() {
-    int status = 0;
-    int i;
-    for ( i = 0; i < NUM_XMSG_THR; i++ ) {
+    for (int i = 0; i < NUM_XMSG_THR; i++ ) {
         ProcReqThread[i] = new boost::thread( procReqRoutine );
     }
 
-    return status;
+    return 0;
 }
 
 void
@@ -620,7 +618,7 @@ procReqRoutine() {
 
             FD_SET( rsComm.sock, &sockMask );
             while ( ( numSock = select( rsComm.sock + 1, &sockMask,
-                                        ( fd_set * ) NULL, ( fd_set * ) NULL, &msgTimeout ) ) < 0 ) {
+                                        ( fd_set * ) NULL, ( fd_set * ) NULL, &msgTimeout ) ) <= 0 ) {
                 if ( errno == EINTR ) {
                     rodsLog( LOG_NOTICE,
                              "procReqRoutine: select() interrupted" );
@@ -650,8 +648,7 @@ procReqRoutine() {
 
 int
 ticketHashFunc( uint rcvTicket ) {
-    int mySlot = rcvTicket % NUM_HASH_SLOT;
-
+    const int mySlot = rcvTicket % NUM_HASH_SLOT;
     return mySlot;
 }
 

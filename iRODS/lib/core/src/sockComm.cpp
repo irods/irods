@@ -282,10 +282,7 @@ irods::error readMsgBody(
 /* open sock for incoming connection */
 int
 sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
-    struct sockaddr_in  mySockAddr;
-    int sock = 0;
     int status = 0;
-    int svrPortRangeStart = 0, svrPortRangeEnd = 0;
     char *tmpPtr;
 
     if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
@@ -294,9 +291,10 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         return SYS_INVALID_PROTOCOL_TYPE;
     }
 
+    struct sockaddr_in  mySockAddr;
     memset( ( char * ) &mySockAddr, 0, sizeof mySockAddr );
 
-    sock = socket( AF_INET, proto, 0 );
+    const int sock = socket( AF_INET, proto, 0 );
 
     if ( sock < 0 ) {
         status = SYS_SOCK_OPEN_ERR - errno;
@@ -318,11 +316,13 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 
     if ( *portNum <= 0 && ( tmpPtr = getenv( "svrPortRangeStart" ) ) != NULL ) {
 
-        svrPortRangeStart = atoi( tmpPtr );
+        const int svrPortRangeStart = atoi( tmpPtr );
         if ( svrPortRangeStart < 1 || svrPortRangeStart > 65535 ) {
             rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svrPortRangeStart );
             return SYS_INVALID_INPUT_PARAM;
         }
+
+        int svrPortRangeEnd = 0;
         if ( ( tmpPtr = getenv( "svrPortRangeEnd" ) ) != NULL ) {
             svrPortRangeEnd = atoi( tmpPtr );
             if ( svrPortRangeEnd < svrPortRangeStart ) {
@@ -403,16 +403,15 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 
 int
 rsAcceptConn( rsComm_t *svrComm ) {
-    socklen_t len;
-    int newSock;
-    int status;
+    socklen_t len = sizeof( svrComm->remoteAddr );
 
-    len = sizeof( svrComm->remoteAddr );
-    newSock = accept( svrComm->sock,
-                      ( struct sockaddr * ) &svrComm->remoteAddr, &len );
+    const int saved_socket_flags = fcntl(svrComm->sock, F_GETFL);
+    fcntl(svrComm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK);
+    const int newSock = accept( svrComm->sock, ( struct sockaddr * ) &svrComm->remoteAddr, &len );
+    fcntl(svrComm->sock, F_SETFL, saved_socket_flags);
 
     if ( newSock < 0 ) {
-        status = SYS_SOCK_ACCEPT_ERR - errno;
+        const int status = SYS_SOCK_ACCEPT_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
                       "rsAcceptConn: accept error for socket %d, status = %d",
                       svrComm->sock, status );
