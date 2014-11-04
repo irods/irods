@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See fileRename.h for a description of this API call.*/
-
 #include "fileRename.hpp"
 
+/**
+ * \fn rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** _out )
+ *
+ * \brief Renames a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileRenameInp
+ * \param[out] _out - the output
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** _out ) {
     int status;

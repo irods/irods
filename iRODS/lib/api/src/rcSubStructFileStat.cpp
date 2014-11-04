@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See subStructFileStat.h for a description of this API call.*/
-
 #include "subStructFileStat.hpp"
 
+/**
+ * \fn rcSubStructFileStat( rcComm_t *conn, subFile_t *subFile, rodsStat_t **subStructFileStatOut )
+ *
+ * \brief Stat a subfile within a structured file object.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] subFile
+ * \param[out] subStructFileStatOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSubStructFileStat( rcComm_t *conn, subFile_t *subFile,
                      rodsStat_t **subStructFileStatOut ) {

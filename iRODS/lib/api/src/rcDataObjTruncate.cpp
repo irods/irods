@@ -1,5 +1,5 @@
 /**
- * @file  rcDataObjTruncate.c
+ * @file  rcDataObjTruncate.cpp
  *
  */
 
@@ -17,12 +17,10 @@
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -50,7 +48,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

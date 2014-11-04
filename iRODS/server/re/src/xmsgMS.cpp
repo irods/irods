@@ -1,5 +1,5 @@
 /**
- * @file xmsgMS.c
+ * @file xmsgMS.cpp
  *
  */
 
@@ -30,8 +30,6 @@ static   rodsEnv myRodsXmsgEnv;
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -94,8 +92,6 @@ int msiXmsgServerConnect( msParam_t* outConnParam, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -174,8 +170,6 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -215,7 +209,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
                       msParam_t* inMiscInfo,
                       msParam_t* inXmsgTicketInfoParam,
                       msParam_t* outSendXmsgInpParam,
-                      ruleExecInfo_t* ) {
+                      ruleExecInfo_t* rei ) {
 
 
     sendXmsgInp_t  *sendXmsgInp;
@@ -281,8 +275,6 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \note Sends an Xmsg packet created by #msiCreateXmsgInp using the connection made by #msiXmsgServerConnect
  *
@@ -351,8 +343,6 @@ int msiSendXmsg( msParam_t* inConnParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \note  Uses the connection made by #msiXmsgServerConnect.
  *
@@ -445,8 +435,6 @@ int msiRcvXmsg( msParam_t* inConnParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *

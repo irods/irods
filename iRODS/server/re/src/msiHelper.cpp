@@ -1,5 +1,5 @@
 /**
- * @file  msiHelper.c
+ * @file  msiHelper.cpp
  *
  */
 
@@ -19,7 +19,6 @@
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date  2009
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -68,7 +67,6 @@ msiGetStdoutInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2009
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -128,8 +126,6 @@ msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
  *
  * \since 2.3
  *
- * \author  Jean-Yves Nief
- * \date    2009-06-15
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
@@ -208,7 +204,6 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \since since 2.3
  *
  * \author Mike Wan
- * \date   2010
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -259,7 +254,6 @@ msiAddKeyValToMspStr( msParam_t *keyStr, msParam_t *valStr,
  * \since 2.3
  *
  * \author Mike Wan
- * \date   2010
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -333,8 +327,6 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
  *
  * \since 2.3
  *
- * \author  Michael Wan
- * \date    2009-06-15
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -461,7 +453,6 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
  * \since after 2.4
  *
  * \author Mike Wan
- * \date   2010
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -532,7 +523,6 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
  * \since after 2.4
  *
  * \author Mike Wan
- * \date   2010
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -605,7 +595,6 @@ msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
  * \since after 2.4
  *
  * \author Mike Wan
- * \date   2010
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -734,8 +723,6 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
  *
  * \since after 2.4.1
  *
- * \author  Jean-Yves Nief
- * \date    2010-11-22
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called

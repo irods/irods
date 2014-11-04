@@ -107,7 +107,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
+        "Usage: ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
         "               physicalFilePath, irodsPath",
         " ",
         "Register a file or a directory of files and subdirectory into iRODS.",

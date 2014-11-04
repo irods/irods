@@ -1,5 +1,5 @@
 /**
- * @file nre.systemMS.c
+ * @file nre.systemMS.cpp
  *
  */
 
@@ -22,40 +22,6 @@ int
 fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
                       ruleExecSubmitInp_t *ruleSubmitInfo,  ruleExecInfo_t *rei );
 
-/**
- * \fn assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
- *
- * \brief  This microservice assigns a value to a variable.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author  Arcot Rajasekar
- * \date    2008
- *
- * \note This microservice can be used to assign values to * and $ variables.
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] var - var is a msParam of type STR_MS_T which is a variable name or a Dollar Variable.
- * \param[in] value - value is a msParam of type STR_MS_T that is computed and value assigned to variable.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence depends upon the variable being modified
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa  none
-**/
 
 #define evaluateExpression(expr, eaVal, rei) \
     computeExpression(expr, NULL,rei, 0, eaVal)
@@ -71,8 +37,6 @@ fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedRe
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note  This microservice is a set of statements that will be delayed in execution until delayCondition
  *    is true. The condition also supports repeating of the body until success or until
@@ -230,8 +194,6 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note This micoservice takes a set of microservices that need to be executed at a
  *    remote iRODS server. The execution is done immediately and synchronously with
@@ -444,7 +406,7 @@ doForkExec( char *prog, char *arg1 ) {
 
 
 /**
- * \fn msiGoodFailure(ruleExecInfo_t *rei)
+ * \fn msiGoodFailure(ruleExecInfo_t *)
  *
  * \brief  This microservice fails on purpose.
  *
@@ -452,8 +414,6 @@ doForkExec( char *prog, char *arg1 ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2006-06
  *
  * \note This microservice performs no operations but fails the current rule application
  *    immediately even if the body still has some more microservices. But other definitions
@@ -461,10 +421,6 @@ doForkExec( char *prog, char *arg1 ) {
  *    but no recovery initiated.
  *
  * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
  *
  * \DolVarDependence none
  * \DolVarModified none
@@ -521,8 +477,6 @@ checkFilePerms( char *fileName ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2006
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -589,7 +543,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
 }
 
 /**
- * \fn msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
+ * \fn msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* rei)
  *
  * \brief  Sleep for some amount of time
  *
@@ -597,8 +551,6 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date 2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -621,7 +573,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  * \sa  none
 **/
 int
-msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
+msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* rei ) {
 
     int sec, microsec;
 
@@ -642,8 +594,6 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note Normal operations of the rule engine is to stop after a rule (one of the alternates)
  *   completes successfully. But in some cases, one may want the rule engine to try all
@@ -703,8 +653,6 @@ msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
  *
  * \since 2.1
  *
- * \author  Antoine de Torcy
- * \date    2007-09-19
  *
  * \note If we have arithmetic MSs in the future we should use DOUBLE_MS_T instead of strings.
  *       Default output format is in seconds, use 'human' as the third input param for human readable format.
@@ -799,8 +747,6 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2007-09-19
  *
  * \note Default output format is system time in seconds, use 'human' as input param for human readable format.
  *
@@ -865,8 +811,6 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-03-11
  *
  * \note Expects an input date in the form: YYYY-MM-DD-hh.mm.ss
  *
@@ -931,7 +875,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
 
 
 /**
- * \fn msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
+ * \fn msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* rei)
  *
  * \brief Converts a string to a bytesBuf_t
  *
@@ -939,8 +883,6 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-09-16
  *
  * \note For easily passing parameters to microservices that require a BUF_LEN_MS_T
  *
@@ -965,7 +907,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  * \sa none
 **/
 int
-msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
+msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* rei ) {
     char *inStr;
     bytesBuf_t *outBuf;
 
@@ -990,7 +932,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
 }
 
 /**
- *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t *rei)
+ *\fn msiBytesBufToStr(msParam_t* buf_msp,  msParam_t* str_msp, ruleExecInfo_t* rei)
  *
  * \brief Writes  a bytesBuf_t into a character string
  *
@@ -998,8 +940,6 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
  *
  * \since 3.3
  *
- * \author  Arcot Rajasekar
- * \date    2013-06-10
  *
  * \remark This may blow up if the buffer is not a character string. so be careful
  *
@@ -1007,7 +947,10 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
  *
  * \usage
  *
- * testrule||msiBytesBufToStr(*Buff, *St)##writeLine(stdout,*St)|nop
+ * testrule{
+ *    msiBytesBufToStr(*Buff, *St)
+ *    writeLine(stdout,*St)
+ * }
  * ruleExecOut
  *
  * \param[in] buf_msp - a BUF_LEN_MS_T
@@ -1027,10 +970,9 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
-msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
+msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* rei ) {
     char *outStr;
     bytesBuf_t *inBuf;
 
@@ -1064,8 +1006,6 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
  *
  * \since 2.1
  *
- * \author  Antoine de Torcy
- * \date    2009-02-12
  *
  * \note This microservice looks at reAction.hpp and returns the list of compiled
  *  microservices on the local iRODS server.
@@ -1152,8 +1092,6 @@ msiListEnabledMS(
  *
  * \since pre-2.1
  *
- * \author  Romain Guinot
- * \date    2008
  *
  * \note Default output format is system time in seconds. Use 'human' as input
  *       parameter for human readable format.

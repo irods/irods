@@ -95,7 +95,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : irmtrash [-hMrvV] [--orphan] [-u user] [-z zoneName] [--age age_in_minutes] [dataObj|collection ...] ",
+        "Usage: irmtrash [-hMrvV] [--orphan] [-u user] [-z zoneName] [--age age_in_minutes] [dataObj|collection ...] ",
         "Remove one or more data-object or collection from a RODS trash bin.",
         "If the input dataObj|collection is not specified, the entire trash bin",
         "of the user (/$myZone/trash/$myUserName) will be removed.",

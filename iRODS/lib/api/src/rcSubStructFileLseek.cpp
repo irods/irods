@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See subStructFileLseek.h for a description of this API call.*/
-
 #include "subStructFileLseek.hpp"
 
+/**
+ * \fn rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp, fileLseekOut_t **subStructFileLseekOut )
+ *
+ * \brief Seek within a subfile of a structured file object.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] subStructFileLseekInp
+ * \param[out] subStructFileLseekOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
                       fileLseekOut_t **subStructFileLseekOut ) {

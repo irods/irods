@@ -1,5 +1,5 @@
 /**
- * @file        icatAdminMS.c
+ * @file        icatAdminMS.cpp
  *
  */
 
@@ -21,8 +21,6 @@
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  2008 or before
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -87,8 +85,6 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  2008 or before
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -164,8 +160,6 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  2008 or before
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -245,8 +239,6 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  2008 or before
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -304,8 +296,6 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  2008
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -369,8 +359,6 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  October 2008
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -420,8 +408,6 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  October 2008
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
@@ -473,8 +459,6 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  *
  * \since pre-2.1
  *
- * \author  Wayne Schroeder
- * \date  March 2009
  *
  * \note Should not be used outside of the rules defined in core.irb.
  * Once set STRICT, strict mode remains in force (users can't call it in
@@ -501,7 +485,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * \sa none
  **/
 int
-msiAclPolicy( msParam_t *msParam, ruleExecInfo_t* ) {
+msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *rei ) {
     char *inputArg;
 
     std::string strict = "off";
@@ -542,8 +526,6 @@ msiAclPolicy( msParam_t *msParam, ruleExecInfo_t* ) {
  *
  * \since 3.0.x
  *
- * \author  Antoine de Torcy
- * \date    2011-07-07
  *
  *
  * \note  This microservice sets a disk usage quota for a given user or group.

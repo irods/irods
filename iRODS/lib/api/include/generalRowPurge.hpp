@@ -1,11 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* generalRowPurge.h
-
-   This client/server calls is used to purge rows from certain
-   special-purpose tables.  See the rs file for the current list.
-   Admin only.  Also see generalRowInsert.
- */
 
 #ifndef GENERAL_ROW_PURGE_HPP
 #define GENERAL_ROW_PURGE_HPP

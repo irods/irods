@@ -100,7 +100,7 @@ void
 usage() {
 
     char *msgs[] = {
-        "Usage : itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
+        "Usage: itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
         " ",
         "Reduce the number of replicas of a dataObject in iRODS by deleting some replicas.",
         "Nothing will be done if this is less than or equal to numCopies. The -n and",

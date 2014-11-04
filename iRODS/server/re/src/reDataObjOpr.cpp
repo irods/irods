@@ -1,5 +1,5 @@
 /**
- * @file  reDataObjOpr.c
+ * @file  reDataObjOpr.cpp
  *
  */
 
@@ -22,12 +22,10 @@
  *
  * \brief Creates a data object in the iCAT.
  *
- * \module core
+ * \ingroup msi_lowlevel
  *
  * \since 2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -137,8 +135,6 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note  Can be called by client through irule
  *
@@ -246,8 +242,6 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note  Can be called by client through irule
  *
@@ -335,8 +329,6 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note  Can be called by client through irule
  *
@@ -497,8 +489,6 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note  Can be called by client through irule
  *
@@ -607,8 +597,6 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note Can be called by client through irule
  *
@@ -753,8 +741,6 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author    Mike Wan
- * \date      2007
  *
  * \note  Can be called by client through irule
  *
@@ -864,8 +850,6 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \note  Can be called by client through irule
  *
@@ -1006,8 +990,6 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-02-12
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1148,8 +1130,6 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-02-12
  *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
@@ -1307,8 +1287,6 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-02-12
  *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
@@ -1440,136 +1418,6 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
 }
 
 /**
- * \fn msiDataObjGetWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
- * msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief This microservice requests the client to call a rcDataObjGet API
- *   as part of a workflow execution, with options.
- *
- * \deprecated Since 2.2, #msiDataObjGet can take a parameter with key-values format which make this microservice obsolete.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author  Michael Wan, modified by Romain GUINOT
- * \date    2007-02-12
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection. Also, it should never
- *  be called through delayExec since it requires client interaction.
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
- * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the client's local file path.
- * \param[in] srcrescParam - Optional - a STR_MS_T which specifies the source resource.
- * \param[out] outParam - a INT_MS_T containing the status.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 upon success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
-                          msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t *myDataObjInp = NULL;
-    msParamArray_t *myMsParamArray;
-
-    RE_TEST_MACRO( "    Calling msiDataObjGetWithOptions" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiDataObjGetWithOptions: input rei or rsComm is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    rsComm = rei->rsComm;
-
-    /* parse inpParam1 */
-    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
-    rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
-                                         &myDataObjInp, 1 );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjGetWithOptions: input inpParam1 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
-                                      LOCAL_PATH_KW );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjGetWithOptions: input inpParam2 error. status = %d",
-                            rei->status );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-    rei->status = parseMspForCondInp( srcrescParam, &dataObjInp->condInput,
-                                      RESC_NAME_KW );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjGetWithOptions: input srcrescParam error. status = %d",
-                            rei->status );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-    myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
-    memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
-
-    rei->status = addMsParam( myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
-                              ( void * ) dataObjInp, NULL );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjGetWithOptions: addMsParam error. status = %d",
-                            rei->status );
-        clearMsParamArray( myMsParamArray, 0 );
-        free( myMsParamArray );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-    /* tell the client to do the get */
-    rei->status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
-
-    if ( rei->status >= 0 ) {
-        fillIntInMsParam( outParam, rei->status );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjGetWithOptions: rsDataObjGet failed, status = %d",
-                            rei->status );
-    }
-
-    return rei->status;
-}
-
-/**
 * \fn msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice calls rsDataObjChksum to chksum the iput data object as part of a workflow execution.
@@ -1578,8 +1426,6 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1692,8 +1538,6 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1808,8 +1652,6 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1910,8 +1752,6 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2019,8 +1859,6 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2106,8 +1944,6 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2206,208 +2042,6 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
     return rei->status;
 }
 
-
-/**
- * \fn msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
- *  msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief This microservice iterates through a collection and calls
- *  rsDataObjRepl to recursively replicate the collection
- *  as part of a workflow execution.
- *
- * \deprecated The new microservice for replicating a collection is #msiCollRepl.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author  Sifang Lu
- * \date    2007-10-01
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] coll - Required - A CollInp_MS_T or a STR_MS_T which would be taken
- *               as destination collection path.
- * \param[in] destRescName - A STR_MS_T destination resource name.
- * \param[in] options - A STR_MS_T - a group of options in a string delimited by '%%'.
- *               If the string is empty ("\0") or null ("NULL") it will not
- *               be used.
- *               The options can be the following:
- *              \li "all"(ALL_KW)
- *              \li "irodsAdmin" (ADMIN_KW).
- *              \li "backupMode" if specified, it will try to use 'backup mode'
- *                to the destination resource. Means if a good copy already
- *                exists in destination resource, it will not throw an error
- * \param[out] outParam - an INT_MS_T containing the status.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre
- * \post
- * \sa
-**/
-int
-msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
-             msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    collInp_t collInp, *myCollInp;
-    int i, continueInx, status;
-    transferStat_t *transStat = NULL;
-    strArray_t optArray;
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    dataObjInp_t dataObjInp;
-
-    RE_TEST_MACRO( "    Calling msiReplColl" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiReplColl: input rei or rsComm is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    rsComm = rei->rsComm;
-
-    /* parse inpParam1: coll */
-    rei->status = parseMspForCollInp( coll, &collInp,
-                                      &myCollInp, 0 );
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiReplColl: input inpParam1 error. status = %d", rei->status );
-        return rei->status;
-    }
-
-    /* parse inpParam2: destRescName, and assign the destination
-       resource to dataobjinp */
-    memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
-    rei->status = parseMspForCondInp( destRescName,
-                                      &( &dataObjInp )->condInput, DEST_RESC_NAME_KW );
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiReplColl: input inpParam2 error. status = %d", rei->status );
-        return rei->status;
-    }
-
-    /* parse inpParam3: options, and assign the then to conditional
-       keywords */
-    if ( ( strlen( ( char* )options->inOutStruct ) > 0 ) &&
-            ( 0 != strcmp( ( char* )options->inOutStruct, "null" ) ) ) {
-        memset( &optArray, 0, sizeof( optArray ) );
-        status = parseMultiStr( ( char * )options->inOutStruct, &optArray );
-        if ( status <= 0 ) {
-            rodsLog( LOG_ERROR,
-                     "msiReplColl: Could not parse options string '%s'",
-                     options->inOutStruct );
-        }
-        for ( i = 0; i < optArray.len; i++ ) {
-            char *option;
-            option = &optArray.value[i * optArray.size];
-            if ( strcmp( option, ALL_KW ) &&
-                    strcmp( option, ADMIN_KW ) &&
-                    strcmp( option, "backupMode" )
-               ) {
-                rodsLog( LOG_ERROR, "msiReplColl: invalid option: '%s'", option );
-                continue;
-            }
-            if ( strcmp( option, "backupMode" ) == 0 )
-                addKeyVal( &( dataObjInp.condInput ), BACKUP_RESC_NAME_KW,
-                           ( char * )destRescName->inOutStruct );
-            else {
-                addKeyVal( &( dataObjInp.condInput ), option, "" );
-            }
-        }
-    }
-
-    /* iterate through all files */
-    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    status = rsQueryDataObjInCollReCur( rsComm, myCollInp->collName,
-                                        &genQueryInp, &genQueryOut, NULL, 1 );
-    if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiReplColl: msiReplColl error for %s, stat=%d",
-                            myCollInp->collName, status );
-        rei->status = status;
-        return rei->status;
-    }
-    while ( rei->status >= 0 ) {
-        sqlResult_t *subColl, *dataObj;
-        /* get sub coll paths in the batch */
-        if ( ( subColl = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
-                == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "msiReplColl: msiReplColl for COL_COLL_NAME failed" );
-            rei->status = UNMATCHED_KEY_OR_INDEX;
-            return rei->status;
-        }
-        /* get data names in the batch */
-        if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
-                == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "msiReplColl: msiReplColl for COL_DATA_NAME failed" );
-            rei->status = UNMATCHED_KEY_OR_INDEX;
-            return rei->status;
-        }
-
-        for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-            char *tmpSubColl, *tmpDataName;
-
-            tmpSubColl = &subColl->value[subColl->len * i];
-            tmpDataName = &dataObj->value[dataObj->len * i];
-            snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", tmpSubColl, tmpDataName );
-
-            // =-=-=-=-=-=-=-
-            // necessary to clear these as an incoming resc hier will be used
-            // rather than querying for a new one during the repl
-            rmKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW );
-            rmKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW );
-
-            rei->status = rsDataObjRepl( rsComm, &dataObjInp, &transStat );
-            if ( rei->status < 0 ) {
-                rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                                    "msiReplColl: rsDataObjRepl failed %s, status = %d",
-                                    ( &dataObjInp )->objPath,
-                                    rei->status );
-            }
-            if ( transStat != NULL ) {
-                free( transStat );
-            }
-        }
-
-        continueInx = genQueryOut->continueInx;
-        freeGenQueryOut( &genQueryOut );
-        if ( continueInx > 0 ) {
-            /* More to come */
-            genQueryInp.continueInx = continueInx;
-            rei->status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-        }
-        else {
-            break;
-        }
-    }
-
-    clearKeyVal( &dataObjInp.condInput );
-
-    if ( rei->status >= 0 ) {
-        fillIntInMsParam( outParam, rei->status );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "dataObjInp: msiReplColl failed (should have catched earlier) %s, status = %d",
-                            ( &dataObjInp )->objPath,
-                            rei->status );
-    }
-    return rei->status;
-}
-
 /**
  * \fn msiPhyPathReg (msParam_t *inpParam1, msParam_t *inpParam2,
  * msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
@@ -2420,8 +2054,6 @@ msiReplColl( msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2529,8 +2161,6 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-04-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2606,8 +2236,6 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-02-12
  *
  * \note For now, this microservice should only be used for IRODS_TO_IRODS
  * mode because of the logistic difficulty with the microservice getting the
@@ -2769,8 +2397,6 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since 2.4
  *
- * \author  Michael Wan
- * \date    2010-04-27
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -2969,8 +2595,6 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  *
  * \since pre-2.1
  *
- * \author  Michael Wan
- * \date    2007-05-08
  *
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
@@ -3088,8 +2712,6 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-08-19
  *
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
@@ -3211,375 +2833,6 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
 }
 
 /**
- * \fn msiDataObjPutWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
- * msParam_t *inpParam3,msParam_t *inpOverwriteParam,
- * msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief This microservice requests the client to call a rcDataObjPut API
- *   as part of a workflow execution, with options.
- *
- * \deprecated Since 2.2, #msiDataObjPut can take a parameter with key-values format which make this microservice obsolete.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author  Romain Guinot
- * \date    2008
- *
- * \note  This microservice requests the client to call a rcDataObjPut API
- *   as part of a workflow execution, with options.
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inpParam1 - a DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
- * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
- * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the client's local file path.
- * \param[in] inpOverwriteParam - Optional - a STR_MS_T which specifies if the put
- *      should do an overwrite if content already exists in the resource.
- *      To trigger an overwrite, "forceFlag" keyword is expected
- * \param[in] inpAllCopiesParam - Optional - a STR_MS_T which specifies if that
- *        in case of an overwrite,the operation should overwrite all existing copies
- * \param[out] outParam - a INT_MS_T containing the status.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
-                          msParam_t *inpParam3, msParam_t *inpOverwriteParam,
-                          msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    dataObjInp_t *myDataObjInp = NULL;
-
-    RE_TEST_MACRO( "    Calling msiDataObjPut" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiDataObjPut: input rei or rsComm is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    rsComm_t * rsComm = rei->rsComm;
-
-    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
-    /* parse inpParam1 */
-    rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
-                                         &myDataObjInp, 1 );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPut: input inpParam1 error. status = %d", rei->status );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-    rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
-                                      DEST_RESC_NAME_KW );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPut: input inpParam2 error. status = %d", rei->status );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-
-    rei->status = parseMspForCondInp( inpParam3, &dataObjInp->condInput,
-                                      LOCAL_PATH_KW );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPut: input inpParam3 error. status = %d", rei->status );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-
-        return rei->status;
-    }
-
-    if ( inpOverwriteParam != NULL &&
-            strcmp( ( char* )inpOverwriteParam->inOutStruct, FORCE_FLAG_KW ) == 0 )
-        rei->status = parseMspForCondInp( inpOverwriteParam,
-                                          &dataObjInp->condInput, FORCE_FLAG_KW );
-
-    if ( inpAllCopiesParam != NULL &&
-            strcmp( ( char* )inpAllCopiesParam->inOutStruct, ALL_KW ) == 0 )
-        rei->status = parseMspForCondInp( inpAllCopiesParam,
-                                          &dataObjInp->condInput, ALL_KW );
-
-    msParamArray_t * myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
-    memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
-
-    rei->status = addMsParam( myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
-                              ( void * ) dataObjInp, NULL );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPut: addMsParam error. status = %d", rei->status );
-        clearMsParamArray( myMsParamArray, 0 );
-        free( myMsParamArray );
-        clearDataObjInp( dataObjInp );
-        free( dataObjInp );
-        return rei->status;
-    }
-
-    /* tell the client to do the put */
-    rei->status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
-
-    if ( rei->status >= 0 ) {
-        fillIntInMsParam( outParam, rei->status );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPut: rsDataObjPut failed for %s, status = %d",
-                            dataObjInp->objPath,
-                            rei->status );
-    }
-
-    return rei->status;
-}
-
-/**
- * \fn msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
- *    msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief This microservice is the same as msiDataObjRepl, but with more input options.
- *
- * \deprecated Since 2.2, #msiDataObjRepl can take a parameter with key-values format which make this microservice obsolete.
- *
- * \module core
- *
- * \since 2.1
- *
- * \author  Thomas Ledoux
- * \date    2009-03-24
- *
- * \note  Can be called by client through irule
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
- * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
- * \param[in] inpParam3 - Optional - a STR_MS_T which specifies an additional
- *     param like all (ALL_KW), irodsAdmin (ADMIN_KW)
- * \param[out] outParam - a INT_MS_T for the status.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiDataObjReplWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
-                           msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    transferStat_t *transStat = NULL;
-
-    RE_TEST_MACRO( " Calling msiDataObjReplWithOptions" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiDataObjReplWithOptions: input rei or rsComm is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    rsComm = rei->rsComm;
-
-    /* parse inpParam1 */
-    rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
-                                         &myDataObjInp, 0 );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjReplWithOptions: input inpParam1 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
-                                      DEST_RESC_NAME_KW );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjReplWithOptions: input inpParam2 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    if ( ( rei->status = parseMspForCondKw( inpParam3, &myDataObjInp->condInput ) )
-            < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjReplWithOptions: input inpParam3 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    rei->status = rsDataObjRepl( rsComm, myDataObjInp, &transStat );
-
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
-    }
-
-    if ( transStat != NULL ) {
-        free( transStat );
-    }
-
-    if ( rei->status >= 0 ) {
-        fillIntInMsParam( outParam, rei->status );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjReplWithOptions: rsDataObjRepl failed %s, status = %d",
-                            myDataObjInp->objPath, rei->status );
-    }
-
-    return rei->status;
-}
-
-/**
- * \fn msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
- *  msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
- *
- * \brief This microservice calls rsDataObjChksum to checksum the iput data
- *    object as part of a workflow execution, with options.
- *
- * \deprecated Since 2.2, #msiDataObjChksum can take a parameter with key-values format which make this microservice obsolete.
- *
- * \module core
- *
- * \since 2.1
- *
- * \author  Thomas Ledoux
- * \date    2009-03-24
- *
- * \note  Can be called by client through irule
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
- * \param[in] inpParam2 - Optional - a STR_MS_T which specifies "verifyChksum"
- *    (VERIFY_CHKSUM_KW) or "forceChksum"(FORCE_CHKSUM_KW).
- * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the "ChksumAll"
- *   (CHKSUM_ALL_KW) or a INT which gives the replica number.
- * \param[out] outParam - a STR_MS_T containing the chksum value.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
-                             msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    char *chksum = NULL;
-
-    RE_TEST_MACRO( " Calling msiDataObjChksumWithOptions" )
-
-    if ( rei == NULL || rei->rsComm == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "msiDataObjChksumRepl: input rei or rsComm is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    rsComm = rei->rsComm;
-
-    /* parse inpParam1 */
-    rei->status = parseMspForDataObjInp( inpParam1, &dataObjInp,
-                                         &myDataObjInp, 1 );
-
-    if ( rei->status < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjChksumWithOptions: input inpParam1 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    if ( ( rei->status = parseMspForCondKw( inpParam2,
-                                            &myDataObjInp->condInput ) ) < 0 ) {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjChksumWithOptions: input inpParam2 error. status = %d",
-                            rei->status );
-        return rei->status;
-    }
-
-    if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 ) {
-        if ( strcmp( ( char * ) inpParam3->inOutStruct, CHKSUM_ALL_KW ) == 0 ) {
-            if ( ( rei->status = parseMspForCondKw( inpParam3,
-                                                    &myDataObjInp->condInput ) ) < 0 ) {
-                rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                                    "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
-                                    rei->status );
-                return rei->status;
-            }
-        }
-        else {
-            /* replica number */
-            if ( ( rei->status = parseMspForCondInp( inpParam3,
-                                 &myDataObjInp->condInput, REPL_NUM_KW ) ) < 0 ) {
-                rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                                    "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
-                                    rei->status );
-                return rei->status;
-            }
-        }
-    }
-    rei->status = rsDataObjChksum( rsComm, myDataObjInp, &chksum );
-
-    if ( myDataObjInp == &dataObjInp ) {
-        clearKeyVal( &myDataObjInp->condInput );
-    }
-
-    if ( rei->status >= 0 ) {
-        fillStrInMsParam( outParam, chksum );
-        free( chksum );
-    }
-    else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjChksumWithOptions: rsDataObjChksum failed for %s,stat=%d",
-                            myDataObjInp->objPath, rei->status );
-    }
-
-    return rei->status;
-}
-
-/**
  * \fn msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief Extracts a tar object file into a target collection
@@ -3588,8 +2841,6 @@ msiDataObjChksumWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since 2.3
  *
- * \author  Jean-Yves Nief
- * \date    2009-06-15
  *
  * \note  This microservice calls rsStructFileExtAndReg to extract a tar
  *        file (inpParam1) into a target collection (inpParam2).  The content of
@@ -3733,8 +2984,6 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *
  * \since 2.3
  *
- * \author  Jean-Yves Nief
- * \date    2009-06-15
  *
  * \note  This microservice calls rsStructFileBundle to create a tar file
  *        (inpParam1) from a target collection (inpParam2). The content of the
@@ -3851,8 +3100,6 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *
  * \since 2.3
  *
- * \author  Jean-Yves Nief
- * \date    2009-06-15
  *
  * \note  This microservice calls rsPhyBundleColl to bundle files in a
  *        collection into a number of tar files to make it more efficient to

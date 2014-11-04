@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See bunSubMkdir.h for a description of this API call.*/
-
 #include "subStructFileMkdir.hpp"
 
+/**
+ * \fn rcSubStructFileMkdir( rcComm_t *conn, subFile_t *subFile )
+ *
+ * \brief Make a subdirectory within a structured file object.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] subFile
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSubStructFileMkdir( rcComm_t *conn, subFile_t *subFile ) {
     int status;

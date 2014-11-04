@@ -109,10 +109,10 @@ usage() {
         "Usage: iget [-fIKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
         "[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]", // JMC - backport 4537
         "[--rlock]  srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-        "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+        "Usage: iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
         "[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]", // JMC - backport 4537
         "[--rlock]  srcDataObj|srcCollection",
-        "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+        "Usage: iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
         "[-R resource] [--lfrestart lfRestartFile]  [--retries count] [--purgec] ", // JMC - backport 4537
         "[--rlock]  srcDataObj ... -",
         "Get data-objects or collections from irods space, either to the specified",

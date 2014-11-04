@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* authCheck.h
+/* authCheck.hpp
  */
 
 #ifndef AUTH_CHECK_HPP
 #define AUTH_CHECK_HPP
 
-/* This is a Metadata API call but is is only used server to server */
+/* This is a Metadata API call but is only used server to server */
 
 /* This is used by one server to connect to the ICAT-enabled server to
    verify a user's login */

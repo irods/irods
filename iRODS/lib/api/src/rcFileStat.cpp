@@ -1,10 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileStat.h for a description of this API call.*/
-
 #include "fileStat.hpp"
 
+/**
+ * \fn rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut )
+ *
+ * \brief Stat a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileStatInp
+ * \param[out] fileStatOut - the stat output
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp,
             rodsStat_t **fileStatOut ) {

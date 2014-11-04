@@ -1,5 +1,5 @@
 /**
- * @file  rcBulkDataObjPut.c
+ * @file  rcBulkDataObjPut.cpp
  *
  */
 
@@ -19,12 +19,10 @@
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -128,7 +126,8 @@
  *            The value is the md5 checksum value of the local file.
  *    \n VERIFY_CHKSUM_KW - verify and register the target checksum value
  *            after the copy. The value is the md5 checksum value of the
- ^            local file.
+ *            local file.
+ * \param[in] bulkOprInpBBuf - concatenated contents of all input files
  *
  * \return integer
  * \retval 0 on success
@@ -136,7 +135,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

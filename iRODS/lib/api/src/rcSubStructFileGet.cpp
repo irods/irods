@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See subStructFileGet.h for a description of this API call.*/
-
 #include "subStructFileGet.hpp"
 
+/**
+ * \fn rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile, bytesBuf_t *subFileGetOutBBuf )
+ *
+ * \brief Get a subfile of a structured file object.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] subFile
+ * \param[out] subFileGetOutBBuf
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile,
                     bytesBuf_t *subFileGetOutBBuf ) {

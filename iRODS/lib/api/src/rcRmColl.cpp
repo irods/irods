@@ -1,5 +1,5 @@
 /**
- * @file  rcRmColl.c
+ * @file  rcRmColl.cpp
  *
  */
 
@@ -27,12 +27,10 @@ _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup collection_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -73,7 +71,6 @@ _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

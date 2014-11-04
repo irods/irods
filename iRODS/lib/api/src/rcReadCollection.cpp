@@ -1,5 +1,5 @@
 /**
- * @file  rcReadCollection.c
+ * @file  rcReadCollection.cpp
  *
  */
 
@@ -17,12 +17,10 @@
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup collection_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -65,7 +63,6 @@
  * \sa rclOpenCollection/rclReadCollection/rclCloseCollection. The query
  * for these functions is done by the client and the query results are
  * cached locally making it more efficient.
- * \bug  no known bugs
 **/
 
 int

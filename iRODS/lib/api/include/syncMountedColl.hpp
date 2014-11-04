@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* syncMountedColl.h
+/* syncMountedColl.hPP
  */
 
 #ifndef SYNC_MOUNTED_COLL_HPP
@@ -45,19 +45,6 @@ extern "C" {
 /* prototype for the client call */
 int
 rcSyncMountedColl( rcComm_t *conn, dataObjInp_t *syncMountedCollInp );
-
-/* rcSyncMountedColl - Sync the mounted structured file with the cache.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
- *	objPath - the path of the Mounted collection.
- *      oprType - PURGE_STRUCT_FILE_CACHE - purge the cache after the sync
- *                DELETE_STRUCT_FILE - delete the structured file and
- *		  the cache
- *
- * OutPut -
- *   int status - The status of the operation.
- */
 
 #ifdef __cplusplus
 }

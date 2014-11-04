@@ -52,7 +52,7 @@ FC03 : Resource
    R_RSRC_NET         - internet address of the resource host
    R_RSRC_DEF_PATH    - default path used by the resouce 
    R_FREESPACE        - free space available on resource
-   R_RSRC_INFO        - infomation. This is a tagged list with 
+   R_RSRC_INFO        - information. This is a tagged list with
 			elements of the form:
                         <MAX_OBJ_SIZE>2GB</MAX_OBJ_SIZE>
 			<MIN_LATENCY>1msec</MIN_LATENCY>...

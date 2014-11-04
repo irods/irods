@@ -12,9 +12,7 @@ namespace irods {
     typedef error( *network_maintenance_operation )( plugin_property_map& );
 // =-=-=-=-=-=-=-
     /**
-     * \class
      * \author Jason M. Coposky
-     * \date   July 2013
      * \brief
      *
      **/

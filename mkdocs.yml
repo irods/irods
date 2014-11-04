@@ -1,0 +1,18 @@
+site_name: iRODS
+repo_url: https://github.com/irods/irods
+site_description: Control Your Data
+site_author: iRODS Consortium
+site_dir: mkdocs/html
+theme: readthedocs
+theme: simplex
+
+markdown_extensions:
+ - admonition
+ - attr_list
+ - def_list
+
+#pages:
+# - [index.md, Home]
+# - [manual.md, The Manual]
+# - [developers.md, Some Developers and Stuff]
+# - [Rule_Language.md, ROOOOLS]

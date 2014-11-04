@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See chkObjPermAndStat.h for a description of this API call.*/
-
 #include "chkObjPermAndStat.hpp"
 
+/**
+ * \fn rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp )
+ *
+ * \brief Check data object permissions and stat the file.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] chkObjPermAndStatInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp ) {
     int status;

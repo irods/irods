@@ -1,20 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* modMetadata.h
- */
 
 #ifndef MOD_AVU_METADATA_HPP
 #define MOD_AVU_METADATA_HPP
-
-/* This is a metadata type API call */
-
-/*
-   This call performs various operations on the Attribute-Value-Units
-   (AVU) triplets type of metadata.  The Units are optional, so these
-   are frequently Attribute-Value pairs.  ATUs are user-defined
-   metadata items.  The imeta command makes extensive use of this and
-   the genQuery call.
-*/
 
 #include "rods.hpp"
 #include "rcMisc.hpp"

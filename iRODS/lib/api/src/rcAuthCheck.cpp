@@ -1,9 +1,35 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See authCheck.h for a description of this API call.*/
 
 #include "authCheck.hpp"
+
+/**
+ * \fn rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp, authCheckOut_t **authCheckOut )
+ *
+ * \brief Connect to the ICAT-enabled server to verify a user's login
+ *
+ * \user client
+ *
+ * \ingroup authentication
+ *
+ * \since 1.0
+ *
+ *
+ * \remark This is a Metadata API call, is only used server to server
+ *
+ * \note none
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] authCheckInp
+ * \param[in] authCheckOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 
 int
 rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,

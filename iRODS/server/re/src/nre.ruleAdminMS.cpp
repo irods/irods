@@ -1,5 +1,5 @@
 /**
- * @file ruleAdminMS.c
+ * @file nre.ruleAdminMS.cpp
  *
  */
 
@@ -17,7 +17,7 @@
 
 
 /**
- * \fn msiAdmShowDVM (msParam_t *bufParam, ruleExecInfo_t *rei)
+ * \fn msiAdmShowDVM (msParam_t *bufP, ruleExecInfo_t *rei)
  *
  * \brief  This is a microservice that reads the data-value-mapping data structure
  * in the Rule Engine and pretty-prints that structure to the stdout buffer.
@@ -26,8 +26,6 @@
  *
  * \since pre-2.1
  *
- * \author   Arcot Rajasekar
- * \date     2007-08
  *
  * \note This microservice uses a dummy parameter.
  *
@@ -36,7 +34,7 @@
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] bufParam - is a msParam (not used for anything, a dummy parameter)
+ * \param[in] bufP - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -53,7 +51,7 @@
  * \post none
  * \sa msiAdmShowFNM
 **/
-int msiAdmShowDVM( msParam_t*, ruleExecInfo_t *rei ) {
+int msiAdmShowDVM( msParam_t *bufP, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- DVM -----------------------------\n", rei );
@@ -82,7 +80,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
 }
 
 /**
- * \fn msiAdmShowFNM (msParam_t *bufParam, ruleExecInfo_t *rei)
+ * \fn msiAdmShowFNM (msParam_t *bufP, ruleExecInfo_t *rei)
  *
  * \brief  This is a microservice that reads the function-name-mapping data structure
  * in the Rule Engine and pretty-prints that structure to the stdout buffer.
@@ -91,8 +89,6 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  *
  * \since pre-2.1
  *
- * \author   Arcot Rajasekar
- * \date     2007-08
  *
  * \note This microservice has a dummy parameter.
  *
@@ -101,7 +97,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] bufParam - is a msParam (not used for anything, a dummy parameter)
+ * \param[in] bufP - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -118,7 +114,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  * \post none
  * \sa msiAdmShowDVM
 **/
-int msiAdmShowFNM( msParam_t*, ruleExecInfo_t *rei ) {
+int msiAdmShowFNM( msParam_t *bufP, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- FNM -----------------------------\n", rei );
@@ -146,86 +142,6 @@ int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx )
 
 }
 
-/**
- * \fn msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
- *
- * \brief  This is a microservice that reads the contents of a rule structure and writes them as
- * a new rule base set by populating the core rule tables of the iCAT.
- * It also maintains versioning of the rule base in the iCAT by giving an older version number to the existing base set of rules.
- *
- * \module core
- *
- * \since 2.5
- *
- * \author  Arcot Rajasekar
- * \date    2010
- *
- * \note This microservice requires iRODS administration privileges.
- *
- * \note Adds rules to the iCAT rule base.
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inIrbBaseNameParam - a msParam of type STR_MS_T, which is name of the base that is being added.
- * \param[in] inCoreRuleStruct - a msParam of type RuleStruct_MS_T containing the rules.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified icat rule-tables get modified
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa msiAdmReadRulesFromFileIntoStruct, msiGetRulesFromDBIntoStruct, msiAdmWriteRulesFromStructIntoFile
-**/
-
-
-
-/**
- * \fn msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam,
- *                  msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
- *
- * \brief  This is a microservice that queries the iCAT for rules with a given base name and
- *     version number and populates a rule structure with those rules.
- *
- * \module core
- *
- * \since 2.5
- *
- * \author  Arcot Rajasekar
- * \date    2010
- *
- * \note This microservice requires iRODS administration privileges.
- *
- * \note Queries rules from the iCAT rule base.
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] inIrbBaseNameParam - a msParam of type STR_MS_T, which is the name of the base that is being queried.
- * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
- * \param[out] outCoreRuleStruct - a msParam of type RuleStruct_MS_T (can be NULL in which case it is allocated)
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa msiAdmReadRulesFromFileIntoStruct, msiAdmInsertRulesFromStructIntoDB, msiAdmWriteRulesFromStructIntoFile
-**/
 
 /**
  * \fn msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
@@ -236,8 +152,6 @@ int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx )
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -316,8 +230,6 @@ int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -380,8 +292,6 @@ int msiAdmInsertDVMapsFromStructIntoDB( msParam_t *inDvmBaseNameParam, msParam_t
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -463,8 +373,6 @@ msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersio
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -526,8 +434,6 @@ msiAdmWriteDVMapsFromStructIntoFile( msParam_t *inDvmFileNameParam, msParam_t *i
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -611,8 +517,6 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -675,8 +579,6 @@ int msiAdmInsertFNMapsFromStructIntoDB( msParam_t *inFnmBaseNameParam, msParam_t
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -759,8 +661,6 @@ msiGetFNMapsFromDBIntoStruct( msParam_t *inFnmBaseNameParam, msParam_t *inVersio
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -822,8 +722,6 @@ msiAdmWriteFNMapsFromStructIntoFile( msParam_t *inFnmFileNameParam, msParam_t *i
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -903,8 +801,6 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -931,7 +827,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  * \post none
  * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
 **/
-int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
+int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
 
 {
 
@@ -966,8 +862,6 @@ int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t *inCoreMsrvcStruct
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *
@@ -1052,8 +946,6 @@ msiGetMSrvcsFromDBIntoStruct( msParam_t *inStatus, msParam_t *outCoreMsrvcStruct
  *
  * \since after 2.5
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \note This microservice requires iRODS administration privileges.
  *

@@ -1,4 +1,4 @@
-# iRODS
+# iRODS {#mainpage}
 
 [![Build Status](https://travis-ci.org/irods/irods.svg?branch=master)](https://travis-ci.org/irods/irods) [![Coverity Scan Build Status](https://scan.coverity.com/projects/2605/badge.svg)](https://scan.coverity.com/projects/2605) [![Issue Stats](http://issuestats.com/github/irods/irods/badge/pr?style=flat)](http://issuestats.com/github/irods/irods) [![Issue Stats](http://issuestats.com/github/irods/irods/badge/issue?style=flat)](http://issuestats.com/github/irods/irods)
 
@@ -13,7 +13,7 @@ The development infrastructure supports exhaustive testing on supported platform
 - RENCI: http://www.renci.org
 
 
-## Benefits of iRODS:
+## Benefits
 
 - iRODS enables **data discovery** using a metadata catalog that describes every file, every directory, and every storage resource in the iRODS Zone.
 - iRODS automates **data workflows**, with a rule engine that permits any action to be initiated by any trigger on any server or client in the Zone.
@@ -31,3 +31,21 @@ https://irods.org/about/history/
 ## License
 
 iRODS is released under a 3-clause BSD License.
+
+## iCommands
+
+ <strong><a href="icommands/index.html">iCommands</a></strong> - The client command line interface to iRODS.  This set of ~50 iCommands exercise the full client API.
+
+## Microservices
+
+@ref microservices - The microservices available to rule developers by default on a basic iRODS installation.  Other microservices can be made available as plugins and installed on a per-server basis.
+
+
+## Links to elsewhere...
+
+http://docs.irods.org
+
+ - http://irods.org
+ - http://github.com/irods
+ - http://twitter.com/irods
+

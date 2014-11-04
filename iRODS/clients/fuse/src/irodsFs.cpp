@@ -74,7 +74,7 @@ void usage();
 static void usage(const char *progname)
 {
     fprintf(stderr,
-            "usage: %s mountpoint [options]\n\n", progname);
+            "Usage: %s mountpoint [options]\n\n", progname);
     fprintf(stderr,
             "general options:\n"
             "    -o opt,[opt...]        mount options\n"
@@ -192,7 +192,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : irodsFs [-hd] [-o opt,[opt...]]",
+        "Usage: irodsFs [-hd] [-o opt,[opt...]]",
         "Single user iRODS/Fuse server",
         "Options are:",
         " -h        this help",

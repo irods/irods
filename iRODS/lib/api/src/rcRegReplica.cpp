@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See regReplica.h for a description of this API call.*/
-
 #include "regReplica.hpp"
 
+/**
+ * \fn rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp )
+ *
+ * \brief Register a replica.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] regReplicaInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     int status;

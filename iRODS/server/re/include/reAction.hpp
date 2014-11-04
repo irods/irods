@@ -141,14 +141,6 @@ int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* typeParam,
                                    ruleExecInfo_t *rei );
 
-int msiDataObjPutWithOptions( msParam_t *inpParam1,
-                              msParam_t *inpParam2,
-                              msParam_t *inpParam3,
-                              msParam_t *inpOverwriteParam,
-                              msParam_t *inpAllCopiesParam,
-                              msParam_t *outParam,
-                              ruleExecInfo_t *rei );
-
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei );
 
@@ -263,7 +255,6 @@ namespace irods {
         table_[ "msiDataObjTrim" ] = new irods::ms_table_entry( "msiDataObjTrim", 6, ( funcPtr ) msiDataObjTrim );
         table_[ "msiCollCreate" ] = new irods::ms_table_entry( "msiCollCreate", 3, ( funcPtr ) msiCollCreate );
         table_[ "msiRmColl" ] = new irods::ms_table_entry( "msiRmColl", 3, ( funcPtr ) msiRmColl );
-        table_[ "msiReplColl" ] = new irods::ms_table_entry( "msiReplColl", 4, ( funcPtr ) msiReplColl );
         table_[ "msiCollRepl" ] = new irods::ms_table_entry( "msiCollRepl", 3, ( funcPtr ) msiCollRepl );
         table_[ "msiPhyPathReg" ] = new irods::ms_table_entry( "msiPhyPathReg", 5, ( funcPtr ) msiPhyPathReg );
         table_[ "msiObjStat" ] = new irods::ms_table_entry( "msiObjStat", 2, ( funcPtr ) msiObjStat );
@@ -325,10 +316,6 @@ namespace irods {
         table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy", 1, ( funcPtr )msiAclPolicy );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, ( funcPtr )msiSetQuota );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, ( funcPtr ) msiRemoveKeyValuePairsFromObj );
-        table_[ "msiDataObjPutWithOptions" ] = new irods::ms_table_entry( "msiDataObjPutWithOptions", 6, ( funcPtr ) msiDataObjPutWithOptions );
-        table_[ "msiDataObjReplWithOptions" ] = new irods::ms_table_entry( "msiDataObjReplWithOptions", 4, ( funcPtr ) msiDataObjReplWithOptions );
-        table_[ "msiDataObjChksumWithOptions" ] = new irods::ms_table_entry( "msiDataObjChksumWithOptions", 4, ( funcPtr ) msiDataObjChksumWithOptions );
-        table_[ "msiDataObjGetWithOptions" ] = new irods::ms_table_entry( "msiDataObjGetWithOptions", 4, ( funcPtr ) msiDataObjGetWithOptions );
         table_[ "msiSetReServerNumProc" ] = new irods::ms_table_entry( "msiSetReServerNumProc", 1, ( funcPtr ) msiSetReServerNumProc );
         table_[ "msiGetStdoutInExecCmdOut" ] = new irods::ms_table_entry( "msiGetStdoutInExecCmdOut", 2, ( funcPtr ) msiGetStdoutInExecCmdOut );
         table_[ "msiGetStderrInExecCmdOut" ] = new irods::ms_table_entry( "msiGetStderrInExecCmdOut", 2, ( funcPtr ) msiGetStderrInExecCmdOut );

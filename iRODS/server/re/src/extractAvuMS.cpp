@@ -1,5 +1,5 @@
 /**
- * @file  extractAvuMS.c
+ * @file  extractAvuMS.cpp
  *
  */
 
@@ -29,11 +29,9 @@ extern char *__loc1;
  * \brief This microservice parses a buffer containing a template-style file
  *  and stores the tags in a tag structure.
  *
- * \author  Arcot Rajasekar
- * \date    2007-02-01
  *
  * \note  The template buffer should contain triplets of the form:
- *  <PRETAG>re1</PRETAG>kw<POSTTAG>re2</POSTTAG>.
+ *  \<PRETAG\>re1\</PRETAG\>kw\<POSTTAG\>re2\</POSTTAG\>.
  *  re1 identifies the pre-string and re2 identifies the post-string and
  *  any value between re1 and re2 in a metadata buffer can be
  *  associated with keyword kw.
@@ -176,11 +174,9 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2007-02-01
  *
  * \note This performs some regular expression matching. Given a regular expression as a tag-value 't', it identifies the
- * corresponding string in the match string with a string that matches a sub-string value: '<t>.*</t>'.
+ * corresponding string in the match string with a string that matches a sub-string value: '\<t\>.*\</t\>'.
  * The service is used for processing a tagged structure.
  *
  * \usage See clients/icommands/test/rules3.0/
@@ -205,7 +201,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
  * \sa none
 **/
 int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
-                                 msParam_t *outValueParam, ruleExecInfo_t* ) {
+                                 msParam_t *outValueParam, ruleExecInfo_t *rei ) {
 
 
     int j;
@@ -267,8 +263,6 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2007-02-01
  *
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
@@ -401,8 +395,6 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date   2007-02-01
  *
  * \note The object type is also needed:
  *  \li -d for data object
@@ -476,8 +468,6 @@ msiAssociateKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \since 3.1
  *
- * \author  Thomas Ledoux
- * \date   2012-01-25
  *
  * \note The object type is also needed:
  *  \li -d for data object
@@ -545,8 +535,6 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2007-02-01
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -608,8 +596,6 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
  * \brief This microservice removes with an object <key,value> p pairs
  *  from a given keyValPair_t structure.
  *
- * \author  Romain Guinot
- * \date    2008
  *
  * \note The object type is also needed:
  *  \li -d for data object

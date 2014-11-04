@@ -1,5 +1,5 @@
 /**
-* @file  rcSpecificQuery.c
+* @file  rcSpecificQuery.cpp
 *
 */
 /*** Copyright (c), The Regents of the University of California            ***
@@ -17,12 +17,10 @@
 *
 * \user client
 *
-* \category metadata operations
+* \ingroup metadata
 *
 * \since 2.5
 *
-* \author  Wayne Schroeder
-* \date    2011
 *
 * \remark none
 *
@@ -43,7 +41,6 @@
 * \pre none
 * \post none
 * \sa none
-* \bug  no known bugs
 **/
 
 int

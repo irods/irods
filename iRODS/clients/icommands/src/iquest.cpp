@@ -20,9 +20,9 @@ void usage();
 void
 usage() {
     char *msgs[] = {
-        "Usage : iquest [-hz] [--no-page] [ [hint] format]  selectConditionString ",
-        "Usage : iquest --sql 'pre-defined SQL string' [format] [arguments] ",
-        "Usage : iquest attrs",
+        "Usage: iquest [-hz] [--no-page] [ [hint] format]  selectConditionString ",
+        "Usage: iquest --sql 'pre-defined SQL string' [format] [arguments] ",
+        "Usage: iquest attrs",
         "Options are:",
         " -h  this help",
         " -z Zonename  the zone to query (default or invalid uses the local zone)",

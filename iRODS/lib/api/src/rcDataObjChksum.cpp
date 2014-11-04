@@ -1,5 +1,5 @@
 /**
- * @file  rcDataObjChksum.c
+ * @file  rcDataObjChksum.cpp
  *
  */
 
@@ -11,7 +11,7 @@
 #include "dataObjChksum.hpp"
 
 /**
- * \fn rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjInp,
+ * \fn rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjChksumInp,
  *       char **outChksum)
  *
  * \brief Compute the md5 checksum of a data object and register the checksum
@@ -19,12 +19,10 @@
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -43,7 +41,7 @@
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ * \param[in] dataObjChksumInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n VERIFY_CHKSUM_KW -  verify the checksum value in iCAT. If the
@@ -55,7 +53,7 @@
  *            This keyWd has no value.
  *    \n REPL_NUM_KW - The replica number of the replica to delete.
  *    \n RESC_NAME_KW - delete replica stored in this resource.
- * \param[out] \li char \b **outChksum - a string containing the md5 checksum
+ * \param[out] outChksum - a string containing the md5 checksum
  *             value.
  *
  * \return integer
@@ -64,7 +62,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

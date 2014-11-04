@@ -1,5 +1,8 @@
 *~
 tags
+doxygen/html
+mkdocs/html
+docs/icommands
 irods_external.tar.gz
 VERSION.json
 *.pyc

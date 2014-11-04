@@ -1,5 +1,5 @@
 /**
- * @file reNaraMetaData.c
+ * @file reNaraMetaData.cpp
  *
  */
 
@@ -17,8 +17,6 @@
  *
  * \since pre-2.1
  *
- * \author  DICE
- * \date    2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *

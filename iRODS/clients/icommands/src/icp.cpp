@@ -111,7 +111,7 @@ usage() {
     int i;
 
     char *msgs[] = {
-        "Usage : icp [-fkKPQrTvV] [-N numThreads] [-p physicalPath] [-R resource]",
+        "Usage: icp [-fkKPQrTvV] [-N numThreads] [-p physicalPath] [-R resource]",
         "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
         "icp copies an irods data-object (file) or collection (directory) to another",
         "data-object or collection.",

@@ -1,10 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileGet.h for a description of this API call.*/
-
 #include "fileGet.hpp"
 
+/**
+ * \fn rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf )
+ *
+ * \brief Get a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileGetInp
+ * \param[out] fileGetOutBBuf - the out buffer
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
            bytesBuf_t *fileGetOutBBuf ) {

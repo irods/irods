@@ -136,7 +136,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : irsync [-rahKsvV] [-N numThreads] [-R resource] [--link] [--age age_in_minutes]",
+        "Usage: irsync [-rahKsvV] [-N numThreads] [-R resource] [--link] [--age age_in_minutes]",
         "          sourceFile|sourceDirectory [....] targetFile|targetDirectory",
         " ",
         "Synchronize the data between a  local  copy  (local file  system)  and",

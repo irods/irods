@@ -1,8 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* sendXmsg.h
- *
- */
 
 #ifndef SEND_XMSG_HPP
 #define SEND_XMSG_HPP

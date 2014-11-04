@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileUnlink.h for a description of this API call.*/
-
 #include "fileUnlink.hpp"
 
+/**
+ * \fn rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp )
+ *
+ * \brief Unlink a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileUnlinkInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp ) {
     int status;

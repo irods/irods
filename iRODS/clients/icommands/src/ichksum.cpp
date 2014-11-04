@@ -97,7 +97,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ichksum [-harvV] [-K|f] [-n replNum] [-R resource] [--silent]",
+        "Usage: ichksum [-harvV] [-K|f] [-n replNum] [-R resource] [--silent]",
         "           dataObj|collection ... ",
         "Checksum one or more data-object or collection from iRODS space.",
         "Options are:",

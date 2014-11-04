@@ -1,5 +1,5 @@
 /**
-* @file  rcSimpleQuery.c
+* @file  rcSimpleQuery.cpp
 *
 */
 /*** Copyright (c), The Regents of the University of California            ***
@@ -15,12 +15,10 @@
 *
 * \user client
 *
-* \category metadata operations
+* \ingroup metadata
 *
 * \since 1.0
 *
-* \author  Wayne Schroeder
-* \date    2007
 *
 * \remark none
 *
@@ -33,7 +31,7 @@
 *
 * \param[in] conn - A rcComm_t connection handle to the server.
 * \param[in] simpleQueryInp - input sql or alias (must match definition on server), and arguments
-* \param[out] genQueryOut - the same returned structure as general-query.
+* \param[out] simpleQueryOut - the same returned structure as general-query.
 * \return integer
 * \retval 0 on success
 *
@@ -41,7 +39,6 @@
 * \pre none
 * \post none
 * \sa none
-* \bug  no known bugs
 **/
 
 int

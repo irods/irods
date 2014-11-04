@@ -1,10 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileGetFsFreeSpace.h for a description of this API call.*/
-
 #include "fileGetFsFreeSpace.hpp"
 
+/**
+ * \fn rcFileGetFsFreeSpace( rcComm_t *conn, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut )
+ *
+ * \brief Gets filesystem free space.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileGetFsFreeSpaceInp
+ * \param[out] fileGetFsFreeSpaceOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileGetFsFreeSpace( rcComm_t *conn,
                       fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,

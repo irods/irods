@@ -106,8 +106,8 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ils [-ArlLv] dataObj|collection ... ",
-        "Usage : ils --bundle [-r] dataObj|collection ... ",
+        "Usage: ils [-ArlLv] dataObj|collection ... ",
+        "Usage: ils --bundle [-r] dataObj|collection ... ",
         "Display data Objects and collections stored in irods.",
         "Options are:",
         " -A  ACL (access control list) and inheritance format",

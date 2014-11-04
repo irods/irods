@@ -92,7 +92,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ifsck [-rhK] srcPhysicalFile|srcPhysicalDirectory ... ",
+        "Usage: ifsck [-rhK] srcPhysicalFile|srcPhysicalDirectory ... ",
         "Check if a local data object or a local collection content is",
         "consistent in size (or optionally its checksum) with its",
         "registered size (and optionally its checksum) in iRODS.",

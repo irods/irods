@@ -1,5 +1,5 @@
 /**
- * @file  miscMS.c
+ * @file  miscMS.cpp
  *
  */
 
@@ -28,7 +28,6 @@
  * \since pre-2.1
  *
  * \author Arcot Rajasekar
- * \date    2008
  *
  * \note  Use this only internally as data object information has to be in rei.
  *
@@ -225,8 +224,6 @@ msitest3( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-04-04
  *
  * \usage See clients/icommands/test/rules3.0/
  *

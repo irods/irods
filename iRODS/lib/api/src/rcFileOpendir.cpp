@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileOpendir.h for a description of this API call.*/
-
 #include "fileOpendir.hpp"
 
+/**
+ * \fn rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp )
+ *
+ * \brief Open a directory.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileOpendirInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp ) {
     int status;

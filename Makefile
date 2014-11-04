@@ -6,7 +6,7 @@ MANUAL=irods-manual-$(IRODSVERSION).pdf
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm manual squeaky_clean clean libs plugins plugins-nodb plugins-db code-generation irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
+.PHONY : default all epm manual mkdocs squeaky_clean clean libs plugins plugins-nodb plugins-db code-generation irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
 
 default : external-build libs plugins irods
 
@@ -55,15 +55,25 @@ code-generation : external
 irods : libs
 	@$(MAKE) -C iRODS
 
-docs : epm manual doxygen
+docs : manual doxygen mkdocs
 
 manual :
+	@echo "Generating Manual..."
 	@sed -e 's,TEMPLATE_IRODSVERSION,$(IRODSVERSION),' manual.rst > manual.tmp
 	@rst2pdf manual.tmp -o $(MANUAL)
 	@rm -f manual.tmp
 
 doxygen :
-#	@$(MAKE) -C iRODS doc
+	@echo "Generating Doxygen..."
+	@../doxygen/bin/doxygen Doxyfile 1> /dev/null
+	@cp doxygen/doxy-boot.js doxygen/html
+	@cp doxygen/custom.css doxygen/html
+
+mkdocs :
+	@echo "Generating Mkdocs..."
+	@./docs/generate_icommands_md.sh
+	@mkdocs build --clean
+	@cp iRODS/images/* mkdocs/html/
 
 epm :
 	@$(MAKE) -C external epm
@@ -76,6 +86,9 @@ clean :
 	@$(MAKE) -C examples/microservices clean
 	@$(MAKE) -C examples/resources clean
 	@rm -f $(MANUAL)
+	@rm -rf doxygen/html
+	@rm -rf mkdocs/html
+	@rm -rf docs/icommands
 
 squeaky_clean : clean
 	@$(MAKE) -C external clean

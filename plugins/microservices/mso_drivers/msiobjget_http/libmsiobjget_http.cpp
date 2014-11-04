@@ -17,8 +17,6 @@
  *
  * \since 3.0
  *
- * \author  Arcot Rajasekar
- * \date    2011
  *
  * \usage See clients/icommands/test/rules3.0/
  *

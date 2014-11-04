@@ -687,8 +687,8 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
 void
 usage() {
     char *msgs[] = {
-        "Usage : irule [--test] [-v] rule inputParam outParamDesc",
-        "Usage : irule [--test] [-v] [-l] -F inputFile [prompt | arg_1 arg_2 ...]",
+        "Usage: irule [--test] [-v] rule inputParam outParamDesc",
+        "Usage: irule [--test] [-v] [-l] -F inputFile [prompt | arg_1 arg_2 ...]",
         " ",
         "Submit a user defined rule to be executed by an iRODS server.",
         " ",

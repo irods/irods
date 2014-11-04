@@ -94,7 +94,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iscan [-drh] srcPhysicalFile|srcPhysicalDirectory|srcDataObj|srcCollection",
+        "Usage: iscan [-drh] srcPhysicalFile|srcPhysicalDirectory|srcDataObj|srcCollection",
         "If the input is a local data file or a local directory, it checks if the content is registered in irods.",
         "Full path must be used for local files and directories.",
         "If the input is an iRODS file or an iRODS collection, it checks if the physical files corresponding ",

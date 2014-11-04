@@ -1,8 +1,32 @@
-/* This is script-generated code.  */
-/* See sendXmsg.h for a description of this API call.*/
-
 #include "sendXmsg.hpp"
 
+/**
+ * \fn rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp )
+ *
+ * \brief Send an XMessage.
+ *
+ * \user client
+ *
+ * \ingroup xmessage
+ *
+ * \since 1.0
+ *
+ * \author Arcot Rajasekar
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] sendXmsgInp
+ *
+ * \return integer
+ * \retval 0 on success.
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp ) {
     int status;

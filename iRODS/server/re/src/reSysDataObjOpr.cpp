@@ -1,5 +1,5 @@
 /**
- * @file reSysDataObjOpr.c
+ * @file reSysDataObjOpr.cpp
  *
  */
 
@@ -32,8 +32,6 @@
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2006-11
  *
  * \note This function is mandatory even no defaultResc is specified (null) and should be executed right after the screening function msiSetNoDirectRescInp.
  *
@@ -93,31 +91,8 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  *
  * \brief  This microservice sets the scheme for selecting the best resource to use when creating a data object.
  *
- * \module core
+ * \deprecated Since 4.0, use a resource composition of a similar type.
  *
- * \since pre-2.1
- *
- * \author Mike Wan
- * \date 2007
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in] xsortScheme - The sorting scheme. Valid schemes are "default", "random" and
- *    "byRescType". The "byRescType" scheme will put the cache class of resource on the top
- *    of the list. The scheme "random" and "byRescType" can be applied in sequence.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
  **/
 int
 msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
@@ -137,8 +112,6 @@ msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
  *
  * \since pre-2.1
  *
- * \author  Mike Wan
- * \date    2006-11
  *
  * \note This microservice is optional, but if used, should be the first function to execute because it screens the resource input.
  *
@@ -231,7 +204,6 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \note The copy stored in this preferred resource will be picked if it exists. More than
  * one resource can be input using the character "%" as separator.
@@ -309,7 +281,6 @@ msiSetDataObjPreferredResc( msParam_t *xpreferredRescList, ruleExecInfo_t *rei )
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -362,7 +333,6 @@ msiSetDataObjAvoidResc( msParam_t *xavoidResc, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -412,7 +382,6 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -474,7 +443,6 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Wayne Schroeder
- * \date   2007-02-09
  *
  * \note  Always returns success since it is only doing an attempt;
  *   that is, failure is common and not really a failure.
@@ -585,7 +553,6 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -651,7 +618,6 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \note The allFlag is only meaningful if the replResc is a resource group.
  *  In this case, setting allFlag to "all" means a copy will be made in all the
@@ -735,7 +701,6 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \note The msiSetNumThreads function must be present or no thread will be used for all transfer.
  *
@@ -860,7 +825,6 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -939,7 +903,6 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -975,7 +938,6 @@ msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \warning This microservice can create a security problem if used incorrectly.
  *
@@ -1012,13 +974,12 @@ msiNoChkFilePathPerm( ruleExecInfo_t *rei ) {
  * \since pre-3.1
  *
  * \author Mike Wan
- * \date 2012
  *
  * \warning This microservice can create a security problem if set to anything other than DISALLOW_PATH_REG and used incorrectly.
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] - xchkType - Required - a msParam of type STR_MS_T which defines the check type to set. Valid values are DO_CHK_PATH_PERM_STR, NO_CHK_PATH_PERM_STR, CHK_NON_VAULT_PATH_PERM_STR and DISALLOW_PATH_REG_STR.
+ * \param[in] xchkType - Required - a msParam of type STR_MS_T which defines the check type to set. Valid values are DO_CHK_PATH_PERM_STR, NO_CHK_PATH_PERM_STR, CHK_NON_VAULT_PATH_PERM_STR and DISALLOW_PATH_REG_STR.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -1072,7 +1033,6 @@ msiSetChkFilePathPerm( msParam_t *xchkType, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1109,7 +1069,6 @@ msiNoTrashCan( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1243,7 +1202,6 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
  * \since pre-2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1347,7 +1305,6 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
  * \since pre-2.1
  *
  * \author - Mike Wan
- * \date - 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1409,7 +1366,6 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  * \since 2.1
  *
  * \author Mike Wan
- * \date 2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1464,8 +1420,6 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
  *
  * \since 2.3
  *
- * \author  Mike Wan
- * \date    2010-02
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1515,8 +1469,6 @@ msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
  *
  * \since 2.4
  *
- * \author  Thomas Ledoux (integrated by Wayne Schroeder)
- * \date    2010-04-30
  *
  * \note  Can be called by client through irule
  *
@@ -1634,8 +1586,6 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since 2.4
  *
- * \author  Mike Wan
- * \date    2010-07
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -1684,8 +1634,6 @@ msiSetBulkPutPostProcPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
  *
  * \since after 2.4.1
  *
- * \author  Jean-Yves Nief
- * \date    2011-01-05
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called

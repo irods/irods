@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileRmdir.h for a description of this API call.*/
-
 #include "fileRmdir.hpp"
 
+/**
+ * \fn rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp )
+ *
+ * \brief Remove a directory.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileRmdirInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp ) {
     int status;

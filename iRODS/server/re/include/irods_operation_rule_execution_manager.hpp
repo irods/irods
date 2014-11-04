@@ -18,7 +18,6 @@ namespace irods {
     /**
       * \class  operation_rule_execution_manager
       * \author Jason M. Coposky
-      * \date   January 2013
       * \brief  class which builds operation rule names, queries for the rule existence,
       *         and provides an interface for execution in a pre and post operation condition
       **/

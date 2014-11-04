@@ -55,7 +55,7 @@ printCommandSummary() {
 
 void  printIdbugHelp( char *cmd ) {
     printf( "idbug: icommand for rule debugging \n" );
-    printf( "usage: %s [-h][-v n] [-c|C] \n" , cmd );
+    printf( "Usage: %s [-h][-v n] [-c|C] \n" , cmd );
     printf( "   -h : prints this  help message \n" );
     printf( "   -v : verbose mode 1,2 or 3 \n" );
     printf( "   -c : starts debugging in continue mode for all processes\n" );

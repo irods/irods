@@ -95,7 +95,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iphybun [-hK] [-D dataType] [-S srcResource] [-R resource] [-s maxSize_in_GB] [-N numOfSubFiles] collection ... ",
+        "Usage: iphybun [-hK] [-D dataType] [-S srcResource] [-R resource] [-s maxSize_in_GB] [-N numOfSubFiles] collection ... ",
         "iphybun allows system admin to physically bundle files in a collection into",
         "a number of tar files to make it more efficient to store these files on tape.",
         "The tar files are placed into the /myZone/bundle/.... collection with file",

@@ -13,12 +13,12 @@ int  connectFlag = 0;
 void
 printIxmsgHelp( const char *cmd ) {
 
-    printf( "usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd );
-    printf( "usage: %s r [-n NumberOfMessages] [-t ticketNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
-    printf( "usage: %s t \n" , cmd );
-    printf( "usage: %s d -t ticketNum \n" , cmd );
-    printf( "usage: %s c -t ticketNum \n" , cmd );
-    printf( "usage: %s c -t ticketNum -s sequenceNum \n" , cmd );
+    printf( "Usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd );
+    printf( "Usage: %s r [-n NumberOfMessages] [-t ticketNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
+    printf( "Usage: %s t \n" , cmd );
+    printf( "Usage: %s d -t ticketNum \n" , cmd );
+    printf( "Usage: %s c -t ticketNum \n" , cmd );
+    printf( "Usage: %s c -t ticketNum -s sequenceNum \n" , cmd );
     printf( "    s: send messages. If no ticketNum is given, 1 is used \n" );
     printf( "    r: receive messages. If no ticketNum is given, 1 is used \n" );
     printf( "    t: create new message stream and get a new ticketNum \n" );

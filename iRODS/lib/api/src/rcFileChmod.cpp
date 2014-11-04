@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileChmod.h for a description of this API call.*/
-
 #include "fileChmod.hpp"
 
+/**
+ * \fn rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp )
+ *
+ * \brief Changes mode on a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileChmodInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp ) {
     int status;

@@ -1,8 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* execMyRule.h
- * Execute my rule
- */
 
 #ifndef EXEC_MY_RULE_HPP
 #define EXEC_MY_RULE_HPP

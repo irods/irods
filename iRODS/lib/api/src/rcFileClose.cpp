@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileClose.h for a description of this API call.*/
-
 #include "fileClose.hpp"
 
+/**
+ * \fn rcFileClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp )
+ *
+ * \brief Closes a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileCloseInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp ) {
     int status;

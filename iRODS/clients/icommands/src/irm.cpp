@@ -101,7 +101,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
+        "Usage: irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
         "Remove one or more data-object or collection from iRODS space. By default, ",
         "the data-objects are moved to the trash collection (/myZone/trash) unless",
         "either the -f option or the -n option is used.",

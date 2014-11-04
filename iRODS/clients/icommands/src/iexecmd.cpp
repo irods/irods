@@ -181,7 +181,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iexecmd [-hv] [-p hintPath]|[-P hintPath] [-H hostAddr] command",
+        "Usage: iexecmd [-hv] [-p hintPath]|[-P hintPath] [-H hostAddr] command",
         "Remotely Execute a command installed in the server/bin/cmd directory of ",
         "the server.",
         "The input parameter 'command' is the remote command to execute. Input",

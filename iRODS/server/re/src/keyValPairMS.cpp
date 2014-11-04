@@ -1,5 +1,5 @@
 /**
- * @file	keyValPairMS.c
+ * @file	keyValPairMS.cpp
  *
  */
 
@@ -19,8 +19,6 @@
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date 2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -73,8 +71,6 @@ int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ru
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \note #msiExecStrCondQuery is used to
  *         run the query:  "SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE 'foo%'".
@@ -144,8 +140,6 @@ int msiPrintKeyValPair( msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *r
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -215,8 +209,6 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
  *
  * \since 3.0
  *
- * \author  Arcot Rajasekar
- * \date    2011-07
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -274,8 +266,6 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -330,8 +320,6 @@ int msiStrArray2String( msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t 
  *
  * \module core
  *
- * \author  Antoine de Torcy
- * \date    2009-09-03
  *
  * \note A new keyValPair_t is created if inKeyValPair is NULL.
  *

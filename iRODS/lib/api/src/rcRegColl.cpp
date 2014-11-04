@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See regColl.h for a description of this API call.*/
-
 #include "regColl.hpp"
 
+/**
+ * \fn rcRegColl( rcComm_t *conn, collInp_t *regCollInp )
+ *
+ * \brief Register a collection.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] regCollInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcRegColl( rcComm_t *conn, collInp_t *regCollInp ) {
     int status;

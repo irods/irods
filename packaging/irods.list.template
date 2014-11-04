@@ -640,7 +640,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAssociateKe
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCheckPermission.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCheckPermission.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiFlagInfectedObjs.r ./iRODS/clients/icommands/test/rules3.0/rulemsiFlagInfectedObjs.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByActionID.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetAuditTrailInfoByActionID.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiReplColl.r ./iRODS/clients/icommands/test/rules3.0/rulemsiReplColl.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecGenQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecGenQuery.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDefaultResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDefaultResc.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionSize.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionSize.r

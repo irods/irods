@@ -1,7 +1,5 @@
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* execCmd.h
- */
 
 #ifndef EXEC_CMD_HPP
 #define EXEC_CMD_HPP
@@ -63,17 +61,6 @@ extern "C" {
 /* prototype for the client call */
 int
 rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
-
-/* rcExecCmd - Execute a command on the server.
- * Input -
- *   rcComm_t *conn - The client connection handle.
- *   execCmd_t *execCmdInp - the execCmd input
- *
- * OutPut -
- *   bytesBuf_t *cmdOutBBuf - The stdout and stderr of the command is stored
- *    int this bytesBuf.
- *   int status - status of the operation.
- */
 
 #ifdef __cplusplus
 }

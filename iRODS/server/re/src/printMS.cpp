@@ -1,5 +1,5 @@
 /**
- * @file        printMS.c
+ * @file        printMS.cpp
  *
  */
 
@@ -27,8 +27,6 @@
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note   This microservice takes a given buffer string and appends it to the end of the buffer
  * (either stdout or stderr in ruleExecOut parameter) followed by a new line character.
@@ -91,8 +89,6 @@ int writeLine( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note   This microservice takes a given buffer string and appends it to the end of the buffer
  * (either stdout or stderr in ruleExecOut parameter). This may be extended later for writing into local log file
@@ -263,8 +259,6 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -320,8 +314,6 @@ int writePosInt( msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date 2008
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -383,8 +375,6 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
  *
  * \since 2.1
  *
- * \author  Antoine de Torcy
- * \date    2009
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -501,8 +491,6 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
  *
  * \since 2.4
  *
- * \author  Arcot Rajasekar
- * \date    2010
  *
  * \note   This microservice takes a given buffer string and sends it as a message packet to the XMsg Server
  *
@@ -563,8 +551,6 @@ writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecIn
  *
  * \since 2.4
  *
- * \author  Arcot Rajasekar
- * \date    2010
  *
  * \note   Reads into buffer a message packet from the XMsg Server
  *
@@ -578,7 +564,7 @@ writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecIn
  * \param[out] outSeqNum - of type INT_MS_T - sequence number of the incoming packet (as given by Xmsg Server)
  * \param[out] outHdr - of type STR_MS_T - header string of the incoming message packet
  * \param[out] outMsg - of type STR_MS_T - message string of the incoming message packet
- * \param[out] outUser - of type STR_MS_T - userName@Zone of the sender of the packet
+ * \param[out] outUser - of type STR_MS_T - userName\@Zone of the sender of the packet
  * \param[out] outAddr - of type STR_MS_T - address of the sending site of the packet (host address and process-id)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a

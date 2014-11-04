@@ -1,16 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* generalRowInsert.h
-
-   This client/server call is used to insert rows into certain
-   special-purpose tables.  See the rs file for the current list.
-   Admin only.  Also see generalRowPurge.
- */
 
 #ifndef GENERAL_ROW_INSERT_HPP
 #define GENERAL_ROW_INSERT_HPP
-
-/* This is a Metadata type API call */
 
 
 #include "rods.hpp"

@@ -1,19 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* generalUpdate.h
- */
 
 #ifndef GENERAL_UPDATE_HPP
 #define GENERAL_UPDATE_HPP
-
-/* This is a metadata type API call */
-
-/*
-   This call performs either a generalInsert or generalDelete call,
-   which can add or remove specified rows from tables using input
-   parameters similar to the generalQuery.  This is restricted to
-   irods-admin users.
-*/
 
 #include "rods.hpp"
 #include "rcMisc.hpp"

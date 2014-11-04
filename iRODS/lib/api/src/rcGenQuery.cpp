@@ -1,5 +1,5 @@
 /**
- * @file  rcGenQuery.c
+ * @file  rcGenQuery.cpp
  *
  */
 /*** Copyright (c), The Regents of the University of California            ***
@@ -53,12 +53,10 @@ printGenQI( genQueryInp_t *genQueryInp ) {
  *
  * \user client and server (internal queries to the ICAT as part of server ops)
  *
- * \category metadata operations
+ * \ingroup metadata
  *
  * \since .5
  *
- * \author  Wayne Schroeder
- * \date    2006
  *
  * \remark
  * Perform a general-query:
@@ -83,7 +81,6 @@ printGenQI( genQueryInp_t *genQueryInp ) {
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

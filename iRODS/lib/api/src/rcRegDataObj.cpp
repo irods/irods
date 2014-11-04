@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See regDataObj.h for a description of this API call.*/
-
 #include "regDataObj.hpp"
 
+/**
+ * \fn rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo, dataObjInfo_t **outDataObjInfo )
+ *
+ * \brief Register a data object.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] dataObjInfo - the dataObjInfo
+ * \param[out] outDataObjInfo - the dataObjInfo output
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
               dataObjInfo_t **outDataObjInfo ) {

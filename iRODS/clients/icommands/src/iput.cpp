@@ -104,12 +104,12 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+        "Usage: iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
         "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
         "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
         "             [--purgec]",
         "               localSrcFile|localSrcDir ...  destDataObj|destColl",
-        "Usage : iput [-abfIkKPQtTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+        "Usage: iput [-abfIkKPQtTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
         "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
         "             [--lfrestart lfRestartFile] [--retries count] [--wlock]",
         "             [--purgec]",

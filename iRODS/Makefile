@@ -83,29 +83,6 @@ fuse:
 	@$(MAKE) -C clients/fuse all
 	@echo " "
 
-# Build the documentation
-doc: html
-
-dvi: doc/dvi
-
-doc/dvi:
-	@echo "DVI documentation is not yet supported."
-
-html: doc/html
-
-doc/html:
-	@doxygen ./config/doxygen-saved.cfg
-
-pdf: doc/pdf
-
-doc/pdf:
-	@echo "PDF documentation is not yet supported."
-
-ps: doc/ps
-
-doc/ps:
-	@echo "PS documentation is not yet supported."
-
 # Build the server configuration
 config:
 	@echo "Server Configuration"
@@ -121,7 +98,6 @@ clean:
 	@$(MAKE) cleanlib
 	@$(MAKE) cleanclients
 	@$(MAKE) cleanserver
-	@$(MAKE) cleandoc
 
 cleanlib:
 	@$(MAKE) -C lib clean
@@ -133,13 +109,6 @@ cleanclients:
 	@$(MAKE) -C clients/c_api_test clean
 	@$(MAKE) -C clients/icommands clean
 	@$(MAKE) -C clients/fuse clean
-
-cleandoc:
-	@echo "Cleaning documentation"
-	@rm -rf doc/html
-	@rm -rf doc/dvi
-	@rm -rf doc/pdf
-	@rm -rf doc/ps
 
 distclean:	clean
 	@echo "Cleaning configuration files..."

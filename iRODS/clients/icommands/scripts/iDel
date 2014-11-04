@@ -6,7 +6,7 @@
 usage()
 {
 cat << EOF
-usage: $0 [options] [-t ticket.list]
+Usage: $0 [options] [-t ticket.list]
 
 This script remove your unused tickets.
 It can remove all your tickets or the tickets listed in a file of the form given by iTicket.

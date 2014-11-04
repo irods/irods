@@ -1,7 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* oprComplete.h
- */
 
 #ifndef OPR_COMPLETE_HPP
 #define OPR_COMPLETE_HPP

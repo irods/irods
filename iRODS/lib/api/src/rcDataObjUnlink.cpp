@@ -1,5 +1,5 @@
 /**
- * @file  rcDataObjUnlink.c
+ * @file  rcDataObjUnlink.cpp
  *
  */
 
@@ -11,19 +11,17 @@
 #include "dataObjUnlink.hpp"
 
 /**
- * \fn rcDataObjUnlink (rcComm_t *conn, dataObjInp_t *dataObjInp)
+ * \fn rcDataObjUnlink (rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp)
  *
  * \brief Unlink/delete a data object if the "forceFlag" is set. Otherwise,
  *	move the data object to trash.
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -41,7 +39,7 @@
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ * \param[in] dataObjUnlinkInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li char \b oprType - 0 normally.When set to UNREG_OPR, the data object
  *         is unregistered but the physical file is not deleted.
@@ -57,7 +55,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

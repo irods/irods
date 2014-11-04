@@ -100,7 +100,7 @@ void
 usage() {
 
     char *msgs[] = {
-        "Usage : iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
+        "Usage: iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
         "dataObj|collection ... ",
         " ",
         "Note that if the source copy has a checksum value associated with it,",

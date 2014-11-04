@@ -1,8 +1,32 @@
-/* This is script-generated code.  */
-/* See querySpecColl.h for a description of this API call.*/
-
 #include "querySpecColl.hpp"
 
+/**
+ * \fn rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp, genQueryOut_t **genQueryOut )
+ *
+ * \brief Query a special collection.
+ *
+ * \user client
+ *
+ * \ingroup server_miscellaneous
+ *
+ * \since 1.0
+ *
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] querySpecCollInp
+ * \param[out] genQueryOut - the GenQuery output
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
                  genQueryOut_t **genQueryOut ) {

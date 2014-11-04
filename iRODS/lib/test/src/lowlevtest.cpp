@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* lowlevtest.c - test the low level api */
+/* lowlevtest.cpp - test the low level api */
 
 #include "rodsClient.hpp"
 
@@ -177,33 +177,6 @@ main( int argc, char **argv ) {
                      100, fileLseekOut->offset );
         }
         printf( "rcFileLseek out offset = %lld\n", fileLseekOut->offset );
-    }
-
-    /* test rcFileStage call */
-
-    fileFsyncInp.fileInx = fileInx;
-    status = rcFileFsync( conn, &fileFsyncInp );
-
-    if ( status < 0 ) {
-        fprintf( stderr, "Error: rcFileFsync error. status = %d.\n ", status );
-    }
-    else {
-        printf( "rcFileFsync: status = %d\n", status );
-    }
-
-    fileStageInp.fileType = UNIX_FILE_TYPE;
-    rstrcpy( fileStageInp.addr.hostAddr, ADDR, NAME_LEN );
-    rstrcpy( fileStageInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN );
-    rstrcpy( fileStageInp.fileName, FILE_NAME, MAX_NAME_LEN );
-    fileStageInp.flag = 0;
-
-    status = rcFileStage( conn, &fileStageInp );
-
-    if ( status < 0 ) {
-        fprintf( stderr, "Error: rcFileChmod error. status = %d.\n ", status );
-    }
-    else {
-        printf( "rcFileStage: status = %d\n", status );
     }
 
     /* test rcFileClose call */

@@ -4,7 +4,7 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage: ./mhostsTestiCommands.pl [help] [debug] [noprompt] [addr1 addr2 addr3]
+# Usage: ./mhostsTestiCommands.pl [help] [debug] [noprompt] [addr1 addr2 addr3]
 #    help - Print usage messages.
 #    debug - print debug messages.
 #    noprompt - Assumes iinit was done before running this script 
@@ -698,7 +698,7 @@ sub getBunpathOfSubfile ()
 
 sub printUsage ()
 {
-    print ("usage: $0 [help] [debug] [noprompt] [addr1 addr2 addr3]\n");
+    print ("Usage: $0 [help] [debug] [noprompt] [addr1 addr2 addr3]\n");
     print ("  help - Print usage messages.\n");
     print ("  debug - Print debug messages.\n");
     print ("  noprompt -  Assumes iinit was done before running this script and\n");

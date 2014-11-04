@@ -1,5 +1,5 @@
 /**
- * @file  rcPhyPathReg.c
+ * @file  rcPhyPathReg.cpp
  *
  */
 
@@ -18,12 +18,10 @@
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -44,7 +42,7 @@
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
- * \param[in] dataObjInp - Elements of dataObjInp_t used :
+ * \param[in] phyPathRegInp - Elements of dataObjInp_t used :
  *    \li char \b objPath[MAX_NAME_LEN] - full path of the data object.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n FILE_PATH_KW - The physical file path  of this data object. The server
@@ -65,7 +63,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

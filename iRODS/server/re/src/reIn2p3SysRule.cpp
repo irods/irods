@@ -1,5 +1,5 @@
 /**
- * @file  reIn2p3SysRule.c
+ * @file  reIn2p3SysRule.cpp
  *
  */
 
@@ -479,7 +479,6 @@ int checkHostAccessControl(
  * \since pre-2.1
  *
  * \author Jean-Yves Nief
- * \date 2007-09
  *
  * \note  This microservice controls access to the iRODS service
  *  based on the information in the host based access configuration file:
@@ -563,7 +562,6 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Jean-Yves Nief
- * \date 2009-06
  *
  * \note  This microservice monitors the servers' activity and performance
  *    for CPU, network, memory and more.  It retrieves the list of servers
@@ -775,7 +773,6 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  * \author Jean-Yves Nief
- * \date 2009-06
  *
  * \note  This microservice removes the servers' metrics older than the
  *    number of hours in "timespan".
@@ -891,7 +888,6 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  * \since pre-2.1
  *
  * \author Jean-Yves Nief
- * \date 2009-06
  *
  * \note  The following values are loaded from R_LOAD_SERVER:
  *    \li cpu_used

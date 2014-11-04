@@ -121,7 +121,7 @@ usage( char *program ) {
         "-h help - this help",
         ""
     };
-    printf( "Usage : %s [-hvV] srcDataObj|srcColl ...  destDataObj|destColl\n", program );
+    printf( "Usage: %s [-hvV] srcDataObj|srcColl ...  destDataObj|destColl\n", program );
     for ( i = 0;; i++ ) {
         if ( strlen( msgs[i] ) == 0 ) {
             break;

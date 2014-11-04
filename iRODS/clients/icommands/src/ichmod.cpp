@@ -1,5 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more infomation please refer to files in the COPYRIGHT directory ***/
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /*
  * ichmod - The irods chmod utility
 */
@@ -172,17 +172,14 @@ usage() {
         "Usage: ichmod [-rhvVM] null|read|write|own userOrGroup dataObj|Collection ...",
         " or    ichmod [-rhvVM] inherit Collection ...",
         " or    ichmod [-rhvVM] noinherit Collection ...",
-        " or    ichmod [-R] null|read|write|own userOrGroup DBResource",
         " -r  recursive - set the access level for all dataObjects",
         "             in the entered collection and subCollections under it",
         " -v  verbose",
         " -V  Very verbose",
-        " -R  Resource (Database Resource)",
         " -M  Admin Mode",
         " -h  this help",
         " ",
-        "Modify access to dataObjects (iRODS files), collections (directories),",
-        "and Database Resources.",
+        "Modify access to dataObjects (iRODS files) and collections (directories).",
         " ",
         "When you store a file, you are the owner and have full control - you can",
         "read, write or delete it and, by default, no one else can.",
@@ -200,8 +197,6 @@ usage() {
         "that collection will be modified.  For example, you can give write access",
         "to a user or group so they can store files into one of your collections.",
         "Access permissions on collections are not currently displayed via ils.",
-        "As normally configured, all users can read all collections (i.e. see",
-        "dataObj names within).",
         " ",
         "The inherit/noinherit form sets or clears the inheritance attribute of",
         "one or more collections.  When collections have this attribute set,",
@@ -209,15 +204,10 @@ usage() {
         "access permisions (ACLs) of the collection.  'ils -A' displays ACLs",
         "and the inheritance status.",
         " ",
-        "If you are the irods administrator, you can include the -M option to",
+        "If you are the iRODS administrator, you can include the -M option to",
         "run in administrator mode and set the permissions on the collection(s)",
         "and/or data-objects as if you were the owner.  This is more convenient",
         "than aliasing as the user.",
-        " ",
-        "To execute a Database Object (DBO) on a Database Resource (DBR), users",
-        "need to have access permissions ('read', 'write', or better).  The admin",
-        "or owner can use ichmod to set these.  See 'ilsresc' for listing these.",
-        "See the Database Resources page on the irods web site for more information.",
         " ",
         "Like Unix, if you remove your own access to an object ('null'), you will",
         "not be able to read it, but you can restore access via another 'ichmod'",

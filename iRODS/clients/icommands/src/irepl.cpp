@@ -113,7 +113,7 @@ void
 usage() {
 
     char *msgs[] = {
-        "Usage : irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
+        "Usage: irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
         "[-N numThreads] [-X restartFile] [--purgec]  [--rlock]dataObj|collection ... ",
         " ",
         "Replicate a file in iRODS to another storage resource.",

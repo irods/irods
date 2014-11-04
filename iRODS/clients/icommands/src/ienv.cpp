@@ -53,7 +53,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ienv [-h]",
+        "Usage: ienv [-h]",
         "Display current irods environment. Equivalent to iinit -l.",
         "Options are:",
         " -h  this help",

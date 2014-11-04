@@ -17,9 +17,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
     /**
-     * \class
      * \author Jason M. Coposky
-     * \date   July 2012
      * \brief
      *
      **/

@@ -31,13 +31,12 @@ namespace irods {
     typedef lookup_table<boost::any>                      plugin_property_map;
 
     /**
-     * \class plugin_base - ABC for iRODS Plugins
      * \author Jason M. Coposky
-     * \date   October 2011
-     * \brief  This class enforces the delay_load interface necessary for the
+     * \brief  Abstract Base Class for iRODS Plugins
+     This class enforces the delay_load interface necessary for the
      load_plugin call to load any other non-member symbols from the
      shared object.
-     reference iRODS/lib/core/include/irods_load_plugin.h
+     reference iRODS/lib/core/include/irods_load_plugin.hpp
     **/
     class plugin_base {
         public:

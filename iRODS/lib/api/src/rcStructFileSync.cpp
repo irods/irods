@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See structFileSync.h for a description of this API call.*/
-
 #include "structFileSync.hpp"
 
+/**
+ * \fn rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp )
+ *
+ * \brief Sync a structured file object with its extracted subfiles.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] structFileOprInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp ) {
     int status;

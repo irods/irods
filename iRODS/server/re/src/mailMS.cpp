@@ -1,5 +1,5 @@
 /**
- * @file	mailMS.c
+ * @file	mailMS.cpp
  *
  */
 
@@ -20,8 +20,6 @@
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \note   This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The sender of the e-mail is the unix user-id running the irodsServer.
  *
@@ -46,7 +44,7 @@
  * \post none
  * \sa none
 **/
-int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
+int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* rei ) {
 
     const char * toAddr = ( char * ) xtoAddr->inOutStruct;
     const char * subjectLine = xsubjectLine->inOutStruct ? ( char * ) xsubjectLine->inOutStruct : "";
@@ -138,8 +136,6 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008-05
  *
  * \note   This microservice sends contents of the buffer rei->ruleExecOut->stdoutBuf.buf as email.
  *

@@ -1,8 +1,23 @@
-/* This is script-generated code.  */
-/* See bulkDataObjReg.h for a description of this API call.*/
-
 #include "bulkDataObjReg.hpp"
 
+/**
+ * \fn rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp, genQueryOut_t **bulkDataObjRegOut )
+ *
+ * \brief Register a bulk data object.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] bulkDataObjRegInp
+ * \param[out] bulkDataObjRegOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
                   genQueryOut_t **bulkDataObjRegOut ) {

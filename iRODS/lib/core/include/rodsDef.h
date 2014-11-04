@@ -1,5 +1,5 @@
 /**
- * @file  rodsDef.h
+ * @file  rodsDef.hpp
  *
  */
 
@@ -196,6 +196,8 @@ typedef enum {
  * \brief  general struct to store a buffer of bytes
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -205,7 +207,6 @@ typedef enum {
  * \li void *buf - pointer to the buffer.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct BytesBuf {   /* have to add BytesBuf to get Doxygen working */

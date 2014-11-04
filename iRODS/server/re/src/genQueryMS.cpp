@@ -1,5 +1,5 @@
 /**
- * @file	genQueryMS.c
+ * @file	genQueryMS.cpp
  *
  */
 
@@ -29,8 +29,6 @@ int _makeQuery( char *sel, char *cond, char **sql );
  *
  * \since pre-2.1
  *
- * \author  Romain Guinot
- * \date    2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -123,8 +121,6 @@ int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
  *
  * \since pre-2.1
  *
- * \author  Romain Guinot
- * \date    2007
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -212,8 +208,6 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -294,8 +288,6 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \note Takes a SQL-like iRODS query (no FROM clause) and returns a table structure. Use #msiGetMoreRows to get all rows.
  *
@@ -356,8 +348,6 @@ int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ru
  *
  * \since 2.2
  *
- * \author  Arcot Rajasekar
- * \date    2009-10
  *
  * \note The resulting continueInx can be used to determine whether there are remaining rows to retrieve from the generated query.
  *
@@ -426,8 +416,6 @@ _makeQuery( char *sel, char *cond, char **sql ) {
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -452,7 +440,7 @@ _makeQuery( char *sel, char *cond, char **sql ) {
 **/
 int
 msiMakeQuery( msParam_t* selectListParam, msParam_t* conditionsParam,
-              msParam_t* queryOutParam, ruleExecInfo_t* ) {
+              msParam_t* queryOutParam, ruleExecInfo_t* rei ) {
     char *sql, *sel, *cond;
     int i;
     sel = ( char * ) selectListParam->inOutStruct;
@@ -474,8 +462,6 @@ msiMakeQuery( msParam_t* selectListParam, msParam_t* conditionsParam,
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-09-18
  *
  * \note This microservice gets the next batch of rows for an open iCAT query. Likely to follow #msiMakeGenQuery and #msiExecGenQuery.
  *
@@ -582,8 +568,6 @@ msiGetMoreRows( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_
  *
  * \since 3.1
  *
- * \author  Hao Xu, Antoine de Torcy (msiGetMoreRows)
- * \date    2012-01-12
  *
  * \usage None
  *
@@ -683,8 +667,6 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
  *
  * \since pre-2.1
  *
- * \author  Antoine de Torcy
- * \date    2008-09-19
  *
  * \note This microservice sets up a genQueryInp_t data structure needed by calls to rsGenQuery().
  *    To be used before #msiExecGenQuery and #msiGetMoreRows.
@@ -785,8 +767,6 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
  *
  * \since pre-2.1
  *
- * \author  Arcot Rajasekar
- * \date    2008
  *
  * \usage See clients/icommands/test/rules3.0/
  *
@@ -884,8 +864,6 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  * \module core
  *
  *
- * \author  Antoine de Torcy
- * \date    2009-11-28
  *
  * \note This microservice sets a select field in a genQueryInp_t, from two parameters.
  *       One is an iCAT attribute index given without its 'COL_' prefix.
@@ -995,8 +973,6 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
  *
  * \module core
  *
- * \author  Antoine de Torcy
- * \date    2009-12-07
  *
  * \note This microservice adds a condition to an existing genQueryInp_t, from three parameters.
  *       One is an iCAT attribute index given without its 'COL_' prefix.
@@ -1112,8 +1088,6 @@ msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *opr, msParam_t *valu
  *
  * \module core
  *
- * \author  Antoine de Torcy
- * \date    2009-12-16
  *
  * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
  *       The results can be formatted with an optional C-style format string the same way it is done in iquest.

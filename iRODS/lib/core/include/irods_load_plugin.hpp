@@ -55,25 +55,28 @@ namespace irods {
     }; // class_has_delay_load
 
     /**
-     * \fn PluginType* load_plugin( const std::string _plugin_name, const std::string _dir );
+     * \fn PluginType* load_plugin( PluginType*& _plugin, const std::string& _plugin_name, const std::string& _dir, const std::string& _instance_name, const std::string& _context );
      *
-     * \brief load a plug in object from a given shared object / dll name
+     * \brief load a plugin object from a given shared object / dll name
      *
      * \user developer
      *
-     * \category core facility
+     * \ingroup core
      *
-     * \since E-iRODS 3.0
+     * \since   4.0
      *
-     * \author  Jason M. Coposky
-     * \date    June 2012
      *
      * \usage
      * ms_table_entry* tab_entry;\n
      * tab_entry = load_plugin( "some_microservice_name", "/var/lib/irods/iRODS/server/bin" );
      *
-     * \param[in] _dir         - hard coded string which will house the shared object to be loaded
-     * \param[in] _plugin_name - name of plugin you wish to load, which will have all nonalnum characters removed, as found in a file named "lib" + clean_plugin_name + ".so"
+     * \param[in] _plugin          - the plugin instance
+     * \param[in] _plugin_name     - name of plugin you wish to load, which will have
+     *                                  all non-alphanumeric characters removed, as found in
+     *                                  a file named "lib" clean_plugin_name + ".so"
+     * \param[in] _dir             - hard coded string which will house the shared object to be loaded
+     * \param[in] _instance_name   - the name of the plugin after it is loaded
+     * \param[in] _context         - context to pass to the loaded plugin
      *
      * \return PluginType*
      * \retval non-null on success

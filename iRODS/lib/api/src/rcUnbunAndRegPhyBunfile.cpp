@@ -1,10 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See unbunAndRegPhyBunfle.h for a description of this API call.*/
-
 #include "unbunAndRegPhyBunfile.hpp"
 
+/**
+ * \fn rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp )
+ *
+ * \brief Unbundle and register a physical bundled file.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] dataObjInp - the dataObjInfo input
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;

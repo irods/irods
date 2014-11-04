@@ -6,7 +6,7 @@
 usage()
 {
 cat << EOF
-usage: $0 [options] -t ticket.list -d directory
+Usage: $0 [options] -t ticket.list -d directory
 
 This script retrieve a directory and its subdirectories given your tickets file.
 

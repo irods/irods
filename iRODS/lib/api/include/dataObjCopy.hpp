@@ -1,5 +1,5 @@
 /**
- * @file  dataObjCopy.h
+ * @file  dataObjCopy.hpp
  *
  */
 
@@ -22,6 +22,8 @@
  * \brief Input struct for Copy Data object operation
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -30,7 +32,6 @@
  * \li dataObjInp_t destDataObjInp - dataObjInp_t for the target data object.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct DataObjCopyInp {

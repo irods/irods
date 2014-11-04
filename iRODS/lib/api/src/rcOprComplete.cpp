@@ -1,8 +1,31 @@
-/* This is script-generated code.  */
-/* See oprComplete.h for a description of this API call.*/
-
 #include "oprComplete.hpp"
 
+/**
+ * \fn rcOprComplete( rcComm_t *conn, int retval )
+ *
+ * \brief Complete an operation.
+ *
+ * \user client
+ *
+ * \ingroup miscellaneous
+ *
+ * \since 1.0
+ *
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[out] retval
+ *
+ * \return integer
+ * \retval 0 on success.
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcOprComplete( rcComm_t *conn, int retval ) {
     int status;

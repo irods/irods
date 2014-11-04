@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See fileTruncate.h for a description of this API call.*/
-
 #include "fileTruncate.hpp"
 
+/**
+ * \fn rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp )
+ *
+ * \brief Truncate a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileTruncateInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp ) {
     int status;

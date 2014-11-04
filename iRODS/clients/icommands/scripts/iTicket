@@ -6,7 +6,7 @@
 usage()
 {
 cat << EOF
-usage: $0 [options] -o {read write own} -d directory
+Usage: $0 [options] -o {read write own} -d directory
 
 This script return a file: `pwd`/ticket-DATE.list
 It contains all the informations for a retrieving a collection with iGet.

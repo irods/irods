@@ -1,5 +1,5 @@
 /**
- * @file  rcDataObjLseek.c
+ * @file  rcDataObjLseek.cpp
  *
  */
 
@@ -20,12 +20,10 @@ fileLseekOut_t **dataObjLseekOut)
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -64,7 +62,7 @@ fileLseekOut_t **dataObjLseekOut)
  *        \n SEEK_END - The offset is set to the size of the file plus
  *             offset bytes.
  *    \li rodsLong \b offset - the offset.
- * \param[out] fileLseekOut_t **dataObjLseekOut - pointer to a fileLseekOut_t
+ * \param[out] dataObjLseekOut - pointer to a fileLseekOut_t
  *        containing the resulting offset location in bytes from the beginning
  *        of the file.
  * \return integer
@@ -73,7 +71,6 @@ fileLseekOut_t **dataObjLseekOut)
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

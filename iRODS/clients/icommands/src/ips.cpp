@@ -285,8 +285,8 @@ usage() {
     char *msgs[] = {
         "Usage: ips [-ahv] [-R resource] [-z zone] [-H hostAddr]",
         " ",
-        "Display connection information of iRods agents currently running in",
-        "the iRods federation. By default, agent info for the iCat enabled server",
+        "Display connection information of iRODS agents currently running in",
+        "the iRODS federation. By default, agent info for the iCAT enabled server",
         "(IES) is displayed.",
         " ",
         "The -H and -R option can be used to specify other servers for the",

@@ -1,10 +1,23 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code.  */
-/* See fileLseek.h for a description of this API call.*/
-
 #include "fileLseek.hpp"
 
+/**
+ * \fn rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut )
+ *
+ * \brief Left seek within a file.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileLseekInp
+ * \param[out] fileLseekOut
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
              fileLseekOut_t **fileLseekOut ) {

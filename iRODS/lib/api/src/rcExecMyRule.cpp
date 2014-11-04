@@ -1,11 +1,36 @@
-/* This is script-generated code.  */
-/* See execMyRule.h for a description of this API call.*/
-
 #include "execMyRule.hpp"
 #include "oprComplete.hpp"
 #include "dataObjPut.hpp"
 #include "dataObjGet.hpp"
 
+
+/**
+ * \fn rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, msParamArray_t **outParamArray )
+ *
+ * \brief Execute my rule.
+ *
+ * \user client
+ *
+ * \ingroup rules
+ *
+ * \since 1.0
+ *
+ *
+ * \remark none
+ *
+ * \note none
+*
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] execMyRuleInp
+ * \param[out] outParamArray
+ *
+ * \return integer
+ * \retval 0 on success.
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
               msParamArray_t **outParamArray ) {
@@ -49,7 +74,7 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
         free( *outParamArray );
         *outParamArray = NULL;
 
-        /* read the reply from the eariler call */
+        /* read the reply from the earlier call */
 
         status = branchReadAndProcApiReply( conn, EXEC_MY_RULE_AN,
                                             ( void ** )outParamArray, NULL );

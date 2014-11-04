@@ -4,7 +4,7 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage:   ./testiCommands.pl [debug] [noprompt] [help]
+# Usage:   ./testiCommands.pl [debug] [noprompt] [help]
 #    help - Print usage messages.
 #    debug - print debug messages.
 #    noprompt - assumes iinit was done before running this script
@@ -993,7 +993,7 @@ system( "echo '============================' ");
 
 sub printUsage ()
 {
-    print ("usage: $0 [help] [debug] [noprompt]\n");
+    print ("Usage: $0 [help] [debug] [noprompt]\n");
     print ("  help - Print usage messages.\n");
     print ("  debug - Print debug messages.\n");
     print ("  noprompt -  Assumes iinit was done before running this script and\n");

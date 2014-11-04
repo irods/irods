@@ -1,11 +1,10 @@
 /**
- * @file  rcUserAdmin.c
+ * @file  rcUserAdmin.cpp
  *
  */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* Also see userAdmin.h for a description of this API call.*/
 
 #include "userAdmin.hpp"
 
@@ -16,12 +15,10 @@
  *
  * \user client
  *
- * \category metadata operations
+ * \ingroup administration
  *
  * \since 1.0 (or so)
  *
- * \author  Wayne Schroeder
- * \date    2007 (or so)
  *
  * \remark Perform a user administrative function.
  * \n This is similar to general-admin but is for the regular, non-admin, users.
@@ -44,7 +41,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

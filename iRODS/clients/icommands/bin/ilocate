@@ -10,17 +10,18 @@
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ]
 then
-	echo "Usage : ilocate [options] searchPattern [searchPattern] [searchPattern] ..."
+	echo "Usage: ilocate [options] searchPattern [searchPattern] [searchPattern] ..."
 	echo 
-	echo "Search through your current iRODS zone for data-object(s) OR collections (i.e. "
-	echo "filenames and directories) which match the provided search pattern.  Use '%' "
-	echo "as a wildcard (emulates sql 'like' operand).  If you need to express \% to express"
+	echo "Search through the local Zone for data-object(s) with fullpaths with components"
+	echo "which match the provided search pattern.  Use '%' as a "
+	echo "wildcard (emulates the sql 'like' operand).  If you need to express"
 	echo "% as a literal, you must encapsulate the search pattern with quotes."
 	echo 
 	echo "Options are :"
 	echo "-0  Separate output via NULL characters instead of newlines (like find -print0)" 
 	echo "-t  Also show objects in trash"
-#	echo "-i  Ignore case"
+        echo ""
+        ienv -h | tail -n1 | sed s/ienv/ilocate/
 	exit 0
 fi
 

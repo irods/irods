@@ -1,5 +1,5 @@
 /**
- * @file  fileLseek.h
+ * @file  fileLseek.hpp
  *
  */
 
@@ -23,6 +23,8 @@
  * \brief Input struct for rcDataObjLseek and rsFileLseek operations
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -38,7 +40,6 @@
  *             offset bytes.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct FileLseekInp {
@@ -60,7 +61,6 @@ typedef struct FileLseekInp {
  *        of the file.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct FileLseekOut {

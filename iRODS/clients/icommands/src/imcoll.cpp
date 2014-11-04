@@ -122,9 +122,9 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : imcoll -m mountType [-R resource] mountDirectory|structuredFilePath",
+        "Usage: imcoll -m mountType [-R resource] mountDirectory|structuredFilePath",
         "               irodsCollection",
-        "Usage : imcoll -Usp irodsCollection",
+        "Usage: imcoll -Usp irodsCollection",
         " ",
         "Used to manage (mount, unmount, link, synchronize and purge of cache) ",
         "iRODS collections and the associated cache.",

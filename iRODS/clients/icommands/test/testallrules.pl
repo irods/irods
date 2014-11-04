@@ -4,7 +4,7 @@
 # icommands location has to be put in the PATH env variable or their PATH will be asked
 # at the beginning of the execution of this script.
 #
-# usage: ./testiCommands.pl
+# Usage: ./testiCommands.pl
 # If an argument is given, the debug mode is activated
 #
 # Copyright (c), CCIN2P3

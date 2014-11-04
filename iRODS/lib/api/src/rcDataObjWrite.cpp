@@ -1,5 +1,5 @@
 /**
- * @file  rcDataObjWrite.c
+ * @file  rcDataObjWrite.cpp
  *
  */
 
@@ -12,19 +12,17 @@
 
 /**
  * \fn rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
- * bytesBuf_t *dataObjWriteOutBBuf)
+ * bytesBuf_t *dataObjWriteInpBBuf)
  *
  * \brief Write a chunk of data to an opened data object.
  *    This is equivalent to write of UNIX.
  *
  * \user client
  *
- * \category data object operations
+ * \ingroup data_object
  *
  * \since 1.0
  *
- * \author  Mike Wan
- * \date    2007
  *
  * \remark none
  *
@@ -34,7 +32,7 @@
  * Write 12345 bytes from an open a data object:
  * \n dataObjInp_t dataObjInp;
  * \n openedDataObjInp_t dataObjWriteInp;
- * \n bytesBuf_t dataObjWriteOutBBuf;
+ * \n bytesBuf_t dataObjWriteInpBBuf;
  * \n int bytesWrite;
  * \n bzero (&dataObjInp, sizeof (dataObjInp));
  * \n bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
@@ -47,7 +45,7 @@
  * \n if (dataObjWriteInp.l1descInx < 0) {
  * \n .... handle the error
  * \n }
- * \n bzero (&dataObjWriteOutBBuf, sizeof (dataObjWriteOutBBuf));
+ * \n bzero (&dataObjWriteInpBBuf, sizeof (dataObjWriteInpBBuf));
  * \n dataObjWriteInp.len = 12345;
  * \n dataObjWriteInp.buf = malloc (12345);
  * \n if (dataObjWriteInp.buf == NULL) {
@@ -65,7 +63,7 @@
  *    \li int \b l1descInx - the opened data object descriptor from
  *      rcDataObjOpen or rcDataObjCreate.
  *    \li int \b len - the length to write
- * \param[in] dataObjWriteOutBBuf - A pointer to a bytesBuf_t containing the
+ * \param[in] dataObjWriteInpBBuf - A pointer to a bytesBuf_t containing the
  *      data to write.
  * \return integer
  * \retval the number of bytes write on success.
@@ -73,7 +71,6 @@
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 
 int

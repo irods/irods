@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See fileStageToCache.h for a description of this API call.*/
-
 #include "fileStageToCache.hpp"
 
+/**
+ * \fn rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp )
+ *
+ * \brief Stage a file from the archive to the cache.
+ *
+ * \ingroup server_filedriver
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] fileStageToCacheInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp ) {
     int status;

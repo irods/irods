@@ -36,6 +36,8 @@ if [ $collName = "-h" ]; then
   echo "Get one or more iRODS files using wildcard characters."
   echo "Usage: igetwild collection pattern b|m|e  (beginning, middle, or end)"
   echo "Will prompt for missing items."
+  echo ""
+  ienv -h | tail -n1 | sed s/ienv/igetwild/
   exit 0
 fi
 

@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See modColl.h for a description of this API call.*/
-
 #include "modColl.hpp"
 
+/**
+ * \fn rcModColl( rcComm_t *conn, collInp_t *modCollInp )
+ *
+ * \brief Modify a collection.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] modCollInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcModColl( rcComm_t *conn, collInp_t *modCollInp ) {
     int status;

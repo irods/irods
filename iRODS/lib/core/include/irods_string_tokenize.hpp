@@ -7,7 +7,7 @@
 
 namespace irods {
 // =-=-=-=-=-=-=-
-/// @brienf helper fcn to break up string into tokens for easy handling with a default delim of " "
+/// @brief helper function to break up string into tokens for easy handling with a default delim of " "
     void string_tokenize(
         const std::string&,            // incoming string to tokenize
         const std::string&,            // delimiter for separating tokens

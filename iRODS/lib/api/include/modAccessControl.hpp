@@ -6,13 +6,6 @@
 #ifndef MOD_ACCESS_CONTROL_HPP
 #define MOD_ACCESS_CONTROL_HPP
 
-/* This is a Metadata type API call */
-
-/*
-   This call performs various operations to modify the access control
-   metadata for various types of objects.  This is used by the ichmod
-   command and processed by the chlModAccessControl routine.
-*/
 
 #include "rods.hpp"
 #include "rcMisc.hpp"

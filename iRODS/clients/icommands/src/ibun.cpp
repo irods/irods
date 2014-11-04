@@ -98,11 +98,11 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage : ibun -x [-hfb] [-R resource] structFilePath",
+        "Usage: ibun -x [-hfb] [-R resource] structFilePath",
         "               irodsCollection",
-        "Usage : ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
+        "Usage: ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
         "               irodsCollection",
-        "Usage : ibun --add [-h] structFilePath irodsCollection",
+        "Usage: ibun --add [-h] structFilePath irodsCollection",
 
         " ",
         "Bundle file operations. This command allows structured files such as ",

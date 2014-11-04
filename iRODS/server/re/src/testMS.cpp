@@ -108,8 +108,6 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  *
  * \since 3.0.x
  *
- * \author  Antoine de Torcy
- * \date    2011-06-29
  *
  *
  * \note  This empty microservice is to be filled with your own code. It can serve as a
@@ -127,8 +125,7 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  * 				OUTPUT ruleExecOut
  *
  *
- * \param[in] inParam - Any type. A STR_MS_T can be used to pass multiple parameters
- * 				in the format keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ * \param[out] inParam - A KeyValPair_MS_T (by default).
  * \param[out] outParam - A KeyValPair_MS_T (by default).
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -145,10 +142,9 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  * \pre None
  * \post None
  * \sa None
- * \bug  no known bugs
 **/
 int
-msiDoSomething( msParam_t*, msParam_t *outParam, ruleExecInfo_t *rei ) {
+msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
     keyValPair_t *myKeyVal;						/* will contain results */
 
     /* For testing mode when used with irule --test */

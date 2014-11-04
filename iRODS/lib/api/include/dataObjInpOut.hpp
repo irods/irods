@@ -1,13 +1,10 @@
 /**
- * @file  dataObjInpOut.h
+ * @file  dataObjInpOut.hpp
  *
  */
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* dataObjInpOut.h - header file for generic dataObj type input/output struct.
- */
-
 
 
 #ifndef DATA_OBJ_INP_OUT_HPP
@@ -41,6 +38,8 @@ typedef struct {
  * \brief Input struct for Data object operation
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -60,7 +59,6 @@ typedef struct {
  *      depend on the API.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct DataObjInp {
@@ -80,6 +78,8 @@ typedef struct DataObjInp {
  * \brief Input struct for Opened data object operation
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -98,7 +98,6 @@ typedef struct DataObjInp {
  *      depend on the API.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct OpenedDataObjInp {
@@ -139,6 +138,8 @@ typedef struct DataOprInp {
  * \brief Input struct for collection operation
  * \since 1.0
  *
+ * \ingroup capi_input_data_structures
+ *
  * \remark none
  *
  * \note
@@ -150,7 +151,6 @@ typedef struct DataOprInp {
  *      depend on the API.
  *
  * \sa none
- * \bug  no known bugs
  */
 
 typedef struct CollInp {

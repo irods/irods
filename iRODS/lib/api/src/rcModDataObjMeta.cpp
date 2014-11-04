@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See modDataObjMeta.h for a description of this API call.*/
-
 #include "modDataObjMeta.hpp"
 
+/**
+ * \fn rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp )
+ *
+ * \brief Modify a data object's metadata.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] modDataObjMetaInp - input data structure for modDataObj
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp ) {
     int status;

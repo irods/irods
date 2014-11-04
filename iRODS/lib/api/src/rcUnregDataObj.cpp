@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See unregDataObj.h for a description of this API call.*/
-
 #include "unregDataObj.hpp"
 
+/**
+ * \fn rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp )
+ *
+ * \brief Unregister a data object.
+ *
+ * \ingroup server_icat
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] unregDataObjInp - the dataObj to unregister
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp ) {
     int status;

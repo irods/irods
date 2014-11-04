@@ -1,8 +1,22 @@
-/* This is script-generated code.  */
-/* See subStructFileClosedir.h for a description of this API call.*/
-
 #include "subStructFileClosedir.hpp"
 
+/**
+ * \fn rcSubStructFileClosedir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp )
+ *
+ * \brief Close a sub directory of a structured file object.
+ *
+ * \ingroup server_structuredfile
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] subStructFileClosedirInp
+ *
+ * \return integer
+ * \retval 0 on success
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcSubStructFileClosedir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp ) {
     int status;

@@ -1,8 +1,32 @@
-/* This is script-generated code.  */
-/* See phyBundleColl.h for a description of this API call.*/
-
 #include "phyBundleColl.hpp"
 
+/**
+ * \fn rcPhyBundleColl( rcComm_t *conn, structFileExtAndRegInp_t *phyBundleCollInp )
+ *
+ * \brief Bundle a physical collection
+ *
+ * \user client
+ *
+ * \ingroup collection_object
+ *
+ * \since 1.0
+ *
+ *
+ * \remark none
+ *
+ * \note none
+ *
+ * \param[in] conn - A rcComm_t connection handle to the server.
+ * \param[in] phyBundleCollInp - The phyBundleColl structFileExtAndRegInp_t
+ *
+ * \return integer
+ * \retval 0 on success
+
+ * \sideeffect none
+ * \pre none
+ * \post none
+ * \sa none
+**/
 int
 rcPhyBundleColl( rcComm_t *conn,
                  structFileExtAndRegInp_t *phyBundleCollInp ) {

@@ -1,30 +1,46 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsErrorTable.h - common header file for rods server and agents
+/* rodsErrorTable.hpp - common header file for rods server and agents
  */
 
-/* error code format:
+/**
+ * @file  rodsErrorTable.hpp
  *
- *      -mmmmnnn
- *
- * where -mmmm000 is an error code defined in the rodsErrorTable.h to define
- * an error event. e.g.,
- *
- * #define SYS_SOCK_OPEN_ERR               -1000
- *
- * which define an error when a socket open call failed. Here mmmm = 1
- *
- * nnn is the errno associated with the socket open call. So, if the errno
- * is 34, then the error returned to the user is -1034. We use 3 figures
- * for nnn because the errno is less than 1000.
+ * @brief Defines ERRORS for iRODS server and agents
  */
 
 
 #ifndef RODS_ERROR_TABLE_HPP
 #define RODS_ERROR_TABLE_HPP
 
+/**
+ * @defgroup error_codes iRODS ERROR Codes
+ * @note ERROR code format:
+ *
+ *      -mmmmnnn
+ *
+ * Example:    SYS_SOCK_OPEN_ERR -1000
+ *
+ * Where -mmmm000 is an iRODS ERROR Code
+ *
+ * This error (-1000) is the error that occurs when a
+ * socket open call failed. Here mmmm = 1.
+ *
+ * nnn is the errno associated with the socket open call.
+ *
+ * If the errno is 34, then the error returned to the user
+ * is -1034. iRODS uses 3 digits for nnn because the errno
+ * is less than 1000.
+ *
+ */
+
 /* 1,000 - 299,000 - system type */
+/** @defgroup system_errors System ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 1,000 - 299,000
+ * @{
+ */
 #define SYS_SOCK_OPEN_ERR                           -1000
 #define SYS_SOCK_BIND_ERR                           -2000
 #define SYS_SOCK_ACCEPT_ERR                         -3000
@@ -171,8 +187,14 @@
 #define SYS_SOCK_SELECT_ERR                         -155000
 #define SYS_THREAD_ENCOUNTERED_INTERRUPT            -156000
 #define SYS_THREAD_RESOURCE_ERR                     -157000
+/** @} */
 
 /* 300,000 - 499,000 - user input type error */
+/** @defgroup user_input_errors User Input ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 300,000 - 499,000
+ * @{
+ */
 #define USER_AUTH_SCHEME_ERR                        -300000
 #define USER_AUTH_STRING_EMPTY                      -301000
 #define USER_RODS_HOST_EMPTY                        -302000
@@ -224,11 +246,17 @@
 #define OBJ_PATH_DOES_NOT_EXIST                     -358000
 #define SYMLINKED_BUNFILE_NOT_ALLOWED               -359000 // JMC - backport 4833
 #define USER_INPUT_STRING_ERR                       -360000
-#define USER_INVALID_RESC_INPUT		                -361000
+#define USER_INVALID_RESC_INPUT                     -361000
 #define USER_NOT_ALLOWED_TO_EXEC_CMD                -370000
 #define USER_HASH_TYPE_MISMATCH                     -380000
+/** @} */
 
 /* 500,000 to 800,000 - file driver error */
+/** @defgroup file_driver_errors File Driver ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 500,000 to 800,000
+ * @{
+ */
 #define FILE_INDEX_LOOKUP_ERR                       -500000
 #define UNIX_FILE_OPEN_ERR                          -510000
 #define UNIX_FILE_CREATE_ERR                        -511000
@@ -335,8 +363,14 @@
 
 /* Direct Access vault error */
 #define DIRECT_ACCESS_FILE_USER_INVALID_ERR         -770000
+/** @} */
 
 /* 800,000 to 880,000 - Catalog library errors  */
+/** @defgroup catalog_library_errors Catalog Library ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 800,000 to 880,000
+ * @{
+ */
 #define CATALOG_NOT_CONNECTED                       -801000
 #define CAT_ENV_ERR                                 -802000
 #define CAT_CONNECT_ERR                             -803000
@@ -387,19 +421,16 @@
 #define CAT_INVALID_CHILD                           -857000
 #define CAT_INVALID_OBJ_COUNT                       -858000 // hcj
 #define CAT_INVALID_RESOURCE_NAME                   -859000 // JMC
+/** @} */
 
-/* 880,000 to 899,000  RDA errors  */
-#define RDA_NOT_COMPILED_IN                         -880000
-#define RDA_NOT_CONNECTED                           -881000
-#define RDA_ENV_ERR                                 -882000
-#define RDA_CONNECT_ERR                             -883000
-#define RDA_DISCONNECT_ERR                          -884000
-#define RDA_CLOSE_ENV_ERR                           -885000
-#define RDA_SQL_ERR                                 -886000
-#define RDA_CONFIG_FILE_ERR                         -887000
-#define RDA_ACCESS_PROHIBITED                       -888000
-#define RDA_NAME_NOT_FOUND                          -889000
+/* 880,000 to 889,000  Deprecated  */
 
+/* 890,000 to 899,000  Ticket errors  */
+/** @defgroup ticket_errors Ticket ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 890,000 to 899,000
+ * @{
+ */
 #define CAT_TICKET_INVALID                          -890000
 #define CAT_TICKET_EXPIRED                          -891000
 #define CAT_TICKET_USES_EXCEEDED                    -892000
@@ -408,8 +439,14 @@
 #define CAT_TICKET_GROUP_EXCLUDED                   -895000
 #define CAT_TICKET_WRITE_USES_EXCEEDED              -896000
 #define CAT_TICKET_WRITE_BYTES_EXCEEDED             -897000
+/** @} */
 
 /* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */
+/** @defgroup miscellaneous_errors Miscellaneous ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 900,000 to 920,000
+ * @{
+ */
 #define FILE_OPEN_ERR                               -900000
 #define FILE_READ_ERR                               -901000
 #define FILE_WRITE_ERR                              -902000
@@ -424,8 +461,14 @@
 #define REMOTE_SERVER_AUTH_NOT_PROVIDED             -911000
 #define REMOTE_SERVER_AUTH_EMPTY                    -912000
 #define REMOTE_SERVER_SID_NOT_DEFINED               -913000
+/** @} */
 
 /* 921,000 to 999,000 - GSI, KRB, OSAUTH, and PAM-AUTH errors  */
+/** @defgroup authentication_errors Auth ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 921,000 to 999,000
+ * @{
+ */
 #define GSI_NOT_COMPILED_IN                         -921000
 #define GSI_NOT_BUILT_INTO_CLIENT                   -922000
 #define GSI_NOT_BUILT_INTO_SERVER                   -923000
@@ -478,34 +521,40 @@
 #define PAM_AUTH_NOT_BUILT_INTO_SERVER              -992000
 #define PAM_AUTH_PASSWORD_FAILED                    -993000
 #define PAM_AUTH_PASSWORD_INVALID_TTL               -994000
+/** @} */
 
 /* 1,000,000 to 1,500,000  - Rule Engine errors */
-#define  OBJPATH_EMPTY_IN_STRUCT_ERR                -1000000
-#define  RESCNAME_EMPTY_IN_STRUCT_ERR               -1001000
-#define  DATATYPE_EMPTY_IN_STRUCT_ERR               -1002000
-#define  DATASIZE_EMPTY_IN_STRUCT_ERR               -1003000
-#define  CHKSUM_EMPTY_IN_STRUCT_ERR                 -1004000
-#define  VERSION_EMPTY_IN_STRUCT_ERR                -1005000
-#define  FILEPATH_EMPTY_IN_STRUCT_ERR               -1006000
-#define  REPLNUM_EMPTY_IN_STRUCT_ERR                -1007000
-#define  REPLSTATUS_EMPTY_IN_STRUCT_ERR             -1008000
-#define  DATAOWNER_EMPTY_IN_STRUCT_ERR              -1009000
-#define  DATAOWNERZONE_EMPTY_IN_STRUCT_ERR          -1010000
-#define  DATAEXPIRY_EMPTY_IN_STRUCT_ERR             -1011000
-#define  DATACOMMENTS_EMPTY_IN_STRUCT_ERR           -1012000
-#define  DATACREATE_EMPTY_IN_STRUCT_ERR             -1013000
-#define  DATAMODIFY_EMPTY_IN_STRUCT_ERR             -1014000
-#define  DATAACCESS_EMPTY_IN_STRUCT_ERR             -1015000
-#define  DATAACCESSINX_EMPTY_IN_STRUCT_ERR          -1016000
-#define  NO_RULE_FOUND_ERR                          -1017000
-#define  NO_MORE_RULES_ERR                          -1018000
-#define  UNMATCHED_ACTION_ERR                       -1019000
-#define  RULES_FILE_READ_ERROR                      -1020000
-#define  ACTION_ARG_COUNT_MISMATCH                  -1021000
-#define  MAX_NUM_OF_ARGS_IN_ACTION_EXCEEDED         -1022000
-#define  UNKNOWN_PARAM_IN_RULE_ERR                  -1023000
-#define  DESTRESCNAME_EMPTY_IN_STRUCT_ERR           -1024000
-#define  BACKUPRESCNAME_EMPTY_IN_STRUCT_ERR         -1025000
+/** @defgroup rule_engine_errors Rule Engine ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 1,000,000 to 1,500,000
+ * @{
+ */
+#define OBJPATH_EMPTY_IN_STRUCT_ERR                 -1000000
+#define RESCNAME_EMPTY_IN_STRUCT_ERR                -1001000
+#define DATATYPE_EMPTY_IN_STRUCT_ERR                -1002000
+#define DATASIZE_EMPTY_IN_STRUCT_ERR                -1003000
+#define CHKSUM_EMPTY_IN_STRUCT_ERR                  -1004000
+#define VERSION_EMPTY_IN_STRUCT_ERR                 -1005000
+#define FILEPATH_EMPTY_IN_STRUCT_ERR                -1006000
+#define REPLNUM_EMPTY_IN_STRUCT_ERR                 -1007000
+#define REPLSTATUS_EMPTY_IN_STRUCT_ERR              -1008000
+#define DATAOWNER_EMPTY_IN_STRUCT_ERR               -1009000
+#define DATAOWNERZONE_EMPTY_IN_STRUCT_ERR           -1010000
+#define DATAEXPIRY_EMPTY_IN_STRUCT_ERR              -1011000
+#define DATACOMMENTS_EMPTY_IN_STRUCT_ERR            -1012000
+#define DATACREATE_EMPTY_IN_STRUCT_ERR              -1013000
+#define DATAMODIFY_EMPTY_IN_STRUCT_ERR              -1014000
+#define DATAACCESS_EMPTY_IN_STRUCT_ERR              -1015000
+#define DATAACCESSINX_EMPTY_IN_STRUCT_ERR           -1016000
+#define NO_RULE_FOUND_ERR                           -1017000
+#define NO_MORE_RULES_ERR                           -1018000
+#define UNMATCHED_ACTION_ERR                        -1019000
+#define RULES_FILE_READ_ERROR                       -1020000
+#define ACTION_ARG_COUNT_MISMATCH                   -1021000
+#define MAX_NUM_OF_ARGS_IN_ACTION_EXCEEDED          -1022000
+#define UNKNOWN_PARAM_IN_RULE_ERR                   -1023000
+#define DESTRESCNAME_EMPTY_IN_STRUCT_ERR            -1024000
+#define BACKUPRESCNAME_EMPTY_IN_STRUCT_ERR          -1025000
 #define DATAID_EMPTY_IN_STRUCT_ERR                  -1026000
 #define COLLID_EMPTY_IN_STRUCT_ERR                  -1027000
 #define RESCGROUPNAME_EMPTY_IN_STRUCT_ERR           -1028000
@@ -630,35 +679,29 @@
 #define RE_DYNAMIC_COERCION_ERROR                   -1233000
 #define RE_PACKING_ERROR                            -1234000
 #endif
+/** @} */
 
 
 
 /* 1,600,000 to 1,700,000  - PHP scripting error */
+/** @defgroup php_errors PHP ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 1,600,000 to 1,700,000
+ * @{
+ */
 #define PHP_EXEC_SCRIPT_ERR                         -1600000
 #define PHP_REQUEST_STARTUP_ERR                     -1601000
 #define PHP_OPEN_SCRIPT_FILE_ERR                    -1602000
+/** @} */
 
-/* 1,701,000 to 1,899,000  DBR/DBO errors  */
-#define DBR_NOT_COMPILED_IN                         -1701000
-#define DBR_ENV_ERR                                 -1702000
-#define DBR_CONNECT_ERR                             -1703000
-#define DBR_DISCONNECT_ERR                          -1704000
-#define DBR_CLOSE_ENV_ERR                           -1705000
-#define DBO_SQL_ERR                                 -1706000
-#define DBR_CONFIG_FILE_ERR                         -1707000
-#define DBR_MAX_SESSIONS_REACHED                    -1708000
-#define DBR_NOT_OPEN                                -1709000
-#define DBR_NAME_NOT_FOUND                          -1710000
-#define DBO_INVALID_CONTROL_OPTION                  -1711000
-#define DBR_ALREADY_OPEN                            -1712000
-#define DBO_DOES_NOT_EXIST                          -1713000
-#define DBR_ACCESS_PROHIBITED                       -1714000
-#define DBO_NOT_VALID_DATATYPE                      -1715000
-#define DBR_WRITABLE_BY_TOO_MANY                    -1716000
-#define DBO_WRITABLE_BY_TOO_MANY                    -1717000
-#define DBO_WRITABLE_BY_NON_PRIVILEGED              -1718000
+/* 1,701,000 to 1,899,000  deprecated */
 
 // new irods errors
+/** @defgroup 4x_errors iRODS 4.x ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 1,800,000 to 1,899,000
+ * @{
+ */
 #define KEY_NOT_FOUND                        -1800000
 #define KEY_TYPE_MISMATCH                    -1801000
 #define CHILD_EXISTS                         -1802000
@@ -683,9 +726,15 @@
 #define REPLICA_NOT_IN_RESC                  -1821000
 #define INVALID_ANY_CAST                     -1822000
 #define BAD_FUNCTION_CALL                    -1823000
+/** @} */
+
 
 /* NetCDF error code */
-
+/** @defgroup netcdf_errors NetCDF ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 2,000,000 to 2,099,000
+ * @{
+ */
 #define NETCDF_OPEN_ERR                             -2000000
 #define NETCDF_CREATE_ERR                           -2001000
 #define NETCDF_CLOSE_ERR                            -2002000
@@ -712,17 +761,28 @@
 #define NETCDF_AGG_ELE_INX_OUT_OF_RANGE             -2023000
 #define NETCDF_AGG_ELE_FILE_NOT_OPENED              -2024000
 #define NETCDF_AGG_ELE_FILE_NO_TIME_DIM             -2025000
+/** @} */
 
 /* SSL protocol error codes */
-
+/** @defgroup ssl_errors SSL ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 2,100,000 to 2,199,000
+ * @{
+ */
 #define SSL_NOT_BUILT_INTO_CLIENT                   -2100000
 #define SSL_NOT_BUILT_INTO_SERVER                   -2101000
 #define SSL_INIT_ERROR                              -2102000
 #define SSL_HANDSHAKE_ERROR                         -2103000
 #define SSL_SHUTDOWN_ERROR                          -2104000
 #define SSL_CERT_ERROR                              -2105000
+/** @} */
 
 /* OOI CI error codes */
+/** @defgroup ooi_errors OOI ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 2,200,000 to 2,299,000
+ * @{
+ */
 #define OOI_CURL_EASY_INIT_ERR                      -2200000
 #define OOI_JSON_OBJ_SET_ERR                        -2201000
 #define OOI_DICT_TYPE_NOT_SUPPORTED                 -2202000
@@ -735,16 +795,30 @@
 #define OOI_JSON_TYPE_ERR                           -2209000
 #define OOI_JSON_INX_OUT_OF_RANGE                   -2210000
 #define OOI_REVID_NOT_FOUND                         -2211000
+/** @} */
 
 /* XML parsing and TDS error */
+/** @defgroup xml_errors XML ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 2,300,000 to 2,399,000
+ * @{
+ */
 #define XML_PARSING_ERR                             -2300000
 #define OUT_OF_URL_PATH                             -2301000
 #define URL_PATH_INX_OUT_OF_RANGE                   -2302000
+/** @} */
 
 /* The following are handler protocol type msg. These are not real errors */
+/** @defgroup handler_errors Handler Protocol ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 9,999,000 to 9,999,999
+ * @{
+ */
 #define SYS_NULL_INPUT                              -99999996
 #define SYS_HANDLER_DONE_WITH_ERROR                 -99999997
 #define SYS_HANDLER_DONE_NO_ERROR                   -99999998
 #define SYS_NO_HANDLER_REPLY_MSG                    -99999999
+/** @} */
 
-#endif                            /* RODS_ERROR_TABLE_H */
+#endif                            /* RODS_ERROR_TABLE_HPP */
+
