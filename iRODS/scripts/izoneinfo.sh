@@ -186,9 +186,6 @@ else
   echo "FUSE enabled" | tee -a $outFile
 fi
 
-modules=`grep MODULES $config | grep = | grep -v "#"`
-echo $modules | tee -a $outFile
-
 set +e
 pgdb=`grep PSQICAT $config | grep = | grep -v "#" | grep -v "DPSQICAT"`
 oradb=`grep ORAICAT $config | grep = | grep -v "#"`

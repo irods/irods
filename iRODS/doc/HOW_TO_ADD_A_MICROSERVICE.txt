@@ -39,61 +39,30 @@ to the server for logging messages and performing file operations.
 
 How to add microservice source files to iRODS
 ------------------------------------------------------------------------
-Authors are encouraged to create a new module for custom microservices.
-See the document "HOW_TO_ADD_A_MODULE.txt".
-
-For iRODS system features, the microservices may be included in C source
-files in the iRODS server/re/src directory.  To compile these services they
-need to be listed in the server/Makefile.
-
-
-
+Authors are encouraged to create a new plugin for custom microservices.
 
 
 How to add microservices to the iRODS server's action table
 ------------------------------------------------------------------------
 All microservice functions are discovered by the iRODS server by reading
 a master "action" table compiled into the server.  The action table is
-split into three files:
-
-	server/re/include/reAction.header
-	server/re/include/reAction.table
-	server/re/include/reAction.footer
-
-The iRODS Makefiles assemble these files, and those provided by modules,
-to build server/re/include/reAction.h.  That file contains:
-
-	* reAction.header
-	* The header for each microservice module.
-	* reAction.table
-	* The table entries for each microservice module.
-	* reAction.footer
+contained in 'server/re/include/reAction.hpp'.
 
 There are two ways to add a microservice:
 
 	1. For system microservices:
-		* Edit reAction.header to add function prototypes
-		* Edit reAction.table to add table initializations
+		* Edit reAction.hpp to add function prototypes and table initializations
 
-	2.  For module microservices:
-		* Create MODNAME/microservices/include/microservices.header.
-		* Edit this to add function prototypes.
-		* Create MODNAME/microservices/include/microservices.table.
-		* Edit this to add table initializations.
+	2.  For plugin microservices:
+		* Create a plugin
 
 Function prototypes declare the C microservice function.  While these
 can be added to the above files directly, authors are encouraged to use
-a separate include file and just add a #include of that file.  For instance,
-here's a typical microservices.header file for a module:
+a separate include file and just add a #include of that file.
 
-	// Sample module microservices
-	#include "sampleMS.h"
+The reAction.table contains a C array initialization listing all available
+microservices.  Each line in the initialization looks like this:
 
-The reAction.table and each module's microservices.table file contains a
-C array initialization listing all available microservices.  Each line in
-the initialization looks like this:
-
-	// Sample module microservices
 	{ "sample", 2, (funcPtr) msiSample },
 
 There are three values, in order:
@@ -108,19 +77,3 @@ There are three values, in order:
 
 	3.  The function name is a pointer to the C function for the
 	    microservice.
-
-
-
-
-
-How to rebuild reAction.h
-------------------------------------------------------------------------
-The server's reAction.h action table is rebuilt automatically by the iRODS
-root Makefie if any include file in server/re/include or
-modules/*/microservices/include changes.
-
-To force reAction.h to be rebuilt, delete the existing file and run the
-"reaction" Makefile target:
-
-	rm server/re/include/reAction.h
-	make reaction

@@ -19,8 +19,6 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-extendedICAT.hpp =	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
-
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
 # jansson support
@@ -122,11 +120,6 @@ INCLUDES +=	-I$(libCoreIncDir)
 
 ifdef RELEASE_FLAG
 CFLAGS +=       -DRELEASE_FLAG
-endif
-
-ifdef EXTENDED_ICAT
-CFLAGS +=	-DEXTENDED_ICAT
-INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
 ifdef SHA256_FILE_HASH
@@ -252,11 +245,9 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.hpp):
-	@touch $(extendedICAT.hpp)
 
 # Build API
 $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)

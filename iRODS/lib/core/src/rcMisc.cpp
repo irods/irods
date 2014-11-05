@@ -19,10 +19,6 @@
 #include "dataObjPut.hpp"
 #include "reFuncDefs.hpp"
 
-#ifdef EXTENDED_ICAT
-#define EXTENDED_ICAT_TABLES_1 1 // have extendedICAT.h set up the set 1 tables
-#include "extendedICAT.hpp"
-#endif
 #include "bulkDataObjPut.hpp"
 #include "putUtil.hpp"
 #include "sockComm.hpp"
@@ -2957,13 +2953,6 @@ getAttrIdFromAttrName( char * cname ) {
             return columnNames[i].columnId;
         }
     }
-#ifdef EXTENDED_ICAT
-    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-        if ( !strcmp( extColumnNames[i].columnName, cname ) ) {
-            return extColumnNames[i].columnId;
-        }
-    }
-#endif
     return NO_COLUMN_NAME_FOUND;
 }
 
@@ -2973,11 +2962,6 @@ showAttrNames() {
     for ( i = 0; i < NumOfColumnNames ; i++ ) {
         printf( "%s\n", columnNames[i].columnName );
     }
-#ifdef EXTENDED_ICAT
-    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-        printf( "%s\n", extColumnNames[i].columnName );
-    }
-#endif
     return 0;
 }
 
@@ -3044,13 +3028,6 @@ getAttrNameFromAttrId( int cid ) {
             return columnNames[i].columnName;
         }
     }
-#ifdef EXTENDED_ICAT
-    for ( i = 0; i < NumOfExtColumnNames ; i++ ) {
-        if ( extColumnNames[i].columnId == cid ) {
-            return extColumnNames[i].columnName;
-        }
-    }
-#endif
     return NULL;
 }
 

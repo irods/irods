@@ -31,10 +31,6 @@
 access to the audit tables by
 non-privileged users */
 
-#ifdef EXTENDED_ICAT
-#include "extendedICAT.hpp"
-#endif
-
 extern int logSQLGenQuery;
 
 void icatGeneralQuerySetup();
@@ -43,11 +39,7 @@ int insertWhere( char *condition, int option );
 /* use a column size of at least this many characters: */
 #define MINIMUM_COL_SIZE 50
 
-#ifdef EXTENDED_ICAT
-#define MAX_LINKS_TABLES_OR_COLUMNS 500+EXTENDED_TABLES_AND_COLUMNS
-#else
 #define MAX_LINKS_TABLES_OR_COLUMNS 500
-#endif
 
 #define MAX_TSQL 110
 

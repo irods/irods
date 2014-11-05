@@ -21,8 +21,6 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-extendedICAT.hpp = 	$(buildDir)/modules/extendedICAT/extendedICAT.hpp
-
 #
 # Source files
 # 	core	shared functions for all servers
@@ -182,10 +180,6 @@ endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG
 endif
-ifdef EXTENDED_ICAT
-CFLAGS +=		-DEXTENDED_ICAT
-INCLUDES +=	-I$(svrExtIcatIncDir)
-endif
 
 ifdef SYSLOG_FACILITY_CODE
 CFLAGSS +=     -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
@@ -283,14 +277,8 @@ CONFIG +=	$(svrConfigDir)/irodsHost
 
 # Compilation and link flags
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
-CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
+CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES)
 
-# Previously, MODULE_LDFLAGS was added into the LDFLAGS below, but now
-# we use the new MODULE_OBJS for some dependencies so servers will be
-# relinked when module object files are updated.  The MODULE_LDFLAGS
-# is a list of the object files for modules plus the flags (-L -l
-# options) and MODULE_OBJS is just the object files from the
-# MODULE_LDFLAGS string.
 LDFLAGS +=	$(LIBRARY) $(LDADD) 
 
 #
@@ -396,11 +384,9 @@ $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.cpp $(DEPEND
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
-$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(extendedICAT.hpp) $(DEPEND) $(BOOST_LIBS)
+$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-$(extendedICAT.hpp): 
-	@touch $(extendedICAT.hpp)
 
 # Build server ICAT
 $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(BOOST_LIBS)
@@ -419,36 +405,36 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIB
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS)  $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)  $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS) 
+$(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link rule engine server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 # xmsg server
 $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 
 #

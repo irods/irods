@@ -37,7 +37,6 @@ if ( ! -e "/etc/irods/irods.config" )
 # iRODS installation directories
 #
 $perlScriptsDir   = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
-$modulesDir       = File::Spec->catdir( $IRODS_HOME, "modules" );
 
 $icommandsBinDir  = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "bin" );
 $icommandsTestDir = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "test" );
@@ -45,7 +44,6 @@ $icommandsTestDir = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "te
 $serverBinDir     = File::Spec->catdir( $IRODS_HOME, "server",  "bin" );
 $serverSqlDir     = File::Spec->catdir( $IRODS_HOME, "server",  "icat", "src" );
 $serverAuditExtSql= File::Spec->catdir( $IRODS_HOME, "server",  "icat", "auditExtensions" );
-$extendedIcatDir  = File::Spec->catdir( $IRODS_HOME, "modules",  "extendedICAT" );
 $serverTestBinDir = File::Spec->catdir( $IRODS_HOME, "server",  "test", "bin" );
 $serverTestCLLBinDir = $serverTestBinDir;
 $serverConfigDir  = File::Spec->catdir( $IRODS_HOME, "server",  "config" );

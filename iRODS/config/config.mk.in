@@ -37,17 +37,12 @@
 #
 #	ORACLE_HOME	The home directory of Oracle, if ORAICAT = 1
 #
-#	MODULES		The list of modules enabled during configuration.
-#			Module names are the names of directories in
-#			the 'modules' subdirectory.
-#
 
 #RELEASE_FLAG=1
 OS_platform=
 #osx_106plus=
 FILE_64BITS=1
-MODULES=
-#PARA_OPR=1  
+#PARA_OPR=1
 #RODS_CAT=1
 #PSQICAT=1
 #POSTGRES_HOME=
@@ -272,12 +267,6 @@ UNZIP_EXEC_PATH=/usr/bin/unzip
 # Uncomment this line to log into syslog instead of the usual
 # server/log/ log files.
 #IRODS_SYSLOG = 1
-
-# Extensible ICAT
-
-# See modules/extendedICAT/README.txt.  Uncomment this line, and add
-# modules/extendedICAT/extendedICAT.h, to enable the extensible ICAT:
-# EXTENDED_ICAT = 1
 
 # RUN_SERVER_AS_ROOT - Defines whether the iRODS server contains code
 # that will allow the iRODS servers to switch between root and service

@@ -30,16 +30,9 @@
 */
 #include "rodsClient.hpp"
 #include "icatHighLevelRoutines.hpp"
-#ifdef EXTENDED_ICAT
-#define EXTENDED_ICAT_TABLES_2 1
-#include "extendedICAT.hpp"
-#endif
 
 void
 icatGeneralQuerySetup() {
-#ifdef EXTENDED_ICAT
-    int i;
-#endif
     sTableInit();   /* initialize */
 
     sTable( "R_USER_PASSWORD",  "R_USER_PASSWORD", 0 );
@@ -736,34 +729,5 @@ icatGeneralQuerySetup() {
 
     sFklink( "R_COLL_MAIN", "r_coll_filesystem_meta", "R_COLL_MAIN.coll_id = r_coll_filesystem_meta.object_id" );
     sFklink( "R_DATA_MAIN", "r_data_filesystem_meta", "R_DATA_MAIN.data_id = r_data_filesystem_meta.object_id" );
-
-    /*
-      If using the extended ICAT, establish those tables and columns too.
-      Currently, links are not done (may be needed later).
-    */
-#ifdef EXTENDED_ICAT
-    for ( i = 0; i < NumOfExtTables; i++ ) {
-        sTable( extTables[i].tableName, extTables[i].tableAlias, 0 );
-    }
-    for ( i = 0; i < NumOfExtColumns; i++ ) {
-        sColumn( extColumns[i].column_id,
-                 extColumns[i].column_table_name,
-                 extColumns[i].column_name );
-    }
-
-#ifdef EXTENDED_ICAT_TABLE_LINKS
-    for ( i = 0; i < NumOfExtTableLinks; i++ ) {
-        char linkString[200];
-        snprintf( linkString, sizeof linkString, "%s.%s = %s.%s",
-                  extLinks[i].table1_name,
-                  extLinks[i].col1_name,
-                  extLinks[i].table2_name,
-                  extLinks[i].col2_name );
-        sFklink( extLinks[i].table1_name, extLinks[i].table2_name, linkString );
-    }
-#endif
-
-#endif
-
 
 }

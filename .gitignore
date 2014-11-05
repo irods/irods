@@ -27,7 +27,6 @@ iRODS/server/core/include/irods_database_home.hpp
 iRODS/lib/core/include/rodsVersion.hpp
 iRODS/lib/core/src/rodsLog.cpp
 iRODS/server/config/server.config
-iRODS/server/re/include/reAction.hpp
 iRODS/server/config/lockFileDir/.gitignore
 packaging/irods.list
 packaging/irods-docs.list

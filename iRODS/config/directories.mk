@@ -42,7 +42,6 @@ export libHasherSrcDir  = $(buildDir)/lib/hasher/src
 export svrCoreIncDir	= $(buildDir)/server/core/include
 export svrApiIncDir	= $(buildDir)/server/api/include
 export svrIcatIncDir	= $(buildDir)/server/icat/include
-export svrExtIcatIncDir	= $(buildDir)/modules/extendedICAT
 export svrReIncDir	= $(buildDir)/server/re/include
 export svrDriversIncDir	= $(buildDir)/server/drivers/include
 export svrTestIncDir	= $(buildDir)/server/test/include
@@ -94,5 +93,4 @@ export svrTestBinDir	= $(buildDir)/server/test/bin
 #
 export configDir	= $(buildDir)/config
 export svrConfigDir	= $(buildDir)/server/config
-export modulesDir	= $(buildDir)/modules
 export perlScriptsDir	= $(buildDir)/scripts/perl

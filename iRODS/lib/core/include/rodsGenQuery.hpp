@@ -107,10 +107,9 @@ primary ordering column.
 
 
 /*
-  For the integer values below (the COL_* defines), up to 10,000 is
-  reserved the core tables and above 10,000 for the extended icat
-  table columns (see modules/extendedICAT ).  The type can be
-  determined by comparing with this value. */
+  For the integer values below (the COL_* defines), up to 10,000 is reserved
+  the core tables The type can be determined by comparing with this value.
+ */
 #define MAX_CORE_TABLE_VALUE 10000
 
 
@@ -561,8 +560,5 @@ primary ordering column.
 #define COL_DATA_FILEMETA_SOURCE_PATH 2328
 #define COL_DATA_FILEMETA_CREATE_TIME 2329
 #define COL_DATA_FILEMETA_MODIFY_TIME 2330
-
-/* The range beginning with 10,000 is reserved for the extended icat (
-   see modules/extendedICAT ). */
 
 #endif /* RODS_GEN_QUERY_H */
