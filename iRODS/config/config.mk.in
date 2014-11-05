@@ -285,18 +285,6 @@ UNZIP_EXEC_PATH=/usr/bin/unzip
 # that is turned on by setting run_server_as_root to true in
 # server_config.json followed by a server restart.
 
-# USE_BOOST -  specify whether the BOOST library should be used. BOOST_DIR is
-# the directory where the BOOST directory is located, which is normally
-# the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the
-# iRODS directory to create boost_irods.
-USE_BOOST=1
-ifdef USE_BOOST
-ifndef BOOST_DIR
-#BOOST_DIR=/home/mwan/myapps/boost/install
-BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
-endif
-endif
-
 # =-=-=-=-=-=-=-
 # compile in the sha256 support for the hasher class
 # NOTE:: this should be a build.sh template value

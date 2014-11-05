@@ -428,7 +428,6 @@ f 755 root root ${IRODS_HOME}/server/test/tbox/checkps.pl ./iRODS/server/test/tb
 f 644 root root ${IRODS_HOME}/server/test/tbox/input1.txt.no.pg.mysql ./iRODS/server/test/tbox/input1.txt.no.pg.mysql
 f 644 root root ${IRODS_HOME}/server/test/tbox/input1.txt.no.pg ./iRODS/server/test/tbox/input1.txt.no.pg
 f 755 root root ${IRODS_HOME}/server/test/tbox/irods2.sh ./iRODS/server/test/tbox/irods2.sh
-f 755 root root ${IRODS_HOME}/server/test/tbox/boostTest.sh ./iRODS/server/test/tbox/boostTest.sh
 f 755 root root ${IRODS_HOME}/server/test/tbox/irods1.sh ./iRODS/server/test/tbox/irods1.sh
 f 755 root root ${IRODS_HOME}/server/test/tbox/ch.pl ./iRODS/server/test/tbox/ch.pl
 f 644 root root ${IRODS_HOME}/server/test/tbox/input1.txt.reuse.pg ./iRODS/server/test/tbox/input1.txt.reuse.pg

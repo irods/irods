@@ -333,9 +333,6 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
         if ( time_type_gt( mtim, timestamp ) ) {
             time_type_set( timestamp, mtim );
         }
-#if defined(DEBUG) && !defined(USE_BOOST)
-        printf( "last modified time, %ld\n", timestamp );
-#endif
         snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
     snprintf( r2, sizeof( r2 ), "%s", irbSet );

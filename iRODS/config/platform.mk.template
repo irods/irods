@@ -43,7 +43,6 @@ LDRFLAGS += -ldl -rdynamic
 # JMC :: BOOST Include & Linking
 # use our locally built Boost on the include line
 CCFLAGS+=-I$(BOOST_DIR)
-CCFLAGS+=-DUSE_BOOST
 
 # =-=-=-=-=-=-=-
 
