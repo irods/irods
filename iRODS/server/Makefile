@@ -139,37 +139,6 @@ INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
 
-ifdef DBR
-# Support DBR
-# Postgres, Oracle, and MySQL
-CFLAGS += -DDBR
-ifeq ($(DBR_TYPE), oracle) 
-ifndef ORAICAT
-SVR_DBR_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
-endif
-INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
-#CFLAGS +=	-DORA_ICAT
-CFLAGS +=	-DORA_DBR
-endif
-ifeq ($(DBR_TYPE), postgres) 
-INCLUDES +=	-I$(svrIcatIncDir)
-INCLUDES +=	-I$(POSTGRES_HOME)/include
-ifndef PSQICAT
-#INCLUDES +=	-I$(UNIXODBC_HOME)/include
-SVR_DBR_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
-endif
-endif
-
-ifeq ($(DBR_TYPE), mysql)
-ifndef MYICAT
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
-endif
-INCLUDES +=	-I$(UNIXODBC_HOME)/include
-endif
-
-#SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
-endif  # end DBR
-
 ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)
 endif

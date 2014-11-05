@@ -195,14 +195,6 @@ int
 msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
 int msiCutBufferInHalf(msParam_t* mPIn, ruleExecInfo_t *rei);
 int msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei);
-int msiDboExec(msParam_t *dbrName, msParam_t *dboName, msParam_t *dborName,
-               msParam_t *options,
-               msParam_t *inpParam1, msParam_t *inpParam2,
-               msParam_t *inpParam3, msParam_t *inpParam4,
-               msParam_t *inpParam5, msParam_t *inpParam6,
-               ruleExecInfo_t *rei);
-int msiDbrCommit(msParam_t *dbrName, ruleExecInfo_t *rei);
-int msiDbrRollback(msParam_t *dbrName, ruleExecInfo_t *rei);
 int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei);
 
 

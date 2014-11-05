@@ -489,7 +489,6 @@ usage() {
         " isysmeta mod foo +1h (set the expire time for file 'foo' to an hour from now)",
         " isysmeta mod /tempZone/home/rods/foo 2009-12-01",
         " isysmeta mod /tempZone/home/rods/foo datatype 'tar file'",
-        " isysmeta mod /tempZone/home/rods/dbo1 datatype 'database object'",
         " isysmeta mod /tempZone/home/rods/foo comment 1 'my comment'",
         " isysmeta ls foo",
         " isysmeta -l ls foo",

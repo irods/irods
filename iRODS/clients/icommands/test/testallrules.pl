@@ -305,8 +305,6 @@ foreach $rulefile (@rules)
     if ($rulefile =~ /rulemsiVacuum/) { print "----- skipping input/output -- $rulefile\n"; next; }
 
     # skip rules we are not yet supporting
-    if ($rulefile =~ /rulemsiDbo/) { print "----- skipping DBO/DBR -- $rulefile\n"; next; }
-    if ($rulefile =~ /rulemsiDbr/) { print "----- skipping DBO/DBR -- $rulefile\n"; next; }
 
     if ($rulefile =~ /rulemsiobj/) { print "----- skipping msiobj -- $rulefile\n"; next; }
 

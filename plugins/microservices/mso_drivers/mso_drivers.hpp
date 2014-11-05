@@ -42,14 +42,6 @@ msiobjput_z3950( msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
                  msParam_t*  inFileSize, ruleExecInfo_t* rei );
 
 int
-msiobjget_dbo( msParam_t*  inRequestPath, msParam_t* inFileMode,
-               msParam_t* inFileFlags, msParam_t* inCacheFilename,
-               ruleExecInfo_t* rei );
-int
-msiobjput_dbo( msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
-               msParam_t*  inFileSize, ruleExecInfo_t* rei );
-
-int
 msiobjget_slink( msParam_t*  inRequestPath, msParam_t* inFileMode,
                  msParam_t* inFileFlags, msParam_t* inCacheFilename,
                  ruleExecInfo_t* rei );

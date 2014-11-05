@@ -10,7 +10,6 @@
 
 const char * const icmds[] = {
     "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
-    /*    "idbo", */
     "idbug", "ienv",
     "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild", "igroupadmin",
     "ihelp", "iinit", "ilocate", "ils", "ilsresc",
@@ -36,7 +35,6 @@ printMainHelp() {
         "ichksum  - checksum one or more data-objects or collections.",
         "ichmod   - change access permissions to collections or data-objects.",
         "icp      - copy a data-object (file) or collection (directory) to another.",
-        /*        "idbo     - execute Database Objects on Database Resources, etc." , */
         "idbug    - interactively debug rules.",
         "ienv     - display current irods environment.",
         "ierror   - convert an irods error code to text.",

@@ -65,12 +65,6 @@ This documentation is generated from the iRODS code.
   - #msiGetSessionVarValue - Gets the value of a session variable in the rei
   - #msiExit - Add a user message to the error stack
 
- \subsection msidatabase Database Object (DBO) and DB Resource (DBR) Microservices
-  Can be called by client through irule.
-  - #msiDboExec - Execute a database object on a DBR
-  - #msiDbrCommit - Executes a commit on a DBR
-  - #msiDbrRollback - Executes a rollback on a DBR
-
  \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
   - #msiDataObjCreate - Create a data object
@@ -279,8 +273,6 @@ This documentation is generated from the iRODS code.
   - #msiXsltApply - Returns the xml object after applying the xslt transformation, given an xml object and an xslt object
 
  \subsection msimsodrivers Microservice Object (MSO) Drivers
-  - #msiobjget_dbo    - Gets a DBO object
-  - #msiobjput_dbo    - Puts a DBO object
   - #msiobjget_http   - Gets an HTTP/HTTPS/FTP object
   - #msiobjput_http   - Puts an HTTP/HTTPS/FTP object
   - #msiobjget_irods  - Gets an iRODS object

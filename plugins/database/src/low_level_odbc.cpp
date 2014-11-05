@@ -278,66 +278,6 @@ cllConnectRda( icatSessionStruct *icss ) {
 }
 
 /*
-  Connect to the DBMS for database-resource/db-objects access.
-*/
-int
-cllConnectDbr( icatSessionStruct *icss, const char *odbcEntryName ) {
-
-    HDBC myHdbc;
-    SQLRETURN stat = SQLAllocHandle( SQL_HANDLE_DBC, icss->environPtr, &myHdbc );
-    if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLAllocHandle failed for connect: %d", stat );
-        return -1;
-    }
-
-    stat = SQLSetConnectOption( myHdbc,
-                                SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF );
-    if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLSetConnectOption failed: %d", stat );
-        return -1;
-    }
-
-    stat = SQLConnect( myHdbc, ( unsigned char * )const_cast<char *>( odbcEntryName ), strlen( odbcEntryName ),
-                       ( unsigned char * )icss->databaseUsername, strlen( icss->databaseUsername ),
-                       ( unsigned char * )icss->databasePassword, strlen( icss->databasePassword ) );
-    if ( stat != SQL_SUCCESS ) {
-        rodsLog( LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat );
-        rodsLog( LOG_ERROR,
-                 "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=XXXXX\n",
-                 odbcEntryName, icss->databaseUsername );
-        SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
-        SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
-        SQLINTEGER      sqlcode;
-        SQLSMALLINT     length;
-        while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
-                          SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
-            rodsLog( LOG_ERROR, "cllConnect:  Native Error Code: %ld\n", sqlcode );
-            rodsLog( LOG_ERROR, "cllConnect: %s \n", buffer );
-        }
-
-        SQLDisconnect( myHdbc );
-        SQLFreeHandle( SQL_HANDLE_DBC, myHdbc );
-        return -1;
-    }
-
-    icss->connectPtr = myHdbc;
-
-    if ( icss->databaseType == DB_TYPE_MYSQL ) {
-        /*
-          MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
-          mode) to be able to understand Postgres SQL. STRICT_TRANS_TABLES
-          must be st too, otherwise inserting NULL into NOT NULL column does
-          not produce error.
-        */
-        cllExecSqlNoResult( icss, "SET SESSION autocommit=0" ) ;
-        cllExecSqlNoResult( icss,
-                            "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" );
-    }
-    return 0;
-}
-
-/*
   This function is used to check that there are no DB-modifying SQLs pending
   before a disconnect.  If there are, it logs a warning.
 

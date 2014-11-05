@@ -35,6 +35,5 @@ int cllCurrentValueString( const char *itemName, char *outString, int maxSize );
 int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
 
 int cllConnectRda( icatSessionStruct *icss );
-int cllConnectDbr( icatSessionStruct *icss, const char *unused );
 int cllGetLastErrorMessage( char *msg, int maxChars );
 #endif	/* CLL_ORA_H */

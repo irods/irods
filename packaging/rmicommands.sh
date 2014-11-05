@@ -53,7 +53,6 @@ rm -f /usr/bin/iexecmd
 rm -f /usr/bin/ierror
 rm -f /usr/bin/ienv
 rm -f /usr/bin/idbug
-rm -f /usr/bin/idbo
 rm -f /usr/bin/icp
 rm -f /usr/bin/ichmod
 rm -f /usr/bin/ichksum
@@ -103,7 +102,6 @@ rm -f /usr/share/man/man1/iexecmd.1.gz
 rm -f /usr/share/man/man1/ierror.1.gz
 rm -f /usr/share/man/man1/ienv.1.gz
 rm -f /usr/share/man/man1/idbug.1.gz
-rm -f /usr/share/man/man1/idbo.1.gz
 rm -f /usr/share/man/man1/icp.1.gz
 rm -f /usr/share/man/man1/ichmod.1.gz
 rm -f /usr/share/man/man1/ichksum.1.gz

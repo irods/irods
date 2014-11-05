@@ -4,7 +4,7 @@
   header file for the low level, uses either Oracle or Odbc
  */
 
-#if defined(ORA_ICAT) || defined(ORA_DBR)
+#ifdef ORA_ICAT
 #include "low_level_oracle.hpp"
 #else
 #include "low_level_odbc.hpp"

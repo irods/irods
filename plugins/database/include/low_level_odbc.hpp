@@ -37,7 +37,6 @@ int cllOpenEnv( icatSessionStruct *icss );
 int cllCloseEnv( icatSessionStruct *icss );
 int cllConnect( icatSessionStruct *icss );
 int cllConnectRda( icatSessionStruct *icss );
-int cllConnectDbr( icatSessionStruct *icss, const char *odbcEntryName );
 int cllDisconnect( icatSessionStruct *icss );
 int cllExecSqlNoResult( icatSessionStruct *icss, const char *sql );
 int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql );

@@ -95,8 +95,7 @@ int cmlOpen( icatSessionStruct *icss ) {
 
     /*
      Set the ICAT DBMS type.  The Low Level now uses this instead of the
-     ifdefs so it can interact with either at the same time (for the
-     DBR/DBO feature).
+     ifdefs so it can interact with either at the same time.
      */
     icss->databaseType = DB_TYPE_POSTGRES;
 #ifdef ORA_ICAT

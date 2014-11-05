@@ -188,12 +188,10 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
 
             # skip rules we are not yet supporting
             names_to_skip = [
-                "rulemsiDbo",
-                "rulemsiDbr",
                 "rulemsiobj",
             ]
             for n in names_to_skip:
-                if n in rulefile: print "skipping "+rulefile+" ----- DBO/DBR/msiobj"; return False
+                if n in rulefile: print "skipping "+rulefile+" ----- msiobj"; return False
 
             # ERA
             names_to_skip = [

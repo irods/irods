@@ -119,7 +119,6 @@ TEST_F( TestCllFunctions, HandlesSQL ) {
     NOT tested yet:
 
         cllConnectRda
-        cllConnectDbr
         logBindVars
     */
 
