@@ -9,7 +9,7 @@
 #include "packStruct.hpp"
 #include "objInfo.hpp"
 #include "msParam.hpp"
-#include "irodsGuiProgressCallback.hpp"
+#include "guiProgressCallback.hpp"
 
 extern packConstantArray_t PackConstantTable[];
 extern const packInstructArray_t RodsPackTable[];
@@ -38,7 +38,7 @@ extern struct timeval SysTimingVal;
 #ifdef __cplusplus
 extern "C" {
 #endif
-    extern irodsGuiProgressCallbak gGuiProgressCB;
+    extern guiProgressCallback gGuiProgressCB;
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
-#ifndef _replicator_H_
-#define _replicator_H_
+#ifndef _IRODS_REPLICATOR_HPP_
+#define _IRODS_REPLICATOR_HPP_
 
 #include "irods_error.hpp"
 #include "irods_oper_replicator.hpp"
@@ -24,4 +24,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _replicator_H_
+#endif // _REPLICATOR_HPP_

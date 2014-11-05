@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseLib.h - Header for for iFuseLib.c */
 
-#ifndef I_FUSE_LIB_H
-#define I_FUSE_LIB_H
+#ifndef I_FUSE_LIB_HPP_
+#define I_FUSE_LIB_HPP_
 
 #include "rodsClient.hpp"
 #include "rodsPath.hpp"
@@ -247,4 +247,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* I_FUSE_LIB_H */
+#endif	/* I_FUSE_LIB_HPP_ */

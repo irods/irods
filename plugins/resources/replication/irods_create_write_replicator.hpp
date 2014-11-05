@@ -1,5 +1,5 @@
-#ifndef _create_write_replicator_H_
-#define _create_write_replicator_H_
+#ifndef _IRODS_CREATE_WRITE_REPLICATOR_HPP_
+#define _IRODS_CREATE_WRITE_REPLICATOR_HPP_
 
 #include "irods_error.hpp"
 #include "irods_oper_replicator.hpp"
@@ -27,4 +27,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _create_write_replicator_H_
+#endif // _IRODS_CREATE_WRITE_REPLICATOR_HPP_

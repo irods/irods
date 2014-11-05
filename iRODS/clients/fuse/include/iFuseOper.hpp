@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* iFuseOper.h - Header for for iFuseOper.c */
 
-#ifndef I_FUSE_OPER_H
-#define I_FUSE_OPER_H
+#ifndef I_FUSE_OPER_HPP_
+#define I_FUSE_OPER_HPP_
 
 #include <sys/statvfs.h>
 #include "rodsClient.hpp"
@@ -56,4 +56,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* I_FUSE_OPER_H */
+#endif	/* I_FUSE_OPER_HPP_ */

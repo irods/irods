@@ -1,5 +1,5 @@
-#ifndef _SHA256Strategy_H_
-#define _SHA256Strategy_H_
+#ifndef _SHA256_STRATEGY_HPP_
+#define _SHA256_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
 #include <string>
@@ -23,4 +23,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _SHA256Strategy_H_
+#endif // _SHA256_STRATEGY_HPP_

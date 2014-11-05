@@ -1,5 +1,5 @@
-#ifndef _hierarchy_parser_H_
-#define _hierarchy_parser_H_
+#ifndef _HIERARCHY_PARSER_HPP_
+#define _HIERARCHY_PARSER_HPP_
 
 #include "irods_error.hpp"
 
@@ -68,4 +68,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _hierarchy_parser_H_
+#endif // _HIERARCHY_PARSER_HPP_

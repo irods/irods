@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* irodsFs.h - Header for for irodsFs.c */
 
-#ifndef IRODS_FS_H
-#define IRODS_FS_H
+#ifndef IRODS_FS_HPP_
+#define IRODS_FS_HPP_
 
 #undef USE_BOOST
 
@@ -60,4 +60,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* IRODS_FS_H */
+#endif	/* IRODS_FS_HPP_ */

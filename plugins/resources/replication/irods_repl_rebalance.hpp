@@ -1,5 +1,5 @@
-#ifndef __IRODS_REPL_REBALANCE_HPP__
-#define __IRODS_REPL_REBALANCE_HPP__
+#ifndef _IRODS_REPL_REBALANCE_HPP_
+#define _IRODS_REPL_REBALANCE_HPP_
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"
@@ -35,5 +35,5 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __IRODS_REPL_REBALANCE_HPP__
+#endif // _IRODS_REPL_REBALANCE_HPP_
 

@@ -38,9 +38,9 @@ automatic factory code generation
 
   MICROSERVICE_END
 */
-#ifndef MICROSERVICE_H
+#ifndef MICROSERVICE_HPP_
 
-#define MICROSERVICE_H
+#define MICROSERVICE_HPP_
 #undef BOOST_PP_VARIADICS
 #define BOOST_PP_VARIADICS 1
 #include <boost/preprocessor/comparison/greater_equal.hpp>
@@ -358,4 +358,4 @@ extern "C" { \
     } \
 } \
  
-#endif // MICROSERVICE_H
+#endif // MICROSERVICE_HPP_

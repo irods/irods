@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef IFUSELIB_LOCK_H
-#define IFUSELIB_LOCK_H
+#ifndef IFUSELIB_LOCK_HPP_
+#define IFUSELIB_LOCK_HPP_
 #include "irodsFs.hpp"
 #include "iFuseLib.hpp"
 

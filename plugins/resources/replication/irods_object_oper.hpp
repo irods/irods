@@ -1,5 +1,5 @@
-#ifndef _object_oper_H_
-#define _object_oper_H_
+#ifndef _IRODS_OBJECT_OPER_HPP_
+#define _IRODS_OBJECT_OPER_HPP_
 
 #include "irods_error.hpp"
 #include "irods_file_object.hpp"
@@ -36,4 +36,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _object_oper_H_
+#endif // _IRODS_OBJECT_OPER_HPP_

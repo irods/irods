@@ -1,5 +1,5 @@
-#ifndef _iRODSGuiProgressCallback_h_
-#define _iRODSGuiProgressCallback_h_
+#ifndef _GUI_PROGRESS_CALLBACK_HPP_
+#define _GUI_PROGRESS_CALLBACK_HPP_
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,10 +16,9 @@ extern "C" {
         rodsLong_t curFileSizeDone; /* number of bytes done for the current file */
     } operProgress_t;
 
-    typedef void ( *irodsGuiProgressCallbak )( operProgress_t *operProgress );
+    typedef void ( *guiProgressCallback )( operProgress_t *operProgress );
 
 #ifdef __cplusplus
 }
 #endif
 #endif
-

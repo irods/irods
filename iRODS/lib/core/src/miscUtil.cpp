@@ -2021,9 +2021,9 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
     return status;
 }
 
-/* iCommandProgStat - the irodsGuiProgressCallbak for icommand
+/* iCommandProgStat - the guiProgressCallback for icommand
  */
-irodsGuiProgressCallbak
+guiProgressCallback
 iCommandProgStat( operProgress_t *operProgress ) {
     using namespace boost::filesystem;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];

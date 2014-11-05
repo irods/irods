@@ -1,5 +1,5 @@
-#ifndef _zone_info_H_
-#define _zone_info_H_
+#ifndef _IRODS_ZONE_INFO_HPP_
+#define _IRODS_ZONE_INFO_HPP_
 
 #include "irods_error.hpp"
 
@@ -26,4 +26,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _zone_info_H_
+#endif // _IRODS_ZONE_INFO_HPP_

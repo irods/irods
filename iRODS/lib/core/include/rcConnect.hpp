@@ -19,7 +19,7 @@
 #include "getRodsEnv.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
-#include "irodsGuiProgressCallback.hpp"
+#include "guiProgressCallback.hpp"
 
 // =-=-=-=-=-=-=-
 // forard del of thread context

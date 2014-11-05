@@ -1,5 +1,5 @@
-#ifndef _plugin_name_generator_H_
-#define _plugin_name_generator_H_
+#ifndef _IRODS_PLUGIN_NAME_GENERATOR_HPP_
+#define _IRODS_PLUGIN_NAME_GENERATOR_HPP_
 
 #include "irods_error.hpp"
 #include <vector>
@@ -36,4 +36,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _plugin_name_generator_H_
+#endif // _IRODS_PLUGIN_NAME_GENERATOR_HPP_

@@ -89,7 +89,7 @@ main( int argc, char **argv ) {
     }
 
     if ( myRodsArgs.progressFlag == True ) {
-        gGuiProgressCB = ( irodsGuiProgressCallbak ) iCommandProgStat;
+        gGuiProgressCB = ( guiProgressCallback ) iCommandProgStat;
     }
 
     status = replUtil( conn, &myEnv, &myRodsArgs, &rodsPathInp );

@@ -39,7 +39,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo );
 #define RS_GET_MISC_SVR_INFO NULL
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -56,7 +56,7 @@ extern "C" {
     int
     rcGetMiscSvrInfo( rcComm_t *conn, miscSvrInfo_t **outSvrInfo );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

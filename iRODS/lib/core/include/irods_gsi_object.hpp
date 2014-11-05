@@ -1,5 +1,5 @@
-#ifndef _gsi_auth_object_H_
-#define _gsi_auth_object_H_
+#ifndef _GSI_AUTH_OBJECT_HPP_
+#define _GSI_AUTH_OBJECT_HPP_
 
 #include "irods_error.hpp"
 #include "irods_auth_object.hpp"
@@ -89,4 +89,4 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // _gsi_auth_object_H_
+#endif // _GSI_AUTH_OBJECT_HPP_

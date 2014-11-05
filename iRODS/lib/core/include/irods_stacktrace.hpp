@@ -1,5 +1,5 @@
-#ifndef _stacktrace_H_
-#define _stacktrace_H_
+#ifndef _IRODS_STACKTRACE_HPP_
+#define _IRODS_STACKTRACE_HPP_
 
 #include "irods_error.hpp"
 
@@ -40,4 +40,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _stacktrace_H_
+#endif // _IRODS_STACKTRACE_HPP_

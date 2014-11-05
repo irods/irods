@@ -1,5 +1,5 @@
-#ifndef _children_parser_H_
-#define _children_parser_H_
+#ifndef _CHILDREN_PARSER_HPP_
+#define _CHILDREN_PARSER_HPP_
 
 #include "irods_error.hpp"
 
@@ -56,4 +56,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _children_parser_H_
+#endif // _CHILDREN_PARSER_HPP_

@@ -1,5 +1,5 @@
-#ifndef _HashStrategy_H_
-#define _HashStrategy_H_
+#ifndef _HASH_STRATEGY_HPP_
+#define _HASH_STRATEGY_HPP_
 
 #include <irods_error.hpp>
 #include <string>
@@ -20,4 +20,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _HashStrategy_H_
+#endif // _HASH_STRATEGY_HPP_

@@ -1,5 +1,5 @@
-#ifndef _auth_object_H_
-#define _auth_object_H_
+#ifndef _AUTH_OBJECT_HPP_
+#define _AUTH_OBJECT_HPP_
 
 #include "irods_error.hpp"
 #include "irods_first_class_object.hpp"
@@ -87,4 +87,4 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // _auth_object_H_
+#endif // _AUTH_OBJECT_HPP_

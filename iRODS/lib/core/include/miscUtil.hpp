@@ -7,7 +7,7 @@
 
 #include "rodsPath.hpp"
 #include "parseCommandLine.hpp"
-#include "irodsGuiProgressCallback.hpp"
+#include "guiProgressCallback.hpp"
 
 #define	INIT_UMASK_VAL	99999999
 typedef struct CollSqlResult {
@@ -249,7 +249,7 @@ extern "C" {
     int
     getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
                            operProgress_t *operProgress );
-    irodsGuiProgressCallbak
+    guiProgressCallback
     iCommandProgStat( operProgress_t *operProgress );
     int
     getOpenedCollLen( collHandle_t *collHandle );

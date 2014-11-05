@@ -12,7 +12,7 @@
 #include "objInfo.hpp"
 #include "rodsGenQuery.hpp"
 #include "rodsGeneralUpdate.hpp"
-#include "irodsGuiProgressCallback.hpp"
+#include "guiProgressCallback.hpp"
 
 int ProcessType = CLIENT_PT;
 
@@ -209,7 +209,7 @@ struct timeval SysTimingVal;
 #ifdef __cplusplus
 extern "C" {
 #endif
-    irodsGuiProgressCallbak gGuiProgressCB = NULL;
+    guiProgressCallback gGuiProgressCB = NULL;
 
 #ifdef __cplusplus
 }

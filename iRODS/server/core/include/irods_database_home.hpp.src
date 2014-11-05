@@ -1,6 +1,6 @@
 
-#ifndef __IRODS_DATABASE_HOME_H__
-#define __IRODS_DATABASE_HOME_H__
+#ifndef _IRODS_DATABASE_HOME_HPP_
+#define _IRODS_DATABASE_HOME_HPP_
 
 #include <string>
 
@@ -10,4 +10,4 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __IRODS_DATABASE_HOME_H__
+#endif // _IRODS_DATABASE_HOME_HPP_

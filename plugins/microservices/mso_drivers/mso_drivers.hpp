@@ -9,8 +9,8 @@
 
 
 
-#ifndef MSODRIVERSMS_H
-#define  MSODRIVERSMS_H
+#ifndef MSODRIVERSMS_HPP_
+#define  MSODRIVERSMS_HPP_
 
 #include "rods.h"
 #include "reGlobalsExtern.h"
@@ -73,4 +73,4 @@ msiobjput_srb( msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
                msParam_t*  inFileSize, ruleExecInfo_t* rei );
 
 
-#endif	/*  MSODRIVERSMS_H */
+#endif	/*  MSODRIVERSMS_HPP_ */

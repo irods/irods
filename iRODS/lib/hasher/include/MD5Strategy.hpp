@@ -1,5 +1,5 @@
-#ifndef _MD5Strategy_H_
-#define _MD5Strategy_H_
+#ifndef _MD5_STRATEGY_HPP_
+#define _MD5_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
 #include "global.hpp"             // cause md5.h needs it
@@ -23,4 +23,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _MD5Strategy_H_
+#endif // _MD5_STRATEGY_HPP_

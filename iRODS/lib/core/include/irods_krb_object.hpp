@@ -1,5 +1,5 @@
-#ifndef _krb_auth_object_H_
-#define _krb_auth_object_H_
+#ifndef _KRB_AUTH_OBJECT_HPP_
+#define _KRB_AUTH_OBJECT_HPP_
 
 #include "irods_error.hpp"
 #include "irods_auth_object.hpp"
@@ -90,4 +90,4 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // _krb_auth_object_H_
+#endif // _KRB_AUTH_OBJECT_HPP_

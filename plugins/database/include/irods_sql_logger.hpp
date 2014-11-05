@@ -1,5 +1,5 @@
-#ifndef _sql_logger_H_
-#define _sql_logger_H_
+#ifndef _IRODS_SQL_LOGGER_HPP_
+#define _IRODS_SQL_LOGGER_HPP_
 
 #include <string>
 
@@ -19,4 +19,4 @@ namespace irods {
     };
 }; // namespace irods
 
-#endif // _sql_logger_H_
+#endif // _IRODS_SQL_LOGGER_HPP_
