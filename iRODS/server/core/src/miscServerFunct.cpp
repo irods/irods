@@ -24,9 +24,7 @@
 #include "rcConnect.hpp"
 #include "initServer.hpp"
 #include "reFuncDefs.hpp"
-#ifdef PARA_OPR
 #include <boost/thread/thread.hpp>
-#endif
 #include <boost/lexical_cast.hpp>
 #if !defined(solaris_platform)
 char *__loc1;
@@ -358,9 +356,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     int i;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-#ifdef PARA_OPR
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
     int oprType;
     int flags = 0;
     int retVal = 0;
@@ -400,9 +396,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     }
 
     memset( myInput, 0, sizeof( myInput ) );
-#ifdef PARA_OPR
     memset( tid, 0, sizeof( tid ) );
-#endif
 
     size0 = dataOprInp->dataSize / numThreads;
 
@@ -448,7 +442,6 @@ svrPortalPutGet( rsComm_t *rsComm ) {
         return myInput[0].status;
     }
     else {
-#ifdef PARA_OPR
         rodsLong_t mySize = 0;
         rodsLong_t myOffset = 0;
 
@@ -515,11 +508,6 @@ svrPortalPutGet( rsComm_t *rsComm ) {
         } // for i
         CLOSE_SOCK( lsock );
         return retVal;
-
-#else	/* PARA_OPR */
-        CLOSE_SOCK( lsock );
-        return SYS_PARA_OPR_NO_SUPPORT;
-#endif	/* PARA_OPR */
 
     } // else
 }
@@ -1426,7 +1414,6 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         }
     }
     else {
-#ifdef PARA_OPR
         rodsLong_t totalWritten = 0;
 
         for ( i = 1; i < numThreads; i++ ) {
@@ -1506,9 +1493,6 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 return SYS_COPY_LEN_ERR;
             }
         }
-#else   /* PARA_OPR */
-        return SYS_PARA_OPR_NO_SUPPORT;
-#endif  /* PARA_OPR */
     }
 }
 
@@ -1574,7 +1558,6 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return myInput[0].status;
     }
     else {
-#ifdef PARA_OPR
         rodsLong_t totalWritten = 0;
         rodsLong_t mySize = 0;
         rodsLong_t myOffset = 0;
@@ -1643,9 +1626,6 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 return SYS_COPY_LEN_ERR;
             }
         }
-#else   /* PARA_OPR */
-        return SYS_PARA_OPR_NO_SUPPORT;
-#endif  /* PARA_OPR */
     }
 }
 

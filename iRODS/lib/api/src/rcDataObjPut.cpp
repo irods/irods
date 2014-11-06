@@ -139,10 +139,6 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
 
     dataObjInp->oprType = PUT_OPR;
 
-#ifndef PARA_OPR
-    addKeyVal( &dataObjInp->condInput, NO_PARA_OP_KW, "" );
-#endif
-
     status = _rcDataObjPut( conn, dataObjInp, &dataObjInpBBuf, &portalOprOut );
 
     clearBBuf( &dataObjInpBBuf );

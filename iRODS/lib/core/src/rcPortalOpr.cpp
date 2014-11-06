@@ -131,9 +131,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     int i, sock, in_fd;
     int numThreads;
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-#ifdef PARA_OPR
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
     int retVal = 0;
 
     if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
@@ -162,9 +160,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
 
     initFileRestart( conn, locFilePath, objPath, dataSize,
                      portalOprOut->numThreads );
-#ifdef PARA_OPR
     memset( tid, 0, sizeof( tid ) );
-#endif
     memset( myInput, 0, sizeof( myInput ) );
 
     if ( numThreads == 1 ) {
@@ -204,7 +200,6 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
     }
     else {
-#ifdef PARA_OPR
         rodsLong_t totalWritten = 0;
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -254,9 +249,6 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                 return SYS_COPY_LEN_ERR;
             }
         }
-#else   /* PARA_OPR */
-        return SYS_PARA_OPR_NO_SUPPORT;
-#endif  /* PARA_OPR */
     }
 }
 
@@ -829,9 +821,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         return SYS_INVALID_PORTAL_OPR;
     }
 
-#ifdef PARA_OPR
     memset( tid, 0, sizeof( tid ) );
-#endif
     memset( myInput, 0, sizeof( myInput ) );
 
     initFileRestart( conn, locFilePath, objPath, dataSize,
@@ -872,7 +862,6 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
     }
     else {
-#ifdef PARA_OPR
         rodsLong_t totalWritten = 0;
 
         for ( i = 0; i < numThreads; i++ ) {
@@ -928,9 +917,6 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                 return SYS_COPY_LEN_ERR;
             }
         }
-#else   /* PARA_OPR */
-        return SYS_PARA_OPR_NO_SUPPORT;
-#endif  /* PARA_OPR */
     }
 }
 

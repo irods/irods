@@ -134,11 +134,6 @@ MY_CFLAG+=-D_FILE_OFFSET_BITS=64
 endif
 endif
 
-# Parallel operations
-ifdef PARA_OPR
-MY_CFLAG+= -DPARA_OPR=1
-endif
-
 # Hardware choices
 MY_CFLAG+= -D$(OS_platform)
 ifdef hardware_platform

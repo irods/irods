@@ -64,7 +64,6 @@ int irodsErrors[] = {
     SYS_INVALID_FILE_PATH,
     SYS_INVALID_RESC_INPUT,
     SYS_INVALID_PORTAL_OPR,
-    SYS_PARA_OPR_NO_SUPPORT,
     SYS_INVALID_OPR_TYPE,
     SYS_NO_PATH_PERMISSION,
     SYS_NO_ICAT_SERVER_ERR,
@@ -713,7 +712,6 @@ char *irodsErrorNames[] = {
     "SYS_INVALID_FILE_PATH",
     "SYS_INVALID_RESC_INPUT",
     "SYS_INVALID_PORTAL_OPR",
-    "SYS_PARA_OPR_NO_SUPPORT",
     "SYS_INVALID_OPR_TYPE",
     "SYS_NO_PATH_PERMISSION",
     "SYS_NO_ICAT_SERVER_ERR",
@@ -1328,7 +1326,7 @@ char *irodsErrorNames[] = {
     "SYS_HANDLER_DONE_NO_ERROR",
     "SYS_NO_HANDLER_REPLY_MSG",
 };
-int irodsErrorCount = 647;
+int irodsErrorCount = 646;
 /* END generated code */
 
 static int verbosityLevel = LOG_ERROR;

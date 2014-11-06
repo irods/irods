@@ -223,7 +223,6 @@ $configMkVariables{ "RODS_CAT" } = "";	# Enable iCAT
 $configMkVariables{ "PSQICAT" }  = "";	# Enable Postgres iCAT
 $configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 $configMkVariables{ "MYICAT" }  = "";	# Disable MySQL iCAT
-$configMkVariables{ "PARA_OPR" } = "1";	# Parallel
 
 $irodsConfigVariables{ "IRODS_HOME" } = $IRODS_HOME;
 $irodsConfigVariables{ "IRODS_PORT" } = "1247";
@@ -433,18 +432,6 @@ foreach $arg ( @ARGV )
 			$irodsConfigVariables{ "DATABASE_HOME" } = $psgdir;
 			$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
 		}
-		next;
-	}
-
-	# Parallel execution
-	if ( $arg =~ /--disable-parallel/ )
-	{
-		$configMkVariables{ "PARA_OPR" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-parallel/ )
-	{
-		$configMkVariables{ "PARA_OPR" } = "1";
 		next;
 	}
 

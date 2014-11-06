@@ -302,10 +302,6 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         return 1;
     }
 
-#ifndef PARA_OPR
-    return 1;
-#endif
-
     memset( &doinp, 0, sizeof( doinp ) );
     doinp.numThreads = inpNumThr;
 

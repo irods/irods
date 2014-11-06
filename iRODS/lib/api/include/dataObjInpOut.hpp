@@ -16,7 +16,6 @@
 
 #include "rodsDef.hpp"
 
-#ifdef PARA_OPR
 #if defined(aix_platform)
 #ifndef _AIX_PTHREADS_D7
 #define pthread_mutexattr_default NULL
@@ -28,7 +27,6 @@
 #define pthread_condattr_default NULL
 #define pthread_attr_default NULL
 #endif  /* aix_platform */
-#endif  /* PARA_OPR */
 
 typedef struct {
     int portNum;       /* the port number */

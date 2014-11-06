@@ -23,8 +23,6 @@
 #
 #	FILE_64BITS	Whether 64-bit file sizes are supported.
 #
-#	PARA_OPR	A 1 to enable parallel operations.
-#
 #	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
 #
 #	PSQICAT		A 1 if the iCAT uses an Postgres database.
@@ -42,7 +40,6 @@
 OS_platform=
 #osx_106plus=
 FILE_64BITS=1
-#PARA_OPR=1
 #RODS_CAT=1
 #PSQICAT=1
 #POSTGRES_HOME=

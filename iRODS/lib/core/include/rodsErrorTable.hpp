@@ -58,7 +58,6 @@
 #define SYS_INVALID_FILE_PATH                       -31000
 #define SYS_INVALID_RESC_INPUT                      -32000
 #define SYS_INVALID_PORTAL_OPR                      -33000
-#define SYS_PARA_OPR_NO_SUPPORT                     -34000
 #define SYS_INVALID_OPR_TYPE                        -35000
 #define SYS_NO_PATH_PERMISSION                      -36000
 #define SYS_NO_ICAT_SERVER_ERR                      -37000
