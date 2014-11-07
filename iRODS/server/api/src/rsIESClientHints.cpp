@@ -61,7 +61,7 @@ int rsIESClientHints(
 
 #ifdef RODS_CAT
 
-irods::error get_strict_acls( 
+irods::error get_strict_acls(
     rsComm_t*    _comm,
     std::string& _acls ) {
     if( ! _comm ) {
@@ -69,11 +69,11 @@ irods::error get_strict_acls(
             SYS_INVALID_INPUT_PARAM,
             "comm is null" );
     }
-    
+
     irods::server_properties& props = irods::server_properties::getInstance();
     props.capture_if_needed();
-    irods::error ret = props.get_property<std::string>( 
-                           irods::STRICT_ACL_KW, 
+    irods::error ret = props.get_property<std::string>(
+                           irods::STRICT_ACL_KW,
                            _acls );
 
     return PASS( ret );
@@ -90,7 +90,7 @@ irods::error get_query_array(
                    SYS_INVALID_INPUT_PARAM,
                    "comm is null" );
     }
-    
+
     _queries = json_array();
     if ( !_queries ) {
         return ERROR(
@@ -106,7 +106,7 @@ irods::error get_query_array(
     spec_inp.sql = "ls";
 
     genQueryOut_t* gen_out = 0;
-    int status = rsSpecificQuery( 
+    int status = rsSpecificQuery(
                      _comm,
                      &spec_inp,
                      &gen_out );
@@ -121,18 +121,10 @@ irods::error get_query_array(
     char* values = gen_out->sqlResult[ 0 ].value;
 
     for( int i = 0 ;
-         i < gen_out->rowCnt ; 
+         i < gen_out->rowCnt ;
          ++i ) {
 
         char* alias = &values[ len * i ];
-        if( !alias ) {
-            rodsLog( 
-                LOG_ERROR, 
-                "get_query_array - alias at %d is null", 
-                i );
-            continue;
-        }
-
         json_array_append( _queries, json_string( alias ) );
 
     } // for i
@@ -150,7 +142,7 @@ int _rsIESClientHints(
     bytesBuf_t** _bbuf ) {
     if( ! _comm ) {
         return SYS_INVALID_INPUT_PARAM;
-            
+
     }
 
     json_t* ies_hints = json_object();
@@ -169,9 +161,9 @@ int _rsIESClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_object_set( 
-        ies_hints, 
-        "strict_acls", 
+    json_object_set(
+        ies_hints,
+        "strict_acls",
         json_string( acls.c_str() ) );
 
     json_t* query_arr = 0;
@@ -179,9 +171,9 @@ int _rsIESClientHints(
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( 
-        ies_hints, 
-        "specific_queries", 
+    json_object_set(
+        ies_hints,
+        "specific_queries",
         query_arr );
 
     char* tmp_buf = json_dumps( ies_hints, JSON_INDENT( 4 ) );
