@@ -47,7 +47,7 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 # post install
 # =-=-=-=-=-=-=-
-%postinstall ldconfig /usr/lib/irods
+%postinstall ldconfig
 
 
 # =-=-=-=-=-=-=-
@@ -70,6 +70,8 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
+
+f 644 root root /etc/ld.so.conf.d/irods.conf ./packaging/ldconfig.irods.conf
 
 d 755 root root /usr/lib/irods/ -
 
