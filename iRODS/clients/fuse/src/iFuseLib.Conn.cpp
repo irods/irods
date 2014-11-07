@@ -259,6 +259,7 @@ ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv ) {
             if ( iFuseConn->conn == NULL ) {
                 rodsLogError( LOG_ERROR, errMsg.status,
                               "ifuseConnect: rcConnect failure %s", errMsg.msg );
+                UNLOCK_STRUCT( *iFuseConn );
                 if ( errMsg.status < 0 ) {
                     return errMsg.status;
                 }
