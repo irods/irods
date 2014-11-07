@@ -175,10 +175,10 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         with open(serverConfigFile) as f:
             contents = json.load(f)
         os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
-        contents[pam_password_length] = 20;
-        contents[pam_no_extend] = False;
-        contents[pam_password_min_time] = 121;
-        contents[pam_password_max_time] = 1209600;
+        contents['pam_password_length'] = 20;
+        contents['pam_no_extend'] = False;
+        contents['pam_password_min_time'] = 121;
+        contents['pam_password_max_time'] = 1209600;
         with open(serverConfigFile, 'w') as f:
             json.dump(contents, f)
 
