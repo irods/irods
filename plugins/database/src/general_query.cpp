@@ -185,8 +185,8 @@ sColumn( int defineVal, const char *tableName, const char *columnName ) {
         rodsLog( LOG_ERROR, "sTable table full %d", CAT_TOO_MANY_TABLES );
         return CAT_TOO_MANY_TABLES;
     }
-    strncpy( Columns[nColumns].tableName, tableName, NAME_LEN );
-    strncpy( Columns[nColumns].columnName, columnName, NAME_LEN );
+    snprintf( Columns[nColumns].tableName, sizeof( Columns[nColumns].tableName ), "%s", tableName );
+    snprintf( Columns[nColumns].columnName, sizeof( Columns[nColumns].columnName ), "%s", columnName );
     Columns[nColumns].defineValue = defineVal;
     if ( debug > 1 ) printf( "column %d is %d %s %s\n",
                                  nColumns, defineVal, tableName, columnName );
