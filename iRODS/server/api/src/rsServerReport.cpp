@@ -420,7 +420,7 @@ irods::error convert_irods_host(
         while ( getline( file, line ) ) {
 
             size_t pos = line.find_first_not_of( "\t " );
-            if ( line[ pos ] == '#' ) {
+            if ( std::string::npos == pos || line[ pos ] == '#' ) {
                 continue;
             }
 
