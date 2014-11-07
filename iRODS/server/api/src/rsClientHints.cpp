@@ -69,18 +69,18 @@ irods::error get_hash_and_policy(
                    SYS_INVALID_INPUT_PARAM,
                    "comm is null" );
     }
- 
+
     irods::server_properties& props = irods::server_properties::getInstance();
     props.capture_if_needed();
-    irods::error ret = props.get_property<std::string>( 
-                           DEFAULT_HASH_SCHEME_KW, 
+    irods::error ret = props.get_property<std::string>(
+                           DEFAULT_HASH_SCHEME_KW,
                            _hash );
     if( _hash.empty() ) {
         _hash = "SHA256";
     }
-    
-    ret = props.get_property<std::string>( 
-                           MATCH_HASH_POLICY_KW, 
+
+    ret = props.get_property<std::string>(
+                           MATCH_HASH_POLICY_KW,
                            _policy );
     if( _policy.empty() ) {
         _policy = "not_strict";
@@ -125,14 +125,15 @@ int _rsClientHints(
     }
 
     json_error_t j_err;
-    json_t* client_hints = json_loads( 
-                               ( char* )ies_buf->buf, 
+    json_t* client_hints = json_loads(
+                               ( char* )ies_buf->buf,
                                ies_buf->len, &j_err );
     if ( !client_hints ) {
         rodsLog(
             LOG_ERROR,
             "_rsClientHints - json_loads failed [%s]",
             j_err.text );
+        freeBBuf( ies_buf );
         return ACTION_FAILED_ERR;
     }
 
@@ -142,18 +143,18 @@ int _rsClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_object_set( 
-        client_hints, 
-        "hash_scheme", 
+    json_object_set(
+        client_hints,
+        "hash_scheme",
         json_string( hash.c_str() ) );
-    json_object_set( 
-        client_hints, 
-        "match_hash_policy", 
+    json_object_set(
+        client_hints,
+        "match_hash_policy",
         json_string( hash_policy.c_str() ) );
 
 
-    char* tmp_buf = json_dumps( 
-                        client_hints, 
+    char* tmp_buf = json_dumps(
+                        client_hints,
                         JSON_INDENT( 4 ) );
 
     // *SHOULD* free All The Things...
