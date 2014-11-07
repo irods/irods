@@ -202,10 +202,6 @@ endif
 LDADD+=-lssl -lcrypto
 CL_LDADD+=-lssl -lcrypto
 
-ifdef PAM_AUTH
-MY_CFLAG+= -DPAM_AUTH
-endif
-
 ifdef PAM_AUTH_CHECK_PROG
 MY_CFLAG+= -DPAM_AUTH_CHECK_PROG=\"$(PAM_AUTH_CHECK_PROG)\"
 endif

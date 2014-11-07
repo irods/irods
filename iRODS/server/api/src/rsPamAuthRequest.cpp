@@ -123,8 +123,6 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 
     result = *pamAuthRequestOut;
 
-#if defined(PAM_AUTH)
-
     irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
 
     if ( run_server_as_root ) {
@@ -163,9 +161,5 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                                         NULL,
                                         &result->irodsPamPassword );
     return status;
-#else
-    status = PAM_AUTH_NOT_BUILT_INTO_SERVER;
-    return status;
-#endif
 }
 #endif /* RODS_CAT */

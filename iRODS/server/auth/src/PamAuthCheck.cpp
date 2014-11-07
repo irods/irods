@@ -14,11 +14,6 @@
   You may need to install PAM libraries, such as libpam0g-dev:
   sudo apt-get install libpam0g-dev
 
-  This is built when PAM is enabled (in config/config.mk, change
-  # PAM_AUTH = 1
-  to
-  PAM_AUTH = 1
-
   But you can also build it via:
   gcc PamAuthCheck.c -L /usr/lib -l pam -o PamAuthCheck
 

@@ -83,7 +83,6 @@ int clientLoginPam( rcComm_t* Conn,
                     char*     password,
                     int       ttl ) {
     using namespace boost::filesystem;
-#ifdef PAM_AUTH
     int status = 0;
     pamAuthRequestInp_t pamAuthReqInp;
     pamAuthRequestOut_t *pamAuthReqOut = NULL;
@@ -149,9 +148,6 @@ int clientLoginPam( rcComm_t* Conn,
 
     status = obfSavePw( 0, 0, 0,  pamAuthReqOut->irodsPamPassword );
     return status;
-#else
-    return PAM_AUTH_NOT_BUILT_INTO_CLIENT;
-#endif
 
 }
 

@@ -212,13 +212,10 @@ SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
 
 # authentication support
-ifdef PAM_AUTH
 SERVER_BINS += $(serverBinDir)/PamAuthCheck
 SERVER_OBJS += $(svrAuthObjDir)/PamAuthCheck.o
 AUTH_CFLAGS +=
 AUTH_LDFLAGS += -lpam
-endif
-
 
 # icat Tests
 ifdef RODS_CAT
