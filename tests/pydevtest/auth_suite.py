@@ -36,7 +36,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {}
-        env['irods_auth_scheme'] = "OSAuth"
+        env['irods_authentication_scheme'] = "OSAuth"
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/'+authTestUser 
         env['irods_cwd'] = '/tempZone/home/'+authTestUser 
@@ -108,7 +108,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
         # does not use our SSL to test legacy SSL code path
         env = {}
-        env['irods_auth_scheme'] = "PaM"
+        env['irods_authentication_scheme'] = "PaM"
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/'+authTestUser 
         env['irods_cwd'] = '/tempZone/home/'+authTestUser 
@@ -164,7 +164,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
 
         env = {}
         env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
-        env['irods_auth_scheme'] = "PaM"
+        env['irods_authentication_scheme'] = "PaM"
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/'+authTestUser 
         env['irods_cwd'] = '/tempZone/home/'+authTestUser 
