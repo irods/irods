@@ -5535,7 +5535,6 @@ extern "C" {
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         char myTime[50];
         rodsLong_t status;
-        char tSQL[MAX_SQL_SIZE];
         int count;
         rodsLong_t iVal;
         char iValStr[60];
@@ -5570,7 +5569,7 @@ extern "C" {
             return ERROR( iVal, "cmlCheckDir failed" );
         }
 
-        strncpy( tSQL, "update R_COLL_MAIN set ", MAX_SQL_SIZE );
+        std::string tSQL( "update R_COLL_MAIN set " );
         count = 0;
         if ( strlen( _coll_info->collType ) > 0 ) {
             if ( strcmp( _coll_info->collType, "NULL_SPECIAL_VALUE" ) == 0 ) {
@@ -5580,7 +5579,7 @@ extern "C" {
             else {
                 cllBindVars[cllBindVarCount++] = _coll_info->collType;
             }
-            strncat( tSQL, "coll_type=? ", MAX_SQL_SIZE );
+            tSQL += "coll_type=? ";
             count++;
         }
         if ( strlen( _coll_info->collInfo1 ) > 0 ) {
@@ -5592,9 +5591,9 @@ extern "C" {
                 cllBindVars[cllBindVarCount++] = _coll_info->collInfo1;
             }
             if ( count > 0 ) {
-                strncat( tSQL, ",", MAX_SQL_SIZE );
+                tSQL += ",";
             }
-            strncat( tSQL, "coll_info1=? ", MAX_SQL_SIZE );
+            tSQL += "coll_info1=? ";
             count++;
         }
         if ( strlen( _coll_info->collInfo2 ) > 0 ) {
@@ -5606,9 +5605,9 @@ extern "C" {
                 cllBindVars[cllBindVarCount++] = _coll_info->collInfo2;
             }
             if ( count > 0 ) {
-                strncat( tSQL, ",", MAX_SQL_SIZE );
+                tSQL += ",";
             }
-            strncat( tSQL, "coll_info2=? ", MAX_SQL_SIZE );
+            tSQL += "coll_info2=? ";
             count++;
         }
         if ( count == 0 ) {
@@ -5617,12 +5616,12 @@ extern "C" {
         getNowStr( myTime );
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = _coll_info->collName;
-        strncat( tSQL, ", modify_ts=? where coll_name=?", MAX_SQL_SIZE );
+        tSQL += ", modify_ts=? where coll_name=?";
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModColl SQL 1" );
         }
-        status =  cmlExecuteNoAnswerSql( tSQL,
+        status =  cmlExecuteNoAnswerSql( tSQL.c_str(),
                                          &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -7546,8 +7545,7 @@ checkLevel:
         /* calcuate the temp password (a hash of the user's main pw and
            the hashValue) */
         memset( md5Buf, 0, sizeof( md5Buf ) );
-        strncpy( md5Buf, hashValue, 100 );
-        strncat( md5Buf, password, 100 );
+        snprintf( md5Buf, sizeof( md5Buf ), "%s%s", hashValue, password );
 
         obfMakeOneWayHash( HASH_TYPE_DEFAULT,
                            ( unsigned char * ) md5Buf, 100, ( unsigned char * ) digest );
@@ -7701,8 +7699,7 @@ checkLevel:
         /* calcuate the limited password (a hash of the user's main pw and
            the hashValue) */
         memset( md5Buf, 0, sizeof( md5Buf ) );
-        strncpy( md5Buf, hashValue, 100 );
-        strncat( md5Buf, password, 100 );
+        snprintf( md5Buf, sizeof( md5Buf ), "%s%s", hashValue, password );
 
         obfMakeOneWayHash( HASH_TYPE_DEFAULT,
                            ( unsigned char * ) md5Buf, 100, ( unsigned char * ) digest );
@@ -9185,7 +9182,6 @@ checkLevel:
         char zoneToUse[NAME_LEN];
         char userName2[NAME_LEN];
 
-        char oldPath2[MAX_NAME_LEN];
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModRescDataPaths" );
@@ -9246,8 +9242,8 @@ checkLevel:
         /* This is needed for like clause which is needed to get the
            correct number of rows that were updated (seems like the DBMS will
            return a row count for rows looked at for the replace). */
-        strncpy( oldPath2, _old_path, sizeof( oldPath2 ) );
-        strncat( oldPath2, "%", sizeof( oldPath2 ) );
+        char oldPath2[MAX_NAME_LEN];
+        snprintf( oldPath2, sizeof( oldPath2 ), "%s%%", _old_path );
 
         if ( _user_name != NULL && *_user_name != '\0' ) {
             strncpy( zoneToUse, zone.c_str(), NAME_LEN );
@@ -11457,7 +11453,6 @@ checkLevel:
         const char *myZone = 0;
         char userIdStr[MAX_NAME_LEN];
         char objIdStr[MAX_NAME_LEN];
-        char pathStart[MAX_NAME_LEN * 2];
         int inheritFlag = 0;
         char myAccessStr[LONG_NAME_LEN];
         int adminMode = 0;
@@ -11831,8 +11826,10 @@ checkLevel:
         }
 
 
-        makeEscapedPath( _path_name, pathStart, sizeof( pathStart ) );
-        strncat( pathStart, "/%", sizeof( pathStart ) );
+        char escapedPath[MAX_NAME_LEN * 2];
+        makeEscapedPath( _path_name, escapedPath, sizeof( escapedPath ) );
+        char pathStart[MAX_NAME_LEN * 2];
+        snprintf( pathStart, sizeof( pathStart ), "%s/%%", escapedPath );
 
 #if (defined ORA_ICAT || defined MY_ICAT)
 #else
