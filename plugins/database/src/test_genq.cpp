@@ -4,6 +4,9 @@
   ICAT test program for the GeneralQuery.
 */
 
+#include <limits>
+#include <boost/lexical_cast.hpp>
+
 #include "rodsClient.hpp"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
@@ -166,17 +169,15 @@ int doLs3a()
 }
 
 /* similar to ls2 but will do it repeatedly */
-int doLs3( char *repCount ) {
-    int iRepCount, i, status;
+int doLs3( int repCount ) {
     rodsLogSqlReq( 0 ); /* less verbosity */
-    iRepCount = atoi( repCount );
-    for ( i = 0; i < iRepCount; i++ ) {
-        status = doLs3a();
+    for ( int i = 0; i < repCount; i++ ) {
+        int status = doLs3a();
         if ( status ) {
-            break;
+            return status;
         }
     }
-    return status;
+    return 0;
 }
 
 
@@ -1065,7 +1066,13 @@ main( int argc, char **argv ) {
             exit( 0 );
         }
         if ( mode == 15 ) {
-            status = doLs3( argv[2] );
+            try {
+                int reps = boost::lexical_cast<int>( argv[2] );
+                reps = reps > 0 && reps <= std::numeric_limits<int>::max() ? reps : 0;
+                status = doLs3( reps );
+            } catch ( boost::bad_lexical_cast e ) {
+                exit( 2 );
+            }
             if ( status < 0 ) {
                 exit( 2 );
             }
