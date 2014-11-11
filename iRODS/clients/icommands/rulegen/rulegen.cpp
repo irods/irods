@@ -131,6 +131,7 @@ void yyerror( char *fmt, ... ) {
     fprintf( stdout, "\n%*s", column, "^" );
     vfprintf( stdout, fmt, va );
     fprintf( stdout, ":Line %d\n", line_num );
+    va_end( va );
 
 }
 
