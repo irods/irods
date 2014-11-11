@@ -10,7 +10,6 @@
 #include "irods_api_home.hpp"
 #include "irods_database_home.hpp"
 #include "irods_lookup_table.hpp"
-#include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_home_directory.hpp"
@@ -18,6 +17,8 @@
 #include "irods_get_full_path_for_config_file.hpp"
 #include "server_report.hpp"
 #include "readServerConfig.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_environment_properties.hpp"
 
 #include <jansson.h>
 
@@ -29,6 +30,7 @@
 #include <boost/archive/iterators/insert_linebreaks.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/archive/iterators/ostream_iterator.hpp>
+namespace fs = boost::filesystem;
 
 #include <sys/utsname.h>
 
@@ -159,7 +161,38 @@ irods::error make_federation_set(
 
 irods::error convert_server_config(
     json_t*& _svr_cfg ) {
+    // =-=-=-=-=-=-=-
+    // if json file exists, simply load that
+    std::string svr_cfg;
+    irods::error ret = irods::get_full_path_for_config_file(
+                           "server_config.json",
+                           svr_cfg );
+    if( ret.ok() && fs::exists( svr_cfg ) ) {
+        json_error_t error;
 
+        _svr_cfg = json_load_file(
+                       svr_cfg.c_str(), 
+                       0, &error );
+        if( !_svr_cfg ) {
+            std::string msg( "failed to load file [" );
+            msg += svr_cfg;
+            msg += "] json error [";
+            msg += error.text;
+            msg += "]";
+            return ERROR(
+                       -1,
+                       msg );
+
+
+        } else {
+            json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+            return SUCCESS();
+
+        }
+    }
+
+    // =-=-=-=-=-=-=-
+    // otherwise, convert the old properties
     irods::server_properties& props = irods::server_properties::getInstance();
     props.capture_if_needed();
 
@@ -171,7 +204,7 @@ irods::error convert_server_config(
     }
 
     std::string s_val;
-    irods::error ret = props.get_property< std::string >( "icatHost", s_val );
+    ret = props.get_property< std::string >( "icatHost", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "icat_host", json_string( s_val.c_str() ) );
     }
@@ -490,6 +523,36 @@ irods::error convert_irods_host(
 
 irods::error convert_service_account(
     json_t*& _svc_acct ) {
+    // =-=-=-=-=-=-=-
+    // if json file exists, simply load that
+    std::string env_file( irods::IRODS_HOME_DIRECTORY );
+    env_file += irods::environment_properties::JSON_ENV_FILE;
+
+    if( fs::exists( env_file ) ) {
+        json_error_t error;
+
+        _svc_acct = json_load_file(
+                       env_file.c_str(), 
+                       0, &error );
+        if( !_svc_acct ) {
+            std::string msg( "failed to load file [" );
+            msg += env_file;
+            msg += "] json error [";
+            msg += error.text;
+            msg += "]";
+            return ERROR(
+                       -1,
+                       msg );
+
+
+        } else {
+            return SUCCESS();
+
+        }
+    }
+
+    // =-=-=-=-=-=-=-
+    // otherwise, convert the old properties
 
     _svc_acct = json_object();
     if ( !_svc_acct ) {
@@ -986,11 +1049,74 @@ irods::error get_config_dir(
 
 } // get_config_dir
 
+irods::error load_version_file(
+    json_t*& _version ) {
+    // =-=-=-=-=-=-=-
+    // if json file exists, simply load that
+    std::string version_file( irods::IRODS_HOME_DIRECTORY );
+    version_file += "VERSION.json";
+
+    if( fs::exists( version_file ) ) {
+        json_error_t error;
+
+        _version = json_load_file(
+                       version_file.c_str(), 
+                       0, &error );
+        if( !_version ) {
+            std::string msg( "failed to load file [" );
+            msg += version_file;
+            msg += "] json error [";
+            msg += error.text;
+            msg += "]";
+            return ERROR(
+                       -1,
+                       msg );
+
+
+        } else {
+            return SUCCESS();
+
+        }
+    }
+            
+    return SUCCESS();
+
+} // load_version_file
 
 
 #ifdef RODS_CAT
 irods::error get_database_config(
     json_t*& _db_cfg ) {
+    // =-=-=-=-=-=-=-
+    // if json file exists, simply load that
+    std::string db_cfg;
+    irods::error ret = irods::get_full_path_for_config_file(
+                           "database_config.json",
+                           db_cfg );
+    if( ret.ok() && fs::exists( db_cfg ) ) {
+        json_error_t error;
+
+        _db_cfg = json_load_file(
+                       db_cfg.c_str(), 
+                       0, &error );
+        if( !_db_cfg ) {
+            std::string msg( "failed to load file [" );
+            msg += db_cfg;
+            msg += "] json error [";
+            msg += error.text;
+            msg += "]";
+            return ERROR(
+                       -1,
+                       msg );
+
+
+        } else {
+            // sanitize passwords
+            json_object_set( _db_cfg, "db_password", json_string( "XXXXX" ) );
+            return SUCCESS();
+
+        }
+    }
 
     irods::server_properties& props = irods::server_properties::getInstance();
     props.capture_if_needed();
@@ -1003,9 +1129,9 @@ irods::error get_database_config(
     }
 
     std::string s_val;
-    irods::error ret = props.get_property< std::string >(
-                           "catalog_database_type",
-                           s_val );
+    ret = props.get_property< std::string >(
+              "catalog_database_type",
+              s_val );
     if ( ret.ok() ) {
         json_object_set(
             _db_cfg,
@@ -1046,12 +1172,25 @@ int _rsServerReport(
 
     }
 
-
     json_t* resc_svr = json_object();
-    json_object_set( resc_svr, "commit_id", json_string( "0000000000000000000000000000000000000000" ) );
+    if( !resc_svr ) {
+        rodsLog(
+            LOG_ERROR,
+            "_rsServerReport: failed to allocate resc_svr" );
+        return SYS_MALLOC_ERR;
+
+    }
+
+    json_t* version = 0;
+    irods::error ret = load_version_file(
+                           version );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+    json_object_set( resc_svr, "version", version );
 
     json_t* host_system_information = 0;
-    irods::error ret = get_host_system_information( host_system_information );
+    ret = get_host_system_information( host_system_information );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }

@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef IRODS_SERVER_PROPERTIES_HPP_
-#define IRODS_SERVER_PROPERTIES_HPP_
+#ifndef IRODS_ENVIRONMENT_PROPERTIES_HPP_
+#define IRODS_ENVIRONMENT_PROPERTIES_HPP_
 
 
 #include "irods_lookup_table.hpp"
@@ -13,17 +13,15 @@
 
 namespace irods {
 
-    const std::string STRICT_ACL_KW( "strict_acls" );
-
-/// @brief kw for server property map stating this is an agent-agent conn
-    const std::string AGENT_CONN_KW( "agent_conn" );
-
-/// @brief kw for server property map for encryption key
-    const std::string AGENT_KEY_KW( "agent_key" );
-
     class environment_properties {
 
     public:
+        /// @brief path for legacy environemnt file
+        static const std::string LEGACY_ENV_FILE;
+        
+        /// @brief path for json environemnt file
+        static const std::string JSON_ENV_FILE;
+
         /**
          * @brief Access method for the singleton
          */
@@ -99,13 +97,12 @@ namespace irods {
         lookup_table< std::string > key_map_;
         bool captured_;
 
-        const std::string LEGACY_ENV_FILE;
-        const std::string JSON_ENV_FILE;
-
-
     }; // class environment_properties
-
 
 } // namespace irods
 
-#endif /* IRODS_SERVER_PROPERTIES_HPP_ */
+#endif /* IRODS_ENVIRONMENT_PROPERTIES_HPP_ */
+
+
+
+

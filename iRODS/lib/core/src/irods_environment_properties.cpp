@@ -29,6 +29,9 @@ namespace fs = boost::filesystem;
 
 namespace irods {
 
+    const std::string environment_properties::LEGACY_ENV_FILE = "/.irods/.irodsEnv";
+    const std::string environment_properties::JSON_ENV_FILE   = "/.irods/irods_environment.json";
+
 // Access method for singleton
     environment_properties& environment_properties::getInstance() {
         static environment_properties instance;
@@ -45,9 +48,7 @@ namespace irods {
     }
 
     environment_properties::environment_properties() : 
-        captured_( false ),
-        LEGACY_ENV_FILE( "/.irods/.irodsEnv" ),
-        JSON_ENV_FILE( "/.irods/irods_environment.json" ) {
+        captured_( false ) {
 
         key_map_[ CFG_IRODS_USER_NAME_KW ]                  = "irodsUserName";
         key_map_[ CFG_IRODS_HOST_KW ]                       = "irodsHost";
