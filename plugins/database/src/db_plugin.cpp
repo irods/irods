@@ -2489,7 +2489,7 @@ extern "C" {
         /* If the only field is the chksum then the user only needs read
            access since we can trust that the server-side code is
            calculating it properly and checksum is a system-managed field.
-           For example, when doing an irsync the server may calcuate a
+           For example, when doing an irsync the server may calculate a
            checksum and want to set it in the source copy.
         */
         neededAccess = ACCESS_MODIFY_METADATA;

@@ -2745,7 +2745,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
     rei->status = parseResForCollInp( subtrees[1], &collInpCache, &collInp, 0 );
     if ( rei->status < 0 ) {
         char buf[ERR_MSG_LEN];
-        snprintf( buf, ERR_MSG_LEN, "msiIsCollectionSpider: input collection error. status = %d", rei->status );
+        snprintf( buf, ERR_MSG_LEN, "msiCollectionSpider: input collection error. status = %d", rei->status );
         generateAndAddErrMsg( buf, node, rei->status, errmsg );
         return newErrorRes( r, rei->status );
     }
@@ -2753,7 +2753,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
     /* Check if "objects" input has proper form */
     if ( getNodeType( subtrees[0] ) != TK_VAR ) {
         char buf[ERR_MSG_LEN];
-        snprintf( buf, ERR_MSG_LEN, "msiIsCollectionSpider: input objects error. status = %d", rei->status );
+        snprintf( buf, ERR_MSG_LEN, "msiCollectionSpider: input objects error. status = %d", rei->status );
         generateAndAddErrMsg( buf, node, rei->status, errmsg );
         return newErrorRes( r, rei->status );
     }
