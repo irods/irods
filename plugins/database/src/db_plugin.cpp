@@ -7005,6 +7005,7 @@ extern "C" {
         char *pSha1 = NULL;
         int hashType = 0;
         char lastPwModTs[MAX_PASSWORD_LEN + 10];
+        snprintf( lastPwModTs, sizeof( lastPwModTs ), "0" );
         char *cPwTs = NULL;
         int iTs1 = 0, iTs2 = 0;
         std::vector<char> pwInfoArray( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
