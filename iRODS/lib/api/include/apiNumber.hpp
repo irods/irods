@@ -153,8 +153,6 @@
 #define PAM_AUTH_REQUEST_AN                         725
 #define GET_LIMITED_PASSWORD_AN                     726
 
-#define EXEC_CMD241_AN                  634
-
 /* 1100 - 1200 - SSL API calls */
 #define SSL_START_AN 			1100
 #define SSL_END_AN 			1101

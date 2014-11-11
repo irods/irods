@@ -27,24 +27,6 @@ int initExecCmdMutex() {
 }
 
 int
-rsExecCmd241( rsComm_t *rsComm, execCmd241_t *execCmd241Inp,
-              execCmdOut_t **execCmdOut ) {
-    execCmd_t execCmdInp;
-    int status;
-
-    rstrcpy( execCmdInp.cmd, execCmd241Inp->cmd, LONG_NAME_LEN );
-    rstrcpy( execCmdInp.cmdArgv, execCmd241Inp->cmdArgv, HUGE_NAME_LEN );
-    rstrcpy( execCmdInp.execAddr, execCmd241Inp->execAddr, LONG_NAME_LEN );
-    rstrcpy( execCmdInp.hintPath, execCmd241Inp->hintPath, LONG_NAME_LEN );
-    execCmdInp.addPathToArgv = execCmd241Inp->addPathToArgv;
-    execCmdInp.dummy = 0;
-    bzero( &execCmdInp.condInput, sizeof( keyValPair_t ) );
-
-    status = rsExecCmd( rsComm, &execCmdInp, execCmdOut );
-    return status;
-}
-
-int
 rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;

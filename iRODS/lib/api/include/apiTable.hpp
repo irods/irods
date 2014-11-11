@@ -362,10 +362,6 @@ static irods::apidef_t client_api_table_inp[] = {
         "DataObjInp_PI", 0, "RodsObjStat_PI", 0, ( funcPtr ) RS_OBJ_STAT, clearDataObjInp
     },
     {
-        EXEC_CMD241_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "ExecCmd241_PI", 0, "ExecCmdOut_PI", 0, ( funcPtr ) RS_EXEC_CMD241, irods::clearInStruct_noop
-    },
-    {
         EXEC_CMD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "ExecCmd_PI", 0, "ExecCmdOut_PI", 0, ( funcPtr ) RS_EXEC_CMD, irods::clearInStruct_noop
     },

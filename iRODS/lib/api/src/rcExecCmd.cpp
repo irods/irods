@@ -13,14 +13,3 @@ rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
 
     return status;
 }
-
-int
-rcExecCmd241( rcComm_t *conn, execCmd241_t *execCmdInp,
-              execCmdOut_t **execCmdOut ) {
-    int status;
-    status = procApiRequest( conn, EXEC_CMD241_AN, execCmdInp, NULL,
-                             ( void ** ) execCmdOut, NULL );
-
-    return status;
-}
-

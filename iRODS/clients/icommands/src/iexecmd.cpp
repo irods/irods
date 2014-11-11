@@ -108,20 +108,6 @@ main( int argc, char **argv ) {
 
     status = rcExecCmd( conn, &execCmd, &execCmdOut );
 
-    if ( status == SYS_UNMATCHED_API_NUM ) {
-        /* try older version */
-        execCmd241_t execCmd241Inp;
-
-        rstrcpy( execCmd241Inp.cmd, execCmd.cmd, LONG_NAME_LEN );
-        rstrcpy( execCmd241Inp.cmdArgv, execCmd.cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmd241Inp.execAddr, execCmd.execAddr, LONG_NAME_LEN );
-        rstrcpy( execCmd241Inp.hintPath, execCmd.hintPath, LONG_NAME_LEN );
-        execCmd241Inp.addPathToArgv = execCmd.addPathToArgv;
-        bzero( &execCmd241Inp.condInput, sizeof( keyValPair_t ) );
-
-        status = rcExecCmd241( conn, &execCmd241Inp, &execCmdOut );
-    }
-
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "rcExecCmd error. " );
         printErrorStack( conn->rError );

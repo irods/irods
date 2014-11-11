@@ -58,7 +58,6 @@ packInstructArray_t api_pack_table_init[] = {
     {"RegReplica_PI", RegReplica_PI, irods::clearInStruct_noop},
     {"UnregDataObj_PI", UnregDataObj_PI, irods::clearInStruct_noop},
     {"ExecCmd_PI", ExecCmd_PI, irods::clearInStruct_noop},
-    {"ExecCmd241_PI", ExecCmd241_PI, irods::clearInStruct_noop},
     {"ExecCmdOut_PI", ExecCmdOut_PI, irods::clearInStruct_noop},
     {"SubStructFileFdOpr_PI", SubStructFileFdOpr_PI, irods::clearInStruct_noop},
     {"SubStructFileLseekInp_PI", SubStructFileLseekInp_PI, irods::clearInStruct_noop},
