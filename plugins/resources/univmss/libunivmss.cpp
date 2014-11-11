@@ -130,20 +130,14 @@ extern "C" {
         irods::data_object_ptr fco = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
         std::string filename = fco->physical_path();
 
-        int status;
         execCmd_t execCmdInp;
-        char cmdArgv[HUGE_NAME_LEN] = "";
-        execCmdOut_t *execCmdOut = NULL;
+        memset( &execCmdInp, 0, sizeof( execCmdInp ) );
+        snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "rm '%s'", filename.c_str() );
+        snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "localhost" );
 
-        bzero( &execCmdInp, sizeof( execCmdInp ) );
-        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "rm" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "'" );
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
-        status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        execCmdOut_t *execCmdOut = NULL;
+        int status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_UNLINK_ERR - errno;
