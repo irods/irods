@@ -487,37 +487,31 @@ doTicketOp( char *arg1, char *arg2, char *arg3, char *arg4, char *arg5 ) {
 
 void
 makeTicket( char *newTicket ) {
-    int characterSet_len;
-    int characterSet[26 + 26 + 10];
+    int ticket_len = 15;
     char buf1[100], buf2[20];
     get64RandomBytes( buf1 );
-    int i, ix, j;
 
     /*
      Set up an array of characters that are allowed in the result.
     */
-    characterSet_len = 26 + 26 + 10;
-    j = 0;
-    for ( i = 0; i < 26; i++ ) {
-        characterSet[j++] = ( int )'A' + i;
+    char characterSet_len = 26 + 26 + 10;
+    char characterSet[26 + 26 + 10];
+    int j = 0;
+    for ( char i = 0; i < 26; i++ ) {
+        characterSet[j++] = 'A' + i;
     }
-    for ( i = 0; i < 26; i++ ) {
-        characterSet[j++] = ( int )'a' + i;
+    for ( char i = 0; i < 26; i++ ) {
+        characterSet[j++] = 'a' + i;
     }
-    for ( i = 0; i < 10; i++ ) {
-        characterSet[j++] = ( int )'0' + i;
+    for ( char i = 0; i < 10; i++ ) {
+        characterSet[j++] = '0' + i;
     }
 
-    for ( i = 0, j = 0; j < 15; i++ ) {
-        ix = ( int )buf1[i];
-        ix = ix & 0x3f;
-        if ( ix < characterSet_len - 1 ) {
-            buf2[j++] = ( char )characterSet[ix];
-        }
-        else {
-        }
+    for ( char i = 0; i < ticket_len; i++ ) {
+        int ix = buf1[i] % characterSet_len;
+        buf2[i] = characterSet[ix];
     }
-    buf2[j++] = '\0';
+    buf2[ticket_len] = '\0';
     strncpy( newTicket, buf2, 20 );
     printf( "ticket:%s\n", buf2 );
 }
