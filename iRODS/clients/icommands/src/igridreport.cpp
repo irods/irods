@@ -59,7 +59,7 @@ main( int, char** ) {
     else {
         bytesBuf_t* bbuf = static_cast< bytesBuf_t* >( tmp_out );
 
-        // may not be propertly null terminated
+        // may not be properly null terminated
         std::string s( (char*)bbuf->buf, bbuf->len );
         printf( "\n%s\n", s.c_str() );
     }
