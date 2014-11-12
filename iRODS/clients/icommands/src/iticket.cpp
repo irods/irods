@@ -507,7 +507,7 @@ makeTicket( char *newTicket ) {
         characterSet[j++] = '0' + i;
     }
 
-    for ( char i = 0; i < ticket_len; i++ ) {
+    for ( int i = 0; i < ticket_len; i++ ) {
         int ix = buf1[i] % characterSet_len;
         buf2[i] = characterSet[ix];
     }
