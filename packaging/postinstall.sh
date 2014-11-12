@@ -36,9 +36,12 @@ rm -f /var/run/shm/*var_lib_irods_iRODS_server_config*
 
 # =-=-=-=-=-=-=-
 # wrap previous VERSION.json with new VERSION.json
-python -c "import json; data=json.load(open('$IRODS_HOME_DIR/VERSION.json')); data['previous_version'] = json.load(open('$IRODS_HOME_DIR/VERSION.json.previous')); print json.dumps(data, indent=4, sort_keys=True)" > $IRODS_HOME_DIR/VERSION.json.tmp
-mv $IRODS_HOME_DIR/VERSION.json.tmp $IRODS_HOME_DIR/VERSION.json
-rm $IRODS_HOME_DIR/VERSION.json.previous
+if [ "$UPGRADE_FLAG" == "true" ] ; then
+    python -c "import json; data=json.load(open('$IRODS_HOME_DIR/VERSION.json')); data['previous_version'] = json.load(open('$IRODS_HOME_DIR/VERSION.json.previous')); print json.dumps(data, indent=4, sort_keys=True)" > $IRODS_HOME_DIR/VERSION.json.tmp
+    mv $IRODS_HOME_DIR/VERSION.json.tmp $IRODS_HOME_DIR/VERSION.json
+    rm $IRODS_HOME_DIR/VERSION.json.previous
+    
+fi
 
 # =-=-=-=-=-=-=-
 # explode tarball of necessary coverage files if it exists
