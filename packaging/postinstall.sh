@@ -25,6 +25,11 @@ fi
 DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 
 # =-=-=-=-=-=-=-
+# add install time to VERSION.json file
+python -c "import time; import json; data=json.load(open('$IRODS_HOME_DIR/VERSION.json')); data['installation_time'] = time.strftime( '%Y-%m-%dT%H:%M:%SZ' ); print json.dumps(data, indent=4, sort_keys=True)" > $IRODS_HOME_DIR/VERSION.json.tmp
+mv $IRODS_HOME_DIR/VERSION.json.tmp $IRODS_HOME_DIR/VERSION.json
+
+# =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
 if [ -f /tmp/irodsServer.* ] ; then
     rm /tmp/irodsServer.*
