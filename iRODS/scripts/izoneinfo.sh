@@ -1,16 +1,14 @@
 #!/bin/bash
 
 # Usage is:
-#	zone-info [-m |-mf]
+#       izoneinfo.sh [-m |-mf]
 #
 # This shell script collects and displays some basic information on
 # the local iRODS instance and optionally sends the information to
-# DICE Research (the iRODS team).
+# the iRODS team.
 #
-# This should be run from the irods admin account on the ICAT-enabled
-# host, with the i-commands in the path and 'iinit' run.
-# If run from the build directory, it does not need to prompt for the 
-# config.mk file location.
+# This should be run from the iRODS service account on the ICAT-enabled
+# host.
 #
 
 set -e   # exit if anything fails
@@ -215,13 +213,13 @@ echo $svrinfo | tee -a $outFile
 date | tee -a $outFile
 
 # 
-# Optionally send this to DICE
+# Optionally send this to the iRODS team
 printf "Please enter yes or y to send the above information to the iRODS team:"
 read response
 if [ ! -z $response ]; then
     if [ $response = "y" ] || [ $response = "yes" ]; then
-	mailx -s zone-info schroeder@diceresearch.org < $outFile
-	echo "Thank you for sharing this information with DICE Research"
+	mailx -s izoneinfo-output info@irods.org < $outFile
+	echo "Thank you for sharing this information with the iRODS team."
     fi
 fi
 
