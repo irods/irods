@@ -1005,11 +1005,17 @@ cd $BUILDDIR/iRODS
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
 
+# =-=-=-=-=-=-=-
+# populate VERSION.json from VERSION.json.dist with current information
+set_tmpfile
+cd $BUILDDIR
+python packaging/generate_version_json.py > $TMPFILE
+mv $TMPFILE VERSION.json
 
 # =-=-=-=-=-=-=-
-# generate canonical version information for the code from top level VERSION file
+# generate canonical version information for the code from top level VERSION.json file
 cd $BUILDDIR
-TEMPLATE_RODS_RELEASE_VERSION=`$GREPCMD "\<IRODSVERSION\>" VERSION | awk -F= '{print $2}'`
+TEMPLATE_RODS_RELEASE_VERSION=`python packaging/get_irods_version.py`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
 sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
