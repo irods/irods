@@ -576,12 +576,12 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get the host property from the last resc and get the
         // host name from that host
-        rodsServerHost_t* last_resc_host = 0;
+        rodsServerHost_t* last_resc_host = NULL;
         error err = get_resource_property< rodsServerHost_t* >(
                         last_resc,
                         RESOURCE_HOST,
                         last_resc_host );
-        if ( !err.ok() ) {
+        if ( !err.ok() || NULL == last_resc_host ) {
             std::stringstream msg;
             msg << "resource_redirect :: failed in get_resource_property call ";
             msg << "for [" << last_resc << "]";
