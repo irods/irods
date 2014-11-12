@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import json
 import os
 import subprocess
@@ -37,7 +39,7 @@ outdata['catalog_schema_version'] = int(catalog_schema_version)
 p = subprocess.Popen("git log | head -n1 | awk '{print $2}'",
                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 (commit_id, err) = p.communicate()
-outdata['commit_id'] = commit_id.strip()
+outdata['commit_id'] = str(commit_id.strip())
 
 # get build_system_information
 unameinfo = platform.uname()
@@ -47,12 +49,12 @@ outdata['build_system_information'] = " ".join(unameinfo).strip()
 p = subprocess.Popen('date -u +"%Y-%m-%dT%H:%M:%SZ"',
                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 (compile_time, err) = p.communicate()
-outdata['compile_time'] = compile_time.strip()
+outdata['compile_time'] = str(compile_time.strip())
 
 # get compiler_version
 p = subprocess.Popen('g++ --version | head -n1',
                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 (compiler_version, err) = p.communicate()
-outdata['compiler_version'] = compiler_version.strip()
+outdata['compiler_version'] = str(compiler_version.strip())
 
-print json.dumps(outdata, indent=4, sort_keys=True)
+print(json.dumps(outdata, indent=4, sort_keys=True))
