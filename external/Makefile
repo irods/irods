@@ -37,6 +37,8 @@ LIBS3VERSIONARCHIVE=$(LIBS3VERSION).tar.gz
 LIBS3VERSIONMAKE=$(LIBS3VERSION)/GNUmakefile
 AVROVERSIONARCHIVE=$(AVROVERSION).tar.gz
 AVROVERSIONMAKE=$(AVROVERSION)/Makefile
+ZEROMQVERSIONARCHIVE=$(ZEROMQVERSION).tar.gz
+ZEROMQVERSIONMAKE=$(ZEROMQVERSION)/Makefile
 
 FAKETARGETFORMAKE=FakeTargetForMake
 
@@ -79,9 +81,9 @@ $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 ifeq ($(OS_platform), osx_platform)
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro build_database_for_macosx
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
 else
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq
 endif
 
 generate : build
@@ -217,6 +219,17 @@ $(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
 avro : $(AVROVERSIONMAKE)
 	@$(MAKE) -C $(AVROVERSION)/build avrocpp
 
+$(ZEROMQVERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(ZEROMQVERSIONARCHIVE) 2>&1
+
+$(ZEROMQVERSIONMAKE) : $(ZEROMQVERSIONARCHIVE)
+	@tar zxf $(ZEROMQVERSIONARCHIVE)
+	@cd $(ZEROMQVERSION) ; \
+		./configure
+
+zeromq : $(ZEROMQVERSIONMAKE)
+	@$(MAKE) -C $(ZEROMQVERSION)
+
 $(EPMVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_BUILD)/$(EPMVERSIONARCHIVE) 2>&1
 
@@ -265,6 +278,9 @@ clean :
 	@echo "Cleaning avro..."
 	@rm -rf $(AVROVERSION)
 	@rm -f $(AVROVERSIONARCHIVE)
+	@echo "Cleaning zeromq..."
+	@rm -rf $(ZEROMQVERSION)
+	@rm -f $(ZEROMQVERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
