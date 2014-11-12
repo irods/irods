@@ -202,10 +202,10 @@ extern "C" {
         }
 
          // default auth scheme
-         strncpy(
+         snprintf(
              _env->rodsAuthScheme,
-             "native",
-             6 );
+             sizeof( _env->rodsAuthScheme ),
+             "native" );
 
         capture_string_property( 
             msg_lvl,
