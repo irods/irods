@@ -96,8 +96,8 @@ namespace irods {
 
     }; // class error
 
-    error assert_error( bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ... );
-    error assert_pass( const error& _error, const std::string& _file, const std::string& _function, int _line, const std::string& _format, ... );
+    error assert_error( bool expr_, long long code_, const std::string& file_, const std::string& function_, const std::string& format_, int line_, ... );
+    error assert_pass( const error& _error, const std::string& _file, const std::string& _function, const std::string& _format, int line_, ... );
 
 }; // namespace irods
 
@@ -109,8 +109,8 @@ namespace irods {
 #define CODE( code_ ) ( irods::error( true, code_, "", __FILE__, __LINE__, __FUNCTION__ ) )
 #define SUCCESS( ) ( irods::error( true, 0, "", __FILE__, __LINE__, __FUNCTION__ ) )
 
-#define ASSERT_ERROR(expr_, code_, format_, ...)  (irods::assert_error(expr_, code_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
-#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
+#define ASSERT_ERROR(expr_, code_, format_, ...)  (irods::assert_error(expr_, code_, __FILE__, __FUNCTION__, format_, __LINE__, ##__VA_ARGS__))
+#define ASSERT_PASS(prev_error_, format_, ...) (irods::assert_pass(prev_error_, __FILE__, __FUNCTION__, format_, __LINE__, ##__VA_ARGS__))
 
 #endif // __IRODS_ERROR_HPP__
 
