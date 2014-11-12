@@ -2016,9 +2016,12 @@ extern "C" {
             rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
                      spec_coll->cacheDir );
 
-            rodsHostAddr_t* host_addr = 0;
+            rodsHostAddr_t* host_addr = NULL;
             _ctx.prop_map().get< rodsHostAddr_t* >( irods::RESOURCE_LOCATION, host_addr );
 
+            if ( NULL == host_addr ) {
+                return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "host_addr is null in rmDir" );
+            }
             /* remove cache */
             fileRmdirInp_t fileRmdirInp;
             memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
