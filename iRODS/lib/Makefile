@@ -173,7 +173,8 @@ OBJS =	$(LIB_CORE_OBJS) \
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a
+             $(BOOST_DIR)/stage/lib/libboost_thread.a \
+             $(BOOST_DIR)/stage/lib/libboost_chrono.a
 
 # Server configuration
 CONFIG =	$(svrConfigDir)/irodsHost
@@ -198,11 +199,6 @@ endif
 .PHONY:	all lib libs clean print_cflags
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
 		$(libSha1SrcDir) $(libRbudpSrcDir) $(libHasherSrcDir)
-
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a 
 
 # Build everything
 all:	libs

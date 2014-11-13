@@ -322,7 +322,8 @@ clean:
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a 
+             $(BOOST_DIR)/stage/lib/libboost_thread.a \
+             $(BOOST_DIR)/stage/lib/libboost_chrono.a
 
 db_plugin_with_re: $(DB_PLUGIN_SRC)
 	@echo "Compile With RE `basename $@`..."

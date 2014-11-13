@@ -12,8 +12,10 @@
 #include "startsock.hpp"
 #endif
 
-#include <boost/thread/thread_time.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+
 
 // =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"
@@ -281,15 +283,12 @@ int rcDisconnect(
 
     _conn->exit_flg = true; //
     if ( _conn->thread_ctx->reconnThr ) {
-        boost::system_time until;
         try {
-            until = boost::get_system_time();
-        } catch ( boost::exception& e ) {
-            rodsLog( LOG_ERROR, "get_system_time threw an exception, counter to boost documentation");
-            return SYS_INTERNAL_ERR;
+            _conn->thread_ctx->reconnThr->try_join_for( boost::chrono::seconds( 2 ) );    // force an interruption point
+        } catch ( boost::thread_interrupted e ) {
+            rodsLog( LOG_ERROR, "Thread encountered interrupt." );
+            status = SYS_THREAD_ENCOUNTERED_INTERRUPT;
         }
-        until += boost::posix_time::seconds( 2 );
-        _conn->thread_ctx->reconnThr->timed_join( until );    // force an interruption point
     }
 
     status = freeRcComm( _conn );

@@ -177,7 +177,7 @@ $(BOOSTVERSIONARCHIVE) :
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
 	@cd $(BOOSTVERSION) ; \
-		./bootstrap.sh --with-libraries=filesystem,system,thread,regex,program_options,iostreams
+		./bootstrap.sh --with-libraries=filesystem,system,thread,regex,program_options,iostreams,chrono
 
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \

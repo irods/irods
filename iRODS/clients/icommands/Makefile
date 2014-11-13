@@ -166,7 +166,8 @@ endif
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a
+             $(BOOST_DIR)/stage/lib/libboost_thread.a \
+             $(BOOST_DIR)/stage/lib/libboost_chrono.a
 #
 # Principal Targets
 #
