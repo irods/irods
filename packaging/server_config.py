@@ -11,6 +11,7 @@ def get_install_dir():
 
 class ServerConfig(object):
     def __init__(self):
+        self.values = {}
         if os.path.isfile('/etc/irods/server_config.json'):
             self.capture('/etc/irods/server_config.json', ' ')
             self.capture('/etc/irods/database_config.json', ' ')
@@ -45,7 +46,7 @@ class ServerConfig(object):
         name, ext = os.path.splitext(cfg_file)
         with open(cfg_file, 'r') as f:
             if '.json' == ext:
-                self.values = json.load(f)
+                self.values.update(json.load(f))
             else:
                 for i, row in enumerate(f):
                     columns = row.split(sep)

@@ -169,8 +169,16 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   mkdir -p $IRODS_HOME_DIR
   # write version information down for postinstall
   UPGRADE_TEMP_FILE="$IRODS_HOME_DIR/upgrade.tmp"
-  cp $IRODS_HOME_DIR/VERSION.json $$UPGRADE_TEMP_FILE
-  cp $IRODS_HOME_DIR/VERSION.json $IRODS_HOME_DIR/VERSION.json.previous
+  if [ -f "$IRODS_HOME_DIR/VERSION.json" ] ; then
+    cp $IRODS_HOME_DIR/VERSION.json $$UPGRADE_TEMP_FILE
+    cp $IRODS_HOME_DIR/VERSION.json $IRODS_HOME_DIR/VERSION.json.previous
+  else
+    cp $IRODS_HOME_DIR/VERSION $$UPGRADE_TEMP_FILE
+    # get version information from 4.0 bash-style VERSION file
+    # and stub out the rest for validation
+    . $IRODS_HOME_DIR/VERSION
+    python -c "from __future__ import print_function; import json; print(json.dumps({'irods_version': '$$IRODSVERSION', 'catalog_schema_version': $$CATALOG_SCHEMA_VERSION, 'commit_id': '0000000000000000000000000000000000000000', 'installation_time': '2014-08-20T17:36:40Z', 'build_system_information': '', 'compiler_version': '', 'compile_time': '2014-08-20T17:36:40Z'}))" > $IRODS_HOME_DIR/VERSION.json.previous
+  fi
 
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
