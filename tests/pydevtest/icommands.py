@@ -83,24 +83,23 @@ class RodsSession(object):
 
         # create irods_environment.json file
         envFileAbsPath = "%s/%s" % (self.sessionDir, "irods_environment.json")
-        ENVFILE = open(envFileAbsPath, "w")
-        ENVFILE.write("{\n")
-        ENVFILE.write("    \"irods_host\": \"%s\",\n" % myEnv.host)
-        ENVFILE.write("    \"irods_port\": %s,\n" % myEnv.port)
-        ENVFILE.write("    \"irods_default_resource\": \"%s\",\n" % myEnv.defRes)
-        ENVFILE.write("    \"irods_home\": \"%s\",\n" % myEnv.homeColl)
-        ENVFILE.write("    \"irods_cwd\": \"%s\",\n" % myEnv.cwd)
-        ENVFILE.write("    \"irods_user_name\": \"%s\",\n" % myEnv.username)
-        ENVFILE.write("    \"irods_zone\": \"%s\",\n" % myEnv.zone)
-        ENVFILE.write("    \"irods_client_server_negotiation\": \"%s\",\n" % myEnv.csnegotiation)
-        ENVFILE.write("    \"irods_client_server_policy\": \"%s\",\n" % myEnv.cspolicy)
-        ENVFILE.write("    \"irods_encryption_key_size\": %s,\n" % myEnv.enckeysize)
-        ENVFILE.write("    \"irods_encryption_salt_size\": %s,\n" % myEnv.encsaltsize)
-        ENVFILE.write("    \"irods_encryption_num_hash_rounds\": %s,\n" % myEnv.encnumhashrounds)
-        ENVFILE.write("    \"irods_encryption_algorithm\": \"%s\",\n" % myEnv.encalgorithm)
-        ENVFILE.write("    \"irods_default_hash_scheme\": \"%s\"\n" % myEnv.defaulthashscheme)
-        ENVFILE.write("}\n")
-        ENVFILE.close()
+        with open(envFileAbsPath, "w") as ENVFILE:
+            ENVFILE.write("{\n")
+            ENVFILE.write("    \"irods_host\": \"%s\",\n" % myEnv.host)
+            ENVFILE.write("    \"irods_port\": %s,\n" % myEnv.port)
+            ENVFILE.write("    \"irods_default_resource\": \"%s\",\n" % myEnv.defRes)
+            ENVFILE.write("    \"irods_home\": \"%s\",\n" % myEnv.homeColl)
+            ENVFILE.write("    \"irods_cwd\": \"%s\",\n" % myEnv.cwd)
+            ENVFILE.write("    \"irods_user_name\": \"%s\",\n" % myEnv.username)
+            ENVFILE.write("    \"irods_zone\": \"%s\",\n" % myEnv.zone)
+            ENVFILE.write("    \"irods_client_server_negotiation\": \"%s\",\n" % myEnv.csnegotiation)
+            ENVFILE.write("    \"irods_client_server_policy\": \"%s\",\n" % myEnv.cspolicy)
+            ENVFILE.write("    \"irods_encryption_key_size\": %s,\n" % myEnv.enckeysize)
+            ENVFILE.write("    \"irods_encryption_salt_size\": %s,\n" % myEnv.encsaltsize)
+            ENVFILE.write("    \"irods_encryption_num_hash_rounds\": %s,\n" % myEnv.encnumhashrounds)
+            ENVFILE.write("    \"irods_encryption_algorithm\": \"%s\",\n" % myEnv.encalgorithm)
+            ENVFILE.write("    \"irods_default_hash_scheme\": \"%s\"\n" % myEnv.defaulthashscheme)
+            ENVFILE.write("}\n")
 
     def deleteEnvFiles(self):
         '''Deletes temporary sessionDir recursively.
@@ -128,10 +127,8 @@ class RodsSession(object):
         if not self.sessionFileExists():
             return returnstring
         envfilename = "%s/irods_environment.json" % (self.sessionDir)
-        envfile = open(envfilename)
-        env = json.load( envfile );        
-        envfile.close()
-        return env[ 'irods_zone' ] 
+        with open(envfilename) as envfile:
+            return str(json.load(envfile)['irods_zone'])
 
     def getUserName(self):
         '''Returns current irodsUserName from irods_environment.json or an empty string
@@ -141,10 +138,8 @@ class RodsSession(object):
         if not self.sessionFileExists():
             return returnstring
         envfilename = "%s/irods_environment.json" % (self.sessionDir)
-        envfile = open(envfilename)
-        env = json.load( envfile );        
-        envfile.close()
-        return env[ 'irods_user_name' ]
+        with open(envfilename) as envfile:
+            return str(json.load(envfile)['irods_user_name'])
 
     def getDefResource(self):
         '''Returns current default Resource Name from irods_environment.json or an empty string
@@ -154,10 +149,8 @@ class RodsSession(object):
         if not self.sessionFileExists():
             return returnstring
         envfilename = "%s/irods_environment.json" % (self.sessionDir)
-        envfile = open(envfilename)
-        env = json.load( envfile );        
-        envfile.close()
-        return env[ 'irods_default_resource' ]
+        with open(envfilename) as envfile:
+            return str(json.load(envfile)['irods_default_resource'])
 
     def interruptCmd(self, icommand, argList, filename, filesize):
         '''Runs an icommand with optional argument list but
