@@ -304,7 +304,7 @@ tScan( int table, int link ) {
     }
 
     thisKeep = 0;
-    if ( table < 0 || table >= sizeof( Tables ) ) {
+    if ( table < 0 || table >= sizeof( Tables ) / sizeof( *Tables ) ) {
         printf( "index %d out of bounds.", table );
         return -1;
     }
