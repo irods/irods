@@ -2835,6 +2835,7 @@ extern "C" {
         char dataReplNum[MAX_NAME_LEN];
         char dataSizeNum[MAX_NAME_LEN];
         char dataStatusNum[MAX_NAME_LEN];
+        char data_expiry_ts[] = { "00000000000" };
         int status;
         int inheritFlag;
 
@@ -2935,12 +2936,13 @@ extern "C" {
         cllBindVars[15] = _data_obj_info->dataMode;
         cllBindVars[16] = myTime;
         cllBindVars[17] = myTime;
-        cllBindVarCount = 18;
+        cllBindVars[18] = data_expiry_ts;
+        cllBindVarCount = 19;
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlRegDataObj SQL 6" );
         }
         status =  cmlExecuteNoAnswerSql(
-                      "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                      "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                       &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
