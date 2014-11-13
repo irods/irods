@@ -22,6 +22,7 @@
 #include "sockComm.hpp"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "rodsError.hpp"
 
 rcComm_t *
 rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
@@ -280,7 +281,14 @@ int rcDisconnect(
 
     _conn->exit_flg = true; //
     if ( _conn->thread_ctx->reconnThr ) {
-        boost::system_time until = boost::get_system_time() + boost::posix_time::seconds( 2 );
+        boost::system_time until;
+        try {
+            until = boost::get_system_time();
+        } catch ( boost::exception& e ) {
+            rodsLog( LOG_ERROR, "get_system_time threw an exception, counter to boost documentation");
+            return SYS_INTERNAL_ERR;
+        }
+        until += boost::posix_time::seconds( 2 );
         _conn->thread_ctx->reconnThr->timed_join( until );    // force an interruption point
     }
 
