@@ -128,12 +128,12 @@ int _rsClientHints(
     json_t* client_hints = json_loads(
                                ( char* )ies_buf->buf,
                                ies_buf->len, &j_err );
+    freeBBuf( ies_buf );
     if ( !client_hints ) {
         rodsLog(
             LOG_ERROR,
             "_rsClientHints - json_loads failed [%s]",
             j_err.text );
-        freeBBuf( ies_buf );
         return ACTION_FAILED_ERR;
     }
 
