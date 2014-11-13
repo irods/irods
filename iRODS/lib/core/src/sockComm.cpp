@@ -406,9 +406,15 @@ rsAcceptConn( rsComm_t *svrComm ) {
     socklen_t len = sizeof( svrComm->remoteAddr );
 
     const int saved_socket_flags = fcntl(svrComm->sock, F_GETFL);
-    fcntl(svrComm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK);
+    int status = fcntl(svrComm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK);
+    if ( status < 0 ) {
+        rodsLogError( LOG_NOTICE, status, "failed to set flags with nonblock on fnctl with status %d", status );
+    }
     const int newSock = accept( svrComm->sock, ( struct sockaddr * ) &svrComm->remoteAddr, &len );
-    fcntl(svrComm->sock, F_SETFL, saved_socket_flags);
+    status = fcntl(svrComm->sock, F_SETFL, saved_socket_flags);
+    if ( status < 0 ) {
+        rodsLogError( LOG_NOTICE, status, "failed to revert flags on fnctl with status %d", status );
+    }
 
     if ( newSock < 0 ) {
         const int status = SYS_SOCK_ACCEPT_ERR - errno;
