@@ -584,7 +584,11 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
 
             conn->thread_ctx->cond->notify_all();
             /* wait for reconnManager to get done */
-            conn->thread_ctx->cond->wait( boost_lock );
+            try {
+                conn->thread_ctx->cond->wait( boost_lock );
+            } catch ( boost::condition_error ) {
+                rodsLog( LOG_ERROR, "encountered boost condition_error on wait" );
+            }
         }
         boost_lock.unlock();
     }
