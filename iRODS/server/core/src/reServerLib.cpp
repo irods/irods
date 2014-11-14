@@ -648,7 +648,7 @@ waitAndFreeReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 469
                              "waitAndFreeReThr:getResultByInx for RULE_EXEC_STATUS failed" );
                 }
 
-                if ( exeFrequency == NULL || strlen( exeFrequency->value ) == 0 || strcmp( exeStatus->value, RE_RUNNING ) == 0 ) {
+                if ( exeFrequency == NULL || exeStatus == NULL || strlen( exeFrequency->value ) == 0 || strcmp( exeStatus->value, RE_RUNNING ) == 0 ) {
                     // r5676
                     int i;
                     int overlap = 0;
