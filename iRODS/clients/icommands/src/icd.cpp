@@ -78,7 +78,7 @@ main( int argc, char **argv ) {
     rcDisconnect( Conn );
 
     if ( status < 0 ) {
-        printError( Conn, status, "getRodsObjType" );
+        fprintf( stderr, "error %d getting type", status );
         exit( 4 );
     }
 
