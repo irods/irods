@@ -285,9 +285,12 @@ int rcDisconnect(
     if ( _conn->thread_ctx->reconnThr ) {
         try {
             _conn->thread_ctx->reconnThr->try_join_for( boost::chrono::seconds( 2 ) );    // force an interruption point
-        } catch ( boost::thread_interrupted e ) {
+        } catch ( boost::thread_interrupted& e ) {
             rodsLog( LOG_ERROR, "Thread encountered interrupt." );
             status = SYS_THREAD_ENCOUNTERED_INTERRUPT;
+        } catch ( boost::thread_resource_error& e ) {
+            rodsLog( LOG_ERROR, "Threads exceed maximum supported concurrent threads" );
+            status = SYS_INTERNAL_ERR;
         }
     }
 
