@@ -310,6 +310,8 @@ class RodsSession(object):
                         'iticket',
                         # added for pluggable api test
                         'iapitest',
+                        # added for catalog_suite.py
+                        'isysmeta',
                      ]
 
         if icommand not in valid_cmds:

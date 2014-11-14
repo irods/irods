@@ -171,5 +171,32 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
     def test_iquest_bad_format(self):
         assertiCmd(s.adminsession,"iquest \"bad formatting\"","ERROR","INPUT_ARG_NOT_WELL_FORMED_ERR") # bad request
 
+    ###################
+    # isysmeta
+    ###################
 
+    def test_isysmeta_init_set_and_reset(self):
+        assertiCmd(s.adminsession,"ils -L","STDOUT","pydevtest_testfile.txt") # basic listing
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT","data_expiry_ts (expire time): 00000000000: None") # initialized with zeros
+        assertiCmd(s.adminsession,"isysmeta mod pydevtest_testfile.txt 1","EMPTY") # set to 1 sec after epoch
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT","data_expiry_ts (expire time): 00000000001: 1969-12-31.19:00:01") # confirm
+        assertiCmd(s.adminsession,"isysmeta mod pydevtest_testfile.txt 0","EMPTY") # reset to zeros
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT","data_expiry_ts (expire time): 00000000000: None") # confirm
 
+    def test_isysmeta_relative_set(self):
+        assertiCmd(s.adminsession,"ils -L","STDOUT","pydevtest_testfile.txt") # basic listing
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT","data_expiry_ts (expire time): 00000000000: None") # initialized with zeros
+        secondsahead = 10
+        assertiCmd(s.adminsession,"isysmeta mod pydevtest_testfile.txt +"+str(secondsahead),"EMPTY") # set to slight future
+        futuretime = (datetime.datetime.now() + datetime.timedelta(0,secondsahead)).strftime('%Y-%m-%d.%H:%M:%S')
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT",futuretime) # confirm
+        secondsahead = 60*60 # 1 hour
+        assertiCmd(s.adminsession,"isysmeta mod pydevtest_testfile.txt +1h","EMPTY") # set to more future
+        futuretime = (datetime.datetime.now() + datetime.timedelta(0,secondsahead)).strftime('%Y-%m-%d.%H:%M:%S')
+        assertiCmd(s.adminsession,"isysmeta ls pydevtest_testfile.txt","STDOUT",futuretime) # confirm
+
+    def test_isysmeta_no_permission(self):
+        assertiCmd(s.sessions[1],"icd /"+s.adminsession.getZoneName()+"/home/public","EMPTY") # get into public/
+        assertiCmd(s.sessions[1],"ils -L ","STDOUT","pydevtest_testfile.txt") # basic listing
+        assertiCmd(s.sessions[1],"isysmeta ls pydevtest_testfile.txt","STDOUT","data_expiry_ts (expire time): 00000000000: None") # initialized with zeros
+        assertiCmd(s.sessions[1],"isysmeta mod pydevtest_testfile.txt 1","ERROR","CAT_NO_ACCESS_PERMISSION") # cannot set expiry
