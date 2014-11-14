@@ -101,6 +101,7 @@ irods::error get_server_reports(
                      tmp_host->conn,
                      &bbuf );
         if ( status < 0 ) {
+            freeBBuf( bbuf );
             rodsLog(
                 LOG_ERROR,
                 "rcServerReport failed for [%s], status = %d",
@@ -113,6 +114,7 @@ irods::error get_server_reports(
                              ( char* )bbuf->buf,
                              bbuf->len,
                              &j_err );
+        freeBBuf( bbuf );
         if ( !j_resc ) {
             std::string msg( "json_loads failed [" );
             msg += j_err.text;
@@ -140,6 +142,7 @@ int _rsGridReport(
                      _comm,
                      &bbuf );
     if ( status < 0 ) {
+        freeBBuf( bbuf );
         rodsLog(
             LOG_ERROR,
             "_rsGridReport - rsServerReport failed %d",
@@ -149,6 +152,7 @@ int _rsGridReport(
 
     json_error_t j_err;
     json_t* cat_svr = json_loads( ( char* )bbuf->buf, bbuf->len, &j_err );
+    freeBBuf( bbuf );
     if ( !cat_svr ) {
         rodsLog(
             LOG_ERROR,
