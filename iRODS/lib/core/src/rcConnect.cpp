@@ -528,7 +528,13 @@ int
 cliChkReconnAtSendEnd( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
+        boost::unique_lock<boost::mutex> boost_lock;
+        try {
+            boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
+        } catch ( boost::lock_error e ) {
+            rodsLog( LOG_ERROR, "lock_error on unique_lock" );
+            return SYS_INTERNAL_ERR;
+        }
         conn->clientState = PROCESSING_STATE;
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
             conn->thread_ctx->cond->notify_all();
@@ -543,7 +549,13 @@ int
 cliChkReconnAtReadStart( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
+        boost::unique_lock<boost::mutex> boost_lock;
+        try {
+            boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
+        } catch ( boost::lock_error e ) {
+            rodsLog( LOG_ERROR, "lock_error on unique_lock" );
+            return SYS_INTERNAL_ERR;
+        }
         conn->clientState = RECEIVING_STATE;
         boost_lock.unlock();
     }
@@ -554,7 +566,13 @@ int
 cliChkReconnAtReadEnd( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
+        boost::unique_lock<boost::mutex> boost_lock;
+        try {
+            boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
+        } catch ( boost::lock_error e ) {
+            rodsLog( LOG_ERROR, "lock_error on unique_lock" );
+            return SYS_INTERNAL_ERR;
+        }
         conn->clientState = PROCESSING_STATE;
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
             rodsLog( LOG_DEBUG,
