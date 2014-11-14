@@ -263,11 +263,16 @@ namespace irods {
             }
 
             std::vector< std::string > toks;
+            try {
             boost::split(
                 toks,
                 line,
                 boost::is_any_of( "\t " ),
                 boost::token_compress_on );
+            } catch ( boost::exception& e ) {
+                rodsLog( LOG_ERROR, "boost::split failed on line [%s]", line.c_str() );
+                continue;
+            }
             if( toks.size() != 2 ||
                 toks[0].empty()  ||
                 toks[1].empty()) {
