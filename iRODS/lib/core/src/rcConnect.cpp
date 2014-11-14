@@ -377,7 +377,13 @@ cliReconnManager( rcComm_t *conn ) {
         if ( curTime < conn->reconnTime ) {
             rodsSleep( conn->reconnTime - curTime, 0 );
         }
-        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
+        boost::unique_lock<boost::mutex> boost_lock;
+        try {
+            boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
+        } catch ( boost::lock_error e ) {
+            rodsLog( LOG_ERROR, "lock_error on unique_lock" );
+            return;
+        }
         /* need to check clientState */
         while ( conn->clientState != PROCESSING_STATE ) {
             /* have to wait until the client stop sending */
@@ -494,7 +500,13 @@ int
 cliChkReconnAtSendStart( rcComm_t *conn ) {
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
-        boost::unique_lock<boost::mutex> boost_lock( *conn->thread_ctx->lock );
+        boost::unique_lock<boost::mutex> boost_lock;
+        try {
+            boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
+        } catch ( boost::lock_error e ) {
+            rodsLog( LOG_ERROR, "lock_error on unique_lock" );
+            return SYS_INTERNAL_ERR;
+        }
         if ( conn->reconnThrState == CONN_WAIT_STATE ) {
             rodsLog( LOG_DEBUG,
                      "cliChkReconnAtSendStart:ThrState=CONN_WAIT_STATE,clientState=%d",
