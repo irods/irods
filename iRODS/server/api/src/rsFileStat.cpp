@@ -111,6 +111,8 @@ int _rsFileStat(
     fileStatInp_t* _stat_inp,
     rodsStat_t**   _stat_out ) {
     struct stat myFileStat;
+    memset( &myFileStat, 0, sizeof( myFileStat ) );
+
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     irods::file_object_ptr file_obj(
