@@ -1,4 +1,3 @@
-
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
 #include "initServer.hpp"
@@ -426,96 +425,29 @@ irods::error convert_host_access_control(
 irods::error convert_irods_host(
     json_t*& _irods_host ) {
 
-    _irods_host = json_object();
-    if ( !_irods_host ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
-    }
-
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( HOST_CONFIG_FILE, cfg_file );
+    irods::error ret = irods::get_full_path_for_config_file( 
+                           HOST_CONFIG_FILE, 
+                           cfg_file );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    json_t* host_arr = json_array();
-    if ( !host_arr ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "failed to allocate array" );
-    }
-
-    std::ifstream file( cfg_file.c_str(), std::ios::in );
-    if ( file.is_open() ) {
-
-        std::string line;
-        while ( getline( file, line ) ) {
-
-            size_t pos = line.find_first_not_of( "\t " );
-            if ( std::string::npos == pos || line[ pos ] == '#' ) {
-                continue;
-            }
-
-            boost::trim( line );
-
-            std::vector< std::string > vals;
-            boost::split( vals, line, boost::is_any_of( "\t " ), boost::token_compress_on );
-
-            json_t* host_obj = json_object();
-            if ( !host_obj ) {
-                return ERROR(
-                           SYS_MALLOC_ERR,
-                           "failed to allocate object" );
-            }
-
-            json_t* addr_arr = json_array();
-            if ( !addr_arr ) {
-                return ERROR(
-                           SYS_MALLOC_ERR,
-                           "failed to allocate object" );
-            }
-
-            if ( "localhost" == vals[0] ) {
-                json_object_set( host_obj, "address_type", json_string( "local" ) );
-            }
-            else {
-                json_object_set( host_obj, "address_type", json_string( "remote" ) );
-            }
-
-            for ( size_t i = 1;
-                    i < vals.size();
-                    ++i ) {
-                json_t* addr_obj = json_object();
-                if ( !addr_obj ) {
-                    return ERROR(
-                               SYS_MALLOC_ERR,
-                               "failed to allocate object" );
-                }
-
-                json_object_set( addr_obj, "address", json_string( vals[i].c_str() ) );
-                json_array_append( addr_arr, addr_obj );
-
-            } // for i
-
-            json_object_set( host_obj, "addresses", addr_arr );
-            json_array_append( host_arr, host_obj );
-
-        } // while
-
-        file.close();
-
-    }
-    else {
-        std::string msg( "failed to open file [" );
+    json_error_t error;
+    _irods_host = json_load_file(
+                      cfg_file.c_str(),
+                      0, &error );
+    if( !_irods_host ) {
+        std::string msg( "failed to load file [" );
         msg += cfg_file;
+        msg += "] json error [";
+        msg += error.text;
         msg += "]";
         return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   msg.c_str() );
-    }
+                   -1,
+                   msg );
 
-    json_object_set( _irods_host, "host_entries", host_arr );
+    }
 
     return SUCCESS();
 
@@ -1015,7 +947,8 @@ irods::error get_config_dir(
             const std::string& name = p.string();
 
             if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
-                    std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE )
+                 std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
+                 std::string::npos != name.find( HOST_CONFIG_FILE )
                ) {
                 continue;
             }
@@ -1035,8 +968,10 @@ irods::error get_config_dir(
                 irods::log( PASS( ret ) );
                 continue;
             }
-
-            json_object_set( f_obj, "contents", json_string( contents.c_str() ) );
+            json_object_set( 
+                f_obj, 
+                "contents", 
+                json_string( contents.c_str() ) );
 
             json_array_append( file_arr, f_obj );
         }

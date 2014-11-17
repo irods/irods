@@ -364,7 +364,7 @@ c 644 root root /etc/irods/HostAccessControl ./iRODS/server/config/HostAccessCon
 c 644 root root /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
 c 644 root root /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 c 644 root root /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
-c 644 root root /etc/irods/irodsHost ./iRODS/server/config/irodsHost
+c 644 root root /etc/irods/hosts_config.json ./iRODS/server/config/hosts_config.json
 c 644 root root /etc/irods/irods.config ./iRODS/config/irods.config
 
 d 755 root root ${IRODS_HOME}/installLogs -
@@ -404,7 +404,6 @@ d 755 root root ${IRODS_HOME}/server/config/lockFileDir -
 f 644 root root ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
 d 755 root root ${IRODS_HOME}/server/config/reConfigs -
 f 644 root root ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
-f 644 root root ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 d 755 root root ${IRODS_HOME}/server/config/packedRei -
 f 644 root root ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
 f 644 root root ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt

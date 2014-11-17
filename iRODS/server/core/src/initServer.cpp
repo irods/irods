@@ -20,6 +20,7 @@
 #include "irods_stacktrace.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_configuration_parser.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_log.hpp"
 #include "irods_threads.hpp"
@@ -746,7 +747,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
 }
 
 int
-queHostName( rodsServerHost_t *rodsServerHost, char *myName, int topFlag ) {
+queHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag ) {
     hostName_t *myHostName, *lastHostName;
     hostName_t *tmpHostName;
 
@@ -1507,62 +1508,124 @@ rsPipSigalHandler( int ) {
     }
 }
 
-int
-initHostConfigByFile() {
-    FILE *fptr = 0;
-    char inbuf[MAX_NAME_LEN];
-    char hostBuf[LONG_NAME_LEN];
-    int lineLen = 0, bytesCopied = 0;
+/// @brief parse the irodsHost file, creating address
+int initHostConfigByFile() {
+    typedef irods::configuration_parser::object_t object_t;
+    typedef irods::configuration_parser::array_t  array_t;
+
     // =-=-=-=-=-=-=-
     // request fully qualified path to the config file
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( HOST_CONFIG_FILE, cfg_file );
+    irods::error ret = irods::get_full_path_for_config_file( 
+                           HOST_CONFIG_FILE, 
+                           cfg_file );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-#ifndef windows_platform
-    fptr = fopen( cfg_file.c_str(), "r" );
-#else
-    fptr = iRODSNt_fopen( cfg_file.c_str(), "r" );
-#endif
-
-    if ( fptr == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "Cannot open HOST_CONFIG_FILE  file %s. errno = %d\n",
-                 cfg_file.c_str(), errno );
-        return SYS_CONFIG_FILE_ERR;
+    irods::configuration_parser cfg;
+    ret = cfg.load( cfg_file );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    while ( ( lineLen = getLine( fptr, inbuf, MAX_NAME_LEN ) ) > 0 ) {
-        char *inPtr = inbuf;
-        rodsServerHost_t *tmpRodsServerHost = NULL;
-        while ( ( bytesCopied = getStrInBuf( &inPtr, hostBuf,
-                                             &lineLen, LONG_NAME_LEN ) ) > 0 ) {
-            if ( tmpRodsServerHost == NULL ) {
-                /* first host */
-                tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
-                memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
-                /* assume it is remote */
-                tmpRodsServerHost->localFlag = REMOTE_HOST;
-                /* local zone */
-                tmpRodsServerHost->zoneInfo = ZoneInfoHead;
-                int status = queRodsServerHost( &HostConfigHead, tmpRodsServerHost );
-                if ( status < 0 ) {}
-            }
-            if ( strcmp( hostBuf, "localhost" ) == 0 ) {
-                tmpRodsServerHost->localFlag = LOCAL_HOST;
-            }
-            else {
-                int status = queHostName( tmpRodsServerHost, hostBuf, 0 );
-                if ( status < 0 ) {}
-            }
+    array_t host_entries;
+    ret = cfg.get< array_t > (
+              "host_entries",
+              host_entries );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    for( size_t he_idx = 0;
+         he_idx < host_entries.size();
+         ++he_idx ) {
+        object_t obj = host_entries[ he_idx ];
+
+        std::string address_type;
+        ret = obj.get< std::string >(
+                  "address_type",
+                  address_type );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
         }
-    }
-    fclose( fptr );
+
+        array_t addresses;
+        ret = obj.get< array_t >(
+                  "addresses",
+                  addresses );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+        }
+
+        rodsServerHost_t* svr_host = ( rodsServerHost_t* )malloc( 
+                               sizeof( rodsServerHost_t ) );
+        memset( 
+            svr_host, 
+            0, 
+            sizeof( rodsServerHost_t ) );
+       
+        if( "remote" == address_type ) { 
+            svr_host->localFlag = REMOTE_HOST;
+        }
+        else if( "local" == address_type ) {
+            svr_host->localFlag = LOCAL_HOST;
+
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "unsupported address type [%s]",
+                address_type.c_str() );
+            continue;
+        }
+        
+        // local zone 
+        svr_host->zoneInfo = ZoneInfoHead;
+        if( queRodsServerHost( 
+                         &HostConfigHead, 
+                         svr_host ) < 0 ) {
+            rodsLog( 
+                 LOG_ERROR,
+                 "queRodsServerHost failed" );
+        }
+
+        for( size_t addr_idx = 0;
+             addr_idx < addresses.size();
+             ++addr_idx ) {
+
+            object_t& obj_ent = addresses[ addr_idx ];
+            
+            std::string entry;
+            ret = obj_ent.get< std::string >( 
+                      "address", 
+                      entry );
+            if( !ret.ok() ) {
+                irods::log( PASS( ret ) );
+                continue;
+            }
+            
+            if( queHostName( 
+                    svr_host, 
+                    entry.c_str(), 
+                    0 ) < 0 ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "queHostName failed" );
+                
+            }
+
+        } // for addr_idx
+
+    } // for i
+
     return 0;
-}
+
+} // initHostConfigByFile
 
 int
 matchHostConfig( rodsServerHost_t *myRodsServerHost ) {

@@ -16,7 +16,7 @@
 /* server host configuration */
 
 #ifndef windows_platform
-#define HOST_CONFIG_FILE  "irodsHost"
+#define HOST_CONFIG_FILE  "hosts_config.json"
 #define RE_RULES_FILE   "reRules"
 #else
 #define HOST_CONFIG_FILE  "irodsHost.txt"
@@ -142,7 +142,7 @@ initRcatServerHostByFile();
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int
-queHostName( rodsServerHost_t *rodsServerHost, char *myHostName, int topFlag );
+queHostName( rodsServerHost_t *rodsServerHost, const char *myHostName, int topFlag );
 int
 queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
                    rodsServerHost_t *myRodsServerHost );

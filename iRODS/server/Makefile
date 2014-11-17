@@ -237,9 +237,6 @@ endif
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
 		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBR_OBJS)
 
-# Server configuration
-CONFIG +=	$(svrConfigDir)/irodsHost
-
 
 # Compilation and link flags
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
@@ -273,10 +270,6 @@ server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
 # Server configuration
 config:	$(CONFIG)
 
-$(svrConfigDir)/irodsHost: $(svrConfigDir)/irodsHost.in
-	@echo "Note, making irodsHost file from irodsHost.in"
-	@cp $(svrConfigDir)/irodsHost.in $(svrConfigDir)/irodsHost
-	@chmod 600 $(svrConfigDir)/irodsHost
 
 # Show compile flags
 print_cflags:

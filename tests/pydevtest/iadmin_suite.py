@@ -13,6 +13,8 @@ import time
 import subprocess
 import distutils.spawn
 import stat
+import socket
+import json
 
 # =-=-=-=-=-=-=-
 # build path magic to import server_config.py
@@ -833,10 +835,47 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"irule -F rule2_2242.r", "EMPTY" )
 
 
+    def test_hosts_config(self):
+        addy1 = {}
+        addy1[ 'address' ] = socket.gethostname()
+        
+        addy2 = {}
+        addy2[ 'address' ] = 'jimbo'
 
+        addresses = [ addy1, addy2 ];
+        
+        remote = {}
+        remote[ 'address_type' ] = 'local'
+        remote[ 'addresses' ] = addresses
 
+        cfg = {}
+        cfg[ 'host_entries' ] = [ remote ]
+       
+        hosts_config = ''
+        if os.path.isfile('/etc/irods/hosts_config.json'):
+            hosts_config = '/etc/irods/hosts_config.json'
+        else:
+           install_dir = os.path.dirname(
+                             os.path.dirname(
+                                os.path.realpath(__file__)))
+           hosts_config = install_dir + '/iRODS/server/config/hosts_config.json'
 
+        orig_file = hosts_config + '.orig'
+        os.system( 'cp %s %s' % (hosts_config, orig_file))
+        with open(hosts_config, 'w') as f:
+            json.dump( 
+                cfg, 
+                f, 
+                sort_keys = True, 
+                indent = 4,
+                ensure_ascii=False )
 
+        assertiCmd(s.adminsession,"iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/jimboResc", "LIST", "jimbo" )
+        assertiCmd(s.adminsession,"iput -R jimboResc README jimbofile")
+        assertiCmd(s.adminsession,"irm -f jimbofile")
+        assertiCmd(s.adminsession,"iadmin rmresc jimboResc") 
+
+        os.system( 'mv %s %s' % (orig_file,hosts_config))
 
 
 

@@ -1,7 +1,7 @@
 #
 # HostAccessControl - The host based access configuration file.
 #                     It is used only if the following hook is commented out in your core.irb:
-                      acChkHostAccessControl||msiCheckHostAccessControl|nop
+#                     acChkHostAccessControl||msiCheckHostAccessControl|nop
 #
 # The first column specifies a user that is allowed to connect to
 # this iRODS server. An entry of "all" means all users are allowed.
