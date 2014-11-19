@@ -332,10 +332,6 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
     if ( i < 0 ) {
         return i;
     }
-    /* read logging settings */
-    if ( svrComm != NULL ) { /* if this is not a process started by a client, then we used the default logging setting */
-        readICatUserLogging( svrComm->clientUser.userName, &ruleEngineConfig.logging, svrComm );
-    }
     /*strcpy(r2,r3);
     }*/
     snprintf( r2, sizeof( r2 ), "%s", dvmSet );
@@ -365,6 +361,11 @@ initRuleStruct( int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, 
             return i;
         }
         snprintf( r2, sizeof( r2 ), "%s", r3 );
+    }
+
+    /* read logging settings */
+    if ( svrComm != NULL ) { /* if this is not a process started by a client, then we used the default logging setting */
+        readICatUserLogging( svrComm->clientUser.userName, &ruleEngineConfig.logging, svrComm );
     }
 
     if ( getenv( RETESTFLAG ) != NULL ) {
