@@ -360,7 +360,7 @@ f 644 root root ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
 
 d 755 root root /etc/irods -
-c 644 root root /etc/irods/HostAccessControl ./iRODS/server/config/HostAccessControl
+c 644 root root /etc/irods/host_access_control.json ./iRODS/server/config/host_access_control.json
 c 644 root root /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
 c 644 root root /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 c 644 root root /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re

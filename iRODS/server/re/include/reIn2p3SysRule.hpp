@@ -28,7 +28,7 @@
 #define MAXSTR 30
 #define MAXLIST 40 /* max number of entries in the access list tab. */
 
-#define HOST_ACCESS_CONTROL_FILE "HostAccessControl"
+#define HOST_ACCESS_CONTROL_FILE "host_access_control.json"
 
 #define MON_PERF_SCRIPT "irodsServerMonPerf"
 #define MON_CFG_FILE "../config/irodsMonPerf.config" /* contains list of servers to monitor,
@@ -62,7 +62,10 @@ typedef struct {
     char vaultPath[LONG_NAME_LEN];
 } monInfo_t;
 
-int checkHostAccessControl( char *username, char *hostclient, char *groupsname );
+int checkHostAccessControl( 
+    const std::string&,   // user name
+    const std::string&,   // client host
+    const std::string& ); // group name
 int msiCheckHostAccessControl( ruleExecInfo_t *rei );
 int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght,  msParam_t *swap_wght, msParam_t *runq_wght,
                       msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght,

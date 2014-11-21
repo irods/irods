@@ -4,7 +4,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir
 import pydevtest_sessions as s
 import commands
 import os
@@ -23,6 +23,25 @@ topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
 packagingdir = os.path.join(topdir,"packaging")
 sys.path.append(packagingdir)
 from server_config import ServerConfig
+
+def write_host_access_control(filename, username, group, address, mask):
+    add_ent = {}
+    add_ent[ 'username' ] = username
+    add_ent[ 'group' ] = group
+    add_ent[ 'address' ] = address
+    add_ent[ 'mask' ] = mask
+
+    address_entries = [ add_ent ]
+    hac = {}
+    hac[ 'access_entries' ] = address_entries
+
+    with open(filename, 'w') as f:
+        json.dump( 
+            hac, 
+            f, 
+            sort_keys = True, 
+            indent = 4,
+            ensure_ascii=False )
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -876,6 +895,50 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc jimboResc") 
 
         os.system( 'mv %s %s' % (orig_file,hosts_config))
+
+    def test_host_access_control(self):
+        my_ip = socket.gethostbyname( socket.gethostname() )
+
+        # manipulate the core.re to enable host access control
+        corefile = get_irods_config_dir() + "/core.re"
+        backupcorefile = corefile+"--"+self._testMethodName
+        shutil.copy(corefile,backupcorefile)
+        os.system('''sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' /etc/irods/core.re > /tmp/irods/core.re''')
+        time.sleep(1) # remove once file hash fix is commited #2279
+        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
+       
+        # restart the server to reread the new core.re
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        
+       
+        host_access_control = ''
+        if os.path.isfile('/etc/irods/host_access_control.json'):
+            host_access_control = '/etc/irods/host_access_control.json'
+        else:
+           install_dir = os.path.dirname(
+                             os.path.dirname(
+                                os.path.realpath(__file__)))
+           host_access_control = install_dir + '/iRODS/server/config/host_access_control.json'
+
+        orig_file = host_access_control + '.orig'
+        os.system( 'cp %s %s' % (host_access_control, orig_file))
+
+        write_host_access_control( host_access_control, 'nope', 'nope', '', '')
+
+        assertiCmdFail(s.adminsession,"ils","ERROR","SYS_AGENT_INIT_ERR")
+        
+        write_host_access_control( host_access_control, 'all', 'all', my_ip, '255.255.255.255')
+        
+        assertiCmd(s.adminsession,"ils","LIST","tempZone")
+
+        # restore the original host_access_control.json
+        os.system( 'mv %s %s' % (orig_file,host_access_control))
+
+        # restore the original core.re
+        shutil.copy(backupcorefile,corefile)
+        os.remove(backupcorefile)
 
 
 
