@@ -2,6 +2,7 @@
 #include "rodsErrorTable.hpp"
 #include "initServer.hpp"
 
+#include "reIn2p3SysRule.hpp"
 #include "irods_ms_home.hpp"
 #include "irods_network_home.hpp"
 #include "irods_auth_home.hpp"
@@ -32,9 +33,6 @@
 namespace fs = boost::filesystem;
 
 #include <sys/utsname.h>
-
-const std::string HOST_ACCESS_CONTROL_FILE( "HostAccessControl" );
-
 
 int _rsServerReport(
     rsComm_t*    _comm,
@@ -343,79 +341,30 @@ irods::error convert_server_config(
 irods::error convert_host_access_control(
     json_t*& _host_ctrl ) {
 
-    _host_ctrl = json_object();
-    if ( !_host_ctrl ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
-    }
-
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( HOST_ACCESS_CONTROL_FILE, cfg_file );
+    irods::error ret = irods::get_full_path_for_config_file( 
+        HOST_ACCESS_CONTROL_FILE, 
+        cfg_file );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    json_t* cfg_arr = json_array();
-    if ( !cfg_arr ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "failed to allocate array" );
-    }
-
-    std::ifstream file( cfg_file.c_str(), std::ios::in );
-    if ( file.is_open() ) {
-
-        std::string line;
-        while ( getline( file, line ) ) {
-
-            size_t pos = line.find_first_not_of( "\t " );
-            if ( std::string::npos == pos || line[ pos ] == '#' ) {
-                continue;
-            }
-
-            boost::trim( line );
-
-            std::vector< std::string > vals;
-            boost::split( vals, line, boost::is_any_of( "\t " ), boost::token_compress_on );
-            if ( vals.size() != 4 ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "convert_host_access_control - invalid line [%s]",
-                    line.c_str() );
-                continue;
-            }
-
-            json_t* obj = json_object();
-            if ( !obj ) {
-                return ERROR(
-                           SYS_MALLOC_ERR,
-                           "failed to allocate object" );
-            }
-
-            json_object_set( obj, "user",    json_string( vals[0].c_str() ) );
-            json_object_set( obj, "group",   json_string( vals[1].c_str() ) );
-            json_object_set( obj, "address", json_string( vals[2].c_str() ) );
-            json_object_set( obj, "mask",    json_string( vals[3].c_str() ) );
-
-            json_array_append( cfg_arr, obj );
-
-        } // while
-
-        file.close();
-
-    }
-    else {
-        std::string msg( "failed to open file [" );
+    json_error_t error;
+    _host_ctrl = json_load_file(
+                      cfg_file.c_str(),
+                      0, &error );
+    if( !_host_ctrl ) {
+        std::string msg( "failed to load file [" );
         msg += cfg_file;
+        msg += "] json error [";
+        msg += error.text;
         msg += "]";
         return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   msg.c_str() );
+                   -1,
+                   msg );
+
     }
-
-    json_object_set( _host_ctrl, "access_entries", cfg_arr );
-
+    
     return SUCCESS();
 
 } // convert_host_access_control
