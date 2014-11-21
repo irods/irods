@@ -26,7 +26,7 @@ from server_config import ServerConfig
 
 def write_host_access_control(filename, username, group, address, mask):
     add_ent = {}
-    add_ent[ 'username' ] = username
+    add_ent[ 'user' ] = username
     add_ent[ 'group' ] = group
     add_ent[ 'address' ] = address
     add_ent[ 'mask' ] = mask

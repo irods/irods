@@ -353,7 +353,7 @@ int checkHostAccessControl(
        
        std::string user;
        ret = obj.get< std::string >( 
-           "username", 
+           "user", 
            user ); 
        if( !ret.ok() ) {
            irods::log( PASS( ret ) );
