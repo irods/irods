@@ -13,12 +13,12 @@ class ServerConfig(object):
     def __init__(self):
         self.values = {}
         if os.path.isfile('/etc/irods/server_config.json'):
-            self.capture('/etc/irods/server_config.json', ' ')
-            self.capture('/etc/irods/database_config.json', ' ')
+            self.capture('/etc/irods/server_config.json')
+            self.capture('/etc/irods/database_config.json')
         # Run in place
         elif os.path.isfile(get_install_dir() + '/iRODS/server/config/server_config.json'):
-            self.capture(get_install_dir() + '/iRODS/server/config/server_config.json', ' ')
-            self.capture(get_install_dir() + '/iRODS/server/config/database_config.json', ' ')
+            self.capture(get_install_dir() + '/iRODS/server/config/server_config.json')
+            self.capture(get_install_dir() + '/iRODS/server/config/database_config.json')
         # Support deprecated pre-json config files through 4.1.x
         else:
             thefile = '/etc/irods/server.config'
@@ -40,7 +40,7 @@ class ServerConfig(object):
         else:
             raise KeyError(key)
 
-    def capture(self, cfg_file, sep):
+    def capture(self, cfg_file, sep=None):
         # NOTE:: we want to make this programmatically detected
         cfg_file = os.path.abspath(cfg_file)
         name, ext = os.path.splitext(cfg_file)
@@ -97,10 +97,8 @@ class ServerConfig(object):
         db_host = self.values['Servername']
         db_port = self.values['Port']
         db_name = self.values['Database']
-        if db_host == 'localhost':
-            run_str = '{sqlclient} -p {db_port} {db_name} < {sql_filename}'.format(**vars())
-        else:
-            run_str = '{sqlclient} -h {db_host} -p {db_port} {db_name} < {sql_filename}'.format(**vars())
+        db_user = self.values['db_username']
+        run_str = '{sqlclient} -h {db_host} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
         p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
