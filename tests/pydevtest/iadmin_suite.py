@@ -940,5 +940,31 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         shutil.copy(backupcorefile,corefile)
         os.remove(backupcorefile)
 
+    def test_issue_2420(self):
+        # manipulate the core.re to enable host access control
+        corefile = get_irods_config_dir() + "/core.re"
+        backupcorefile = corefile+"--"+self._testMethodName
+        shutil.copy(corefile,backupcorefile)
+        os.system('''sed -e '/^acAclPolicy {msiAclPolicy("STRICT"); }/iacAclPolicy {ON($userNameClient == "quickshare") { } }' /etc/irods/core.re > /tmp/irods/core.re''')
+        time.sleep(1) # remove once file hash fix is commited #2279
+        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        time.sleep(1) # remove once file hash fix is commited #2279
+       
+        # restart the server to reread the new core.re
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        
+        assertiCmd(s.adminsession,"ils","LIST","tempZone")
+
+        # look for the error "unable to read session variable $userNameClient." 
+        p = subprocess.Popen(['grep "unable to read session variable $userNameClient."  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
+        result = p.communicate()[0]
+
+        # restore the original core.re
+        shutil.copy(backupcorefile,corefile)
+        os.remove(backupcorefile)
+
+        # check the results for the error
+        assert( -1 == result.find( "userNameClient" ) )
 
 
