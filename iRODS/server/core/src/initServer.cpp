@@ -1369,7 +1369,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
 //    initStructFileDesc ();
 //    initTarSubFileDesc ();
 #endif
-    status = initRuleEngine( processType, rsComm, reRuleStr, reFuncMapStr, reVariableMapStr );
+    status = initRuleEngine( processType, rsComm, reRuleStr, reVariableMapStr, reFuncMapStr );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initRuleEngine error, status = %d", status );
