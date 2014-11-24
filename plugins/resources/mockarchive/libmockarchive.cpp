@@ -400,11 +400,16 @@ extern "C" {
         }
 
         inFd = open( srcFileName, O_RDONLY, 0 );
-        if ( inFd < 0 || ( statbuf.st_mode & S_IFREG ) == 0 ) {
+        if ( inFd < 0 ) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
+            return status;
+        } else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+            rodsLog( LOG_ERROR,
+                     "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
+                     srcFileName, UNIX_FILE_OPEN_ERR );
             close( inFd ); // JMC cppcheck - resource
             return status;
         }
