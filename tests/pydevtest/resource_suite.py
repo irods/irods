@@ -206,6 +206,15 @@ class ResourceSuite(ResourceBase):
         # local cleanup
 
     ###################
+    # iphymv
+    ###################
+
+    def test_iphymv_to_nonexistent_resource(self):
+        assertiCmd(s.adminsession,"ils -L","STDOUT",self.testfile) # debug
+        assertiCmd(s.adminsession,"iphymv -R nonexistentresc "+self.testfile, "STDERR", "SYS_RESC_DOES_NOT_EXIST") # should fail
+        assertiCmd(s.adminsession,"ils -L","STDOUT",self.testfile) # debug
+
+    ###################
     # iput
     ###################
 

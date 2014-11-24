@@ -53,6 +53,15 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
+    char* dest_resc = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+    if ( dest_resc ) {
+        irods::resource_ptr resc;
+        irods::error ret = resc_mgr.resolve( dest_resc, resc );
+        if ( !ret.ok() ) {
+            return SYS_RESC_DOES_NOT_EXIST;
+        }
+    }
+
     // =-=-=-=-=-=-=-
     // determine hierarchy string
     if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
