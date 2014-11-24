@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* See dataObjPhymv.h for a description of this API call.*/
 
 #include "dataObjPhymv.hpp"
 #include "reFuncDefs.hpp"
@@ -17,23 +16,6 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
-
-int
-rsDataObjPhymv250( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                   transStat_t **transStat ) {
-    int status;
-    transferStat_t *transferStat = NULL;
-
-    status = rsDataObjPhymv( rsComm, dataObjInp, &transferStat );
-
-    if ( transStat != NULL && status >= 0 && transferStat != NULL ) {
-        *transStat = ( transStat_t * ) malloc( sizeof( transStat_t ) );
-        ( *transStat )->numThreads = transferStat->numThreads;
-        ( *transStat )->bytesWritten = transferStat->bytesWritten;
-        free( transferStat );
-    }
-    return status;
-}
 
 /* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
  * a data object from one resource to another.

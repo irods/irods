@@ -154,10 +154,6 @@ static irods::apidef_t client_api_table_inp[] = {
         "DataObjInp_PI", 0, "PortalOprOut_PI", 1, ( funcPtr ) RS_DATA_OBJ_GET, clearDataObjInp
     },
     {
-        DATA_OBJ_REPL250_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, "TransStat_PI", 0, ( funcPtr ) RS_DATA_OBJ_REPL250, clearDataObjInp
-    },
-    {
         DATA_OBJ_REPL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInp_PI", 0, "TransferStat_PI", 0, ( funcPtr ) RS_DATA_OBJ_REPL, clearDataObjInp
     },
@@ -165,10 +161,6 @@ static irods::apidef_t client_api_table_inp[] = {
         DATA_OBJ_LSEEK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "OpenedDataObjInp_PI", 0, "fileLseekOut_PI", 0,
         ( funcPtr ) RS_DATA_OBJ_LSEEK, irods::clearInStruct_noop
-    },
-    {
-        DATA_OBJ_COPY250_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjCopyInp_PI", 0, "TransStat_PI", 0, ( funcPtr ) RS_DATA_OBJ_COPY250, clearDataObjCopyInp
     },
     {
         DATA_OBJ_COPY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
@@ -344,10 +336,6 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         PHY_PATH_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "DataObjInp_PI", 0, NULL, 0, ( funcPtr ) RS_PHY_PATH_REG, clearDataObjInp
-    },
-    {
-        DATA_OBJ_PHYMV250_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, "TransStat_PI", 0, ( funcPtr ) RS_DATA_OBJ_PHYMV250, clearDataObjInp
     },
     {
         DATA_OBJ_PHYMV_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,

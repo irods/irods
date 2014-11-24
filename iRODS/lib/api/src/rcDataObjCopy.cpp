@@ -97,20 +97,6 @@ rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp ) {
     if ( status >= 0 && transferStat != NULL ) {
         conn->transStat = *( transferStat );
     }
-    else if ( status == SYS_UNMATCHED_API_NUM ) {
-        /* try older version */
-        transStat_t *transStat = NULL;
-        status = _rcDataObjCopy250( conn, dataObjCopyInp, &transStat );
-        if ( status >= 0 && transStat != NULL ) {
-            conn->transStat.numThreads = transStat->numThreads;
-            conn->transStat.bytesWritten = transStat->bytesWritten;
-            conn->transStat.flags = 0;
-        }
-        if ( transStat != NULL ) {
-            free( transStat );
-        }
-        return status;
-    }
     if ( transferStat != NULL ) {
         free( transferStat );
     }
@@ -128,15 +114,3 @@ _rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
 
     return status;
 }
-
-int
-_rcDataObjCopy250( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
-                   transStat_t **transStat ) {
-    int status;
-
-    status = procApiRequest( conn, DATA_OBJ_COPY250_AN,  dataObjCopyInp, NULL,
-                             ( void ** ) transStat, NULL );
-
-    return status;
-}
-

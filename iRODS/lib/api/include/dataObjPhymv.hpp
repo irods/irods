@@ -18,12 +18,8 @@
 #include "dataCopy.hpp"
 
 #if defined(RODS_SERVER)
-#define RS_DATA_OBJ_PHYMV250 rsDataObjPhymv250
 #define RS_DATA_OBJ_PHYMV rsDataObjPhymv
 /* prototype for the server handler */
-int
-rsDataObjPhymv250( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                   transStat_t **transStat );
 int
 rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 transferStat_t **transferStat );
@@ -33,7 +29,6 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  transferStat_t *transStat, int multiCopyFlag );
 #else
 #define RS_DATA_OBJ_PHYMV NULL
-#define RS_DATA_OBJ_PHYMV250 NULL
 #endif
 
 #ifdef __cplusplus
@@ -59,9 +54,6 @@ extern "C" {
 
     int
     rcDataObjPhymv( rcComm_t *conn, dataObjInp_t *dataObjInp );
-    int
-    _rcDataObjPhymv250( rcComm_t *conn, dataObjInp_t *dataObjInp,
-                        transStat_t **transStat );
     int
     _rcDataObjPhymv( rcComm_t *conn, dataObjInp_t *dataObjInp,
                      transferStat_t **transferStat );

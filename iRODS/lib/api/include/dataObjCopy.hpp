@@ -42,12 +42,8 @@ typedef struct DataObjCopyInp {
 #define DataObjCopyInp_PI "struct DataObjInp_PI; struct DataObjInp_PI;"
 
 #if defined(RODS_SERVER)
-#define RS_DATA_OBJ_COPY250 rsDataObjCopy250
 #define RS_DATA_OBJ_COPY rsDataObjCopy
 /* prototype for the server handler */
-int
-rsDataObjCopy250( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
-                  transStat_t **transStat );
 int
 rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
                transferStat_t **transferStat );
@@ -59,7 +55,6 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
                              rodsServerHost_t **rodsServerHost );
 #else
 #define RS_DATA_OBJ_COPY NULL
-#define RS_DATA_OBJ_COPY250 NULL
 #endif
 
 #ifdef __cplusplus
@@ -95,11 +90,6 @@ extern "C" {
     int
     _rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
                     transferStat_t **transferStat );
-    int
-    _rcDataObjCopy250( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
-                       transStat_t **transStat );
-    //int
-    //clearDataObjCopyInp( dataObjCopyInp_t *dataObjCopyInp );
 #ifdef __cplusplus
 }
 #endif
