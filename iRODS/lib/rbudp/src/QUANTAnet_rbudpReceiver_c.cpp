@@ -404,6 +404,10 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
             fprintf( stderr, "The size of the file is %lld.\n", filesize );
 
             int fd = open( destFName, O_RDWR | O_CREAT | O_TRUNC, 0666 );
+            if ( fd < 0 ) {
+                fprintf( stderr, "Open failed.\n" );
+                return FAILED;
+            }
             if ( ftruncate( fd, filesize ) != 0 ) {
                 fprintf( stderr, "Truncation failed." );
             }
