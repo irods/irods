@@ -747,6 +747,16 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         print( "results["+out_str+"]" )
         assert( -1 != out_str.find( "foo0 does not exist" ) )
 
+        # =-=-=-=-=-=-=-
+        # now run bonnie++ and then verify it reports a summary
+        cmd = "bonnie++ -d "+mount_point
+        print( "cmd: ["+cmd+"]" )
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 != out_str.find( "-Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--" ) )
+        assert( -1 != out_str.find( "-Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--" ) )
+
         # tear down the fuse mount
         os.system( "fusermount -uz "+mount_point )
         if os.path.isdir( mount_point ):
@@ -966,5 +976,3 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # check the results for the error
         assert( -1 == result.find( "userNameClient" ) )
-
-

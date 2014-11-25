@@ -81,7 +81,7 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
     int objFd;
     /* simply return if no file cache or the file cache hasn't been updated */
     if ( fileCache->state != HAVE_NEWLY_CREATED_CACHE ) {
-        UNLOCK_STRUCT( *fileCache );
+        //UNLOCK_STRUCT( *fileCache );
         return 0;
     }
 
@@ -98,9 +98,9 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
     struct stat stbuf;
     stat( fileCache->fileCachePath, &stbuf );
     /* put cache file to server */
-    UNLOCK_STRUCT( *fileCache );
+    //UNLOCK_STRUCT( *fileCache );
     iFuseConn_t *conn = getAndUseConnByPath( fileCache->localPath, &status );
-    LOCK_STRUCT( *fileCache );
+    //LOCK_STRUCT( *fileCache );
 
     RECONNECT_IF_NECESSARY( status, conn, ifusePut( conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size ) );
     unuseIFuseConn( conn );
@@ -129,6 +129,7 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
         fileCache->iFd = objFd;
         fileCache->state = NO_FILE_CACHE;
         fileCache->offset = 0;
+		status = objFd;
     }
     else {
         fileCache->state = HAVE_READ_CACHE;
@@ -231,18 +232,18 @@ int ifuseFileCacheClose( fileCache_t *fileCache ) {
     LOCK_STRUCT( *fileCache );
     if ( fileCache->state == NO_FILE_CACHE ) {
         /* close remote file */
+	    //UNLOCK_STRUCT( *fileCache );
         iFuseConn_t *conn = getAndUseConnByPath( fileCache->localPath, &status );
+    	//LOCK_STRUCT( *fileCache );
         status = closeIrodsFd( conn->conn, fileCache->iFd );
         unuseIFuseConn( conn );
         fileCache->offset = 0;
     }
     else {
         /* close local file */
-        if ( fileCache->status == 1 ) {
-            status = close( fileCache->iFd );
-            fileCache->iFd = 0;
-            fileCache->offset = 0;
-        }
+        status = close( fileCache->iFd );
+        fileCache->iFd = 0;
+        fileCache->offset = 0;
     }
     UNLOCK_STRUCT( *fileCache );
     return status;
@@ -259,6 +260,7 @@ fileCache_t *addFileCache( int iFd, char *objPath, char *localPath, char *cacheP
 
         fileCache = newFileCache( iFd, objPath, localPath, cachePath, cachedTime, mode, fileSize, state );
         LOCK_STRUCT( *FileCacheList );
+
 
         if ( _listSize( FileCacheList ) >= NUM_NEWLY_CREATED_SLOT ) {
             ListNode *node = FileCacheList->list->head;
@@ -326,7 +328,6 @@ setAndMkFileCacheDir() {
 }
 
 int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t offset ) {
-
     int status, myError;
     openedDataObjInp_t dataObjWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;
@@ -375,7 +376,6 @@ int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t 
     }
     else {
         status = write( fileCache->iFd, buf, size );
-
         if ( status < 0 ) {
             return errno ? ( -1 * errno ) : -1;
         }
@@ -392,6 +392,7 @@ int _ifuseFileCacheWrite( fileCache_t *fileCache, char *buf, size_t size, off_t 
             rstrcpy( dataObjOpenInp.objPath, fileCache->objPath, MAX_NAME_LEN );
             dataObjOpenInp.openFlags = O_RDWR;
 
+            int status;
             conn = getAndUseConnByPath( fileCache->localPath, &status );
             status = rcDataObjOpen( conn->conn, &dataObjOpenInp );
             unuseIFuseConn( conn );
@@ -439,9 +440,9 @@ int _ifuseFileCacheRead( fileCache_t *fileCache, char *buf, size_t size, off_t o
         dataObjReadOutBBuf.len = size;
         dataObjReadInp.l1descInx = fileCache->iFd;
         dataObjReadInp.len = size;
-
+		//UNLOCK_STRUCT(*fileCache);
         conn = getAndUseConnByPath( fileCache->localPath, &status );
-
+		//LOCK_STRUCT(*fileCache);
         status = rcDataObjRead( conn->conn,
                                 &dataObjReadInp, &dataObjReadOutBBuf );
         unuseIFuseConn( conn );

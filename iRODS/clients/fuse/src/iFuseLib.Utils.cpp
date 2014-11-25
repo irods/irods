@@ -86,6 +86,7 @@ iFuseDesc_t *newIFuseDesc( char *objPath, char *localPath, fileCache_t *fileCach
         REF_NO_LOCK( desc->fileCache, fileCache );
         desc->objPath = strdup( objPath );
         desc->localPath = strdup( localPath );
+        desc->offset = 0;
         INIT_STRUCT_LOCK( *desc );
         *status = 0;
         return desc;

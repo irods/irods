@@ -11,27 +11,15 @@
 #include "miscUtil.hpp"
 #include "sockComm.hpp"
 
+PathCacheTable *pctable = initPathCache();
+
 int
 irodsGetattr( const char *path, struct stat *stbuf ) {
     int status;
     iFuseConn_t *iFuseConn = NULL;
-
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
-    status = _irodsGetattr( iFuseConn, path, stbuf );
-    unuseIFuseConn( iFuseConn );
-    return status;
-}
-
-int
-_irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
-    int status;
-    dataObjInp_t dataObjInp;
-    rodsObjStat_t *rodsObjStatOut = NULL;
 #ifdef CACHE_FUSE_PATH
     pathCache_t *tmpPathCache;
 #endif
-
-    rodsLog( LOG_DEBUG, "_irodsGetattr: %s", path );
 
 #ifdef CACHE_FUSE_PATH
 
@@ -40,7 +28,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
         return -ENOENT;
     }*/
 
-    if ( matchAndLockPathCache( ( char * ) path, &tmpPathCache ) == 1 ) {
+    if ( matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache ) == 1 ) {
         rodsLog( LOG_DEBUG, "irodsGetattr: a match for path %s", path );
         if ( tmpPathCache->fileCache != NULL ) {
             LOCK_STRUCT( *( tmpPathCache->fileCache ) );
@@ -49,7 +37,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                 UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
                 UNLOCK_STRUCT( *tmpPathCache );
                 if ( status < 0 ) {
-                    clearPathFromCache( ( char * ) path );
+                    clearPathFromCache( pctable, ( char * ) path );
                 }
                 else {
                     *stbuf = tmpPathCache->stbuf;
@@ -66,6 +54,28 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
         }
     }
 #endif
+    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
+    status = _irodsGetattr( iFuseConn, path, stbuf );
+    unuseIFuseConn( iFuseConn );
+#ifdef CACHE_FUSE_PATH
+	if (status == -ENOENT ) {
+        pathNotExist( pctable, ( char * ) path );		
+	} else {		
+		/* don't set file cache */
+		pathExist( pctable, ( char * ) path, NULL, stbuf, &tmpPathCache );
+	}
+#endif
+
+    return status;
+}
+
+int
+_irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
+    int status;
+    dataObjInp_t dataObjInp;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+
+    rodsLog( LOG_DEBUG, "_irodsGetattr: %s", path );
 
     memset( stbuf, 0, sizeof( struct stat ) );
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -87,12 +97,10 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                 rodsLogError( LOG_ERROR, status,
                               "irodsGetattr: rcObjStat of %s error", path );
             }
-#ifdef CACHE_FUSE_PATH
-            pathNotExist( ( char * ) path );
-#endif
             return -ENOENT;
         }
     }
+
 
     if ( rodsObjStatOut->objType == COLL_OBJ_T ) {
         fillDirStat( stbuf,
@@ -100,7 +108,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                      atoi( rodsObjStatOut->modifyTime ) );
     }
     else if ( rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
-        pathNotExist( ( char * ) path );
+        
         if ( rodsObjStatOut != NULL ) {
             freeRodsObjStat( rodsObjStatOut );
         }
@@ -116,8 +124,6 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
         freeRodsObjStat( rodsObjStatOut );
     }
 
-    /* don't set file cache */
-    pathExist( ( char * ) path, NULL, stbuf, &tmpPathCache );
     return 0;
 }
 
@@ -250,11 +256,11 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
                 snprintf( childPath, MAX_NAME_LEN, "%s/%s",
                           path, collEnt.dataName );
             }
-            if ( lookupPathExist( ( char * ) childPath, &tmpPathCache ) != 1 ) {
+            if ( lookupPathExist( pctable, ( char * ) childPath, &tmpPathCache ) != 1 ) {
                 fillFileStat( &stbuf, collEnt.dataMode, collEnt.dataSize,
                               atoi( collEnt.createTime ), atoi( collEnt.modifyTime ),
                               atoi( collEnt.modifyTime ) );
-                pathExist( childPath, NULL, &stbuf, &tmpPathCache );
+                pathExist( pctable, childPath, NULL, &stbuf, &tmpPathCache );
             }
 #endif
         }
@@ -269,11 +275,11 @@ irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
                 else {
                     snprintf( childPath, MAX_NAME_LEN, "%s/%s", path, mySubDir );
                 }
-                if ( lookupPathExist( ( char * ) childPath, &tmpPathCache ) != 1 ) {
+                if ( lookupPathExist( pctable, ( char * ) childPath, &tmpPathCache ) != 1 ) {
                     fillDirStat( &stbuf,
                                  atoi( collEnt.createTime ), atoi( collEnt.modifyTime ),
                                  atoi( collEnt.modifyTime ) );
-                    pathExist( childPath, NULL, &stbuf, &tmpPathCache );
+                    pathExist( pctable, childPath, NULL, &stbuf, &tmpPathCache );
                 }
 #endif
             }
@@ -334,7 +340,7 @@ irodsMknod( const char *path, mode_t mode, dev_t ) {
     }
     fileCache = addFileCache( localFd, objPath, ( char * ) path, cachePath, mode, 0, HAVE_NEWLY_CREATED_CACHE );
     stbuf.st_mode = mode;
-    pathExist( ( char * ) path, fileCache, &stbuf, &tmpPathCache );
+    pathExist( pctable, ( char * ) path, fileCache, &stbuf, &tmpPathCache );
 
     unuseIFuseConn( iFuseConn );
 
@@ -381,7 +387,7 @@ irodsMkdir( const char *path, mode_t ) {
         uint mytime = time( 0 );
         bzero( &stbuf, sizeof( struct stat ) );
         fillDirStat( &stbuf, mytime, mytime, mytime );
-        pathExist( ( char * ) path, NULL, &stbuf, NULL );
+        pathExist( pctable, ( char * ) path, NULL, &stbuf, NULL );
 #endif
         unuseIFuseConn( iFuseConn );
     }
@@ -414,7 +420,7 @@ irodsUnlink( const char *path ) {
     status = rcDataObjUnlink( iFuseConn->conn, &dataObjInp );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
-        pathNotExist( ( char * ) path );
+        pathNotExist( pctable, ( char * ) path );
 #endif
         status = 0;
     }
@@ -461,7 +467,7 @@ irodsRmdir( const char *path ) {
     RECONNECT_IF_NECESSARY( status, iFuseConn, rcRmColl( iFuseConn->conn, &collInp, 0 ) );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
-        pathNotExist( ( char * ) path );
+        pathNotExist( pctable,( char * ) path );
 #endif
         status = 0;
     }
@@ -608,7 +614,7 @@ irodsRename( const char *from, const char *to ) {
 
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
-        status = renmeLocalPath( ( char * ) from, ( char * ) to, ( char * ) toIrodsPath );
+        status = renmeLocalPath( pctable, ( char * ) from, ( char * ) to, ( char * ) toIrodsPath );
 #endif
     }
     else {
@@ -646,7 +652,7 @@ irodsChmod( const char *path, mode_t mode ) {
 
     rodsLog( LOG_DEBUG, "irodsChmod: %s", path );
 
-    matchAndLockPathCache( ( char * ) path, &tmpPathCache );
+    matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache );
 
     if ( tmpPathCache->fileCache != NULL ) {
         LOCK_STRUCT( *tmpPathCache->fileCache );
@@ -694,7 +700,7 @@ irodsChmod( const char *path, mode_t mode ) {
 #ifdef CACHE_FUSE_PATH
         pathCache_t *tmpPathCache;
 
-        if ( matchAndLockPathCache( ( char * ) path, &tmpPathCache ) == 1 ) {
+        if ( matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache ) == 1 ) {
             tmpPathCache->stbuf.st_mode &= 0xfffffe00;
             tmpPathCache->stbuf.st_mode |= ( mode & 0777 );
             UNLOCK_STRUCT( *tmpPathCache );
@@ -729,7 +735,7 @@ irodsTruncate( const char *path, off_t size ) {
 
     rodsLog( LOG_DEBUG, "irodsTruncate: %s", path );
 
-    if ( matchAndLockPathCache( ( char * ) path, &tmpPathCache ) == 1 ) {
+    if ( matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache ) == 1 ) {
         if ( tmpPathCache->fileCache != NULL ) {
             LOCK_STRUCT( *tmpPathCache->fileCache );
             if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
@@ -763,7 +769,7 @@ irodsTruncate( const char *path, off_t size ) {
     if ( status >= 0 ) {
         pathCache_t *tmpPathCache;
 
-        if ( matchAndLockPathCache( ( char * ) path, &tmpPathCache ) == 1 ) {
+        if ( matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache ) == 1 ) {
             tmpPathCache->stbuf.st_size = size;
         }
         UNLOCK_STRUCT( *tmpPathCache );
@@ -806,7 +812,7 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
 
     rodsLog( LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags );
 
-    matchAndLockPathCache( ( char * ) path, &tmpPathCache );
+    matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache );
     if ( tmpPathCache != NULL ) {
         if ( tmpPathCache->fileCache != NULL ) {
             LOCK_STRUCT( *( tmpPathCache->fileCache ) );
@@ -863,9 +869,9 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
         }
 
         fileCache_t *fileCache = addFileCache( fd, objPath, ( char * ) path, NULL, stbuf.st_mode, stbuf.st_size, NO_FILE_CACHE );
-        matchAndLockPathCache( ( char * ) path, &tmpPathCache );
+        matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache );
         if ( tmpPathCache == NULL ) {
-            pathExist( ( char * ) path, fileCache, &stbuf, NULL );
+            pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
         }
         else {
             _addFileCacheForPath( tmpPathCache, fileCache );
@@ -897,9 +903,9 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
         int fd = open( cachePath, O_RDWR );
 
         fileCache_t *fileCache = addFileCache( fd, objPath, ( char * ) path, cachePath, stbuf.st_mode, stbuf.st_size, HAVE_READ_CACHE );
-        matchAndLockPathCache( ( char * ) path, &tmpPathCache );
+        matchAndLockPathCache( pctable, ( char * ) path, &tmpPathCache );
         if ( tmpPathCache == NULL ) {
-            pathExist( ( char * ) path, fileCache, &stbuf, NULL );
+            pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
         }
         else {
             _addFileCacheForPath( tmpPathCache, fileCache );

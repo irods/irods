@@ -25,7 +25,7 @@ boost::condition_variable ConnManagerCond;
 #else
 /*pthread_mutex_t DescLock;*/
 /*pthread_mutex_t ConnLock;*/
-pthread_mutex_t PathCacheLock;
+//pthread_mutex_t PathCacheLock;
 /* pthread_mutex_t FileCacheLock; */
 pthread_t ConnManagerThr;
 pthread_mutex_t ConnManagerLock;

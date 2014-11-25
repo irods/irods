@@ -22,8 +22,7 @@
 /* some global variables */
 
 rodsEnv MyRodsEnv;
-
-
+extern PathCacheTable *pctable;
 
 static specialPath_t SpecialPath[] = {
     {"/tls", 4},
@@ -208,17 +207,17 @@ dataObjCreateByFusePath( rcComm_t *conn, int mode,
 }
 
 int
-renmeLocalPath( char *from, char *to, char *toIrodsPath ) {
+renmeLocalPath( PathCacheTable *pctable, char *from, char *to, char *toIrodsPath ) {
     pathCache_t *fromPathCache = NULL;
     pathCache_t *tmpPathCache = NULL;
 
     /* do not check existing path here as path cache may be out of date */
-    matchAndLockPathCache( from, &fromPathCache );
+    matchAndLockPathCache( pctable, from, &fromPathCache );
     if ( fromPathCache == NULL ) {
         return 0;
     }
 
-    LOCK( PathCacheLock );
+    LOCK( *pctable -> PathCacheLock );
     if ( fromPathCache->fileCache != NULL ) {
         LOCK_STRUCT( *( fromPathCache->fileCache ) );
         free( fromPathCache->fileCache->localPath );
@@ -226,20 +225,20 @@ renmeLocalPath( char *from, char *to, char *toIrodsPath ) {
         free( fromPathCache->fileCache->objPath );
         fromPathCache->fileCache->objPath = strdup( toIrodsPath );
 
-        _pathReplace( ( char * ) to, fromPathCache->fileCache, &fromPathCache->stbuf, &tmpPathCache );
+        _pathReplace( pctable, ( char * ) to, fromPathCache->fileCache, &fromPathCache->stbuf, &tmpPathCache );
 
         UNLOCK_STRUCT( *( fromPathCache->fileCache ) );
     }
     else {
-        _pathReplace( ( char * ) to, NULL /* fromPathCache->fileCache */, &fromPathCache->stbuf, &tmpPathCache );
+        _pathReplace( pctable, ( char * ) to, NULL /* fromPathCache->fileCache */, &fromPathCache->stbuf, &tmpPathCache );
 
     }
 
     /* need to unlock fileCache here since the following function call ness to lock fileCache */
-    _pathNotExist( ( char * ) from );
+    _pathNotExist( pctable, ( char * ) from );
 
     UNLOCK_STRUCT( *fromPathCache );
-    UNLOCK( PathCacheLock );
+    UNLOCK( *pctable -> PathCacheLock );
     return 0;
 }
 

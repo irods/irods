@@ -23,7 +23,7 @@ concurrentList_t *IFuseDescFreeList;
 int
 initIFuseDesc() {
 #ifndef USE_BOOST
-    pthread_mutex_init( &PathCacheLock, NULL );
+    //pthread_mutex_init( &PathCacheLock, NULL );
     pthread_mutex_init( &ConnManagerLock, NULL );
     pthread_cond_init( &ConnManagerCond, NULL );
     IFuseDescFreeList = newConcurrentList();
