@@ -135,7 +135,6 @@ static irods::error unix_file_copy_plugin(
                     }
                 }
 
-                close( inFd );
                 close( outFd );
 
                 if ( result.ok() ) {
@@ -143,6 +142,7 @@ static irods::error unix_file_copy_plugin(
                                            bytesCopied, statbuf.st_size, srcFileName );
                 }
             }
+            close( inFd );
         }
     }
     return result;
