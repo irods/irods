@@ -72,6 +72,7 @@
 #include <sys/stat.h>
 
 #include <string.h>
+#include <sstream>
 
 
 // =-=-=-=-=-=-=-
@@ -103,9 +104,16 @@ static irods::error unix_file_copy_plugin(
 
         inFd = open( srcFileName, O_RDONLY, 0 );
         err_status = UNIX_FILE_OPEN_ERR - errno;
-        if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
-                                       srcFileName, status ) ).ok() ) {
+        if ( inFd < 0 ) {
+            std::stringstream msg_stream;
+            msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << status;
+            result = ERROR( err_status, msg_stream.str() );
+        }
+        else if ( statbuf.st_mode & S_IFREG == 0 ) {
             close( inFd ); // JMC cppcheck - resource
+            std::stringstream msg_stream;
+            msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
+            result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
         }
         else {
             outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
