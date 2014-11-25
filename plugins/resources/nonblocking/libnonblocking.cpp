@@ -1125,35 +1125,45 @@ extern "C" {
                                 const char* destFileName ) {
         irods::error result = SUCCESS();
 
-        int inFd, outFd;
-        char myBuf[TRANS_BUF_SZ];
-        rodsLong_t bytesCopied = 0;
-        int bytesRead;
-        int bytesWritten;
-        int status;
         struct stat statbuf;
-
-        status = stat( srcFileName, &statbuf );
+        int status = stat( srcFileName, &statbuf );
         int err_status = UNIX_FILE_STAT_ERR - errno;
         if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
                                       srcFileName, err_status ) ).ok() ) {
 
-            inFd = open( srcFileName, O_RDONLY, 0 );
+            int inFd = open( srcFileName, O_RDONLY, 0 );
             err_status = UNIX_FILE_OPEN_ERR - errno;
-            if ( !( result = ASSERT_ERROR( inFd >= 0 && ( statbuf.st_mode & S_IFREG ) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
-                                           srcFileName, status ) ).ok() ) {
+            if ( inFd < 0 ) {
+                std::stringstream msg_stream;
+                msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << status;
+                result = ERROR( err_status, msg_stream.str() );
+            }
+            else if ( statbuf.st_mode & S_IFREG == 0 ) {
                 close( inFd ); // JMC cppcheck - resource
+                std::stringstream msg_stream;
+                msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
+                result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
             }
             else {
-                outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
+                int outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
                 err_status = UNIX_FILE_OPEN_ERR - errno;
-                if ( !( result = ASSERT_ERROR( outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
-                                               destFileName, status ) ).ok() ) {
-                    close( inFd );
+                if ( outFd < 0 ) {
+                    std::stringstream msg_stream;
+                    msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << status;
+                    result = ERROR( err_status, msg_stream.str() );
+                }
+                else if ( statbuf.st_mode & S_IFREG == 0 ) {
+                    close( outFd ); // JMC cppcheck - resource
+                    std::stringstream msg_stream;
+                    msg_stream << "destFileName \"" << destFileName << "\" is not a regular file.";
+                    result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
                 }
                 else {
+                    int bytesRead;
+                    char myBuf[TRANS_BUF_SZ];
+                    rodsLong_t bytesCopied = 0;
                     while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                        bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+                        int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
                         err_status = UNIX_FILE_WRITE_ERR - errno;
                         if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
                                                       destFileName, status ) ).ok() ) {
@@ -1161,7 +1171,6 @@ extern "C" {
                         }
                     }
 
-                    close( inFd );
                     close( outFd );
 
                     if ( result.ok() ) {
@@ -1169,6 +1178,7 @@ extern "C" {
                                                bytesCopied, statbuf.st_size, srcFileName );
                     }
                 }
+                close( inFd );
             }
         }
         return result;
