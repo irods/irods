@@ -1516,8 +1516,8 @@ int initHostConfigByFile() {
     // =-=-=-=-=-=-=-
     // request fully qualified path to the config file
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( 
-                           HOST_CONFIG_FILE, 
+    irods::error ret = irods::get_full_path_for_config_file(
+                           HOST_CONFIG_FILE,
                            cfg_file );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -1563,33 +1563,34 @@ int initHostConfigByFile() {
             continue;
         }
 
-        rodsServerHost_t* svr_host = ( rodsServerHost_t* )malloc( 
+        rodsServerHost_t* svr_host = ( rodsServerHost_t* )malloc(
                                sizeof( rodsServerHost_t ) );
-        memset( 
-            svr_host, 
-            0, 
+        memset(
+            svr_host,
+            0,
             sizeof( rodsServerHost_t ) );
-       
-        if( "remote" == address_type ) { 
+
+        if( "remote" == address_type ) {
             svr_host->localFlag = REMOTE_HOST;
         }
         else if( "local" == address_type ) {
             svr_host->localFlag = LOCAL_HOST;
 
         } else {
+            free( svr_host );
             rodsLog(
                 LOG_ERROR,
                 "unsupported address type [%s]",
                 address_type.c_str() );
             continue;
         }
-        
-        // local zone 
+
+        // local zone
         svr_host->zoneInfo = ZoneInfoHead;
-        if( queRodsServerHost( 
-                         &HostConfigHead, 
+        if( queRodsServerHost(
+                         &HostConfigHead,
                          svr_host ) < 0 ) {
-            rodsLog( 
+            rodsLog(
                  LOG_ERROR,
                  "queRodsServerHost failed" );
         }
@@ -1599,24 +1600,24 @@ int initHostConfigByFile() {
              ++addr_idx ) {
 
             object_t& obj_ent = addresses[ addr_idx ];
-            
+
             std::string entry;
-            ret = obj_ent.get< std::string >( 
-                      "address", 
+            ret = obj_ent.get< std::string >(
+                      "address",
                       entry );
             if( !ret.ok() ) {
                 irods::log( PASS( ret ) );
                 continue;
             }
-            
-            if( queHostName( 
-                    svr_host, 
-                    entry.c_str(), 
+
+            if( queHostName(
+                    svr_host,
+                    entry.c_str(),
                     0 ) < 0 ) {
                 rodsLog(
                     LOG_ERROR,
                     "queHostName failed" );
-                
+
             }
 
         } // for addr_idx
