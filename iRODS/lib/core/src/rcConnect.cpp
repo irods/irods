@@ -588,6 +588,8 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
                 conn->thread_ctx->cond->wait( boost_lock );
             } catch ( boost::condition_error ) {
                 rodsLog( LOG_ERROR, "encountered boost condition_error on wait" );
+            } catch ( boost::thread_interrupted ) {
+                rodsLog( LOG_ERROR, "encountered interrupt in wait" );
             }
         }
         boost_lock.unlock();
