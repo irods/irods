@@ -102,7 +102,7 @@ static irods::error unix_file_copy_plugin(
             msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << status;
             result = ERROR( err_status, msg_stream.str() );
         }
-        else if ( statbuf.st_mode & S_IFREG == 0 ) {
+        else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
             close( inFd ); // JMC cppcheck - resource
             std::stringstream msg_stream;
             msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
@@ -116,7 +116,7 @@ static irods::error unix_file_copy_plugin(
                 msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << status;
                 result = ERROR( err_status, msg_stream.str() );
             }
-            else if ( statbuf.st_mode & S_IFREG == 0 ) {
+            else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
                 close( outFd ); // JMC cppcheck - resource
                 std::stringstream msg_stream;
                 msg_stream << "destFileName \"" << destFileName << "\" is not a regular file.";
