@@ -98,7 +98,12 @@ class ServerConfig(object):
         db_port = self.values['Port']
         db_name = self.values['Database']
         db_user = self.values['db_username']
-        run_str = '{sqlclient} -h {db_host} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
+        # suse12 ident auth for default pgsql install fails if localhost given explicitly
+        if db_host == 'localhost':
+            run_str = '{sqlclient} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
+        # this works for cen6, ub12-14
+        else:
+            run_str = '{sqlclient} -h {db_host} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
         p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
