@@ -749,7 +749,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # =-=-=-=-=-=-=-
         # now run bonnie++ and then verify it reports a summary
-        cmd = "bonnie++ -d "+mount_point
+        if ( os.path.isfile( "/usr/sbin/bonnie++" ) ):
+            # ubuntu and centos
+            bonniecmd = "/usr/sbin/bonnie++"
+        else:
+            # suse
+            bonniecmd = "/usr/bin/bonnie++"
+        cmd = bonniecmd+" -d "+mount_point
         print( "cmd: ["+cmd+"]" )
         output = commands.getstatusoutput( cmd )
         out_str = str( output )
