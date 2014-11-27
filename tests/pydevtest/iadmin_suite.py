@@ -4,7 +4,7 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
 import pydevtest_sessions as s
 import commands
 import os
@@ -982,3 +982,34 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # check the results for the error
         assert( -1 == result.find( "userNameClient" ) )
+
+    def test_server_config_environment_variables(self):
+        # set log level to get all the things
+        os.environ['spLogLevel']='11'  
+       
+        # set a random environment value to find in the log
+        svr_cfg_file = get_irods_config_dir() + "/server_config.json"
+        os.system( "cp %s %sOrig" % (svr_cfg_file,svr_cfg_file))
+
+        with open(svr_cfg_file) as f:
+            svr_cfg = json.load(f)
+        the_value='THIS_IS_THE_VALUE'
+        svr_cfg['environment_variables']['foo_bar']=the_value
+        mod_json_file(svr_cfg_file,svr_cfg) 
+
+        # bounce the server to get the new env variable
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+
+        assertiCmd(s.adminsession,"ils","LIST","tempZone")
+
+        # look for the error "unable to read session variable $userNameClient." 
+        p = subprocess.Popen(['grep "'+the_value+'"  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
+        result = p.communicate()[0]
+
+        os.environ['spLogLevel']
+        os.system( "mv %sOrig %s" % (svr_cfg_file,svr_cfg_file))
+
+        # check the results for the error
+        assert( -1 != result.find( the_value ) )
+

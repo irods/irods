@@ -460,6 +460,9 @@ printZoneInfo() {
 
 int
 initRcatServerHostByFile() {
+    typedef irods::configuration_parser::object_t object_t;
+    typedef irods::configuration_parser::array_t  array_t;
+
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
     if( !ret.ok() ) {
@@ -467,14 +470,46 @@ initRcatServerHostByFile() {
         return ret.code();
     }
 
-    std::string prop_str;
-
-    irods::configuration_parser::array_t prop_arr;
+    object_t env_obj;
     ret = props.get_property<
-              irods::configuration_parser::array_t >(
+              object_t >(
+                  irods::CFG_ENVIRONMENT_VARIABLES_KW,
+                  env_obj );
+
+    if( ret.ok() ) {
+        object_t::iterator itr;
+        for( itr = env_obj.begin();
+             itr != env_obj.end();
+             ++itr ) {
+            std::string val = boost::any_cast< 
+                                  std::string >(
+                                      itr->second );
+            setenv( 
+                itr->first.c_str(), // variable
+                val.c_str(),        // value
+                1 );                // overwrite
+            rodsLog(
+                LOG_DEBUG,
+                "environment setting [%s]=[%s]",
+                itr->first.c_str(),
+                getenv( itr->first.c_str() ) );
+
+        }
+
+    } else {
+        rodsLog(
+            LOG_NOTICE,
+            "XXXX - did not get [%s] property",
+            irods::CFG_ENVIRONMENT_VARIABLES_KW.c_str() );
+    }
+
+    array_t prop_arr;
+    ret = props.get_property<
+              array_t >(
                   irods::CFG_RE_RULEBASE_SET_KW,
                   prop_arr );
 
+    std::string prop_str;
     if( ret.ok() ) {
         std::string rule_arr;
         for( size_t i = 0;
@@ -513,7 +548,7 @@ initRcatServerHostByFile() {
     }
 
     ret = props.get_property<
-              irods::configuration_parser::array_t >(
+              array_t >(
                   irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
                   prop_arr );
     if( ret.ok() ) {
@@ -552,7 +587,7 @@ initRcatServerHostByFile() {
     }
 
     ret = props.get_property<
-              irods::configuration_parser::array_t >(
+              array_t >(
                   irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
                   prop_arr );
     if( ret.ok() ) {
@@ -671,9 +706,9 @@ initRcatServerHostByFile() {
     }
 
     // try for new federation config
-    irods::configuration_parser::array_t fed_arr;
+    array_t fed_arr;
     ret = props.get_property<
-              irods::configuration_parser::array_t >(
+              array_t >(
                   irods::CFG_NEGOTIATION_KEY_KW,
                   fed_arr );
     if( ret.ok() ) {

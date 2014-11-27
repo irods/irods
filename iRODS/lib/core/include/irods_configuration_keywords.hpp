@@ -31,6 +31,7 @@ namespace irods {
     const std::string CFG_DEFAULT_HASH_SCHEME_KW( "default_hash_scheme" );
     const std::string CFG_MATCH_HASH_POLICY_KW( "match_hash_policy" );
     const std::string CFG_FEDERATION_KW( "federation" );
+    const std::string CFG_ENVIRONMENT_VARIABLES_KW( "environment_variables" );
     
     
     
