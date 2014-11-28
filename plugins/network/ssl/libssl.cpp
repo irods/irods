@@ -193,10 +193,21 @@ static SSL_CTX* ssl_init_context(
     char *certfile,
     char *keyfile ) {
     static int init_done = 0;
-    SSL_CTX *ctx;
-    char *ca_path;
-    char *ca_file;
-    char *verify_server;
+    SSL_CTX *ctx = 0;
+    char *ca_path = 0;
+    char *ca_file = 0;
+    char *verify_server = 0;
+
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "ssl_init_context - failed in getRodsEnv : %d",
+            status );
+        return NULL;
+
+    }
 
     if ( !init_done ) {
         SSL_library_init();
@@ -228,9 +239,9 @@ static SSL_CTX* ssl_init_context(
     }
 
     /* set up CA paths and files here */
-    ca_path = getenv( "irodsSSLCACertificatePath" );
-    ca_file = getenv( "irodsSSLCACertificateFile" );
-    if ( ca_path || ca_file ) {
+    ca_path = env.irodsSSLCACertificatePath;
+    ca_file = env.irodsSSLCACertificateFile;
+    if ( strlen( ca_path ) > 0 || strlen( ca_file ) > 0 ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             ssl_log_error( "sslInit: error loading CA certificate locations" );
         }
@@ -243,8 +254,8 @@ static SSL_CTX* ssl_init_context(
     /* if "none" is specified, we won't stop the SSL handshake
        due to certificate error, but will log messages from
        the verification callback */
-    verify_server = getenv( "irodsSSLVerifyServer" );
-    if ( verify_server && !strcmp( verify_server, "none" ) ) {
+    verify_server = env.irodsSSLVerifyServer;
+    if ( strlen( verify_server ) > 0 && !strcmp( verify_server, "none" ) ) {
         SSL_CTX_set_verify( ctx, SSL_VERIFY_NONE, ssl_verify_callback );
     }
     else {
@@ -293,17 +304,28 @@ static SSL* ssl_init_socket(
 static int ssl_post_connection_check(
     SSL *ssl,
     const char *peer ) {
-    char *verify_server;
-    X509 *cert;
+    char *verify_server = 0;
+    X509 *cert = 0;
     int match = 0;
-    STACK_OF( GENERAL_NAMES ) *names;
-    GENERAL_NAME *name;
-    int num_names, i;
-    char *namestr;
+    STACK_OF( GENERAL_NAMES ) *names = 0;
+    GENERAL_NAME *name = 0;
+    int num_names = 0, i = 0;
+    char *namestr = 0;
     char cn[256];
 
-    verify_server = getenv( "irodsSSLVerifyServer" );
-    if ( verify_server && strcmp( verify_server, "hostname" ) ) {
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "ssl_init_context - failed in getRodsEnv : %d",
+            status );
+        return 0;
+
+    }
+
+    verify_server = env.irodsSSLVerifyServer;
+    if ( strlen( verify_server ) > 0 && strcmp( verify_server, "hostname" ) ) {
         /* not being asked to verify that the peer hostname
            is in the certificate. */
         return 1;
@@ -793,6 +815,18 @@ extern "C" {
     irods::error ssl_agent_start(
         irods::plugin_context& _ctx ) {
         irods::error result = SUCCESS();
+        rodsEnv env;
+        int status = getRodsEnv( &env );
+        if( status < 0 ) {
+            rodsLog(
+                LOG_ERROR,
+                "ssl_init_context - failed in getRodsEnv : %d",
+                status );
+            return ERROR(
+                       status,
+                       "failed in getRodsEnv" );
+
+        }
 
         // =-=-=-=-=-=-=-
         // check the context
@@ -806,13 +840,13 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // set up the context using a certificate file and separate
             // keyfile passed through environment variables
-            SSL_CTX* ctx = ssl_init_context( getenv( "irodsSSLCertificateChainFile" ),
-                                             getenv( "irodsSSLCertificateKeyFile" ) );
+            SSL_CTX* ctx = ssl_init_context( env.irodsSSLCertificateChainFile,
+                                             env.irodsSSLCertificateKeyFile );
             std::string err_str = "couldn't initialize SSL context";
             ssl_build_error_string( err_str );
             if ( ( result = ASSERT_ERROR( ctx, SSL_INIT_ERROR, err_str.c_str() ) ).ok() ) {
 
-                int status = ssl_load_hd_params( ctx, getenv( "irodsSSLDHParamsFile" ) );
+                int status = ssl_load_hd_params( ctx, env.irodsSSLDHParamsFile );
                 std::string err_str = "error setting Diffie-Hellman parameters";
                 ssl_build_error_string( err_str );
                 if ( !( result = ASSERT_ERROR( status >= 0, SSL_INIT_ERROR, err_str.c_str() ) ).ok() ) {

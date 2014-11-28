@@ -218,6 +218,52 @@ class ResourceSuite(ResourceBase):
     # iput
     ###################
 
+    def test_ssl_iput_with_rods_env(self):
+        # set up client and server side for ssl handshake
+
+        # server side certificate setup
+        os.system("openssl genrsa -out server.key 2> /dev/null")
+        os.system("openssl req -batch -new -key server.key -out server.csr")
+        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
+        os.system("mv server.crt chain.pem")
+        os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null") # normally 2048, but smaller size here for speed
+        
+
+        # add client irodsEnv settings
+        clientEnvFile = s.adminsession.sessionDir+"/irods_environment.json"
+        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
+        
+        env = {}
+        env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
+        env['irods_ssl_certificate_chain_file'] = get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
+        env['irods_ssl_certificate_key_file'] = get_irods_top_level_dir() + "/tests/pydevtest/server.key"
+        env['irods_ssl_dh_params_file'] = get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
+        env['irods_ssl_verify_server'] = "none"
+
+        mod_json_file(clientEnvFile, env)
+
+        # server needs the environment variable to
+        # read the correctly changed environment
+
+        # server reboot to pick up new irodsEnv settings
+        env_val=s.adminsession.sessionDir+"/irods_environment.json"
+        sys_cmd="export IRODS_ENVIRONMENT_FILE="+env_val+";"+get_irods_top_level_dir()+"/iRODS/irodsctl restart"
+        os.system(sys_cmd)
+
+        # do the encrypted put
+        filename = "encryptedfile.txt"
+        filepath = create_local_testfile(filename)
+        assertiCmd(s.adminsession,"iinit rods") # reinitialize
+        # small file
+        assertiCmd(s.adminsession,"iput "+filename) # encrypted put - small file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename) # should be listed
+        # reset client environment to not require SSL
+        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
+
+        # clean up
+        os.system("rm server.key server.csr chain.pem dhparams.pem")
+        os.remove(filename)
+
     def test_ssl_iput_small_and_large_files(self):
         # set up client and server side for ssl handshake
 

@@ -32,11 +32,12 @@ def mod_json_file(fn,new_dict):
         with open(fn) as f:
             env = json.load( f )
 
-        for k,v in new_dict.items():
-            env[k] = v
+        env.update(new_dict)
+        #for k,v in new_dict.items():
+        #    env[k] = v
 
         with open(fn, 'w') as f:
-            json.dump(env, f)
+            json.dump(env, f, indent=4)
 
 def get_interface_ip(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

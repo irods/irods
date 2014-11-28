@@ -499,7 +499,7 @@ initRcatServerHostByFile() {
     } else {
         rodsLog(
             LOG_NOTICE,
-            "XXXX - did not get [%s] property",
+            "initRcatServerHostByFile - did not get [%s] property",
             irods::CFG_ENVIRONMENT_VARIABLES_KW.c_str() );
     }
 

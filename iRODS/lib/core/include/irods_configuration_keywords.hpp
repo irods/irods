@@ -62,6 +62,14 @@ namespace irods {
     const std::string CFG_IRODS_ENVIRONMENT_FILE_KW( "irods_environment_file" );
     const std::string CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW( "irods_session_environment_file" );
 
+    // legacy ssl environment variables
+    const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH( "irods_ssl_ca_certificate_path" );
+    const std::string CFG_IRODS_SSL_CA_CERTIFICATE_FILE( "irods_ssl_ca_certificate_file" );
+    const std::string CFG_IRODS_SSL_VERIFY_SERVER( "irods_ssl_verify_server" );
+    const std::string CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE( "irods_ssl_certificate_chain_file" );
+    const std::string CFG_IRODS_SSL_CERTIFICATE_KEY_FILE( "irods_ssl_certificate_key_file" );
+    const std::string CFG_IRODS_SSL_DH_PARAMS_FILE( "irods_ssl_dh_params_file" );
+
 }; // namespace irods
 
 #endif // CONFIGURATION_KEYWORODS_HPP

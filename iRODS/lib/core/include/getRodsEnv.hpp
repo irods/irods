@@ -38,6 +38,19 @@ extern "C" {
         char rodsDefaultHashScheme[ NAME_LEN ];
         char rodsMatchHashPolicy[ NAME_LEN ];
 
+        // =-=-=-=-=-=-=-
+        // leagcy ssl environment variables
+        char irodsSSLCACertificatePath[MAX_NAME_LEN];
+        char irodsSSLCACertificateFile[MAX_NAME_LEN];
+        char irodsSSLVerifyServer[MAX_NAME_LEN];
+        char irodsSSLCertificateChainFile[MAX_NAME_LEN];
+        char irodsSSLCertificateKeyFile[MAX_NAME_LEN];
+        char irodsSSLDHParamsFile[MAX_NAME_LEN];
+
+
+
+
+
     } rodsEnv;
 
     int getRodsEnv( rodsEnv *myRodsEnv );

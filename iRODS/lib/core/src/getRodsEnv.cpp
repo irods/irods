@@ -356,6 +356,38 @@ extern "C" {
                 _env->rodsAuthFileName, 
                 LONG_NAME_LEN - 1);
         }
+
+        // legacy ssl environment variables
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
+            _env->irodsSSLCACertificatePath );
+        capture_string_property(
+            msg_lvl,
+            props,
+             irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
+            _env->irodsSSLCACertificateFile );
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SSL_VERIFY_SERVER,
+            _env->irodsSSLVerifyServer );
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
+            _env->irodsSSLCertificateChainFile );
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
+            _env->irodsSSLCertificateKeyFile );
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
+            _env->irodsSSLDHParamsFile );
         
         return 0;
     }
@@ -399,12 +431,77 @@ extern "C" {
     } // capture_integer_env_var
 
     int
+    get_legacy_ssl_variables(
+        rodsEnv* _env ) {
+        if( !_env ) {
+            rodsLog(
+                LOG_ERROR,
+                "get_legacy_ssl_variables - null env pointer" );
+            return SYS_INVALID_INPUT_PARAM;
+
+        }
+
+        char* val = 0;
+
+        val = getenv( "irodsSSLCACertificatePath" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLCACertificatePath,
+                "%s", val );
+        }
+
+        val = getenv( "irodsSSLCACertificateFile" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLCACertificateFile,
+                "%s", val );
+        }
+
+        val = getenv( "irodsSSLVerifyServer" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLVerifyServer,
+                "%s", val );
+        }
+
+        val = getenv( "irodsSSLCertificateChainFile" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLCertificateChainFile,
+                "%s", val );
+        }
+
+        val = getenv( "irodsSSLCertificateKeyFile" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLCertificateKeyFile,
+                "%s", val );
+        }
+
+        val = getenv( "irodsSSLDHParamsFile" );
+        if( val ) {
+            sprintf(
+                _env->irodsSSLDHParamsFile,
+                "%s", val );
+        }
+
+        return 0;
+
+    } // get_legacy_ssl_variables
+
+    int
     getRodsEnvFromEnv( 
         rodsEnv* _env ) {
         if( !_env ) {
             printf( "ERROR - getRodsEnvFromEnv :: null rodsEnv\n" );
             fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
+        }
+
+        int status = get_legacy_ssl_variables( _env );
+        if( status < 0 ) {
+            return status;
+
         }
 
         std::string env_var = irods::CFG_IRODS_USER_NAME_KW;
@@ -525,6 +622,36 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->rodsDebug );
+
+        // legacy ssl environment variables
+        env_var = irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLCACertificatePath );
+        env_var = irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLCACertificateFile );
+        env_var = irods::CFG_IRODS_SSL_VERIFY_SERVER;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLVerifyServer );
+        env_var = irods::CFG_IRODS_SSL_VERIFY_SERVER;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLVerifyServer );
+        env_var = irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLCertificateChainFile );
+        env_var = irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLCertificateKeyFile );
+        env_var = irods::CFG_IRODS_SSL_DH_PARAMS_FILE;
+        capture_string_env_var(
+            env_var,
+            _env->irodsSSLDHParamsFile );
 
         return 0;
     }
