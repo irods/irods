@@ -61,9 +61,9 @@ if [ "$CHECKACCT" = "" ] ; then
   # new account
   echo "Creating Service Account: $MYACCTNAME at $IRODS_HOME_DIR "
   /usr/sbin/useradd -r -d $IRODS_HOME_DIR -M -s /bin/bash -g $MYGROUPNAME -c "iRODS Administrator" $MYACCTNAME
-  # remove the password from the service account
+  # lock the service account
   if [ "$DETECTEDOS" != "MacOSX" ] ; then
-    passwd -d $MYACCTNAME > /dev/null
+    passwd -l $MYACCTNAME > /dev/null
   fi
 else
   # use existing account
