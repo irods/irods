@@ -7045,8 +7045,8 @@ extern "C" {
                   ( unsigned char )md5Buf[10], ( unsigned char )md5Buf[11],
                   ( unsigned char )md5Buf[12], ( unsigned char )md5Buf[13],
                   ( unsigned char )md5Buf[14], ( unsigned char )md5Buf[15] );
-
         status = parseUserName( _user_name, userName2, userZone );
+
         if ( userZone[0] == '\0' ) {
             std::string zone;
             ret = getLocalZone( _ctx.prop_map(), &icss, zone );

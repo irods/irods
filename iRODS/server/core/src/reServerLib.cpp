@@ -19,6 +19,7 @@
 #include "resource.hpp"
 #include "reFuncDefs.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -408,9 +409,28 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
 #ifdef RE_EXEC_PROC
             if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
                 /* child. need to disconnect Rcat */
+                irods::server_properties& props = irods::server_properties::getInstance();
+                irods::error ret = props.capture_if_needed();
+                if( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                    return ret.code();
+                }
 
-                if ( ( status = resetRcatHost( rsComm, MASTER_RCAT,
-                                               rsComm->myEnv.rodsZone ) ) == LOCAL_HOST ) {
+                std::string zone_name;
+                ret = props.get_property<
+                          std::string >(
+                              irods::CFG_ZONE_NAME,
+                              zone_name );
+                if( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                    return ret.code();
+
+                }
+                status = resetRcatHost( 
+                             rsComm, 
+                             MASTER_RCAT,
+                             zone_name.c_str() );
+                if( LOCAL_HOST == status ) {
 #ifdef RODS_CAT
                     resetRcat();
 #endif
@@ -454,14 +474,32 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
     /* child. need to disconnect Rcat */
     rodsServerHost_t *rodsServerHost = NULL;
 
-    if ( ( status = resetRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone ) )
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+    if ( ( status = resetRcatHost( MASTER_RCAT, zone_name.c_str() ) )
+
             == LOCAL_HOST ) {
 #ifdef RODS_CAT
         resetRcat();
 #endif
     }
     if ( ( status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                        rsComm->myEnv.rodsZone, &rodsServerHost ) ) == LOCAL_HOST ) {
+                                        zone_name.c_str(), &rodsServerHost ) ) == LOCAL_HOST ) {
 #ifdef RODS_CAT
         status = connectRcat();
         if ( status < 0 ) {

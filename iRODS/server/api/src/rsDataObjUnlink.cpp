@@ -44,7 +44,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     resolveLinkedPath( rsComm, dataObjUnlinkInp->objPath, &specCollCache,
                        &dataObjUnlinkInp->condInput );
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                 dataObjUnlinkInp->objPath, &rodsServerHost );
+                                 (const char*)dataObjUnlinkInp->objPath, &rodsServerHost );
 
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;

@@ -25,7 +25,7 @@ int rsGridReport(
     int status = getAndConnRcatHost(
                      _comm,
                      MASTER_RCAT,
-                     NULL,
+                     (const char*)NULL,
                      &rods_host );
     if ( status < 0 ) {
         return status;

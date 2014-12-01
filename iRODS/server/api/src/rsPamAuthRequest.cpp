@@ -20,8 +20,11 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                 rsComm->clientUser.rodsZone, &rodsServerHost );
+    status = getAndConnRcatHost( 
+                 rsComm, 
+                 MASTER_RCAT,
+                 (const char*)rsComm->clientUser.rodsZone, 
+                 &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

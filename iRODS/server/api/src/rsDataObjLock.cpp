@@ -26,8 +26,11 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
 
-    remoteFlag = getAndConnRcatHost( rsComm, MASTER_RCAT, dataObjInp->objPath,
-                                     &rodsServerHost );
+    remoteFlag = getAndConnRcatHost( 
+                     rsComm, 
+                     MASTER_RCAT, 
+                     (const char*)dataObjInp->objPath,
+                     &rodsServerHost );
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }

@@ -14,7 +14,7 @@ rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
 
     rodsLog( LOG_DEBUG, "endTransaction" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, (const char*)NULL, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

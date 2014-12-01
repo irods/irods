@@ -242,8 +242,25 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 int
 reSvrSleep( rsComm_t *rsComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
-    int status = disconnRcatHost( MASTER_RCAT, rsComm->myEnv.rodsZone );
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    int status = disconnRcatHost( MASTER_RCAT, zone_name.c_str() );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
         status = disconnectRcat();
@@ -255,7 +272,7 @@ reSvrSleep( rsComm_t *rsComm ) {
     }
     rodsSleep( RE_SERVER_SLEEP_TIME, 0 );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, rsComm->myEnv.rodsZone, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, zone_name.c_str(), &rodsServerHost );
     if ( status == LOCAL_HOST ) {
 #ifdef RODS_CAT
         status = connectRcat();

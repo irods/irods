@@ -83,8 +83,11 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
     resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
                        &collCreateInp->condInput );
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, collCreateInp->collName,
-                                 &rodsServerHost );
+    status = getAndConnRcatHost( 
+                 rsComm, 
+                 MASTER_RCAT, 
+                 (const char*)collCreateInp->collName,
+                 &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
         return status;
     }

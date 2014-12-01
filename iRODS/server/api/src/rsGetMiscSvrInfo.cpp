@@ -6,9 +6,15 @@
 
 /* script generated code */
 #include "getMiscSvrInfo.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_log.hpp"
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
+    if( !rsComm || !outSvrInfo ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     miscSvrInfo_t *myOutSvrInfo;
     char *tmpStr;
 
@@ -25,7 +31,25 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
     rstrcpy( myOutSvrInfo->relVersion, RODS_REL_VERSION, NAME_LEN );
     rstrcpy( myOutSvrInfo->apiVersion, RODS_API_VERSION, NAME_LEN );
 
-    rstrcpy( myOutSvrInfo->rodsZone, rsComm->myEnv.rodsZone, NAME_LEN );
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    snprintf( myOutSvrInfo->rodsZone, NAME_LEN, "%s", zone_name.c_str() );
     if ( ( tmpStr = getenv( SERVER_BOOT_TIME ) ) != NULL ) {
         myOutSvrInfo->serverBootTime = atoi( tmpStr );
     }

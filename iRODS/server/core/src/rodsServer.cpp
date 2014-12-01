@@ -882,9 +882,30 @@ initServerMain( rsComm_t *svrComm ) {
                  status );
         exit( 1 );
     }
-    svrComm->sock = sockOpenForInConn( svrComm, &svrComm->myEnv.rodsPort,
-                                       NULL, SOCK_STREAM );
 
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    int zone_port = 0;
+    ret = props.get_property<
+              int >(
+                  irods::CFG_ZONE_PORT,
+                  zone_port );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    svrComm->sock = sockOpenForInConn( 
+                        svrComm, 
+                        &zone_port,
+                        NULL, 
+                        SOCK_STREAM );
     if ( svrComm->sock < 0 ) {
         rodsLog( LOG_ERROR,
                  "initServerMain: sockOpenForInConn error. status = %d",

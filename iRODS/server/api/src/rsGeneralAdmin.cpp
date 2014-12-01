@@ -33,7 +33,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     rodsLog( LOG_DEBUG, "generalAdmin" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, (const char*)NULL, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

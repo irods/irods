@@ -760,7 +760,7 @@ extern "C" {
     int appendRodsEnv( char *appendText ) {
         FILE *fptr;
         char *getVar = NULL;
-printf( "XXXX - appendRodsEnv :: FIXME!!!!!!!!!!!!!\n" );
+
         getVar = getenv( irods::to_env( irods::CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
         if ( getVar != NULL && *getVar != '\0' ) {
             rstrcpy( configFileName, findNextTokenAndTerm( getVar ), LONG_NAME_LEN );

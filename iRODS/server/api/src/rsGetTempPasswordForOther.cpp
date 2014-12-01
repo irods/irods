@@ -13,7 +13,7 @@ rsGetTempPasswordForOther( rsComm_t *rsComm,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, (const char*)NULL, &rodsServerHost );
     rodsLog( LOG_DEBUG,
              "rsGetTempPasswordForOther get stat=%d", status );
     if ( status < 0 ) {

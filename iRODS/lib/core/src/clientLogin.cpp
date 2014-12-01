@@ -20,6 +20,8 @@
 #include "irods_native_auth_object.hpp"
 #include "irods_pam_auth_object.hpp"
 #include "authPluginRequest.hpp"
+#include "irods_configuration_parser.hpp"
+#include "irods_configuration_keywords.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -238,7 +240,7 @@ int clientLogin(
         else {
             // =-=-=-=-=-=-=-
             // check the environment variable first
-            char* auth_env_var = getenv( "irodsAuthScheme" );
+            char* auth_env_var = getenv( irods::to_env( irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW ).c_str() );
             if ( !auth_env_var ) {
                 rodsEnv rods_env;
                 if ( getRodsEnv( &rods_env ) >= 0 ) {

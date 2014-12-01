@@ -109,7 +109,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         zone_hint_str = zoneHint;
     }
 
-    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, zoneHint,
+    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, (const char*)zoneHint,
                                  &rodsServerHost );
 
     if ( status < 0 ) {

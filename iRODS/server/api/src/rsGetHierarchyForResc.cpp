@@ -62,7 +62,7 @@ int rsGetHierarchyForResc(
     int status = getAndConnRcatHost(
                      _comm,
                      MASTER_RCAT,
-                     zone_name,
+                     (const char*)zone_name,
                      &svr_host );
     if ( status < 0 || NULL == svr_host ) {
         return status;

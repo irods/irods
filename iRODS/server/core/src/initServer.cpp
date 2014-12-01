@@ -172,11 +172,48 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
 
 int
 initServerInfo( rsComm_t *rsComm ) {
-    int status;
+    int status = 0;
 
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    int zone_port = 0;
+    ret = props.get_property<
+              int >(
+                  irods::CFG_ZONE_PORT,
+                  zone_port );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+    
     /* que the local zone */
-
-    queZone( rsComm->myEnv.rodsZone, rsComm->myEnv.rodsPort, NULL, NULL );
+    status = queZone( 
+                 zone_name.c_str(), 
+                 zone_port, NULL, NULL );
+    if( status < 0 ) {
+        rodsLog(
+            LOG_DEBUG,
+            "initServerInfo - queZone failed %d",
+            status );
+        // do not error out
+    }
 
     status = initHostConfigByFile();
     if ( status < 0 ) {
@@ -222,7 +259,7 @@ initServerInfo( rsComm_t *rsComm ) {
         return status;
     }
 
-    irods::error ret = resc_mgr.init_from_catalog( rsComm );
+    ret = resc_mgr.init_from_catalog( rsComm );
     if ( !ret.ok() ) {
         irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
         irods::log( log_err );
@@ -876,9 +913,11 @@ getLogDir() {
  * If the rcat host is remote, it will automatically connect to the rcat host.
  */
 
-int
-getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
-                    rodsServerHost_t **rodsServerHost ) {
+int getAndConnRcatHost( 
+    rsComm_t *rsComm, 
+    int rcatType, 
+    const char *rcatZoneHint,
+    rodsServerHost_t **rodsServerHost ) {
     int status;
 
     status = getRcatHost( rcatType, rcatZoneHint, rodsServerHost );
@@ -957,7 +996,7 @@ convZoneSockError( int inStatus ) {
  */
 
 int
-getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
+getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     int status;
     zoneInfo_t *tmpZoneInfo;
     int zoneInput;
@@ -998,7 +1037,7 @@ getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     else {
         rodsLog( LOG_DEBUG,
                  "getZoneInfo: Invalid zone name from hint %s", rcatZoneHint );
-        status = getZoneInfo( NULL, myZoneInfo );
+        status = getZoneInfo( (const char*)NULL, myZoneInfo );
         if ( status < 0 ) {
             return SYS_INVALID_ZONE_NAME;
         }
@@ -1009,7 +1048,7 @@ getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
 }
 
 int
-getRcatHost( int rcatType, char *rcatZoneHint,
+getRcatHost( int rcatType, const char *rcatZoneHint,
              rodsServerHost_t **rodsServerHost ) {
     int status;
     zoneInfo_t *myZoneInfo = NULL;
@@ -1081,7 +1120,7 @@ getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
 }
 
 int
-disconnRcatHost( int rcatType, char *rcatZoneHint ) {
+disconnRcatHost( int rcatType, const char *rcatZoneHint ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
@@ -1110,7 +1149,7 @@ disconnRcatHost( int rcatType, char *rcatZoneHint ) {
 /* resetRcatHost is similar to disconnRcatHost except it does not disconnect */
 
 int
-resetRcatHost( int rcatType, char *rcatZoneHint ) {
+resetRcatHost( int rcatType, const char *rcatZoneHint ) {
     rodsServerHost_t *rodsServerHost = NULL;
     int status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
@@ -1128,7 +1167,6 @@ resetRcatHost( int rcatType, char *rcatZoneHint ) {
 
 int
 initZone( rsComm_t *rsComm ) {
-    rodsEnv *myEnv = &rsComm->myEnv;
     rodsServerHost_t *tmpRodsServerHost;
     rodsServerHost_t *masterServerHost = NULL;
     rodsServerHost_t *slaveServerHost = NULL;
@@ -1137,6 +1175,24 @@ initZone( rsComm_t *rsComm ) {
     int status, i;
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
     char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
+
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
 
     /* configure the local zone first or rsGenQuery would not work */
 
@@ -1154,7 +1210,6 @@ initZone( rsComm_t *rsComm ) {
     }
     ZoneInfoHead->masterServerHost = masterServerHost;
     ZoneInfoHead->slaveServerHost = slaveServerHost;
-    /* queZone (myEnv->rodsZone, masterServerHost, slaveServerHost); */
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     addInxIval( &genQueryInp.selectInp, COL_ZONE_NAME, 1 );
@@ -1208,10 +1263,10 @@ initZone( rsComm_t *rsComm ) {
         tmpZoneConn = &zoneConn->value[zoneConn->len * i];
         //tmpZoneComment = &zoneComment->value[zoneComment->len * i];
         if ( strcmp( tmpZoneType, "local" ) == 0 ) {
-            if ( strcmp( myEnv->rodsZone, tmpZoneName ) != 0 ) {
+            if ( strcmp( zone_name.c_str(), tmpZoneName ) != 0 ) {
                 rodsLog( LOG_ERROR,
                          "initZone: zoneName in env %s does not match %s in icat ",
-                         myEnv->rodsZone, tmpZoneName );
+                         zone_name.c_str(), tmpZoneName );
             }
             /* fillin rodsZone if it is not defined */
             if ( strlen( rsComm->proxyUser.rodsZone ) == 0 ) {
@@ -1262,9 +1317,12 @@ initZone( rsComm_t *rsComm ) {
     return 0;
 }
 
-int
-queZone( char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
-         rodsServerHost_t *slaveServerHost ) {
+int queZone( 
+    const char*       zoneName, 
+    int               portNum, 
+    rodsServerHost_t* masterServerHost,
+    rodsServerHost_t* slaveServerHost ) {
+
     zoneInfo_t *tmpZoneInfo, *lastZoneInfo;
     zoneInfo_t *myZoneInfo;
 
@@ -1755,29 +1813,58 @@ disconnectAllSvrToSvrConn() {
 
 int
 initRsComm( rsComm_t *rsComm ) {
-    int status;
-
     memset( rsComm, 0, sizeof( rsComm_t ) );
-    status = getRodsEnv( &rsComm->myEnv );
 
-
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "initRsComm: getRodsEnv serror, status = %d", status );
-        return status;
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    /* fill in the proxyUser info from myEnv. clientUser has to come from
-     * the rei */
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
 
-    rstrcpy( rsComm->proxyUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN );
-    rstrcpy( rsComm->proxyUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN );
+    }
+
+    std::string zone_user;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_USER,
+                  zone_user );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    std::string zone_auth_scheme;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_AUTH_SCHEME,
+                  zone_auth_scheme );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    /* fill in the proxyUser info from server_config. clientUser 
+     * has to come from the rei */
+    rstrcpy( rsComm->proxyUser.userName, zone_user.c_str(), NAME_LEN );
+    rstrcpy( rsComm->proxyUser.rodsZone, zone_name.c_str(), NAME_LEN );
     rstrcpy( rsComm->proxyUser.authInfo.authScheme,
-             rsComm->myEnv.rodsAuthScheme, NAME_LEN );
-    rstrcpy( rsComm->clientUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN );
-    rstrcpy( rsComm->clientUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN );
+             zone_auth_scheme.c_str(), NAME_LEN );
+    rstrcpy( rsComm->clientUser.userName, zone_user.c_str(), NAME_LEN );
+    rstrcpy( rsComm->clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
     rstrcpy( rsComm->clientUser.authInfo.authScheme,
-             rsComm->myEnv.rodsAuthScheme, NAME_LEN );
+             zone_auth_scheme.c_str(), NAME_LEN );
     /* assume LOCAL_PRIV_USER_AUTH */
     rsComm->clientUser.authInfo.authFlag =
         rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -2228,7 +2315,7 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    status = getRcatHost( MASTER_RCAT, NULL, rodsServerHost );
+    status = getRcatHost( MASTER_RCAT, (const char*)NULL, rodsServerHost );
 
     return status;
 }
@@ -2642,13 +2729,40 @@ readProcLog( int pid, procLog_t *procLog ) {
 
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm ) {
-    rodsEnv *myEnv = &rsComm->myEnv;
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
-    rstrcpy( rsComm->proxyUser.userName, myEnv->rodsUserName, NAME_LEN );
-    rstrcpy( rsComm->clientUser.userName, myEnv->rodsUserName, NAME_LEN );
+    std::string zone_name;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_NAME,
+                  zone_name );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
 
-    rstrcpy( rsComm->proxyUser.rodsZone, myEnv->rodsZone, NAME_LEN );
-    rstrcpy( rsComm->clientUser.rodsZone, myEnv->rodsZone, NAME_LEN );
+    }
+
+    std::string zone_user;
+    ret = props.get_property<
+              std::string >(
+                  irods::CFG_ZONE_USER,
+                  zone_user );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
+    rstrcpy( rsComm->proxyUser.userName,  zone_user.c_str(), NAME_LEN );
+    rstrcpy( rsComm->clientUser.userName, zone_user.c_str(), NAME_LEN );
+
+    rstrcpy( rsComm->proxyUser.rodsZone,  zone_name.c_str(), NAME_LEN );
+    rstrcpy( rsComm->clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
 
     return 0;
 }

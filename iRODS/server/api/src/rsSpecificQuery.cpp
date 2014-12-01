@@ -20,7 +20,7 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     /*  zoneHint = getZoneHintForGenQuery (genQueryInp); (need something like this?) */
     zoneHint = getValByKey( &specificQueryInp->condInput, ZONE_KW );
 
-    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, zoneHint,
+    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, (const char*)zoneHint,
                                  &rodsServerHost );
     if ( status < 0 ) {
         return status;

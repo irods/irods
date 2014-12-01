@@ -1289,7 +1289,11 @@ sub configureIrodsServer
 	my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
 
 	my %svr_variables = (
-		"icat_host",	$host );
+		"icat_host",	    $host,
+        "zone_name",        $ZONE_NAME,
+        "zone_port",        $IRODS_PORT + 0, # convert to integer
+        "zone_user",        $IRODS_ADMIN_NAME,
+        "zone_auth_scheme", "native" );
         printStatus( "    Updating $serverConfigFile....\n" );
         printLog( "    Updating $serverConfigFile....\n" );
 	printLog( "        icat_host   = $host\n" );
@@ -1392,6 +1396,31 @@ sub configureIrodsServer
 		cleanAndExit( 1 );
 	}
 
+    # repave the irods_port with 1233 which is expected by the boot user
+    my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server_config.json" );
+    my $databaseConfigFile = File::Spec->catfile( $serverConfigDir,"database_config.json" );
+    unless( -e $serverConfigFile ) {
+        $serverConfigFile = File::Spec->catfile( "/etc/irods/","server_config.json" );
+        unless( -e $serverConfigFile ) {
+            print( "server_config.json not found\n" );
+        }
+        if ( $IRODS_ICAT_HOST eq "" )
+        {
+            $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
+            unless( -e $databaseConfigFile ) {
+                print( "database_config.json not found\n" );
+            }
+        }
+    }
+
+    my %svr_variables = (
+            "zone_name",        $ZONE_NAME,
+            "zone_port",        1233,
+            "zone_auth_scheme", "native" );
+    $status = update_json_configuration_file(
+            $serverConfigFile,
+            %svr_variables );
+
 
 	# Start iRODS.
 	#	We need the server started so that we can
@@ -1400,6 +1429,7 @@ sub configureIrodsServer
 	printStatus( "Starting iRODS server with boot environment...\n" );
 	printLog( "\nStarting iRODS server with boot environment...\n" );
 	printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
+	
 	$ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
 	open( BOOTENV, "<$bootEnv" );
 	my $line;
@@ -1444,6 +1474,18 @@ sub configureIrodsServer
 	printLog( "\nOpening iRODS connection using boot password...\n" );
 	my $passwordsAlreadySet = 0;
 	($status,$output) = run( "$iinit $IRODS_ADMIN_BOOT_PASSWORD" );
+	if ( $status != 0 ) {
+        exit(999);
+    }
+
+    # need to repave the irods_port in the server_config.json to
+    # the configured port after using 1233 for irodsBoot user
+    my %svr_variables = (
+            "zone_port",  $IRODS_PORT + 0 );
+    update_json_configuration_file(
+            $serverConfigFile,
+            %svr_variables );
+
 	if ( $status != 0 )
 	{
                 # Failed with the boot password.
@@ -1504,6 +1546,8 @@ sub configureIrodsServer
 		# password.  Flag that we don't need to do
 		# that again.
 		$passwordsAlreadySet = 1;
+
+
 	}
 
 	my $somethingFailed = 0;

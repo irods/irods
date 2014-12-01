@@ -196,10 +196,30 @@ xmsgServerMain() {
 
     }
 
+    irods::server_properties& props = irods::server_properties::getInstance();
+    ret = props.capture_if_needed();
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    int xmsg_port = 0;
+    ret = props.get_property<
+              int >(
+                  irods::CFG_XMSG_PORT,
+                  xmsg_port );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+
+    }
 
     /* open  a socket and listen for connection */
-    svrComm.sock = sockOpenForInConn( &svrComm, &svrComm.myEnv.xmsgPort, NULL,
-                                      SOCK_STREAM );
+    svrComm.sock = sockOpenForInConn( 
+                       &svrComm, 
+                       &xmsg_port, 
+                       NULL,
+                       SOCK_STREAM );
 
     if ( svrComm.sock < 0 ) {
         rodsLog( LOG_NOTICE, "xmsgServerMain: sockOpenForInConn error. status = %d",

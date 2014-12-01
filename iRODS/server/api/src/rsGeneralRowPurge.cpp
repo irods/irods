@@ -14,7 +14,7 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
 
     rodsLog( LOG_DEBUG, "generalRowPurge" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, (const char*)NULL, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

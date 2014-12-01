@@ -28,6 +28,7 @@
 #include <algorithm>
 
 // =-=-=-=-=-=-=-
+#include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_client_api_table.hpp"
@@ -510,39 +511,30 @@ getLine( FILE *fp, char *buf, int bufSize ) {
     }
 }
 
-int
-getZoneNameFromHint( char *rcatZoneHint, char *zoneName, int len ) {
-    int bytesCopied = 0;
-    char *hintPtr, *outPtr;
-
-    if ( rcatZoneHint == NULL ) {
-        zoneName[0] = '\0';
+int getZoneNameFromHint( 
+    const char* _hint, 
+    char*       _zone_name, 
+    int         _len ) {
+    if ( !_hint ) {
+        _zone_name[0] = '\0';
         return 0;
     }
 
-    if ( rcatZoneHint[0] == '/' ) {             /* a path */
-        hintPtr = rcatZoneHint + 1;
-        outPtr = zoneName;
-        while ( *hintPtr != '\0' && *hintPtr != '/' && bytesCopied < len - 1 ) {
-            *outPtr = *hintPtr;
-            bytesCopied ++;
-            outPtr ++;
-            hintPtr ++;
-        }
-        /* take out the last ' */
-        if ( *( outPtr - 1 ) == '\'' ) {
-            *( outPtr - 1 ) = '\0';
-        }
-        else {
-            *outPtr = '\0';
+    const std::string sep = irods::get_virtual_path_separator();
+
+    std::string hint( _hint );
+    if( sep[0] == hint[0] ) {
+        std::string::size_type pos = hint.find( sep, 1 );
+        if( std::string::npos != pos ) {
+            hint = hint.substr( pos, 1 );
+
+        } else {
+            hint = hint.substr( 1 );
+
         }
     }
-    else {
-        /* just a zoneName. use strncpy instead of rstrcpy to avoid error
-         * msg */
-        strncpy( zoneName, rcatZoneHint, len );
-        zoneName[len - 1] = '\0';
-    }
+
+    snprintf( _zone_name, _len, "%s", hint.c_str() );
 
     return 0;
 }

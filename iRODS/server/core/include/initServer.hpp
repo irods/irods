@@ -147,7 +147,7 @@ int
 queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
                    rodsServerHost_t *myRodsServerHost );
 int
-getAndConnRcatHost( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
+getAndConnRcatHost( rsComm_t *rsComm, int rcatType, const char *rcatZoneHint,
                     rodsServerHost_t **rodsServerHost );
 char *
 getConfigDir();
@@ -156,12 +156,12 @@ getLogDir();
 rodsServerHost_t *
 mkServerHost( char *myHostAddr, char *zoneName );
 int
-getRcatHost( int rcatType, char *rcatZoneHint,
+getRcatHost( int rcatType, const char *rcatZoneHint,
              rodsServerHost_t **rodsServerHost );
 int
 initZone( rsComm_t *rsComm );
 int
-queZone( char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
+queZone( const char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
          rodsServerHost_t *slaveServerHost );
 int
 printZoneInfo();
@@ -198,7 +198,7 @@ queConfigName( rodsServerHost_t *configServerHost,
 int
 disconnectAllSvrToSvrConn();
 int
-disconnRcatHost( int rcatType, char *rcatZoneHint );
+disconnRcatHost( int rcatType, const char *rcatZoneHint );
 int
 svrReconnect( rsComm_t *rsComm );
 int
@@ -214,7 +214,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo );
 char *
 getLocalZoneName();
 int
-getZoneInfo( char *rcatZoneHint, zoneInfo_t **myZoneInfo );
+getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo );
 int
 getAndConnRemoteZone( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                       rodsServerHost_t **rodsServerHost, char *remotZoneOpr );
@@ -228,7 +228,7 @@ isSameZone( char *zoneHint1, char *zoneHint2 );
 int
 convZoneSockError( int inStatus );
 int
-resetRcatHost( int rcatType, char *rcatZoneHint );
+resetRcatHost( int rcatType, const char *rcatZoneHint );
 int
 getReHost( rodsServerHost_t **rodsServerHost );
 int

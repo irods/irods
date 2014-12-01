@@ -65,6 +65,12 @@ namespace irods {
         key_map_[ LOCAL_ZONE_SID_KW ]        = CFG_ZONE_ID_KW;
         key_map_[ AGENT_KEY_KW ]             = CFG_NEGOTIATION_KEY_KW;
 
+        key_map_[ CFG_ZONE_NAME ]             = CFG_ZONE_NAME;
+        key_map_[ CFG_ZONE_USER ]             = CFG_ZONE_USER;
+        key_map_[ CFG_ZONE_PORT ]             = CFG_ZONE_PORT;
+        key_map_[ CFG_XMSG_PORT ]             = CFG_XMSG_PORT;
+        key_map_[ CFG_ZONE_AUTH_SCHEME ]      = CFG_ZONE_AUTH_SCHEME;
+
     } // ctor
 
     error server_properties::capture() {

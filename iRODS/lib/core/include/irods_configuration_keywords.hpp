@@ -70,6 +70,13 @@ namespace irods {
     const std::string CFG_IRODS_SSL_CERTIFICATE_KEY_FILE( "irods_ssl_certificate_key_file" );
     const std::string CFG_IRODS_SSL_DH_PARAMS_FILE( "irods_ssl_dh_params_file" );
 
+    // irods environment values now included in server_config
+    const std::string CFG_ZONE_NAME( "zone_name" );
+    const std::string CFG_ZONE_USER( "zone_user" );
+    const std::string CFG_ZONE_PORT( "zone_port" );
+    const std::string CFG_ZONE_AUTH_SCHEME( "zone_auth_scheme" );
+    const std::string CFG_XMSG_PORT( "xmsg_port" );
+
 }; // namespace irods
 
 #endif // CONFIGURATION_KEYWORODS_HPP
