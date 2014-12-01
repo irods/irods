@@ -755,7 +755,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         else:
             # suse
             bonniecmd = "/usr/bin/bonnie++"
-        cmd = bonniecmd+" -d "+mount_point
+        cmd = bonniecmd+" -r 1024 -d "+mount_point
         print( "cmd: ["+cmd+"]" )
         output = commands.getstatusoutput( cmd )
         out_str = str( output )
