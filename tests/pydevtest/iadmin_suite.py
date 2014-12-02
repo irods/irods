@@ -312,6 +312,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
         assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment '"+mycomment+"'")
         assertiCmd(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
+        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment 'none'")
+        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
 
     # USERS
 
