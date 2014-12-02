@@ -757,26 +757,6 @@ extern "C" {
         }
     }
 
-    int appendRodsEnv( char *appendText ) {
-        FILE *fptr;
-        char *getVar = NULL;
-
-        getVar = getenv( irods::to_env( irods::CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
-        if ( getVar != NULL && *getVar != '\0' ) {
-            rstrcpy( configFileName, findNextTokenAndTerm( getVar ), LONG_NAME_LEN );
-        }
-        fptr = fopen( configFileName, "a" );
-        if ( fptr == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "appendRodsEnv: cannot create file %s",
-                     configFileName );
-            return 0;
-        }
-        fputs( appendText, fptr );
-        fclose( fptr );
-        return 0;
-    }
-
 } // extern "C"
 
 

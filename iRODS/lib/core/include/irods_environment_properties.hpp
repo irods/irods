@@ -22,6 +22,12 @@ namespace irods {
         /// @brief path for json environemnt file
         static const std::string JSON_ENV_FILE;
 
+        /// @brief function which returns json env and session file
+        static error get_json_environment_file( std::string&, std::string& );
+        
+        /// @brief function which returns legacy env and session file
+        static error get_legacy_environment_file( std::string&, std::string& );
+
         /**
          * @brief Access method for the singleton
          */

@@ -15,8 +15,14 @@
 #include "irods_auth_constants.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_environment_properties.hpp"
 
-#include<iostream>
+#include "boost/lexical_cast.hpp"
+
+#include <jansson.h>
+#include <iostream>
+#include <fstream>
+
 void usage( char *prog );
 void usageTTL();
 
@@ -65,18 +71,16 @@ printUpdateMsg() {
 }
 int
 main( int argc, char **argv ) {
-    int i, ix, status;
+    int i = 0, ix = 0, status = 0;
     int echoFlag = 0;
-    char *password;
-    rodsEnv myEnv;
-    rcComm_t *Conn;
+    char *password = 0;
+    rodsEnv my_env;
+    rcComm_t *Conn = 0;
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
     int useGsi = 0;
-    int doPassword;
-    char ttybuf[TTYBUF_LEN];
+    int doPassword = 0;
     int doingEnvFileUpdate = 0;
-    char updateText[UPDATE_TEXT_LEN] = "";
     int ttl = 0;
 
     status = parseCmdLineOpt( argc, argv, "ehvVlZ", 1, &myRodsArgs );
@@ -104,7 +108,7 @@ main( int argc, char **argv ) {
         setenv( PRINT_RODS_ENV_STR, "1", 0 );
     }
 
-    status = getRodsEnv( &myEnv );
+    status = getRodsEnv( &my_env );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
@@ -136,11 +140,22 @@ main( int argc, char **argv ) {
      */
     mkrodsdir();
 
+    json_t* json_env = json_object();
+    if ( !json_env ) {
+        printf( "call to json_object() failed.\n" );
+        return SYS_MALLOC_ERR;
+    }
+    
+    json_object_set( 
+        json_env, 
+        irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW.c_str(),
+        json_string( irods::AUTH_NATIVE_SCHEME.c_str() ) );
+
     /*
        Check on the key Environment values, prompt and save
        them if not already available.
      */
-    if ( strlen( myEnv.rodsHost ) == 0 ) {
+    if ( strlen( my_env.rodsHost ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -148,13 +163,17 @@ main( int argc, char **argv ) {
         printf( "Enter the host name (DNS) of the server to connect to:" );
         std::string response;
         getline( std::cin, response );
-        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
-        rstrcat( updateText, "irodsHost ", UPDATE_TEXT_LEN );
-        rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
-        strncpy( myEnv.rodsHost, ttybuf, NAME_LEN );
+        snprintf( 
+            my_env.rodsHost, 
+            NAME_LEN, 
+            "%s", 
+            response.c_str() );
+        json_object_set( 
+            json_env, 
+            "irods_host", 
+            json_string( my_env.rodsHost ) );
     }
-    if ( myEnv.rodsPort == 0 ) {
+    if ( my_env.rodsPort == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -162,13 +181,20 @@ main( int argc, char **argv ) {
         printf( "Enter the port number:" );
         std::string response;
         getline( std::cin, response );
-        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
-        rstrcat( updateText, "irodsPort ", UPDATE_TEXT_LEN );
-        rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
-        myEnv.rodsPort = atoi( ttybuf );
+        try {
+            my_env.rodsPort = boost::lexical_cast< int >( response );
+
+        } catch ( boost::bad_lexical_cast e ) {
+            my_env.rodsPort = 0; 
+
+        }
+
+        json_object_set( 
+            json_env, 
+            "irods_port", 
+            json_integer( my_env.rodsPort ) );
     }
-    if ( strlen( myEnv.rodsUserName ) == 0 ) {
+    if ( strlen( my_env.rodsUserName ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -176,13 +202,17 @@ main( int argc, char **argv ) {
         printf( "Enter your irods user name:" );
         std::string response;
         getline( std::cin, response );
-        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
-        rstrcat( updateText, "irodsUserName ", UPDATE_TEXT_LEN );
-        rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
-        strncpy( myEnv.rodsUserName, ttybuf, NAME_LEN );
+        snprintf( 
+            my_env.rodsUserName, 
+            NAME_LEN,
+            "%s",
+            response.c_str() );
+        json_object_set( 
+            json_env, 
+            "irods_user_name", 
+            json_string( my_env.rodsUserName ) );
     }
-    if ( strlen( myEnv.rodsZone ) == 0 ) {
+    if ( strlen( my_env.rodsZone ) == 0 ) {
         if ( doingEnvFileUpdate == 0 ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
@@ -190,11 +220,15 @@ main( int argc, char **argv ) {
         printf( "Enter your irods zone:" );
         std::string response;
         getline( std::cin, response );
-        strncpy( ttybuf, response.c_str(), TTYBUF_LEN );
-        rstrcat( updateText, "irodsZone ", UPDATE_TEXT_LEN );
-        rstrcat( updateText, ttybuf, UPDATE_TEXT_LEN );
-        rstrcat( updateText, "\n", UPDATE_TEXT_LEN );
-        strncpy( myEnv.rodsZone, ttybuf, NAME_LEN );
+        snprintf( 
+            my_env.rodsZone, 
+            NAME_LEN,
+            "%s",
+            response.c_str() );
+        json_object_set( 
+            json_env, 
+            "irods_zone", 
+            json_string( my_env.rodsZone ) );
     }
     if ( doingEnvFileUpdate ) {
         printf( "Those values will be added to your environment file (for use by\n" );
@@ -207,7 +241,7 @@ main( int argc, char **argv ) {
     doPassword = 1;
     // =-=-=-=-=-=-=-
     // ensure scheme is lower case for comparison
-    std::string lower_scheme = myEnv.rodsAuthScheme;
+    std::string lower_scheme = my_env.rodsAuthScheme;
     std::transform(
         lower_scheme.begin(),
         lower_scheme.end(),
@@ -223,7 +257,7 @@ main( int argc, char **argv ) {
         doPassword = 0;
     }
 
-    if ( strcmp( myEnv.rodsUserName, ANONYMOUS_USER ) == 0 ) {
+    if ( strcmp( my_env.rodsUserName, ANONYMOUS_USER ) == 0 ) {
         doPassword = 0;
     }
     if ( useGsi == 1 ) {
@@ -250,12 +284,12 @@ main( int argc, char **argv ) {
     init_api_table( api_tbl, pk_tbl );
 
     /* Connect... */
-    Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                      myEnv.rodsZone, 0, &errMsg );
+    Conn = rcConnect( my_env.rodsHost, my_env.rodsPort, my_env.rodsUserName,
+                      my_env.rodsZone, 0, &errMsg );
     if ( Conn == NULL ) {
         rodsLog( LOG_ERROR,
                  "Saved password, but failed to connect to server %s",
-                 myEnv.rodsHost );
+                 my_env.rodsHost );
         exit( 2 );
     }
 
@@ -275,7 +309,7 @@ main( int argc, char **argv ) {
         ttl_str << ttl;
         std::string context = irods::AUTH_TTL_KEY      +
                               irods::kvp_association() +
-                              ttl_str.str()             +
+                              ttl_str.str()            +
                               irods::kvp_delimiter()   +
                               irods::AUTH_PASSWORD_KEY +
                               irods::kvp_association() +
@@ -296,9 +330,9 @@ main( int argc, char **argv ) {
     // =-=-=-=-=-=-=-
     // since we might be using PAM
     // and check that the user/password is OK
-    const char* auth_scheme = ( pam_flg )                        ?
+    const char* auth_scheme = ( pam_flg ) ?
                               irods::AUTH_NATIVE_SCHEME.c_str() :
-                              myEnv.rodsAuthScheme;
+                              my_env.rodsAuthScheme;
     status = clientLogin( Conn, 0, auth_scheme );
     if ( status != 0 ) {
 
@@ -332,10 +366,38 @@ main( int argc, char **argv ) {
 
     /* Save updates to irods_environment.json. */
     if ( doingEnvFileUpdate == 1 ) {
-        appendRodsEnv( updateText );
-    }
+        std::string env_file, session_file;
+        irods::error ret = irods::environment_properties::get_json_environment_file(
+                               env_file,
+                               session_file );
+        if( ret.ok() ) { 
+            char* tmp_buf = json_dumps( 
+                                json_env, 
+                                JSON_INDENT( 4 ) );
+            std::ofstream f( 
+                              env_file.c_str(), 
+                              std::ios::out );
+            if( f.is_open() ) {
+                f << tmp_buf << std::endl;
+                f.close();
+                    
+            } else {
+                printf( 
+                    "failed to open environment file [%s]\n", 
+                    env_file.c_str() );
 
-    exit( 0 );
+            }
+
+        } else {
+            printf( 
+                "failed to get environment file - %Ld\n", 
+                ret.code() );
+        
+        }
+
+    } // if doingEnvFileUpdate
+
+    return 0;
 
 } // main
 

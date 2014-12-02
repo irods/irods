@@ -58,8 +58,6 @@ extern "C" {
     char *getRodsEnvFileName();
     char *getRodsEnvAuthFileName();
 
-    int appendRodsEnv( char *appendText );
-
 #ifdef __cplusplus
 }
 #endif

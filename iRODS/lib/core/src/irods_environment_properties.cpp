@@ -98,7 +98,9 @@ namespace irods {
         
     } // ctor
 
-    error environment_properties::capture() {
+    error environment_properties::get_json_environment_file(
+        std::string& _env_file,
+        std::string& _session_file ) {
         // capture parent process id for use in creation of 'session'
         // file which contains the cwd for a given session.  this cwd
         // is only updated by the icd command which writes a new irods
@@ -136,83 +138,128 @@ namespace irods {
 
         }
 
-        error ret;
+        _env_file     = json_file;
+        _session_file = json_session_file;
+
+        return SUCCESS();
+
+    } // get_json_environment_file
+
+    error environment_properties::get_legacy_environment_file(
+        std::string& _env_file,
+        std::string& _session_file ) {
+        // capture parent process id for use in creation of 'session'
+        // file which contains the cwd for a given session.  this cwd
+        // is only updated by the icd command which writes a new irods
+        // CFG_IRODS_CWD_KW to the session dir which repaves the existing
+        // one in the original irodsEnv file.
+        std::stringstream ppid_str; ppid_str << getppid();
+
+        std::string legacy_file( IRODS_HOME_DIRECTORY );
+        std::string legacy_session_file( IRODS_HOME_DIRECTORY );
+        char* irods_env = getenv( 
+                              to_env( 
+                                  CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
+        if( irods_env && strlen( irods_env ) != 0 ) {
+            legacy_file = irods_env;
+        
+            // "cwd" is used in this case instead of the ppid given the
+            // assumption that scripts will set the env file var to allow
+            // for more complex interactions possibly yielding complex pid
+            // hierarchies.  this routes all references to the same session
+            // for this given use case
+            legacy_session_file = legacy_file + ".cwd";
+
+        } else {
+            char* home_dir = getenv( "HOME" );
+            // if home env exists, prefer that for run in place
+            // or use of existing irods service accound
+            if( home_dir ) {
+                legacy_file = home_dir;
+            }
+
+            legacy_file += LEGACY_ENV_FILE;
+            legacy_session_file = legacy_file + "." + ppid_str.str();
+       
+        }
+       
+        _env_file     = legacy_file;
+        _session_file = legacy_session_file; 
+
+        return SUCCESS();
+
+    } // get_legacy_environment_file
+
+    error environment_properties::capture() {
+        std::string json_file, json_session_file;
+        error ret = get_json_environment_file(
+                        json_file,
+                        json_session_file );
+        
         bool do_parse_legacy = false;
-        if( fs::exists( json_file ) ) {
-            ret = capture_json( json_file );
-            if ( !ret.ok() ) {
-                // debug - irods::log( PASS( ret ) );
-                do_parse_legacy = true;
-            
-            } else {
-                config_props_.set< std::string >(
-                    CFG_IRODS_ENVIRONMENT_FILE_KW,
-                    json_file );
-                ret = capture_json( json_session_file );
-                if( !ret.ok() ) {
+        if( ret.ok() ) {
+            if( fs::exists( json_file ) ) {
+                ret = capture_json( json_file );
+                if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
+                    do_parse_legacy = true;
+                
+                } else {
+                    config_props_.set< std::string >(
+                        CFG_IRODS_ENVIRONMENT_FILE_KW,
+                        json_file );
+                    ret = capture_json( json_session_file );
+                    if( !ret.ok() ) {
+                        // debug - irods::log( PASS( ret ) );
+
+                    }
+
+                    config_props_.set< std::string >(
+                        CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
+                        json_session_file );
 
                 }
-
-                config_props_.set< std::string >(
-                    CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
-                    json_session_file );
+                 
+            } else {
+                do_parse_legacy = true;
 
             }
-             
+
         } else {
             do_parse_legacy = true;
 
         }
 
         if( do_parse_legacy ) {
-            std::string legacy_file( IRODS_HOME_DIRECTORY );
-            std::string legacy_session_file( IRODS_HOME_DIRECTORY );
-            char* irods_env = getenv( 
-                                  to_env( 
-                                      CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
-            if( irods_env && strlen( irods_env ) != 0 ) {
-                legacy_file = irods_env;
-            
-                // "cwd" is used in this case instead of the ppid given the
-                // assumption that scripts will set the env file var to allow
-                // for more complex interactions possibly yielding complex pid
-                // hierarchies.  this routes all references to the same session
-                // for this given use case
-                legacy_session_file = legacy_file + ".cwd";
+            std::string legacy_file, legacy_session_file;
+            ret = get_legacy_environment_file(
+                      legacy_file,
+                      legacy_session_file );
+            if( ret.ok() ) {
+                ret = capture_legacy( legacy_file );
+                if ( !ret.ok() ) {
+                    // debug - irods::log( PASS( ret ) );
+
+                }
+                config_props_.set< std::string >(
+                    CFG_IRODS_ENVIRONMENT_FILE_KW,
+                    legacy_file );
+
+                // session file ( written by icd ) already moved to json 
+                ret = capture_json( legacy_session_file );
+                if ( !ret.ok() ) {
+                    // debug - irods::log( PASS( ret ) );
+                
+                } 
+     
+                config_props_.set< std::string >(
+                    CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
+                    legacy_session_file );
 
             } else {
-                char* home_dir = getenv( "HOME" );
-                // if home env exists, prefer that for run in place
-                // or use of existing irods service accound
-                if( home_dir ) {
-                    legacy_file = home_dir;
-                }
-
-                legacy_file += LEGACY_ENV_FILE;
-                legacy_session_file = legacy_file + "." + ppid_str.str();
-           
-            }
-
-            ret = capture_legacy( legacy_file );
-            if ( !ret.ok() ) {
                 // debug - irods::log( PASS( ret ) );
 
             }
-            config_props_.set< std::string >(
-                CFG_IRODS_ENVIRONMENT_FILE_KW,
-                legacy_file );
-
-            // session file ( written by icd ) already moved to json 
-            ret = capture_json( legacy_session_file );
-            if ( !ret.ok() ) {
-                // debug - irods::log( PASS( ret ) );
-            
-            } 
- 
-            config_props_.set< std::string >(
-                CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
-                legacy_session_file );
 
         } // do parse legacy
 
