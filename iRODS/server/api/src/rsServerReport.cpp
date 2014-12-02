@@ -154,7 +154,44 @@ irods::error make_federation_set(
 
 } // make_federation_set
 
+irods::error sanitize_federation_keys(
+    json_t* _svr_cfg ) {
+   if( !_svr_cfg ) {
+       return ERROR(
+                  SYS_INVALID_INPUT_PARAM,
+                  "null json object" );
 
+   }
+
+   // sanitize the top level key         
+   json_object_set( 
+       _svr_cfg, 
+       "negotiation_key", 
+       json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+
+   // get the federation object
+   json_t* fed_obj = json_object_get(
+                         _svr_cfg,
+                         "federation" );
+   if( !fed_obj ) {
+       return SUCCESS();
+
+   }
+
+   // sanitize all federation keys
+   size_t      idx = 0;
+   json_t*     obj = 0;
+   json_array_foreach( fed_obj, idx, obj ) {
+       json_object_set( 
+           obj, 
+           "negotiation_key", 
+           json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+
+   }
+
+   return SUCCESS();
+
+} // sanitize_federation_keys
 
 irods::error convert_server_config(
     json_t*& _svr_cfg ) {
@@ -182,8 +219,7 @@ irods::error convert_server_config(
 
 
         } else {
-            json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-            return SUCCESS();
+            return sanitize_federation_keys( _svr_cfg );
 
         }
     }
