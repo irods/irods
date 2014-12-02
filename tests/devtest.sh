@@ -105,18 +105,18 @@ if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 # run the full suite (default)
 else
+    $PYTHONCMD $OPTS test_xmsg
+    $PYTHONCMD $OPTS iadmin_suite
     $PYTHONCMD $OPTS test_mso_suite
     $PYTHONCMD $OPTS test_resource_types
     $PYTHONCMD $OPTS catalog_suite
     $PYTHONCMD $OPTS rulebase_suite
     $PYTHONCMD $OPTS test_workflow_suite
     $PYTHONCMD $OPTS test_resource_tree
-    $PYTHONCMD $OPTS test_xmsg
     $PYTHONCMD $OPTS test_load_balanced_suite
     $PYTHONCMD $OPTS test_icommands_file_operations
     $PYTHONCMD $OPTS test_imeta_set
     $PYTHONCMD $OPTS test_allrules
-    $PYTHONCMD $OPTS iadmin_suite
 
     # run DICE developed perl-based devtest suite
     if [ ! "$IRODSDEVTESTTOPO" == "true" ] ; then

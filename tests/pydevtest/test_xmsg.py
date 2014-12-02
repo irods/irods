@@ -14,7 +14,7 @@ from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir, mod_
 class Test_ixmsg(unittest.TestCase):
 	serverConfigFile = get_irods_config_dir() + "/server_config.json"
 	xmsgHost = 'localhost'
-	xmsgPort = '1279'
+	xmsgPort = 1279
 
 
 	def setUp(self):
@@ -33,7 +33,7 @@ class Test_ixmsg(unittest.TestCase):
 		# apparently needed by the server too...
 		my_env = os.environ.copy()
 		my_env['XMSG_HOST'] = self.xmsgHost
-		my_env['XMSG_PORT'] = self.xmsgPort
+		my_env['XMSG_PORT'] = str(self.xmsgPort)
 
 		# restart server with Xmsg
 		args = [get_irods_top_level_dir() + '/iRODS/irodsctl', 'restart']
@@ -59,7 +59,7 @@ class Test_ixmsg(unittest.TestCase):
 		# set up Xmsg in client environment
 		my_env = os.environ.copy()
 		my_env['XMSG_HOST'] = self.xmsgHost
-		my_env['XMSG_PORT'] = self.xmsgPort
+		my_env['XMSG_PORT'] = str(self.xmsgPort)
 
 		# send msg
 		args = ['/usr/bin/ixmsg', 's', '-M "{0}"'.format(message)]
