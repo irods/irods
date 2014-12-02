@@ -324,7 +324,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the server host handle
         rodsServerHost_t* server_host = 0;
-        int status = getAndConnRcatHost( _comm, MASTER_RCAT, _comm->clientUser.rodsZone, &server_host );
+        int status = getAndConnRcatHost( _comm, MASTER_RCAT, (const char*)_comm->clientUser.rodsZone, &server_host );
         if ( status < 0 ) {
             return ERROR( status, "getAndConnRcatHost failed." );
         }
