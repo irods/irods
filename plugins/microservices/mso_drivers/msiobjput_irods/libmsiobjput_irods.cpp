@@ -5,7 +5,9 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 
-
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+#include <string>
 
 
 extern "C" {
@@ -13,80 +15,48 @@ extern "C" {
     int connectToRemoteiRODS(
         char*      inStr,
         rcComm_t** rcComm ) {
-        int i, port;
         rErrMsg_t errMsg;
-        char *t, *s;
-        char *host = NULL;
-        char *user = NULL;
-        char *zone = NULL;
-        char *pass = NULL;
-        char *str;
 
         /*inStr of form: //irods:host[:port][:user[@zone][:pass]]/remotePath
-          if port is not give default pott 1247  is used
+          if port is not give default port 1247  is used
           if user@zone is not given ANONYMOUS_USER is used
           if pass is not given ANONYMOUS_USER is used
         */
-        str = strdup( inStr );
-        if ( ( t = strstr( str, "/" ) ) == NULL ) {
-            free( str );
-            return USER_INPUT_FORMAT_ERR;
-        }
-        else {
-            *t = '\0';
-        }
-        if ( ( t = strstr( str, ":" ) ) == NULL ) {
-            free( str );
-            return USER_INPUT_FORMAT_ERR;
-        }
-        s = t + 1;
-        port = -1;
-        host = s;
-        while ( ( t = strstr( s, ":" ) ) != NULL ) {
-            *t = '\0';
-            s = t + 1;
-            if ( port == -1 && user == NULL && isdigit( *s ) ) {
-                port = atoi( s );
+        const std::string input( inStr );
+        boost::smatch matches;
+        boost::regex expression( "irods:([^:/]+)(:([0-9]+))?"           // irods:host[:port]
+                                 "(:([^:/@]+)(@([^:/]+))?(:([^/]+))?)?" // [:user[@zone][:pass]]
+                                 "/(.*)" );                             // /remotePath
+        try {
+            const bool matched = boost::regex_match( input, matches, expression );
+            if ( !matched ) {
+                return USER_INPUT_FORMAT_ERR;
             }
-            else if ( user == NULL ) {
-                user = s;
+            std::string host = matches.str(1);
+            int port = 1247;
+            if ( !matches.str( 3 ).empty() ) {
+                port = boost::lexical_cast<int>( matches.str( 3 ) );
             }
-            else if ( pass == NULL ) {
-                pass = s;
-                break;
+            std::string user( ANONYMOUS_USER );
+            if ( !matches.str( 5 ).empty() ) {
+                user = matches.str( 5 );
             }
+            std::string zone = matches.str( 7 );
+            printf( "MM: host=%s,port=%i,user=%s\n", host.c_str(), port, user.c_str() );
+            *rcComm = rcConnect( host.c_str(), port, user.c_str(), zone.c_str(), 0, &errMsg );
+            if ( *rcComm == NULL ) {
+                return REMOTE_IRODS_CONNECT_ERR;
+            }
+            int status = clientLogin( *rcComm );
+            if ( status != 0 ) {
+                rcDisconnect( *rcComm );
+            }
+            return status;
+        } catch ( const boost::bad_lexical_cast & ) {
+            return INVALID_LEXICAL_CAST;
+        } catch ( const boost::exception & ) {
+            return SYS_INTERNAL_ERR;
         }
-
-
-        if ( user == NULL ) {
-            strcpy( user, ANONYMOUS_USER );
-        }
-        if ( ( t = strstr( user, "@" ) ) != NULL ) {
-            *t = '\0';
-            zone = t + 1;
-        }
-        if ( port == -1 ) {
-            port = 1247;
-        }
-        if ( pass != NULL ) {
-            /* do something */
-            t++;
-        }
-
-        printf( "MM: host=%s,port=%i,user=%s\n", host, port, user );
-
-        *rcComm = rcConnect( host, port, user, zone, 0, &errMsg );
-        if ( *rcComm == NULL ) {
-            free( str );
-            return REMOTE_IRODS_CONNECT_ERR;
-        }
-        i = clientLogin( *rcComm );
-        if ( i != 0 ) {
-            rcDisconnect( *rcComm );
-        }
-
-        free( str );
-        return i;
 
     }
 

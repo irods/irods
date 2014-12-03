@@ -199,25 +199,25 @@ extern "C" {
     void rcPipSigHandler();
 
     rcComm_t *
-    rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
+    rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
                int reconnFlag, rErrMsg_t *errMsg );
 
     rcComm_t *
-    _rcConnect( char *rodsHost, int rodsPort,
-                char *proxyUserName, char *proxyRodsZone,
-                char *clientUserName, char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
+    _rcConnect( const char *rodsHost, int rodsPort,
+                const char *proxyUserName, const char *proxyRodsZone,
+                const char *clientUserName, const char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
                 int reconnFlag );
 
     int
     setUserInfo(
-        char *proxyUserName, char *proxyRodsZone,
-        char *clientUserName, char *clientRodsZone,
+        const char *proxyUserName, const char *proxyRodsZone,
+        const char *clientUserName, const char *clientRodsZone,
         userInfo_t *clientUser, userInfo_t *proxyUser );
 
     int
-    setRhostInfo( rcComm_t *conn, char *rodsHost, int rodsPort );
+    setRhostInfo( rcComm_t *conn, const char *rodsHost, int rodsPort );
     int
-    setSockAddr( struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort );
+    setSockAddr( struct sockaddr_in *remoteAddr, const char *rodsHost, int rodsPort );
 
     int setAuthInfo( char *rodsAuthScheme,
                      char *authStr, char *rodsServerDn,

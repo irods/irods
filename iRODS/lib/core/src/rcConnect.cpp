@@ -27,7 +27,7 @@
 #include "rodsError.hpp"
 
 rcComm_t *
-rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
+rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
            int reconnFlag, rErrMsg_t *errMsg ) {
     if ( strlen( rodsHost ) == 0 ) {
         irods::stacktrace st;
@@ -58,9 +58,9 @@ rcConnect( char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 }
 
 rcComm_t *
-_rcConnect( char *rodsHost, int rodsPort,
-            char *proxyUserName, char *proxyRodsZone,
-            char *clientUserName, char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
+_rcConnect( const char *rodsHost, int rodsPort,
+            const char *proxyUserName, const char *proxyRodsZone,
+            const char *clientUserName, const char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
             int reconnFlag ) {
     rcComm_t *conn;
     int status;
@@ -165,8 +165,8 @@ _rcConnect( char *rodsHost, int rodsPort,
 
 int
 setUserInfo(
-    char *proxyUserName, char *proxyRodsZone,
-    char *clientUserName, char *clientRodsZone,
+    const char *proxyUserName, const char *proxyRodsZone,
+    const char *clientUserName, const char *clientRodsZone,
     userInfo_t *clientUser, userInfo_t *proxyUser ) {
     char *myUserName;
     char *myRodsZone;
@@ -175,7 +175,7 @@ setUserInfo(
     if ( clientUserName != NULL ) {
         rstrcpy( clientUser->userName, clientUserName, NAME_LEN );
     }
-    else if ( ( myUserName = getenv( CLIENT_USER_NAME_KEYWD ) ) != NULL ) {
+    else if ( char * myUserName = getenv( CLIENT_USER_NAME_KEYWD ) ) {
         rstrcpy( clientUser->userName, myUserName, NAME_LEN );
     }
     else {
@@ -186,7 +186,7 @@ setUserInfo(
     if ( clientRodsZone != NULL ) {
         rstrcpy( clientUser->rodsZone, clientRodsZone, NAME_LEN );
     }
-    else if ( ( myRodsZone = getenv( CLIENT_RODS_ZONE_KEYWD ) ) != NULL ) {
+    else if ( char * myRodsZone = getenv( CLIENT_RODS_ZONE_KEYWD ) ) {
         rstrcpy( clientUser->rodsZone, myRodsZone, NAME_LEN );
     }
     else {
@@ -197,7 +197,7 @@ setUserInfo(
 }
 
 int
-setRhostInfo( rcComm_t *conn, char *rodsHost, int rodsPort ) {
+setRhostInfo( rcComm_t *conn, const char *rodsHost, int rodsPort ) {
     int status;
 
     if ( rodsHost == NULL || strlen( rodsHost ) == 0 ) {
@@ -213,7 +213,7 @@ setRhostInfo( rcComm_t *conn, char *rodsHost, int rodsPort ) {
 }
 
 int
-setSockAddr( struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort ) {
+setSockAddr( struct sockaddr_in *remoteAddr, const char *rodsHost, int rodsPort ) {
     struct hostent *myHostent;
     myHostent = gethostbyname( rodsHost );
 
