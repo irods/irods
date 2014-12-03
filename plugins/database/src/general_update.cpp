@@ -227,7 +227,10 @@ extern "C" int chl_general_update_impl(
     status =  cmlExecuteNoAnswerSql( tSQL, icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE, "chlGeneralUpdate cmlExecuteNoAnswerSql insert failure %d", status );
-        cmlExecuteNoAnswerSql( "rollback", icss ); // JMC - backport 4509
+        int rollback_status = cmlExecuteNoAnswerSql( "rollback", icss ); // JMC - backport 4509
+        if ( rollback_status != 0 ) {
+            rodsLog( LOG_NOTICE, "rollback failed." );
+        }
         return status;
     }
 
