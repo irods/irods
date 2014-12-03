@@ -423,7 +423,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // send the message buffer
         int bytes_written = 0;
-        if ( msg_header.msgLen > 0 ) {
+        if ( _msg_buf && _msg_buf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
                 printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
@@ -441,7 +441,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // send the error buffer
-        if ( msg_header.errorLen > 0 ) {
+        if ( _error_buf && _error_buf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
                 printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
@@ -461,7 +461,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // send the stream buffer
-        if ( msg_header.bsLen > 0 ) {
+        if ( _stream_bbuf && _stream_bbuf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
                 printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
