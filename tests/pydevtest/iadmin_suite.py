@@ -888,7 +888,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         p = subprocess.Popen(['grep "'+the_value+'"  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
         result = p.communicate()[0]
 
-        os.environ['spLogLevel']
+        del os.environ['spLogLevel']
         os.system( "mv %sOrig %s" % (svr_cfg_file,svr_cfg_file))
 
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
