@@ -908,31 +908,22 @@ extern "C" {
                 }
                 if ( status == 0 || dataObjOutBBuf.len > 0 ) {
                     /* the buffer contains the file */
-                    FILE *fd;
-                    fd = fopen( mvstr, "w" );
-                    if ( fd == NULL ) {
+                    if ( FILE * fd = fopen( mvstr, "w" ) ) {
+                        int bytes_written = fwrite( dataObjOutBBuf.buf, 1, dataObjOutBBuf.len, fd );
+                        fclose( fd );
+                        free( dataObjOutBBuf.buf );
+                        if ( bytes_written != dataObjOutBBuf.len ) {
+                            rodsLog( LOG_NOTICE,
+                                    "extractMssoFile:  copy len error for  file in stage area %s for writing:%d, status=%d\n", mvstr,
+                                    dataObjOutBBuf.len, bytes_written );
+                            return SYS_COPY_LEN_ERR;
+                        }
+                    }
+                    else {
+                        free( dataObjOutBBuf.buf );
                         rodsLog( LOG_NOTICE,
                                  "extractMssoFile:  could not open file in stage area %s for writing:%d\n", mvstr );
-                        if ( dataObjOutBBuf.buf != NULL ) {
-                            free( dataObjOutBBuf.buf );
-                        }
-                        fclose( fd );
                         return FILE_OPEN_ERR;
-                    }
-                    status = fwrite( dataObjOutBBuf.buf, 1, dataObjOutBBuf.len, fd );
-                    if ( status != dataObjOutBBuf.len ) {
-                        rodsLog( LOG_NOTICE,
-                                 "extractMssoFile:  copy len error for  file in stage area %s for writing:%d, status=%d\n", mvstr,
-                                 dataObjOutBBuf.len, status );
-                        if ( dataObjOutBBuf.buf != NULL ) {
-                            free( dataObjOutBBuf.buf );
-                        }
-                        fclose( fd );
-                        return SYS_COPY_LEN_ERR;
-                    }
-                    fclose( fd );
-                    if ( dataObjOutBBuf.buf != NULL ) {
-                        free( dataObjOutBBuf.buf );
                     }
                 }
                 else { /* file is too large!!! */
