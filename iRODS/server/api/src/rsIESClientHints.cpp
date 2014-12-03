@@ -6,7 +6,7 @@
 #include "specificQuery.hpp"
 
 #include "irods_log.hpp"
-#include "grid_report.hpp"
+#include "zone_report.hpp"
 #include "ies_client_hints.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"

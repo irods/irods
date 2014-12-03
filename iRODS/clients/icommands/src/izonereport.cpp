@@ -1,5 +1,5 @@
 /*
- * igridreport - produce json configuration gridreport
+ * izonereport - produce json configuration zonereport
 */
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
@@ -8,7 +8,7 @@
 #include "rodsPath.hpp"
 #include "lsUtil.hpp"
 #include "irods_buffer_encryption.hpp"
-#include "grid_report.hpp"
+#include "zone_report.hpp"
 #include <string>
 #include <iostream>
 
@@ -50,10 +50,10 @@ main( int, char** ) {
     }
 
     void *tmp_out = NULL;
-    status = procApiRequest( conn, GRID_REPORT_AN, NULL, NULL,
+    status = procApiRequest( conn, ZONE_REPORT_AN, NULL, NULL,
                              &tmp_out, NULL );
     if ( status < 0 ) {
-        printf( "\n\nERROR - failed in call to rcGridReport" );
+        printf( "\n\nERROR - failed in call to rcZoneReport" );
         return 0;
     }
     else {

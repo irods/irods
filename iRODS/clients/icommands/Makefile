@@ -84,7 +84,7 @@ OBJS =		\
 		$(objDir)/iticket.o \
 		$(objDir)/igroupadmin.o \
 		$(objDir)/iapitest.o \
-		$(objDir)/igridreport.o
+		$(objDir)/izonereport.o
 
 
 BINS =		\
@@ -136,7 +136,7 @@ BINS =		\
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin  \
 		$(binDir)/iapitest  \
-		$(binDir)/igridreport 
+		$(binDir)/izonereport 
 
 # Compile and link flags
 

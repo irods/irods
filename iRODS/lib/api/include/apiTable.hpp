@@ -22,7 +22,7 @@
 
 
 #include "server_report.hpp"
-#include "grid_report.hpp"
+#include "zone_report.hpp"
 #include "client_hints.hpp"
 #include "ies_client_hints.hpp"
 
@@ -594,8 +594,8 @@ static irods::apidef_t client_api_table_inp[] = {
         "getHierarchyForRescInp_PI", 0, "getHierarchyForRescOut_PI", 0, ( funcPtr ) RS_GET_HIER_FOR_RESC, irods::clearInStruct_noop
     },
     {
-        GRID_REPORT_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_GRID_REPORT, irods::clearInStruct_noop
+        ZONE_REPORT_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_ZONE_REPORT, irods::clearInStruct_noop
     },
     {
         SERVER_REPORT_AN, RODS_API_VERSION, REMOTE_PRIV_USER_AUTH, REMOTE_PRIV_USER_AUTH,

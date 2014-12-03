@@ -1,5 +1,5 @@
-#ifndef GRID_REPORT_HPP
-#define GRID_REPORT_HPP
+#ifndef ZONE_REPORT_HPP
+#define ZONE_REPORT_HPP
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -9,15 +9,15 @@
 #include "apiNumber.hpp"
 #include "initServer.hpp"
 
-#define GRID_REPORT_AN 10205
+#define ZONE_REPORT_AN 10205
 
 #ifdef RODS_SERVER
-#define RS_GRID_REPORT rsGridReport
-int rsGridReport(
+#define RS_ZONE_REPORT rsZoneReport
+int rsZoneReport(
     rsComm_t*,      // server comm ptr
     bytesBuf_t** ); // json response
 #else
-#define RS_GRID_REPORT NULL
+#define RS_ZONE_REPORT NULL
 #endif
 
 #ifdef __cplusplus
@@ -25,7 +25,7 @@ extern "C" {
 #endif
 // =-=-=-=-=-=-=-
 // prototype for client
-    int rcGridReport(
+    int rcZoneReport(
         rcComm_t*,      // server comm ptr
         bytesBuf_t** ); // json response
 #ifdef __cplusplus
@@ -34,7 +34,7 @@ extern "C" {
 
 
 
-#endif //  GRID_REPORT_HPP
+#endif //  ZONE_REPORT_HPP
 
 
 

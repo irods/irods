@@ -394,8 +394,8 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetHierarchyForResc.o
 SVR_API_OBJS += $(svrApiObjDir)/rsServerReport.o
 LIB_API_OBJS += $(libApiObjDir)/rcServerReport.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsGridReport.o
-LIB_API_OBJS += $(libApiObjDir)/rcGridReport.o
+SVR_API_OBJS += $(svrApiObjDir)/rsZoneReport.o
+LIB_API_OBJS += $(libApiObjDir)/rcZoneReport.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsClientHints.o
 LIB_API_OBJS += $(libApiObjDir)/rcClientHints.o

@@ -5,7 +5,7 @@
 #include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"
-#include "grid_report.hpp"
+#include "zone_report.hpp"
 #include "server_report.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
@@ -14,11 +14,11 @@
 
 
 
-int _rsGridReport(
+int _rsZoneReport(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf );
 
-int rsGridReport(
+int rsZoneReport(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf ) {
     rodsServerHost_t* rods_host;
@@ -33,7 +33,7 @@ int rsGridReport(
 
     if ( rods_host->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
-        status = _rsGridReport(
+        status = _rsZoneReport(
                      _comm,
                      _bbuf );
 #else
@@ -41,20 +41,20 @@ int rsGridReport(
 #endif
     }
     else {
-        status = rcGridReport( rods_host->conn,
+        status = rcZoneReport( rods_host->conn,
                                _bbuf );
     }
 
     if ( status < 0 ) {
         rodsLog(
             LOG_ERROR,
-            "rsGridReport: rcGridReport failed, status = %d",
+            "rsZoneReport: rcZoneReport failed, status = %d",
             status );
     }
 
     return status;
 
-} // rsGridReport
+} // rsZoneReport
 
 
 #ifdef RODS_CAT
@@ -133,7 +133,7 @@ irods::error get_server_reports(
 } // get_server_reports
 
 
-int _rsGridReport(
+int _rsZoneReport(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf ) {
 
@@ -145,7 +145,7 @@ int _rsGridReport(
         freeBBuf( bbuf );
         rodsLog(
             LOG_ERROR,
-            "_rsGridReport - rsServerReport failed %d",
+            "_rsZoneReport - rsServerReport failed %d",
             status );
         return status;
     }
@@ -156,7 +156,7 @@ int _rsGridReport(
     if ( !cat_svr ) {
         rodsLog(
             LOG_ERROR,
-            "_rsGridReport - json_loads failed [%s]",
+            "_rsZoneReport - json_loads failed [%s]",
             j_err.text );
         return ACTION_FAILED_ERR;
     }
@@ -167,53 +167,57 @@ int _rsGridReport(
     if ( !ret.ok() ) {
         rodsLog(
             LOG_ERROR,
-            "_rsGridReport - get_server_reports failed, status = %d",
+            "_rsZoneReport - get_server_reports failed, status = %d",
             ret.code() );
         return ret.code();
     }
 
-    json_t* grid_obj = json_object();
-    if ( !grid_obj ) {
+    json_t* zone_obj = json_object();
+    if ( !zone_obj ) {
         rodsLog(
             LOG_ERROR,
             "failed to allocate json_object" );
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set( grid_obj, "icat_server", cat_svr );
-    json_object_set( grid_obj, "resource_servers", svr_arr );
+    json_object_set( zone_obj, "icat_server", cat_svr );
+    json_object_set( zone_obj, "resource_servers", svr_arr );
 
-    json_t* grid_arr = json_array();
-    if ( !grid_arr ) {
+    json_t* zone_arr = json_array();
+    if ( !zone_arr ) {
         rodsLog(
             LOG_ERROR,
             "failed to allocate json_array" );
         return SYS_MALLOC_ERR;
     }
 
-    json_array_append( grid_arr, grid_obj );
+    json_array_append( zone_arr, zone_obj );
 
-    json_t* grid = json_object();
-    if ( !grid ) {
+    json_t* zone = json_object();
+    if ( !zone ) {
         rodsLog(
             LOG_ERROR,
             "failed to allocate json_object" );
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set( grid, "schema_version", json_string( "1" ) );
-    json_object_set( grid, "zones", grid_arr );
+    json_object_set( 
+        zone, 
+        "schema_version", 
+        json_string( 
+            "http://schemas.irods.org/v1/zone_bundle.json" ) );
+    json_object_set( zone, "zones", zone_arr );
 
-    char* tmp_buf = json_dumps( grid, JSON_INDENT( 4 ) );
+    char* tmp_buf = json_dumps( zone, JSON_INDENT( 4 ) );
 
     // *SHOULD* free All The Things...
-    json_decref( grid );
+    json_decref( zone );
 
     ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( bytesBuf_t ) );
     if ( !( *_bbuf ) ) {
         rodsLog(
             LOG_ERROR,
-            "_rsGridReport: failed to allocate _bbuf" );
+            "_rsZoneReport: failed to allocate _bbuf" );
         return SYS_MALLOC_ERR;
 
     }
@@ -223,7 +227,7 @@ int _rsGridReport(
 
     return 0;
 
-} // _rsGridReport
+} // _rsZoneReport
 
 #endif // RODS_CAT
 

@@ -189,7 +189,7 @@ f 755 root root /usr/bin/iexit                ./iRODS/clients/icommands/bin/iexi
 f 755 root root /usr/bin/ifsck                ./iRODS/clients/icommands/bin/ifsck
 f 755 root root /usr/bin/iget                 ./iRODS/clients/icommands/bin/iget
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
-f 755 root root /usr/bin/igridreport          ./iRODS/clients/icommands/bin/igridreport
+f 755 root root /usr/bin/igzoneeport          ./iRODS/clients/icommands/bin/izonereport
 f 755 root root /usr/bin/igroupadmin          ./iRODS/clients/icommands/bin/igroupadmin
 f 755 root root /usr/bin/ihelp                ./iRODS/clients/icommands/bin/ihelp
 f 755 root root /usr/bin/iinit                ./iRODS/clients/icommands/bin/iinit
