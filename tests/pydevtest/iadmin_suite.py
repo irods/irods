@@ -891,6 +891,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         os.environ['spLogLevel']
         os.system( "mv %sOrig %s" % (svr_cfg_file,svr_cfg_file))
 
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
+        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+
         # check the results for the error
         assert( -1 != result.find( the_value ) )
 
