@@ -105,6 +105,11 @@ if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 # run the full suite (default)
 else
+    # run OSAuth test by itself
+    if [ "$IRODSDEVTESTCI" == "true" ] ; then
+        $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
+    fi
+
     $PYTHONCMD $OPTS test_xmsg
     $PYTHONCMD $OPTS iadmin_suite
     $PYTHONCMD $OPTS test_mso_suite
@@ -128,39 +133,6 @@ else
         $PYTHONCMD $OPTS auth_suite.Test_Auth_Suite
     fi
 
-    # run OSAuth test by itself
-    if [ "$IRODSDEVTESTCI" == "true" ] ; then
-        set +e
-        passwd <<EOF
-temporarypasswordforci
-temporarypasswordforci
-EOF
-        PASSWDRESULT=`echo $?`
-        if [ "$PASSWDRESULT" != 0 ] ; then
-                # known suse11 behavior
-                # needs an empty line for 'old password' prompt
-                passwd <<EOF
-
-temporarypasswordforci
-temporarypasswordforci
-EOF
-        fi
-        PASSWDRESULT=`echo $?`
-        if [ "$PASSWDRESULT" != 0 ] ; then
-            exit $PASSWDRESULT
-        fi
-        set -e
-        $PYTHONCMD $OPTS auth_suite.Test_OSAuth_Only
-        ################################################
-        # note:
-        #   this test is run last to minimize the
-        #   window of the following...
-        # side effect:
-        #   unix irods user now has a set password
-        # to remove, run:
-        #   sudo passwd -d irods
-        ################################################
-    fi
 fi
 
 
