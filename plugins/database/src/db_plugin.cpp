@@ -8626,7 +8626,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlModResc" );
         }
 
-        if ( *_resc_name == '\0' || *_option == '\0' || *_option_value == '\0' ) {
+        if ( *_resc_name == '\0' || *_option == '\0' ) {
             return ERROR( CAT_INVALID_ARGUMENT, "argument is empty" );
         }
 
@@ -8677,6 +8677,33 @@ checkLevel:
 
         getNowStr( myTime );
         OK = 0;
+
+        if ( strcmp( _option, "comment" ) == 0 ) {
+            cllBindVars[cllBindVarCount++] = _option_value;
+            cllBindVars[cllBindVarCount++] = myTime;
+            cllBindVars[cllBindVarCount++] = rescId;
+            if ( logSQL != 0 ) {
+                rodsLog( LOG_SQL, "chlModResc SQL 3" );
+            }
+            status =  cmlExecuteNoAnswerSql(
+                          "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
+                          &icss );
+            if ( status != 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "chlModResc cmlExecuteNoAnswerSql update failure %d",
+                         status );
+                _rollback( "chlModResc" );
+                return ERROR( status, "failed to update comment" );
+            }
+
+            OK = 1;
+
+        } else if( *_option_value == '\0' ) {
+            return ERROR(
+                       CAT_INVALID_ARGUMENT,
+                       "argument is empty" );
+        }
+
         if ( strcmp( _option, "objcount" ) == 0 ) {
             int amt = atoi( _option_value );
             int ret = _updateRescObjCount(
@@ -8698,7 +8725,6 @@ checkLevel:
 
         } // objcount
 
-
         if ( strcmp( _option, "info" ) == 0 ) {
             cllBindVars[cllBindVarCount++] = _option_value;
             cllBindVars[cllBindVarCount++] = myTime;
@@ -8719,25 +8745,6 @@ checkLevel:
             OK = 1;
         }
 
-        if ( strcmp( _option, "comment" ) == 0 ) {
-            cllBindVars[cllBindVarCount++] = _option_value;
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = rescId;
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlModResc SQL 3" );
-            }
-            status =  cmlExecuteNoAnswerSql(
-                          "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
-                          &icss );
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlModResc cmlExecuteNoAnswerSql update failure %d",
-                         status );
-                _rollback( "chlModResc" );
-                return ERROR( status, "failed to update comment" );
-            }
-            OK = 1;
-        }
 
         if ( strcmp( _option, "freespace" ) == 0 ) {
             int inType = 0;    /* regular mode, just set as provided */
@@ -9878,22 +9885,22 @@ checkLevel:
 #define ACCESS_MAX 999999  /* A large access value (larger than the
     maximum used (i.e. for fail safe)) and
         also indicates not initialized*/
-        // =-=-=-=-=-=-=-
-        // Add an Attribute-Value [Units] pair/triple metadata item to one or
-        // more data objects.  This is the Wildcard version, where the
-        // collection/data-object name can match multiple objects).
+    // =-=-=-=-=-=-=-
+    // Add an Attribute-Value [Units] pair/triple metadata item to one or
+    // more data objects.  This is the Wildcard version, where the
+    // collection/data-object name can match multiple objects).
 
-        // The return value is error code (negative) or the number of objects
-        // to which the AVU was associated.
-        irods::error db_add_avu_metadata_wild_op(
-            irods::plugin_context& _ctx,
-                  rsComm_t*              _comm,
-                  int                    _admin_mode,
-                  char*                  _type,
-                  char*                  _name,
-                  char*                  _attribute,
-                  char*                  _value,
-                  char*                  _units ) {
+    // The return value is error code (negative) or the number of objects
+    // to which the AVU was associated.
+    irods::error db_add_avu_metadata_wild_op(
+        irods::plugin_context& _ctx,
+        rsComm_t*              _comm,
+        int                    _admin_mode,
+        char*                  _type,
+        char*                  _name,
+        char*                  _attribute,
+        char*                  _value,
+        char*                  _units ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
@@ -16466,7 +16473,7 @@ checkLevel:
     // factory function to provide instance of the plugin
     irods::database* plugin_factory(
         const std::string& _inst_name,
-              const std::string& _context ) {
+        const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // create a postgres database plugin instance
         postgres_database_plugin* pg = new postgres_database_plugin(

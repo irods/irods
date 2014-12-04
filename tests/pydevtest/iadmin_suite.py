@@ -953,3 +953,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # check the results for the error
         assert(-1 != result.find(the_value))
+
+    def test_set_resource_comment_to_emptystring_ticket_2434(self):
+        mycomment = "notemptystring"
+        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
+        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment '"+mycomment+"'")
+        assertiCmd(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
+        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment ''")
+        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
+
+
