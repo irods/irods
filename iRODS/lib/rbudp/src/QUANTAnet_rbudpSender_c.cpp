@@ -432,7 +432,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
 
         off_t lseek_return = lseek( fd, 0, SEEK_END );
         int errsv = errno;
-        if ( ( off_t )-1 == lseek_return ) {
+        if ( ( off_t ) - 1 == lseek_return ) {
             fprintf( stderr, "SEEK_END lseek failed with error %d.\n", errsv );
             close( fd );
             return FAILED;
@@ -448,7 +448,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
         }
         lseek_return = lseek( fd, 0, SEEK_SET );
         errsv = errno;
-        if ( ( off_t )-1 == lseek_return ) {
+        if ( ( off_t ) - 1 == lseek_return ) {
             fprintf( stderr, "SEEK_SET lseek failed with error %d.\n", errsv );
             close( fd );
             return FAILED;

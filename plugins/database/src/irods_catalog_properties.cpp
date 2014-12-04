@@ -58,7 +58,7 @@ namespace irods {
             std::vector<std::string> bindVars;
             // Main query to get settings
             status = cmlGetMultiRowStringValuesFromSql( "select name, setting from pg_settings",
-                    sql_out, MAX_NAME_LEN, row_count * col_nbr, bindVars, _icss );
+                     sql_out, MAX_NAME_LEN, row_count * col_nbr, bindVars, _icss );
         }
 
         if ( status < 0 ) {

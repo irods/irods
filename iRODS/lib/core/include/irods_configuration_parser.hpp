@@ -29,23 +29,23 @@ namespace irods {
 
         bool has_entry(
             const std::string& ); // key
-        
+
         size_t erase(
             const std::string& ); // key
 
         template< typename T >
-        error set( 
+        error set(
             const std::string& _key,
             const T&           _val ) {
-            irods::error ret = root_.set< T >( 
+            irods::error ret = root_.set< T >(
                                    _key,
                                    _val );
-            return ret; 
-                        
+            return ret;
+
         } // set
 
         template< typename T >
-        error set( 
+        error set(
             const key_path_t& _key,
             const T&          _val ) {
 
@@ -54,30 +54,30 @@ namespace irods {
         } // set with path
 
         template< typename T >
-        error get( 
+        error get(
             const std::string& _key,
             T&                 _val ) {
-            irods::error ret = root_.get< T >( 
+            irods::error ret = root_.get< T >(
                                    _key,
                                    _val );
-            return ret; 
+            return ret;
 
         } // get
 
         template< typename T >
-        error get( 
+        error get(
             const key_path_t& _key,
             T&                _val ) {
 
             return SUCCESS();
-        
+
         } // get with path
 
     private:
         error load_json_object(
             const std::string& ); // file name
 
-        error parse_json_object( 
+        error parse_json_object(
             json_t*,              // jansson object
             object_t& );          // parsing object
 

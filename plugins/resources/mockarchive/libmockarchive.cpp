@@ -406,7 +406,8 @@ extern "C" {
                      "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
             return status;
-        } else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+        }
+        else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
             rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, UNIX_FILE_OPEN_ERR );

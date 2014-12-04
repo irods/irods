@@ -99,24 +99,24 @@ namespace irods {
 
     } // get_re_vars
 
-    void add_key_val( 
-            data_object_ptr&   _do,
-            const std::string& _k,
-            const std::string& _v ) {
-            addKeyVal( 
-                &_do->cond_input_, 
-                (char*)_k.c_str(), 
-                (char*)_v.c_str() );
-        }
+    void add_key_val(
+        data_object_ptr&   _do,
+        const std::string& _k,
+        const std::string& _v ) {
+        addKeyVal(
+            &_do->cond_input_,
+            ( char* )_k.c_str(),
+            ( char* )_v.c_str() );
+    }
 
-    void remove_key_val( 
-            data_object_ptr&   _do,
-            const std::string& _k ) {
-            rmKeyVal( 
-                &_do->cond_input_, 
-                (char*)_k.c_str() ); 
-                
-        }
+    void remove_key_val(
+        data_object_ptr&   _do,
+        const std::string& _k ) {
+        rmKeyVal(
+            &_do->cond_input_,
+            ( char* )_k.c_str() );
+
+    }
 }; // namespace irods
 
 

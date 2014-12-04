@@ -40,7 +40,7 @@ void usageTTL();
 
 /*
  Attempt to make the ~/.irods directory in case it doesn't exist (may
- be needed to write the .irodsA file and perhaps the 
+ be needed to write the .irodsA file and perhaps the
  irods_environment.json file).
  */
 int
@@ -145,9 +145,9 @@ main( int argc, char **argv ) {
         printf( "call to json_object() failed.\n" );
         return SYS_MALLOC_ERR;
     }
-    
-    json_object_set( 
-        json_env, 
+
+    json_object_set(
+        json_env,
         irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW.c_str(),
         json_string( irods::AUTH_NATIVE_SCHEME.c_str() ) );
 
@@ -163,14 +163,14 @@ main( int argc, char **argv ) {
         printf( "Enter the host name (DNS) of the server to connect to:" );
         std::string response;
         getline( std::cin, response );
-        snprintf( 
-            my_env.rodsHost, 
-            NAME_LEN, 
-            "%s", 
+        snprintf(
+            my_env.rodsHost,
+            NAME_LEN,
+            "%s",
             response.c_str() );
-        json_object_set( 
-            json_env, 
-            "irods_host", 
+        json_object_set(
+            json_env,
+            "irods_host",
             json_string( my_env.rodsHost ) );
     }
     if ( my_env.rodsPort == 0 ) {
@@ -184,14 +184,15 @@ main( int argc, char **argv ) {
         try {
             my_env.rodsPort = boost::lexical_cast< int >( response );
 
-        } catch ( boost::bad_lexical_cast e ) {
-            my_env.rodsPort = 0; 
+        }
+        catch ( boost::bad_lexical_cast e ) {
+            my_env.rodsPort = 0;
 
         }
 
-        json_object_set( 
-            json_env, 
-            "irods_port", 
+        json_object_set(
+            json_env,
+            "irods_port",
             json_integer( my_env.rodsPort ) );
     }
     if ( strlen( my_env.rodsUserName ) == 0 ) {
@@ -202,14 +203,14 @@ main( int argc, char **argv ) {
         printf( "Enter your irods user name:" );
         std::string response;
         getline( std::cin, response );
-        snprintf( 
-            my_env.rodsUserName, 
+        snprintf(
+            my_env.rodsUserName,
             NAME_LEN,
             "%s",
             response.c_str() );
-        json_object_set( 
-            json_env, 
-            "irods_user_name", 
+        json_object_set(
+            json_env,
+            "irods_user_name",
             json_string( my_env.rodsUserName ) );
     }
     if ( strlen( my_env.rodsZone ) == 0 ) {
@@ -220,14 +221,14 @@ main( int argc, char **argv ) {
         printf( "Enter your irods zone:" );
         std::string response;
         getline( std::cin, response );
-        snprintf( 
-            my_env.rodsZone, 
+        snprintf(
+            my_env.rodsZone,
             NAME_LEN,
             "%s",
             response.c_str() );
-        json_object_set( 
-            json_env, 
-            "irods_zone", 
+        json_object_set(
+            json_env,
+            "irods_zone",
             json_string( my_env.rodsZone ) );
     }
     if ( doingEnvFileUpdate ) {
@@ -370,29 +371,31 @@ main( int argc, char **argv ) {
         irods::error ret = irods::environment_properties::get_json_environment_file(
                                env_file,
                                session_file );
-        if( ret.ok() ) { 
-            char* tmp_buf = json_dumps( 
-                                json_env, 
+        if ( ret.ok() ) {
+            char* tmp_buf = json_dumps(
+                                json_env,
                                 JSON_INDENT( 4 ) );
-            std::ofstream f( 
-                              env_file.c_str(), 
-                              std::ios::out );
-            if( f.is_open() ) {
+            std::ofstream f(
+                env_file.c_str(),
+                std::ios::out );
+            if ( f.is_open() ) {
                 f << tmp_buf << std::endl;
                 f.close();
-                    
-            } else {
-                printf( 
-                    "failed to open environment file [%s]\n", 
+
+            }
+            else {
+                printf(
+                    "failed to open environment file [%s]\n",
                     env_file.c_str() );
 
             }
 
-        } else {
-            printf( 
-                "failed to get environment file - %Ld\n", 
+        }
+        else {
+            printf(
+                "failed to get environment file - %Ld\n",
                 ret.code() );
-        
+
         }
 
     } // if doingEnvFileUpdate

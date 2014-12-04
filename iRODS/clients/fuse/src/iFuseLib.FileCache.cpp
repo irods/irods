@@ -129,7 +129,7 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
         fileCache->iFd = objFd;
         fileCache->state = NO_FILE_CACHE;
         fileCache->offset = 0;
-		status = objFd;
+        status = objFd;
     }
     else {
         fileCache->state = HAVE_READ_CACHE;
@@ -232,9 +232,9 @@ int ifuseFileCacheClose( fileCache_t *fileCache ) {
     LOCK_STRUCT( *fileCache );
     if ( fileCache->state == NO_FILE_CACHE ) {
         /* close remote file */
-	    //UNLOCK_STRUCT( *fileCache );
+        //UNLOCK_STRUCT( *fileCache );
         iFuseConn_t *conn = getAndUseConnByPath( fileCache->localPath, &status );
-    	//LOCK_STRUCT( *fileCache );
+        //LOCK_STRUCT( *fileCache );
         status = closeIrodsFd( conn->conn, fileCache->iFd );
         unuseIFuseConn( conn );
         fileCache->offset = 0;
@@ -440,9 +440,9 @@ int _ifuseFileCacheRead( fileCache_t *fileCache, char *buf, size_t size, off_t o
         dataObjReadOutBBuf.len = size;
         dataObjReadInp.l1descInx = fileCache->iFd;
         dataObjReadInp.len = size;
-		//UNLOCK_STRUCT(*fileCache);
+        //UNLOCK_STRUCT(*fileCache);
         conn = getAndUseConnByPath( fileCache->localPath, &status );
-		//LOCK_STRUCT(*fileCache);
+        //LOCK_STRUCT(*fileCache);
         status = rcDataObjRead( conn->conn,
                                 &dataObjReadInp, &dataObjReadOutBBuf );
         unuseIFuseConn( conn );

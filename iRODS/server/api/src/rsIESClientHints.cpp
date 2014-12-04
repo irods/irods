@@ -27,7 +27,7 @@ int rsIESClientHints(
     int status = getAndConnRcatHost(
                      _comm,
                      MASTER_RCAT,
-                     (const char*)NULL,
+                     ( const char* )NULL,
                      &rods_host );
     if ( status < 0 ) {
         return status;
@@ -44,7 +44,7 @@ int rsIESClientHints(
     }
     else {
         status = rcIESClientHints( rods_host->conn,
-                               _bbuf );
+                                   _bbuf );
     }
 
     if ( status < 0 ) {
@@ -64,10 +64,10 @@ int rsIESClientHints(
 irods::error get_strict_acls(
     rsComm_t*    _comm,
     std::string& _acls ) {
-    if( ! _comm ) {
+    if ( ! _comm ) {
         return ERROR(
-            SYS_INVALID_INPUT_PARAM,
-            "comm is null" );
+                   SYS_INVALID_INPUT_PARAM,
+                   "comm is null" );
     }
 
     irods::server_properties& props = irods::server_properties::getInstance();
@@ -85,7 +85,7 @@ irods::error get_strict_acls(
 irods::error get_query_array(
     rsComm_t* _comm,
     json_t*&  _queries ) {
-    if( !_comm ) {
+    if ( !_comm ) {
         return ERROR(
                    SYS_INVALID_INPUT_PARAM,
                    "comm is null" );
@@ -110,7 +110,7 @@ irods::error get_query_array(
                      _comm,
                      &spec_inp,
                      &gen_out );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         return ERROR(
                    status,
                    "rsSpecificQuery for 'ls' failed" );
@@ -120,9 +120,9 @@ irods::error get_query_array(
     int   len    = gen_out->sqlResult[ 0 ].len;
     char* values = gen_out->sqlResult[ 0 ].value;
 
-    for( int i = 0 ;
-         i < gen_out->rowCnt ;
-         ++i ) {
+    for ( int i = 0 ;
+            i < gen_out->rowCnt ;
+            ++i ) {
 
         char* alias = &values[ len * i ];
         json_array_append( _queries, json_string( alias ) );
@@ -140,7 +140,7 @@ irods::error get_query_array(
 int _rsIESClientHints(
     rsComm_t*    _comm,
     bytesBuf_t** _bbuf ) {
-    if( ! _comm ) {
+    if ( ! _comm ) {
         return SYS_INVALID_INPUT_PARAM;
 
     }

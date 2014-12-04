@@ -2700,7 +2700,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
     for ( i = 0; i < numElement; i++ ) {
         unpackItemHead = NULL;
 
-        status = parsePackInstruct( static_cast<const char*>(packInstruct), &unpackItemHead );
+        status = parsePackInstruct( static_cast<const char*>( packInstruct ), &unpackItemHead );
         if ( status < 0 ) {
             return status;
         }

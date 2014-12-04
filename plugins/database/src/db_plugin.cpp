@@ -186,8 +186,8 @@ irods::error getLocalZone(
             std::vector<std::string> bindVars;
             bindVars.push_back( "local" );
             status = cmlGetStringValueFromSql(
-                            ( char* )"select zone_name from R_ZONE_MAIN where zone_type_name=?",
-                            local_zone, MAX_NAME_LEN, bindVars, _icss );
+                         ( char* )"select zone_name from R_ZONE_MAIN where zone_type_name=?",
+                         local_zone, MAX_NAME_LEN, bindVars, _icss );
         }
         if ( status != 0 ) {
             _rollback( "getLocalZone" );
@@ -232,8 +232,8 @@ _updateRescObjCount(
         bindVars.push_back( _resc_name );
         bindVars.push_back( _zone );
         status = cmlGetStringValueFromSql(
-                ( char* )"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                resc_id, MAX_NAME_LEN, bindVars, _icss );
+                     ( char* )"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                     resc_id, MAX_NAME_LEN, bindVars, _icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -415,8 +415,8 @@ irods::error _childIsValid(
         bindVars.push_back( resc_name );
         bindVars.push_back( zone );
         status = cmlGetStringValueFromSql(
-                            "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            parent, MAX_NAME_LEN, bindVars, &icss );
+                     "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
+                     parent, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -455,8 +455,8 @@ _updateRescChildren(
         std::vector<std::string> bindVars;
         bindVars.push_back( _resc_id );
         status = cmlGetStringValueFromSql(
-                "select resc_children from R_RESC_MAIN where resc_id=?",
-                children, MAX_PATH_ALLOWED, bindVars, &icss );
+                     "select resc_children from R_RESC_MAIN where resc_id=?",
+                     children, MAX_PATH_ALLOWED, bindVars, &icss );
     }
     if ( status != 0 ) {
         _rollback( "_updateRescChildren" );
@@ -522,8 +522,8 @@ irods::error _updateChildParent(
         bindVars.push_back( child );
         bindVars.push_back( zone );
         status = cmlGetStringValueFromSql(
-                "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                resc_id, MAX_NAME_LEN, bindVars, &icss );
+                     "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                     resc_id, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -569,8 +569,8 @@ irods::error _get_resc_obj_count(
         std::vector<std::string> bindVars;
         bindVars.push_back( _resc_name );
         status = cmlGetIntegerValueFromSql(
-                "select resc_objcount from R_RESC_MAIN where resc_name=?",
-                &obj_count, bindVars, &icss );
+                     "select resc_objcount from R_RESC_MAIN where resc_name=?",
+                     &obj_count, bindVars, &icss );
     }
     if ( status != 0 ) {
         _rollback( __FUNCTION__ );
@@ -603,8 +603,8 @@ _rescHasData(
         std::vector<std::string> bindVars;
         bindVars.push_back( _resc_name );
         status = cmlGetIntegerValueFromSql(
-                "select resc_objcount from R_RESC_MAIN where resc_name=?",
-                &obj_count, bindVars, &icss );
+                     "select resc_objcount from R_RESC_MAIN where resc_name=?",
+                     &obj_count, bindVars, &icss );
     }
     if ( status != 0 ) {
         _rollback( func_name );
@@ -669,8 +669,8 @@ _removeRescChild(
         std::vector<std::string> bindVars;
         bindVars.push_back( _resc_id );
         status = cmlGetStringValueFromSql(
-                "select resc_children from R_RESC_MAIN where resc_id=?",
-                children, MAX_PATH_ALLOWED, bindVars, &icss );
+                     "select resc_children from R_RESC_MAIN where resc_id=?",
+                     children, MAX_PATH_ALLOWED, bindVars, &icss );
     }
     if ( status != 0 ) {
         _rollback( "_updateRescChildren" );
@@ -740,8 +740,8 @@ _rescHasParentOrChild( char* rescId ) {
         std::vector<std::string> bindVars;
         bindVars.push_back( rescId );
         status = cmlGetStringValueFromSql(
-                "select resc_parent from R_RESC_MAIN where resc_id=?",
-                parent, MAX_NAME_LEN, bindVars, &icss );
+                     "select resc_parent from R_RESC_MAIN where resc_id=?",
+                     parent, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -761,8 +761,8 @@ _rescHasParentOrChild( char* rescId ) {
         std::vector<std::string> bindVars;
         bindVars.push_back( rescId );
         status = cmlGetStringValueFromSql(
-                "select resc_children from R_RESC_MAIN where resc_id=?",
-                children, MAX_NAME_LEN, bindVars, &icss );
+                     "select resc_children from R_RESC_MAIN where resc_id=?",
+                     children, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status != CAT_NO_ROWS_FOUND ) {
@@ -878,8 +878,8 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
         bindVars.push_back( collInfo->collName );
         bindVars.push_back( collInfo->collName );
         status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
-                    &iVal, bindVars, &icss );
+                     "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
+                     &iVal, bindVars, &icss );
     }
     if ( status != CAT_NO_ROWS_FOUND ) {
         return CAT_COLLECTION_NOT_EMPTY;
@@ -1213,8 +1213,8 @@ int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
         bindVars.push_back( rsComm->clientUser.userName );
         bindVars.push_back( rsComm->clientUser.rodsZone );
         status = cmlGetStringValueFromSql(
-                    "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                    password, MAX_PASSWORD_LEN, bindVars, &icss );
+                     "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+                     password, MAX_PASSWORD_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -1421,8 +1421,8 @@ rodsLong_t checkAndGetObjectId(
             bindVars.push_back( name );
             bindVars.push_back( zone );
             status = cmlGetIntegerValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                         "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                         &objId, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -1457,8 +1457,8 @@ rodsLong_t checkAndGetObjectId(
             bindVars.push_back( userName );
             bindVars.push_back( userZone );
             status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                         &objId, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -1495,8 +1495,8 @@ findAVU( char *attribute, char *value, char *units ) {
             bindVars.push_back( value );
             bindVars.push_back( units );
             status = cmlGetIntegerValueFromSql(
-                        "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
-                        &iVal, bindVars, &icss );
+                         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
+                         &iVal, bindVars, &icss );
         }
     }
     else {
@@ -1508,8 +1508,8 @@ findAVU( char *attribute, char *value, char *units ) {
             bindVars.push_back( attribute );
             bindVars.push_back( value );
             status = cmlGetIntegerValueFromSql(
-                        "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)", // JMC - backport 4827
-                        &iVal, bindVars, &icss );
+                         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)", // JMC - backport 4827
+                         &iVal, bindVars, &icss );
         }
     }
     if ( status == 0 ) {
@@ -1894,8 +1894,8 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char
         bindVars.push_back( userName2 );
         bindVars.push_back( zoneToUse );
         status = cmlGetStringValueFromSql(
-                    "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
-                    userId, NAME_LEN, bindVars, &icss );
+                     "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name!='rodsgroup'",
+                     userId, NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -1936,8 +1936,8 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
         bindVars.push_back( groupName2 );
         bindVars.push_back( zoneToUse );
         status = cmlGetStringValueFromSql(
-                    "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
-                    groupId, NAME_LEN, bindVars, &icss );
+                     "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
+                     groupId, NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -2084,22 +2084,22 @@ extern "C" {
         // cache db creds
         irods::server_properties& props = irods::server_properties::getInstance();
         ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
-            
+
         }
         strncpy( icss.databaseUsername, prop.c_str(), DB_USERNAME_LEN );
 
         ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
-        }  
+        }
         strncpy( icss.databasePassword, prop.c_str(), DB_PASSWORD_LEN );
 
         ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
-        }  
+        }
         strncpy( icss.database_plugin_type, prop.c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
@@ -2123,23 +2123,23 @@ extern "C" {
         // set pam properties
         bool no_ex = false;
         ret = irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, no_ex );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             irods_pam_auth_no_extend = no_ex;
         }
 
         size_t pw_len = 0;
         ret = irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             irods_pam_password_len = pw_len;
         }
 
         ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             strncpy( irods_pam_password_min_time, prop.c_str(), NAME_LEN );
         }
 
         ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             strncpy( irods_pam_password_max_time, prop.c_str(), NAME_LEN );
         }
 
@@ -2515,8 +2515,8 @@ extern "C" {
                 std::vector<std::string> bindVars;
                 bindVars.push_back( logicalDirName );
                 status = cmlGetIntegerValueFromSql(
-                            "select coll_id from R_COLL_MAIN where coll_name=?", &iVal,
-                            bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_name=?", &iVal,
+                             bindVars, &icss );
             }
 
             if ( status != 0 ) {
@@ -2539,8 +2539,8 @@ extern "C" {
                 bindVars.push_back( objIdString );
                 bindVars.push_back( logicalFileName );
                 status = cmlGetIntegerValueFromSql(
-                            "select data_id from R_DATA_MAIN where coll_id=? and data_name=?",
-                            &iVal, bindVars, &icss );
+                             "select data_id from R_DATA_MAIN where coll_id=? and data_name=?",
+                             &iVal, bindVars, &icss );
             }
             if ( status != 0 ) {
                 std::stringstream msg;
@@ -2670,8 +2670,8 @@ extern "C" {
                 bindVars.push_back( id_stream.str() );
                 bindVars.push_back( repl_stream.str() );
                 status = cmlGetStringValueFromSql(
-                        "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                        resc_hier, MAX_NAME_LEN, bindVars, &icss );
+                             "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                             resc_hier, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status != 0 ) {
                 std::stringstream msg;
@@ -2897,8 +2897,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _data_obj_info->objPath );
             status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name=?",
-                        &iVal, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where coll_name=?",
+                         &iVal, bindVars, &icss );
         }
         if ( status == 0 ) {
             return ERROR( CAT_NAME_EXISTS_AS_COLLECTION, "collection exists" );
@@ -3187,8 +3187,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
             status = cmlGetIntegerValueFromSql(
-                        "select max(data_repl_num) from R_DATA_MAIN where data_id = ?",
-                        &iVal, bindVars, &icss );
+                         "select max(data_repl_num) from R_DATA_MAIN where data_id = ?",
+                         &iVal, bindVars, &icss );
         }
 
         if ( status != 0 ) {
@@ -3432,8 +3432,8 @@ extern "C" {
                         bindVars.push_back( dataObjNumber );
                         bindVars.push_back( replNumber );
                         status = cmlGetStringValueFromSql(
-                                    "select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
-                                    cVal, sizeof cVal, bindVars, &icss );
+                                     "select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
+                                     cVal, sizeof cVal, bindVars, &icss );
                     }
                     if ( status != 0 ) {
                         addRErrorMsg( &_comm->rError, 0,
@@ -3460,8 +3460,8 @@ extern "C" {
                     bindVars.push_back( dataObjNumber );
                     bindVars.push_back( replNumber );
                     status = cmlGetStringValueFromSql(
-                            "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                            cVal, sizeof cVal, bindVars, &icss );
+                                 "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                                 cVal, sizeof cVal, bindVars, &icss );
                 }
                 if ( status != 0 ) {
                     return ERROR( status, "cmlGetStringValueFromSql failed" );
@@ -3472,8 +3472,8 @@ extern "C" {
                     std::vector<std::string> bindVars;
                     bindVars.push_back( dataObjNumber );
                     status = cmlGetStringValueFromSql(
-                            "select resc_hier from R_DATA_MAIN where data_id=?",
-                            cVal, sizeof cVal, bindVars, &icss );
+                                 "select resc_hier from R_DATA_MAIN where data_id=?",
+                                 cVal, sizeof cVal, bindVars, &icss );
                 }
                 if ( status != 0 ) {
                     return ERROR( status, "cmlGetStringValueFromSql failed" );
@@ -3893,8 +3893,8 @@ extern "C" {
                     std::vector<std::string> bindVars;
                     bindVars.push_back( _re_id );
                     status = cmlGetStringValueFromSql(
-                                    "select user_name from R_RULE_EXEC where rule_exec_id=?",
-                                    userName, MAX_NAME_LEN, bindVars, &icss );
+                                 "select user_name from R_RULE_EXEC where rule_exec_id=?",
+                                 userName, MAX_NAME_LEN, bindVars, &icss );
                 }
                 if ( status != 0 || strncmp( userName, _comm->clientUser.userName, MAX_NAME_LEN )
                         != 0 ) {
@@ -4019,8 +4019,8 @@ extern "C" {
                     bindVars.push_back( _resc_info->rescName );
                     bindVars.push_back( zone );
                     status = cmlGetStringValueFromSql(
-                            "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            resc_id, MAX_NAME_LEN, bindVars, &icss );
+                                 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                 resc_id, MAX_NAME_LEN, bindVars, &icss );
                 }
                 if ( status != 0 ) {
                     if ( status == CAT_NO_ROWS_FOUND ) {
@@ -4414,8 +4414,8 @@ extern "C" {
                     bindVars.push_back( _resc_info->rescName );
                     bindVars.push_back( zone );
                     status = cmlGetStringValueFromSql(
-                            "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            resc_id, MAX_NAME_LEN, bindVars, &icss );
+                                 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                 resc_id, MAX_NAME_LEN, bindVars, &icss );
                 }
                 if ( status != 0 ) {
                     if ( status == CAT_NO_ROWS_FOUND ) {
@@ -4630,8 +4630,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _resc_info->rescName );
             status = cmlGetStringValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=?",
-                        rescId, MAX_NAME_LEN, bindVars, &icss );
+                         "select resc_id from R_RESC_MAIN where resc_name=?",
+                         rescId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -4909,8 +4909,8 @@ extern "C" {
             bindVars.push_back( userName2 );
             bindVars.push_back( zoneToUse );
             status = cmlGetStringValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        iValStr, 200, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                         iValStr, 200, bindVars, &icss );
         }
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
                 status == CAT_NO_ROWS_FOUND ) {
@@ -5110,8 +5110,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( logicalParentDirName );
             status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name=?",
-                        &iVal, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where coll_name=?",
+                         &iVal, bindVars, &icss );
         }
         if ( status < 0 ) {
             char errMsg[MAX_NAME_LEN + 40];
@@ -5328,8 +5328,8 @@ extern "C" {
             bindVars.push_back( logicalEndName );
             bindVars.push_back( collIdNum );
             status = cmlGetIntegerValueFromSql(
-                        "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-                        &iVal, bindVars, &icss );
+                         "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
+                         &iVal, bindVars, &icss );
         }
 
         if ( status == 0 ) {
@@ -5849,8 +5849,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _zone_name );
             status = cmlGetStringValueFromSql(
-                        "select zone_id from R_ZONE_MAIN where zone_name=?",
-                        zoneId, MAX_NAME_LEN, bindVars, &icss );
+                         "select zone_id from R_ZONE_MAIN where zone_name=?",
+                         zoneId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -6158,8 +6158,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _new_zone );
             status = cmlGetStringValueFromSql(
-                        "select zone_id from R_ZONE_MAIN where zone_name=?",
-                        zoneId, MAX_NAME_LEN, bindVars, &icss );
+                         "select zone_id from R_ZONE_MAIN where zone_name=?",
+                         zoneId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != CAT_NO_ROWS_FOUND ) {
             return ERROR( CAT_INVALID_ZONE, "zone not found" );
@@ -6353,8 +6353,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _zone_name );
             status = cmlGetStringValueFromSql(
-                        "select zone_type_name from R_ZONE_MAIN where zone_name=?",
-                        zoneType, MAX_NAME_LEN, bindVars, &icss );
+                         "select zone_type_name from R_ZONE_MAIN where zone_name=?",
+                         zoneType, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -6788,8 +6788,8 @@ extern "C" {
             bindVars.push_back( _coll_info->collName );
             bindVars.push_back( _coll_info->collName );
             status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
-                        &iVal, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
+                         &iVal, bindVars, &icss );
         }
 
         if ( status != CAT_NO_ROWS_FOUND ) {
@@ -7077,8 +7077,8 @@ extern "C" {
             bindVars.push_back( myUserZone );
             /* four strings per password returned */
             status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
-                    "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                    pwInfoArray.data(), MAX_PASSWORD_LEN, MAX_PASSWORDS * 4, bindVars, &icss );
+                     "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+                     pwInfoArray.data(), MAX_PASSWORD_LEN, MAX_PASSWORDS * 4, bindVars, &icss );
         }
 
         if ( status < 4 ) {
@@ -7117,8 +7117,8 @@ extern "C" {
                 bindVars.push_back( myUserZone );
                 /* four strings per password returned */
                 status = cmlGetMultiRowStringValuesFromSql( "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, "
-                        "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-                        pwInfoArray.data(), MAX_PASSWORD_LEN, MAX_PASSWORDS * 4, bindVars, &icss );
+                         "R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+                         pwInfoArray.data(), MAX_PASSWORD_LEN, MAX_PASSWORDS * 4, bindVars, &icss );
             }
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR, "cmlGetMultiRowStringValuesFromSql failed in db_check_auth_op with status %d", status );
@@ -7326,8 +7326,8 @@ checkLevel:
             bindVars.push_back( userName2 );
             bindVars.push_back( myUserZone );
             status = cmlGetStringValueFromSql(
-                        "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                        userType, MAX_NAME_LEN, bindVars, &icss );
+                         "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                         userType, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -7374,8 +7374,8 @@ checkLevel:
                         bindVars.push_back( _comm->clientUser.userName );
                         bindVars.push_back( _comm->clientUser.rodsZone );
                         status = cmlGetStringValueFromSql(
-                                    "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                                    userType, MAX_NAME_LEN, bindVars, &icss );
+                                     "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                                     userType, MAX_NAME_LEN, bindVars, &icss );
                     }
                     if ( status != 0 ) {
                         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -7417,8 +7417,8 @@ checkLevel:
                     bindVars.push_back( _comm->clientUser.userName );
                     bindVars.push_back( _comm->clientUser.rodsZone );
                     status = cmlGetStringValueFromSql(
-                                "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                                userType, MAX_NAME_LEN, bindVars, &icss );
+                                 "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
+                                 userType, MAX_NAME_LEN, bindVars, &icss );
                 }
                 if ( status != 0 ) {
                     if ( status == CAT_NO_ROWS_FOUND ) {
@@ -7861,8 +7861,8 @@ checkLevel:
             bindVars.push_back( _user_name );
             bindVars.push_back( zone );
             status = cmlGetStringValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
-                        selUserId, MAX_NAME_LEN, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
+                         selUserId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             return  ERROR( CAT_INVALID_USER, "invalid user" );
@@ -7896,11 +7896,11 @@ checkLevel:
             bindVars.push_back( irods_pam_password_max_time );
             status = cmlGetStringValuesFromSql(
 #if MY_ICAT
-                    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+                         "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
 #else
-                    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+                         "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
 #endif
-                    cVal, iVal, 2, bindVars, &icss );
+                         cVal, iVal, 2, bindVars, &icss );
         }
 
         if ( status == 0 ) {
@@ -8298,8 +8298,8 @@ checkLevel:
                     std::vector<std::string> bindVars;
                     bindVars.push_back( _new_value );
                     status2 = cmlGetIntegerValueFromSql(
-                                "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?",
-                                &iVal, bindVars, &icss );
+                                  "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?",
+                                  &iVal, bindVars, &icss );
                 }
                 if ( status2 != 0 ) {
                     char errMsg[105];
@@ -8324,8 +8324,8 @@ checkLevel:
                     bindVars.push_back( userName2 );
                     bindVars.push_back( zoneName );
                     status2 = cmlGetIntegerValueFromSql(
-                                "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                                &iVal, bindVars, &icss );
+                                  "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                                  &iVal, bindVars, &icss );
                 }
                 if ( status2 != 0 ) {
                     rodsLog( LOG_NOTICE,
@@ -8471,8 +8471,8 @@ checkLevel:
             bindVars.push_back( userName2 );
             bindVars.push_back( zoneToUse );
             status = cmlGetStringValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name !='rodsgroup'",
-                        userId, MAX_NAME_LEN, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name !='rodsgroup'",
+                         userId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -8491,8 +8491,8 @@ checkLevel:
             bindVars.push_back( _group_name );
             bindVars.push_back( zone );
             status = cmlGetStringValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
-                        groupId, MAX_NAME_LEN, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
+                         groupId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -8664,8 +8664,8 @@ checkLevel:
             bindVars.push_back( _resc_name );
             bindVars.push_back( zone );
             status = cmlGetStringValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        rescId, MAX_NAME_LEN, bindVars, &icss );
+                         "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                         rescId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -8860,8 +8860,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( rescId );
                 status = cmlGetStringValueFromSql(
-                            "select resc_def_path from R_RESC_MAIN where resc_id=?",
-                            rescPath, MAX_NAME_LEN, bindVars, &icss );
+                             "select resc_def_path from R_RESC_MAIN where resc_id=?",
+                             rescPath, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status != 0 ) {
                 rodsLog( LOG_NOTICE,
@@ -9231,8 +9231,8 @@ checkLevel:
             bindVars.push_back( _resc_name );
             bindVars.push_back( zone );
             status = cmlGetStringValueFromSql(
-                    "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                    rescId, MAX_NAME_LEN, bindVars, &icss );
+                         "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                         rescId, MAX_NAME_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -9505,8 +9505,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _user_info->userType );
                 status = cmlGetStringValueFromSql(
-                        "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?",
-                        userTypeTokenName, MAX_NAME_LEN, bindVars, &icss );
+                             "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?",
+                             userTypeTokenName, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status == 0 ) {
                 strncpy( lastValidUserType, _user_info->userType, MAX_NAME_LEN );
@@ -9562,8 +9562,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( userZone );
                 status = cmlGetStringValueFromSql(
-                        "select zone_id from R_ZONE_MAIN where zone_name=?",
-                        zoneId, MAX_NAME_LEN, bindVars, &icss );
+                             "select zone_id from R_ZONE_MAIN where zone_name=?",
+                             zoneId, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -9765,7 +9765,7 @@ checkLevel:
             bindVars.push_back( _attribute );
             bindVars.push_back( objIdStr );
             status = cmlGetMultiRowStringValuesFromSql( "select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
-                    metaIdStr, MAX_NAME_LEN, 2, bindVars, &icss );
+                     metaIdStr, MAX_NAME_LEN, 2, bindVars, &icss );
         }
 
         if ( status <= 0 ) {
@@ -9964,8 +9964,8 @@ checkLevel:
             bindVars.push_back( objectName );
             bindVars.push_back( collection );
             status = cmlGetIntegerValueFromSql(
-                    "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
-                    &iVal, bindVars, &icss );
+                         "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+                         &iVal, bindVars, &icss );
         }
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -10104,8 +10104,8 @@ checkLevel:
             {
                 std::vector<std::string> bindVars;
                 status = cmlGetIntegerValueFromSql(
-                        "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
-                        &iVal, bindVars, &icss );
+                             "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
+                             &iVal, bindVars, &icss );
             }
             if ( status == 0 ) {
                 accessNeeded = iVal;
@@ -10121,8 +10121,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             status = cmlGetIntegerValueFromSql(
-                    "select min(max) from ACCESS_VIEW_TWO",
-                    &iVal, bindVars, &icss );
+                         "select min(max) from ACCESS_VIEW_TWO",
+                         &iVal, bindVars, &icss );
         }
 
         if ( status == CAT_NO_ROWS_FOUND ) {
@@ -10145,8 +10145,8 @@ checkLevel:
             {
                 std::vector<std::string> bindVars;
                 status = cmlGetIntegerValueFromSql(
-                        "select count(*) from ACCESS_VIEW_TWO",
-                        &iVal, bindVars, &icss );
+                             "select count(*) from ACCESS_VIEW_TWO",
+                             &iVal, bindVars, &icss );
             }
             if ( status == 0 ) {
                 nAccess = iVal;
@@ -10362,9 +10362,9 @@ checkLevel:
                     bindVars.push_back( logicalEndName );
                     bindVars.push_back( logicalParentDirName );
                     status = cmlGetIntegerValueFromSql(
-                            "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where "
-                            "DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-                            &iVal, bindVars, &icss );
+                                 "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where "
+                                 "DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+                                 &iVal, bindVars, &icss );
                 }
                 if ( status == 0 ) {
                     status = iVal;    /*like cmlCheckDataObjOnly, status is objid */
@@ -10395,8 +10395,8 @@ checkLevel:
                     std::vector<std::string> bindVars;
                     bindVars.push_back( _name );
                     status = cmlGetIntegerValueFromSql(
-                            "select coll_id from R_COLL_MAIN where coll_name=?",
-                            &iVal, bindVars, &icss );
+                                 "select coll_id from R_COLL_MAIN where coll_name=?",
+                                 &iVal, bindVars, &icss );
                 }
                 if ( status == 0 ) {
                     status = iVal;    /*like cmlCheckDir, status is objid*/
@@ -10449,8 +10449,8 @@ checkLevel:
                 bindVars.push_back( _name );
                 bindVars.push_back( zone );
                 status = cmlGetIntegerValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                             "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 _rollback( "chlAddAVUMetadata" );
@@ -10485,8 +10485,8 @@ checkLevel:
                 bindVars.push_back( userName );
                 bindVars.push_back( userZone );
                 status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                             "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 _rollback( "chlAddAVUMetadata" );
@@ -10516,8 +10516,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _name );
                 status = cmlGetIntegerValueFromSql(
-                        "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                        &objId, bindVars, &icss );
+                             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 _rollback( "chlAddAVUMetadata" );
@@ -10862,8 +10862,8 @@ checkLevel:
                 bindVars.push_back( _name );
                 bindVars.push_back( zone );
                 status = cmlGetIntegerValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                             "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -10900,8 +10900,8 @@ checkLevel:
                 bindVars.push_back( userName );
                 bindVars.push_back( userZone );
                 status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        &objId, bindVars, &icss );
+                             "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -10933,8 +10933,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _name );
                 status = cmlGetIntegerValueFromSql(
-                        "select resc_group_id from R_RESC_GROUP where resc_group_name=?",
-                        &objId, bindVars, &icss );
+                             "select resc_group_id from R_RESC_GROUP where resc_group_name=?",
+                             &objId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -11297,8 +11297,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _resc_name );
                 status = cmlGetIntegerValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=?",
-                        &iVal, bindVars, &icss );
+                             "select resc_id from R_RESC_MAIN where resc_name=?",
+                             &iVal, bindVars, &icss );
             }
             if ( status == CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_UNKNOWN_RESOURCE, "unknown resource" );
@@ -11341,8 +11341,8 @@ checkLevel:
             bindVars.push_back( _user_name );
             bindVars.push_back( myZone );
             status = cmlGetIntegerValueFromSql(
-                    "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
-                    &userId, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
+                         &userId, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -11532,8 +11532,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _path_name );
                 status1 = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name=?",
-                        &iVal, bindVars, &icss );
+                              "select coll_id from R_COLL_MAIN where coll_name=?",
+                              &iVal, bindVars, &icss );
             }
             if ( status1 == CAT_NO_ROWS_FOUND ) {
                 status1 = CAT_UNKNOWN_COLLECTION;
@@ -11582,8 +11582,8 @@ checkLevel:
                     bindVars.push_back( logicalEndName );
                     bindVars.push_back( logicalParentDirName );
                     status2 = cmlGetIntegerValueFromSql(
-                            "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-                            &iVal, bindVars, &icss );
+                                  "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+                                  &iVal, bindVars, &icss );
                 }
                 if ( status2 == CAT_NO_ROWS_FOUND ) {
                     status2 = CAT_UNKNOWN_FILE;
@@ -11682,8 +11682,8 @@ checkLevel:
             bindVars.push_back( _user_name );
             bindVars.push_back( myZone );
             status = cmlGetIntegerValueFromSql(
-                    "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
-                    &userId, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
+                         &userId, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
@@ -12134,8 +12134,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-                    &collId, bindVars,  &icss );
+                         "select coll_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+                         &collId, bindVars,  &icss );
         }
 
         if ( status == 0 ) { /* it is a dataObj and user has access to it */
@@ -12150,8 +12150,8 @@ checkLevel:
                 bindVars.push_back( _new_name );
                 bindVars.push_back( collIdString );
                 status = cmlGetIntegerValueFromSql(
-                        "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-                        &otherDataId, bindVars, &icss );
+                             "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
+                             &otherDataId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "select data_id failed" );
@@ -12168,8 +12168,8 @@ checkLevel:
                 bindVars.push_back( collIdString );
                 bindVars.push_back( collNameTmp );
                 status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
-                        &otherCollId, bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
+                             &otherCollId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_COLLECTION, "select coll_id failed" );
@@ -12246,8 +12246,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
-                    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-                    cVal, iVal, 2, bindVars, &icss );
+                         "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+                         cVal, iVal, 2, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it is a collection and user has access to it */
@@ -12261,8 +12261,8 @@ checkLevel:
                 bindVars.push_back( _new_name );
                 bindVars.push_back( parentCollName );
                 status = cmlGetIntegerValueFromSql(
-                        "select data_id from R_DATA_MAIN where data_name=? and coll_id= (select coll_id from R_COLL_MAIN  where coll_name = ?)",
-                        &otherDataId, bindVars, &icss );
+                             "select data_id from R_DATA_MAIN where data_name=? and coll_id= (select coll_id from R_COLL_MAIN  where coll_name = ?)",
+                             &otherDataId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "select data_id failed" );
@@ -12278,8 +12278,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( collNameTmp );
                 status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name = ?",
-                        &otherCollId, bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_name = ?",
+                             &otherCollId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_COLLECTION, "select coll_id failed" );
@@ -12410,8 +12410,8 @@ checkLevel:
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
             status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_DATA_MAIN where data_id=?",
-                    &otherDataId, bindVars, &icss );
+                         "select coll_id from R_DATA_MAIN where data_id=?",
+                         &otherDataId, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it IS a data obj, must be permission error */
@@ -12426,8 +12426,8 @@ checkLevel:
             std::vector<std::string> bindVars;
             bindVars.push_back( collIdString );
             status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_COLL_MAIN where coll_id=?",
-                    &otherDataId, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where coll_id=?",
+                         &otherDataId, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it IS a collection, must be permission error */
@@ -12518,8 +12518,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
-                    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-                    cVal, iVal, 2, bindVars, &icss );
+                         "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+                         cVal, iVal, 2, bindVars, &icss );
 
         }
         snprintf( collIdString, MAX_NAME_LEN, "%lld", _target_coll_id );
@@ -12531,8 +12531,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( collIdString );
                 status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_id=?",
-                        &collId, bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_id=?",
+                             &collId, bindVars, &icss );
             }
             if ( status == 0 ) {
                 return  ERROR( CAT_NO_ACCESS_PERMISSION, "permission error" );  /* does exist, must be
@@ -12554,8 +12554,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetStringValueFromSql(
-                    "select data_name from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-                    dataObjName, MAX_NAME_LEN, bindVars, &icss );
+                         "select data_name from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+                         dataObjName, MAX_NAME_LEN, bindVars, &icss );
         }
         snprintf( collIdString, MAX_NAME_LEN, "%lld", _target_coll_id );
         if ( status == 0 ) { /* it is a dataObj and user has access to it */
@@ -12570,8 +12570,8 @@ checkLevel:
                 bindVars.push_back( dataObjName );
                 bindVars.push_back( collIdString );
                 status = cmlGetIntegerValueFromSql(
-                        "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-                        &otherDataId, bindVars, &icss );
+                             "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
+                             &otherDataId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "select data_id failed" );
@@ -12589,8 +12589,8 @@ checkLevel:
                 bindVars.push_back( collIdString );
                 bindVars.push_back( nameTmp );
                 status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
-                        &otherCollId, bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
+                             &otherCollId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_COLLECTION, "select coll_id failed" );
@@ -12666,8 +12666,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
-                    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-                    cVal, iVal, 2, bindVars, &icss );
+                         "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+                         cVal, iVal, 2, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it is a collection and user has access to it */
@@ -12714,8 +12714,8 @@ checkLevel:
                 bindVars.push_back( endCollName );
                 bindVars.push_back( collIdString );
                 status = cmlGetIntegerValueFromSql(
-                        "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-                        &otherDataId, bindVars, &icss );
+                             "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
+                             &otherDataId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_DATAOBJ, "select data_id failed" );
@@ -12734,8 +12734,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( newCollName );
                 status = cmlGetIntegerValueFromSql(
-                        "select coll_id from R_COLL_MAIN where coll_name = ?",
-                        &otherCollId, bindVars, &icss );
+                             "select coll_id from R_COLL_MAIN where coll_name = ?",
+                             &otherCollId, bindVars, &icss );
             }
             if ( status != CAT_NO_ROWS_FOUND ) {
                 return ERROR( CAT_NAME_EXISTS_AS_COLLECTION, "select coll_id failed" );
@@ -12837,8 +12837,8 @@ checkLevel:
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
             status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_DATA_MAIN where data_id=?",
-                    &otherDataId, bindVars, &icss );
+                         "select coll_id from R_DATA_MAIN where data_id=?",
+                         &otherDataId, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it IS a data obj, must be permission error */
@@ -12852,8 +12852,8 @@ checkLevel:
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
             status = cmlGetIntegerValueFromSql(
-                    "select coll_id from R_COLL_MAIN where coll_id=?",
-                    &otherDataId, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where coll_id=?",
+                         &otherDataId, bindVars, &icss );
         }
         if ( status == 0 ) {
             /* it IS a collection, must be permission error */
@@ -12928,8 +12928,8 @@ checkLevel:
             bindVars.push_back( "token_namespace" );
             bindVars.push_back( _name_space );
             status = cmlGetIntegerValueFromSql(
-                    "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
-                    &objId, bindVars, &icss );
+                         "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
+                         &objId, bindVars, &icss );
         }
         if ( status != 0 ) {
             snprintf( errMsg, 200,
@@ -12947,8 +12947,8 @@ checkLevel:
             bindVars.push_back( _name_space );
             bindVars.push_back( _name );
             status = cmlGetIntegerValueFromSql(
-                    "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
-                    &objId, bindVars, &icss );
+                         "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
+                         &objId, bindVars, &icss );
         }
         if ( status == 0 ) {
             snprintf( errMsg, 200,
@@ -13091,8 +13091,8 @@ checkLevel:
             bindVars.push_back( _name_space );
             bindVars.push_back( _name );
             status = cmlGetIntegerValueFromSql(
-                    "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
-                    &objId, bindVars, &icss );
+                         "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
+                         &objId, bindVars, &icss );
         }
         if ( status != 0 ) {
             snprintf( errMsg, 200,
@@ -13637,8 +13637,8 @@ checkLevel:
                 bindVars.push_back( _resc_name );
                 bindVars.push_back( zone );
                 status = cmlGetIntegerValueFromSql(
-                        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        &rescId, bindVars, &icss );
+                             "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                             &rescId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -13665,8 +13665,8 @@ checkLevel:
                 bindVars.push_back( userName );
                 bindVars.push_back( userZone );
                 status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        &userId, bindVars, &icss );
+                             "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                             &userId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -13686,8 +13686,8 @@ checkLevel:
                 bindVars.push_back( userName );
                 bindVars.push_back( userZone );
                 status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='rodsgroup'",
-                        &userId, bindVars, &icss );
+                             "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='rodsgroup'",
+                             &userId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 if ( status == CAT_NO_ROWS_FOUND ) {
@@ -14755,8 +14755,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _alias );
                 status = cmlGetStringValueFromSql(
-                        "select create_ts from R_SPECIFIC_QUERY where alias=?",
-                        tsCreateTime, 50, bindVars, &icss );
+                             "select create_ts from R_SPECIFIC_QUERY where alias=?",
+                             tsCreateTime, 50, bindVars, &icss );
             }
             if ( status == 0 ) {
                 i = addRErrorMsg( &_comm->rError, 0, "Alias is not unique" );
@@ -14959,8 +14959,8 @@ checkLevel:
                 std::vector<std::string> bindVars;
                 bindVars.push_back( _spec_query_inp->sql );
                 status = cmlGetStringValueFromSql(
-                        "select create_ts from R_SPECIFIC_QUERY where sqlStr=?",
-                        tsCreateTime, 50, bindVars, &icss );
+                             "select create_ts from R_SPECIFIC_QUERY where sqlStr=?",
+                             tsCreateTime, 50, bindVars, &icss );
             }
             if ( status == CAT_NO_ROWS_FOUND ) {
                 int status2;
@@ -14971,8 +14971,8 @@ checkLevel:
                     std::vector<std::string> bindVars;
                     bindVars.push_back( _spec_query_inp->sql );
                     status2 = cmlGetStringValueFromSql(
-                            "select sqlStr from R_SPECIFIC_QUERY where alias=?",
-                            combinedSQL, sizeof( combinedSQL ), bindVars, &icss );
+                                  "select sqlStr from R_SPECIFIC_QUERY where alias=?",
+                                  combinedSQL, sizeof( combinedSQL ), bindVars, &icss );
                 }
                 if ( status2 == CAT_NO_ROWS_FOUND ) {
                     return ERROR( CAT_UNKNOWN_SPECIFIC_QUERY, "unknown query" );
@@ -15420,7 +15420,7 @@ checkLevel:
                 bindVars.push_back( *_zone_name );
                 // Ask for parent of current node
                 status = cmlGetStringValueFromSql( "select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
-                        parent, MAX_NAME_LEN, bindVars, &icss );
+                                                   parent, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status == CAT_NO_ROWS_FOUND ) { // Resource doesn't exist
                 // =-=-=-=-=-=-=-
@@ -15431,8 +15431,8 @@ checkLevel:
                     bindVars.push_back( current_node );
                     bindVars.push_back( *_zone_name );
                     status = cmlGetStringValueFromSql(
-                            "select resc_type_name from R_RESC_MAIN where resc_name=? and zone_name=?",
-                            type_name, 250, bindVars, &icss );
+                                 "select resc_type_name from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                 type_name, 250, bindVars, &icss );
                 }
                 if ( status < 0 ) {
                     return ERROR( CAT_UNKNOWN_RESOURCE, "resource does not exist" );
@@ -15578,8 +15578,8 @@ checkLevel:
                 bindVars.push_back( _comm->clientUser.userName );
                 bindVars.push_back( _comm->clientUser.rodsZone );
                 status = cmlGetIntegerValueFromSql(
-                        "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                        &userId, bindVars, &icss );
+                             "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                             &userId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 return ERROR( CAT_INVALID_USER, "select user_id failed" );
@@ -15653,8 +15653,8 @@ checkLevel:
             bindVars.push_back( _comm->clientUser.userName );
             bindVars.push_back( _comm->clientUser.rodsZone );
             status = cmlGetIntegerValueFromSql(
-                    "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
-                    &userId, bindVars, &icss );
+                         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                         &userId, bindVars, &icss );
         }
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
                 status == CAT_NO_ROWS_FOUND ) {
@@ -15675,8 +15675,8 @@ checkLevel:
             bindVars.push_back( userIdStr );
             bindVars.push_back( _ticket_string );
             status = cmlGetIntegerValueFromSql(
-                    "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
-                    &ticketId, bindVars, &icss );
+                         "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_string=?",
+                         &ticketId, bindVars, &icss );
         }
         if ( status != 0 ) {
             if ( logSQL != 0 ) {
@@ -15687,8 +15687,8 @@ checkLevel:
                 bindVars.push_back( userIdStr );
                 bindVars.push_back( _ticket_string );
                 status = cmlGetIntegerValueFromSql(
-                        "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
-                        &ticketId, bindVars, &icss );
+                             "select ticket_id from R_TICKET_MAIN where user_id=? and ticket_id=?",
+                             &ticketId, bindVars, &icss );
             }
             if ( status != 0 ) {
                 return ERROR( CAT_TICKET_INVALID, _ticket_string );

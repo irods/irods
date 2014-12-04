@@ -53,10 +53,10 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     }
 
     /* connect to rcat for cross zone */
-    status = getAndConnRcatHost( 
-                 rsComm, 
+    status = getAndConnRcatHost(
+                 rsComm,
                  MASTER_RCAT,
-                 (const char*)srcDataObjInp->objPath, 
+                 ( const char* )srcDataObjInp->objPath,
                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) {
         return status;
@@ -131,10 +131,10 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
     }
 
-    status = getAndConnRcatHost( 
-                 rsComm, 
+    status = getAndConnRcatHost(
+                 rsComm,
                  MASTER_RCAT,
-                 (const char*)dataObjRenameInp->srcDataObjInp.objPath,
+                 ( const char* )dataObjRenameInp->srcDataObjInp.objPath,
                  &rodsServerHost );
     if ( status < 0 ) {
         return status;

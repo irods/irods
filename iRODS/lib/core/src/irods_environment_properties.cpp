@@ -47,7 +47,7 @@ namespace irods {
         return result;
     }
 
-    environment_properties::environment_properties() : 
+    environment_properties::environment_properties() :
         captured_( false ) {
 
         key_map_[ CFG_IRODS_USER_NAME_KW ]                  = "irodsUserName";
@@ -95,7 +95,7 @@ namespace irods {
         key_map_[ "irodsEncryptionAlgorithm" ]     = CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
         key_map_[ "irodsDefaultHashScheme" ]       = CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
         key_map_[ "irodsMatchHashPolicy" ]         = CFG_IRODS_MATCH_HASH_POLICY_KW;
-        
+
     } // ctor
 
     error environment_properties::get_json_environment_file(
@@ -113,10 +113,10 @@ namespace irods {
         std::string json_file( IRODS_HOME_DIRECTORY );
         std::string json_session_file( IRODS_HOME_DIRECTORY );
         std::string env_var = to_env( CFG_IRODS_ENVIRONMENT_FILE_KW );
-        char* irods_env = getenv( 
-                              to_env( 
+        char* irods_env = getenv(
+                              to_env(
                                   CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
-        if( irods_env && strlen( irods_env ) > 0 ) {
+        if ( irods_env && strlen( irods_env ) > 0 ) {
             json_file = irods_env;
             // "cwd" is used in this case instead of the ppid given the
             // assumption that scripts will set the env file var to allow
@@ -125,12 +125,13 @@ namespace irods {
             // for this given use case
             json_session_file = json_file + ".cwd";
 
-        } else {
+        }
+        else {
             char* home_dir = getenv( "HOME" );
             // if home env exists, prefer that for run in place
-                // or use of existing irods service accound
-            if( home_dir ) {
-                json_file = home_dir; 
+            // or use of existing irods service accound
+            if ( home_dir ) {
+                json_file = home_dir;
             }
 
             json_file += JSON_ENV_FILE;
@@ -157,12 +158,12 @@ namespace irods {
 
         std::string legacy_file( IRODS_HOME_DIRECTORY );
         std::string legacy_session_file( IRODS_HOME_DIRECTORY );
-        char* irods_env = getenv( 
-                              to_env( 
+        char* irods_env = getenv(
+                              to_env(
                                   CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
-        if( irods_env && strlen( irods_env ) != 0 ) {
+        if ( irods_env && strlen( irods_env ) != 0 ) {
             legacy_file = irods_env;
-        
+
             // "cwd" is used in this case instead of the ppid given the
             // assumption that scripts will set the env file var to allow
             // for more complex interactions possibly yielding complex pid
@@ -170,21 +171,22 @@ namespace irods {
             // for this given use case
             legacy_session_file = legacy_file + ".cwd";
 
-        } else {
+        }
+        else {
             char* home_dir = getenv( "HOME" );
             // if home env exists, prefer that for run in place
             // or use of existing irods service accound
-            if( home_dir ) {
+            if ( home_dir ) {
                 legacy_file = home_dir;
             }
 
             legacy_file += LEGACY_ENV_FILE;
             legacy_session_file = legacy_file + "." + ppid_str.str();
-       
+
         }
-       
+
         _env_file     = legacy_file;
-        _session_file = legacy_session_file; 
+        _session_file = legacy_session_file;
 
         return SUCCESS();
 
@@ -195,21 +197,22 @@ namespace irods {
         error ret = get_json_environment_file(
                         json_file,
                         json_session_file );
-        
+
         bool do_parse_legacy = false;
-        if( ret.ok() ) {
-            if( fs::exists( json_file ) ) {
+        if ( ret.ok() ) {
+            if ( fs::exists( json_file ) ) {
                 ret = capture_json( json_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
                     do_parse_legacy = true;
-                
-                } else {
+
+                }
+                else {
                     config_props_.set< std::string >(
                         CFG_IRODS_ENVIRONMENT_FILE_KW,
                         json_file );
                     ret = capture_json( json_session_file );
-                    if( !ret.ok() ) {
+                    if ( !ret.ok() ) {
                         // debug - irods::log( PASS( ret ) );
 
                     }
@@ -219,23 +222,25 @@ namespace irods {
                         json_session_file );
 
                 }
-                 
-            } else {
+
+            }
+            else {
                 do_parse_legacy = true;
 
             }
 
-        } else {
+        }
+        else {
             do_parse_legacy = true;
 
         }
 
-        if( do_parse_legacy ) {
+        if ( do_parse_legacy ) {
             std::string legacy_file, legacy_session_file;
             ret = get_legacy_environment_file(
                       legacy_file,
                       legacy_session_file );
-            if( ret.ok() ) {
+            if ( ret.ok() ) {
                 ret = capture_legacy( legacy_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
@@ -245,18 +250,19 @@ namespace irods {
                     CFG_IRODS_ENVIRONMENT_FILE_KW,
                     legacy_file );
 
-                // session file ( written by icd ) already moved to json 
+                // session file ( written by icd ) already moved to json
                 ret = capture_json( legacy_session_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
-                
-                } 
-     
+
+                }
+
                 config_props_.set< std::string >(
                     CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
                     legacy_session_file );
 
-            } else {
+            }
+            else {
                 // debug - irods::log( PASS( ret ) );
 
             }
@@ -266,7 +272,7 @@ namespace irods {
         // set the captured flag so we no its already been captured
         captured_ = true;
         return ret;
-    
+
     } // capture
 
     error environment_properties::capture_json(
@@ -281,10 +287,10 @@ namespace irods {
     error environment_properties::capture_legacy(
         const std::string& _fn ) {
 
-        std::ifstream in_file( 
-                          _fn.c_str(), 
-                          std::ios::in );
-        if( !in_file.is_open() ) {
+        std::ifstream in_file(
+            _fn.c_str(),
+            std::ios::in );
+        if ( !in_file.is_open() ) {
             std::string msg( "failed to open legacy file [" );
             msg += _fn;
             msg += "]";
@@ -294,36 +300,37 @@ namespace irods {
         }
 
         std::string line;
-        while( getline( in_file, line ) ) {
+        while ( getline( in_file, line ) ) {
             // left trim whitespace
             line.erase(
-                line.begin(), 
+                line.begin(),
                 std::find_if(
-                    line.begin(), 
-                    line.end(), 
+                    line.begin(),
+                    line.end(),
                     std::not1(
                         std::ptr_fun<int, int>(
                             std::isspace ) ) ) );
             // skip comments
-            if( '#' == line[0] ) {
+            if ( '#' == line[0] ) {
                 continue;
             }
 
             std::vector< std::string > toks;
             try {
-            boost::split(
-                toks,
-                line,
-                boost::is_any_of( "\t " ),
-                boost::token_compress_on );
-            } catch ( boost::exception& e ) {
+                boost::split(
+                    toks,
+                    line,
+                    boost::is_any_of( "\t " ),
+                    boost::token_compress_on );
+            }
+            catch ( boost::exception& e ) {
                 rodsLog( LOG_ERROR, "boost::split failed on line [%s]", line.c_str() );
                 continue;
             }
-            if( toks.size() != 2 ||
-                toks[0].empty()  ||
-                toks[1].empty()) {
-                rodsLog( 
+            if ( toks.size() != 2 ||
+                    toks[0].empty()  ||
+                    toks[1].empty() ) {
+                rodsLog(
                     LOG_NOTICE,
                     "environment_properties :: invalid line [%s]",
                     line.c_str() );
@@ -331,7 +338,7 @@ namespace irods {
             }
 
             std::string& key = toks[0];
-            if( key_map_.has_entry( key ) ) {
+            if ( key_map_.has_entry( key ) ) {
                 std::string pkey = key;
                 key = key_map_[ key ];
 
@@ -340,44 +347,46 @@ namespace irods {
             std::string& val = toks[1];
 
             char front = *( val.begin() );
-            if( '"'  == front ||
-                '\'' == front ) {
+            if ( '"'  == front ||
+                    '\'' == front ) {
                 val.erase( 0, 1 );
             }
-                
+
             char back = *( val.rbegin() );
-            if( '"'  == back || 
-                '\'' == back ) {
+            if ( '"'  == back ||
+                    '\'' == back ) {
                 val.erase( val.size() - 1 );
             }
 
             error ret;
-            if( CFG_IRODS_PORT_KW                        == key ||
-                CFG_IRODS_XMSG_PORT_KW                   == key ||
-                CFG_IRODS_LOG_LEVEL_KW                   == key ||
-                CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
-                CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
-                CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
-                try {                
+            if ( CFG_IRODS_PORT_KW                        == key ||
+                    CFG_IRODS_XMSG_PORT_KW                   == key ||
+                    CFG_IRODS_LOG_LEVEL_KW                   == key ||
+                    CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
+                    CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
+                    CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
+                try {
                     int i_val = boost::lexical_cast< int >( val );
                     ret = config_props_.set< int >( key, i_val );
-                } catch( ... ) {
+                }
+                catch ( ... ) {
                     rodsLog(
                         LOG_ERROR,
                         "environment_properties :: lexical_cast failed for [%s]-[%s]",
                         key.c_str(),
-                        val.c_str()  );
+                        val.c_str() );
                 }
 
-            } else {
-                 ret = config_props_.set< 
-                           std::string >(
-                               key,
-                               val );
             }
-            if( !ret.ok() ) {
+            else {
+                ret = config_props_.set <
+                      std::string > (
+                          key,
+                          val );
+            }
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
-            
+
             }
 
         } // while

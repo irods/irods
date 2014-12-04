@@ -32,7 +32,7 @@ extern "C" {
             if ( !matched ) {
                 return USER_INPUT_FORMAT_ERR;
             }
-            std::string host = matches.str(1);
+            std::string host = matches.str( 1 );
             int port = 1247;
             if ( !matches.str( 3 ).empty() ) {
                 port = boost::lexical_cast<int>( matches.str( 3 ) );
@@ -52,9 +52,11 @@ extern "C" {
                 rcDisconnect( *rcComm );
             }
             return status;
-        } catch ( const boost::bad_lexical_cast & ) {
+        }
+        catch ( const boost::bad_lexical_cast & ) {
             return INVALID_LEXICAL_CAST;
-        } catch ( const boost::exception & ) {
+        }
+        catch ( const boost::exception & ) {
             return SYS_INTERNAL_ERR;
         }
 

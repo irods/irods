@@ -306,7 +306,7 @@ void *startMonScript( void *arg ) {
 #endif
 }
 
-int checkHostAccessControl( 
+int checkHostAccessControl(
     const std::string& _user_name,
     const std::string& _host_client,
     const std::string& _groups_name ) {
@@ -315,8 +315,8 @@ int checkHostAccessControl(
     namespace ip = boost::asio::ip;
 
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( 
-                           HOST_ACCESS_CONTROL_FILE, 
+    irods::error ret = irods::get_full_path_for_config_file(
+                           HOST_ACCESS_CONTROL_FILE,
                            cfg_file );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
@@ -325,135 +325,135 @@ int checkHostAccessControl(
 
     irods::configuration_parser cfg;
     ret = cfg.load( cfg_file );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::vector< std::string > group_list;
-    boost::split( 
-        group_list, 
-        _groups_name, 
-        boost::is_any_of( "\t " ), 
+    boost::split(
+        group_list,
+        _groups_name,
+        boost::is_any_of( "\t " ),
         boost::token_compress_on );
 
     array_t access_entries;
     ret = cfg.get< array_t > (
               "access_entries",
               access_entries );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-    for( size_t ae_idx = 0;
-         ae_idx < access_entries.size();
-         ++ae_idx ) {
-       object_t obj = access_entries[ ae_idx ];
-       
-       std::string user;
-       ret = obj.get< std::string >( 
-           "user", 
-           user ); 
-       if( !ret.ok() ) {
-           irods::log( PASS( ret ) );
-           continue;
+    for ( size_t ae_idx = 0;
+            ae_idx < access_entries.size();
+            ++ae_idx ) {
+        object_t obj = access_entries[ ae_idx ];
 
-       }
-
-       std::string group;
-       ret = obj.get< std::string >( 
-           "group", 
-           group ); 
-       if( !ret.ok() ) {
-           irods::log( PASS( ret ) );
-           continue;
-
-       }      
-       
-       std::string addy;
-       ret = obj.get< std::string >( 
-           "address", 
-           addy ); 
-       if( !ret.ok() ) {
-           irods::log( PASS( ret ) );
-           continue;
-
-       }      
-
-       std::string mask;
-       ret = obj.get< std::string >( 
-           "mask", 
-           mask ); 
-       if( !ret.ok() ) {
-           irods::log( PASS( ret ) );
-           continue;
-
-       }      
-       
-       boost::system::error_code error_code;
-       ip::address_v4 address_entry( 
-           ip::address_v4::from_string( 
-               addy,  
-               error_code ) );
-       if( error_code.value() ) {
-           continue;
-
-       }
-
-       ip::address_v4 mask_entry( 
-           ip::address_v4::from_string( 
-               mask, 
-               error_code ) );
-       if( error_code.value() ) {
-           continue;
-
-       }
-
-       ip::address_v4 host_client( 
-           ip::address_v4::from_string( 
-               _host_client, 
-               error_code ) );
-       if( error_code.value() ) {
-           continue;
-
-       }
-
-       bool user_match = false;
-       if( user == _user_name ||
-           user == "all" ) {
-           user_match = true;
-
-       }
-
-       bool group_match = false;
-       if( "all" == group ) {
-           group_match = true;
-       
-       }
-       else {
-           for( size_t i = 0;
-                i < group_list.size();
-                ++i ) {
-               if( group == group_list[ i ] ) {
-                   group_match = true;
-
-               }
-
-           } // for i
+        std::string user;
+        ret = obj.get< std::string >(
+                  "user",
+                  user );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
 
         }
 
-        if( group_match || user_match ) {
-            // check if <client, group, clientIP> 
+        std::string group;
+        ret = obj.get< std::string >(
+                  "group",
+                  group );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+
+        }
+
+        std::string addy;
+        ret = obj.get< std::string >(
+                  "address",
+                  addy );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+
+        }
+
+        std::string mask;
+        ret = obj.get< std::string >(
+                  "mask",
+                  mask );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+
+        }
+
+        boost::system::error_code error_code;
+        ip::address_v4 address_entry(
+            ip::address_v4::from_string(
+                addy,
+                error_code ) );
+        if ( error_code.value() ) {
+            continue;
+
+        }
+
+        ip::address_v4 mask_entry(
+            ip::address_v4::from_string(
+                mask,
+                error_code ) );
+        if ( error_code.value() ) {
+            continue;
+
+        }
+
+        ip::address_v4 host_client(
+            ip::address_v4::from_string(
+                _host_client,
+                error_code ) );
+        if ( error_code.value() ) {
+            continue;
+
+        }
+
+        bool user_match = false;
+        if ( user == _user_name ||
+                user == "all" ) {
+            user_match = true;
+
+        }
+
+        bool group_match = false;
+        if ( "all" == group ) {
+            group_match = true;
+
+        }
+        else {
+            for ( size_t i = 0;
+                    i < group_list.size();
+                    ++i ) {
+                if ( group == group_list[ i ] ) {
+                    group_match = true;
+
+                }
+
+            } // for i
+
+        }
+
+        if ( group_match || user_match ) {
+            // check if <client, group, clientIP>
             // match this entry of the control access file.
-            if( ( ( host_client.to_ulong() ^ 
-                    address_entry.to_ulong() ) & 
-                        ~mask_entry.to_ulong() ) == 0 ) {
+            if ( ( ( host_client.to_ulong() ^
+                     address_entry.to_ulong() ) &
+                    ~mask_entry.to_ulong() ) == 0 ) {
                 return 0;
             }
         }
-        
+
     } // for ae_idx
 
     return UNMATCHED_KEY_OR_INDEX;

@@ -885,26 +885,26 @@ initServerMain( rsComm_t *svrComm ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     int zone_port = 0;
-    ret = props.get_property<
-              int >(
-                  irods::CFG_ZONE_PORT,
-                  zone_port );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          int > (
+              irods::CFG_ZONE_PORT,
+              zone_port );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
-    svrComm->sock = sockOpenForInConn( 
-                        svrComm, 
+    svrComm->sock = sockOpenForInConn(
+                        svrComm,
                         &zone_port,
-                        NULL, 
+                        NULL,
                         SOCK_STREAM );
     if ( svrComm->sock < 0 ) {
         rodsLog( LOG_ERROR,

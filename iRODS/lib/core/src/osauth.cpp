@@ -200,7 +200,7 @@ extern "C" {
         }
         off_t lseek_return = lseek( key_fd, 0, SEEK_END );
         int errsv = errno;
-        if ( ( off_t )-1 == lseek_return ) {
+        if ( ( off_t ) - 1 == lseek_return ) {
             fprintf( stderr, "SEEK_END lseek failed with error %d.\n", errsv );
             close( key_fd );
             return UNIX_FILE_LSEEK_ERR;
@@ -213,7 +213,7 @@ extern "C" {
         buflen = lseek_return;
         lseek_return = lseek( key_fd, 0, SEEK_SET );
         errsv = errno;
-        if ( ( off_t )-1 == lseek_return ) {
+        if ( ( off_t ) - 1 == lseek_return ) {
             fprintf( stderr, "SEEK_SET lseek failed with error %d.\n", errsv );
             close( key_fd );
             return UNIX_FILE_LSEEK_ERR;

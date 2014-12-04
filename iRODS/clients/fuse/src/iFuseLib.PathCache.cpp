@@ -13,8 +13,8 @@
 #include "iFuseLib.Lock.hpp"
 
 PathCacheTable *initPathCache() {
-	PathCacheTable *pctable = (PathCacheTable *) malloc(sizeof (PathCacheTable));
-	pctable->PathCacheLock = &pctable->lock;
+    PathCacheTable *pctable = ( PathCacheTable * ) malloc( sizeof( PathCacheTable ) );
+    pctable->PathCacheLock = &pctable->lock;
     pctable->NonExistPathTable = newHashTable( NUM_PATH_HASH_SLOT );
     pctable->PathArrayTable = newHashTable( NUM_PATH_HASH_SLOT );
     pthread_mutex_init( pctable->PathCacheLock, NULL ); // *&

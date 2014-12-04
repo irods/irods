@@ -92,12 +92,12 @@ namespace irods {
             replKeyVal( &_cond_input, &cond_input_ );
         }
 
-        friend void add_key_val( 
+        friend void add_key_val(
             data_object_ptr&   _do,
             const std::string& _k,
             const std::string& _v );
 
-        friend void remove_key_val( 
+        friend void remove_key_val(
             data_object_ptr&   _do,
             const std::string& _k );
 

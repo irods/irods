@@ -42,9 +42,9 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
             rodsEnv env;
             int ret = getRodsEnv( &env );
-            if( ret < 0 ) {
-                rodsLogError( 
-                    LOG_ERROR, 
+            if ( ret < 0 ) {
+                rodsLogError(
+                    LOG_ERROR,
                     ret,
                     "rsyncDataToFileUtil: getRodsEnv failed" );
                 return ret;

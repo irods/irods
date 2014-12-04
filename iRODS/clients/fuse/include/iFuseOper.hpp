@@ -21,7 +21,7 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
-	
+
     int
     _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf );
     int irodsGetattr( const char *path, struct stat *stbuf );

@@ -411,26 +411,26 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
                 /* child. need to disconnect Rcat */
                 irods::server_properties& props = irods::server_properties::getInstance();
                 irods::error ret = props.capture_if_needed();
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     irods::log( PASS( ret ) );
                     return ret.code();
                 }
 
                 std::string zone_name;
-                ret = props.get_property<
-                          std::string >(
-                              irods::CFG_ZONE_NAME,
-                              zone_name );
-                if( !ret.ok() ) {
+                ret = props.get_property <
+                      std::string > (
+                          irods::CFG_ZONE_NAME,
+                          zone_name );
+                if ( !ret.ok() ) {
                     irods::log( PASS( ret ) );
                     return ret.code();
 
                 }
-                status = resetRcatHost( 
-                             rsComm, 
+                status = resetRcatHost(
+                             rsComm,
                              MASTER_RCAT,
                              zone_name.c_str() );
-                if( LOCAL_HOST == status ) {
+                if ( LOCAL_HOST == status ) {
 #ifdef RODS_CAT
                     resetRcat();
 #endif
@@ -441,7 +441,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
             if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
                 status = postForkExecProc( rsComm,
                                            &reExec->reExecProc[thrInx] );
-                cleanupAndExit ( status );
+                cleanupAndExit( status );
 #endif
             }
             else {
@@ -476,17 +476,17 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 

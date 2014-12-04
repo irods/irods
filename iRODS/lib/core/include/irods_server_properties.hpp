@@ -58,7 +58,7 @@ namespace irods {
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
             error ret = config_props_.get< T >( _key, _val );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 ret = config_props_.get< T >( key_map_[ _key ], _val );
             }
             return PASS( ret );
@@ -67,7 +67,7 @@ namespace irods {
         template< typename T >
         error set_property( const std::string& _key, const T& _val ) {
             error ret = config_props_.set< T >( _key, _val );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 ret = config_props_.set< T >( key_map_[ _key ], _val );
             }
             return PASS( ret );

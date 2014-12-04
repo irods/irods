@@ -562,7 +562,7 @@ getReqFromQue() {
 
 int
 startXmsgThreads() {
-    for (int i = 0; i < NUM_XMSG_THR; i++ ) {
+    for ( int i = 0; i < NUM_XMSG_THR; i++ ) {
         ProcReqThread[i] = new boost::thread( procReqRoutine );
     }
 

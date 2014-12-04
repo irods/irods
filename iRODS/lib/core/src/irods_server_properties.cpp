@@ -80,7 +80,7 @@ namespace irods {
         irods::error ret = irods::get_full_path_for_config_file(
                                "server_config.json",
                                svr_cfg );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             ret = capture_json( svr_cfg );
             if ( !ret.ok() ) {
                 return PASS( ret );
@@ -88,8 +88,8 @@ namespace irods {
 
             std::string db_cfg;
             ret = irods::get_full_path_for_config_file(
-                                   "database_config.json",
-                                   db_cfg );
+                      "database_config.json",
+                      db_cfg );
             if ( ret.ok() ) {
                 ret = capture_json( db_cfg );
                 if ( !ret.ok() ) {
@@ -97,7 +97,8 @@ namespace irods {
                 }
             }
 
-        } else {
+        }
+        else {
             return capture_legacy();
 
         }

@@ -130,7 +130,7 @@ int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
     timeout.tv_usec = 0;
 #define QMAX(x, y) ((x)>(y)?(x):(y))
     const int maxfdpl = QMAX( rbudpReceiver->rbudpBase.udpSockfd,
-                    rbudpReceiver->rbudpBase.tcpSockfd ) + 1;
+                              rbudpReceiver->rbudpBase.tcpSockfd ) + 1;
     FD_ZERO( &rset );
     while ( !done ) {
         // These two FD_SET cannot be put outside the while, don't why though
@@ -184,9 +184,9 @@ int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
 
             rbudpReceiver->rbudpBase.receivedNumberOfPackets ++;
             const float prog = ( float )
-                   rbudpReceiver->rbudpBase.receivedNumberOfPackets /
-                   ( float ) rbudpReceiver->rbudpBase.totalNumberOfPackets
-                   * 100;
+                               rbudpReceiver->rbudpBase.receivedNumberOfPackets /
+                               ( float ) rbudpReceiver->rbudpBase.totalNumberOfPackets
+                               * 100;
             if ( ( int )prog > oldprog ) {
                 oldprog = ( int )prog;
                 if ( oldprog > 100 ) {

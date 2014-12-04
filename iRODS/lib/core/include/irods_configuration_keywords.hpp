@@ -32,9 +32,9 @@ namespace irods {
     const std::string CFG_MATCH_HASH_POLICY_KW( "match_hash_policy" );
     const std::string CFG_FEDERATION_KW( "federation" );
     const std::string CFG_ENVIRONMENT_VARIABLES_KW( "environment_variables" );
-    
-    
-    
+
+
+
     // service_account_environment.json keywords
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
     const std::string CFG_IRODS_HOST_KW( "irods_host" );

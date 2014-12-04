@@ -258,7 +258,8 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
                                   ( fd_set * ) NULL, ( fd_set * ) NULL, &selectTimeout ) ) < 0 ) {
         if ( errno == EINTR ) {
             rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted" );
-        } else {
+        }
+        else {
             rodsLog( LOG_ERROR, "acceptSrvPortal: select failed, errno = %d", errno );
         }
     }
@@ -268,10 +269,10 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
         return SYS_SOCK_SELECT_ERR;
     }
 
-    const int saved_socket_flags = fcntl(sockfd, F_GETFL);
-    fcntl(sockfd, F_SETFL, saved_socket_flags | O_NONBLOCK);
+    const int saved_socket_flags = fcntl( sockfd, F_GETFL );
+    fcntl( sockfd, F_SETFL, saved_socket_flags | O_NONBLOCK );
     const int myFd = accept( sockfd, 0, 0 );
-    fcntl(sockfd, F_SETFL, saved_socket_flags);
+    fcntl( sockfd, F_SETFL, saved_socket_flags );
 
     if ( myFd < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -2218,10 +2219,10 @@ reconnManager( rsComm_t *rsComm ) {
         socklen_t len = sizeof( remoteAddr );
         bzero( &remoteAddr, sizeof( remoteAddr ) );
 
-        const int saved_socket_flags = fcntl(rsComm->reconnSock, F_GETFL);
-        fcntl(rsComm->reconnSock, F_SETFL, saved_socket_flags | O_NONBLOCK);
+        const int saved_socket_flags = fcntl( rsComm->reconnSock, F_GETFL );
+        fcntl( rsComm->reconnSock, F_SETFL, saved_socket_flags | O_NONBLOCK );
         const int newSock = accept( rsComm->reconnSock, ( struct sockaddr * ) &remoteAddr, &len );
-        fcntl(rsComm->reconnSock, F_SETFL, saved_socket_flags);
+        fcntl( rsComm->reconnSock, F_SETFL, saved_socket_flags );
 
         if ( newSock < 0 ) {
             acceptFailCnt++;

@@ -44,7 +44,7 @@ iFuseConn_t *getAndUseConnByPath( char *localPath, int *status ) {
     }
     else {
         /* no match. just assign one */
-        pathExist(pctable, localPath, NULL, NULL, NULL); // need to find a way to clean up
+        pathExist( pctable, localPath, NULL, NULL, NULL ); // need to find a way to clean up
         *status = getAndUseIFuseConn( &iFuseConn );
 
     }
@@ -88,15 +88,15 @@ int _getAndUseConnForPathCache( iFuseConn_t **iFuseConn, pathCache_t *paca ) {
         return status;
     }
     // if ( paca->iFuseConn != NULL ) {
-        /* has been changed by other threads, or current paca->ifuseconn inuse,
-         * return new ifuseconn without setting paca->ifuseconn */
+    /* has been changed by other threads, or current paca->ifuseconn inuse,
+     * return new ifuseconn without setting paca->ifuseconn */
     //    *iFuseConn = tmpIFuseConn;
     //}
     //else {
-        /* conn in use, cannot be deleted by conn manager
-         * therefore, it is safe to do the following without locking conn */
-        REF( paca->iFuseConn, tmpIFuseConn );
-        *iFuseConn = paca->iFuseConn;
+    /* conn in use, cannot be deleted by conn manager
+     * therefore, it is safe to do the following without locking conn */
+    REF( paca->iFuseConn, tmpIFuseConn );
+    *iFuseConn = paca->iFuseConn;
     //}
     return 0;
 }
@@ -349,7 +349,7 @@ connManager() {
                     listAppendNoRegion( TimeOutList, tmpIFuseConn );
 
                 }
-                node = node->next;            
+                node = node->next;
             }
             UNLOCK_STRUCT( *ConnectedConn );
 

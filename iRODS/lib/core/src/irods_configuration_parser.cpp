@@ -19,24 +19,24 @@ namespace irods {
 
     } // dtor
 
-    configuration_parser::configuration_parser( 
+    configuration_parser::configuration_parser(
         const configuration_parser& _rhs ) {
 
         irods::error ret = copy_and_swap( _rhs.root_ );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
         }
 
     } // cctor
 
-    configuration_parser::configuration_parser( 
+    configuration_parser::configuration_parser(
         const std::string& _file ) {
 
         load( _file );
 
     } // ctor
 
-    configuration_parser& configuration_parser::operator=( 
+    configuration_parser& configuration_parser::operator=(
         const configuration_parser& _rhs ) {
 
         copy_and_swap( _rhs.root_ );
@@ -51,7 +51,7 @@ namespace irods {
 
     } // clear
 
-    error configuration_parser::copy_and_swap( 
+    error configuration_parser::copy_and_swap(
         const configuration_parser::object_t& _rhs ) {
         // more could possibly be done here
         root_.clear();
@@ -75,14 +75,14 @@ namespace irods {
 
     } // erase
 
-    error configuration_parser::load( 
+    error configuration_parser::load(
         const std::string& _file ) {
-        if( _file.empty() ) {
+        if ( _file.empty() ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "file is empty" );
         }
-     
+
         error ret = load_json_object( _file );
 
         return ret;
@@ -95,9 +95,9 @@ namespace irods {
         json_error_t error;
 
         json = json_load_file(
-                   _file.c_str(), 
+                   _file.c_str(),
                    0, &error );
-        if( !json ) {
+        if ( !json ) {
             std::string msg( "failed to load file [" );
             msg += _file;
             msg += "] json error [";
@@ -106,7 +106,7 @@ namespace irods {
             return ERROR(
                        -1,
                        msg );
-            
+
         }
 
         irods::error ret = parse_json_object( json, root_ );
@@ -123,23 +123,28 @@ namespace irods {
         json_t*     val = 0;
         json_object_foreach( _obj, key, val ) {
             int type = json_typeof( val );
-            if( JSON_INTEGER == type ) {
+            if ( JSON_INTEGER == type ) {
                 _obj_out.set< int >( key, json_integer_value( val ) );
 
-            } else if( JSON_STRING == type ) {
+            }
+            else if ( JSON_STRING == type ) {
                 _obj_out.set< std::string >( key, json_string_value( val ) );
 
-            } else if( JSON_REAL == type ) {
+            }
+            else if ( JSON_REAL == type ) {
                 _obj_out.set< double >( key, json_real_value( val ) );
 
-            } else if( JSON_TRUE == type ||
-                       JSON_FALSE == type )  {
+            }
+            else if ( JSON_TRUE == type ||
+                      JSON_FALSE == type )  {
                 _obj_out.set< bool >( key, json_boolean( val ) );
 
-            } else if( JSON_NULL == type ) {
+            }
+            else if ( JSON_NULL == type ) {
                 _obj_out.set< std::string >( key, "NULL" );
 
-            } else if( JSON_ARRAY  == type ) {
+            }
+            else if ( JSON_ARRAY  == type ) {
                 array_t arr;
                 size_t  idx = 0;
                 json_t* obj = 0;
@@ -148,10 +153,11 @@ namespace irods {
                     irods::error err = parse_json_object(
                                            obj,
                                            lt );
-                    if( err.ok() ) {
+                    if ( err.ok() ) {
                         arr.push_back( lt );
 
-                    } else {
+                    }
+                    else {
                         irods::log( PASS( err ) );
 
                     }
@@ -160,21 +166,24 @@ namespace irods {
 
                 _obj_out.set< array_t >( key, arr );
 
-            } else if( JSON_OBJECT == type ) {
+            }
+            else if ( JSON_OBJECT == type ) {
                 irods::lookup_table< boost::any > lt;
                 irods::error err = parse_json_object(
                                        val,
                                        lt );
-                if( err.ok() ) {
+                if ( err.ok() ) {
                     _obj_out.set< object_t >( key, lt );
-                        
-                } else {
+
+                }
+                else {
                     irods::log( PASS( err ) );
 
                 }
 
-            } else {
-                rodsLog( 
+            }
+            else {
+                rodsLog(
                     LOG_NOTICE,
                     "parse_json_object :: unhandled type %d",
                     type );
@@ -186,10 +195,10 @@ namespace irods {
 
     } // parse_json_object
 
-    std::string to_env( 
+    std::string to_env(
         const std::string& _v ) {
-        return boost::to_upper_copy<
-                   std::string >( _v );
+        return boost::to_upper_copy <
+               std::string > ( _v );
     }
 
 }; // namespace irods

@@ -3,9 +3,9 @@
 
 /*
   This routine sets up the rodsEnv structure using the contents of the
-  irods_environment.json file and possibly some environment variables.  
-  For each of the irods_environment.json  items, if an environment variable 
-  with the same name exists, it overrides the possible environment item.  
+  irods_environment.json file and possibly some environment variables.
+  For each of the irods_environment.json  items, if an environment variable
+  with the same name exists, it overrides the possible environment item.
   This is called by the various Rods commands and the agent.
 
   This routine also fills in irodsHome and irodsCwd if they are not
@@ -15,7 +15,7 @@
   quotes, but do not need to be.  One or more spaces, or a '=', will
   preceed the item values.
 
-  The items are defined in the rodsEnv struct. 
+  The items are defined in the rodsEnv struct.
 
   If an error occurs, a message may logged or displayed but the
   structure is filled with whatever values are available.
@@ -105,7 +105,7 @@ extern "C" {
     }
 
     int getRodsEnv( rodsEnv *rodsEnvArg ) {
-        if( !rodsEnvArg ) {
+        if ( !rodsEnvArg ) {
             printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
             fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
@@ -126,27 +126,28 @@ extern "C" {
         const std::string&             _key,
         char*                          _val ) {
         std::string prop_str;
-        irods::error ret = _props.get_property< 
-                               std::string >( 
-                                   _key,
-                                   prop_str );
-        if( !ret.ok() ) {
+        irods::error ret = _props.get_property <
+                           std::string > (
+                               _key,
+                               prop_str );
+        if ( !ret.ok() ) {
             rodsLog(
                 _msg_lvl,
                 "%s is not defined",
                 _key.c_str() );
             return -1;
-        } else {
-            rodsLog( 
-                _msg_lvl, 
+        }
+        else {
+            rodsLog(
+                _msg_lvl,
                 "%s - %s",
                 _key.c_str(),
                 prop_str.c_str() );
-            strncpy( 
+            strncpy(
                 _val,
-                prop_str.c_str(), 
-                prop_str.size()+1 );
-            return 0; 
+                prop_str.c_str(),
+                prop_str.size() + 1 );
+            return 0;
         }
 
     } // capture_string_property
@@ -157,204 +158,204 @@ extern "C" {
         irods::environment_properties& _props,
         const std::string&             _key,
         int&                           _val ) {
-        irods::error ret = _props.get_property< int >( 
+        irods::error ret = _props.get_property< int >(
                                _key,
                                _val );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             rodsLog(
                 _msg_lvl,
                 "%s is not defined",
                 _key.c_str() );
             return ret.code();
         }
-        rodsLog( 
-            _msg_lvl, 
+        rodsLog(
+            _msg_lvl,
             "%s - %d",
             _key.c_str(),
             _val );
-        
-        return 0; 
+
+        return 0;
 
     } // capture_integer_property
 
-    int getRodsEnvFromFile( 
+    int getRodsEnvFromFile(
         rodsEnv* _env ) {
-        if( !_env ) {
+        if ( !_env ) {
             printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
             fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        irods::environment_properties& props = 
+        irods::environment_properties& props =
             irods::environment_properties::getInstance();
         irods::error ret = props.capture_if_needed();
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             // irods::log( PASS( ret ) );
-            // legacy code doesnt error out 
+            // legacy code doesnt error out
             // return  ret.code();
         }
 
         int msg_lvl = LOG_DEBUG;
-        if( getenv( PRINT_RODS_ENV_STR ) && 
-            atoi( getenv(PRINT_RODS_ENV_STR ) ) ) {
+        if ( getenv( PRINT_RODS_ENV_STR ) &&
+                atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
             msg_lvl = LOG_NOTICE;
             unsetenv( PRINT_RODS_ENV_STR );
         }
 
-         // default auth scheme
-         snprintf(
-             _env->rodsAuthScheme,
-             sizeof( _env->rodsAuthScheme ),
-             "native" );
+        // default auth scheme
+        snprintf(
+            _env->rodsAuthScheme,
+            sizeof( _env->rodsAuthScheme ),
+            "native" );
 
-        capture_string_property( 
+        capture_string_property(
             msg_lvl,
-            props, 
-            irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, 
-             configFileName );
+            props,
+            irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
+            configFileName );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_USER_NAME_KW, 
-             _env->rodsUserName );
+            props,
+            irods::CFG_IRODS_USER_NAME_KW,
+            _env->rodsUserName );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_HOST_KW, 
-             _env->rodsHost );
+            props,
+            irods::CFG_IRODS_HOST_KW,
+            _env->rodsHost );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_XMSG_HOST_KW, 
-             _env->xmsgHost );
+            props,
+            irods::CFG_IRODS_XMSG_HOST_KW,
+            _env->xmsgHost );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_HOME_KW, 
-             _env->rodsHome );
+            props,
+            irods::CFG_IRODS_HOME_KW,
+            _env->rodsHome );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_CWD_KW, 
-             _env->rodsCwd );
-         
-         capture_string_property( 
-            msg_lvl,
-             props, 
-             irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW, 
-             _env->rodsAuthScheme );
+            props,
+            irods::CFG_IRODS_CWD_KW,
+            _env->rodsCwd );
 
-         capture_integer_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_PORT_KW, 
-             _env->rodsPort );
+            props,
+            irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW,
+            _env->rodsAuthScheme );
 
-         capture_integer_property( 
+        capture_integer_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_XMSG_PORT_KW, 
-             _env->xmsgPort );
+            props,
+            irods::CFG_IRODS_PORT_KW,
+            _env->rodsPort );
 
-         capture_string_property( 
+        capture_integer_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_DEFAULT_RESOURCE_KW, 
-             _env->rodsDefResource );
- 
-         capture_string_property( 
-            msg_lvl,
-             props, 
-             irods::CFG_IRODS_ZONE_KW, 
-             _env->rodsZone );
+            props,
+            irods::CFG_IRODS_XMSG_PORT_KW,
+            _env->xmsgPort );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW, 
-             _env->rodsClientServerPolicy );
+            props,
+            irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
+            _env->rodsDefResource );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW, 
-             _env->rodsClientServerNegotiation );
+            props,
+            irods::CFG_IRODS_ZONE_KW,
+            _env->rodsZone );
 
-         capture_integer_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW, 
-             _env->rodsEncryptionKeySize );
+            props,
+            irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW,
+            _env->rodsClientServerPolicy );
 
-         capture_integer_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW, 
-             _env->rodsEncryptionSaltSize );
+            props,
+            irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW,
+            _env->rodsClientServerNegotiation );
 
-         capture_integer_property( 
+        capture_integer_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW, 
-             _env->rodsEncryptionNumHashRounds );
- 
-         capture_string_property( 
-            msg_lvl,
-             props, 
-             irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW, 
-             _env->rodsEncryptionAlgorithm );
+            props,
+            irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW,
+            _env->rodsEncryptionKeySize );
 
-         capture_string_property( 
+        capture_integer_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW, 
-             _env->rodsDefaultHashScheme );
+            props,
+            irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW,
+            _env->rodsEncryptionSaltSize );
 
-         capture_string_property( 
+        capture_integer_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_MATCH_HASH_POLICY_KW, 
-             _env->rodsMatchHashPolicy );
+            props,
+            irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+            _env->rodsEncryptionNumHashRounds );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_GSI_SERVER_DN_KW, 
-             _env->rodsServerDn );
+            props,
+            irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW,
+            _env->rodsEncryptionAlgorithm );
 
-         capture_string_property( 
+        capture_string_property(
             msg_lvl,
-             props, 
-             irods::CFG_IRODS_DEBUG_KW, 
-             _env->rodsDebug );
+            props,
+            irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW,
+            _env->rodsDefaultHashScheme );
+
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_MATCH_HASH_POLICY_KW,
+            _env->rodsMatchHashPolicy );
+
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_GSI_SERVER_DN_KW,
+            _env->rodsServerDn );
+
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_DEBUG_KW,
+            _env->rodsDebug );
 
         _env->rodsLogLevel = 0;
-        int status = capture_integer_property( 
+        int status = capture_integer_property(
                          msg_lvl,
-                         props, 
-                         irods::CFG_IRODS_LOG_LEVEL_KW, 
+                         props,
+                         irods::CFG_IRODS_LOG_LEVEL_KW,
                          _env->rodsLogLevel );
-        if( status == 0 ) {
-            rodsLogLevel( _env->rodsLogLevel ); 
+        if ( status == 0 ) {
+            rodsLogLevel( _env->rodsLogLevel );
 
         }
 
         memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
-        status = capture_string_property( 
+        status = capture_string_property(
                      msg_lvl,
-                     props, 
-                     irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW, 
+                     props,
+                     irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW,
                      _env->rodsAuthFileName );
-        if( status == 0 ) {
-            rstrcpy( 
-                authFileName, 
-                _env->rodsAuthFileName, 
-                LONG_NAME_LEN - 1);
+        if ( status == 0 ) {
+            rstrcpy(
+                authFileName,
+                _env->rodsAuthFileName,
+                LONG_NAME_LEN - 1 );
         }
 
         // legacy ssl environment variables
@@ -366,7 +367,7 @@ extern "C" {
         capture_string_property(
             msg_lvl,
             props,
-             irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
+            irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
             _env->irodsSSLCACertificateFile );
         capture_string_property(
             msg_lvl,
@@ -388,7 +389,7 @@ extern "C" {
             props,
             irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
-        
+
         return 0;
     }
 
@@ -397,43 +398,43 @@ extern "C" {
     void capture_string_env_var(
         const std::string& _key,
         char*              _val ) {
-        char* env = getenv( 
+        char* env = getenv(
                         irods::to_env( _key ).c_str() );
-        if( env ) {
+        if ( env ) {
             strncpy(
                 _val,
                 env,
-                strlen(env)+1 );
-            rodsLog( 
+                strlen( env ) + 1 );
+            rodsLog(
                 LOG_DEBUG,
                 "captured env [%s]-[%s]",
                 _key.c_str(),
                 _val );
         }
-          
+
     } // capture_string_env_var
 
     static
     void capture_integer_env_var(
         const std::string& _key,
         int&               _val ) {
-        char* env = getenv( 
+        char* env = getenv(
                         irods::to_env( _key ).c_str() );
-        if( env ) {
+        if ( env ) {
             _val = atoi( env );
-            rodsLog( 
+            rodsLog(
                 LOG_DEBUG,
                 "captured env [%s]-[%d]",
                 _key.c_str(),
                 _val );
         }
-                
+
     } // capture_integer_env_var
 
     int
     get_legacy_ssl_variables(
         rodsEnv* _env ) {
-        if( !_env ) {
+        if ( !_env ) {
             rodsLog(
                 LOG_ERROR,
                 "get_legacy_ssl_variables - null env pointer" );
@@ -444,42 +445,42 @@ extern "C" {
         char* val = 0;
 
         val = getenv( "irodsSSLCACertificatePath" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLCACertificatePath,
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCACertificateFile" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLCACertificateFile,
                 "%s", val );
         }
 
         val = getenv( "irodsSSLVerifyServer" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLVerifyServer,
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCertificateChainFile" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLCertificateChainFile,
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCertificateKeyFile" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLCertificateKeyFile,
                 "%s", val );
         }
 
         val = getenv( "irodsSSLDHParamsFile" );
-        if( val ) {
+        if ( val ) {
             sprintf(
                 _env->irodsSSLDHParamsFile,
                 "%s", val );
@@ -490,16 +491,16 @@ extern "C" {
     } // get_legacy_ssl_variables
 
     int
-    getRodsEnvFromEnv( 
+    getRodsEnvFromEnv(
         rodsEnv* _env ) {
-        if( !_env ) {
+        if ( !_env ) {
             printf( "ERROR - getRodsEnvFromEnv :: null rodsEnv\n" );
             fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
 
         int status = get_legacy_ssl_variables( _env );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             return status;
 
         }
@@ -568,7 +569,7 @@ extern "C" {
         capture_integer_env_var(
             env_var,
             _env->rodsEncryptionKeySize );
-        
+
         env_var = irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
         capture_integer_env_var(
             env_var,
@@ -613,7 +614,7 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->rodsAuthFileName );
-        if( strlen( _env->rodsAuthFileName ) > 0 ) {
+        if ( strlen( _env->rodsAuthFileName ) > 0 ) {
             rstrcpy( authFileName, _env->rodsAuthFileName, LONG_NAME_LEN );
 
         }

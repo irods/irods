@@ -250,7 +250,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     else if ( rodsArgs->verifyChecksum == True ) {
         rodsEnv env;
         int ret = getRodsEnv( &env );
-        if( ret < 0 ) {
+        if ( ret < 0 ) {
             rodsLog(
                 LOG_ERROR,
                 "putFileUtil - failed to capture rods env %d",
@@ -791,7 +791,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     int bytesRead = 0;
     /*#ifndef windows_platform
       char *bufPtr = bulkOprInfo->bytesBuf.buf + bulkOprInfo->size;
-#else*/  /* make change for Windows only */
+    #else*/  /* make change for Windows only */
     char *bufPtr = ( char * )( bulkOprInfo->bytesBuf.buf ) + bulkOprInfo->size;
     /*#endif*/
 
@@ -831,11 +831,11 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
 
         rodsEnv env;
         int ret = getRodsEnv( &env );
-        if( ret < 0 ) {
+        if ( ret < 0 ) {
             rodsLog(
                 LOG_ERROR,
                 "bulkPutFileUtil: error getting rods env %d",
-                ret  );
+                ret );
             return ret;
         }
         status = chksumLocFile( srcPath, chksumStr, env.rodsDefaultHashScheme );

@@ -123,12 +123,12 @@ extern "C" {
                             // =-=-=-=-=-=-=-
                             // rebuilt and reset context string
                             std::string context = irods::AUTH_TTL_KEY        +
-                                                irods::kvp_association()  +
-                                                ttl_str                    +
-                                                irods::kvp_delimiter()    +
-                                                irods::AUTH_PASSWORD_KEY  +
-                                                irods::kvp_association()  +
-                                                new_password;
+                                                  irods::kvp_association()  +
+                                                  ttl_str                    +
+                                                  irods::kvp_delimiter()    +
+                                                  irods::AUTH_PASSWORD_KEY  +
+                                                  irods::kvp_association()  +
+                                                  new_password;
                             ptr->context( context );
 
                         }
@@ -324,7 +324,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the server host handle
         rodsServerHost_t* server_host = 0;
-        int status = getAndConnRcatHost( _comm, MASTER_RCAT, (const char*)_comm->clientUser.rodsZone, &server_host );
+        int status = getAndConnRcatHost( _comm, MASTER_RCAT, ( const char* )_comm->clientUser.rodsZone, &server_host );
         if ( status < 0 ) {
             return ERROR( status, "getAndConnRcatHost failed." );
         }

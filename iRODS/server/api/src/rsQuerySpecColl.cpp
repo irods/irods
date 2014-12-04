@@ -35,10 +35,10 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int continueFlag;   /* continue query */
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    remoteFlag = getAndConnRcatHost( 
-                     rsComm, 
-                     SLAVE_RCAT, 
-                     (const char*)dataObjInp->objPath,
+    remoteFlag = getAndConnRcatHost(
+                     rsComm,
+                     SLAVE_RCAT,
+                     ( const char* )dataObjInp->objPath,
                      &rodsServerHost );
 
     if ( remoteFlag < 0 ) {

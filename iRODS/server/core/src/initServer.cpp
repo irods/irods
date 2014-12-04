@@ -176,38 +176,38 @@ initServerInfo( rsComm_t *rsComm ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
     int zone_port = 0;
-    ret = props.get_property<
-              int >(
-                  irods::CFG_ZONE_PORT,
-                  zone_port );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          int > (
+              irods::CFG_ZONE_PORT,
+              zone_port );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
-    
+
     /* que the local zone */
-    status = queZone( 
-                 zone_name.c_str(), 
+    status = queZone(
+                 zone_name.c_str(),
                  zone_port, NULL, NULL );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         rodsLog(
             LOG_DEBUG,
             "initServerInfo - queZone failed %d",
@@ -502,26 +502,26 @@ initRcatServerHostByFile() {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     object_t env_obj;
-    ret = props.get_property<
-              object_t >(
-                  irods::CFG_ENVIRONMENT_VARIABLES_KW,
-                  env_obj );
+    ret = props.get_property <
+          object_t > (
+              irods::CFG_ENVIRONMENT_VARIABLES_KW,
+              env_obj );
 
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         object_t::iterator itr;
-        for( itr = env_obj.begin();
-             itr != env_obj.end();
-             ++itr ) {
-            std::string val = boost::any_cast< 
-                                  std::string >(
-                                      itr->second );
-            setenv( 
+        for ( itr = env_obj.begin();
+                itr != env_obj.end();
+                ++itr ) {
+            std::string val = boost::any_cast <
+                              std::string > (
+                                  itr->second );
+            setenv(
                 itr->first.c_str(), // variable
                 val.c_str(),        // value
                 1 );                // overwrite
@@ -533,7 +533,8 @@ initRcatServerHostByFile() {
 
         }
 
-    } else {
+    }
+    else {
         rodsLog(
             LOG_NOTICE,
             "initRcatServerHostByFile - did not get [%s] property",
@@ -541,23 +542,23 @@ initRcatServerHostByFile() {
     }
 
     array_t prop_arr;
-    ret = props.get_property<
-              array_t >(
-                  irods::CFG_RE_RULEBASE_SET_KW,
-                  prop_arr );
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_RULEBASE_SET_KW,
+              prop_arr );
 
     std::string prop_str;
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         std::string rule_arr;
-        for( size_t i = 0;
-             i < prop_arr.size();
-             ++i ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
             rule_arr += boost::any_cast< std::string >(
-                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
 
-        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
 
         snprintf(
             reRuleStr,
@@ -565,40 +566,42 @@ initRcatServerHostByFile() {
             "%s",
             rule_arr.c_str() );
 
-    } else {
+    }
+    else {
         std::string prop_str;
         ret = props.get_property< std::string >(
                   RE_RULESET_KW,
                   prop_str );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             snprintf(
                 reRuleStr,
                 sizeof( reRuleStr ),
                 "%s",
                 prop_str.c_str() );
 
-        } else {
+        }
+        else {
             irods::log( PASS( ret ) );
             return ret.code();
         }
 
     }
 
-    ret = props.get_property<
-              array_t >(
-                  irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
-                  prop_arr );
-    if( ret.ok() ) {
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
+              prop_arr );
+    if ( ret.ok() ) {
         std::string rule_arr;
-        for( size_t i = 0;
-             i < prop_arr.size();
-             ++i ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
             rule_arr += boost::any_cast< std::string >(
-                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
 
-        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
 
         snprintf(
             reFuncMapStr,
@@ -606,38 +609,40 @@ initRcatServerHostByFile() {
             "%s",
             rule_arr.c_str() );
 
-    } else {
+    }
+    else {
         ret = props.get_property< std::string >(
                   RE_FUNCMAPSET_KW,
                   prop_str );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             snprintf(
                 reFuncMapStr,
                 sizeof( reFuncMapStr ),
                 "%s",
                 prop_str.c_str() );
 
-        } else {
+        }
+        else {
             irods::log( PASS( ret ) );
             return ret.code();
         }
     }
 
-    ret = props.get_property<
-              array_t >(
-                  irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
-                  prop_arr );
-    if( ret.ok() ) {
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
+              prop_arr );
+    if ( ret.ok() ) {
         std::string rule_arr;
-         for( size_t i = 0;
-             i < prop_arr.size();
-             ++i ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
             rule_arr += boost::any_cast< std::string >(
-                           prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
             rule_arr += prop_str + ",";
         }
 
-        rule_arr = rule_arr.substr( 0, rule_arr.size()-1 );
+        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
 
         snprintf(
             reVariableMapStr,
@@ -645,18 +650,20 @@ initRcatServerHostByFile() {
             "%s",
             rule_arr.c_str() );
 
-    } else {
+    }
+    else {
         ret = props.get_property< std::string >(
                   RE_VARIABLEMAPSET_KW,
                   prop_str );
-        if( ret.ok() ) {
+        if ( ret.ok() ) {
             snprintf(
                 reVariableMapStr,
                 sizeof( reVariableMapStr ),
                 "%s",
                 prop_str.c_str() );
 
-        } else {
+        }
+        else {
             irods::log( PASS( ret ) );
             return ret.code();
         }
@@ -665,7 +672,7 @@ initRcatServerHostByFile() {
     ret = props.get_property< std::string >(
               KERBEROS_NAME_KW,
               prop_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         snprintf(
             KerberosName,
             sizeof( KerberosName ),
@@ -677,7 +684,7 @@ initRcatServerHostByFile() {
     ret = props.get_property< std::string >(
               ICAT_HOST_KW,
               prop_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
@@ -698,7 +705,8 @@ initRcatServerHostByFile() {
         }
         tmp_host->rcatEnabled = LOCAL_ICAT;
 
-    } else {
+    }
+    else {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -708,7 +716,7 @@ initRcatServerHostByFile() {
     ret = props.get_property< std::string >(
               irods::CFG_IRODS_XMSG_HOST_KW,
               prop_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
@@ -735,21 +743,22 @@ initRcatServerHostByFile() {
     ret = props.get_property< std::string >(
               LOCAL_ZONE_SID_KW,
               prop_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         snprintf( localSID, sizeof( localSID ), "%s", prop_str.c_str() );
-    } else {
+    }
+    else {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     // try for new federation config
     array_t fed_arr;
-    ret = props.get_property<
-              array_t >(
-                  irods::CFG_NEGOTIATION_KEY_KW,
-                  fed_arr );
-    if( ret.ok() ) {
-        for( size_t i = 0; i < fed_arr.size(); ++i ) {
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_NEGOTIATION_KEY_KW,
+              fed_arr );
+    if ( ret.ok() ) {
+        for ( size_t i = 0; i < fed_arr.size(); ++i ) {
             std::string fed_zone_id   = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_ID_KW ] );
             std::string fed_zone_name = boost::any_cast< std::string >(
@@ -759,19 +768,20 @@ initRcatServerHostByFile() {
 
         }
 
-    } else {
+    }
+    else {
         // try the old remote sid config
         std::vector< std::string > rem_sids;
-        ret = props.get_property<
-                  std::vector< std::string > >(
-                      REMOTE_ZONE_SID_KW,
-                      rem_sids );
-        if( ret.ok() ) {
-             for( size_t i = 0; i < rem_sids.size(); ++i ) {
+        ret = props.get_property <
+              std::vector< std::string > > (
+                  REMOTE_ZONE_SID_KW,
+                  rem_sids );
+        if ( ret.ok() ) {
+            for ( size_t i = 0; i < rem_sids.size(); ++i ) {
                 snprintf( remoteSID[i], sizeof( remoteSID[i] ), "%s", rem_sids[i].c_str() );
             }
 
-       }
+        }
 
     } // else
 
@@ -913,9 +923,9 @@ getLogDir() {
  * If the rcat host is remote, it will automatically connect to the rcat host.
  */
 
-int getAndConnRcatHost( 
-    rsComm_t *rsComm, 
-    int rcatType, 
+int getAndConnRcatHost(
+    rsComm_t *rsComm,
+    int rcatType,
     const char *rcatZoneHint,
     rodsServerHost_t **rodsServerHost ) {
 
@@ -1034,7 +1044,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     else {
         rodsLog( LOG_DEBUG,
                  "getZoneInfo: Invalid zone name from hint %s", rcatZoneHint );
-        status = getZoneInfo( (const char*)NULL, myZoneInfo );
+        status = getZoneInfo( ( const char* )NULL, myZoneInfo );
         if ( status < 0 ) {
             return SYS_INVALID_ZONE_NAME;
         }
@@ -1175,17 +1185,17 @@ initZone( rsComm_t *rsComm ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
@@ -1314,9 +1324,9 @@ initZone( rsComm_t *rsComm ) {
     return 0;
 }
 
-int queZone( 
-    const char*       zoneName, 
-    int               portNum, 
+int queZone(
+    const char*       zoneName,
+    int               portNum,
     rodsServerHost_t* masterServerHost,
     rodsServerHost_t* slaveServerHost ) {
 
@@ -1616,7 +1626,7 @@ int initHostConfigByFile() {
 
     irods::configuration_parser cfg;
     ret = cfg.load( cfg_file );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -1625,21 +1635,21 @@ int initHostConfigByFile() {
     ret = cfg.get< array_t > (
               "host_entries",
               host_entries );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-    for( size_t he_idx = 0;
-         he_idx < host_entries.size();
-         ++he_idx ) {
+    for ( size_t he_idx = 0;
+            he_idx < host_entries.size();
+            ++he_idx ) {
         object_t obj = host_entries[ he_idx ];
 
         std::string address_type;
         ret = obj.get< std::string >(
                   "address_type",
                   address_type );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             continue;
         }
@@ -1648,25 +1658,26 @@ int initHostConfigByFile() {
         ret = obj.get< array_t >(
                   "addresses",
                   addresses );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             continue;
         }
 
         rodsServerHost_t* svr_host = ( rodsServerHost_t* )malloc(
-                               sizeof( rodsServerHost_t ) );
+                                         sizeof( rodsServerHost_t ) );
         memset(
             svr_host,
             0,
             sizeof( rodsServerHost_t ) );
 
-        if( "remote" == address_type ) {
+        if ( "remote" == address_type ) {
             svr_host->localFlag = REMOTE_HOST;
         }
-        else if( "local" == address_type ) {
+        else if ( "local" == address_type ) {
             svr_host->localFlag = LOCAL_HOST;
 
-        } else {
+        }
+        else {
             free( svr_host );
             rodsLog(
                 LOG_ERROR,
@@ -1677,17 +1688,17 @@ int initHostConfigByFile() {
 
         // local zone
         svr_host->zoneInfo = ZoneInfoHead;
-        if( queRodsServerHost(
-                         &HostConfigHead,
-                         svr_host ) < 0 ) {
+        if ( queRodsServerHost(
+                    &HostConfigHead,
+                    svr_host ) < 0 ) {
             rodsLog(
-                 LOG_ERROR,
-                 "queRodsServerHost failed" );
+                LOG_ERROR,
+                "queRodsServerHost failed" );
         }
 
-        for( size_t addr_idx = 0;
-             addr_idx < addresses.size();
-             ++addr_idx ) {
+        for ( size_t addr_idx = 0;
+                addr_idx < addresses.size();
+                ++addr_idx ) {
 
             object_t& obj_ent = addresses[ addr_idx ];
 
@@ -1695,15 +1706,15 @@ int initHostConfigByFile() {
             ret = obj_ent.get< std::string >(
                       "address",
                       entry );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
                 continue;
             }
 
-            if( queHostName(
-                    svr_host,
-                    entry.c_str(),
-                    0 ) < 0 ) {
+            if ( queHostName(
+                        svr_host,
+                        entry.c_str(),
+                        0 ) < 0 ) {
                 rodsLog(
                     LOG_ERROR,
                     "queHostName failed" );
@@ -1814,45 +1825,45 @@ initRsComm( rsComm_t *rsComm ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
     std::string zone_user;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_USER,
-                  zone_user );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_USER,
+              zone_user );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
     std::string zone_auth_scheme;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_AUTH_SCHEME,
-                  zone_auth_scheme );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_AUTH_SCHEME,
+              zone_auth_scheme );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
-    /* fill in the proxyUser info from server_config. clientUser 
+    /* fill in the proxyUser info from server_config. clientUser
      * has to come from the rei */
     rstrcpy( rsComm->proxyUser.userName, zone_user.c_str(), NAME_LEN );
     rstrcpy( rsComm->proxyUser.rodsZone, zone_name.c_str(), NAME_LEN );
@@ -2312,7 +2323,7 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    status = getRcatHost( MASTER_RCAT, (const char*)NULL, rodsServerHost );
+    status = getRcatHost( MASTER_RCAT, ( const char* )NULL, rodsServerHost );
 
     return status;
 }
@@ -2699,7 +2710,7 @@ readProcLog( int pid, procLog_t *procLog ) {
         procTokens.push_back( token );
     }
 
-    if( procTokens.size() != 7 ) {
+    if ( procTokens.size() != 7 ) {
         rodsLog( LOG_ERROR,
                  "readProcLog: error fscanf file %s. Number of param read = %d",
                  procPath, procTokens.size() );
@@ -2716,7 +2727,8 @@ readProcLog( int pid, procLog_t *procLog ) {
     snprintf( procLog->remoteAddr, sizeof( procLog->remoteAddr ), "%s", procTokens[5].c_str() );
     try {
         procLog->startTime = boost::lexical_cast<unsigned int>( procTokens[6].c_str() );
-    } catch( ... ) {
+    }
+    catch ( ... ) {
         rodsLog( LOG_ERROR, "Could not convert %s to unsigned int.", procTokens[6].c_str() );
         return INVALID_LEXICAL_CAST;
     }
@@ -2728,28 +2740,28 @@ int
 setRsCommFromRodsEnv( rsComm_t *rsComm ) {
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
     }
 
     std::string zone_user;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_USER,
-                  zone_user );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_USER,
+              zone_user );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 

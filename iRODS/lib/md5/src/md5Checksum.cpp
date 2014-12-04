@@ -42,12 +42,12 @@ int main( int argc, char *argv[] ) {
 #endif 	/* MD5_TESTING */
 
 int chksumLocFile(
-   char*       _file_name,
-   char*       _checksum,
-   const char* _hash_scheme ) {
-    if( !_file_name ||
-        !_checksum  ||
-        !_hash_scheme ) {
+    char*       _file_name,
+    char*       _checksum,
+    const char* _hash_scheme ) {
+    if ( !_file_name ||
+            !_checksum  ||
+            !_hash_scheme ) {
         rodsLog(
             LOG_ERROR,
             "chksumLocFile :: null input param - %p %p %p",
@@ -91,8 +91,8 @@ int chksumLocFile(
     // capture the incoming scheme if it is valid
     std::string hash_scheme;
     if ( _hash_scheme &&
-         strlen( _hash_scheme ) > 0 &&
-         strlen( _hash_scheme ) < NAME_LEN ) {
+            strlen( _hash_scheme ) > 0 &&
+            strlen( _hash_scheme ) < NAME_LEN ) {
         hash_scheme = _hash_scheme;
         // =-=-=-=-=-=-=-
         // hash scheme keywords are all lowercase
@@ -101,11 +101,12 @@ int chksumLocFile(
             hash_scheme.end(),
             hash_scheme.begin(),
             ::tolower );
-    } else {
+    }
+    else {
         hash_scheme = env_scheme;
 
     }
-    
+
     // =-=-=-=-=-=-=-
     // hash scheme keywords are all lowercase
     std::transform(
@@ -142,7 +143,7 @@ int chksumLocFile(
     irods::error ret = irods::getHasher(
                            final_scheme,
                            hasher );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 
@@ -151,9 +152,9 @@ int chksumLocFile(
     // =-=-=-=-=-=-=-
     // open the local file
     std::ifstream in_file(
-                      _file_name,
-                      std::ios::in | std::ios::binary  );
-    if( !in_file.is_open() ) {
+        _file_name,
+        std::ios::in | std::ios::binary );
+    if ( !in_file.is_open() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLogError(
             LOG_NOTICE,
@@ -168,7 +169,7 @@ int chksumLocFile(
     std::streamsize bytes_read = in_file.readsome(
                                      buffer_read,
                                      MD5_BUF_SZ );
-    while( bytes_read > 0 ) {
+    while ( bytes_read > 0 ) {
         hasher.update(
             std::string(
                 buffer_read,

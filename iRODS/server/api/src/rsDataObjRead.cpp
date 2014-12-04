@@ -41,7 +41,7 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     addMsParamToArray( &msParamArray, "*ReadBuf", BUF_LEN_MS_T, myInOutStruct,
                        dataObjReadOutBBuf, 0 );
     int status = applyRule( "acPostProcForDataObjRead(*ReadBuf)", &msParamArray, &rei2,
-                    NO_SAVE_REI );
+                            NO_SAVE_REI );
     free( rei2.doi );
     if ( status < 0 ) {
         if ( rei2.status < 0 ) {

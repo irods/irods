@@ -202,14 +202,15 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     const boost::regex expression( "(\\w+([.-]\\w+)*(@([.-]\\w+)*)?)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str(1).size() >= NAME_LEN || matches.str(1).size() < 3 || matches.str(6).size() >= NAME_LEN ) {
+        if ( !matched || matches.str( 1 ).size() >= NAME_LEN || matches.str( 1 ).size() < 3 || matches.str( 6 ).size() >= NAME_LEN ) {
             userName[0] = '\0';
             userZone[0] = '\0';
             return USER_INVALID_USERNAME_FORMAT;
         }
-        snprintf( userName, NAME_LEN, "%s", matches.str(1).c_str() );
-        snprintf( userZone, NAME_LEN, "%s", matches.str(6).c_str() );
-    } catch ( const boost::exception& e ) {
+        snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
+        snprintf( userZone, NAME_LEN, "%s", matches.str( 6 ).c_str() );
+    }
+    catch ( const boost::exception& e ) {
         return SYS_INTERNAL_ERR;
     }
     return 0;
@@ -511,9 +512,9 @@ getLine( FILE *fp, char *buf, int bufSize ) {
     }
 }
 
-int getZoneNameFromHint( 
-    const char* _hint, 
-    char*       _zone_name, 
+int getZoneNameFromHint(
+    const char* _hint,
+    char*       _zone_name,
     int         _len ) {
     if ( !_hint ) {
         _zone_name[0] = '\0';
@@ -523,12 +524,13 @@ int getZoneNameFromHint(
     const std::string sep = irods::get_virtual_path_separator();
 
     std::string hint( _hint );
-    if( sep[0] == hint[0] ) {
+    if ( sep[0] == hint[0] ) {
         std::string::size_type pos = hint.find( sep, 1 );
-        if( std::string::npos != pos ) {
+        if ( std::string::npos != pos ) {
             hint = hint.substr( pos, 1 );
 
-        } else {
+        }
+        else {
             hint = hint.substr( 1 );
 
         }

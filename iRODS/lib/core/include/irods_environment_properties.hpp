@@ -18,13 +18,13 @@ namespace irods {
     public:
         /// @brief path for legacy environemnt file
         static const std::string LEGACY_ENV_FILE;
-        
+
         /// @brief path for json environemnt file
         static const std::string JSON_ENV_FILE;
 
         /// @brief function which returns json env and session file
         static error get_json_environment_file( std::string&, std::string& );
-        
+
         /// @brief function which returns legacy env and session file
         static error get_legacy_environment_file( std::string&, std::string& );
 
@@ -50,7 +50,7 @@ namespace irods {
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
             error ret = config_props_.get< T >( _key, _val );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 ret = config_props_.get< T >( key_map_[ _key ], _val );
             }
             return PASS( ret );
@@ -59,7 +59,7 @@ namespace irods {
         template< typename T >
         error set_property( const std::string& _key, const T& _val ) {
             error ret = config_props_.set< T >( _key, _val );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 ret = config_props_.set< T >( key_map_[ _key ], _val );
             }
             return PASS( ret );

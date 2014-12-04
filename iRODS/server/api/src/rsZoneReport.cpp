@@ -25,7 +25,7 @@ int rsZoneReport(
     int status = getAndConnRcatHost(
                      _comm,
                      MASTER_RCAT,
-                     (const char*)NULL,
+                     ( const char* )NULL,
                      &rods_host );
     if ( status < 0 ) {
         return status;
@@ -201,10 +201,10 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set( 
-        zone, 
-        "schema_version", 
-        json_string( 
+    json_object_set(
+        zone,
+        "schema_version",
+        json_string(
             "http://schemas.irods.org/v1/zone_bundle.json" ) );
     json_object_set( zone, "zones", zone_arr );
 

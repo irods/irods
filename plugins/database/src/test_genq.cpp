@@ -1070,7 +1070,8 @@ main( int argc, char **argv ) {
                 int reps = boost::lexical_cast<int>( argv[2] );
                 reps = reps > 0 && reps <= std::numeric_limits<int>::max() ? reps : 0;
                 status = doLs3( reps );
-            } catch ( boost::bad_lexical_cast e ) {
+            }
+            catch ( boost::bad_lexical_cast e ) {
                 exit( 2 );
             }
             if ( status < 0 ) {

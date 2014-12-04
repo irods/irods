@@ -11,7 +11,7 @@
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
-    if( !rsComm || !outSvrInfo ) {
+    if ( !rsComm || !outSvrInfo ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -33,17 +33,17 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 

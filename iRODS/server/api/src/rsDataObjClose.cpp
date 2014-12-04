@@ -416,7 +416,7 @@ _rsDataObjClose(
     // archive plugins report UNKNOWN_FILE_SZ as their size since they may
     // not be able to stat the file.  filter that out and trust the plugin
     // in this instance
-    if( newSize == UNKNOWN_FILE_SZ && L1desc[l1descInx].dataSize > 0 ) {
+    if ( newSize == UNKNOWN_FILE_SZ && L1desc[l1descInx].dataSize > 0 ) {
         newSize = L1desc[l1descInx].dataSize;
     }
     /* check for consistency of the write operation */
@@ -436,9 +436,9 @@ _rsDataObjClose(
         }
     }
     // If an object with a checksum was written to, checksum needs updating
-    if ( ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType || 
-           CREATE_TYPE == L1desc[l1descInx].openType ) &&
-           strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
+    if ( ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType ||
+            CREATE_TYPE == L1desc[l1descInx].openType ) &&
+            strlen( L1desc[l1descInx].dataObjInfo->chksum ) > 0 ) {
 
         L1desc[l1descInx].chksumFlag = REG_CHKSUM;
         updateChksumFlag = 1;

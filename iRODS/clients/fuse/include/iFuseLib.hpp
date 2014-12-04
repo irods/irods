@@ -99,11 +99,11 @@ typedef struct PathCache {
 } pathCache_t;
 
 typedef struct {
-	Hashtable *NonExistPathTable;
-	Hashtable *PathArrayTable;
-	
+    Hashtable *NonExistPathTable;
+    Hashtable *PathArrayTable;
+
     pthread_mutex_t lock;
-	pthread_mutex_t *PathCacheLock;
+    pthread_mutex_t *PathCacheLock;
 } PathCacheTable;
 
 typedef struct PathCacheQue {

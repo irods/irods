@@ -491,7 +491,7 @@ int cmlGetStringValuesFromSql( const char *sql,
                                icatSessionStruct *icss ) {
 
     int i = cmlGetOneRowFromSqlBV( sql, cVal, cValSize, numberOfStringsToGet,
-                               bindVars, icss );
+                                   bindVars, icss );
     if ( i == numberOfStringsToGet ) {
         return 0;
     }
@@ -919,7 +919,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
         bindVars.push_back( dirName );
         bindVars.push_back( ticketStr );
         status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_TICKET_MAIN TM where CM.coll_name=? and TM.ticket_string=? and TM.ticket_type = 'write' and TM.object_id = CM.coll_id",
-                cVal, cValSize, 2, bindVars, icss );
+                                        cVal, cValSize, 2, bindVars, icss );
     }
     else {
         if ( logSQL_CML != 0 ) {
@@ -931,7 +931,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
         bindVars.push_back( userZone );
         bindVars.push_back( accessLevel );
         status = cmlGetOneRowFromSqlBV( "select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-                cVal, cValSize, 2, bindVars, icss );
+                                        cVal, cValSize, 2, bindVars, icss );
     }
     if ( status == 2 ) {
         if ( *cVal[0] == '\0' ) {

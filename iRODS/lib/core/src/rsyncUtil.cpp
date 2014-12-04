@@ -172,12 +172,12 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
-    
+
     rodsEnv env;
     int ret = getRodsEnv( &env );
-    if( ret < 0 ) {
-        rodsLogError( 
-            LOG_ERROR, 
+    if ( ret < 0 ) {
+        rodsLogError(
+            LOG_ERROR,
             ret,
             "rsyncDataToFileUtil: getRodsEnv failed" );
         return ret;
@@ -315,9 +315,9 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     rodsEnv env;
     int ret = getRodsEnv( &env );
-    if( ret < 0 ) {
-        rodsLogError( 
-            LOG_ERROR, 
+    if ( ret < 0 ) {
+        rodsLogError(
+            LOG_ERROR,
             ret,
             "rsyncDataToFileUtil: getRodsEnv failed" );
         return ret;

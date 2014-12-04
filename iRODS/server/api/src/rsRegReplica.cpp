@@ -21,10 +21,10 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
 
-    status = getAndConnRcatHost( 
-                 rsComm, 
-                 MASTER_RCAT, 
-                 (const char*)srcDataObjInfo->objPath,
+    status = getAndConnRcatHost(
+                 rsComm,
+                 MASTER_RCAT,
+                 ( const char* )srcDataObjInfo->objPath,
                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;

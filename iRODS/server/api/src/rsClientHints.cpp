@@ -64,7 +64,7 @@ irods::error get_hash_and_policy(
     rsComm_t* _comm,
     std::string& _hash,
     std::string& _policy ) {
-    if( !_comm ) {
+    if ( !_comm ) {
         return ERROR(
                    SYS_INVALID_INPUT_PARAM,
                    "comm is null" );
@@ -75,14 +75,14 @@ irods::error get_hash_and_policy(
     irods::error ret = props.get_property<std::string>(
                            DEFAULT_HASH_SCHEME_KW,
                            _hash );
-    if( _hash.empty() ) {
+    if ( _hash.empty() ) {
         _hash = "SHA256";
     }
 
     ret = props.get_property<std::string>(
-                           MATCH_HASH_POLICY_KW,
-                           _policy );
-    if( _policy.empty() ) {
+              MATCH_HASH_POLICY_KW,
+              _policy );
+    if ( _policy.empty() ) {
         _policy = "not_strict";
     }
 
@@ -116,7 +116,7 @@ int _rsClientHints(
     int status = rsIESClientHints(
                      _comm,
                      &ies_buf );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         rodsLog(
             LOG_ERROR,
             "_rsClientHints: rsIESClientHints failed %d",

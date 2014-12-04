@@ -29,10 +29,10 @@ rsObjStat(
                                  NULL );
 
     *rodsObjStatOut = NULL;
-    status = getAndConnRcatHost( 
-                 rsComm, 
-                 SLAVE_RCAT, 
-                 (const char*)dataObjInp->objPath,
+    status = getAndConnRcatHost(
+                 rsComm,
+                 SLAVE_RCAT,
+                 ( const char* )dataObjInp->objPath,
                  &rodsServerHost );
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;

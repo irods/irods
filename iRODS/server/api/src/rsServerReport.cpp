@@ -156,40 +156,40 @@ irods::error make_federation_set(
 
 irods::error sanitize_federation_keys(
     json_t* _svr_cfg ) {
-   if( !_svr_cfg ) {
-       return ERROR(
-                  SYS_INVALID_INPUT_PARAM,
-                  "null json object" );
+    if ( !_svr_cfg ) {
+        return ERROR(
+                   SYS_INVALID_INPUT_PARAM,
+                   "null json object" );
 
-   }
+    }
 
-   // sanitize the top level key         
-   json_object_set( 
-       _svr_cfg, 
-       "negotiation_key", 
-       json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+    // sanitize the top level key
+    json_object_set(
+        _svr_cfg,
+        "negotiation_key",
+        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-   // get the federation object
-   json_t* fed_obj = json_object_get(
-                         _svr_cfg,
-                         "federation" );
-   if( !fed_obj ) {
-       return SUCCESS();
+    // get the federation object
+    json_t* fed_obj = json_object_get(
+                          _svr_cfg,
+                          "federation" );
+    if ( !fed_obj ) {
+        return SUCCESS();
 
-   }
+    }
 
-   // sanitize all federation keys
-   size_t      idx = 0;
-   json_t*     obj = 0;
-   json_array_foreach( fed_obj, idx, obj ) {
-       json_object_set( 
-           obj, 
-           "negotiation_key", 
-           json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+    // sanitize all federation keys
+    size_t      idx = 0;
+    json_t*     obj = 0;
+    json_array_foreach( fed_obj, idx, obj ) {
+        json_object_set(
+            obj,
+            "negotiation_key",
+            json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-   }
+    }
 
-   return SUCCESS();
+    return SUCCESS();
 
 } // sanitize_federation_keys
 
@@ -201,13 +201,13 @@ irods::error convert_server_config(
     irods::error ret = irods::get_full_path_for_config_file(
                            "server_config.json",
                            svr_cfg );
-    if( ret.ok() && fs::exists( svr_cfg ) ) {
+    if ( ret.ok() && fs::exists( svr_cfg ) ) {
         json_error_t error;
 
         _svr_cfg = json_load_file(
-                       svr_cfg.c_str(), 
+                       svr_cfg.c_str(),
                        0, &error );
-        if( !_svr_cfg ) {
+        if ( !_svr_cfg ) {
             std::string msg( "failed to load file [" );
             msg += svr_cfg;
             msg += "] json error [";
@@ -218,7 +218,8 @@ irods::error convert_server_config(
                        msg );
 
 
-        } else {
+        }
+        else {
             return sanitize_federation_keys( _svr_cfg );
 
         }
@@ -378,18 +379,18 @@ irods::error convert_host_access_control(
     json_t*& _host_ctrl ) {
 
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( 
-        HOST_ACCESS_CONTROL_FILE, 
-        cfg_file );
+    irods::error ret = irods::get_full_path_for_config_file(
+                           HOST_ACCESS_CONTROL_FILE,
+                           cfg_file );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
     json_error_t error;
     _host_ctrl = json_load_file(
-                      cfg_file.c_str(),
-                      0, &error );
-    if( !_host_ctrl ) {
+                     cfg_file.c_str(),
+                     0, &error );
+    if ( !_host_ctrl ) {
         std::string msg( "failed to load file [" );
         msg += cfg_file;
         msg += "] json error [";
@@ -400,7 +401,7 @@ irods::error convert_host_access_control(
                    msg );
 
     }
-    
+
     return SUCCESS();
 
 } // convert_host_access_control
@@ -411,8 +412,8 @@ irods::error convert_irods_host(
     json_t*& _irods_host ) {
 
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( 
-                           HOST_CONFIG_FILE, 
+    irods::error ret = irods::get_full_path_for_config_file(
+                           HOST_CONFIG_FILE,
                            cfg_file );
     if ( !ret.ok() ) {
         return PASS( ret );
@@ -422,7 +423,7 @@ irods::error convert_irods_host(
     _irods_host = json_load_file(
                       cfg_file.c_str(),
                       0, &error );
-    if( !_irods_host ) {
+    if ( !_irods_host ) {
         std::string msg( "failed to load file [" );
         msg += cfg_file;
         msg += "] json error [";
@@ -445,13 +446,13 @@ irods::error convert_service_account(
     std::string env_file( irods::IRODS_HOME_DIRECTORY );
     env_file += irods::environment_properties::JSON_ENV_FILE;
 
-    if( fs::exists( env_file ) ) {
+    if ( fs::exists( env_file ) ) {
         json_error_t error;
 
         _svc_acct = json_load_file(
-                       env_file.c_str(), 
-                       0, &error );
-        if( !_svc_acct ) {
+                        env_file.c_str(),
+                        0, &error );
+        if ( !_svc_acct ) {
             std::string msg( "failed to load file [" );
             msg += env_file;
             msg += "] json error [";
@@ -462,7 +463,8 @@ irods::error convert_service_account(
                        msg );
 
 
-        } else {
+        }
+        else {
             return SUCCESS();
 
         }
@@ -537,7 +539,7 @@ irods::error convert_service_account(
 irods::error add_plugin_type_to_json_array(
     const std::string& dir_name,
     const char* plugin_type,
-    json_t*& json_array) {
+    json_t*& json_array ) {
 
     irods::plugin_name_generator name_gen;
     irods::plugin_name_generator::plugin_list_t plugin_list;
@@ -606,14 +608,14 @@ irods::error get_plugin_array(
 
 } // get_plugin_array
 
-irods::error get_uname_string( 
+irods::error get_uname_string(
     std::string& _str ) {
 
     struct utsname os_name;
     memset( &os_name, 0, sizeof( os_name ) );
     const int status = uname( &os_name );
-    if( status != 0 ) {
-        return ERROR( 
+    if ( status != 0 ) {
+        return ERROR(
                    status,
                    "uname failed" );
     }
@@ -621,44 +623,44 @@ irods::error get_uname_string(
     _str.clear();
     _str += "SYS_NAME=" ;
     _str += os_name.sysname;
-    _str += ";NODE_NAME="; 
+    _str += ";NODE_NAME=";
     _str += os_name.nodename;
-    _str += ";RELEASE="; 
+    _str += ";RELEASE=";
     _str += os_name.release;
-    _str += ";VERSION="; 
+    _str += ";VERSION=";
     _str += os_name.version;
-    _str += ";MACHINE="; 
+    _str += ";MACHINE=";
     _str += os_name.machine;
 
     return SUCCESS();
 
 } // get_uname_string
 
-irods::error get_script_output_single_line(const std::string& script_language, const std::string& script_name, const std::vector<std::string>& args, std::string& output) {
+irods::error get_script_output_single_line( const std::string& script_language, const std::string& script_name, const std::vector<std::string>& args, std::string& output ) {
     output.clear();
     std::stringstream exec;
     exec << script_language << " " << irods::IRODS_HOME_DIRECTORY << "/iRODS/scripts/" << script_language << "/" << script_name;
-    for (std::vector<std::string>::size_type i=0; i<args.size(); ++i) {
+    for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
         exec << " " << args[i];
     }
 
-    FILE *fp = popen(exec.str().c_str(), "r");
-    if (fp == NULL) {
+    FILE *fp = popen( exec.str().c_str(), "r" );
+    if ( fp == NULL ) {
         return ERROR( SYS_FORK_ERROR, "popen() failed" );
     }
 
-    std::vector<char> buf(1000);
-    const char* fgets_ret = fgets(&buf[0], buf.size(), fp);
-    if (fgets_ret == NULL) {
+    std::vector<char> buf( 1000 );
+    const char* fgets_ret = fgets( &buf[0], buf.size(), fp );
+    if ( fgets_ret == NULL ) {
         std::stringstream msg;
-        msg << "fgets() failed. feof[" << std::feof(fp) << "] ferror[" << std::ferror(fp) << "]";
-        const int pclose_ret = pclose(fp);
+        msg << "fgets() failed. feof[" << std::feof( fp ) << "] ferror[" << std::ferror( fp ) << "]";
+        const int pclose_ret = pclose( fp );
         msg << " pclose[" << pclose_ret << "]";
         return ERROR( FILE_READ_ERR, msg.str() );
     }
 
-    const int pclose_ret = pclose(fp);
-    if (pclose_ret == -1) {
+    const int pclose_ret = pclose( fp );
+    if ( pclose_ret == -1 ) {
         return ERROR( SYS_FORK_ERROR,
                       "pclose() failed." );
     }
@@ -666,8 +668,8 @@ irods::error get_script_output_single_line(const std::string& script_language, c
     output = &buf[0];
     // Remove trailing newline
     const std::string::size_type size = output.size();
-    if (size > 0 && output[size-1] == '\n') {
-        output.resize(size-1);
+    if ( size > 0 && output[size - 1] == '\n' ) {
+        output.resize( size - 1 );
     }
 
     return SUCCESS();
@@ -687,25 +689,25 @@ irods::error get_host_system_information(
 
     std::string uname_string;
     irods::error ret = get_uname_string( uname_string );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( _host_system_information, "uname", json_string( uname_string.c_str() ) );
 
     std::vector<std::string> args;
-    args.push_back("os_distribution_name");
+    args.push_back( "os_distribution_name" );
     std::string os_distribution_name;
-    ret = get_script_output_single_line("python", "system_identification.py", args, os_distribution_name);
-    if( !ret.ok() ) {
+    ret = get_script_output_single_line( "python", "system_identification.py", args, os_distribution_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
 
     args.clear();
-    args.push_back("os_distribution_version");
+    args.push_back( "os_distribution_version" );
     std::string os_distribution_version;
-    ret = get_script_output_single_line("python", "system_identification.py", args, os_distribution_version);
-    if( !ret.ok() ) {
+    ret = get_script_output_single_line( "python", "system_identification.py", args, os_distribution_version );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
@@ -932,8 +934,8 @@ irods::error get_config_dir(
             const std::string& name = p.string();
 
             if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
-                 std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
-                 std::string::npos != name.find( HOST_CONFIG_FILE )
+                    std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
+                    std::string::npos != name.find( HOST_CONFIG_FILE )
                ) {
                 continue;
             }
@@ -953,9 +955,9 @@ irods::error get_config_dir(
                 irods::log( PASS( ret ) );
                 continue;
             }
-            json_object_set( 
-                f_obj, 
-                "contents", 
+            json_object_set(
+                f_obj,
+                "contents",
                 json_string( contents.c_str() ) );
 
             json_array_append( file_arr, f_obj );
@@ -976,13 +978,13 @@ irods::error load_version_file(
     std::string version_file( irods::IRODS_HOME_DIRECTORY );
     version_file += "VERSION.json";
 
-    if( fs::exists( version_file ) ) {
+    if ( fs::exists( version_file ) ) {
         json_error_t error;
 
         _version = json_load_file(
-                       version_file.c_str(), 
+                       version_file.c_str(),
                        0, &error );
-        if( !_version ) {
+        if ( !_version ) {
             std::string msg( "failed to load file [" );
             msg += version_file;
             msg += "] json error [";
@@ -993,12 +995,13 @@ irods::error load_version_file(
                        msg );
 
 
-        } else {
+        }
+        else {
             return SUCCESS();
 
         }
     }
-            
+
     return SUCCESS();
 
 } // load_version_file
@@ -1013,13 +1016,13 @@ irods::error get_database_config(
     irods::error ret = irods::get_full_path_for_config_file(
                            "database_config.json",
                            db_cfg );
-    if( ret.ok() && fs::exists( db_cfg ) ) {
+    if ( ret.ok() && fs::exists( db_cfg ) ) {
         json_error_t error;
 
         _db_cfg = json_load_file(
-                       db_cfg.c_str(), 
-                       0, &error );
-        if( !_db_cfg ) {
+                      db_cfg.c_str(),
+                      0, &error );
+        if ( !_db_cfg ) {
             std::string msg( "failed to load file [" );
             msg += db_cfg;
             msg += "] json error [";
@@ -1030,7 +1033,8 @@ irods::error get_database_config(
                        msg );
 
 
-        } else {
+        }
+        else {
             // sanitize passwords
             json_object_set( _db_cfg, "db_password", json_string( "XXXXX" ) );
             return SUCCESS();
@@ -1093,7 +1097,7 @@ int _rsServerReport(
     }
 
     json_t* resc_svr = json_object();
-    if( !resc_svr ) {
+    if ( !resc_svr ) {
         rodsLog(
             LOG_ERROR,
             "_rsServerReport: failed to allocate resc_svr" );

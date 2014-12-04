@@ -109,7 +109,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         zone_hint_str = zoneHint;
     }
 
-    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, (const char*)zoneHint,
+    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, ( const char* )zoneHint,
                                  &rodsServerHost );
 
     if ( status < 0 ) {
@@ -295,7 +295,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     if ( PrePostProcForGenQueryFlag == 1 ) {
         std::string in_string = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
         std::string out_string = str( boost::format( "%ld" ) % ( ( long )genQueryOut ) );
-        std::string status_string = str( boost::format( "%d" ) % ( ( long )status) );
+        std::string status_string = str( boost::format( "%d" ) % ( ( long )status ) );
         args[0] = in_string.c_str();
         args[1] = out_string.c_str();
         args[2] = status_string.c_str();

@@ -200,7 +200,7 @@ static SSL_CTX* ssl_init_context(
 
     rodsEnv env;
     int status = getRodsEnv( &env );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         rodsLog(
             LOG_ERROR,
             "ssl_init_context - failed in getRodsEnv : %d",
@@ -315,7 +315,7 @@ static int ssl_post_connection_check(
 
     rodsEnv env;
     int status = getRodsEnv( &env );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         rodsLog(
             LOG_ERROR,
             "ssl_init_context - failed in getRodsEnv : %d",
@@ -817,7 +817,7 @@ extern "C" {
         irods::error result = SUCCESS();
         rodsEnv env;
         int status = getRodsEnv( &env );
-        if( status < 0 ) {
+        if ( status < 0 ) {
             rodsLog(
                 LOG_ERROR,
                 "ssl_init_context - failed in getRodsEnv : %d",

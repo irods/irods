@@ -528,7 +528,7 @@ _cllExecSqlNoResult(
     }
 
     if ( option == 0 && bindTheVariables( myHstmt, sql ) != 0 ) {
-            return -1;
+        return -1;
     }
 
     rodsLogSql( sql );
@@ -537,22 +537,22 @@ _cllExecSqlNoResult(
     SQL_INT_OR_LEN rowCount = 0;
     SQLRowCount( myHstmt, ( SQL_INT_OR_LEN * )&rowCount );
     switch ( stat ) {
-        case SQL_SUCCESS:
+    case SQL_SUCCESS:
         rodsLogSqlResult( "SUCCESS" );
         break;
-        case SQL_SUCCESS_WITH_INFO:
+    case SQL_SUCCESS_WITH_INFO:
         rodsLogSqlResult( "SUCCESS_WITH_INFO" );
         break;
-        case SQL_NO_DATA_FOUND:
+    case SQL_NO_DATA_FOUND:
         rodsLogSqlResult( "NO_DATA" );
         break;
-        case SQL_ERROR:
+    case SQL_ERROR:
         rodsLogSqlResult( "SQL_ERROR" );
         break;
-        case SQL_INVALID_HANDLE:
+    case SQL_INVALID_HANDLE:
         rodsLogSqlResult( "HANDLE_ERROR" );
         break;
-        default:
+    default:
         rodsLogSqlResult( "UNKNOWN" );
     }
 
@@ -654,22 +654,22 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
 
     switch ( stat ) {
-        case SQL_SUCCESS:
+    case SQL_SUCCESS:
         rodsLogSqlResult( "SUCCESS" );
         break;
-        case SQL_SUCCESS_WITH_INFO:
+    case SQL_SUCCESS_WITH_INFO:
         rodsLogSqlResult( "SUCCESS_WITH_INFO" );
         break;
-        case SQL_NO_DATA_FOUND:
+    case SQL_NO_DATA_FOUND:
         rodsLogSqlResult( "NO_DATA" );
         break;
-        case SQL_ERROR:
+    case SQL_ERROR:
         rodsLogSqlResult( "SQL_ERROR" );
         break;
-        case SQL_INVALID_HANDLE:
+    case SQL_INVALID_HANDLE:
         rodsLogSqlResult( "HANDLE_ERROR" );
         break;
-        default:
+    default:
         rodsLogSqlResult( "UNKNOWN" );
     }
 
@@ -806,7 +806,7 @@ cllExecSqlWithResultBV(
     myStatement->stmtPtr = hstmt;
 
     bool prepared = false;
-    for( int i = 0; i < bindVars.size(); i++ ) {
+    for ( int i = 0; i < bindVars.size(); i++ ) {
         if ( !bindVars[i].empty() ) {
             //first time binding parameters?
             if ( !prepared ) {
@@ -814,21 +814,21 @@ cllExecSqlWithResultBV(
                 stat = SQLPrepare( hstmt, ( unsigned char * )sql, strlen( sql ) );
                 if ( stat != SQL_SUCCESS ) {
                     rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
-                            stat );
+                             stat );
                     return -1;
                 }
                 prepared = true;
             }
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, &bindVars[i][0], 0, 0 );
+                                     SQL_C_CHAR, 0, 0, &bindVars[i][0], 0, 0 );
             char tmpStr[TMP_STR_LEN + 2];
             snprintf( tmpStr, TMP_STR_LEN,
-                    "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+                      "bindVar%d=%s", i + 1, bindVars[i].c_str() );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
                 rodsLog( LOG_ERROR,
-                        "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
+                         "cllExecSqlWithResultBV: SQLBindParameter failed: %d", stat );
                 return -1;
             }
         }
@@ -843,22 +843,22 @@ cllExecSqlWithResultBV(
     }
 
     switch ( stat ) {
-        case SQL_SUCCESS:
+    case SQL_SUCCESS:
         rodsLogSqlResult( "SUCCESS" );
         break;
-        case SQL_SUCCESS_WITH_INFO:
+    case SQL_SUCCESS_WITH_INFO:
         rodsLogSqlResult( "SUCCESS_WITH_INFO" );
         break;
-        case SQL_NO_DATA_FOUND:
+    case SQL_NO_DATA_FOUND:
         rodsLogSqlResult( "NO_DATA" );
         break;
-        case SQL_ERROR:
+    case SQL_ERROR:
         rodsLogSqlResult( "SQL_ERROR" );
         break;
-        case SQL_INVALID_HANDLE:
+    case SQL_INVALID_HANDLE:
         rodsLogSqlResult( "HANDLE_ERROR" );
         break;
-        default:
+    default:
         rodsLogSqlResult( "UNKNOWN" );
     }
 
@@ -1131,8 +1131,8 @@ extern "C" int cllTest( const char *userArg, const char *pwArg ) {
     bindVars.clear();
     bindVars.push_back( "2" );
     status = cllExecSqlWithResultBV( &icss, &stmt,
-                                "select * from test where i = ?",
-                                bindVars );
+                                     "select * from test where i = ?",
+                                     bindVars );
     OK &= !status;
     if ( status == 0 ) {
         int numOfCols = 1;

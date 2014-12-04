@@ -244,17 +244,17 @@ reSvrSleep( rsComm_t *rsComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     std::string zone_name;
-    ret = props.get_property<
-              std::string >(
-                  irods::CFG_ZONE_NAME,
-                  zone_name );
-    if( !ret.ok() ) {
+    ret = props.get_property <
+          std::string > (
+              irods::CFG_ZONE_NAME,
+              zone_name );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
 

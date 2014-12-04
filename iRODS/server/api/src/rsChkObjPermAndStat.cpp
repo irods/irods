@@ -18,10 +18,10 @@ rsChkObjPermAndStat( rsComm_t *rsComm,
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    status = getAndConnRcatHost( 
-                 rsComm, 
+    status = getAndConnRcatHost(
+                 rsComm,
                  SLAVE_RCAT,
-                 (const char*)chkObjPermAndStatInp->objPath, 
+                 ( const char* )chkObjPermAndStatInp->objPath,
                  &rodsServerHost );
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
         return status;

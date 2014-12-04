@@ -134,7 +134,7 @@ int fileChksum(
         hash_scheme.begin(),
         hash_scheme.end(),
         hash_scheme.begin(),
-        ::tolower);
+        ::tolower );
 
     std::string svr_hash_policy;
     ret = props.get_property< std::string >(

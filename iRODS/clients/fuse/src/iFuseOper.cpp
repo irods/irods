@@ -58,12 +58,13 @@ irodsGetattr( const char *path, struct stat *stbuf ) {
     status = _irodsGetattr( iFuseConn, path, stbuf );
     unuseIFuseConn( iFuseConn );
 #ifdef CACHE_FUSE_PATH
-	if (status == -ENOENT ) {
-        pathNotExist( pctable, ( char * ) path );		
-	} else {		
-		/* don't set file cache */
-		pathExist( pctable, ( char * ) path, NULL, stbuf, &tmpPathCache );
-	}
+    if ( status == -ENOENT ) {
+        pathNotExist( pctable, ( char * ) path );
+    }
+    else {
+        /* don't set file cache */
+        pathExist( pctable, ( char * ) path, NULL, stbuf, &tmpPathCache );
+    }
 #endif
 
     return status;
@@ -108,7 +109,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                      atoi( rodsObjStatOut->modifyTime ) );
     }
     else if ( rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
-        
+
         if ( rodsObjStatOut != NULL ) {
             freeRodsObjStat( rodsObjStatOut );
         }
@@ -467,7 +468,7 @@ irodsRmdir( const char *path ) {
     RECONNECT_IF_NECESSARY( status, iFuseConn, rcRmColl( iFuseConn->conn, &collInp, 0 ) );
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
-        pathNotExist( pctable,( char * ) path );
+        pathNotExist( pctable, ( char * ) path );
 #endif
         status = 0;
     }

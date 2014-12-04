@@ -62,7 +62,7 @@ typedef struct {
     char vaultPath[LONG_NAME_LEN];
 } monInfo_t;
 
-int checkHostAccessControl( 
+int checkHostAccessControl(
     const std::string&,   // user name
     const std::string&,   // client host
     const std::string& ); // group name

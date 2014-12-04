@@ -81,7 +81,7 @@ extern "C" {
         int status = getAndConnRcatHost(
                          _comm,
                          MASTER_RCAT,
-                         (const char*)NULL,
+                         ( const char* )NULL,
                          &server_host );
         if ( status < 0 ) {
             rodsLog(

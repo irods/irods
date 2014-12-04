@@ -464,8 +464,8 @@ extern "C" {
                             rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
                             data_obj_inp.createMode = obj->mode();
 
-                            char* no_chk = getValByKey( (keyValPair_t*)&obj->cond_input(), NO_CHK_COPY_LEN_KW );
-                            if( no_chk ) {
+                            char* no_chk = getValByKey( ( keyValPair_t* )&obj->cond_input(), NO_CHK_COPY_LEN_KW );
+                            if ( no_chk ) {
                                 addKeyVal( &data_obj_inp.condInput, NO_CHK_COPY_LEN_KW, no_chk );
                             }
 
@@ -1190,11 +1190,11 @@ extern "C" {
         arch_check_parser.str( arch_hier );
 
         f_ptr->resc_hier( arch_hier );
-        irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast< 
-                                           irods::data_object >( f_ptr );  
-        add_key_val( 
-            d_ptr, 
-            NO_CHK_COPY_LEN_KW, 
+        irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast <
+                                       irods::data_object > ( f_ptr );
+        add_key_val(
+            d_ptr,
+            NO_CHK_COPY_LEN_KW,
             "prefer_archive_policy" );
 
         // =-=-=-=-=-=-=-
@@ -1208,7 +1208,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // restore repl requested
         f_ptr->repl_requested( repl_requested );
-        remove_key_val( 
+        remove_key_val(
             d_ptr,
             NO_CHK_COPY_LEN_KW );
 
