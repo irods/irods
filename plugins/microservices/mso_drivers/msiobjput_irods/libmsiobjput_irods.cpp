@@ -18,7 +18,7 @@ extern "C" {
         rErrMsg_t errMsg;
 
         /*inStr of form: //irods:host[:port][:user[@zone][:pass]]/remotePath
-          if port is not give default port 1247  is used
+          if port is not given default port 1247 is used
           if user@zone is not given ANONYMOUS_USER is used
           if pass is not given ANONYMOUS_USER is used
         */
