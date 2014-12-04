@@ -914,7 +914,7 @@ extern "C" {
                         free( dataObjOutBBuf.buf );
                         if ( bytes_written != dataObjOutBBuf.len ) {
                             rodsLog( LOG_NOTICE,
-                                    "extractMssoFile:  copy len error for  file in stage area %s for writing:%d, status=%d\n", mvstr,
+                                    "extractMssoFile:  copy len error for file in stage area %s for writing:%d, status=%d\n", mvstr,
                                     dataObjOutBBuf.len, bytes_written );
                             return SYS_COPY_LEN_ERR;
                         }
