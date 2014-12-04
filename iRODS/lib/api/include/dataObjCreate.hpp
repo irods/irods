@@ -15,6 +15,7 @@
 #include "initServer.hpp"
 #include "dataObjInpOut.hpp"
 #include "fileCreate.hpp"
+#include <string>
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_CREATE rsDataObjCreate
@@ -39,7 +40,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo );
 int
 getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                     rescGrpInfo_t **myRescGrpInfo );
+                     std::string& _resc_name, rescGrpInfo_t **myRescGrpInfo );
 #else
 #define RS_DATA_OBJ_CREATE NULL
 #endif

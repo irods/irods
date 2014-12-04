@@ -223,9 +223,10 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
     rescGrpInfo_t* myRescGrpInfo  = 0;
     int l1descInx;
+    std::string resc_name;
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
         return status;
@@ -534,7 +535,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * or an error code.
  */
 
-int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo_t** myRescGrpInfo ) {
+int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name, rescGrpInfo_t** myRescGrpInfo ) {
     int            status;
     ruleExecInfo_t rei;
 
@@ -561,27 +562,63 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         return status;
     }
 
-    if ( rei.rgi == NULL ) {
-        /* def resc group has not been initialized yet */
-        // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
-        //if( !(*myRescGrpInfo) ) {
-        ( *myRescGrpInfo ) = new rescGrpInfo_t;
-        bzero( ( *myRescGrpInfo ), sizeof( rescGrpInfo_t ) );
-        ( *myRescGrpInfo )->rescInfo = new rescInfo_t;
-        //}
 
-        irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *( *myRescGrpInfo ) );
+    // adt #1472
+
+    // get resource name
+    if (!strlen(rei.rescName)) {
+    	irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, _resc_name );
+
         if ( !set_err.ok() ) {
-            delete( *myRescGrpInfo )->rescInfo;
-            delete( *myRescGrpInfo );
             irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
         }
-
     }
     else {
-        *myRescGrpInfo = rei.rgi;
+    	_resc_name = rei.rescName;
     }
+
+    // also converts to rescGrpInfo_t (for now)
+    *myRescGrpInfo = new rescGrpInfo_t;
+    bzero(*myRescGrpInfo, sizeof(rescGrpInfo_t));
+    (*myRescGrpInfo)->rescInfo = new rescInfo_t;
+
+    irods::error grp_err = irods::get_resc_grp_info( _resc_name, **myRescGrpInfo );
+    if ( !grp_err.ok() ) {
+        delete( *myRescGrpInfo )->rescInfo;
+        delete( *myRescGrpInfo );
+        irods::log( PASS( grp_err ) );
+        return SYS_INVALID_RESC_INPUT;
+    }
+
+
+//    if ( rei.rgi == NULL ) {
+//        /* def resc group has not been initialized yet */
+//        // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
+//        //if( !(*myRescGrpInfo) ) {
+//        ( *myRescGrpInfo ) = new rescGrpInfo_t;
+//        bzero( ( *myRescGrpInfo ), sizeof( rescGrpInfo_t ) );
+//        ( *myRescGrpInfo )->rescInfo = new rescInfo_t;
+//        //}
+//
+//        irods::error set_err ; //= irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *( *myRescGrpInfo ) ); // #1472
+//        if ( !set_err.ok() ) {
+//            delete( *myRescGrpInfo )->rescInfo;
+//            delete( *myRescGrpInfo );
+//            irods::log( PASS( set_err ) );
+//            return SYS_INVALID_RESC_INPUT;
+//        }
+//
+//    }
+//    else {
+//        *myRescGrpInfo = rei.rgi;
+//    }
+
+
+    // adt #1472
+
+
+
 
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
 

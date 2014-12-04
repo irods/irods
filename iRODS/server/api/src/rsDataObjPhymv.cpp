@@ -38,6 +38,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int remoteFlag = 0;
     rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
+    std::string resc_name;
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
@@ -98,7 +99,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 ) {
         delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;

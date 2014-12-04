@@ -205,6 +205,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     rescInfo_t *rescInfo;
     char phyBunDir[MAX_NAME_LEN];
     rescGrpInfo_t *myRescGrpInfo;
+    std::string resc_name;
     dataObjInp_t dataObjInp;
     rodsObjStat_t *myRodsObjStat = NULL;
 
@@ -244,7 +245,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         }
     }
     else {
-        status = getRescGrpForCreate( rsComm, &dataObjInp, &myRescGrpInfo );
+        status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name, &myRescGrpInfo );
         if ( status < 0 || myRescGrpInfo == NULL ) { // JMC cppcheck
             freeRodsObjStat( myRodsObjStat );
             return status;

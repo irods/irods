@@ -196,6 +196,7 @@ _rsDataObjRepl(
     dataObjInfo_t *oldDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfo = NULL;
     rescGrpInfo_t *myRescGrpInfo = NULL;
+    std::string resc_name;
     ruleExecInfo_t rei;
     int multiCopyFlag;
     char *accessPerm;
@@ -308,7 +309,7 @@ _rsDataObjRepl(
 
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
-    status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__ );
         return status;

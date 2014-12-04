@@ -259,6 +259,38 @@ namespace irods {
 
     } // resource_to_resc_grp_info
 
+
+/// @brief Given a resource name, checks that the resource exists and is not flagged as down
+    error is_resc_live(const std::string& _resc_name) {
+
+    	// Try to get resource status
+        int status = 0;
+        error resc_err = get_resource_property< int >( _resc_name, RESOURCE_STATUS, status );
+
+        if (resc_err.ok()) {
+            if ( status == INT_RESC_STATUS_DOWN ) {
+                std::stringstream msg;
+                msg << "Resource [";
+                msg << _resc_name;
+                msg << "] is down";
+
+            	return ERROR( SYS_RESC_IS_DOWN, msg.str() );
+            }
+        }
+        else {
+            std::stringstream msg;
+            msg << "Failed to get status for resource [";
+            msg << _resc_name;
+            msg << "]";
+
+            return PASSMSG( msg.str(), resc_err );
+        }
+
+        return resc_err;
+
+    } // is_resc_available
+
+
 // =-=-=-=-=-=-=-
 // given a list of resource names from a rule, make some decisions
 // about which resource should be set to default and used.  store
@@ -267,7 +299,7 @@ namespace irods {
 //      :: with the composite resource spin
     error set_default_resource( rsComm_t*      _comm,   std::string   _resc_list,
                                 std::string    _option, keyValPair_t* _cond_input,
-                                rescGrpInfo_t& _resc_grp ) {
+                                std::string& _resc_name ) {
         // =-=-=-=-=-=-=
         // quick error check
         if ( _resc_list.empty() && NULL == _cond_input ) {
@@ -308,32 +340,23 @@ namespace irods {
         string_tokenize( _resc_list, "%", resources );
 
         // =-=-=-=-=-=-=-
-        // pick a good resource which is availabe out of the list,
+        // pick a good resource which is available out of the list,
         // NOTE :: the legacy code picks a random one first then scans
         //      :: for a valid one if the random resource is down.  i just
-        //      :: scan for one.  i dont think this would break anything...
+        //      :: scan for one.  i don't think this would break anything...
         std::string default_resc_name;
 
         std::vector< std::string >::iterator itr = resources.begin();
         for ( ; itr != resources.end(); ++itr ) {
-            // =-=-=-=-=-=-=-
-            // convert the resource into a legacy group info
-            error grp_err = get_resc_grp_info( *itr, _resc_grp );
-            if ( grp_err.ok() ) {
-                default_resc_name = *itr;
-                // =-=-=-=-=-=-=-
-                // we found a live one
-                break;
 
-            }
-            else {
-                std::stringstream msg;
-                msg << "failed to get group info for [";
-                msg << *itr;
-                msg << "]";
-                irods::log( PASSMSG( msg.str(), grp_err ) );
-
-            }
+        	error resc_err = is_resc_live(*itr);
+        	if (resc_err.ok()) {
+            	// live resource found
+            	default_resc_name = *itr;
+        	}
+        	else {
+        		irods::log(resc_err);
+        	}
 
         } // for itr
 
@@ -343,42 +366,38 @@ namespace irods {
         if ( "preferred" == _option && !cond_input_resc.empty() ) {
             // =-=-=-=-=-=-=-
             // determine if the resource is live
-            error grp_err = get_resc_grp_info( cond_input_resc, _resc_grp );
-            if ( grp_err.ok() ) {
-                if ( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
-                    // =-=-=-=-=-=-=-
-                    // we found a live one, were good to go
-                    return SUCCESS();
-                }
-
-            } // if grp_err
+        	error resc_err = is_resc_live(cond_input_resc);
+        	if (resc_err.ok()) {
+                // =-=-=-=-=-=-=-
+                // we found a live one, we're good to go
+        		_resc_name = cond_input_resc;
+        		return SUCCESS();
+        	}
 
         }
         else if ( "forced" == _option && _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             // stick with the default found above, its forced.
+        	_resc_name = default_resc_name;
             return SUCCESS();
 
         }
         else {
             // =-=-=-=-=-=-=-
             // try the conditional input string, if not go back to the default resource
-            error grp_err = get_resc_grp_info( cond_input_resc, _resc_grp );
-            if ( grp_err.ok() ) {
-                if ( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
-                    // =-=-=-=-=-=-=-
-                    // we found a live one, go!
-                    return SUCCESS();
-                }
-                else {
-
-                }
+        	error resc_err = is_resc_live(cond_input_resc);
+            if ( resc_err.ok() ) {
+				// =-=-=-=-=-=-=-
+				// we found a live one, go!
+            	_resc_name = cond_input_resc;
+				return SUCCESS();
 
             }
             else {
                 // =-=-=-=-=-=-=-
                 // otherwise go back to the old, default we had before
-                error grp_err = get_resc_grp_info( default_resc_name, _resc_grp );
-                if ( grp_err.ok() ) {
+            	error resc_err = is_resc_live(default_resc_name);
+                if ( resc_err.ok() ) {
+                	_resc_name = default_resc_name;
                     return SUCCESS();
 
                 }
@@ -389,7 +408,7 @@ namespace irods {
                     msg << "] and option [";
                     msg << _option;
                     msg << "]";
-                    return PASSMSG( msg.str(), grp_err );
+                    return PASSMSG( msg.str(), resc_err );
                 }
 
             } // else

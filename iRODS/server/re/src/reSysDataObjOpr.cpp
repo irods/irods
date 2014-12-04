@@ -66,7 +66,7 @@ int
 msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei ) {
     char *defaultRescList;
     char *optionStr;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
+    std::string default_resc;
 
     defaultRescList = ( char * ) xdefaultRescList->inOutStruct;
 
@@ -75,19 +75,16 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
     RE_TEST_MACRO( "    Calling msiSetDefaultResc" )
 
     // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, &myRescGrpInfo );
-    myRescGrpInfo = new rescGrpInfo_t;
-    myRescGrpInfo->rescInfo = new rescInfo_t;
-    irods::error err = irods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, *myRescGrpInfo );
+
+    irods::error err = irods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, default_resc );
     rei->status = err.code();
 
     if ( rei->status >= 0 ) {
-        rei->rgi = myRescGrpInfo;
+    	strncpy(rei->rescName, default_resc.c_str(), NAME_LEN);
     }
     else {
         irods::log( PASS( err ) );
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
-        rei->rgi = NULL;
+        memset(&rei->rescName, 0, NAME_LEN);
     }
     return rei->status;
 }

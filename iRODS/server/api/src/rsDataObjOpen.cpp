@@ -437,7 +437,6 @@ int
 createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  dataObjInfo_t **dataObjInfoHead ) {
     int status;
-    char *rescName;
     rescInfo_t *rescInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
     regReplica_t regReplicaInp;
@@ -445,13 +444,15 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     keyValPair_t *condInput = &dataObjInp->condInput;
     dataObjInfo_t *myDataObjInfo;
 
-    if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) == NULL &&
-            ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
-            ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) == NULL ) {
+    std::string resc_name;
+
+    if ( getValByKey( condInput, DEST_RESC_NAME_KW ) == NULL &&
+            getValByKey( condInput, BACKUP_RESC_NAME_KW ) == NULL &&
+            getValByKey( condInput, DEF_RESC_NAME_KW ) == NULL ) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
-    status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 || myRescGrpInfo == NULL ) {
         return status;    // JMC cppcheck
     }

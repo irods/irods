@@ -255,7 +255,7 @@ namespace irods {
             // this is a 'create' operation and no resource is specified,
             // query the server for the default or other resource to use
             rescGrpInfo_t* grp_info = 0;
-            int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info );
+            int status = getRescGrpForCreate( _comm, _data_obj_inp, resc_name, &grp_info );
             if ( status < 0 || !grp_info || !grp_info->rescInfo ) {
                 // =-=-=-=-=-=-=-
                 // clean up memory

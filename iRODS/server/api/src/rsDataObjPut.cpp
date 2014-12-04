@@ -270,6 +270,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     rescInfo_t *tmpRescInfo = NULL;
     int status;
     openedDataObjInp_t dataObjCloseInp;
+    std::string resc_name;
 
     /* don't actually physically open the file */
     addKeyVal( &dataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
@@ -329,7 +330,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
 
     /* get here when Put failed. and rescGroupName is a valid resc group.
      * Try other resc in the resc group */
-    status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 ) {
         return bytesWritten;
     }
@@ -463,7 +464,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 
     std::string prev_resc_hier;
     memset( &filePutInp, 0, sizeof( filePutInp ) );
-    rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+//    rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );	//#1472
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( filePutInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
     if ( ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) != 0 ) {
