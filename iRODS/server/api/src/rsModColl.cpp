@@ -67,7 +67,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
                                  COLLECTION_INFO2_KW ) ) != NULL ) {
         rstrcpy( collInfo.collInfo2, tmpStr, MAX_NAME_LEN );
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
     rei2.coi = &collInfo;
     i =  applyRule( "acPreProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
     if ( i < 0 ) {
@@ -79,11 +79,11 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
                  modCollInp->collName, i );
         return i;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     status = chlModColl( rsComm, &collInfo );
 
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
     if ( status >= 0 ) {
         i =  applyRule( "acPostProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
         if ( i < 0 ) {
@@ -96,7 +96,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
             return i;
         }
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     /* XXXX need to commit */
     if ( status >= 0 ) {

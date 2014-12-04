@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* initServer.c - Server initialization routines
+/* initServer.cpp - Server initialization routines
  */
 
 #include "initServer.hpp"
@@ -1543,7 +1543,6 @@ cleanup() {
     disconnectRcat();
 #endif
 
-    /* added by RAJA April 12, 2011 */
     finalizeRuleEngine();
 
     if ( InitialState == INITIAL_DONE ) {
@@ -1956,8 +1955,7 @@ logFileOpen( int runMode, char *logDir, char *logFileName ) {
 int
 initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     char *tmpStr;
-    static char tmpStr2[LONG_NAME_LEN]; /** RAJA added to take care of memory
-                                         * leak Nov 15 2010 found by J-Y **/
+    static char tmpStr2[LONG_NAME_LEN];
     /* always use NATIVE_PROT as a client. e.g., server to server comm */
     snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
@@ -2101,11 +2099,10 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
 
     }
     if ( rsComm->sock != 0 ) {
-        /* added by RAJA Nov 16 2010 to remove error
-                                  * messages from xmsLog */
+        /* remove error messages from xmsLog */
         setLocalAddr( rsComm->sock, &rsComm->localAddr );
         setRemoteAddr( rsComm->sock, &rsComm->remoteAddr );
-    } /* added by RAJA Nov 16 2010 to remove error messages from xmsLog */
+    }
 
     tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
     if ( tmpStr == NULL || *tmpStr == '\0' ) {

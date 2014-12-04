@@ -77,7 +77,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
      * but less efficient
      */
 
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
     rei2.doi = dataObjInfo;
     i =  applyRule( "acPreProcForModifyDataObjMeta", NULL, &rei2, NO_SAVE_REI );
     if ( i < 0 ) {
@@ -88,7 +88,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
         return i;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     if ( getValByKey( regParam, ALL_KW ) != NULL ) {
         /* all copies */
@@ -134,7 +134,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         }
     }
 
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
     if ( status >= 0 ) {
         i =  applyRule( "acPostProcForModifyDataObjMeta", NULL, &rei2, NO_SAVE_REI );
         if ( i < 0 ) {
@@ -150,7 +150,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         rodsLog( LOG_NOTICE, "%s - Failed updating the database with object info.", __FUNCTION__ );
         return status;
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     return status;
 #else

@@ -148,8 +148,6 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                      portalOprOut );
         if ( status >= 0 ) {
             int status2;
-            /** since the object is read here, we apply post procesing RAJA
-             * Dec 2 2010 **/
             status2 = applyRuleForPostProcForRead( rsComm, dataObjOutBBuf,
                                                    dataObjInp->objPath );
             if ( status2 >= 0 ) {
@@ -158,8 +156,6 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             else {
                 status = status2;
             }
-            /** since the object is read here, we apply post procesing
-             * RAJA Dec 2 2010 **/
             if ( chksumStr != NULL ) {
                 rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
                 free( chksumStr );

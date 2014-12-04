@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */
-/* See dataObjPut.h for a description of this API call.*/
+/* See dataObjPut.hpp for a description of this API call.*/
 
 #include "dataObjPut.hpp"
 #include "rodsLog.hpp"
@@ -72,15 +72,11 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         } // if keyword
 
-        /** since the object is written here, we apply pre procesing RAJA
-         * Dec 2 2010 **/
         status2 = applyRuleForPostProcForWrite( rsComm, dataObjInpBBuf,
                                                 dataObjInp->objPath );
         if ( status2 < 0 ) {
-            return( status2 );    /* need to dealloc anything??? */
+            return( status2 );
         }
-        /** since the object is written here, we apply pre procesing RAJA
-         * Dec 2 2010 **/
 
         dataObjInp->openFlags = O_RDWR;
         status = _rsDataObjPut( rsComm, dataObjInp, dataObjInpBBuf,
@@ -150,8 +146,6 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
         if ( status >= 0 ) {
             int status2;
-            /** since the object is written here, we apply pre procesing RAJA
-             * Dec 2 2010 **/
             status2 = applyRuleForPostProcForWrite( rsComm, dataObjInpBBuf,
                                                     dataObjInp->objPath );
             if ( status2 >= 0 ) {
@@ -160,8 +154,6 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             else {
                 status = status2;
             }
-            /** since the object is written here, we apply pre procesing RAJA
-             * Dec 2 2010 **/
         }
         return status;
     }

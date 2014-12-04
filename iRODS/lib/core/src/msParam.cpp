@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* msParam.c - function for handling msParam_t.
+/* msParam.cpp - function for handling msParam_t.
  */
 
 #include "msParam.hpp"
@@ -64,13 +64,13 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
             continue;
         }
         if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
-            /*** RAJA ADDED Jan 28 2010 to make it not given an error ***/
+            /***  Jan 28 2010 to make it not given an error ***/
             if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) &&
                     !strcmp( type, STR_MS_T ) &&
                     !strcmp( ( char * ) inOutStruct, ( char * ) msParamArray->msParam[i]->inOutStruct ) ) {
                 return 0;
             }
-            /*** RAJA ADDED Jan 28 2010 to make it not given an error ***/
+            /***  Jan 28 2010 to make it not given an error ***/
             rodsLog( LOG_ERROR,
                      "addMsParam: Two params have the same label %s", label );
             if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) )
@@ -231,7 +231,6 @@ fillMsParam( msParam_t *msParam, char *label,
     if ( type != NULL ) {
         msParam->type = strdup( type );
     }
-    /*** RAJA Changed JUn 27, 2007 from msParam->inOutStruct != NULL to inOutStruct != NULL ***/
     if ( inOutStruct != NULL && msParam->type != NULL &&
             strcmp( msParam->type, STR_MS_T ) == 0 ) {
         msParam->inOutStruct = ( void * ) strdup( ( char * )inOutStruct );

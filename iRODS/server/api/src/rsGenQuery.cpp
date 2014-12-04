@@ -276,7 +276,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             }
         }
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     status = chlGenQuery( *genQueryInp, *genQueryOut );
 
@@ -291,7 +291,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             old_acl_val );
     }
 
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
     if ( PrePostProcForGenQueryFlag == 1 ) {
         std::string in_string = str( boost::format( "%ld" ) % ( ( long )genQueryInp ) );
         std::string out_string = str( boost::format( "%ld" ) % ( ( long )genQueryOut ) );
@@ -309,7 +309,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             }
         }
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    /**  June 1 2009 for pre-post processing rule hooks **/
 
     if ( status < 0 ) {
         clearGenQueryOut( *genQueryOut );

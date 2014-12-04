@@ -608,10 +608,6 @@ parseMsInputParam( int argc, char **argv, int optInd, int ruleGen, int string,
         if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
             *tmpPtr = '\0';
             tmpPtr++;
-            /** RAJA Jul 12 2007 changed it so that it can take input values from terminal
-            addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
-                    strdup (tmpPtr), NULL);
-             ** RAJA Jul 12 2007 changed it so that it can take input values from terminal **/
             if ( *tmpPtr == '$' ) {
                 /* If $ is used as a value in the input file for label=value then
                  the remaining command line arguments are taken as values.

@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* sendXmsg.c
+/* rsSendXmsg.cpp
  */
 
 #include "sendXmsg.hpp"
@@ -34,7 +34,7 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
         return SYS_UNMATCHED_XMSG_TICKET;
     }
 
-    /* added by Raja Jun 30, 2010 for dropping and clearing a messageStream */
+    /* dropping and clearing a messageStream */
     miscInfo = sendXmsgInp->sendXmsgInfo.miscInfo;
     if ( miscInfo != NULL && strlen( miscInfo ) > 0 ) {
         if ( !strcmp( miscInfo, "CLEAR_STREAM" ) ) {
@@ -65,13 +65,8 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     irodsXmsg->sendXmsgInfo = ( sendXmsgInfo_t* )calloc( 1, sizeof( sendXmsgInfo_t ) );
     *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
     irodsXmsg->sendTime = time( 0 );
-    /*    rstrcpy (irodsXmsg->sendUserName, rsComm->clientUser.userName, NAME_LEN);*/
     snprintf( irodsXmsg->sendUserName, NAME_LEN, "%s@%s", rsComm->clientUser.userName, rsComm->clientUser.rodsZone );
     rstrcpy( irodsXmsg->sendAddr, sendXmsgInp->sendAddr, NAME_LEN );
-    /*** moved to xmsgLib.c RAJA Nov 29 2010 ***
-    addXmsgToXmsgQue (irodsXmsg, &XmsgQue);
-    status = addXmsgToTicketMsgStruct (irodsXmsg, ticketMsgStruct);
-    ***  moved to xmsgLib.c RAJA Nov 29 2010 ***/
     status = addXmsgToQues( irodsXmsg,  ticketMsgStruct );
     return status;
 }

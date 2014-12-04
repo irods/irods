@@ -1177,7 +1177,7 @@ extern "C" {
                     return status;
                 }
                 /* register the CacheDir */
-                status = modCollInfo2( rsComm, specColl, 0 ); /*#######*/
+                status = modCollInfo2( rsComm, specColl, 0 );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -1188,12 +1188,6 @@ extern "C" {
             return status;
         }
         else if ( fileType == 3 ) { /* run */
-            /* craete a run dir */
-            /*** moved into prepareForExecution ****
-              status = mkMssoMpfRunDir( _struct_inx , subFile, runDir);
-              if (status < 0)
-              return status;
-             ***** RAJA Aug 16,2012 ****/
             /* perform the run */
             status = extractMssoFile( _struct_inx , _fco, runDir, showFiles );
             if ( status < 0 ) {
@@ -1204,7 +1198,7 @@ extern "C" {
             }
             return status;
         }
-        else { /* fileType == 4   looking at run results*/
+        else { /* fileType == 4   looking at run results */
 
         }
         return 0;

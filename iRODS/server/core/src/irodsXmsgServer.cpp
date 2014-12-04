@@ -1,7 +1,7 @@
-/*** Copyright (c), The Regents of the University of California            ***   *** For more information please refer to files in the COPYRIGHT directory ***/
+/*** Copyright (c), The Regents of the University of California
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* irodsXmsgServer.c - The irods xmsg server
- */
+/* irodsXmsgServer.cpp - The irods xmsg server */
 
 #include "reconstants.hpp"
 #include "irodsXmsgServer.hpp"
@@ -268,9 +268,6 @@ xmsgServerMain() {
 
 
     }
-    /* RAJA removed June 13, 2088 to avoid compiler warning in solaris
-    return status;
-    */
     return 0;
 }
 

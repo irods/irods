@@ -283,7 +283,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             return status;
         }
 
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        /**  June 1 2009 for pre-post processing rule hooks **/
         argc    = 2;
         args[0] = srcDataObjInp->objPath;
         args[1] = destDataObjInp->objPath;
@@ -298,7 +298,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                      args[0], args[1], i );
             return i;
         }
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        /**  June 1 2009 for pre-post processing rule hooks **/
 
         status = chlRenameObject( rsComm, srcId, destObj );
     }
@@ -317,7 +317,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             return status;
         }
 
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        /**  June 1 2009 for pre-post processing rule hooks **/
         if ( acPreProcFromRenameFlag == 0 ) {
             args[0] = srcDataObjInp->objPath;
             args[1] = destDataObjInp->objPath;
@@ -333,7 +333,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                 return i;
             }
         }
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        /**  June 1 2009 for pre-post processing rule hooks **/
 
         status = chlMoveObject( rsComm, srcId, destId );
     }

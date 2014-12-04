@@ -336,7 +336,6 @@ regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
     keyValPair_t *regParam;
     ruleExecModInp_t ruleExecModInp;
     int status;
-    /*** RAJA July 24, 2007 changed chl call to rs call ***/
     regParam = &( ruleExecModInp.condInput );
     memset( regParam, 0, sizeof( keyValPair_t ) );
     rstrcpy( ruleExecModInp.ruleId, ruleExecId, NAME_LEN );
@@ -559,7 +558,7 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
     }
 
     bzero( reExec, sizeof( reExec_t ) );
-    bzero( &rei, sizeof( ruleExecInfo_t ) ); /* RAJA ADDED June 17. 2009 */
+    bzero( &rei, sizeof( ruleExecInfo_t ) ); /*  June 17. 2009 */
 
     rei.rsComm = rsComm;
     status = applyRule( "acSetReServerNumProc", NULL, &rei, NO_SAVE_REI );

@@ -28,7 +28,7 @@ static boost::condition_variable ReqQueCond;
 
 static xmsgQue_t      XmsgQue;
 static xmsgReq_t*     XmsgReqHead = NULL;
-static xmsgReq_t*     XmsgReqTail = NULL; /* points to last item in Q RAJA Nov 19 2010 */
+static xmsgReq_t*     XmsgReqTail = NULL; /* points to last item in queue */
 static msParamArray_t XMsgMsParamArray;
 
 // =-=-=-=-=-=-=-
@@ -170,17 +170,6 @@ addXmsgToTicketMsgStruct( irodsXmsg_t *xmsg,
     xmsg->seqNumber = ticketMsgStruct->nxtSeqNumber;
     ticketMsgStruct->nxtSeqNumber =  ticketMsgStruct->nxtSeqNumber + 1;
 
-    /***
-    rodsLog (LOG_ERROR,
-         "TickNum: %i SEQNum: %i Sender:%s@%s",
-         ticketMsgStruct->ticket.rcvTicket,
-         ticketMsgStruct->nxtSeqNumber,
-         xmsg->sendUserName,
-         xmsg->sendAddr);
-    ***/
-    /* changed by RAJA April 15, 20111
-    return 0;
-    ******************************/
     return xmsg->seqNumber;
 }
 
@@ -287,7 +276,7 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
 
     while ( tmpIrodsXmsg != NULL ) {
         if ( ( i = checkMsgCondition( tmpIrodsXmsg, msgCond ) ) == 0 ) {
-            /*** RAJA Dec 16 2010 added to make it be part of a mutex ***/
+            /*** added to make it be part of a mutex ***/
 #ifndef windows_platform
             pthread_mutex_lock( &MessQueCondMutex );
 #endif
@@ -502,16 +491,9 @@ addReqToQue( int sock ) {
 
     if ( XmsgReqHead == NULL ) {
         XmsgReqHead = myXmsgReq;
-        XmsgReqTail = myXmsgReq; /* points to last item in Q RAJA Nov 19 2010 */
+        XmsgReqTail = myXmsgReq; /* points to last item in queue */
     }
     else {
-        /* RAJA Nov 19 2010
-            tmpXmsgReq = XmsgReqHead;
-        while (tmpXmsgReq->next != NULL) {
-            tmpXmsgReq = tmpXmsgReq->next;
-        }
-        tmpXmsgReq->next = myXmsgReq;
-        */
         XmsgReqTail->next  = myXmsgReq;
         XmsgReqTail = myXmsgReq;
     }
@@ -662,7 +644,7 @@ initXmsgHashQue() {
     memset( XmsgHashQue, 0, NUM_HASH_SLOT * sizeof( ticketHashQue_t ) );
     memset( &XmsgQue, 0, sizeof( XmsgQue ) );
 
-    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id =1,2,3,4,5***/
+    /***  have a permanent message queue with ticket-id =1,2,3,4,5***/
 
     thisTime = time( NULL );
 
@@ -718,9 +700,7 @@ initXmsgHashQue() {
     addIntParamToArray( &XMsgMsParamArray, "*XSEQNUM", 0 );
     addIntParamToArray( &XMsgMsParamArray, "*XTIME", 0 );
 
-
-
-    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3,4,5***/
+    /*** have a permanent message queue with ticket-id = 1,2,3,4,5***/
 
     return 0;
 }
@@ -790,18 +770,8 @@ _rsRcvXmsg( irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut ) {
         rmXmsgFromXmsgQue( irodsXmsg, &XmsgQue );
         rmXmsgFromXmsgTcketQue( irodsXmsg, &ticketMsgStruct->xmsgQue );
         clearSendXmsgInfo( sendXmsgInfo );
-        /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
         free( sendXmsgInfo );
-        /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
         free( irodsXmsg );
-        /* take out the ticket too ?    DONT!!!! commented out by RAJA Dec 16. 2010  garbage collect later*******
-        if (ticketMsgStruct->xmsgQue.head == NULL &&
-          (!(ticketMsgStruct->ticket.flag & MULTI_MSG_TICKET) ||
-          time (NULL) >= ticketMsgStruct->ticket.expireTime)) {
-            rmTicketMsgStructFromHQue (ticketMsgStruct,
-              (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
-        }
-            **** commnneted out ****/
     }
     else {
         rcvXmsgOut->msg = strdup( sendXmsgInfo->msg );
@@ -850,9 +820,7 @@ clearAllXMessages( ticketMsgStruct_t *ticketMsgStruct ) {
         tmpIrodsXmsg2 = tmpIrodsXmsg->tnext;
         rmXmsgFromXmsgQue( tmpIrodsXmsg, &XmsgQue );
         clearSendXmsgInfo( tmpIrodsXmsg->sendXmsgInfo );
-        /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
         free( tmpIrodsXmsg->sendXmsgInfo );
-        /** added by Raja Nov 9, 2010 to take care of memory leak found by J-Y **/
         free( tmpIrodsXmsg );
         tmpIrodsXmsg = tmpIrodsXmsg2;
     }

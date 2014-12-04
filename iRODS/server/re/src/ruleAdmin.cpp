@@ -14,7 +14,7 @@
 #define LF 10
 #define CR 13
 #define MAX_TOKEN 500
-#define MAX_ENTRIES 5000    /* upped from 1000 Apr 14,2005 RAJA*/
+#define MAX_ENTRIES 5000
 #define MYSRBBUFSIZE        2000000
 #define QSIZE               MYSRBBUFSIZE
 #define HUGE_STRING 5000
@@ -621,7 +621,7 @@ performAction( inStruct Sentries ) {
     char ruleSet[RULE_SET_DEF_LENGTH];
     hrtime_t ht1, ht2, ht3;
 
-    bzero( &rei, sizeof( ruleExecInfo_t ) ); /* RAJA ADDED June 17. 2009 */
+    bzero( &rei, sizeof( ruleExecInfo_t ) ); /*  June 17. 2009 */
     /*
      sprintf(configDirEV,"irodsConfigDir=/scratch/s1/sekar/irods/RODS/server/config");
      sprintf(configDirEV,"irodsConfigDir=/misc/www/projects/srb-secure/cgi-bin");
