@@ -8,6 +8,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_hash.hpp"
 #include "irods_error.hpp"
+#include "irods_stacktrace.hpp"
 
 #include "rodsLog.hpp"
 
@@ -66,7 +67,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // accessor function
-        error get( std::string _key, ValueType& _val ) {
+        error get( const std::string& _key, ValueType& _val ) {
             if ( !has_entry( _key ) ) {
                 return ERROR( KEY_NOT_FOUND, "key not found" );
             }
@@ -78,7 +79,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // mutator function
-        error set( std::string _key, const ValueType& _val ) {
+        error set( const std::string& _key, const ValueType& _val ) {
             table_[ _key ] = _val;
             return SUCCESS();
         } // set
@@ -132,11 +133,11 @@ namespace irods {
         // get a property from the table if it exists.  catch the exception in the case where
         // the template types may not match and return sucess/fail
         template< typename T >
-        error get( std::string _key, T& _val ) {
+        error get( const std::string& _key, T& _val ) {
             // =-=-=-=-=-=-=-
             // check params
             if ( _key.empty() ) {
-                return ERROR( KEY_NOT_FOUND, "empty key" );
+                return ERROR( KEY_NOT_FOUND, "the key is empty" );
             }
 
             if ( !has_entry( _key ) ) {
@@ -171,7 +172,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // set a property in the table
         template< typename T >
-        error set( std::string _key, const T& _val ) {
+        error set( const std::string& _key, const T& _val ) {
             // =-=-=-=-=-=-=-
             // check params
             if ( _key.empty() ) {

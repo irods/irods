@@ -678,7 +678,7 @@
 #define INVALID_DYNAMIC_CAST                 -1817000
 #define INVALID_ACCESS_TO_IMPOSTOR_RESOURCE  -1818000
 #define INVALID_LEXICAL_CAST                 -1819000
-
+#define CONTROL_PLANE_MESSAGE_ERROR          -1820000
 
 /* NetCDF error code */
 

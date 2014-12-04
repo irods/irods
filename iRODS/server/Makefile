@@ -64,7 +64,9 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_server_api_table.o  \
 		$(svrCoreObjDir)/irods_get_l1desc.o  \
 		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
-        $(svrCoreObjDir)/readServerConfig.o
+        $(svrCoreObjDir)/readServerConfig.o \
+        $(svrCoreObjDir)/irods_server_control_plane.o \
+        $(svrCoreObjDir)/irods_server_state.o
 
 DB_IFACE_OBJS = \
 	    $(svrCoreObjDir)/irods_database_factory.o \
@@ -81,6 +83,7 @@ DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o
 
 
 INCLUDES +=	-I$(svrCoreIncDir) -I$(libHasherIncDir)
+
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
@@ -299,6 +302,12 @@ CFLAGS += -I../../external/jansson-2.7/src/
 AG_LDADD += ../../external/jansson-2.7/src/.libs/libjansson.a
 LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 
+# temp include for control plane
+INCLUDES +=	-I$(buildDir)/../external/zeromq-4.0.5/include/
+LDFLAGS += $(buildDir)/../external/zeromq-4.0.5/src/.libs/libzmq.a
+
+INCLUDES +=	-I$(buildDir)/../external/avro-cpp-1.7.7/
+LDFLAGS += $(buildDir)/../external/avro-cpp-1.7.7/build/libavrocpp_s.a -lz
 
 
 # Clean

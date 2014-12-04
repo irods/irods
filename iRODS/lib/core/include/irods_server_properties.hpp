@@ -102,6 +102,27 @@ namespace irods {
 
     }; // class server_properties
 
+    template< typename T >
+    error get_server_property(
+              const std::string& _prop,
+              T&                 _val ) {
+        irods::server_properties& props =
+            irods::server_properties::getInstance();
+        irods::error ret = props.capture_if_needed();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+        ret = props.get_property< T > (
+                    _prop,
+                    _val );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        return SUCCESS();
+
+    } // get_server_property
 
 } // namespace irods
 

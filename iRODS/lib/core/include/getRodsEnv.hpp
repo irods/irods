@@ -47,6 +47,11 @@ extern "C" {
         char irodsSSLCertificateKeyFile[MAX_NAME_LEN];
         char irodsSSLDHParamsFile[MAX_NAME_LEN];
 
+        // =-=-=-=-=-=-=-
+        // control plane parameters
+        char irodsCtrlPlaneKey[MAX_NAME_LEN];
+        int  irodsCtrlPlanePort;
+
 
 
 

@@ -102,6 +102,8 @@ procSingleConnReq( agentProc_t *connReq );
 int
 startProcConnReqThreads();
 void
+stopProcConnReqThreads();
+void
 spawnManagerTask();
 int
 procBadReq();

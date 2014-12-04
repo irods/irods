@@ -61,6 +61,8 @@ namespace irods {
 
     const std::string CFG_IRODS_ENVIRONMENT_FILE_KW( "irods_environment_file" );
     const std::string CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW( "irods_session_environment_file" );
+    const std::string CFG_IRODS_CONTROL_PLANE_PORT( "irods_server_control_plane_port" );
+    const std::string CFG_IRODS_CONTROL_PLANE_KEY( "irods_server_control_plane_key" );
 
     // legacy ssl environment variables
     const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH( "irods_ssl_ca_certificate_path" );
@@ -76,6 +78,13 @@ namespace irods {
     const std::string CFG_ZONE_PORT( "zone_port" );
     const std::string CFG_ZONE_AUTH_SCHEME( "zone_auth_scheme" );
     const std::string CFG_XMSG_PORT( "xmsg_port" );
+    
+    
+    // irods control plane values
+    const std::string CFG_SVR_CONTROL_PLANE_PORT( "server_control_plane_port" );
+    const std::string CFG_RE_CONTROL_PLANE_PORT( "rule_engine_control_plane_port" );
+    const std::string CFG_CONTROL_PLANE_KEY( "control_plane_key" );
+    const std::string CFG_CONTROL_PLANE_TIMEOUT( "control_plane_timeout" );
 
 }; // namespace irods
 

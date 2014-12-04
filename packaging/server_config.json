@@ -20,9 +20,12 @@
     "default_file_mode": "0600",
     "default_hash_scheme": "SHA256",
     "zone_id": "TEMP_LOCAL_ZONE_SID",
-    "negotiation_key": "temp_32_byte_key_for_agent__conn",
+    "negotiation_key":   "temp_32_byte_key_for_agent__conn",
     "match_hash_policy": "not_strict",
     "federation": [],
-    "environment_variables": {}
+    "environment_variables": {},
+    "server_control_plane_key": "temp_32_byte_key_for_ctrl__plane",
+    "server_control_plane_port": 1248,
+    "rule_engine_control_plane_port": 1249
 }
 

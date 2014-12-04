@@ -9,9 +9,8 @@
 
 #include <syslog.h>
 
-#ifndef SINGLE_SVR_THR
 #include <pthread.h>
-#endif
+
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -23,9 +22,12 @@
 #endif
 
 // =-=-=-=-=-=-=-
+//
+#include "irods_server_state.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_server_control_plane.hpp"
 #include "readServerConfig.hpp"
 
 #include <boost/filesystem/operations.hpp>
@@ -44,7 +46,7 @@ agentProc_t *ConnReqHead = NULL;
 agentProc_t *SpawnReqHead = NULL;
 agentProc_t *BadReqHead = NULL;
 
-#ifndef SINGLE_SVR_THR
+
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
@@ -53,7 +55,6 @@ boost::mutex		  BadReqMutex;
 boost::thread*		  ReadWorkerThread[NUM_READ_WORKER_THR];
 boost::thread*		  SpawnManagerThread;
 boost::thread*		  PurgeLockFileThread; // JMC - backport 4612
-#endif
 
 boost::mutex		  ReadReqCondMutex;
 boost::mutex		  SpawnReqCondMutex;
@@ -311,9 +312,6 @@ int
 serverMain( char *logDir ) {
     int loopCnt = 0;
     int acceptErrCnt = 0;
-#ifdef SYS_TIMING
-    int connCnt = 0;
-#endif
 
     irods::error ret = createAndSetRECacheSalt();
     if ( !ret.ok() ) {
@@ -328,22 +326,43 @@ serverMain( char *logDir ) {
                  status );
         exit( 1 );
     }
-#ifndef SINGLE_SVR_THR
+
+
+    // =-=-=-=-=-=-=-
+    // Launch the Control Plane
+    irods::server_control_plane ctrl_plane( irods::CFG_SVR_CONTROL_PLANE_PORT );
+
+
+
     startProcConnReqThreads();
 #if RODS_CAT // JMC - backport 4612
     PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
 #endif /* RODS_CAT */
-#endif /* SINGLE_SVR_THR */
+
 
     fd_set sockMask;
     FD_ZERO( &sockMask );
-
     SvrSock = svrComm.sock;
-    while ( 1 ) {		/* infinite loop */
+
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() ) {
+        if( irods::server_state::PAUSED == state() ) {
+            sleep( 0.125 );
+            continue;
+        }
+
         FD_SET( svrComm.sock, &sockMask );
-        int numSock;
-        while ( ( numSock = select( svrComm.sock + 1, &sockMask,
-                                    ( fd_set * ) NULL, ( fd_set * ) NULL, ( struct timeval * ) NULL ) ) < 0 ) {
+
+        int numSock = 0;
+        struct timeval time_out;
+        time_out.tv_sec  = 0;
+        time_out.tv_usec = 100;
+        while ( ( numSock = select( 
+                                svrComm.sock + 1, 
+                                &sockMask,
+                                ( fd_set * ) NULL, 
+                                ( fd_set * ) NULL, 
+                                &time_out ) ) < 0 ) {
 
             if ( errno == EINTR ) {
                 rodsLog( LOG_NOTICE, "serverMain: select() interrupted" );
@@ -356,11 +375,13 @@ serverMain( char *logDir ) {
                 return -1;
             }
         }
-
+        
         procChildren( &ConnectedAgentHead );
-#ifdef SYS_TIMING
-        initSysTiming( "irodsServer", "recv connection", 0 );
-#endif
+
+        if( 0 == numSock ) {
+            continue;
+                
+        }
 
         const int newSock = rsAcceptConn( &svrComm );
         if ( newSock < 0 ) {
@@ -407,17 +428,6 @@ serverMain( char *logDir ) {
 
         addConnReqToQue( &svrComm, newSock );
 
-#ifdef SYS_TIMING
-        connCnt ++;
-        rodsLog( LOG_NOTICE, "irodsServer: agent proc count = %d, connCnt = %d",
-                 getAgentProcCnt( ConnectedAgentHead ), connCnt );
-#endif
-
-#ifdef SINGLE_SVR_THR
-        procSingleConnReq( ConnReqHead );
-        ConnReqHead = NULL;
-#endif
-
 #ifndef windows_platform
         loopCnt++;
         if ( loopCnt >= LOGFILE_CHK_CNT ) {
@@ -425,10 +435,15 @@ serverMain( char *logDir ) {
             loopCnt = 0;
         }
 #endif
-    }		/* infinite loop */
+    }
+    
+    // JMC :: sleeping 2 hrs? - PurgeLockFileThread->join(); 
+    procChildren( &ConnectedAgentHead );
+    stopProcConnReqThreads();
+    
+    rodsLog( LOG_NOTICE, "irods server is exiting" );
 
-    /* not reached - return (status); */
-    return ( 0 ); /* to avoid warning */
+    return 0; 
 }
 
 void
@@ -491,9 +506,9 @@ getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
     agentProc_t *tmpAgentProc, *prevAgentProc;
     prevAgentProc = NULL;
 
-#ifndef SINGLE_SVR_THR
+
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
-#endif
+
     tmpAgentProc = *agentProcHead;
 
     while ( tmpAgentProc != NULL ) {
@@ -509,9 +524,9 @@ getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
         prevAgentProc = tmpAgentProc;
         tmpAgentProc = tmpAgentProc->next;
     }
-#ifndef SINGLE_SVR_THR
+
     con_agent_lock.unlock();
-#endif
+
     return tmpAgentProc;
 }
 
@@ -539,12 +554,9 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     else if ( childPid == 0 ) {	/* child */
         agentProc_t *tmpAgentProc;
         close( SvrSock );
-#ifdef SYS_TIMING
-        printSysTiming( "irodsAgent", "after fork", 0 );
-        initSysTiming( "irodsAgent", "after fork", 1 );
-#endif
+
         /* close any socket still in the queue */
-#ifndef SINGLE_SVR_THR
+
         /* These queues may be inconsistent because of the multi-threading
              * of the parent. set sock to -1 if it has been closed */
         tmpAgentProc = ConnReqHead;
@@ -565,13 +577,10 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
             tmpAgentProc->sock = -1;
             tmpAgentProc = tmpAgentProc->next;
         }
-#endif
+
         execAgent( newSock, startupPack );
     }
     else {			/* parent */
-#ifdef SYS_TIMING
-        printSysTiming( "irodsServer", "fork agent", 0 );
-#endif
         queConnectedAgentProc( childPid, connReq, agentProcHead );
     }
 #else
@@ -661,15 +670,12 @@ queConnectedAgentProc( int childPid, agentProc_t *connReq,
     }
 
     connReq->pid = childPid;
-#ifndef SINGLE_SVR_THR
+
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
-#endif
 
     queAgentProc( connReq, agentProcHead, TOP_POS );
 
-#ifndef SINGLE_SVR_THR
     con_agent_lock.unlock();
-#endif
 
     return 0;
 }
@@ -679,18 +685,14 @@ getAgentProcCnt() {
     agentProc_t *tmpAagentProc;
     int count = 0;
 
-#ifndef SINGLE_SVR_THR
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
-#endif
 
     tmpAagentProc = ConnectedAgentHead;
     while ( tmpAagentProc != NULL ) {
         count++;
         tmpAagentProc = tmpAagentProc->next;
     }
-#ifndef SINGLE_SVR_THR
     con_agent_lock.unlock();
-#endif
 
     return count;
 }
@@ -723,9 +725,7 @@ chkConnectedAgentProcQue() {
     agentProc_t *tmpAgentProc, *prevAgentProc, *unmatchedAgentProc;
     prevAgentProc = NULL;
 
-#ifndef SINGLE_SVR_THR
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
-#endif
     tmpAgentProc = ConnectedAgentHead;
 
     while ( tmpAgentProc != NULL ) {
@@ -754,9 +754,8 @@ chkConnectedAgentProcQue() {
             tmpAgentProc = tmpAgentProc->next;
         }
     }
-#ifndef SINGLE_SVR_THR
     con_agent_lock.unlock();
-#endif
+
     return 0;
 }
 
@@ -972,19 +971,15 @@ int
 addConnReqToQue( rsComm_t *rsComm, int sock ) {
     agentProc_t *myConnReq;
 
-#ifndef SINGLE_SVR_THR
     boost::unique_lock< boost::mutex > read_req_lock( ReadReqCondMutex );
-#endif
     myConnReq = ( agentProc_t* )calloc( 1, sizeof( agentProc_t ) );
 
     myConnReq->sock = sock;
     myConnReq->remoteAddr = rsComm->remoteAddr;
     queAgentProc( myConnReq, &ConnReqHead, BOTTOM_POS );
 
-#ifndef SINGLE_SVR_THR
     ReadReqCond.notify_all(); // NOTE:: check all vs one
     read_req_lock.unlock();
-#endif
 
     return 0;
 }
@@ -998,34 +993,25 @@ agentProc_t *
 getConnReqFromQue() {
     agentProc_t *myConnReq = NULL;
 
-    while ( myConnReq == NULL ) {
-#ifndef SINGLE_SVR_THR
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() && myConnReq == NULL ) {
         boost::unique_lock<boost::mutex> read_req_lock( ReadReqCondMutex );
-#endif
         if ( ConnReqHead != NULL ) {
             myConnReq = ConnReqHead;
             ConnReqHead = ConnReqHead->next;
-#ifndef SINGLE_SVR_THR
             read_req_lock.unlock();
-#endif
             break;
         }
 
-#ifndef SINGLE_SVR_THR
         ReadReqCond.wait( read_req_lock );
-#endif
         if ( ConnReqHead == NULL ) {
-#ifndef SINGLE_SVR_THR
             read_req_lock.unlock();
-#endif
             continue;
         }
         else {
             myConnReq = ConnReqHead;
             ConnReqHead = ConnReqHead->next;
-#ifndef SINGLE_SVR_THR
             read_req_lock.unlock();
-#endif
             break;
         }
     }
@@ -1045,6 +1031,20 @@ startProcConnReqThreads() {
 }
 
 void
+stopProcConnReqThreads() {
+    
+    SpawnReqCond.notify_all(); 
+    SpawnManagerThread->join();
+
+    for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
+        ReadReqCond.notify_all(); 
+        ReadWorkerThread[i]->join();
+    }
+
+
+}
+
+void
 readWorkerTask() {
 
     // =-=-=-=-=-=-=-
@@ -1061,7 +1061,8 @@ readWorkerTask() {
         return;
     }
 
-    while ( 1 ) {
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() ) {
         agentProc_t *myConnReq = getConnReqFromQue();
         if ( myConnReq == NULL ) {
             /* someone else took care of it */
@@ -1082,13 +1083,13 @@ readWorkerTask() {
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", status );
             sendVersion( net_obj, status, 0, NULL, 0 );
-#ifndef SINGLE_SVR_THR
+
             boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
-#endif
+
             queAgentProc( myConnReq, &BadReqHead, TOP_POS );
-#ifndef SINGLE_SVR_THR
+
             bad_req_lock.unlock();
-#endif
+
             mySockClose( newSock );
         }
         else if ( startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT ) {
@@ -1110,17 +1111,17 @@ readWorkerTask() {
 
             myConnReq->startupPack = *startupPack;
             free( startupPack );
-#ifndef SINGLE_SVR_THR
+
             boost::unique_lock< boost::mutex > spwn_req_lock( SpawnReqCondMutex );
-#endif
+
             queAgentProc( myConnReq, &SpawnReqHead, BOTTOM_POS );
-#ifndef SINGLE_SVR_THR
+
             SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all
-#endif
+
         } // else
 
     } // while 1
-
+            
 } // readWorkerTask
 
 void
@@ -1129,17 +1130,19 @@ spawnManagerTask() {
     int status;
     uint curTime;
     uint agentQueChkTime = 0;
-    while ( 1 ) {
-#ifndef SINGLE_SVR_THR
+
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() ) {
+
         boost::unique_lock<boost::mutex> spwn_req_lock( SpawnReqCondMutex );
         SpawnReqCond.wait( spwn_req_lock );
-#endif
+
         while ( SpawnReqHead != NULL ) {
             mySpawnReq = SpawnReqHead;
             SpawnReqHead = mySpawnReq->next;
-#ifndef SINGLE_SVR_THR
+
             spwn_req_lock.unlock();
-#endif
+
             status = spawnAgent( mySpawnReq, &ConnectedAgentHead );
             close( mySpawnReq->sock );
 
@@ -1158,13 +1161,13 @@ spawnManagerTask() {
                          mySpawnReq->startupPack.clientUser,
                          inet_ntoa( mySpawnReq->remoteAddr.sin_addr ) );
             }
-#ifndef SINGLE_SVR_THR
+
             spwn_req_lock.lock();
-#endif
+
         }
-#ifndef SINGLE_SVR_THR
+
         spwn_req_lock.unlock();
-#endif
+
         curTime = time( 0 );
         if ( curTime > agentQueChkTime + AGENT_QUE_CHK_INT ) {
             agentQueChkTime = curTime;
@@ -1210,9 +1213,7 @@ procSingleConnReq( agentProc_t *connReq ) {
         mySockClose( newSock );
         return status;
     }
-#ifdef SYS_TIMING
-    printSysTiming( "irodsServer", "read StartupPack", 0 );
-#endif
+
     if ( startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT ) {
         sendVersion( net_obj, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0 );
         mySockClose( newSock );
@@ -1247,9 +1248,9 @@ int
 procBadReq() {
     agentProc_t *tmpConnReq, *nextConnReq;
     /* just free them for now */
-#ifndef SINGLE_SVR_THR
+
     boost::unique_lock< boost::mutex > bad_req_lock( BadReqMutex );
-#endif
+
     tmpConnReq = BadReqHead;
     while ( tmpConnReq != NULL ) {
         nextConnReq = tmpConnReq->next;
@@ -1257,9 +1258,7 @@ procBadReq() {
         tmpConnReq = nextConnReq;
     }
     BadReqHead = NULL;
-#ifndef SINGLE_SVR_THR
     bad_req_lock.unlock();
-#endif
 
     return 0;
 }
@@ -1269,7 +1268,8 @@ procBadReq() {
 void
 purgeLockFileWorkerTask() {
     int status;
-    while ( 1 ) {
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() ) {
         rodsSleep( LOCK_FILE_PURGE_TIME, 0 );
         status = purgeLockFileDir( 1 );
         if ( status < 0 ) {

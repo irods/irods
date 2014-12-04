@@ -389,6 +389,16 @@ extern "C" {
             props,
             irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_CONTROL_PLANE_KEY,
+            _env->irodsCtrlPlaneKey );
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_CONTROL_PLANE_PORT,
+            _env->irodsCtrlPlanePort );
 
         return 0;
     }

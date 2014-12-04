@@ -378,8 +378,6 @@ cliReconnManager( rcComm_t *conn ) {
     conn->reconnTime = time( 0 ) + RECONN_TIMEOUT_TIME;
 
     while ( !conn->exit_flg ) { /* JMC */
-        printf( "cliReconnManager: while !exit flg\n" );
-        fflush( stdout );
         time_t curTime = time( 0 );
 
         if ( curTime < conn->reconnTime ) {

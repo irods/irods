@@ -13,7 +13,9 @@
 #include <syslog.h>
 #include "miscServerFunct.hpp"
 #include "reconstants.hpp"
+#include "irods_server_state.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_server_control_plane.hpp"
 #include "readServerConfig.hpp"
 
 // =-=-=-=-=-=-=-
@@ -183,7 +185,19 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 
     initReExec( rsComm, &reExec );
     LastRescUpdateTime = time( NULL );
-    while ( 1 ) {
+
+    // =-=-=-=-=-=-=-
+    // Launch the Control Plane
+    irods::server_control_plane ctrl_plane( 
+                                    irods::CFG_RE_CONTROL_PLANE_PORT );
+
+    irods::server_state& state = irods::server_state::instance();
+    while( irods::server_state::STOPPED != state() ) {
+        if( irods::server_state::PAUSED == state() ) {
+            sleep( 1 );
+            continue;
+        }
+
 #ifndef windows_platform
 #ifndef SYSLOG
         chkLogfileName( logDir, RULE_EXEC_LOGFILE );
@@ -237,6 +251,10 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
             reSvrSleep( rsComm );
         }
     }
+
+    rodsLog(
+        LOG_NOTICE,
+        "rule engine is exiting" );
 }
 
 int

@@ -24,6 +24,7 @@ iRODS/lib/core/include/irods_home_directory.hpp
 iRODS/lib/core/include/irods_ms_home.hpp
 iRODS/lib/core/include/irods_network_home.hpp
 iRODS/lib/core/include/irods_resources_home.hpp
+iRODS/lib/core/include/server_control_plane_command.hpp
 iRODS/server/core/include/irods_database_home.hpp
 iRODS/lib/core/include/rodsVersion.hpp
 iRODS/lib/core/src/rodsLog.cpp

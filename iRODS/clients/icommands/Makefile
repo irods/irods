@@ -84,7 +84,8 @@ OBJS =		\
 		$(objDir)/iticket.o \
 		$(objDir)/igroupadmin.o \
 		$(objDir)/iapitest.o \
-		$(objDir)/izonereport.o
+		$(objDir)/izonereport.o \
+		$(objDir)/irods-grid.o 
 
 
 BINS =		\
@@ -136,7 +137,8 @@ BINS =		\
 		$(binDir)/iticket \
 		$(binDir)/igroupadmin  \
 		$(binDir)/iapitest  \
-		$(binDir)/izonereport 
+		$(binDir)/izonereport  \
+		$(binDir)/irods-grid
 
 # Compile and link flags
 
@@ -150,9 +152,14 @@ LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 LDFLAGS += $(BOOST_LIBS)
 
 CFLAGS += -I../../../external/jansson-2.7/src/
-AG_LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
-LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
+CFLAGS += -I../../../external/zeromq-4.0.5/include/
+CFLAGS += -I../../../external/avro-cpp-1.7.7/
 
+LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
+LDFLAGS += ../../../external/zeromq-4.0.5/src/.libs/libzmq.a
+LDFLAGS += ../../../external/avro-cpp-1.7.7/build/libavrocpp_s.a
+
+LDFLAGS += -lz
 
 ifneq (${OS_platform}, osx_platform)
 LDFLAGS += -lrt
