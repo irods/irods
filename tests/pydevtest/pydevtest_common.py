@@ -10,118 +10,130 @@ from signal import signal, SIGPIPE, SIG_DFL
 # Ignore SIG_PIPE and don't throw exceptions on it...
 # Added due to problems on cen5
 # (http://docs.python.org/library/signal.html)
-signal(SIGPIPE,SIG_DFL)
+signal(SIGPIPE, SIG_DFL)
 
 
 # =-=-=-=-=-=-=-
 # global variable dictating that we are running in a
 # toplogical testing framework.  skip certain tests
 # and define various hostnames to resources
-RUN_IN_TOPOLOGY=False;
+RUN_IN_TOPOLOGY = False
 
 # =-=-=-=-=-=-=-
 # global variable dictating that we are running as a
 # resource server during topological testing
-RUN_AS_RESOURCE_SERVER=False;
+RUN_AS_RESOURCE_SERVER = False
 
 if os.name != "nt":
     import fcntl
     import struct
 
-def mod_json_file(fn,new_dict):
-        with open(fn) as f:
-            env = json.load( f )
 
-        env.update(new_dict)
-        #for k,v in new_dict.items():
-        #    env[k] = v
+def mod_json_file(fn, new_dict):
+    with open(fn) as f:
+        env = json.load(f)
 
-        with open(fn, 'w') as f:
-            json.dump(env, f, indent=4)
+    env.update(new_dict)
+    # for k,v in new_dict.items():
+    #    env[k] = v
+
+    with open(fn, 'w') as f:
+        json.dump(env, f, indent=4)
+
 
 def get_interface_ip(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa( fcntl.ioctl( s.fileno(),
-        0x8915,  # SIOCGIFADDR
-        struct.pack('256s', ifname[:15]) )[20:24])
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
+                                        0x8915,  # SIOCGIFADDR
+                                        struct.pack('256s', ifname[:15]))[20:24])
+
 
 def get_lan_ip():
     ip = socket.gethostbyname(socket.gethostname())
     if ip.startswith("127.") and os.name != "nt":
-        interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
+        interfaces = ["eth0", "eth1", "eth2", "wlan0", "wlan1", "wifi0", "ath0", "ath1", "ppp0"]
         for ifname in interfaces:
             try:
                 ip = get_interface_ip(ifname)
-                break;
+                break
             except IOError:
                 pass
     return ip
 
+
 def get_hostname():
     return socket.gethostname()
+
 
 def get_irods_top_level_dir():
     configdir = "/etc/irods/irods.config"
     topleveldir = "/var/lib/irods"
-    if( not os.path.isfile( configdir )):
-        topleveldir = os.path.dirname( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
+    if(not os.path.isfile(configdir)):
+        topleveldir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return topleveldir
+
 
 def get_irods_config_dir():
     configfile = "/etc/irods/irods.config"
-    configdir = os.path.dirname( configfile )
-    if( not os.path.isfile( configfile )):
+    configdir = os.path.dirname(configfile)
+    if(not os.path.isfile(configfile)):
         configdir = get_irods_top_level_dir() + "/iRODS/config"
     return configdir
+
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):
         os.mkdir(directory_name_suffix)
     for i in range(file_count):
-        target = open (("%s/%d" % (directory_name_suffix, i)), 'w')
-        target.write("iglkg3fqfhwpwpo-"+"A"*i)
+        target = open(("%s/%d" % (directory_name_suffix, i)), 'w')
+        target.write("iglkg3fqfhwpwpo-" + "A" * i)
         target.close()
+
 
 def create_local_testfile(filename):
     filepath = os.path.abspath(filename)
-    f = open(filepath,'wb')
-    f.write("TESTFILE -- ["+filepath+"]")
+    f = open(filepath, 'wb')
+    f.write("TESTFILE -- [" + filepath + "]")
     f.close()
     return filepath
 
+
 def create_local_largefile(filename):
     filepath = os.path.abspath(filename)
-    os.system('dd if=/dev/zero of='+filepath+' bs=1M count=64')
+    os.system('dd if=/dev/zero of=' + filepath + ' bs=1M count=64')
     return filepath
 
-def check_icmd_outputtype(fullcmd,outputtype):
-    allowed_outputtypes = ["LIST","EMPTY","ERROR","",'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
+
+def check_icmd_outputtype(fullcmd, outputtype):
+    allowed_outputtypes = ["LIST", "EMPTY", "ERROR", "", 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
     if outputtype not in allowed_outputtypes:
-        print "  full command: ["+fullcmd+"]"
-        print "  allowed outputtypes: "+str(allowed_outputtypes)
-        print "  unknown outputtype requested: ["+outputtype+"]"
+        print "  full command: [" + fullcmd + "]"
+        print "  allowed outputtypes: " + str(allowed_outputtypes)
+        print "  unknown outputtype requested: [" + outputtype + "]"
         assert False, "hard fail, bad icommand output format requested"
 
-def getiCmdOutput(mysession,fullcmd):
-    parameters = shlex.split(fullcmd) # preserves quoted substrings
-    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
+
+def getiCmdOutput(mysession, fullcmd):
+    parameters = shlex.split(fullcmd)  # preserves quoted substrings
+    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
     if parameters[0] == "iadmin":
-        output = mysession.runAdminCmd(parameters[0],parameters[1:])
+        output = mysession.runAdminCmd(parameters[0], parameters[1:])
     else:
-        output = mysession.runCmd(parameters[0],parameters[1:])
+        output = mysession.runCmd(parameters[0], parameters[1:])
     # return output array
     #   [0] is stdout
     #   [1] is stderr
     return output
 
-def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
-    result = False # should start as failing, then get set to pass
-    parameters = shlex.split(fullcmd) # preserves quoted substrings
+
+def getiCmdBoolean(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
+    result = False  # should start as failing, then get set to pass
+    parameters = shlex.split(fullcmd)  # preserves quoted substrings
     # expectedresults needs to be a list
-    if isinstance(expectedresults, str): # converts a string to a list
+    if isinstance(expectedresults, str):  # converts a string to a list
         expectedresults = [expectedresults]
     # get output from icommand
-    output = getiCmdOutput(mysession,fullcmd)
+    output = getiCmdOutput(mysession, fullcmd)
     # allow old outputtype identifiers
     if outputtype == "LIST":
         outputtype = "STDOUT"
@@ -135,10 +147,10 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
 
     # check result listing for expected results
     if outputtype in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
-        print "  Expecting "+outputtype+": "+regex_msg+str(expectedresults)
+        print "  Expecting " + outputtype + ": " + regex_msg + str(expectedresults)
         print "  stdout:"
-        print "    | "+"\n    | ".join(output[0].splitlines())
-        print "  stderr: ["+output[1].rstrip('\n')+"]"
+        print "    | " + "\n    | ".join(output[0].splitlines())
+        print "  stderr: [" + output[1].rstrip('\n') + "]"
         # generate lines based on outputtype
         if outputtype in ['STDOUT', 'STDOUT_MULTILINE']:
             lines = output[0].splitlines()
@@ -152,7 +164,7 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
                 else:
                     regex_pattern = re.escape(er)
                 for line in lines:
-                    print '  searching for ' + regex_msg + '['+er+'] in ['+line.rstrip('\n')+'] ...',
+                    print '  searching for ' + regex_msg + '[' + er + '] in [' + line.rstrip('\n') + '] ...',
                     if re.search(regex_pattern, line.rstrip('\n')):
                         print "FOUND"
                         break
@@ -172,10 +184,10 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
                         regex_pattern = er
                     else:
                         regex_pattern = re.escape(er)
-                    print '  searching for ' + regex_msg + '['+er+'] in ['+line.rstrip('\n')+']...',
-                    if re.search(regex_pattern,line.rstrip('\n')):
+                    print '  searching for ' + regex_msg + '[' + er + '] in [' + line.rstrip('\n') + ']...',
+                    if re.search(regex_pattern, line.rstrip('\n')):
                         foundcount += 1
-                        print "found ("+str(foundcount)+" of "+str(len(expectedresults))+")"
+                        print "found (" + str(foundcount) + " of " + str(len(expectedresults)) + ")"
                     else:
                         print "NOTFOUND"
                 if foundcount == len(expectedresults):
@@ -187,14 +199,14 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
     # check that icommand returned no result
     elif (outputtype == "EMPTY" or outputtype == ""):
         print "  Expecting EMPTY output"
-        print "  stdout: ["+",".join(output[0].splitlines())+"]"
-        print "  stderr: ["+output[1].strip()+"]"
+        print "  stdout: [" + ",".join(output[0].splitlines()) + "]"
+        print "  stderr: [" + output[1].strip() + "]"
         if output[0] == "":
             result = True
     # bad test formatting
     else:
         print "  WEIRD - SHOULD ALREADY HAVE BEEN CAUGHT ABOVE"
-        print "  unknown outputtype requested: ["+outputtype+"]"
+        print "  unknown outputtype requested: [" + outputtype + "]"
         assert False, "WEIRD - DUPLICATE BRANCH - hard fail, bad icommand format"
     # return error if stderr is populated unexpectedly
     if outputtype not in ['STDERR', 'STDERR_MULTILINE'] and output[1] != "":
@@ -202,7 +214,8 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
     # return value
     return result
 
-def assertiCmd(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
+
+def assertiCmd(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
     ''' Runs an icommand, detects output type, and searches for
     values in expected results list.
 
@@ -213,12 +226,13 @@ def assertiCmd(mysession,fullcmd,outputtype="",expectedresults="",use_regex=Fals
     begin = time.time()
     print "\n"
     print "ASSERTING PASS"
-    check_icmd_outputtype(fullcmd,outputtype)
-    assert getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults,use_regex)
+    check_icmd_outputtype(fullcmd, outputtype)
+    assert getiCmdBoolean(mysession, fullcmd, outputtype, expectedresults, use_regex)
     elapsed = time.time() - begin
     return elapsed
 
-def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults="",use_regex=False):
+
+def assertiCmdFail(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
     ''' Runs an icommand, detects output type, and searches for
     values in expected results list.
 
@@ -229,12 +243,13 @@ def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults="",use_regex=
     begin = time.time()
     print "\n"
     print "ASSERTING FAIL"
-    check_icmd_outputtype(fullcmd,outputtype)
-    assert not getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults,use_regex)
+    check_icmd_outputtype(fullcmd, outputtype)
+    assert not getiCmdBoolean(mysession, fullcmd, outputtype, expectedresults, use_regex)
     elapsed = time.time() - begin
     return elapsed
 
-def interruptiCmd(mysession,fullcmd,filename,filesize):
+
+def interruptiCmd(mysession, fullcmd, filename, filesize):
     ''' Runs an icommand, but does not let it complete.
 
     This function terminates the icommand once filename reaches (>=)
@@ -244,13 +259,13 @@ def interruptiCmd(mysession,fullcmd,filename,filesize):
 
     Returns 0 or -1 or -2.
     '''
-    parameters = shlex.split(fullcmd) # preserves quoted substrings
+    parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
-    print "  filename set to: ["+filename+"]"
-    print "  filesize set to: ["+str(filesize)+"] bytes"
-    resultcode = mysession.interruptCmd(parameters[0],parameters[1:],filename,filesize)
+    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
+    print "  filename set to: [" + filename + "]"
+    print "  filesize set to: [" + str(filesize) + "] bytes"
+    resultcode = mysession.interruptCmd(parameters[0], parameters[1:], filename, filesize)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
     elif resultcode == -1:
@@ -260,7 +275,8 @@ def interruptiCmd(mysession,fullcmd,filename,filesize):
     assert 0 == resultcode, "0 == resultcode"
     return resultcode
 
-def interruptiCmdDelay(mysession,fullcmd,delay):
+
+def interruptiCmdDelay(mysession, fullcmd, delay):
     ''' Runs an icommand, but does not let it complete.
 
     This function terminates the icommand after delay seconds.
@@ -269,16 +285,15 @@ def interruptiCmdDelay(mysession,fullcmd,delay):
 
     Returns 0 or -1.
     '''
-    parameters = shlex.split(fullcmd) # preserves quoted substrings
+    parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
-    print "  timeout set to: ["+str(delay)+" seconds]"
-    resultcode = mysession.interruptCmdDelay(parameters[0],parameters[1:],delay)
+    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
+    print "  timeout set to: [" + str(delay) + " seconds]"
+    resultcode = mysession.interruptCmdDelay(parameters[0], parameters[1:], delay)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
     else:
         print "  resultcode: [-1], icommand completed"
     assert 0 == resultcode, "0 == resultcode"
     return resultcode
-

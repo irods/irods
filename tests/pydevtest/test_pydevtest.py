@@ -1,5 +1,5 @@
 import sys
-if (sys.version_info >= (2,7)):
+if (sys.version_info >= (2, 7)):
     import unittest
 else:
     import unittest2 as unittest
@@ -7,10 +7,12 @@ import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail
 import commands
 
+
 class Test_Pydevtest_Examples(unittest.TestCase):
 
     def setUp(self):
         s.adminonly_up()
+
     def tearDown(self):
         s.adminonly_down()
 
@@ -31,10 +33,10 @@ class Test_Pydevtest_Examples(unittest.TestCase):
         pass
 
     def test_attempt_bad_icommand(self):
-        assertiCmdFail(s.adminsession,"idoesnotexist","LIST","nope")
+        assertiCmdFail(s.adminsession, "idoesnotexist", "LIST", "nope")
 
     def test_catch_icommand_error(self):
-        assertiCmd(s.adminsession,"ils filedoesnotexist","ERROR","does not exist or user lacks access permission")
+        assertiCmd(s.adminsession, "ils filedoesnotexist", "ERROR", "does not exist or user lacks access permission")
 
     def test_show_variables(self):
         print help(s.adminsession)

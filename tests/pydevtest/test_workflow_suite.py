@@ -2,7 +2,7 @@ import time
 import sys
 import shutil
 import os
-if (sys.version_info >= (2,7)):
+if (sys.version_info >= (2, 7)):
     import unittest
 else:
     import unittest2 as unittest
@@ -16,13 +16,14 @@ import datetime
 import time
 
 RODSHOME = "/home/irodstest/irodsfromsvn/iRODS"
-ABSPATHTESTDIR = os.path.abspath(os.path.dirname (sys.argv[0]))
+ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 FILESDIR = ABSPATHTESTDIR + '/workflow_testfiles'
 
+
 class Test_WorkflowSuite(unittest.TestCase, ResourceBase):
 
-    my_test_resource = {"setup":[],"teardown":[]}
+    my_test_resource = {"setup": [], "teardown": []}
 
     def setUp(self):
         ResourceBase.__init__(self)
@@ -31,7 +32,7 @@ class Test_WorkflowSuite(unittest.TestCase, ResourceBase):
         shutil.copy2(FILESDIR + '/myWorkFlow', RODSHOME + '/server/bin/cmd/')
         shutil.copy2(FILESDIR + '/tt', RODSHOME + '/server/bin/cmd/')
         assertiCmd(s.adminsession, "iput -f " + FILESDIR + "/PHOTO.JPG /tempZone/home/rods")
-	getiCmdOutput(s.adminsession, "irm -rf /tempZone/home/rods/workflow")
+        getiCmdOutput(s.adminsession, "irm -rf /tempZone/home/rods/workflow")
         assertiCmd(s.adminsession, "imkdir -p /tempZone/home/rods/workflow")
 
         self.run_resource_setup()
@@ -59,13 +60,15 @@ class Test_WorkflowSuite(unittest.TestCase, ResourceBase):
         # setup
 
         # ingest workflow file
-        assertiCmd(s.adminsession, "iput -D \"msso file\" " + FILESDIR + "/myWf.mss /tempZone/home/rods/workflow/myWf.mss")
-	assertiCmd(s.adminsession, "ils -L /tempZone/home/rods/workflow", "LIST", "myWf.mss")
+        assertiCmd(s.adminsession, "iput -D \"msso file\" " + FILESDIR +
+                   "/myWf.mss /tempZone/home/rods/workflow/myWf.mss")
+        assertiCmd(s.adminsession, "ils -L /tempZone/home/rods/workflow", "LIST", "myWf.mss")
 
         # create WSO collection and associate with MSO
         assertiCmd(s.adminsession, "imkdir -p /tempZone/home/rods/workflow/myWf")
-        assertiCmd(s.adminsession, "imcoll -m msso /tempZone/home/rods/workflow/myWf.mss /tempZone/home/rods/workflow/myWf")
- 
+        assertiCmd(
+            s.adminsession, "imcoll -m msso /tempZone/home/rods/workflow/myWf.mss /tempZone/home/rods/workflow/myWf")
+
         # ingest param file into WSO (there can be more than one)
         assertiCmd(s.adminsession, "iput " + FILESDIR + "/myWf.mpf /tempZone/home/rods/workflow/myWf")
 
@@ -73,9 +76,8 @@ class Test_WorkflowSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iput " + FILESDIR + "/myData /tempZone/home/rods/workflow/myWf/myData")
 
         # run the workflow
-        assertiCmd(s.adminsession, "iget /tempZone/home/rods/workflow/myWf/myWf.run -", "LIST", "Workflow Executed Successfully.")
+        assertiCmd(s.adminsession, "iget /tempZone/home/rods/workflow/myWf/myWf.run -",
+                   "LIST", "Workflow Executed Successfully.")
 
         # teardown
         assertiCmd(s.adminsession, "imcoll -U /tempZone/home/rods/workflow/myWf")
-
-

@@ -10,12 +10,14 @@ import sys
 # Invoke module functions directly from the command line by passing the
 #  desired function name minus the leading 'get_' as the first argument.
 
+
 def get_os_distribution_name():
     system = platform.system()
     if system == 'Linux':
         return platform.linux_distribution()[0]
     elif system == 'Darwin':
         return 'MacOSX'
+
 
 def get_os_distribution_version():
     system = platform.system()
@@ -27,7 +29,7 @@ def get_os_distribution_version():
 if __name__ == '__main__':
     def print_error(*args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
-    
+
     argument_function_map = dict((fname[4:], f)
                                  for fname, f in globals().items()
                                  if fname.startswith('get_') and inspect.isfunction(f))

@@ -12,7 +12,7 @@ irodstoplevel = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # get irods_version and catalog_schema_version
 versionfile = os.path.join(irodstoplevel, 'VERSION')
-jsonfile = versionfile+'.json'
+jsonfile = versionfile + '.json'
 if os.path.isfile(jsonfile):
     # VERSION.json already exists, use it
     with open(jsonfile) as f:

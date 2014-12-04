@@ -1,4 +1,5 @@
 class MetaclassUnittestTestCaseGenerator(type):
+
     def __new__(meta, name, bases, dct):
         test_generators = [v for k, v in dct.items() if k.startswith('generate_tests')]
         for g in test_generators:

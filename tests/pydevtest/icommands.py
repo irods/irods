@@ -13,7 +13,9 @@ from pydevtest_common import get_irods_top_level_dir
 
 RODSLOGDIR = get_irods_top_level_dir() + "/iRODS/server/log"
 
+
 class RodsEnv(object):
+
     '''Contains Env/Auth variables.
 
     Used as argument for RodsSession.createEnvFiles().
@@ -36,12 +38,14 @@ class RodsEnv(object):
         self.encalgorithm = encalgorithm
         self.defaulthashscheme = defaulthashscheme
 
+
 class RodsSession(object):
+
     '''A set of methods to start, close and manage multiple
     iRODS client sessions at the same time, using icommands.
     '''
 
-    def __init__(self, topDir, icommandsDir, sessionId = 'default_session'):
+    def __init__(self, topDir, icommandsDir, sessionId='default_session'):
         self.topDir = topDir  # main directory to store session and log dirs
         self.icommandsDir = icommandsDir  # where the icommand binaries are
         self.sessionId = sessionId
@@ -65,7 +69,7 @@ class RodsSession(object):
         terminate_default = terminate_nix
 
         handlers = {
-            "win32": terminate_win, 
+            "win32": terminate_win,
             "linux2": terminate_nix
         }
 
@@ -174,14 +178,14 @@ class RodsSession(object):
         argList = [cmdStr] + argList
 
         global RODSLOGDIR
-        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen('ls -t ' + RODSLOGDIR + '/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        myrodslog = open(myrodslogfile.rstrip(),"a")
-        myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(), "a")
+        myrodslog.write(" --- interrupt icommand [" + ' '.join(argList) + "] --- \n")
         myrodslog.close()
 
-        p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
-            stderr = subprocess.PIPE, env = myenv)
+        p = subprocess.Popen(argList, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, env=myenv)
 
         # set timeout in seconds
         timeout = 60  # 1 minute
@@ -199,7 +203,7 @@ class RodsSession(object):
             returncode = -2
         # else if subprocess did not complete by filesize threshold, we kill it
         elif p.poll() is None:
-            if (sys.version_info >= (2,6)):
+            if (sys.version_info >= (2, 6)):
                 # use native p.terminate() available in 2.6+
                 p.terminate()
             else:
@@ -234,14 +238,14 @@ class RodsSession(object):
         argList = [cmdStr] + argList
 
         global RODSLOGDIR
-        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen('ls -t ' + RODSLOGDIR + '/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        myrodslog = open(myrodslogfile.rstrip(),"a")
-        myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(), "a")
+        myrodslog.write(" --- interrupt icommand delay(" + str(delay) + ") [" + ' '.join(argList) + "] --- \n")
         myrodslog.close()
 
-        p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
-            stderr = subprocess.PIPE, env = myenv)
+        p = subprocess.Popen(argList, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, env=myenv)
 
         # wait for subprocess to complete
         granularity = 0.01
@@ -253,7 +257,7 @@ class RodsSession(object):
         # if subprocess did not complete by delay, we kill it
         if p.poll() is None:
             p.terminate()
-             # expected, so return 0
+            # expected, so return 0
             returncode = 0
         # else the process finished before the delay expired
         else:
@@ -268,55 +272,55 @@ class RodsSession(object):
 
         Set of valid commands can be extended.
         '''
-        valid_cmds = [  'iinit',
-                        'ienv',
-                        'ihelp',
-                        'ils',
-                        'icd',
-                        'imkdir',
-                        'ichmod',
-                        'imeta',
-                        'iget',
-                        'iput',
-                        'imv',
-                        'icp',
-                        'irepl',
-                        'iquest',
-                        'irm',
-                        'irmtrash',
-                        'iexit',
-                        # added for test_originaldevtest.py
-                        'ilsresc',
-                        'imiscsvrinfo',
-                        'iuserinfo',
-                        'ipwd',
-                        'ierror',
-                        'iexecmd',
-                        'ips',
-                        'iqstat',
-                        'ichksum',
-                        'itrim',
-                        'iphymv',
-                        'ibun',
-                        'iphybun',
-                        'ireg',
-                        'imcoll',
-                        'irsync',
-                        'ixmsg',
-                        # added for test_allrules.py
-                        'irule',
-                        'iqdel',
-                        # added for ticket_suite.py
-                        'iticket',
-                        # added for pluggable api test
-                        'iapitest',
-                        # added for catalog_suite.py
-                        'isysmeta',
-                     ]
+        valid_cmds = ['iinit',
+                      'ienv',
+                      'ihelp',
+                      'ils',
+                      'icd',
+                      'imkdir',
+                      'ichmod',
+                      'imeta',
+                      'iget',
+                      'iput',
+                      'imv',
+                      'icp',
+                      'irepl',
+                      'iquest',
+                      'irm',
+                      'irmtrash',
+                      'iexit',
+                      # added for test_originaldevtest.py
+                      'ilsresc',
+                      'imiscsvrinfo',
+                      'iuserinfo',
+                      'ipwd',
+                      'ierror',
+                      'iexecmd',
+                      'ips',
+                      'iqstat',
+                      'ichksum',
+                      'itrim',
+                      'iphymv',
+                      'ibun',
+                      'iphybun',
+                      'ireg',
+                      'imcoll',
+                      'irsync',
+                      'ixmsg',
+                      # added for test_allrules.py
+                      'irule',
+                      'iqdel',
+                      # added for ticket_suite.py
+                      'iticket',
+                      # added for pluggable api test
+                      'iapitest',
+                      # added for catalog_suite.py
+                      'isysmeta',
+                      ]
 
         if icommand not in valid_cmds:
             # second value represents STDERR
-            return ("","Invalid Command - '"+icommand+"' not allowed")
+            return ("", "Invalid Command - '" + icommand + "' not allowed")
 
         # should probably also add a condition to restrict
         # possible values for icommandsDir
@@ -328,23 +332,22 @@ class RodsSession(object):
         argList = [cmdStr] + argList
 
         global RODSLOGDIR
-        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen('ls -t ' + RODSLOGDIR + '/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        myrodslog = open(myrodslogfile.rstrip(),"a")
-        myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(), "a")
+        myrodslog.write(" --- icommand [" + ' '.join(argList) + "] --- \n")
         myrodslog.close()
 
         if delay > 0:
-            print "  runCmd: sleeping ["+str(delay)+"] seconds"
+            print "  runCmd: sleeping [" + str(delay) + "] seconds"
             time.sleep(delay)
 
         if waitforresult:
-            return subprocess.Popen(argList, stdout = subprocess.PIPE, \
-                stderr = subprocess.PIPE, env = myenv).communicate()
+            return subprocess.Popen(argList, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, env=myenv).communicate()
         else:
-            return subprocess.Popen(argList, stdout = subprocess.PIPE, \
-                stderr = subprocess.PIPE, env = myenv)
-
+            return subprocess.Popen(argList, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, env=myenv)
 
     def runAdminCmd(self, icommand, argList=[]):
         '''Runs the iadmin icommand with optional argument list and
@@ -353,7 +356,7 @@ class RodsSession(object):
 
         if icommand != 'iadmin':
             # second value represents STDERR
-            return ("","Invalid Admin Command - '"+icommand+"' not allowed")
+            return ("", "Invalid Admin Command - '" + icommand + "' not allowed")
 
         # should probably also add a condition to restrict
         # possible values for icommandsDir
@@ -365,19 +368,19 @@ class RodsSession(object):
         argList = [cmdStr] + argList
 
         global RODSLOGDIR
-        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen('ls -t ' + RODSLOGDIR + '/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
-        myrodslog = open(myrodslogfile.rstrip(),"a")
-        myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")
+        myrodslog = open(myrodslogfile.rstrip(), "a")
+        myrodslog.write(" --- iadmin [" + ' '.join(argList) + "] --- \n")
         myrodslog.close()
 
-        return subprocess.Popen(argList, stdin = subprocess.PIPE, \
-            stdout = subprocess.PIPE, stderr = subprocess.PIPE, \
-            env = myenv).communicate("yes\n")
+        return subprocess.Popen(argList, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                env=myenv).communicate("yes\n")
 
 
-### an example usage
-#def testsuite():
+# an example usage
+# def testsuite():
 #    working_path = "/Users/trel/Desktop/irodstesting/sessions"
 #    icommands_bin = "/Users/trel/Desktop/irodstesting/iRODS/clients/icommands/bin"
 #    session_id = datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")

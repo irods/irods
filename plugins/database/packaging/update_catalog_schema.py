@@ -9,6 +9,7 @@ schema_directory = "schema_updates"
 DEBUG = True
 DEBUG = False
 
+
 def get_current_schema_version(cfg):
     dbtype = cfg.values['catalog_database_type']
     result = cfg.exec_sql_cmd( "select option_value \
@@ -19,8 +20,8 @@ def get_current_schema_version(cfg):
     # use default value
     current_schema_version = 1
 
-    err_idx = 2;
-    if( dbtype == "oracle" ):
+    err_idx = 2
+    if(dbtype == "oracle"):
         err_idx = 1
 
     if DEBUG:
@@ -28,14 +29,14 @@ def get_current_schema_version(cfg):
         print(result)
     if (
         (dbtype == "postgres" and
-        "relation \"r_grid_configuration\" does not exist" in result[2].decode('utf-8'))
+         "relation \"r_grid_configuration\" does not exist" in result[2].decode('utf-8'))
         or
         (dbtype == "mysql" and
-        ("Table '%s.R_GRID_CONFIGURATION' doesn't exist" % cfg.values['Database']) in result[2].decode('utf-8'))
+         ("Table '%s.R_GRID_CONFIGURATION' doesn't exist" % cfg.values['Database']) in result[2].decode('utf-8'))
         or
         (dbtype == "oracle" and
-        "table or view does not exist" in result[1].decode('utf-8')) # sqlplus puts the output into stdout
-        ):
+         "table or view does not exist" in result[1].decode('utf-8'))  # sqlplus puts the output into stdout
+    ):
 
         # create and populate configuration table
         indexstring = ""
@@ -44,28 +45,28 @@ def get_current_schema_version(cfg):
         result = cfg.exec_sql_cmd("create table R_GRID_CONFIGURATION ( \
                                    namespace varchar(2700), \
                                    option_name varchar(2700), \
-                                   option_value varchar(2700) );" )
+                                   option_value varchar(2700) );")
         if DEBUG:
             print(result)
 
         result = cfg.exec_sql_cmd("create unique index idx_grid_configuration \
-                                   on R_GRID_CONFIGURATION (namespace %s, option_name %s);" % ( indexstring, indexstring ) )
+                                   on R_GRID_CONFIGURATION (namespace %s, option_name %s);" % (indexstring, indexstring))
         if DEBUG:
             print(result)
 
         result = cfg.exec_sql_cmd("insert into R_GRID_CONFIGURATION VALUES ( \
-                                   'database', 'schema_version', '1' );" )
+                                   'database', 'schema_version', '1' );")
         if DEBUG:
             print(result)
- 
+
         # special error case for oracle as it prints out '1 row created' on success
-        if ( dbtype == "oracle" ):
-            if( result[err_idx].decode('utf-8').find("row created") == -1 ):
+        if (dbtype == "oracle"):
+            if(result[err_idx].decode('utf-8').find("row created") == -1):
                 print("ERROR: Creating Grid Configuration Table did not complete...")
                 print(result[err_idx])
                 return
         else:
-            if( result[err_idx].decode('utf-8') != "" ):
+            if(result[err_idx].decode('utf-8') != ""):
                 print("ERROR: Creating Grid Configuration Table did not complete...")
                 print(result[err_idx])
                 return
@@ -76,19 +77,21 @@ def get_current_schema_version(cfg):
         sql_output_lines = result[1].decode('utf-8').split('\n')
         for i, line in enumerate(sql_output_lines):
             if 'option_value' in line.lower():
-                result_line = i+1
+                result_line = i + 1
                 # oracle and postgres have line of "------" separating column title from entry
                 if '-' in sql_output_lines[result_line]:
                     result_line += 1
                 break
         else:
-            raise RuntimeError('get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
+            raise RuntimeError(
+                'get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
 
         try:
             current_schema_version = int(sql_output_lines[result_line])
         except ValueError:
             print('Failed to convert [' + sql_output_lines[result_line] + '] to an int')
-            raise RuntimeError('get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
+            raise RuntimeError(
+                'get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
     if DEBUG:
         print("current_schema_version: %d" % current_schema_version)
 
@@ -99,7 +102,7 @@ def get_target_schema_version():
     # default
     target_schema_version = 2
     # read version value from VERSION.json file
-    if os.path.isfile( "/var/lib/irods/VERSION.json" ):
+    if os.path.isfile("/var/lib/irods/VERSION.json"):
         version_file = os.path.abspath("/var/lib/irods/VERSION.json")
     else:
         version_file = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/VERSION.json"
@@ -135,7 +138,7 @@ def update_schema_version(cfg, version):
 def get_update_files(version, dbtype):
     # list all files
     sd = os.path.dirname(os.path.realpath(__file__)) + "/" + schema_directory
-    if ( not os.path.exists( sd )):
+    if (not os.path.exists(sd)):
         sd = os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))) + "/plugins/database/packaging/" + schema_directory
     mycmd = "find %s -name %s" % (sd, "*." + dbtype + ".*sql")

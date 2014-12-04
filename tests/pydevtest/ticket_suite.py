@@ -1,5 +1,5 @@
 import sys
-if (sys.version_info >= (2,7)):
+if (sys.version_info >= (2, 7)):
     import unittest
 else:
     import unittest2 as unittest
@@ -8,9 +8,10 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 
+
 class Test_TicketSuite(unittest.TestCase, ResourceBase):
 
-    my_test_resource = {"setup":[],"teardown":[]}
+    my_test_resource = {"setup": [], "teardown": []}
 
     def setUp(self):
         ResourceBase.__init__(self)
@@ -22,7 +23,7 @@ class Test_TicketSuite(unittest.TestCase, ResourceBase):
         s.twousers_down()
 
     def test_list_no_tickets(self):
-        assertiCmd(s.adminsession,"iticket ls")
+        assertiCmd(s.adminsession, "iticket ls")
 
     def test_iticket_bad_subcommand(self):
-        assertiCmd(s.adminsession,"iticket badsubcommand","LIST","unrecognized command")
+        assertiCmd(s.adminsession, "iticket badsubcommand", "LIST", "unrecognized command")

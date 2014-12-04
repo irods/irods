@@ -6,10 +6,13 @@ import re
 import subprocess
 import time
 
+
 def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
+
 class ServerConfig(object):
+
     def __init__(self):
         self.values = {}
         if os.path.isfile('/etc/irods/server_config.json'):
@@ -135,7 +138,8 @@ class ServerConfig(object):
         db_name = self.values['Database']
         db_user = self.values['DBUsername']
         db_pass = self.get_db_password()
-        run_str = '{sqlclient} -h {db_host} -u {db_user} --password={db_pass} -P {db_port} {db_name} < {sql_filename}'.format(**vars())
+        run_str = '{sqlclient} -h {db_host} -u {db_user} --password={db_pass} -P {db_port} {db_name} < {sql_filename}'.format(
+            **vars())
         p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)

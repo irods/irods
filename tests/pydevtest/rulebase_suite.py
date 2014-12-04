@@ -1,5 +1,5 @@
 import sys
-if (sys.version_info >= (2,7)):
+if (sys.version_info >= (2, 7)):
     import unittest
 else:
     import unittest2 as unittest
@@ -9,11 +9,12 @@ import pydevtest_sessions as s
 import commands
 import os
 import socket
-import time # remove once file hash fix is commited #2279
+import time  # remove once file hash fix is commited #2279
+
 
 class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
 
-    my_test_resource = {"setup":[],"teardown":[]}
+    my_test_resource = {"setup": [], "teardown": []}
 
     def setUp(self):
         ResourceBase.__init__(self)
@@ -27,17 +28,20 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         # create new resources
         hostname = socket.gethostname()
-        assertiCmd(s.adminsession,"iadmin mkresc r1 unixfilesystem "+hostname+":/tmp/irods/r1", "STDOUT", "Creating")
-        assertiCmd(s.adminsession,"iadmin mkresc r2 unixfilesystem "+hostname+":/tmp/irods/r2", "STDOUT", "Creating")
+        assertiCmd(s.adminsession, "iadmin mkresc r1 unixfilesystem " +
+                   hostname + ":/tmp/irods/r1", "STDOUT", "Creating")
+        assertiCmd(s.adminsession, "iadmin mkresc r2 unixfilesystem " +
+                   hostname + ":/tmp/irods/r2", "STDOUT", "Creating")
 
         # save original core.re
         os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
 
         # add acPostProcForPut replication rule
-        os.system('''sed -e '/^acPostProcForPut/i acPostProcForPut { replicateMultiple( "r1,r2" ); }' /etc/irods/core.re > /tmp/irods/core.re''')
-        time.sleep(1) # remove once file hash fix is commited #2279
+        os.system(
+            '''sed -e '/^acPostProcForPut/i acPostProcForPut { replicateMultiple( "r1,r2" ); }' /etc/irods/core.re > /tmp/irods/core.re''')
+        time.sleep(1)  # remove once file hash fix is commited #2279
         os.system("cp /tmp/irods/core.re /etc/irods/core.re")
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
 
         # add new rule to end of core.re
         newrule = """
@@ -62,47 +66,47 @@ class Test_RulebaseSuite(unittest.TestCase, ResourceBase):
                         }
 
                 """
-        f = open("/tmp/irods/newrule","w")
+        f = open("/tmp/irods/newrule", "w")
         f.write(newrule)
         f.close()
         os.system("cat /etc/irods/core.re /tmp/irods/newrule > /tmp/irods/core.re")
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
         os.system("cp /tmp/irods/core.re /etc/irods/core.re")
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
 
         # put data
         tfile = "rulebasetestfile"
-        os.system("touch "+tfile)
-        assertiCmd(s.adminsession,"iput "+tfile)
+        os.system("touch " + tfile)
+        assertiCmd(s.adminsession, "iput " + tfile)
 
         # check replicas
-        assertiCmd(s.adminsession,"ils -L "+tfile,"STDOUT"," demoResc ")
-        assertiCmd(s.adminsession,"ils -L "+tfile,"STDOUT"," r1 ")
-        assertiCmd(s.adminsession,"ils -L "+tfile,"STDOUT"," r2 ")
+        assertiCmd(s.adminsession, "ils -L " + tfile, "STDOUT", " demoResc ")
+        assertiCmd(s.adminsession, "ils -L " + tfile, "STDOUT", " r1 ")
+        assertiCmd(s.adminsession, "ils -L " + tfile, "STDOUT", " r2 ")
 
         # clean up and remove new resources
-        assertiCmd(s.adminsession,"irm -rf "+tfile)
-        assertiCmd(s.adminsession,"iadmin rmresc r1")
-        assertiCmd(s.adminsession,"iadmin rmresc r2")
+        assertiCmd(s.adminsession, "irm -rf " + tfile)
+        assertiCmd(s.adminsession, "iadmin rmresc r1")
+        assertiCmd(s.adminsession, "iadmin rmresc r2")
 
         # restore core.re
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
         os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
 
     def test_dynamic_pep_with_rscomm_usage(self):
         # save original core.re
         os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
 
         # add dynamic PEP with rscomm usage
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
         os.system('''echo "pep_resource_open_pre(*OUT) { msiGetSystemTime( *junk, '' ); }" >> /etc/irods/core.re''')
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
 
         # check rei functioning
-        assertiCmd(s.adminsession,"iget "+self.testfile+" - ","STDOUT", self.testfile)
+        assertiCmd(s.adminsession, "iget " + self.testfile + " - ", "STDOUT", self.testfile)
 
         # restore core.re
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
         os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
-        time.sleep(1) # remove once file hash fix is commited #2279
+        time.sleep(1)  # remove once file hash fix is commited #2279
