@@ -39,6 +39,8 @@ AVROVERSIONARCHIVE=$(AVROVERSION).tar.gz
 AVROVERSIONMAKE=$(AVROVERSION)/Makefile
 ZEROMQVERSIONARCHIVE=$(ZEROMQVERSION).tar.gz
 ZEROMQVERSIONMAKE=$(ZEROMQVERSION)/Makefile
+CPPZMQVERSIONARCHIVE=$(CPPZMQVERSION).tar.gz
+CPPZMQVERSIONMAKE=$(CPPZMQVERSION)/Makefile
 
 FAKETARGETFORMAKE=FakeTargetForMake
 
@@ -81,9 +83,9 @@ $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 ifeq ($(OS_platform), osx_platform)
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq cppzmq build_database_for_macosx
 else
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq cppzmq
 endif
 
 generate : build
@@ -230,6 +232,15 @@ $(ZEROMQVERSIONMAKE) : $(ZEROMQVERSIONARCHIVE)
 zeromq : $(ZEROMQVERSIONMAKE)
 	@$(MAKE) -C $(ZEROMQVERSION)
 
+$(CPPZMQVERSIONARCHIVE) :
+	@wget $(RENCI_FTP_EXTERNAL)/$(CPPZMQVERSIONARCHIVE) 2>&1
+
+$(CPPZMQVERSIONMAKE) : $(CPPZMQVERSIONARCHIVE)
+	@tar zxf $(CPPZMQVERSIONARCHIVE)
+
+cppzmq : $(CPPZMQVERSIONMAKE) zeromq
+	@cp $(CPPZMQVERSION)/zmq.hpp $(ZEROMQVERSION)/include/
+
 $(EPMVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_BUILD)/$(EPMVERSIONARCHIVE) 2>&1
 
@@ -281,6 +292,9 @@ clean :
 	@echo "Cleaning zeromq..."
 	@rm -rf $(ZEROMQVERSION)
 	@rm -f $(ZEROMQVERSIONARCHIVE)
+	@echo "Cleaning cppzmq..."
+	@rm -rf $(CPPZMQVERSION)
+	@rm -f $(CPPZMQVERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
