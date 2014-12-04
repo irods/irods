@@ -96,7 +96,7 @@ namespace irods {
         std::map< std::string, float > root_map;
 
         // =-=-=-=-=-=-=-
-        // grid throught the list, get the root of the hiers and
+        // grind through the list, get the root of the hiers and
         // place it into the map
         std::vector< physical_object > repls = _file_obj->replicas();
         for ( size_t i = 0; i < repls.size(); ++i ) {
