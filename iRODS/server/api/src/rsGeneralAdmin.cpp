@@ -199,7 +199,6 @@ _addResource(
     rescInfo.rescParent[0] = '\0';
 
     // =-=-=-=-=-=-=-
-    // RAJA ADDED June 1 2009 for pre-post processing rule hooks
     args[0] = rescInfo.rescName;
     args[1] = rescInfo.rescType;
     args[2] = rescInfo.rescClass;
@@ -227,7 +226,6 @@ _addResource(
         }
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
                  rescInfo.rescName, result );
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     }
 
     // =-=-=-=-=-=-=-
@@ -238,7 +236,6 @@ _addResource(
 
     // =-=-=-=-=-=-=-
     // apply postproc policy enforcement point for creating a resource, handle errors
-    // ( RAJA ADDED June 1 2009 for pre-post processing rule hooks )
     else if ( ( result =  applyRuleArg( "acPostProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI ) ) < 0 ) {
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
@@ -246,7 +243,6 @@ _addResource(
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
                  rescInfo.rescName, result );
     }
-    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     return result;
 }
@@ -425,7 +421,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
 
         if ( strcmp( generalAdminInp->arg1, "token" ) == 0 ) {
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2;
             args[1] = generalAdminInp->arg3;
             args[2] = generalAdminInp->arg4;
@@ -443,7 +438,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], args[2], i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlRegToken( rsComm, generalAdminInp->arg2,
                                   generalAdminInp->arg3,
@@ -451,7 +445,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                                   generalAdminInp->arg5,
                                   generalAdminInp->arg6,
                                   generalAdminInp->arg7 );
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForCreateToken", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -464,7 +457,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
@@ -481,7 +473,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     if ( strcmp( generalAdminInp->arg0, "modify" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2; /* username */
             args[1] = generalAdminInp->arg3; /* option */
             /* Since the obfuscated password might contain commas, single or
@@ -501,12 +492,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlModUser( rsComm, generalAdminInp->arg2,
                                  generalAdminInp->arg3, generalAdminInp->arg4 );
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForModifyUser", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -519,7 +508,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
@@ -546,12 +534,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlModGroup( rsComm, generalAdminInp->arg2,
                                   generalAdminInp->arg3, generalAdminInp->arg4,
                                   generalAdminInp->arg5 );
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForModifyUserGroup", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -564,7 +550,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
@@ -625,7 +610,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2; /* rescname */
             args[1] = generalAdminInp->arg3; /* option */
             args[2] = generalAdminInp->arg4; /* newvalue */
@@ -640,7 +624,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             // =-=-=-=-=-=-=-
             // addition of 'rebalance' as an option to iadmin modresc.  not in icat code
             // due to dependency on resc_mgr, etc.
@@ -678,7 +661,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
             }
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForModifyResource", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -691,7 +673,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status != 0 ) {
                 chlRollback( rsComm );
             }
@@ -786,7 +767,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 return SYS_INVALID_INPUT_PARAM;
             }
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = rescInfo.rescName;
             argc = 1;
             i =  applyRuleArg( "acPreProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
@@ -799,11 +779,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          rescInfo.rescName, i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlDelResc( rsComm, &rescInfo );
             if ( status == 0 ) {
-                /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
                 i =  applyRuleArg( "acPostProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
                     if ( rei2.status < 0 ) {
@@ -815,7 +793,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             if ( status != 0 ) {
                 chlRollback( rsComm );
@@ -847,7 +824,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "token" ) == 0 ) {
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2;
             args[1] = generalAdminInp->arg3;
             argc = 2;
@@ -861,12 +837,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                          args[0], args[1], i );
                 return i;
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             status = chlDelToken( rsComm, generalAdminInp->arg2,
                                   generalAdminInp->arg3 );
 
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForDeleteToken", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -879,7 +853,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     return i;
                 }
             }
-            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
             if ( status != 0 ) {
                 chlRollback( rsComm );
