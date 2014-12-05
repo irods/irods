@@ -356,10 +356,11 @@ extern "C" {
                                             irods::osauth_auth_object > (
                                                 _ctx.fco() );
         char response[ RESPONSE_LEN + 2 ];
-        strncpy(
+        snprintf(
             response,
-            ptr->digest().c_str(),
-            RESPONSE_LEN + 2 );
+            RESPONSE_LEN + 2,
+            "%s",
+            ptr->digest().c_str() );
 
         // =-=-=-=-=-=-=-
         // build the username#zonename string
@@ -367,10 +368,11 @@ extern "C" {
                                 "#"              +
                                 ptr->zone_name();
         char username[ MAX_NAME_LEN ];
-        strncpy(
+        snprintf(
             username,
-            user_name.c_str(),
-            MAX_NAME_LEN );
+            MAX_NAME_LEN,
+            "%s",
+            user_name.c_str() );
 
         authResponseInp_t auth_response;
         auth_response.response = response;
