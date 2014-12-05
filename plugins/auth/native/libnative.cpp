@@ -325,7 +325,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // build the response string
                 char response[ RESPONSE_LEN + 2 ];
-                strncpy( response, ptr->digest().c_str(), RESPONSE_LEN + 2 );
+                snprintf( response, RESPONSE_LEN + 2, "%s", ptr->digest().c_str() );
 
                 // =-=-=-=-=-=-=-
                 // build the username#zonename string
