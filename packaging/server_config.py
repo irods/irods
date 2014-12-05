@@ -100,7 +100,10 @@ class ServerConfig(object):
         db_host = self.values['Servername']
         db_port = self.values['Port']
         db_name = self.values['Database']
-        db_user = self.values['db_username']
+        if 'db_username' in self.values.keys():
+            db_user = self.values['db_username']
+        else:
+            db_user = self.values['DBUsername']
         # suse12 ident auth for default pgsql install fails if localhost given explicitly
         if db_host == 'localhost':
             run_str = '{sqlclient} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
@@ -136,7 +139,10 @@ class ServerConfig(object):
         db_host = self.values['Server']
         db_port = self.values['Port']
         db_name = self.values['Database']
-        db_user = self.values['DBUsername']
+        if 'db_username' in self.values.keys():
+            db_user = self.values['db_username']
+        else:
+            db_user = self.values['DBUsername']
         db_pass = self.get_db_password()
         run_str = '{sqlclient} -h {db_host} -u {db_user} --password={db_pass} -P {db_port} {db_name} < {sql_filename}'.format(
             **vars())
