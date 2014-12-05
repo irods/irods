@@ -168,8 +168,6 @@ setUserInfo(
     const char *proxyUserName, const char *proxyRodsZone,
     const char *clientUserName, const char *clientRodsZone,
     userInfo_t *clientUser, userInfo_t *proxyUser ) {
-    char *myUserName;
-    char *myRodsZone;
 
     rstrcpy( proxyUser->userName, proxyUserName, NAME_LEN );
     if ( clientUserName != NULL ) {
