@@ -587,7 +587,7 @@ namespace irods {
 
         if( 0 != env.xmsgPort ) {
             result = config_props_.set<int>( 
-                         irods::CFG_ZONE_PORT,
+                         irods::CFG_XMSG_PORT,
                          env.xmsgPort );
             if( !result.ok() ) {
                 irods::log( PASS( result ) );
