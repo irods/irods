@@ -177,6 +177,7 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
     # get version information from 4.0 bash-style VERSION file
     # and stub out the rest for validation
     . $IRODS_HOME_DIR/VERSION
+    if [ "$$CATALOG_SCHEMA_VERSION" = "" ] ; then CATALOG_SCHEMA_VERSION=1 ; fi
     python -c "from __future__ import print_function; import json; print(json.dumps({'irods_version': '$$IRODSVERSION', 'catalog_schema_version': $$CATALOG_SCHEMA_VERSION, 'commit_id': '0000000000000000000000000000000000000000', 'installation_time': '2014-08-20T17:36:40Z', 'build_system_information': '', 'compiler_version': '', 'compile_time': '2014-08-20T17:36:40Z'}))" > $IRODS_HOME_DIR/VERSION.json.previous
   fi
 
