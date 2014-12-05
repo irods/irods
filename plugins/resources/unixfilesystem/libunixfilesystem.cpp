@@ -446,13 +446,16 @@ extern "C" {
                     if ( fd == 0 ) {
 
                         close( fd );
-                        rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
-                        open( "/dev/null", O_RDWR, 0 );
+                        int null_fd = open( "/dev/null", O_RDWR, 0 );
 
                         // =-=-=-=-=-=-=-
                         // make call to umask & open for create
                         mode_t myMask = umask( ( mode_t ) 0000 );
                         fd = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+                        if ( null_fd >= 0 ) {
+                            close( null_fd );
+                        }
+                        rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
 
                         // =-=-=-=-=-=-=-
                         // reset the old mask
@@ -524,9 +527,12 @@ extern "C" {
             // if we got a 0 descriptor, try again
             if ( fd == 0 ) {
                 close( fd );
-                rodsLog( LOG_NOTICE, "unix_file_open_plugin: 0 descriptor" );
-                open( "/dev/null", O_RDWR, 0 );
+                int null_fd = open( "/dev/null", O_RDWR, 0 );
                 fd = open( fco->physical_path().c_str(), flags, fco->mode() );
+                if ( null_fd >= 0 ) {
+                    close( null_fd );
+                }
+                rodsLog( LOG_NOTICE, "unix_file_open_plugin: 0 descriptor" );
             }
 
             // =-=-=-=-=-=-=-
