@@ -549,6 +549,52 @@ namespace irods {
         result = config_props_.set<std::string>( prop_name, prop_setting );
         rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
+        // add expected zone_name, zone_user, zone_port, zone_auth_scheme
+        // as these are now read from server_properties
+        rodsEnv env;
+        getRodsEnv( &env );
+        result = config_props_.set<std::string>( 
+                     irods::CFG_ZONE_NAME_KW,
+                     env.rodsZone );
+        if( !result.ok() ) {
+            irods::log( PASS( result ) );
+
+        }
+
+        result = config_props_.set<std::string>( 
+                     irods::CFG_ZONE_USER,
+                     env.rodsUserName );
+        if( !result.ok() ) {
+            irods::log( PASS( result ) );
+
+        }
+
+        result = config_props_.set<std::string>( 
+                     irods::CFG_ZONE_AUTH_SCHEME,
+                     env.rodsAuthScheme );
+        if( !result.ok() ) {
+            irods::log( PASS( result ) );
+
+        }
+
+        result = config_props_.set<int>( 
+                     irods::CFG_ZONE_PORT,
+                     env.rodsPort );
+        if( !result.ok() ) {
+            irods::log( PASS( result ) );
+
+        }
+
+        if( 0 != env.xmsgPort ) {
+            result = config_props_.set<int>( 
+                         irods::CFG_ZONE_PORT,
+                         env.xmsgPort );
+            if( !result.ok() ) {
+                irods::log( PASS( result ) );
+
+            }
+        }
+
         return result;
 
     } // server_properties::capture()
