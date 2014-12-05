@@ -1063,7 +1063,7 @@ extern "C" {
                 msgHeader_t msg_header;
                 memset( &msg_header, 0, sizeof( msg_header ) );
 
-                strncpy( msg_header.type, _msg_type, HEADER_TYPE_LEN );
+                snprintf( msg_header.type, HEADER_TYPE_LEN, "%s", _msg_type );
                 msg_header.intInfo = _int_info;
 
                 // =-=-=-=-=-=-=-
