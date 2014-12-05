@@ -11,10 +11,29 @@ def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
+class CompatibilityDict(dict):
+    def __init__(self, compatibility_listing, *args, **kwargs):
+        super(CompatibilityDict, self).__init__(*args, **kwargs)
+        key_dict = {}
+        for old, new in compatibility_listing:
+            key_dict[old] = new
+            key_dict[new] = old
+        self.key_dict = key_dict
+
+    def __missing__(self, key):
+        compat_key = self.key_dict[key]
+        if compat_key in self.keys():
+            return self[compat_key]
+        else:
+            raise KeyError(key)
+
+
 class ServerConfig(object):
 
     def __init__(self):
-        self.values = {}
+        self.combined_config_dict = CompatibilityDict(compatibility_listing=[('DBPassword', 'db_password'),
+                                                                             ('DBUsername', 'db_username')])
+
         if os.path.isfile('/etc/irods/server_config.json'):
             self.capture('/etc/irods/server_config.json')
             self.capture('/etc/irods/database_config.json')
@@ -34,14 +53,7 @@ class ServerConfig(object):
         self.capture(os.path.join(os.environ['HOME'], '.odbc.ini'), '=')
 
     def get(self, key):
-        # old-key to new-key map
-        map_deprecated_keys = {'DBPassword': 'db_password', 'DBUsername': 'db_username'}
-        if key in self.values:
-            return self.values[key]
-        elif key in map_deprecated_keys:
-            return self.values[map_deprecated_keys[key]]
-        else:
-            raise KeyError(key)
+        return self.combined_config_dict[key]
 
     def capture(self, cfg_file, sep=None):
         # NOTE:: we want to make this programmatically detected
@@ -49,7 +61,7 @@ class ServerConfig(object):
         name, ext = os.path.splitext(cfg_file)
         with open(cfg_file, 'r') as f:
             if '.json' == ext:
-                self.values.update(json.load(f))
+                self.combined_config_dict.update(json.load(f))
             else:
                 for i, row in enumerate(f):
                     columns = row.split(sep)
@@ -57,15 +69,15 @@ class ServerConfig(object):
                     if columns[0] == '#':
                         continue
                     elif len(columns) > 1:
-                        self.values[columns[0].rstrip()] = columns[1].rstrip()
+                        self.combined_config_dict[columns[0].rstrip()] = columns[1].rstrip()
 
     def get_db_password(self):
         try:
-            db_key = self.values['DBKey']
+            db_key = self.get('DBKey')
         except KeyError:
-            return self.values['db_password']
+            return self.get('db_password')
 
-        obfuscated_password = self.values['db_password']
+        obfuscated_password = self.get('db_password')
         p = subprocess.Popen(['iadmin', obfuscated_password, db_key],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         db_pass, db_err = p.communicate()
@@ -97,13 +109,10 @@ class ServerConfig(object):
         if p.returncode != 0:
             raise RuntimeError('Failed to find postgres binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
         sqlclient = stdout.strip().decode('utf-8').rstrip() + '/psql'
-        db_host = self.values['Servername']
-        db_port = self.values['Port']
-        db_name = self.values['Database']
-        if 'db_username' in self.values.keys():
-            db_user = self.values['db_username']
-        else:
-            db_user = self.values['DBUsername']
+        db_host = self.get('Servername')
+        db_port = self.get('Port')
+        db_name = self.get('Database')
+        db_user = self.get('db_username')
         # suse12 ident auth for default pgsql install fails if localhost given explicitly
         if db_host == 'localhost':
             run_str = '{sqlclient} -p {db_port} -U {db_user} {db_name} < {sql_filename}'.format(**vars())
@@ -136,13 +145,10 @@ class ServerConfig(object):
         if p.returncode != 0:
             raise RuntimeError('Failed to find mysql binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
         sqlclient = stdout.strip().decode('utf-8').rstrip() + '/mysql'
-        db_host = self.values['Server']
-        db_port = self.values['Port']
-        db_name = self.values['Database']
-        if 'db_username' in self.values.keys():
-            db_user = self.values['db_username']
-        else:
-            db_user = self.values['DBUsername']
+        db_host = self.get('Server')
+        db_port = self.get('Port')
+        db_name = self.get('Database')
+        db_user = self.get('DBUsername')
         db_pass = self.get_db_password()
         run_str = '{sqlclient} -h {db_host} -u {db_user} --password={db_pass} -P {db_port} {db_name} < {sql_filename}'.format(
             **vars())
@@ -172,9 +178,9 @@ class ServerConfig(object):
         if p.returncode != 0:
             raise RuntimeError('Failed to find oracle binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
         sqlclient = stdout.strip().decode('utf-8').rstrip()
-        db_port = self.values['Port']
-        db_user = self.values['DBUsername'].split('@')[0]
-        db_host = self.values['DBUsername'].split('@')[1]
+        db_port = self.get('Port')
+        db_user = self.get('DBUsername').split('@')[0]
+        db_host = self.get('DBUsername').split('@')[1]
         db_pass = self.get_db_password()
         run_str = '{sqlclient} {db_user}/{db_pass}@{db_host} < {sql_filename}'.format(**vars())
         p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -185,19 +191,19 @@ class ServerConfig(object):
     # GENERIC
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     def exec_sql_cmd(self, sql):
-        if self.values['catalog_database_type'] == 'postgres':
+        if self.get('catalog_database_type') == 'postgres':
             return self.exec_pgsql_cmd(sql)
-        if self.values['catalog_database_type'] == 'mysql':
+        if self.get('catalog_database_type') == 'mysql':
             return self.exec_mysql_cmd(sql)
-        if self.values['catalog_database_type'] == 'oracle':
+        if self.get('catalog_database_type') == 'oracle':
             return self.exec_oracle_cmd(sql)
-        print('exec_sql_cmd: unknown database type [{0}]'.format(self.values['catalog_database_type']))
+        print('exec_sql_cmd: unknown database type [{0}]'.format(self.get('catalog_database_type')))
 
     def exec_sql_file(self, sql):
-        if self.values['catalog_database_type'] == 'postgres':
+        if self.get('catalog_database_type') == 'postgres':
             return self.exec_pgsql_file(sql)
-        if self.values['catalog_database_type'] == 'mysql':
+        if self.get('catalog_database_type') == 'mysql':
             return self.exec_mysql_file(sql)
-        if self.values['catalog_database_type'] == 'oracle':
+        if self.get('catalog_database_type') == 'oracle':
             return self.exec_oracle_file(sql)
-        print('exec_sql_file: unknown database type [{0}]'.format(self.values['catalog_database_type']))
+        print('exec_sql_file: unknown database type [{0}]'.format(self.get('catalog_database_type')))
