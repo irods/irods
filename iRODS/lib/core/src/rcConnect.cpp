@@ -155,12 +155,12 @@ _rcConnect( const char *rodsHost, int rodsPort,
         conn->exit_flg = false;
         try {
             conn->thread_ctx->lock      = new boost::mutex;
+            conn->thread_ctx->cond      = new boost::condition_variable;
+            conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
         } catch ( boost::thread_resource_error & ) {
-            rodsLog( LOG_ERROR, "boost::mutex constructor failed" );
+            rodsLog( LOG_ERROR, "failure initializing the boost thread context in _rcConnect" );
             return NULL;
         }
-        conn->thread_ctx->cond      = new boost::condition_variable;
-        conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
     }
 #endif
 
