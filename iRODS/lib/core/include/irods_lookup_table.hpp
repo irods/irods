@@ -154,7 +154,7 @@ namespace irods {
                 _val = boost::any_cast< T >( table_[ _key ] );
                 return SUCCESS();
             }
-            catch ( const boost::bad_any_cast & ) {
+            catch ( const boost::bad_any_cast& ) {
                 std::stringstream msg;
                 msg << "type and property key [";
                 msg << _key;

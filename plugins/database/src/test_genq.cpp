@@ -1071,7 +1071,7 @@ main( int argc, char **argv ) {
                 reps = reps > 0 && reps <= std::numeric_limits<int>::max() ? reps : 0;
                 status = doLs3( reps );
             }
-            catch ( boost::bad_lexical_cast e ) {
+            catch ( const boost::bad_lexical_cast& ) {
                 exit( 2 );
             }
             if ( status < 0 ) {

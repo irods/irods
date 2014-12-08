@@ -157,7 +157,7 @@ _rcConnect( const char *rodsHost, int rodsPort,
             conn->thread_ctx->lock      = new boost::mutex;
             conn->thread_ctx->cond      = new boost::condition_variable;
             conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
-        } catch ( boost::thread_resource_error & ) {
+        } catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "failure initializing the boost thread context in _rcConnect" );
             return NULL;
         }
@@ -289,11 +289,11 @@ int rcDisconnect(
         try {
             _conn->thread_ctx->reconnThr->try_join_for( boost::chrono::seconds( 2 ) );    // force an interruption point
         }
-        catch ( boost::thread_interrupted& e ) {
+        catch ( const boost::thread_interrupted& ) {
             rodsLog( LOG_ERROR, "Thread encountered interrupt." );
             status = SYS_THREAD_ENCOUNTERED_INTERRUPT;
         }
-        catch ( boost::thread_resource_error& e ) {
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "Threads exceed maximum supported concurrent threads" );
             status = SYS_INTERNAL_ERR;
         }
@@ -389,7 +389,7 @@ cliReconnManager( rcComm_t *conn ) {
         try {
             boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
         }
-        catch ( boost::lock_error e ) {
+        catch ( const boost::lock_error& ) {
             rodsLog( LOG_ERROR, "lock_error on unique_lock" );
             return;
         }
@@ -513,7 +513,7 @@ cliChkReconnAtSendStart( rcComm_t *conn ) {
         try {
             boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
         }
-        catch ( boost::lock_error e ) {
+        catch ( const boost::lock_error& ) {
             rodsLog( LOG_ERROR, "lock_error on unique_lock" );
             return SYS_INTERNAL_ERR;
         }
@@ -542,7 +542,7 @@ cliChkReconnAtSendEnd( rcComm_t *conn ) {
         try {
             boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
         }
-        catch ( boost::lock_error e ) {
+        catch ( const boost::lock_error& ) {
             rodsLog( LOG_ERROR, "lock_error on unique_lock" );
             return SYS_INTERNAL_ERR;
         }
@@ -564,7 +564,7 @@ cliChkReconnAtReadStart( rcComm_t *conn ) {
         try {
             boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
         }
-        catch ( boost::lock_error e ) {
+        catch ( const boost::lock_error& ) {
             rodsLog( LOG_ERROR, "lock_error on unique_lock" );
             return SYS_INTERNAL_ERR;
         }
@@ -582,7 +582,7 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
         try {
             boost_lock = boost::unique_lock<boost::mutex>( *conn->thread_ctx->lock );
         }
-        catch ( boost::lock_error e ) {
+        catch ( const boost::lock_error& ) {
             rodsLog( LOG_ERROR, "lock_error on unique_lock" );
             return SYS_INTERNAL_ERR;
         }
@@ -597,10 +597,10 @@ cliChkReconnAtReadEnd( rcComm_t *conn ) {
             try {
                 conn->thread_ctx->cond->wait( boost_lock );
             }
-            catch ( boost::condition_error ) {
+            catch ( const boost::condition_error& ) {
                 rodsLog( LOG_ERROR, "encountered boost condition_error on wait" );
             }
-            catch ( boost::thread_interrupted ) {
+            catch ( const boost::thread_interrupted& ) {
                 rodsLog( LOG_ERROR, "encountered interrupt in wait" );
             }
         }

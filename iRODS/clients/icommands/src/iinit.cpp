@@ -185,7 +185,7 @@ main( int argc, char **argv ) {
             my_env.rodsPort = boost::lexical_cast< int >( response );
 
         }
-        catch ( boost::bad_lexical_cast e ) {
+        catch ( const boost::bad_lexical_cast& ) {
             my_env.rodsPort = 0;
 
         }

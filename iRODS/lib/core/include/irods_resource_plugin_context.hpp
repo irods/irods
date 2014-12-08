@@ -60,7 +60,7 @@ namespace irods {
             try {
                 boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
             }
-            catch ( std::bad_cast exp ) {
+            catch ( const std::bad_cast& ) {
                 ret = PASSMSG( "invalid type for fco cast", ret );
             }
 

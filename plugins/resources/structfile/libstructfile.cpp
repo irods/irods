@@ -2167,7 +2167,7 @@ extern "C" {
             }
 
         }
-        catch ( const std::exception & ex ) {
+        catch ( const std::exception& ex ) {
             std::stringstream msg;
             msg << "build_directory_listing - caught exception [";
             msg << ex.what();

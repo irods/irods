@@ -70,7 +70,7 @@ namespace irods {
                     ret = PASSMSG( "invalid type for fco cast", ret );
                 }
             }
-            catch ( std::bad_cast exp ) {
+            catch ( const std::bad_cast& ) {
                 ret = PASSMSG( "invalid type for fco cast", ret );
             }
 

@@ -1417,7 +1417,7 @@ extern "C" {
                 }
             }
         }
-        catch ( std::bad_cast expr ) {
+        catch ( const std::bad_cast& ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Invalid first class object.";
@@ -1534,7 +1534,7 @@ extern "C" {
                     limit = boost::lexical_cast<int>( limit_str );
 
                 }
-                catch ( boost::bad_lexical_cast e ) {
+                catch ( const boost::bad_lexical_cast& ) {
                     std::stringstream msg;
                     msg << "failed to cast value ["
                         << limit_str

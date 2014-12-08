@@ -125,7 +125,7 @@ irods::error unix_check_path(
         return result;
 
     }
-    catch ( std::bad_cast ) {
+    catch ( const std::bad_cast& ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object" );
 
     }

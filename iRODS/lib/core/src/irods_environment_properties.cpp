@@ -323,7 +323,7 @@ namespace irods {
                     boost::is_any_of( "\t " ),
                     boost::token_compress_on );
             }
-            catch ( boost::exception& e ) {
+            catch ( boost::exception& ) {
                 rodsLog( LOG_ERROR, "boost::split failed on line [%s]", line.c_str() );
                 continue;
             }

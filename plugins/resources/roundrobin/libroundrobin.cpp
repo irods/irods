@@ -253,7 +253,7 @@ extern "C" {
                     _child_vector[ idx ] = name;
 
                 }
-                catch ( boost::bad_lexical_cast const& ) {
+                catch ( const boost::bad_lexical_cast& ) {
                     irods::log( ERROR( -1, "build_sorted_child_vector - lexical cast to size_t failed" ) );
                 }
 

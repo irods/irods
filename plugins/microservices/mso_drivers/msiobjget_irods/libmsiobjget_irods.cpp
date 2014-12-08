@@ -53,10 +53,10 @@ extern "C" {
             }
             return status;
         }
-        catch ( const boost::bad_lexical_cast & ) {
+        catch ( const boost::bad_lexical_cast& ) {
             return INVALID_LEXICAL_CAST;
         }
-        catch ( const boost::exception & ) {
+        catch ( const boost::exception& ) {
             return SYS_INTERNAL_ERR;
         }
 

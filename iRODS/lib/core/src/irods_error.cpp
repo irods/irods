@@ -36,7 +36,7 @@ namespace irods {
         try { //replace with std::to_string when we have c++14
             line_info = _file + ":" + boost::lexical_cast<std::string>( _line ) + ":" + _fcn;
         }
-        catch ( boost::bad_lexical_cast e ) {
+        catch ( const boost::bad_lexical_cast& ) {
             line_info = _file + ":<unknown line number>:" + _fcn;
         }
 
