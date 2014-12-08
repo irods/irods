@@ -552,7 +552,10 @@ namespace irods {
         // add expected zone_name, zone_user, zone_port, zone_auth_scheme
         // as these are now read from server_properties
         rodsEnv env;
-        getRodsEnv( &env );
+        int status = getRodsEnv( &env );
+        if ( status < 0 ) {
+            return ERROR( status, "failure in getRodsEnv" );
+        }
         result = config_props_.set<std::string>( 
                      irods::CFG_ZONE_NAME_KW,
                      env.rodsZone );
