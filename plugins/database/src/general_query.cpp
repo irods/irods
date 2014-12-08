@@ -2036,12 +2036,9 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
             }
         }
 
-        strncpy( prevDataId, icss->stmtPtr[statementNum]->resultValue[dataIx],
-                 LONG_NAME_LEN );
-        strncpy( prevUser, genQueryInp.condInput.value[userIx],
-                 LONG_NAME_LEN );
-        strncpy( prevAccess, genQueryInp.condInput.value[accessIx],
-                 LONG_NAME_LEN );
+        snprintf( prevDataId, sizeof( prevDataId ), "%s", icss->stmtPtr[statementNum]->resultValue[dataIx] );
+        strncpy( prevUser, sizeof( prevUser ), "%s", genQueryInp.condInput.value[userIx] );
+        strncpy( prevAccess, sizeof( prevAccess ), "%s", genQueryInp.condInput.value[accessIx] );
         prevStatus = 0;
 
         if ( strlen( genQueryInp.condInput.value[zoneIx] ) == 0 ) {
