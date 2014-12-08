@@ -446,43 +446,49 @@ extern "C" {
 
         val = getenv( "irodsSSLCACertificatePath" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLCACertificatePath,
+                sizeof( _env->irodsSSLCACertificatePath ),
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCACertificateFile" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLCACertificateFile,
+                sizeof( _env->irodsSSLCACertificateFile ),
                 "%s", val );
         }
 
         val = getenv( "irodsSSLVerifyServer" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLVerifyServer,
+                sizeof( _env->irodsSSLVerifyServer ),
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCertificateChainFile" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLCertificateChainFile,
+                sizeof( _env->irodsSSLCertificateChainFile ),
                 "%s", val );
         }
 
         val = getenv( "irodsSSLCertificateKeyFile" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLCertificateKeyFile,
+                sizeof( _env->irodsSSLCertificateKeyFile ),
                 "%s", val );
         }
 
         val = getenv( "irodsSSLDHParamsFile" );
         if ( val ) {
-            sprintf(
+            snprintf(
                 _env->irodsSSLDHParamsFile,
+                sizeof( _env->irodsSSLDHParamsFile ),
                 "%s", val );
         }
 
