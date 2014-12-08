@@ -32,7 +32,12 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // split along the associative delimiter and place into the map
         std::vector< std::string > token_vec;
-        boost::split( token_vec, _token, boost::is_any_of( _assoc ), boost::token_compress_on );
+        try {
+            boost::split( token_vec, _token, boost::is_any_of( _assoc ), boost::token_compress_on );
+        } catch ( const boost::bad_function_call& ) {
+            rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
+            token_vec.clear();
+        }
         if ( token_vec.size() != 2 ) {
             std::stringstream msg;
             msg << "token vector size != 2 during parsing of ["

@@ -891,10 +891,15 @@ namespace irods {
                     ++op_itr ) {
                 // =-=-=-=-=-=-=-
                 // call the op
-                error ret = ( ( *op_itr ) )( _comm );
-                if ( !ret.ok() ) {
-                    log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
-                    result = ret.code();
+                try {
+                    error ret = ( ( *op_itr ) )( _comm );
+                    if ( !ret.ok() ) {
+                        log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
+                        result = ret.code();
+                    }
+                } catch ( const boost::bad_function_call& ) {
+                    rodsLog( LOG_ERROR, "maintenance operation threw boost::bad_function_call" );
+                    result = SYS_INTERNAL_ERR;
                 }
 
             } // for op_itr
