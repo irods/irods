@@ -896,7 +896,7 @@ compoundConditionSpecified( char *condition ) {
     }
 
     /* Make a copy of the condition and erase the quoted strings */
-    strncpy( myCondition, condition, MAX_NAME_LEN * 2 );
+    snprintf( myCondition, sizeof( myCondition ), "%s", condition );
     for ( cptr = myCondition, quote = 0; *cptr != '\0'; cptr++ ) {
         if ( *cptr == '\'' ) {
             if ( quote == 0 ) {
