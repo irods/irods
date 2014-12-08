@@ -153,7 +153,12 @@ _rcConnect( const char *rodsHost, int rodsPort,
             rstrcpy( conn->svrVersion->reconnAddr, conn->host, NAME_LEN );
         }
         conn->exit_flg = false;
-        conn->thread_ctx->lock      = new boost::mutex;
+        try {
+            conn->thread_ctx->lock      = new boost::mutex;
+        } catch ( boost::thread_resource_error & ) {
+            rodsLog( LOG_ERROR, "boost::mutex constructor failed" );
+            return NULL;
+        }
         conn->thread_ctx->cond      = new boost::condition_variable;
         conn->thread_ctx->reconnThr = new boost::thread( cliReconnManager, conn );
     }
