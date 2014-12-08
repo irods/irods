@@ -195,10 +195,7 @@ extern "C" {
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
         rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "stat" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "' " );
+        snprintf( cmdArgv, sizeof( cmdArgv ), "stat '%s' ", filename.c_str() );
         rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
