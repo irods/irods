@@ -1633,7 +1633,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
 
                 }
 
-                strncpy( userZone, zoneName.c_str(), sizeof userZone );
+                snprintf( userZone, sizeof( userZone), "%s", zoneName.c_str() );
                 rodsLog( LOG_ERROR, "userZone1=:%s:\n", userZone );
             }
             rodsLog( LOG_DEBUG, "spQuery(1) userZone2=:%s:\n", userZone );
@@ -1659,7 +1659,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
             rodsLog( LOG_DEBUG, "spQuery(2) userName=:%s:\n", userName );
             rodsLog( LOG_DEBUG, "spQuery(2) in=:%s:\n",
                      genQueryInp.sqlCondInp.value[i] );
-            strncpy( rescName, genQueryInp.sqlCondInp.value[i], sizeof rescName );
+            snprintf( rescName, sizeof( rescName ), "%s", genQueryInp.sqlCondInp.value[i] );
             cllBindVars[cllCounter++] = rescName;
             cllBindVars[cllCounter++] = userName;
             cllBindVars[cllCounter++] = userZone;
