@@ -97,7 +97,7 @@ def get_current_schema_version(cfg):
             print('Failed to convert [' + sql_output_lines[result_line] + '] to an int')
             raise RuntimeError(
                 'get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
-    print_debug('current_schema_version: {}'.format(current_schema_version))
+    print_debug('current_schema_version: {0}'.format(current_schema_version))
 
     return current_schema_version
 
