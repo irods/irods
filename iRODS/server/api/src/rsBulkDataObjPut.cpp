@@ -256,6 +256,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     if ( status < 0 ) {
         delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;
+        freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to create BunDir";
@@ -267,6 +268,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     if ( status < 0 ) {
         delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;
+        freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
         msg << __FUNCTION__ << ": Unable to make collection \"" << bulkOprInp->objPath << "\"";
