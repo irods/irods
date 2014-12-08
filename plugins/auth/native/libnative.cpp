@@ -331,7 +331,7 @@ extern "C" {
                 // build the username#zonename string
                 std::string user_name = ptr->user_name() + "#"              + ptr->zone_name();
                 char username[ MAX_NAME_LEN ];
-                strncpy( username, user_name.c_str(), MAX_NAME_LEN );
+                snprintf( username, MAX_NAME_LEN, "%s", user_name.c_str() );
 
                 authResponseInp_t auth_response;
                 auth_response.response = response;
