@@ -34,23 +34,6 @@
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 
-int
-rsDataObjRepl250( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                  transStat_t **transStat ) {
-    int status;
-    transferStat_t *transferStat = NULL;
-
-    status = rsDataObjRepl( rsComm, dataObjInp, &transferStat );
-
-    if ( transStat != NULL && status >= 0 && transferStat != NULL ) {
-        *transStat = ( transStat_t * ) malloc( sizeof( transStat_t ) );
-        ( *transStat )->numThreads = transferStat->numThreads;
-        ( *transStat )->bytesWritten = transferStat->bytesWritten;
-        free( transferStat );
-    }
-    return status;
-}
-
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
  * Input -
