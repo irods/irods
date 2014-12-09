@@ -142,6 +142,76 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     return status;
 }
 
+
+int
+getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+                 dataObjInp_t *dataObjInp ) {
+    char *filePath;
+    vaultPathPolicy_t vaultPathPolicy;
+    int status;
+
+    if ( dataObjInp != NULL &&
+            ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
+            && strlen( filePath ) > 0 ) {
+        rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
+        return 0;
+    }
+    else {
+    }
+
+    /* Make up a physical path */
+    if ( dataObjInp != NULL && dataObjInfo->rescName == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "getFilePathName: rescName for %s not resolved",
+                 dataObjInp->objPath );
+        return SYS_INVALID_RESC_INPUT;
+    }
+
+    // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
+    int chk_path = 0;
+    irods::error err = irods::get_resource_property< int >(
+                           dataObjInfo->rescName,
+                           irods::RESOURCE_CHECK_PATH_PERM, chk_path );
+    if ( !err.ok() ) {
+        irods::log( PASS( err ) );
+    }
+
+    if ( NO_CREATE_PATH == chk_path ) {
+        *dataObjInfo->filePath = '\0';
+        return 0;
+    }
+
+    std::string vault_path;
+    status = getLeafRescPathName( dataObjInfo->rescHier, vault_path );
+    if ( status != 0 ) {
+        return status;
+    }
+
+    status = getVaultPathPolicy( rsComm, dataObjInfo, &vaultPathPolicy );
+    if ( status < 0 ) {
+        return status;
+    }
+
+    if ( vaultPathPolicy.scheme == GRAFT_PATH_S ) {
+        status = setPathForGraftPathScheme( dataObjInp->objPath,
+                                            vault_path.c_str(), vaultPathPolicy.addUserName,
+                                            rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt,
+                                            dataObjInfo->filePath );
+    }
+    else {
+        status = setPathForRandomScheme( dataObjInp->objPath,
+                                         vault_path.c_str(), rsComm->clientUser.userName,
+                                         dataObjInfo->filePath );
+    }
+
+    if ( status < 0 ) {
+        return status;
+    }
+
+    return status;
+}
+
+
 int
 getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     vaultPathPolicy_t *outVaultPathPolicy ) {

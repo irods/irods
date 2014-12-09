@@ -232,7 +232,7 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
+    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, resc_name.c_str(), myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
 
     delete myRescGrpInfo->rescInfo;
     delete myRescGrpInfo;
@@ -302,8 +302,9 @@ int
 _rsDataObjCreateWithRescInfo(
     rsComm_t*     rsComm,
     dataObjInp_t* dataObjInp,
+    const char*   _resc_name,
     rescInfo_t*   rescInfo,
-    char*         rescGroupName ) {
+    char*   	  rescGroupName ) {
 
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
