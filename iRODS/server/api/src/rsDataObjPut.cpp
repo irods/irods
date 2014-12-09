@@ -265,9 +265,9 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     dataObjInfo_t *myDataObjInfo;
     char rescGroupName[NAME_LEN];
     rescInfo_t *rescInfo = NULL;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-    rescGrpInfo_t *tmpRescGrpInfo = NULL;
-    rescInfo_t *tmpRescInfo = NULL;
+//    rescGrpInfo_t *myRescGrpInfo = NULL;
+//    rescGrpInfo_t *tmpRescGrpInfo = NULL;
+//    rescInfo_t *tmpRescInfo = NULL;
     int status;
     openedDataObjInp_t dataObjCloseInp;
     std::string resc_name;
@@ -328,50 +328,56 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
         return bytesWritten;
     }
 
-    /* get here when Put failed. and rescGroupName is a valid resc group.
-     * Try other resc in the resc group */
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
-    if ( status < 0 ) {
-        return bytesWritten;
-    }
-    tmpRescGrpInfo = myRescGrpInfo;
-    while ( tmpRescGrpInfo != NULL ) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        if ( rescInfo == tmpRescInfo ) {
-            /* already tried this resc */
-            tmpRescGrpInfo = tmpRescGrpInfo->next;
-            continue;
-        }
-        l1descInx = _rsDataObjCreateWithRescInfo( rsComm,
-                    dataObjInp, resc_name, myRescGrpInfo->rescGroupName );
-        if ( l1descInx <= 2 ) {
-            if ( l1descInx >= 0 ) {
-                rodsLog( LOG_ERROR,
-                         "l3DataPutSingleBuf:_rsDataObjCreateWithRI %s err,stat = %d",
-                         dataObjInp->objPath, l1descInx );
-            }
-        }
-        else {
-            bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp,
-                                                dataObjInpBBuf );
-            dataObjCloseInp.l1descInx = l1descInx;
-            L1desc[l1descInx].oprStatus = bytesWritten;
-            status = rsDataObjClose( rsComm, &dataObjCloseInp );
-            if ( status < 0 ) {
-                rodsLog( LOG_DEBUG,
-                         "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
-                         l1descInx, status );
-            }
-            if ( bytesWritten >= 0 ) {
-                bytesWritten = status;
-                break;
-            }
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
+    // Should not need to go beyond that point #1472
     return bytesWritten;
+    // #1472
+
+
+
+//    /* get here when Put failed. and rescGroupName is a valid resc group.
+//     * Try other resc in the resc group */
+//    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
+//    if ( status < 0 ) {
+//        return bytesWritten;
+//    }
+//    tmpRescGrpInfo = myRescGrpInfo;
+//    while ( tmpRescGrpInfo != NULL ) {
+//        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+//        if ( rescInfo == tmpRescInfo ) {
+//            /* already tried this resc */
+//            tmpRescGrpInfo = tmpRescGrpInfo->next;
+//            continue;
+//        }
+//        l1descInx = _rsDataObjCreateWithRescInfo( rsComm,
+//                    dataObjInp, resc_name, myRescGrpInfo->rescGroupName );
+//        if ( l1descInx <= 2 ) {
+//            if ( l1descInx >= 0 ) {
+//                rodsLog( LOG_ERROR,
+//                         "l3DataPutSingleBuf:_rsDataObjCreateWithRI %s err,stat = %d",
+//                         dataObjInp->objPath, l1descInx );
+//            }
+//        }
+//        else {
+//            bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp,
+//                                                dataObjInpBBuf );
+//            dataObjCloseInp.l1descInx = l1descInx;
+//            L1desc[l1descInx].oprStatus = bytesWritten;
+//            status = rsDataObjClose( rsComm, &dataObjCloseInp );
+//            if ( status < 0 ) {
+//                rodsLog( LOG_DEBUG,
+//                         "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
+//                         l1descInx, status );
+//            }
+//            if ( bytesWritten >= 0 ) {
+//                bytesWritten = status;
+//                break;
+//            }
+//        }
+//        tmpRescGrpInfo = tmpRescGrpInfo->next;
+//    }
+//    delete myRescGrpInfo->rescInfo;
+//    delete myRescGrpInfo;
+//    return bytesWritten;
 }
 
 int

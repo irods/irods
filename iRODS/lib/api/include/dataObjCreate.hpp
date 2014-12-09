@@ -27,8 +27,8 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
 specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-_rsDataObjCreateWithRescInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                              const std::string& _resc_name, char *rescGroupName );
+_rsDataObjCreateWithResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                              const std::string& _resc_name );
 int
 dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx );
 int

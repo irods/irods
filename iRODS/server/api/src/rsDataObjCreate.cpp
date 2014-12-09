@@ -232,7 +232,7 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, resc_name, /*myRescGrpInfo->rescInfo, */myRescGrpInfo->rescGroupName );
+    status = l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, resc_name );
 
     delete myRescGrpInfo->rescInfo;
     delete myRescGrpInfo;
@@ -292,18 +292,17 @@ specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     return l1descInx;
 }
 
-/* _rsDataObjCreateWithRescInfo - Create a single copy of the data Object
- * given the rescInfo.
+/* _rsDataObjCreateWithResc - Create a single copy of the data Object
+ * given a resource name.
  *
  * return l1descInx.
  */
 
 int
-_rsDataObjCreateWithRescInfo(
+_rsDataObjCreateWithResc(
     rsComm_t*     rsComm,
     dataObjInp_t* dataObjInp,
-    const std::string&   _resc_name,
-    char*   	  rescGroupName ) {
+    const std::string&   _resc_name ) {
 
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
@@ -328,7 +327,7 @@ _rsDataObjCreateWithRescInfo(
 
     rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
 
-    rstrcpy( dataObjInfo->rescGroupName, rescGroupName, NAME_LEN );
+    rstrcpy( dataObjInfo->rescGroupName, _resc_name.c_str(), NAME_LEN ); // leave that on for now #1472
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
