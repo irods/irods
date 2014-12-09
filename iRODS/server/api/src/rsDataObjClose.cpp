@@ -818,8 +818,7 @@ l3Stat( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat ) {
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
         rstrcpy( fileStatInp.fileName, dataObjInfo->filePath,
                  MAX_NAME_LEN );
-        rstrcpy( fileStatInp.addr.hostAddr,
-                 dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+        //rstrcpy( fileStatInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
         rstrcpy( fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
         rstrcpy( fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         status = rsFileStat( rsComm, &fileStatInp, myStat );

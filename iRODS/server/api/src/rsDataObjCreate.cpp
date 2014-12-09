@@ -232,7 +232,7 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, resc_name.c_str(), myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
+    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, resc_name, /*myRescGrpInfo->rescInfo, */myRescGrpInfo->rescGroupName );
 
     delete myRescGrpInfo->rescInfo;
     delete myRescGrpInfo;
@@ -302,8 +302,7 @@ int
 _rsDataObjCreateWithRescInfo(
     rsComm_t*     rsComm,
     dataObjInp_t* dataObjInp,
-    const char*   _resc_name,
-    rescInfo_t*   rescInfo,
+    const std::string&   _resc_name,
     char*   	  rescGroupName ) {
 
     dataObjInfo_t *dataObjInfo;
@@ -315,6 +314,7 @@ _rsDataObjCreateWithRescInfo(
         return l1descInx;
     }
 
+
     dataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     initDataObjInfoWithInp( dataObjInfo, dataObjInp );
 
@@ -324,9 +324,10 @@ _rsDataObjCreateWithRescInfo(
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
 
-    dataObjInfo->rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( dataObjInfo->rescName, rescInfo->rescName, NAME_LEN );
+    dataObjInfo->rescInfo = new rescInfo_t;  // leave that on for now #1472
+
+    rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
+
     rstrcpy( dataObjInfo->rescGroupName, rescGroupName, NAME_LEN );
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
@@ -335,7 +336,7 @@ _rsDataObjCreateWithRescInfo(
 
     }
     else {
-        rstrcpy( dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN ); // in kw else
+    	rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
 
     }
 
@@ -343,7 +344,7 @@ _rsDataObjCreateWithRescInfo(
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
-    status = getFilePathName( rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp );
+    status = getFilePathName_1472( rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp );
 
     if ( status < 0 ) {
         freeL1desc( l1descInx );

@@ -343,7 +343,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
             continue;
         }
         l1descInx = _rsDataObjCreateWithRescInfo( rsComm,
-                    dataObjInp, NULL, tmpRescInfo, myRescGrpInfo->rescGroupName );
+                    dataObjInp, resc_name, myRescGrpInfo->rescGroupName );
         if ( l1descInx <= 2 ) {
             if ( l1descInx >= 0 ) {
                 rodsLog( LOG_ERROR,
