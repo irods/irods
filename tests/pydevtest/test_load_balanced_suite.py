@@ -64,7 +64,7 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
         # read server_config.json and .odbc.ini
         cfg = ServerConfig()
 
-        if cfg.values['catalog_database_type'] == "postgres":
+        if cfg.get('catalog_database_type') == "postgres":
             # =-=-=-=-=-=-=-
             # seed load table with fake values - rescA should win
             secs = int(time.time())
