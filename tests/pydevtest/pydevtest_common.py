@@ -32,11 +32,7 @@ if os.name != "nt":
 def mod_json_file(fn, new_dict):
     with open(fn) as f:
         env = json.load(f)
-
     env.update(new_dict)
-    # for k,v in new_dict.items():
-    #    env[k] = v
-
     with open(fn, 'w') as f:
         json.dump(env, f, indent=4)
 
@@ -308,3 +304,39 @@ def cat(fname, string, times=None):
     with file(fname, 'a') as f:
         f.write(string)
 
+def make_file(f_name, f_size, source='/dev/zero'):
+    output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
+    if output[0] != 0:
+        sys.stderr.write(output[1] + '\n')
+        raise OSError(output[0], "call to dd returned non-zero")
+
+
+def runCmd_ils_to_entries(runCmd_output):
+    raw = runCmd_output[0].strip().split('\n')
+    collection = raw[0]
+    entries = [entry.strip() for entry in raw[1:]]
+    return entries
+
+
+def get_vault_path(session):
+    cmdout = session.runCmd("iquest", ["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+    if cmdout[1] != "":
+        raise OSError(cmdout[1], "iquest wrote to stderr when called from get_vault_path()")
+    return cmdout[0].rstrip('\n')
+
+
+def get_vault_session_path(session):
+    return os.path.join(get_vault_path(session),
+                        "home",
+                        session.getUserName(),
+                        session.sessionId)
+
+
+def make_large_local_tmp_dir(dir_name, file_count, file_size):
+    os.mkdir(dir_name)
+    for i in range(file_count):
+        make_file(os.path.join(dir_name, "junk" + str(i).zfill(4)),
+                  file_size)
+    local_files = os.listdir(dir_name)
+    assert len(local_files) == file_count, "dd loop did not make all " + str(file_count) + " files"
+    return local_files
