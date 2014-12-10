@@ -1182,6 +1182,10 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
         qcondCnt++;
     }
 
+    if ( const char * admin = getValByKey( &dataObjInp->condInput, ADMIN_KW ) ) {
+        addKeyVal( &genQueryInp->condInput, ADMIN_KW, admin );
+    }
+
     return qcondCnt;
 }
 

@@ -3268,7 +3268,7 @@ extern "C" {
             return PASS( ret );
         }
 
-        if ( ( status = _updateObjCountOfResources( &icss, _dst_data_obj_info->rescHier, zone.c_str(), +1 ) ) != 0 ) {
+        if ( ( status = _updateObjCountOfResources( &icss, _dst_data_obj_info->rescHier, zone.c_str(), 1 ) ) != 0 ) {
             return ERROR( status, "_updateObjCountOfResources failed" );
         }
 

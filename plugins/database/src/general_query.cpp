@@ -1966,6 +1966,10 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
     static char prevAccess[LONG_NAME_LEN];
     static int prevStatus;
 
+    if ( getValByKey( &genQueryInp.condInput, ADMIN_KW ) ) {
+        return 0;
+    }
+
     for ( i = 0; i < genQueryInp.condInput.len; i++ ) {
         if ( strcmp( genQueryInp.condInput.keyWord[i],
                      USER_NAME_CLIENT_KW ) == 0 ) {
