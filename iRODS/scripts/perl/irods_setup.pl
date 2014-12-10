@@ -1315,10 +1315,12 @@ sub configureIrodsServer
         if ( $IRODS_ICAT_HOST eq "" )
         {
             my %db_variables = (
+                    "catalog_database_type",  $DATABASE_TYPE,
                     "db_username",  $DATABASE_ADMIN_NAME,
                     "db_password",  $DATABASE_ADMIN_PASSWORD );
             printStatus( "    Updating $databaseConfigFile....\n" );
             printLog( "    Updating $databaseConfigFile....\n" );
+            printLog( "        catalog_database_type = $DATABASE_TYPE\n" );
             printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
             printLog( "        db_password = $DATABASE_ADMIN_PASSWORD\n" );
             $status = update_json_configuration_file(
