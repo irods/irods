@@ -981,6 +981,12 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
+    def test_irepl_with_admin_mode(self):
+        touch( "file.txt" )
+        for i in range(0, 100):
+            assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
+        assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + s.sessions[1].homepath, "EMPTY" )  # creates replica
+
     ###################
     # irm
     ###################
