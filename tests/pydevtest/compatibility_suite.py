@@ -7,20 +7,10 @@ if (sys.version_info >= (2, 7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, touch, cat
 import pydevtest_sessions as s
 import commands
 import psutil
-
-
-def touch(fname, times=None):
-    with file(fname, 'a'):
-        utime(fname, times)
-
-
-def cat(fname, string, times=None):
-    with file(fname, 'a') as f:
-        f.write(string)
 
 
 class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):

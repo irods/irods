@@ -297,3 +297,14 @@ def interruptiCmdDelay(mysession, fullcmd, delay):
         print "  resultcode: [-1], icommand completed"
     assert 0 == resultcode, "0 == resultcode"
     return resultcode
+
+
+def touch(fname, times=None):
+    with file(fname, 'a'):
+        utime(fname, times)
+
+
+def cat(fname, string, times=None):
+    with file(fname, 'a') as f:
+        f.write(string)
+
