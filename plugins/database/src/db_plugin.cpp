@@ -16420,7 +16420,8 @@ checkLevel:
 #ifdef MY_ICAT
         char cml_res[ MAX_NAME_LEN ];
         char sql[] = { "select name from mysql.func" };
-        int status = cmlGetStringValueFromSql( sql, cml_res, MAX_NAME_LEN, 0, 0, 0, &icss );
+        std::vector<std::string> bindVars;
+        int status = cmlGetStringValueFromSql( sql, cml_res, sizeof(cml_res), bindVars, &icss );
         if ( status < 0 ) {
             return ERROR( status, "failed to call sql to determine UDF" );
         }
