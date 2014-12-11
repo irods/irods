@@ -29,6 +29,15 @@ else
     set -e
 fi
 
+# find server_config
+if [ "$DATABASETYPE" == "oracle" ] ; then
+    if [ "$RUNINPLACE" == "1" ] ;  then
+        server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
+    else
+        server_config="/etc/irods/server_config.json"
+    fi
+fi
+
 # get temp file from prior run, if it exists
 mkdir -p /tmp/$USER
 if [ -f $SETUP_DATABASE_FLAG ] ; then
@@ -38,11 +47,6 @@ if [ -f $SETUP_DATABASE_FLAG ] ; then
     DATABASENAME=`grep "DB_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASEUSER=`grep "DATABASE_ADMIN_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     if [ "$DATABASETYPE" == "oracle" ] ; then
-        if [ "$RUNINPLACE" == "1" ] ;  then
-            server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
-        else
-            server_config="/etc/irods/server_config.json"
-        fi
         ORACLEHOME=`grep "ORACLE_HOME" $server_config | awk -F"ORACLE_HOME" '{print $2}' | awk -F\: '{print $2}' | awk -F\" '{print $2}'`
     fi
     STATUS="loop"
