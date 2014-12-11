@@ -75,12 +75,16 @@ while [ "$STATUS" != "complete" ] ; do
 
 
 if [ "$DATABASETYPE" == "oracle" ] ; then
+  echo "ORACLE_HOME[$ORACLE_HOME]"
+  echo "lastoraclehome[$LASTORACLEHOME]"
+  echo "oraclehome[$ORACLEHOME]"
+
   # get oracle home
   echo -n "\$ORACLE_HOME"
   if [ "$LASTORACLEHOME" ] ; then
-    echo -n " [$LASTORACLEHOME]"
+    echo -n " l[$LASTORACLEHOME]"
   else
-    echo -n " [$ORACLEHOME]"
+    echo -n " o[$ORACLEHOME]"
   fi
   echo -n ": "
   read ORACLEHOME
