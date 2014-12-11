@@ -1,7 +1,6 @@
 import sys
 import string
-from os import utime
-from os import unlink
+import os
 if (sys.version_info >= (2, 7)):
     import unittest
 else:
@@ -48,7 +47,7 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
             filenames.append(f)
             pydevtest_common.cat(f, str(i))
             assertiCmd(s.adminsession, "iput " + f)
-            unlink(f)
+            os.unlink(f)
         assertiCmd(s.adminsession, "icd ..")
         assertiCmd(s.adminsession, "iphybun -N3 -SdemoResc -RdemoResc testColl")
         coll_dir = getiCmdOutput(

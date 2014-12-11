@@ -298,7 +298,7 @@ def interruptiCmdDelay(mysession, fullcmd, delay):
 
 def touch(fname, times=None):
     with file(fname, 'a'):
-        utime(fname, times)
+        os.utime(fname, times)
 
 
 def cat(fname, string, times=None):
