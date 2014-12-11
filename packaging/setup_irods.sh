@@ -27,7 +27,7 @@ fi
 
 # setup database script or resource server script
 if [ -e "$DETECTEDDIR/setup_irods_database.sh" ] ; then
-  sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_database.sh"
+  sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "ORACLE_HOME=$ORACLE_HOME; $DETECTEDDIR/setup_irods_database.sh"
 else
   if [ -e "$DETECTEDDIR/setup_resource.sh" ] ; then
     sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_resource.sh"

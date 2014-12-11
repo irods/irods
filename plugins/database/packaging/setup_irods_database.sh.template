@@ -13,7 +13,8 @@ DATABASEPORT="DEFAULTPORT"
 DATABASEUSER="DEFAULTUSER"
 DATABASEPASSWORD="DEFAULTPASSWORD"
 
-
+# use inherited environment variable
+ORACLEHOME=$ORACLE_HOME
 
 # get into the top level directory
 # detect run-in-place installation
@@ -37,6 +38,14 @@ if [ -f $SETUP_DATABASE_FLAG ] ; then
     DATABASEPORT=`grep "DATABASE_PORT =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASENAME=`grep "DB_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
     DATABASEUSER=`grep "DATABASE_ADMIN_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    if [ "$DATABASETYPE" == "oracle" ] ; then
+        if [ "$RUNINPLACE" == "1" ] ;  then
+            server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
+        else
+            server_config="/etc/irods/server_config.json"
+        fi
+        ORACLEHOME=`grep "ORACLE_HOME" $server_config | awk -F"ORACLE_HOME" '{print $2}' | awk -F\: '{print $2}' | awk -F\" '{print $2}'`
+    fi
     STATUS="loop"
 else
     # no temp file, this is the first run
@@ -58,10 +67,26 @@ while [ "$STATUS" != "complete" ] ; do
     LASTDATABASEPORT=$DATABASEPORT
     LASTDATABASENAME=$DATABASENAME
     LASTDATABASEUSER=$DATABASEUSER
+    LASTORACLEHOME=$ORACLEHOME
   fi
 
 
 if [ "$DATABASETYPE" == "oracle" ] ; then
+  # get oracle home
+  echo -n "\$ORACLE_HOME"
+  if [ "$LASTORACLEHOME" ] ; then
+    echo -n " [$LASTORACLEHOME]"
+  else
+    echo -n " [$ORACLEHOME]"
+  fi
+  echo -n ": "
+  read ORACLEHOME
+  if [ "$ORACLEHOME" == "" ] ; then
+    if [ "$LASTORACLEHOME" ] ; then
+      ORACLEHOME=$LASTORACLEHOME
+    fi
+  fi
+
   # get database user
   echo -n "Database Connection String User@TNS"
   if [ "$LASTDATABASEUSER" ] ; then
@@ -165,6 +190,9 @@ fi # else not oracle
   # confirm
   echo "-------------------------------------------"
   echo "Database Type:     $DATABASETYPE"
+if [ "$DATABASETYPE" == "oracle" ] ; then
+  echo "\$ORACLE_HOME:      $ORACLEHOME"
+fi
   echo "Hostname or IP:    $DATABASEHOSTORIP"
   echo "Database Port:     $DATABASEPORT"
   echo "Database Name:     $DATABASENAME"
@@ -193,6 +221,7 @@ sed -e "/^\$DATABASE_ADMIN_NAME/s/^.*$/\$DATABASE_ADMIN_NAME = '$DATABASEUSER';/
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
 if [ "$DATABASETYPE" != "oracle" ] ; then
+    # update irods.config
     sed -e "/^\$DATABASE_HOST/s/^.*$/\$DATABASE_HOST = '$DATABASEHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
     mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
     sed -e "/^\$DATABASE_PORT/s/^.*$/\$DATABASE_PORT = '$DATABASEPORT';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
@@ -210,7 +239,7 @@ fi
 if [ "$RUNINPLACE" == "1" ] ;  then
     db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
     if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to /etc/irods"
+        echo ">>> Copying new database_config.json to $(dirname db_config)"
         cp $DETECTEDDIR/database_config.json $db_config
     fi
 
@@ -221,10 +250,16 @@ else
         cp $DETECTEDDIR/database_config.json $db_config
     fi
 fi
-
 TMPFILE="/tmp/$USER/setupdatabaseconfiguration.txt"
 sed -e "/^catalog_database_type /s/^.*$/catalog_database_type: \"$DATABASETYPE\",/" $db_config > $TMPFILE ; mv $TMPFILE $db_config
 echo ""
+
+# =-=-=-=-=-=-=-
+# update ORACLE_HOME in server_config.json
+if [ "$DATABASETYPE" == "oracle" ] ; then
+    echo "Updating $server_config..."
+    python $DETECTEDDIR/update_json.py $server_config "environment_variables,ORACLE_HOME" $ORACLEHOME
+fi
 
 # =-=-=-=-=-=-=-
 # run irods_setup.pl
