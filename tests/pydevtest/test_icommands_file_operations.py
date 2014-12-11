@@ -3,7 +3,6 @@ if (sys.version_info >= (2, 7)):
     import unittest
 else:
     import unittest2 as unittest
-import commands
 import os
 import shutil
 import psutil
