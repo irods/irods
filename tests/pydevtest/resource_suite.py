@@ -986,7 +986,8 @@ class ResourceSuite(ResourceBase):
         pydevtest_common.touch( "file.txt" )
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + s.sessions[1].homepath, "EMPTY" )  # creates replica
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName()
+        assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + homepath, "EMPTY" )  # creates replica
 
     ###################
     # irm
