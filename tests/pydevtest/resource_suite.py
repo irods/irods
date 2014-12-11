@@ -225,6 +225,13 @@ class ResourceSuite(ResourceBase):
                    "STDERR", "SYS_RESC_DOES_NOT_EXIST")  # should fail
         assertiCmd(s.adminsession, "ils -L", "STDOUT", self.testfile)  # debug
 
+    def test_iphymv_admin_mode(self):
+        pydevtest_common.touch( "file.txt" )
+        for i in range(0, 100):
+            assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
+        assertiCmd(s.adminsession, "iphymv -r -M -R " + self.testresc + " " + homepath, "EMPTY" )  # creates replica
+
     ###################
     # iput
     ###################
@@ -986,7 +993,7 @@ class ResourceSuite(ResourceBase):
         pydevtest_common.touch( "file.txt" )
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName()
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
         assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + homepath, "EMPTY" )  # creates replica
 
     ###################
@@ -1064,3 +1071,15 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "irmtrash")  # should be listed
         assertiCmdFail(s.adminsession, "ils -rL /" + s.adminsession.getZoneName() + "/trash/home/" +
                        s.adminsession.getUserName() + "/", "LIST", self.testfile)  # should be deleted
+
+    ###################
+    # itrim
+    ###################
+
+    def test_itrim_with_admin_mode(self):
+        pydevtest_common.touch( "file.txt" )
+        for i in range(0, 100):
+            assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
+        assertiCmd(s.sessions[1], "irepl -R " + self.testresc + " -r " + homepath, "EMPTY" )  # creates replica
+        assertiCmd(s.adminsession, "itrim -M -N1 -r " + homepath, "LIST", "Number of files trimmed = 100." )
