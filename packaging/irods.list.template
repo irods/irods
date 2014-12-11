@@ -317,6 +317,7 @@ f 755 root root ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.s
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods.sh ./packaging/setup_irods.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_service_account.sh ./packaging/setup_irods_service_account.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_configuration.sh ./packaging/setup_irods_configuration.sh
+f 755 root root ${IRODS_HOME_DIR}/packaging/update_json.py ./packaging/update_json.py
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt

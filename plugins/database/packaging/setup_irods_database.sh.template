@@ -85,6 +85,7 @@ if [ "$DATABASETYPE" == "oracle" ] ; then
       ORACLEHOME=$LASTORACLEHOME
     fi
   fi
+  echo ""
 
   # get database user
   echo -n "Database Connection String User@TNS"
@@ -104,6 +105,7 @@ if [ "$DATABASETYPE" == "oracle" ] ; then
   fi
   # strip all forward slashes
   DATABASEUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
+  echo ""
 
 else
   # get host
