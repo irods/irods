@@ -1907,7 +1907,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status >= 0 ) {
         if ( ( *dataObjInfo )->specColl != NULL ) {
             if ( ( *dataObjInfo )->specColl->collClass == LINKED_COLL ) {
-                /* already been tranlated */
+                /* already been translated */
                 rstrcpy( dataObjInp->objPath, ( *dataObjInfo )->objPath,
                          MAX_NAME_LEN );
                 free( ( *dataObjInfo )->specColl );

@@ -449,7 +449,7 @@ namespace irods {
         error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
 
         // =-=-=-=-=-=-=-
-        // perform an open operation if create is not specificied ( thats all we have for now )
+        // perform an open operation if create is not specified ( thats all we have for now )
         if ( OPEN_OPERATION  == oper ||
                 WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-

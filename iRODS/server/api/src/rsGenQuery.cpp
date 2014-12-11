@@ -155,8 +155,9 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
                              genQueryInp, genQueryOut );
     }
     if ( status < 0  && status != CAT_NO_ROWS_FOUND ) {
+    	std::string prefix = ( rodsServerHost->localFlag == LOCAL_HOST ) ? "_rs" : "rc";
         rodsLog( LOG_NOTICE,
-                 "rsGenQuery: rcGenQuery failed, status = %d", status );
+                 "rsGenQuery: %sGenQuery failed, status = %d", prefix.c_str(), status );
     }
     return status;
 }
