@@ -7,7 +7,7 @@ if (sys.version_info >= (2, 7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, touch, cat
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
 import pydevtest_sessions as s
 import commands
 import psutil
@@ -46,7 +46,7 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
         for i in range(0, 8):
             f = "empty" + str(i) + ".txt"
             filenames.append(f)
-            cat(f, str(i))
+            pydevtest_common.cat(f, str(i))
             assertiCmd(s.adminsession, "iput " + f)
             unlink(f)
         assertiCmd(s.adminsession, "icd ..")
