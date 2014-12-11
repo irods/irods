@@ -263,7 +263,9 @@ echo ""
 # update ORACLE_HOME in server_config.json
 if [ "$DATABASETYPE" == "oracle" ] ; then
     echo "Updating $server_config..."
-    python $DETECTEDDIR/update_json.py $server_config "environment_variables,ORACLE_HOME" $ORACLEHOME
+    UPDATE_JSON_CMD="python $DETECTEDDIR/update_json.py $server_config 'environment_variables,ORACLE_HOME' $ORACLEHOME"
+    echo "  [$UPDATE_JSON_CMD]"
+    $UPDATE_JSON_CMD
 fi
 
 # =-=-=-=-=-=-=-
