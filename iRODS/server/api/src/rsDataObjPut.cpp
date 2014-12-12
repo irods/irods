@@ -263,8 +263,8 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     int bytesWritten;
     int l1descInx;
     dataObjInfo_t *myDataObjInfo;
-    char rescGroupName[NAME_LEN];
-    rescInfo_t *rescInfo = NULL;
+//    char rescGroupName[NAME_LEN];		//#1472
+//    rescInfo_t *rescInfo = NULL;
 //    rescGrpInfo_t *myRescGrpInfo = NULL;
 //    rescGrpInfo_t *tmpRescGrpInfo = NULL;
 //    rescInfo_t *tmpRescInfo = NULL;
@@ -293,23 +293,23 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
 
 
 
-    if ( bytesWritten < 0 ) {
-        myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-        if ( getStructFileType( myDataObjInfo->specColl ) < 0 &&
-                strlen( myDataObjInfo->rescGroupName ) > 0 &&
-                ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) == 0 ) {
-            /* getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) { */
-            /* File not in specColl and resc is a resc group and not
-             * overwriting existing data. Save resc info in case the put fail
-             */
-            rstrcpy( rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN );
-            rescInfo = myDataObjInfo->rescInfo;
-        }
-        else {
-            rescGroupName[0] = '\0';
-            rescInfo = NULL;
-        }
-    }
+//    if ( bytesWritten < 0 ) {
+//        myDataObjInfo = L1desc[l1descInx].dataObjInfo;
+//        if ( getStructFileType( myDataObjInfo->specColl ) < 0 &&
+//                strlen( myDataObjInfo->rescGroupName ) > 0 &&
+//                ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) == 0 ) {
+//            /* getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) { */
+//            /* File not in specColl and resc is a resc group and not
+//             * overwriting existing data. Save resc info in case the put fail
+//             */
+//            rstrcpy( rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN );
+////            rescInfo = myDataObjInfo->rescInfo;
+//        }
+//        else {
+//            rescGroupName[0] = '\0';
+////            rescInfo = NULL;
+//        }
+//    }
 
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
@@ -324,9 +324,9 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     if ( bytesWritten >= 0 ) {
         return status;
     }
-    else if ( strlen( rescGroupName ) == 0 ) {
-        return bytesWritten;
-    }
+//    else if ( strlen( rescGroupName ) == 0 ) {
+//        return bytesWritten;
+//    }
 
     // Should not need to go beyond that point #1472
     return bytesWritten;
