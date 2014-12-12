@@ -229,6 +229,14 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
+
+        // to make cppcheck happy before these things go away for good #1472
+        if (myRescGrpInfo) {
+        	delete myRescGrpInfo->rescInfo;
+        	delete myRescGrpInfo;
+        }
+        // #1472
+
         return status;
     }
 
@@ -588,6 +596,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
     if ( !grp_err.ok() ) {
         delete( *myRescGrpInfo )->rescInfo;
         delete( *myRescGrpInfo );
+        *myRescGrpInfo = NULL;
         irods::log( PASS( grp_err ) );
         return SYS_INVALID_RESC_INPUT;
     }
@@ -627,6 +636,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
         if ( rei.rgi == NULL ) {
             delete( *myRescGrpInfo )->rescInfo;
             delete( *myRescGrpInfo );
+            *myRescGrpInfo = NULL;
         }
         return SYS_RESC_QUOTA_EXCEEDED;
     }
