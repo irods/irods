@@ -75,23 +75,23 @@ while [ "$STATUS" != "complete" ] ; do
 
 
 if [ "$DATABASETYPE" == "oracle" ] ; then
-  echo "ORACLE_HOME[$ORACLE_HOME]"
-  echo "lastoraclehome[$LASTORACLEHOME]"
-  echo "oraclehome[$ORACLEHOME]"
-
   # get oracle home
   echo -n "\$ORACLE_HOME"
   if [ "$LASTORACLEHOME" ] ; then
-    echo -n " l[$LASTORACLEHOME]"
+    echo -n " [$LASTORACLEHOME]"
   else
-    echo -n " o[$ORACLEHOME]"
+    echo -n " [$ORACLEHOME]"
   fi
   echo -n ": "
-  read ORACLEHOME
-  if [ "$ORACLEHOME" == "" ] ; then
+  read ORACLEHOMEINPUT
+  if [ "$ORACLEHOMEINPUT" == "" ] ; then
     if [ "$LASTORACLEHOME" ] ; then
       ORACLEHOME=$LASTORACLEHOME
+    else
+      ORACLEHOME=$ORACLE_HOME
     fi
+  else
+      ORACLEHOME=$ORACLEHOMEINPUT
   fi
   echo ""
 
@@ -201,10 +201,11 @@ fi # else not oracle
   echo "Database Type:     $DATABASETYPE"
 if [ "$DATABASETYPE" == "oracle" ] ; then
   echo "\$ORACLE_HOME:      $ORACLEHOME"
-fi
+else
   echo "Hostname or IP:    $DATABASEHOSTORIP"
   echo "Database Port:     $DATABASEPORT"
   echo "Database Name:     $DATABASENAME"
+fi
   echo "Database User:     $DATABASEUSER"
   echo "Database Password: Not Shown"
   echo "-------------------------------------------"
@@ -267,9 +268,7 @@ echo ""
 # update ORACLE_HOME in server_config.json
 if [ "$DATABASETYPE" == "oracle" ] ; then
     echo "Updating $server_config..."
-    UPDATE_JSON_CMD="python $DETECTEDDIR/update_json.py $server_config 'environment_variables,ORACLE_HOME' $ORACLEHOME"
-    echo "  [$UPDATE_JSON_CMD]"
-    $UPDATE_JSON_CMD
+    python $DETECTEDDIR/update_json.py $server_config 'environment_variables,ORACLE_HOME' $ORACLEHOME
 fi
 
 # =-=-=-=-=-=-=-
