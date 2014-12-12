@@ -7,6 +7,7 @@ from resource_suite import ResourceBase
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
 import pydevtest_sessions as s
 import commands
+import distutils.spawn
 import os
 import subprocess
 import stat

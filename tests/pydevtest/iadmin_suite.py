@@ -11,7 +11,6 @@ import os
 import shutil
 import time
 import subprocess
-import distutils.spawn
 import stat
 import socket
 import json
