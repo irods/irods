@@ -104,12 +104,11 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // make sure tmp_dest_resc exists and is available
     if ( !tmp_dest_resc.empty() ) {
-        rescInfo_t resc_info;
-        irods::error resc_err = irods::get_resc_info( tmp_dest_resc, resc_info );
-        if ( !resc_err.ok() ) {
-            irods::log( resc_err );
-            return resc_err.code();
-        }
+    	irods::error resc_err = irods::is_resc_live(tmp_dest_resc);
+    	if (!resc_err.ok()) {
+			irods::log( resc_err );
+			return resc_err.code();
+    	}
     }
 
     // =-=-=-=-=-=-=-
@@ -372,7 +371,7 @@ _rsDataObjRepl(
         }
         /* NO_GOOD_COPY drop through here */
 
-    } // if mulitcopy flg
+    } // if multicopy flg
 
 
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
@@ -416,7 +415,7 @@ _rsDataObjRepl(
         }
     }
 
-    if ( myRescGrpInfo != NULL ) {
+    if ( myRescGrpInfo != NULL ) {	// can't remove just now #1472
         /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat,
@@ -436,7 +435,7 @@ _rsDataObjRepl(
 
 /* _rsDataObjRepl - Update existing copies from srcDataObjInfoHead to
  *      destDataObjInfoHead.
- * Additinal input -
+ * Additional input -
  *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be
 
  *   dataObjInfo_t *destDataObjInfoHead -  a link of copies to be updated.
@@ -531,7 +530,7 @@ int _rsDataObjReplUpdate(
 } // _rsDataObjReplUpdate
 
 /* _rsDataObjReplNewCopy - Replicate new copies to destRescGrpInfo.
- * Additinal input -
+ * Additional input -
  *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be
  *     replicated. Only one will be picked.
  *   rescGrpInfo_t *destRescGrpInfo - The dest resource info
@@ -550,9 +549,9 @@ _rsDataObjReplNewCopy(
     rescGrpInfo_t *destRescGrpInfo,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
+    // =-=-=-=-=-=-=-
+
     dataObjInfo_t *srcDataObjInfo;
-    rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
     int status;
     int allFlag;
     int savedStatus = 0;
@@ -566,36 +565,32 @@ _rsDataObjReplNewCopy(
 
     // =-=-=-=-=-=-=-
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
-    tmpRescGrpInfo = destRescGrpInfo;
-    while ( tmpRescGrpInfo != NULL ) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        srcDataObjInfo = srcDataObjInfoHead;
-        while ( srcDataObjInfo != NULL ) {
-            status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                      tmpRescInfo, tmpRescGrpInfo->rescGroupName,
-                                      outDataObjInfo, 0 );
-            if ( status >= 0 ) {
-                break;
-            }
-            else {
-                savedStatus = status;
-            }
-            srcDataObjInfo = srcDataObjInfo->next;
-        }
+
+    srcDataObjInfo = srcDataObjInfoHead;
+    while ( srcDataObjInfo != NULL ) {
+        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
+        		destRescGrpInfo->rescInfo, destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
         if ( status >= 0 ) {
-            transStat->numThreads = dataObjInp->numThreads;
-            if ( allFlag == 0 ) {
-                return 0;
-            }
+            break;
         }
         else {
             savedStatus = status;
         }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+
+    if ( status >= 0 ) {
+        transStat->numThreads = dataObjInp->numThreads;
+        if ( allFlag == 0 ) {
+            return 0;
+        }
+    }
+    else {
+        savedStatus = status;
     }
 
     if ( savedStatus == 0 && destRescGrpInfo->status < 0 ) {
-        /* resource down or quoto overrun */
+        /* resource down or quota overrun */
         return destRescGrpInfo->status;
     }
     else {
@@ -625,6 +620,8 @@ _rsDataObjReplS(
     char * rescGroupName,
     dataObjInfo_t * destDataObjInfo,
     int updateFlag ) {
+    // =-=-=-=-=-=-=-
+
     int status, status1;
     int l1descInx;
     openedDataObjInp_t dataObjCloseInp;

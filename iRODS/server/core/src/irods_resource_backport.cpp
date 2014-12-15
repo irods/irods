@@ -288,7 +288,7 @@ namespace irods {
 
         return resc_err;
 
-    } // is_resc_available
+    } // is_resc_live
 
 
 // =-=-=-=-=-=-=-
