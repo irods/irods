@@ -16,7 +16,12 @@ int lockMutex( mutex_type **mutex ) {
         return -1;
     }
 
-    *mutex = new boost::interprocess::named_mutex( boost::interprocess::open_or_create, mutex_name.c_str() );
+    try {
+        *mutex = new boost::interprocess::named_mutex( boost::interprocess::open_or_create, mutex_name.c_str() );
+    } catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "boost::interprocess::named_mutex threw a boost::interprocess::interprocess_exception." );
+        return -1;
+    }
     ( *mutex )->lock();
     return 0;
 }
