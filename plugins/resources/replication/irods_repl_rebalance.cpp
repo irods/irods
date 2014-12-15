@@ -49,6 +49,7 @@ namespace irods {
         // process the actual call for replication
         transferStat_t* trans_stat = NULL;
         int repl_stat = rsDataObjRepl( _comm, &data_obj_inp, &trans_stat );
+        free( trans_stat );
         if ( repl_stat < 0 ) {
             std::stringstream msg;
             msg << "Failed to replicate the data object ["
