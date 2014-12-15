@@ -1962,8 +1962,9 @@ extern "C" {
         strncpy( fileRenameInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
         status = rsFileRename( _ctx.comm(), &fileRenameInp, &rename_out );
         // NOTE :: rename could possible change the name under the covers,
-        //         need to consider how to thanle this here.
+        //         need to consider how to handle this here.
 
+        free( rename_out );
         if ( status >= 0 ) {
             int status1;
             /* use the specColl in  MssoStructFileDesc */
