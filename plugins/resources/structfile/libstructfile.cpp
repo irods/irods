@@ -1834,6 +1834,7 @@ extern "C" {
         // make the api call for rename
         fileRenameOut_t* ren_out = 0;
         int status = rsFileRename( comm, &fileRenameInp, &ren_out );
+        free( ren_out );
         if ( status >= 0 ) {
             // use the specColl in PluginStructFileDesc
             specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
