@@ -371,12 +371,17 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                  'jim-bob',
                  'boB',
                  '123.456',
+                 'user@email',
+                 'u@e',
+                 'user.@.email',
                  '___haysoos___']
 
         invalid = ['bo',
                    '.bob',
                    'bob.',
                    'jim--bob',
+                   'user@email.',
+                   'user.',
                    'jamesbond..007',
                    '________________________________longer_than_NAME_LEN________________________________________________']
 

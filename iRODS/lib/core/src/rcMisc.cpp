@@ -203,7 +203,7 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     // Username must be between 3 and NAME_LEN-1 characters.
     // Username must start and end with a word character.
     // Username may contain non consecutive dashes and dots.
-    const boost::regex expression( "(\\w+([.-]\\w+)*(@([.-]?\\w+)*)?)(#([^#]*))?" );
+    const boost::regex expression( "(\\w+([.-]\\w+)*([.-]?@([.-]?\\w+)*)?)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
         if ( !matched || matches.str( 1 ).size() >= NAME_LEN || matches.str( 1 ).size() < 3 || matches.str( 6 ).size() >= NAME_LEN ) {
