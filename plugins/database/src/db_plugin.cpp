@@ -10447,7 +10447,7 @@ checkLevel:
                 if ( !ret.ok() ) {
                     return PASS( ret );
                 }
-                strncpy( userZone, zone.c_str(), NAME_LEN );
+                snprintf( userZone, NAME_LEN, "%s", zone.c_str() );
             }
 
             objId = 0;
