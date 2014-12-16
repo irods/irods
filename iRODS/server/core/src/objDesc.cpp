@@ -533,8 +533,8 @@ int
 initDataObjInfoForRepl(
     dataObjInfo_t* destDataObjInfo,
     dataObjInfo_t* srcDataObjInfo,
-    rescInfo_t*    destRescInfo,
-    char*          destRescGroupName ) {
+    char*          _resc_name ) {
+
 
     memset( destDataObjInfo, 0, sizeof( dataObjInfo_t ) );
     *destDataObjInfo = *srcDataObjInfo;
@@ -542,18 +542,21 @@ initDataObjInfoForRepl(
     replKeyVal( &srcDataObjInfo->condInput, &destDataObjInfo->condInput );
 
     destDataObjInfo->filePath[0] = '\0';
-    rstrcpy( destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN );
+    rstrcpy( destDataObjInfo->rescName, _resc_name, NAME_LEN );
 
     // initialize the destination resource hierarchy to the root resource
-    rstrcpy( destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN ); // orphan right now
+    rstrcpy( destDataObjInfo->rescHier, _resc_name, MAX_NAME_LEN ); // orphan right now
 
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
     destDataObjInfo->rescInfo = new rescInfo_t;
-    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
 
-    if ( destRescGroupName != NULL && strlen( destRescGroupName ) > 0 ) {
-        rstrcpy( destDataObjInfo->rescGroupName, destRescGroupName,
+//    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
+    rstrcpy ( destDataObjInfo->rescInfo->rescName, _resc_name, NAME_LEN );   // #1472
+
+    // Removing this block breaks test_resource_types.Test_UnixFileSystem_Resource.test_beginning_from_devtest #1472
+    if ( _resc_name != NULL && strlen( _resc_name ) > 0 ) {
+        rstrcpy( destDataObjInfo->rescGroupName, _resc_name,
                  NAME_LEN );
     }
     else if ( strlen( destDataObjInfo->rescGroupName ) > 0 ) {
@@ -567,6 +570,7 @@ initDataObjInfoForRepl(
         destDataObjInfo->rescGroupName[0] = '\0';
         //}
     } // else
+    // #1472
 
     return 0;
 }

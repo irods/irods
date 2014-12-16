@@ -135,10 +135,6 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                                          dataObjInfo->filePath );
     }
 
-    if ( status < 0 ) {
-        return status;
-    }
-
     return status;
 }
 

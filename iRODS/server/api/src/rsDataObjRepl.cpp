@@ -628,7 +628,7 @@ _rsDataObjReplS(
     dataObjInfo_t *myDestDataObjInfo = NULL;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo,
-                                    rescGroupName, destDataObjInfo, updateFlag );
+                                    rescGroupName, rescGroupName, destDataObjInfo, updateFlag );
 
     if ( l1descInx < 0 ) {
         return l1descInx;
@@ -694,7 +694,8 @@ dataObjOpenForRepl(
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * inpSrcDataObjInfo,
     rescInfo_t * destRescInfo,
-    char * rescGroupName,
+    char* rescGroupName,  // old
+    char* _resc_name,	// new
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
 
@@ -706,9 +707,16 @@ dataObjOpenForRepl(
         myDestRescInfo = destRescInfo;
     }
 
-    if ( inpSrcDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-        return SYS_RESC_IS_DOWN;
-    }
+//    if ( inpSrcDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
+//        return SYS_RESC_IS_DOWN;
+//    }
+	irods::error resc_err = irods::is_resc_live(inpSrcDataObjInfo->rescName);
+	if (!resc_err.ok()) {
+		return resc_err.code();
+	}
+	//
+
+
 
     if ( myDestRescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
         return SYS_RESC_IS_DOWN;
@@ -781,8 +789,7 @@ dataObjOpenForRepl(
         // set a creation operation
         op_name = irods::CREATE_OPERATION;
 
-        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo,
-                                destRescInfo, rescGroupName );
+        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, rescGroupName );
         replStatus = srcDataObjInfo->replStatus;
     }
 
@@ -866,7 +873,7 @@ dataObjOpenForRepl(
             status = dataOpen( rsComm, destL1descInx );
         }
         else {
-            status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
+            status = getFilePathName_1472( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status >= 0 ) {
                 status = dataCreate( rsComm, destL1descInx );
             }
@@ -880,7 +887,7 @@ dataObjOpenForRepl(
     }
     else {
         if ( updateFlag == 0 ) {
-            int status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
+            int status = getFilePathName_1472( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status < 0 ) {
                 freeL1desc( destL1descInx );
                 freeDataObjInfo( srcDataObjInfo );
@@ -894,8 +901,10 @@ dataObjOpenForRepl(
         *inpDestDataObjInfo = *myDestDataObjInfo;
 
         // deep copy of rescInfo
-        inpDestDataObjInfo->rescInfo = ( rescInfo_t* )calloc( 1, sizeof( rescInfo_t ) );
-        memcpy( inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+// #1472
+//        inpDestDataObjInfo->rescInfo = ( rescInfo_t* )calloc( 1, sizeof( rescInfo_t ) );
+//        memcpy( inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+        inpDestDataObjInfo->rescInfo = NULL;
 
         // =-=-=-=-=-=-=-
         // JMC :: deep copy of condInput - necessary for preventing a double-free
