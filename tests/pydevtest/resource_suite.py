@@ -335,33 +335,16 @@ class ResourceSuite(ResourceBase):
         os.remove(filename)
         os.remove(largefilename)
 
-    @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.3GB file ( local + iput + 3 repl children )")
+    @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.2GB file ( local + iput + 3 repl children )")
     def test_local_iput_with_really_big_file__ticket_1623(self):
-        # regression test against ticket [#1623]
-        # bigfilesize = [2287636992] is just under 'int' threshold
-        # bigfilesize = [2297714688] is just big enough to trip 'int' size error buffers
-
-        # local setup
-        big = "reallybigfile.txt"
-        bigger = "tmp.txt"
-        f = open(big, 'wb')
-        f.write("skjfhrq274fkjhvifqp92348fuho3uigho4iulqf2h3foq3i47fuhqof9q834fyhoq3iufhq34f8923fhoq348fhurferfwheere")
-        f.write("skjfhrq274fkjhvifqp92348fuho3uigho4iulqf2h3foq3i47fuhqof9q834fyhoq3iufhq34f8923fhoq348fhurferfwheere")
-        f.write("skjfhrq274fkjhvg34eere----2")
-        f.close()
-        for i in range(9):
-            commands.getstatusoutput(
-                "cat " + big + " " + big + " " + big + " " + big + " " + big + " " + big + " > " + bigger)
-            os.rename(bigger, big)
-        datafilename = big
-        # assertions
-        print "bigfilesize = [" + str(os.stat(datafilename).st_size) + "]"
-        # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + datafilename, "ERROR", [datafilename, "does not exist"])
-        assertiCmd(s.adminsession, "iput " + datafilename)  # iput
-        assertiCmd(s.adminsession, "ils -L " + datafilename, "LIST", datafilename)  # should be listed
-        # local cleanup
-        output = commands.getstatusoutput('rm ' + datafilename)
+        filename = "reallybigfile.txt"
+        # file size larger than 32 bit int
+        pydevtest_common.make_file(filename, pow(2,31)+100)
+        print "file size = [" + str(os.stat(filename).st_size) + "]"
+        assertiCmd(s.adminsession, "ils -L " + filename, 'STDERR', [filename, "does not exist"]) # should not be listed
+        assertiCmd(s.adminsession, "iput " + filename)  # iput
+        assertiCmd(s.adminsession, "ils -L " + filename, 'STDOUT', filename)  # should be listed
+        output = commands.getstatusoutput('rm ' + filename)
 
     def test_local_iput(self):
         '''also needs to count and confirm number of replicas after the put'''
