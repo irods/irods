@@ -22,7 +22,12 @@ int lockMutex( mutex_type **mutex ) {
         rodsLog( LOG_ERROR, "boost::interprocess::named_mutex threw a boost::interprocess::interprocess_exception." );
         return -1;
     }
-    ( *mutex )->lock();
+    try {
+        ( *mutex )->lock();
+    } catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "lock threw a boost::interprocess::interprocess_exception." );
+        return -1;
+    }
     return 0;
 }
 
