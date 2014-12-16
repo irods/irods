@@ -80,7 +80,7 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
     rei->status = err.code();
 
     if ( rei->status >= 0 ) {
-    	strncpy(rei->rescName, default_resc.c_str(), NAME_LEN);
+    	snprintf(rei->rescName, NAME_LEN, "%s", default_resc.c_str());
     }
     else {
         irods::log( PASS( err ) );
