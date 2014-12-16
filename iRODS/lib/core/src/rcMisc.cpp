@@ -199,16 +199,28 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     boost::smatch matches;
     // This regex matches usernames with no hashes and optionally one at symbol,
     // and then optionally a hash followed by a zone name containing no hashes.
-    const boost::regex expression( "(\\w+([.-]\\w+)*(@([.-]\\w+)*)?)(#([^#]*))?" );
+    //
+    // Username must be between 3 and NAME_LEN-1 characters.
+    // Username must start and end with a word character.
+    // Username may contain non consecutive dashes and dots.
+    const boost::regex expression( "(\\w+([.-]\\w+)*(@([.-]?\\w+)*)?)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
         if ( !matched || matches.str( 1 ).size() >= NAME_LEN || matches.str( 1 ).size() < 3 || matches.str( 6 ).size() >= NAME_LEN ) {
-            userName[0] = '\0';
-            userZone[0] = '\0';
+            if ( userName != NULL ) {
+                userName[0] = '\0';
+            }
+            if ( userZone != NULL ) {
+                userZone[0] = '\0';
+            }
             return USER_INVALID_USERNAME_FORMAT;
         }
-        snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
-        snprintf( userZone, NAME_LEN, "%s", matches.str( 6 ).c_str() );
+        if ( userName != NULL ) {
+            snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
+        }
+        if ( userZone != NULL ) {
+            snprintf( userZone, NAME_LEN, "%s", matches.str( 6 ).c_str() );
+        }
     }
     catch ( const boost::exception& ) {
         return SYS_INTERNAL_ERR;

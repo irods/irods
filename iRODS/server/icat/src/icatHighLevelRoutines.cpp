@@ -897,27 +897,6 @@ int chlAddChildResc(
 } // chlAddChildResc
 
 
-/// @brief function for validating a resource name
-irods::error validate_resource_name( std::string _resc_name ) {
-
-    // Must be between 1 and NAME_LEN-1 characters.
-    // Must start and end with a word character.
-    // May contain non consecutive dashes.
-    boost::regex re( "^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$" );
-
-    if ( !boost::regex_match( _resc_name, re ) ) {
-        std::stringstream msg;
-        msg << "validate_resource_name failed for resource [";
-        msg << _resc_name;
-        msg << "]";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    }
-
-    return SUCCESS();
-
-} // validate_user_name
-
-
 /* register a Resource */
 int chlRegResc(
     rsComm_t*   _comm,

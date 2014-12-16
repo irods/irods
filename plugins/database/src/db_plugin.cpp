@@ -1255,30 +1255,6 @@ int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
     return 0;
 }
 
-/// =-=-=-=-=-=-=-
-/// @brief function for validating a username
-irods::error validate_user_name( std::string _user_name ) {
-
-    // Must be between 3 and NAME_LEN-1 characters.
-    // Must start and end with a word character.
-    // May contain non consecutive dashes and dots.
-    boost::regex re( "^(?=.{3,63}$)\\w+([.-]\\w+)*$" );
-
-    // No upper case letters. (TODO: more discussion, group names also affected by this change)
-    // boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
-
-    if ( !boost::regex_match( _user_name, re ) ) {
-        std::stringstream msg;
-        msg << "validate_user_name failed for user [";
-        msg << _user_name;
-        msg << "]";
-        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    }
-
-    return SUCCESS();
-
-} // validate_user_name
-
 int
 convertTypeOption( const char *typeStr ) {
     if ( strcmp( typeStr, "-d" ) == 0 ) {
@@ -4251,7 +4227,7 @@ extern "C" {
 
 
         // =-=-=-=-=-=-=-
-        // Validate user name format
+        // Validate resource name format
         ret = validate_resource_name( _resc_info->rescName );
         if ( !ret.ok() ) {
             irods::log( ret );
@@ -9550,15 +9526,6 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "invalid argument" );
         }
 
-
-        // =-=-=-=-=-=-=-
-        // Validate user name format
-        ret = validate_user_name( userName2 );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-        // =-=-=-=-=-=-=-
-
         if ( zoneForm ) {
             /* check that the zone exists (if not defaulting to local) */
             zoneId[0] = '\0';
@@ -9649,7 +9616,7 @@ checkLevel:
         /*
           The case where the caller is specifying an authstring is used in
           some specialized cases.  Using the new table (Aug 12, 2009), this
-          is now set via the chlModUser call below.  This is untested tho.
+          is now set via the chlModUser call below.  This is untested, though.
         */
         if ( strlen( _user_info->authInfo.authStr ) > 0 ) {
             status = chlModUser( _comm, _user_info->userName, "addAuth",
