@@ -1804,11 +1804,9 @@ extern "C" {
         // build a file rename structure to pass off to the server api call
         fileRenameInp_t fileRenameInp;
         memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
-        strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileRenameInp.rescHier,
-                 fco->resc_hier().c_str(),
-                 MAX_NAME_LEN );
-        strncpy( fileRenameInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileRenameInp.addr.hostAddr, NAME_LEN, "%s", resc_host.c_str() );
+        snprintf( fileRenameInp.rescHier, MAX_NAME_LEN, "%s", fco->resc_hier().c_str() );
+        snprintf( fileRenameInp.objPath, MAX_NAME_LEN, "%s", fco->logical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
