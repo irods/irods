@@ -198,15 +198,31 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "ils -L", "STDOUT", "pydevtest_testfile.txt")  # basic listing
         assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
                    "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
-        secondsahead = 10
-        # set to slight future
-        assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt +" + str(secondsahead), "EMPTY")
-        futuretime = (datetime.datetime.now() + datetime.timedelta(0, secondsahead)).strftime('%Y-%m-%d.%H:%M:%S')
-        assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT", futuretime)  # confirm
-        secondsahead = 60 * 60  # 1 hour
-        assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt +1h", "EMPTY")  # set to more future
-        futuretime = (datetime.datetime.now() + datetime.timedelta(0, secondsahead)).strftime('%Y-%m-%d.%H:%M:%S')
-        assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT", futuretime)  # confirm
+
+        def check_relative_expiry(offset_seconds):
+            def get_future_time_string(t):
+                return (t + datetime.timedelta(0, offset_seconds)).strftime('%Y-%m-%d.%H:%M:%S')
+            current_time = datetime.datetime.now()
+            # Race condition: first assert fails if second threshold crossed in between iCAT recording
+            #  current time and this script recording current time
+            try:
+                assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
+                           get_future_time_string(current_time))
+            # Back script's current_time off by a second, since iCAT command issued before script records
+            #  current_time
+            except AssertionError:
+                assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
+                           get_future_time_string(current_time - datetime.timedelta(0, 1)))
+
+        # test seconds syntax
+        seconds_ahead = 10
+        assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt +" + str(seconds_ahead), "EMPTY")
+        check_relative_expiry(seconds_ahead)
+
+        # test hours syntax
+        seconds_ahead = 60 * 60  # 1 hour
+        assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt +1h", "EMPTY")
+        check_relative_expiry(seconds_ahead)
 
     def test_isysmeta_no_permission(self):
         assertiCmd(s.sessions[1], "icd /" + s.adminsession.getZoneName() + "/home/public", "EMPTY")  # get into public/
