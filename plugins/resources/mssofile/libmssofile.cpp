@@ -1436,8 +1436,7 @@ extern "C" {
             return PASS( ret );
         }
 
-        strncpy( MssoStructFileDesc[structFileInx].location,
-                 location.c_str(), NAME_LEN );
+        snprintf( MssoStructFileDesc[structFileInx].location, NAME_LEN, "%s", location.c_str() );
 
         structFileInx = rsMssoStructFileOpen( _ctx.comm(), fco, 1 );
 
@@ -1475,7 +1474,7 @@ extern "C" {
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
 
         fileCreateOut_t* create_out = 0;
-        strncpy( fileCreateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileCreateInp.resc_hier_, MAX_NAME_LEN, "%s", specColl->rescHier );
         status = rsFileCreate( _ctx.comm(), &fileCreateInp, &create_out );
 
         if ( status < 0 ) {
