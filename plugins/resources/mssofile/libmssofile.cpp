@@ -1297,7 +1297,7 @@ extern "C" {
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
 
-        strncpy( fileStatInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileStatInp.rescHier, MAX_NAME_LEN, "%s", specColl->rescHier );
         status = rsFileStat( rsComm, &fileStatInp, &fileStatOut );
 
         if ( status < 0 ) {
