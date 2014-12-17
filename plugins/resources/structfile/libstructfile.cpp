@@ -2490,7 +2490,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // copy the data type requested by user for compression
-        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, fco->data_type().c_str(), NAME_LEN );
+        snprintf( PluginStructFileDesc[ struct_file_index ].dataType, NAME_LEN, "%s", fco->data_type().c_str() );
 
         // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed
@@ -2561,8 +2561,8 @@ extern "C" {
                 memset( &rmdir_inp, 0, sizeof( rmdir_inp ) );
                 rmdir_inp.flags    = RMDIR_RECUR;
                 rstrcpy( rmdir_inp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
-                strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
-                strncpy( rmdir_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
+                snprintf( rmdir_inp.addr.hostAddr,  NAME_LEN,       "%s", resc_host.c_str() );
+                snprintf( rmdir_inp.rescHier,       MAX_NAME_LEN,   "%s", spec_coll->rescHier );
 
                 status = rsFileRmdir( comm, &rmdir_inp );
                 if ( status < 0 ) {
