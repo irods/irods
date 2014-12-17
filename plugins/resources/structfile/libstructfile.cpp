@@ -1526,8 +1526,8 @@ extern "C" {
         // build a file mkdir structure to pass off to the server api call
         fileRmdirInp_t fileRmdirInp;
         memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
-        strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileRmdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
+        snprintf( fileRmdirInp.addr.hostAddr, NAME_LEN, "%s", resc_host.c_str() );
+        snprintf( fileRmdirInp.rescHier, MAX_NAME_LEN, "%s", spec_coll->rescHier );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
