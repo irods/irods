@@ -1296,10 +1296,8 @@ extern "C" {
         // build a file stat structure to pass off to the server api call
         fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
-        strncpy( fileStatInp.rescHier,
-                 fco->resc_hier().c_str(),
-                 MAX_NAME_LEN );
-        strncpy( fileStatInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileStatInp.rescHier, MAX_NAME_LEN, "%s", fco->resc_hier().c_str() );
+        snprintf( fileStatInp.objPath, MAX_NAME_LEN, "%s", fco->logical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1309,10 +1307,8 @@ extern "C" {
                        "tar_file_stat_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-        strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileStatInp.rescHier,
-                 fco->resc_hier().c_str(),
-                 MAX_NAME_LEN );
+        snprintf( fileStatInp.addr.hostAddr, NAME_LEN, "%s", resc_host.c_str() );
+        snprintf( fileStatInp.rescHier, MAX_NAME_LEN, "%s", fco->resc_hier().c_str() );
 
         // =-=-=-=-=-=-=-
         // make the call to stat a file
