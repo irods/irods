@@ -79,7 +79,7 @@ class ResourceBase(object):
         print "run_resource_teardown  - admin session removing session files"
         for session in s.sessions:
             session.runCmd('icd')
-            session.runCmd('irm', ['-r', sess.sessionId])
+            session.runCmd('irm', ['-r', session.sessionId])
         # clean trash
         print "run_resource_teardown  - clean trash"
         s.adminsession.runCmd('irmtrash', ['-M'])
