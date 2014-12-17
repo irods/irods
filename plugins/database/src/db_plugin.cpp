@@ -8428,9 +8428,11 @@ checkLevel:
             return PASS( ret );
         }
 
-        strncpy( zoneToUse, zone.c_str(), MAX_NAME_LEN );
         if ( _user_zone != NULL && *_user_zone != '\0' ) {
-            strncpy( zoneToUse, _user_zone, MAX_NAME_LEN );
+            snprintf( zoneToUse, MAX_NAME_LEN, "%s", _user_zone );
+        }
+        else {
+            snprintf( zoneToUse, MAX_NAME_LEN, "%s", zone.c_str() );
         }
 
         status = parseUserName( _user_name, userName2, zoneName );
