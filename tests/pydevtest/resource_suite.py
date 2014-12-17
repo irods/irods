@@ -77,7 +77,9 @@ class ResourceBase(object):
         s.adminsession.runCmd('irm -rf ../../bundle')
         # tear down admin session files
         print "run_resource_teardown  - admin session removing session files"
-        s.adminsession.runCmd('irm', ['-r', s.adminsession.sessionId])
+        for session in s.sessions:
+            session.runCmd('icd')
+            session.runCmd('irm', ['-r', sess.sessionId])
         # clean trash
         print "run_resource_teardown  - clean trash"
         s.adminsession.runCmd('irmtrash', ['-M'])
