@@ -497,7 +497,7 @@ int _rsDataObjReplUpdate(
             // if the dst hier kw is not set, then set the dest resc hier kw from the dest obj info
             // as it is already known and we do not want the resc hier making this decision again
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, destDataObjInfo->rescHier );
-            status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
+            status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, "", destDataObjInfo, 1 );
 
             if ( status >= 0 ) {
                 break;
@@ -569,7 +569,7 @@ _rsDataObjReplNewCopy(
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-        		destRescGrpInfo->rescInfo, destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
+        		destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }
@@ -600,7 +600,6 @@ _rsDataObjReplNewCopy(
 
 /* _rsDataObjReplS - replicate a single obj
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated.
- *   rescInfo_t *destRescInfo - The dest resource info
  *   rescGroupName - only meaningful if the destDataObj does not exist.
  *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
  *      If destDataObjInfo == NULL, dest is new and no output is required.
@@ -616,7 +615,6 @@ _rsDataObjReplS(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * srcDataObjInfo,
-    rescInfo_t * destRescInfo,
     char * rescGroupName,
     dataObjInfo_t * destDataObjInfo,
     int updateFlag ) {

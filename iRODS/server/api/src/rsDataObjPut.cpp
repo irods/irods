@@ -262,7 +262,6 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
                     bytesBuf_t*   dataObjInpBBuf ) {
     int bytesWritten;
     int l1descInx;
-    dataObjInfo_t *myDataObjInfo;
 //    char rescGroupName[NAME_LEN];		//#1472
 //    rescInfo_t *rescInfo = NULL;
 //    rescGrpInfo_t *myRescGrpInfo = NULL;

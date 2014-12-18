@@ -36,8 +36,8 @@ _rsDataObjReplNewCopy( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                        transferStat_t *transStat, dataObjInfo_t *outDataObjInfo );
 int
 _rsDataObjReplS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo,
-                 char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag );
+                 dataObjInfo_t *srcDataObjInfo, char *rescName,
+                 dataObjInfo_t *destDataObjInfo, int updateFlag );
 int
 dataObjOpenForRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     dataObjInfo_t *srcDataObjInfo, char* _resc_name, dataObjInfo_t *destDataObjInfo, int updateFlag );

@@ -163,19 +163,17 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  transferStat_t *transStat, int multiCopyFlag ) {
     dataObjInfo_t *srcDataObjInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
     int status = 0;
     int savedStatus = 0;
 
     tmpRescGrpInfo = destRescGrpInfo;
     srcDataObjInfo = srcDataObjInfoHead;
     while ( tmpRescGrpInfo != NULL ) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
         while ( srcDataObjInfo != NULL ) {
             /* use _rsDataObjReplS for the phymv */
             dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
             status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                      tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL, 0 );
+                                      tmpRescGrpInfo->rescGroupName, NULL, 0 );
 
             if ( multiCopyFlag == 0 ) {
                 if ( status >= 0 ) {
