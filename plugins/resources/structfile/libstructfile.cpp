@@ -2409,10 +2409,10 @@ extern "C" {
         // create a file stat structure for the rs call
         fileStatInp_t file_stat_inp;
         memset( &file_stat_inp, 0, sizeof( file_stat_inp ) );
-        rstrcpy( file_stat_inp.fileName,      spec_coll->phyPath,  MAX_NAME_LEN );
-        strncpy( file_stat_inp.addr.hostAddr, _host.c_str(),       NAME_LEN );
-        strncpy( file_stat_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
-        strncpy( file_stat_inp.objPath,       spec_coll->objPath,  MAX_NAME_LEN );
+        rstrcpy( file_stat_inp.fileName, spec_coll->phyPath, MAX_NAME_LEN );
+        snprintf( file_stat_inp.addr.hostAddr,  NAME_LEN,     "%s", _host.c_str() );
+        snprintf( file_stat_inp.rescHier,       MAX_NAME_LEN, "%s", spec_coll->rescHier );
+        snprintf( file_stat_inp.objPath,        MAX_NAME_LEN, "%s", spec_coll->objPath );
 
         // =-=-=-=-=-=-=-
         // call file stat api to get the size of the new file
