@@ -1068,22 +1068,22 @@ extern "C" int cllTest( const char *userArg, const char *pwArg ) {
     char userName[500];
     if ( userArg == 0 || *userArg == '\0' ) {
         struct passwd *ppasswd;
-        ppasswd = getpwuid( getuid() );  /* get user passwd entry             */
-        strcpy( userName, ppasswd->pw_name ); /* get user name                  */
+        ppasswd = getpwuid( getuid() );  // get user passwd entry
+        snprintf( userName, sizeof( userName ), "%s", ppasswd->pw_name ); // get user name
     }
     else {
-        strncpy( userName, userArg, 500 );
+        snprintf( userName, sizeof( userName ), "%s", userArg );
     }
     printf( "userName=%s\n", userName );
     printf( "password=%s\n", pwArg );
 
-    strncpy( icss.databaseUsername, userName, DB_USERNAME_LEN );
+    snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", userName );
 
     if ( pwArg == 0 || *pwArg == '\0' ) {
-        strcpy( icss.databasePassword, "" );
+        icss.databasePassword = '\0';
     }
     else {
-        strncpy( icss.databasePassword, pwArg, DB_PASSWORD_LEN );
+        snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", pwArg );
     }
 
     int status = cllConnect( &icss );
