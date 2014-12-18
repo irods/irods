@@ -1958,7 +1958,7 @@ extern "C" {
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
         fileRenameOut_t* rename_out = 0;
-        strncpy( fileRenameInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileRenameInp.rescHier, MAX_NAME_LEN, "%s", specColl->rescHier );
         status = rsFileRename( _ctx.comm(), &fileRenameInp, &rename_out );
         // NOTE :: rename could possible change the name under the covers,
         //         need to consider how to handle this here.
