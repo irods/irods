@@ -3627,7 +3627,7 @@ extern "C" {
         snprintf( ruleExecIdNum, MAX_NAME_LEN, "%lld", seqNum );
 
         /* store as output parameter */
-        strncpy( _re_sub_inp->ruleExecId, ruleExecIdNum, NAME_LEN );
+        snprintf( _re_sub_inp->ruleExecId, NAME_LEN, "%s", ruleExecIdNum );
 
         getNowStr( myTime );
 
