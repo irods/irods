@@ -425,7 +425,7 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     // JMC - legacy resource  if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
     std::string resc_class;
     irods::error prop_err = irods::get_resource_property<std::string>(
-                                dataObjInfo->rescInfo->rescName,
+                                dataObjInfo->rescName,
                                 irods::RESOURCE_CLASS,
                                 resc_class );
     if ( prop_err.ok() ) {
@@ -436,7 +436,7 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     else {
         std::stringstream msg;
         msg << "failed to get property [class] for resource [";
-        msg << dataObjInfo->rescInfo->rescName;
+        msg << dataObjInfo->rescName;
         msg << "]";
         irods::log( PASSMSG( msg.str(), prop_err ) );
         return -1;
@@ -453,9 +453,11 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
 
-    if ( dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-        return SYS_RESC_IS_DOWN;
-    }
+	irods::error resc_err = irods::is_resc_live(dataObjInfo->rescName);
+	if (!resc_err.ok()) {
+		return resc_err.code();
+	}
+
 
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
         subFile_t subFile;

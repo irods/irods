@@ -724,8 +724,10 @@ dataObjOpenForRepl(
     }
     *srcDataObjInfo = *inpSrcDataObjInfo;
 
-    srcDataObjInfo->rescInfo = new rescInfo_t;
-    memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+//    srcDataObjInfo->rescInfo = new rescInfo_t;
+    srcDataObjInfo->rescInfo = NULL;
+//    memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+//    memset(srcDataObjInfo->rescInfo, 0, sizeof (rescInfo_t));
 
     memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
     replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
@@ -773,8 +775,10 @@ dataObjOpenForRepl(
         memset( &myDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
         replKeyVal( &inpDestDataObjInfo->condInput, &myDestDataObjInfo->condInput );
 
-        myDestDataObjInfo->rescInfo = new rescInfo_t;
-        memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+//        myDestDataObjInfo->rescInfo = new rescInfo_t;
+//        memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+        myDestDataObjInfo->rescInfo = NULL;	// #1472
+
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
         addKeyVal( &myDataObjInp.condInput, FORCE_FLAG_KW, "" );
         myDataObjInp.openFlags |= ( O_TRUNC | O_WRONLY );
@@ -1239,7 +1243,8 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
     int dst_create_path = 0;
-    irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName,
+//    irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName,
+    irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescName,
                        irods::RESOURCE_CREATE_PATH, dst_create_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
@@ -1315,11 +1320,23 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     fileStageSyncInp_t file_stage;
     int status;
 
+    std::string resc_loc;
+    std::string resc_hier(destDataObjInfo->rescHier);
+
     memset( &file_stage, 0, sizeof( file_stage ) );
     file_stage.dataSize      = srcDataObjInfo->dataSize;
 
-    rstrcpy( file_stage.addr.hostAddr,
-             destDataObjInfo->rescInfo->rescLoc, NAME_LEN );
+//    rstrcpy( file_stage.addr.hostAddr,
+//             destDataObjInfo->rescInfo->rescLoc, NAME_LEN );
+
+    irods::error ret = irods::get_loc_for_hier_string( resc_hier, resc_loc );
+    if ( !ret.ok() ) {
+        irods::log( PASSMSG( "irods::get_loc_for_hier_string() failed", ret ) );
+        return ret.code();
+    }
+    rstrcpy( file_stage.addr.hostAddr, resc_loc.c_str(), NAME_LEN );
+
+
     /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
     rstrcpy( file_stage.cacheFilename, destDataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( file_stage.filename,      srcDataObjInfo->filePath,  MAX_NAME_LEN );

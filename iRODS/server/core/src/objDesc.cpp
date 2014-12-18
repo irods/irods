@@ -552,7 +552,7 @@ initDataObjInfoForRepl(
     destDataObjInfo->rescInfo = new rescInfo_t;
 
 //    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
-    rstrcpy ( destDataObjInfo->rescInfo->rescName, _resc_name, NAME_LEN );   // #1472
+    memset(destDataObjInfo->rescInfo, 0, sizeof (rescInfo_t)); // #1472
 
     // Removing this block breaks test_resource_types.Test_UnixFileSystem_Resource.test_beginning_from_devtest #1472
     if ( _resc_name != NULL && strlen( _resc_name ) > 0 ) {
