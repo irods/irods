@@ -1529,9 +1529,7 @@ extern "C" {
             return ERROR( structFileInx, msg.str() );
         }
 
-        strncpy( MssoStructFileDesc[structFileInx].location,
-                 location.c_str(),
-                 NAME_LEN );
+        snprintf( MssoStructFileDesc[structFileInx].location, NAME_LEN, "%s", location.c_str() );
 
         /* use the cached specColl. specColl may have changed */
         specColl = MssoStructFileDesc[structFileInx].specColl;
@@ -1557,7 +1555,7 @@ extern "C" {
         rstrcpy( fileOpenInp.addr.hostAddr, location.c_str(), NAME_LEN );
         fileOpenInp.mode  = fco->mode();
         fileOpenInp.flags = fco->flags();
-        strncpy( fileOpenInp.resc_hier_, fco->resc_hier().c_str(), MAX_NAME_LEN );
+        snprintf( fileOpenInp.resc_hier_, MAX_NAME_LEN, "%s", fco->resc_hier().c_str() );
         status = rsFileOpen( _ctx.comm(), &fileOpenInp );
 
         if ( status < 0 ) {
