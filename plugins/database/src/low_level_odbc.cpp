@@ -1080,7 +1080,7 @@ extern "C" int cllTest( const char *userArg, const char *pwArg ) {
     snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", userName );
 
     if ( pwArg == 0 || *pwArg == '\0' ) {
-        icss.databasePassword = '\0';
+        icss.databasePassword[0] = '\0';
     }
     else {
         snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", pwArg );
