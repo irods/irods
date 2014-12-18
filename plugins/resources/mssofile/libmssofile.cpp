@@ -2160,7 +2160,7 @@ extern "C" {
         rstrcpy( fileOpendirInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
-        strncpy( fileOpendirInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileOpendirInp.resc_hier_, MAX_NAME_LEN, "%s", specColl->rescHier );
         status = rsFileOpendir( _ctx.comm(), &fileOpendirInp );
         if ( status < 0 ) {
             std::stringstream msg;
