@@ -13,18 +13,18 @@
 extern "C" {
 #endif
 
-    int
-    scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
-    int
-    scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
-    int
-    scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath );
-    int
-    statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut );
-    int
-    chkObjExist( rcComm_t *conn, char *inpPath, char *hostname );
-    int
-    checkIsMount( rcComm_t *conn, char *inpPath );
+int
+scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
+int
+scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
+int
+scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath );
+int
+statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut );
+int
+chkObjExist( rcComm_t *conn, char *inpPath, char *hostname );
+int
+checkIsMount( rcComm_t *conn, char *inpPath );
 
 #ifdef __cplusplus
 }

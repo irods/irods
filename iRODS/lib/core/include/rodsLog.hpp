@@ -44,18 +44,18 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void rodsLog( int level, const char *formatStr, ... );
-    void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
-                             const char *formatStr, ... );
-    void rodsLogLevel( int level );
-    void rodsLogSqlReq( int onOrOff );
-    void rodsLogSql( const char *sql );
-    void rodsLogSqlResult( char *stat );
-    char *rodsErrorName( int errorValue, char **subName );
-    void rodsLogErrorOld( int level, int errCode, char *textStr );
-    void rodsLogError( int level, int errCode, char *formatStr, ... );
-    int getRodsLogLevel();
-    void generateLogTimestamp( char *ts, int tsLen );
+void rodsLog( int level, const char *formatStr, ... );
+void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
+                         const char *formatStr, ... );
+void rodsLogLevel( int level );
+void rodsLogSqlReq( int onOrOff );
+void rodsLogSql( const char *sql );
+void rodsLogSqlResult( char *stat );
+char *rodsErrorName( int errorValue, char **subName );
+void rodsLogErrorOld( int level, int errCode, char *textStr );
+void rodsLogError( int level, int errCode, char *formatStr, ... );
+int getRodsLogLevel();
+void generateLogTimestamp( char *ts, int tsLen );
 
 #ifdef __cplusplus
 }

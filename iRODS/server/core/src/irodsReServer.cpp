@@ -188,12 +188,12 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
-    irods::server_control_plane ctrl_plane( 
-                                    irods::CFG_RE_CONTROL_PLANE_PORT );
+    irods::server_control_plane ctrl_plane(
+        irods::CFG_RE_CONTROL_PLANE_PORT );
 
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() ) {
-        if( irods::server_state::PAUSED == state() ) {
+    while ( irods::server_state::STOPPED != state() ) {
+        if ( irods::server_state::PAUSED == state() ) {
             sleep( 1 );
             continue;
         }

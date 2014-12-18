@@ -40,9 +40,9 @@ _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp );
+/* prototype for the client call */
+int
+rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp );
 #ifdef __cplusplus
 }
 #endif

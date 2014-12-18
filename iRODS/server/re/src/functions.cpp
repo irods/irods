@@ -639,7 +639,7 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
         subtreesNew[3] = subtrees[3];
         subtrees = subtreesNew;
         ctype = RE_ITERABLE_LIST;
-        /* no break */
+    /* no break */
 
     case RE_ITERABLE_COLLECTION:
     case RE_ITERABLE_GEN_QUERY:

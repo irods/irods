@@ -34,7 +34,8 @@ namespace irods {
         std::vector< std::string > token_vec;
         try {
             boost::split( token_vec, _token, boost::is_any_of( _assoc ), boost::token_compress_on );
-        } catch ( const boost::bad_function_call& ) {
+        }
+        catch ( const boost::bad_function_call& ) {
             rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
             token_vec.clear();
         }

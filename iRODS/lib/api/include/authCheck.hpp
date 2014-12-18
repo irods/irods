@@ -48,10 +48,10 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,
-                 authCheckOut_t **authCheckOut );
+/* prototype for the client call */
+int
+rcAuthCheck( rcComm_t *conn, authCheckInp_t *authCheckInp,
+             authCheckOut_t **authCheckOut );
 
 #ifdef __cplusplus
 }

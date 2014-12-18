@@ -22,7 +22,7 @@ typedef struct TransferProgress {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void init_client_api_table();
+void init_client_api_table();
 #ifdef __cplusplus
 }
 #endif

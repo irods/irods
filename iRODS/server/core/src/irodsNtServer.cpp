@@ -75,25 +75,25 @@ VOID ServiceStop() {
 VOID WINAPI service_ctrl( DWORD dwCtrlCode ) {
     // Handle the requested control code.
     switch ( dwCtrlCode ) {
-        // Stop the service.
-        //
-        // SERVICE_STOP_PENDING should be reported before
-        // setting the Stop Event - hServerStopEvent - in
-        // ServiceStop().  This avoids a race condition
-        // which may result in a 1053 - The Service did not respond...
-        // error.
+    // Stop the service.
+    //
+    // SERVICE_STOP_PENDING should be reported before
+    // setting the Stop Event - hServerStopEvent - in
+    // ServiceStop().  This avoids a race condition
+    // which may result in a 1053 - The Service did not respond...
+    // error.
     case SERVICE_CONTROL_STOP:
         ReportStatusToSCMgr( SERVICE_STOP_PENDING, NO_ERROR, 0 );
         ServiceStop();
         return;
 
-        // Update the service status.
-        //
+    // Update the service status.
+    //
     case SERVICE_CONTROL_INTERROGATE:
         break;
 
-        // invalid control code
-        //
+    // invalid control code
+    //
     default:
         break;
 

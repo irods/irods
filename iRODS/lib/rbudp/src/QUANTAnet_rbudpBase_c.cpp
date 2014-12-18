@@ -252,7 +252,7 @@ int readn( register int fd, register char *ptr, register int nbytes ) {
     while ( nleft > 0 ) {
         nread = read( fd, ptr, nleft );
         if ( nread < 0 ) {
-            return( nread );    /*error */
+            return ( nread );   /*error */
         }
         else if ( nread == 0 ) {
             break;    /* EOF */

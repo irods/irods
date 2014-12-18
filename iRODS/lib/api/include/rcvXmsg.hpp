@@ -29,10 +29,10 @@ rsRcvXmsg( rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp,
-               rcvXmsgOut_t **rcvXmsgOut );
+/* prototype for the client call */
+int
+rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp,
+           rcvXmsgOut_t **rcvXmsgOut );
 
 #ifdef __cplusplus
 }

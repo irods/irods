@@ -52,9 +52,9 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp );
+/* prototype for the client call */
+int
+rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp );
 #ifdef __cplusplus
 }
 #endif

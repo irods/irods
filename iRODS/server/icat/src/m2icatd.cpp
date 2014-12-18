@@ -159,10 +159,10 @@ int
 checkDoCollection( char *inColl ) {
     char testColl[2000];
     if ( strstr( inColl, "/container" ) == inColl ) {
-        return( 0 ); /* don't convert those starting with /container */
+        return ( 0 ); /* don't convert those starting with /container */
     }
     if ( strstr( inColl, "/home/" ) == inColl ) {
-        return( 1 ); /* do convert /home/* collections */
+        return ( 1 ); /* do convert /home/* collections */
     }
 
     testColl[0] = '/';
@@ -170,7 +170,7 @@ checkDoCollection( char *inColl ) {
     strcat( testColl, cv_srb_zone );
     strcat( testColl, "/container" );
     if ( strstr( inColl, testColl ) == inColl ) {
-        return( 0 ); /* don't convert these */
+        return ( 0 ); /* don't convert these */
     }
 
     testColl[0] = '/';
@@ -178,7 +178,7 @@ checkDoCollection( char *inColl ) {
     strcat( testColl, cv_srb_zone );
     strcat( testColl, "/trash" );
     if ( strstr( inColl, testColl ) == inColl ) {
-        return( 1 ); /*  convert these */
+        return ( 1 ); /*  convert these */
     }
     testColl[0] = '/';
     testColl[1] = '\0';
@@ -199,7 +199,7 @@ checkDoCollection( char *inColl ) {
     strcat( testColl, "/" );
     if ( strstr( inColl, testColl ) != inColl ) {
         /* if it doesn't start w /zone/ */
-        return( 0 );     /* skip it */
+        return ( 0 );    /* skip it */
     }
     return 1;
 }

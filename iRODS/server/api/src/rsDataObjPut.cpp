@@ -75,7 +75,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status2 = applyRuleForPostProcForWrite( rsComm, dataObjInpBBuf,
                                                 dataObjInp->objPath );
         if ( status2 < 0 ) {
-            return( status2 );
+            return ( status2 );
         }
 
         dataObjInp->openFlags = O_RDWR;

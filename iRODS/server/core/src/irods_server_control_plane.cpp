@@ -14,7 +14,7 @@
 #include "irods_stacktrace.hpp"
 
 namespace irods {
-     
+
     static error forward_server_control_command(
         const std::string& _name,
         const std::string& _host,
@@ -32,17 +32,17 @@ namespace irods {
 
         int time_out = 0;
         ret = get_server_property <
-                  int > (
-                      CFG_CONTROL_PLANE_TIMEOUT,
-                      time_out );
+              int > (
+                  CFG_CONTROL_PLANE_TIMEOUT,
+                  time_out );
         if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
-        std::stringstream port_sstr; 
+        std::stringstream port_sstr;
         port_sstr << port;
-            
+
         // standard zmq rep-req communication pattern
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
@@ -66,16 +66,16 @@ namespace irods {
         // serialize using the generated avro class
         std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
         avro::EncoderPtr e = avro::binaryEncoder();
-        e->init(*out);
-        avro::encode(*e, cmd);
+        e->init( *out );
+        avro::encode( *e, cmd );
         boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
 
         // copy binary encoding into a zmq message for transport
         zmq::message_t rep( data->size() );
-        memcpy( 
-             rep.data(),
-             data->data(),
-             data->size() );
+        memcpy(
+            rep.data(),
+            data->data(),
+            data->size() );
         zmq_skt.send( rep );
 
         // wait for the server reponse
@@ -83,14 +83,15 @@ namespace irods {
         zmq_skt.recv( &req );
 
         std::string rep_str(
-                        static_cast< char* >( req.data() ),
-                        req.size() );
-        if( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
+            static_cast< char* >( req.data() ),
+            req.size() );
+        if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
             // check if the result is really an error or a status
-            if( std::string::npos == rep_str.find( "[-]" ) ) {
+            if ( std::string::npos == rep_str.find( "[-]" ) ) {
                 _output += rep_str;
 
-            } else {
+            }
+            else {
                 return ERROR(
                            CONTROL_PLANE_MESSAGE_ERROR,
                            rep_str );
@@ -99,19 +100,19 @@ namespace irods {
         }
 
         return SUCCESS();
-        
+
     } // forward_server_control_command
-   
+
     static error server_operation_shutdown(
         std::string& _output ) {
         rodsEnv my_env;
         getRodsEnv( &my_env );
         _output += "[ shutting down ";
         _output += my_env.rodsHost;
-        _output += " ]"; 
+        _output += " ]";
         _output += "\n";
-        // rule engine server only runs on IES 
-        #ifdef RODS_CAT
+        // rule engine server only runs on IES
+#ifdef RODS_CAT
         std::string output;
         error ret = forward_server_control_command(
                         irods::SERVER_CONTROL_SHUTDOWN,
@@ -122,60 +123,60 @@ namespace irods {
             irods::log( PASS( ret ) );
 
         }
-        #endif
+#endif
 
         server_state& s = server_state::instance();
-        s( server_state::STOPPED ); 
+        s( server_state::STOPPED );
         return SUCCESS();
-        
+
     } // server_operation_shutdown
- 
+
     static error rule_engine_operation_shutdown(
         std::string& _output ) {
         rodsEnv my_env;
         getRodsEnv( &my_env );
         _output += "[ shutting down ";
         _output += my_env.rodsHost;
-        _output += " ]"; 
+        _output += " ]";
         _output += "\n";
 
         server_state& s = server_state::instance();
-        s( server_state::STOPPED ); 
+        s( server_state::STOPPED );
         return SUCCESS();
-        
+
     } // rule_engine_server_operation_shutdown
-  
+
     static error operation_pause(
         std::string& _output ) {
         rodsEnv my_env;
         getRodsEnv( &my_env );
         _output += "[ pausing ";
         _output += my_env.rodsHost;
-        _output += " ]"; 
+        _output += " ]";
         _output += "\n";
 
         server_state& s = server_state::instance();
-        s( server_state::PAUSED ); 
+        s( server_state::PAUSED );
 
         return SUCCESS();
-    
+
     } // operation_pause
-    
+
     static error operation_resume(
         std::string& _output ) {
         rodsEnv my_env;
         getRodsEnv( &my_env );
         _output += "[ resuming ";
         _output += my_env.rodsHost;
-        _output += " ]"; 
+        _output += " ]";
         _output += "\n";
 
         server_state& s = server_state::instance();
-        s( server_state::RUNNING ); 
+        s( server_state::RUNNING );
         return SUCCESS();
-    
+
     } // operation_resume
-     
+
     static error operation_status(
         std::string& _output ) {
         rodsEnv my_env;
@@ -183,13 +184,13 @@ namespace irods {
 
         _output += "[ status for ";
         _output += my_env.rodsHost;
-        _output += " ]"; 
+        _output += " ]";
         _output += "\n";
 
         return SUCCESS();
 
     } // operation_status
- 
+
     server_control_plane::server_control_plane(
         const std::string& _prop ) :
         control_executor_( _prop ),
@@ -202,79 +203,80 @@ namespace irods {
         control_thread_.join();
 
     } // dtor
- 
-    server_control_executor::server_control_executor( 
+
+    server_control_executor::server_control_executor(
         const std::string& _prop ) : port_prop_( _prop )  {
-        if( port_prop_.empty() ) {
-            irods::log( ERROR( 
-                        SYS_INVALID_INPUT_PARAM,
-                        "control_plane_port key is empty" ) );
+        if ( port_prop_.empty() ) {
+            irods::log( ERROR(
+                            SYS_INVALID_INPUT_PARAM,
+                            "control_plane_port key is empty" ) );
             // TODO :: throw fancy exception
             return;
-        } 
+        }
 
         op_map_[ SERVER_CONTROL_PAUSE ]    = operation_pause;
         op_map_[ SERVER_CONTROL_RESUME ]   = operation_resume;
         op_map_[ SERVER_CONTROL_STATUS ]   = operation_status;
-        if( _prop == irods::CFG_RE_CONTROL_PLANE_PORT ) {
-             op_map_[ SERVER_CONTROL_SHUTDOWN ] = rule_engine_operation_shutdown;
-         }
-         else {
-             op_map_[ SERVER_CONTROL_SHUTDOWN ] = server_operation_shutdown;
+        if ( _prop == irods::CFG_RE_CONTROL_PLANE_PORT ) {
+            op_map_[ SERVER_CONTROL_SHUTDOWN ] = rule_engine_operation_shutdown;
+        }
+        else {
+            op_map_[ SERVER_CONTROL_SHUTDOWN ] = server_operation_shutdown;
 
-         }
+        }
 
-         // get our hostname for ordering 
-         rodsEnv my_env;
-         getRodsEnv( &my_env );
-         my_host_name_ = my_env.rodsHost;
+        // get our hostname for ordering
+        rodsEnv my_env;
+        getRodsEnv( &my_env );
+        my_host_name_ = my_env.rodsHost;
 
-         // get the IES host for ordereing
-         error ret = get_server_property <
-             std::string > (
-                     CFG_ICAT_HOST_KW,
-                     ies_host_name_ );
-         if ( !ret.ok() ) {
-             irods::log( PASS( ret ) );
+        // get the IES host for ordereing
+        error ret = get_server_property <
+                    std::string > (
+                        CFG_ICAT_HOST_KW,
+                        ies_host_name_ );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
 
-         }
+        }
 
-         // repave ies_host_name_ as we do not want to process 'localhost'
-         if( "localhost" == ies_host_name_ ) {
-             ies_host_name_ = my_host_name_;
+        // repave ies_host_name_ as we do not want to process 'localhost'
+        if ( "localhost" == ies_host_name_ ) {
+            ies_host_name_ = my_host_name_;
 
-         }
+        }
 
     } // ctor
-   
+
     error server_control_executor::forward_command(
         const std::string& _name,
         const std::string& _host,
         const std::string& _port,
         std::string&       _output ) {
         // if this is forwarded to us, just perform the operation
-        if( _host == my_host_name_ ) {
+        if ( _host == my_host_name_ ) {
             host_list_t hosts;
             hosts.push_back( _host );
             return process_host_list(
                        _name,
                        hosts,
                        _output );
-        
-        } else {
+
+        }
+        else {
             return forward_server_control_command(
                        _name,
                        _host,
                        _port,
                        _output );
-            
+
         }
-  
+
         return SUCCESS();
-         
+
     } // forward_command
 
-    error server_control_executor::get_resource_host_names( 
+    error server_control_executor::get_resource_host_names(
         host_list_t& _host_names ) {
         rodsEnv my_env;
         getRodsEnv( &my_env );
@@ -284,19 +286,19 @@ namespace irods {
                              my_env.rodsUserName,
                              my_env.rodsZone,
                              RECONN_TIMEOUT, 0 );
-        if( !comm ) {
-            return ERROR( 
+        if ( !comm ) {
+            return ERROR(
                        LOG_ERROR,
                        "rcConnect failed" );
         }
-        
-        int status = clientLogin( 
-                         comm, 
-                         0, 
+
+        int status = clientLogin(
+                         comm,
+                         0,
                          my_env.rodsAuthScheme );
         if ( status != 0 ) {
             rcDisconnect( comm );
-            return ERROR( 
+            return ERROR(
                        status,
                        "client login failed" );
         }
@@ -304,38 +306,38 @@ namespace irods {
         genQueryInp_t  gen_inp;
         genQueryOut_t* gen_out = NULL;
         memset( &gen_inp, 0, sizeof( gen_inp ) );
-        
+
         addInxIval( &gen_inp.selectInp, COL_R_LOC, 1 );
         gen_inp.maxRows = MAX_SQL_ROWS;
-           
+
         int cont_idx = 1;
-        while( cont_idx ) { 
-            int status = rcGenQuery( 
-                             comm, 
-                             &gen_inp, 
+        while ( cont_idx ) {
+            int status = rcGenQuery(
+                             comm,
+                             &gen_inp,
                              &gen_out );
             if ( status < 0 ) {
                 clearGenQueryInp( &gen_inp );
-                return ERROR( 
-                           status, 
+                return ERROR(
+                           status,
                            "genQuery failed." );
 
             } // if
 
-            sqlResult_t* resc_loc = getSqlResultByInx( 
-                                        gen_out, 
+            sqlResult_t* resc_loc = getSqlResultByInx(
+                                        gen_out,
                                         COL_R_LOC );
-            if( !resc_loc ) {
-                return ERROR( 
-                           UNMATCHED_KEY_OR_INDEX, 
+            if ( !resc_loc ) {
+                return ERROR(
+                           UNMATCHED_KEY_OR_INDEX,
                            "getSqlResultByInx for COL_R_LOC failed" );
             }
-        
-            for( int i = 0; 
-                 i < gen_out->rowCnt; 
-                 ++i ) {
+
+            for ( int i = 0;
+                    i < gen_out->rowCnt;
+                    ++i ) {
                 const std::string hn( &resc_loc->value[ resc_loc->len * i ] );
-                if( "localhost"    != hn ) {
+                if ( "localhost"    != hn ) {
                     _host_names.push_back( hn );
 
                 }
@@ -343,25 +345,25 @@ namespace irods {
             } // for i
 
             cont_idx = gen_out->continueInx;
-       
+
         } // while
 
         rcDisconnect( comm );
-    
+
         return SUCCESS();
-             
-    } // get_resource_host_names 
+
+    } // get_resource_host_names
 
     void server_control_executor::operator()() {
         int port = 0;
         error ret = get_server_property <
-                        int > (
-                            port_prop_,
-                            port );
+                    int > (
+                        port_prop_,
+                        port );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             // TODO :: throw fancy exception here
-            return; 
+            return;
 
         }
 
@@ -372,7 +374,7 @@ namespace irods {
         zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
         zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
 
-        std::stringstream port_sstr; 
+        std::stringstream port_sstr;
         port_sstr << port;
         std::string bind_str( "tcp://*:" );
         bind_str += port_sstr.str();
@@ -384,10 +386,10 @@ namespace irods {
             port );
 
         server_state& s = server_state::instance();
-        while( server_state::STOPPED != s() ) {
+        while ( server_state::STOPPED != s() ) {
             zmq::message_t req;
             zmq_skt.recv( &req );
-            if( 0 == req.size() ) {
+            if ( 0 == req.size() ) {
                 continue;
 
             }
@@ -396,17 +398,18 @@ namespace irods {
             std::string output;
             std::string rep_msg( irods::SERVER_CONTROL_SUCCESS );
             error ret = process_operation( req, output );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
                 rep_msg = ret.result();
-                 
-            } else if( !output.empty() ) { 
+
+            }
+            else if ( !output.empty() ) {
                 rep_msg = output;
-                 
+
             }
 
             zmq::message_t rep( rep_msg.size() );
-            memcpy( 
+            memcpy(
                 rep.data(),
                 rep_msg.c_str(),
                 rep.size() );
@@ -417,33 +420,33 @@ namespace irods {
 
     } // control operation
 
-    error server_control_executor::notify_icat_and_local_servers_preop( 
+    error server_control_executor::notify_icat_and_local_servers_preop(
         const std::string& _cmd_name,
         const std::string& _cmd_option,
         const host_list_t& _cmd_hosts,
         std::string&       _output ) {
 
-        if( SERVER_CONTROL_RESUME != _cmd_name ) {
+        if ( SERVER_CONTROL_RESUME != _cmd_name ) {
             return SUCCESS();
 
         }
-            
+
         error ret = SUCCESS();
-        bool found_my_host = ( std::find( 
-                                  _cmd_hosts.begin(),
-                                  _cmd_hosts.end(),
-                                  my_host_name_ )
-                               != _cmd_hosts.end() );
-        bool found_ies_host = ( std::find( 
+        bool found_my_host = ( std::find(
                                    _cmd_hosts.begin(),
                                    _cmd_hosts.end(),
-                                   ies_host_name_ )
+                                   my_host_name_ )
+                               != _cmd_hosts.end() );
+        bool found_ies_host = ( std::find(
+                                    _cmd_hosts.begin(),
+                                    _cmd_hosts.end(),
+                                    ies_host_name_ )
                                 != _cmd_hosts.end() );
         bool is_all_opt  = ( SERVER_CONTROL_ALL_OPT == _cmd_option );
         bool is_ies_host = ( my_host_name_ == ies_host_name_ );
         // pre-op forwards to the ies first
         // then the icat such as for resume
-        if( found_ies_host || is_all_opt ) {
+        if ( found_ies_host || is_all_opt ) {
             ret = forward_command(
                       _cmd_name,
                       ies_host_name_,
@@ -454,7 +457,7 @@ namespace irods {
 
         // pre-op forwards to the local server second
         // such as for resume
-        if( !is_ies_host && ( found_my_host || is_all_opt ) ) {
+        if ( !is_ies_host && ( found_my_host || is_all_opt ) ) {
             ret = forward_command(
                       _cmd_name,
                       my_host_name_,
@@ -466,26 +469,26 @@ namespace irods {
 
     } // notify_icat_and_local_servers_preop
 
-    error server_control_executor::notify_icat_and_local_servers_postop( 
+    error server_control_executor::notify_icat_and_local_servers_postop(
         const std::string& _cmd_name,
         const std::string& _cmd_option,
         const host_list_t& _cmd_hosts,
         std::string&       _output ) {
         error ret = SUCCESS();
-        if( SERVER_CONTROL_RESUME == _cmd_name ) {
+        if ( SERVER_CONTROL_RESUME == _cmd_name ) {
             return SUCCESS();
 
         }
 
-        bool found_my_host = ( std::find( 
-                                  _cmd_hosts.begin(),
-                                  _cmd_hosts.end(),
-                                  my_host_name_ )
-                               != _cmd_hosts.end() );
-        bool found_ies_host = ( std::find( 
+        bool found_my_host = ( std::find(
                                    _cmd_hosts.begin(),
                                    _cmd_hosts.end(),
-                                   ies_host_name_ )
+                                   my_host_name_ )
+                               != _cmd_hosts.end() );
+        bool found_ies_host = ( std::find(
+                                    _cmd_hosts.begin(),
+                                    _cmd_hosts.end(),
+                                    ies_host_name_ )
                                 != _cmd_hosts.end() );
         bool is_all_opt  = ( SERVER_CONTROL_ALL_OPT == _cmd_option );
         bool is_ies_host = ( my_host_name_ == ies_host_name_ );
@@ -494,7 +497,7 @@ namespace irods {
         // then the icat such as for shutdown
         //if( ( found_my_host && !is_ies_host ) ||
         //    ( found_my_host && !is_all_opt ) ) {
-        if( !is_ies_host && ( found_my_host || is_all_opt ) ) {
+        if ( !is_ies_host && ( found_my_host || is_all_opt ) ) {
             ret = forward_command(
                       _cmd_name,
                       my_host_name_,
@@ -504,7 +507,7 @@ namespace irods {
 
         // post-op forwards to the ies last
         //if( !found_my_host && found_ies_host ) {//&& is_all_opt ) {
-        if( found_ies_host || is_all_opt ) {
+        if ( found_ies_host || is_all_opt ) {
             ret = forward_command(
                       _cmd_name,
                       ies_host_name_,
@@ -516,24 +519,24 @@ namespace irods {
 
     } // notify_icat_server_postop
 
-    error server_control_executor::validate_host_list( 
+    error server_control_executor::validate_host_list(
         const host_list_t&  _irods_hosts,
         const host_list_t&  _cmd_hosts,
         host_list_t&        _valid_hosts ) {
 
         host_list_t::const_iterator itr;
-        for( itr  = _cmd_hosts.begin();
-             itr != _cmd_hosts.end();
-             ++itr ) {
+        for ( itr  = _cmd_hosts.begin();
+                itr != _cmd_hosts.end();
+                ++itr ) {
             // check host value against list from the icat
-            if( _irods_hosts.end() == std::find( 
-                                         _irods_hosts.begin(), 
-                                         _irods_hosts.end(), 
-                                         *itr ) ) {
+            if ( _irods_hosts.end() == std::find(
+                        _irods_hosts.begin(),
+                        _irods_hosts.end(),
+                        *itr ) ) {
                 std::string msg( "invalid server hostname [" );
                 msg += *itr;
                 msg += "]";
-                return ERROR( 
+                return ERROR(
                            SYS_INVALID_INPUT_PARAM,
                            msg );
 
@@ -541,17 +544,17 @@ namespace irods {
 
             // skip the IES since it is a special case
             // and handled elsewhere
-            if( ies_host_name_ == *itr ) {
+            if ( ies_host_name_ == *itr ) {
                 continue;
             }
 
-            // skip the local server since it is also a 
+            // skip the local server since it is also a
             // special case and handled elsewhere
-            if( my_host_name_ == *itr ) {
+            if ( my_host_name_ == *itr ) {
                 continue;
 
             }
-         
+
             // add the host to our newly ordered list
             _valid_hosts.push_back( *itr );
 
@@ -561,59 +564,61 @@ namespace irods {
 
     } // validate_host_list
 
-    error server_control_executor::extract_command_parameters( 
+    error server_control_executor::extract_command_parameters(
         const irods::control_plane_command& _cmd,
         std::string&                        _name,
         std::string&                        _option,
         host_list_t&   _hosts ) {
         // capture and validate the command parameter
         _name = _cmd.command;
-        if( SERVER_CONTROL_SHUTDOWN != _name &&
-            SERVER_CONTROL_PAUSE    != _name &&
-            SERVER_CONTROL_RESUME   != _name &&
-            SERVER_CONTROL_STATUS   != _name ) {
+        if ( SERVER_CONTROL_SHUTDOWN != _name &&
+                SERVER_CONTROL_PAUSE    != _name &&
+                SERVER_CONTROL_RESUME   != _name &&
+                SERVER_CONTROL_STATUS   != _name ) {
             std::string msg( "invalid command [" );
             msg += _name;
             msg += "]";
-            return ERROR( 
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );
         }
 
         // capture and validate the option parameter
-        std::map<std::string,std::string>::const_iterator itr =
+        std::map<std::string, std::string>::const_iterator itr =
             _cmd.options.find( SERVER_CONTROL_OPTION_KW );
-        if( _cmd.options.end() == itr ) {
-            return ERROR( 
+        if ( _cmd.options.end() == itr ) {
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "option parameter is empty" );
 
         }
-        
+
         _option = itr->second;
-        if(  SERVER_CONTROL_ALL_OPT   != _option &&
-             SERVER_CONTROL_HOSTS_OPT != _option ) {
+        if ( SERVER_CONTROL_ALL_OPT   != _option &&
+                SERVER_CONTROL_HOSTS_OPT != _option ) {
             std::string msg( "invalid command option [" );
             msg += _option;
             msg += "]";
-            return ERROR( 
+            return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );
         }
 
         // capture and validate the server hosts, skip the option key
-        for( itr  = _cmd.options.begin();
-             itr != _cmd.options.end();
-             ++itr ) {
-            if( itr->first == SERVER_CONTROL_OPTION_KW ) {
+        for ( itr  = _cmd.options.begin();
+                itr != _cmd.options.end();
+                ++itr ) {
+            if ( itr->first == SERVER_CONTROL_OPTION_KW ) {
                 continue;
 
-            } else if( itr->first.find( 
-                           SERVER_CONTROL_HOST_KW ) 
-                           != std::string::npos ) {
-                    _hosts.push_back( itr->second );
+            }
+            else if ( itr->first.find(
+                          SERVER_CONTROL_HOST_KW )
+                      != std::string::npos ) {
+                _hosts.push_back( itr->second );
 
-            } else {
+            }
+            else {
                 std::string msg( "invalid option key [" );
                 msg += itr->first;
                 msg += "]";
@@ -622,74 +627,74 @@ namespace irods {
                            msg );
 
             }
-          
+
         } // for itr
 
         return SUCCESS();
 
     } // extract_command_parameters
-  
-    error server_control_executor::process_host_list( 
+
+    error server_control_executor::process_host_list(
         const std::string& _cmd_name,
         const host_list_t& _hosts,
         std::string&       _output ) {
-        if( _hosts.empty() ) {
+        if ( _hosts.empty() ) {
             return SUCCESS();
 
         }
 
         irods::error fwd_err;
         host_list_t::const_iterator itr;
-        for( itr  = _hosts.begin();
-             itr != _hosts.end();
-             ++itr ) {
-            if( "localhost" == *itr ) {
+        for ( itr  = _hosts.begin();
+                itr != _hosts.end();
+                ++itr ) {
+            if ( "localhost" == *itr ) {
                 continue;
 
             }
 
             std::string output;
-            if( *itr == my_host_name_ ) {
+            if ( *itr == my_host_name_ ) {
                 error ret = op_map_[ _cmd_name ]( _output );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     fwd_err = PASS( ret );
 
                 }
 
                 continue;
             }
-            
+
             error ret = forward_command(
                             _cmd_name,
                             *itr,
                             port_prop_,
                             _output );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
 
             }
- 
+
         } // for itr
-       
-        return SUCCESS(); 
+
+        return SUCCESS();
 
     } // process_host_list
 
     error server_control_executor::process_operation(
         zmq::message_t& _msg,
         std::string&    _output ) {
-        if( _msg.size() <= 0 ) {
+        if ( _msg.size() <= 0 ) {
             return SUCCESS();
 
         }
 
-        std::auto_ptr<avro::InputStream> in = avro::memoryInputStream( 
-                                                  static_cast<const uint8_t*>(
-                                                      _msg.data() ),
-                                                  _msg.size() );
+        std::auto_ptr<avro::InputStream> in = avro::memoryInputStream(
+                static_cast<const uint8_t*>(
+                    _msg.data() ),
+                _msg.size() );
         avro::DecoderPtr dec = avro::binaryDecoder();
-        dec->init(*in);
-        
+        dec->init( *in );
+
         irods::control_plane_command cmd;
         avro::decode( *dec, cmd );
 
@@ -700,7 +705,7 @@ namespace irods {
                         cmd_name,
                         cmd_option,
                         cmd_hosts );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
@@ -713,39 +718,39 @@ namespace irods {
                   cmd_option,
                   cmd_hosts,
                   _output );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
         host_list_t irods_hosts;
-        ret = get_resource_host_names( 
+        ret = get_resource_host_names(
                   irods_hosts );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
-        if( "all" == cmd_option ) {
+        if ( "all" == cmd_option ) {
             cmd_hosts = irods_hosts;
 
         }
-         
+
         host_list_t valid_hosts;
         ret = validate_host_list(
                   irods_hosts,
                   cmd_hosts,
                   valid_hosts );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
         ret = process_host_list(
-                       cmd_name,
-                       valid_hosts,
-                       _output );
-        if( !ret.ok() ) {
+                  cmd_name,
+                  valid_hosts,
+                  _output );
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
@@ -758,7 +763,7 @@ namespace irods {
                   cmd_option,
                   cmd_hosts, // dont want sanitized
                   _output );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }

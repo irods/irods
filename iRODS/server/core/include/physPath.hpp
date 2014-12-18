@@ -42,7 +42,7 @@ extern "C" {
                      dataObjInp_t *dataObjInp );
     int
     getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                     dataObjInp_t *dataObjInp );
+                          dataObjInp_t *dataObjInp );
     int
     getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                         vaultPathPolicy_t *outVaultPathPolicy );

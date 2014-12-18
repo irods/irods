@@ -28,16 +28,16 @@ rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcL3FilePutSingleBuf - remote call for l3FilePutSingleBuf for cross zone
-     * single buffer get.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   return value - The status of the operation.
-     */
-    int
-    rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx,
-                          bytesBuf_t *dataObjInBBuf );
+/* prototype for the client call */
+/* rcL3FilePutSingleBuf - remote call for l3FilePutSingleBuf for cross zone
+ * single buffer get.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   return value - The status of the operation.
+ */
+int
+rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx,
+                      bytesBuf_t *dataObjInBBuf );
 
 #ifdef __cplusplus
 }

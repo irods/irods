@@ -28,7 +28,7 @@ int
 specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
 _rsDataObjCreateWithResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                              const std::string& _resc_name );
+                          const std::string& _resc_name );
 int
 dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx );
 int
@@ -75,8 +75,8 @@ getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp );
+int
+rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
 }

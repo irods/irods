@@ -13,19 +13,19 @@
 extern "C" {
 #endif
 
-    int
-    phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-               rodsPathInp_t *rodsPathInp );
-    int
-    phymvDataObjUtil( rcComm_t *conn, char *srcPath,
-                      rodsArguments_t *rodsArgs,
-                      dataObjInp_t *dataObjInp );
-    int
-    initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                      dataObjInp_t *dataObjInp );
-    int
-    phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
-                   rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
+int
+phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
+           rodsPathInp_t *rodsPathInp );
+int
+phymvDataObjUtil( rcComm_t *conn, char *srcPath,
+                  rodsArguments_t *rodsArgs,
+                  dataObjInp_t *dataObjInp );
+int
+initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                  dataObjInp_t *dataObjInp );
+int
+phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
+               rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
 }

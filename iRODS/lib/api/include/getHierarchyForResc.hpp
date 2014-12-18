@@ -39,10 +39,10 @@ extern "C" {
 #endif
 // =-=-=-=-=-=-=-
 // prototype for client
-    int rcGetHierarchyForResc(
-        rcComm_t*,                    // server comm ptr
-        getHierarchyForRescInp_t*,    // incoming resc name
-        getHierarchyForRescOut_t** ); // full hier to resc
+int rcGetHierarchyForResc(
+    rcComm_t*,                    // server comm ptr
+    getHierarchyForRescInp_t*,    // incoming resc name
+    getHierarchyForRescOut_t** ); // full hier to resc
 #ifdef __cplusplus
 }
 #endif

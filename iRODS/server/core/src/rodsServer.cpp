@@ -345,8 +345,8 @@ serverMain( char *logDir ) {
     SvrSock = svrComm.sock;
 
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() ) {
-        if( irods::server_state::PAUSED == state() ) {
+    while ( irods::server_state::STOPPED != state() ) {
+        if ( irods::server_state::PAUSED == state() ) {
             sleep( 0.125 );
             continue;
         }
@@ -357,11 +357,11 @@ serverMain( char *logDir ) {
         struct timeval time_out;
         time_out.tv_sec  = 0;
         time_out.tv_usec = 100;
-        while ( ( numSock = select( 
-                                svrComm.sock + 1, 
+        while ( ( numSock = select(
+                                svrComm.sock + 1,
                                 &sockMask,
-                                ( fd_set * ) NULL, 
-                                ( fd_set * ) NULL, 
+                                ( fd_set * ) NULL,
+                                ( fd_set * ) NULL,
                                 &time_out ) ) < 0 ) {
 
             if ( errno == EINTR ) {
@@ -375,12 +375,12 @@ serverMain( char *logDir ) {
                 return -1;
             }
         }
-        
+
         procChildren( &ConnectedAgentHead );
 
-        if( 0 == numSock ) {
+        if ( 0 == numSock ) {
             continue;
-                
+
         }
 
         const int newSock = rsAcceptConn( &svrComm );
@@ -436,14 +436,14 @@ serverMain( char *logDir ) {
         }
 #endif
     }
-    
-    // JMC :: sleeping 2 hrs? - PurgeLockFileThread->join(); 
+
+    // JMC :: sleeping 2 hrs? - PurgeLockFileThread->join();
     procChildren( &ConnectedAgentHead );
     stopProcConnReqThreads();
-    
+
     rodsLog( LOG_NOTICE, "irods server is exiting" );
 
-    return 0; 
+    return 0;
 }
 
 void
@@ -994,7 +994,7 @@ getConnReqFromQue() {
     agentProc_t *myConnReq = NULL;
 
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() && myConnReq == NULL ) {
+    while ( irods::server_state::STOPPED != state() && myConnReq == NULL ) {
         boost::unique_lock<boost::mutex> read_req_lock( ReadReqCondMutex );
         if ( ConnReqHead != NULL ) {
             myConnReq = ConnReqHead;
@@ -1032,12 +1032,12 @@ startProcConnReqThreads() {
 
 void
 stopProcConnReqThreads() {
-    
-    SpawnReqCond.notify_all(); 
+
+    SpawnReqCond.notify_all();
     SpawnManagerThread->join();
 
     for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
-        ReadReqCond.notify_all(); 
+        ReadReqCond.notify_all();
         ReadWorkerThread[i]->join();
     }
 
@@ -1062,7 +1062,7 @@ readWorkerTask() {
     }
 
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() ) {
+    while ( irods::server_state::STOPPED != state() ) {
         agentProc_t *myConnReq = getConnReqFromQue();
         if ( myConnReq == NULL ) {
             /* someone else took care of it */
@@ -1121,7 +1121,7 @@ readWorkerTask() {
         } // else
 
     } // while 1
-            
+
 } // readWorkerTask
 
 void
@@ -1132,7 +1132,7 @@ spawnManagerTask() {
     uint agentQueChkTime = 0;
 
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() ) {
+    while ( irods::server_state::STOPPED != state() ) {
 
         boost::unique_lock<boost::mutex> spwn_req_lock( SpawnReqCondMutex );
         SpawnReqCond.wait( spwn_req_lock );
@@ -1269,7 +1269,7 @@ void
 purgeLockFileWorkerTask() {
     int status;
     irods::server_state& state = irods::server_state::instance();
-    while( irods::server_state::STOPPED != state() ) {
+    while ( irods::server_state::STOPPED != state() ) {
         rodsSleep( LOCK_FILE_PURGE_TIME, 0 );
         status = purgeLockFileDir( 1 );
         if ( status < 0 ) {

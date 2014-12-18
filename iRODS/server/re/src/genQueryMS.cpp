@@ -1179,12 +1179,12 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     int fd = mkstemp( filename );
     if ( fd < 0 ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed." );
-        return( FILE_OPEN_ERR ); /* accurate enough */
+        return ( FILE_OPEN_ERR ); /* accurate enough */
     }
     stream = fdopen( fd, "w" );
     if ( !stream ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: fdopen() failed." );
-        return( FILE_OPEN_ERR ); /* accurate enough */
+        return ( FILE_OPEN_ERR ); /* accurate enough */
     }
 
     /* Write results to temp file */

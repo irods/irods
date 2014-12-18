@@ -142,115 +142,115 @@ typedef struct newlyCreatedFile {
 extern "C" {
 #endif
 
-    int
-    initIFuseDesc();
-    int initFileCache();
-    void initConn();
-    int
-    lockDesc( int descInx );
-    int
-    unlockDesc( int descInx );
-    int
-    iFuseConnInuse( iFuseConn_t *iFuseConn );
-    iFuseConn_t *
-    getIFuseConnByRcConn( rcComm_t *conn );
-    int
-    getIFuseConnByPath( iFuseConn_t **iFuseConn, char *localPath,
-                        rodsEnv *myRodsEnv );
-    int
-    _getIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *MyRodsEnv );
-    int
-    useIFuseConn( iFuseConn_t *iFuseConn );
-    int
-    _useFreeIFuseConn( iFuseConn_t *iFuseConn );
-    int
-    _useIFuseConn( iFuseConn_t *iFuseConn );
-    int
-    unuseIFuseConn( iFuseConn_t *iFuseConn );
-    int
-    useConn( rcComm_t *conn );
-    void
-    connManager();
-    int
-    disconnectAll();
-    int
-    signalConnManager();
-    int
-    getNumConn();
-    int
-    iFuseDescInuse();
-    int
-    checkFuseDesc( int descInx );
-    PathCacheTable*
-    initPathCache();
-    int
-    getHashSlot( int value, int numHashSlot );
-    int
-    chkCacheExpire( pathCacheQue_t *pathCacheQue );
-    int
-    addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray,
-                    struct stat *stbuf, pathCache_t **outPathCache );
-    int
-    _addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray,
-                     struct stat *stbuf, pathCache_t **outPathCache );
-    int
-    addToCacheSlot( char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue,
-                    struct stat *stbuf, pathCache_t **outPathCache );
-    int
-    pathSum( char *inPath );
-    int
-    isSpecialPath( char *inPath );
-    int
-    rmPathFromCache( char *inPath, Hashtable *pathQueArray );
-    int
-    _rmPathFromCache( char *inPath, Hashtable *pathQueArray );
-    int
-    addNewlyCreatedToCache( char *path, char *localPath, int descInx, int mode,
-                            pathCache_t **tmpPathCache );
-    int
-    ifuseFileCacheSwapOut( fileCache_t *newlyCreatedFile );
-    int
-    closeIrodsFd( rcComm_t *conn, int fd );
-    int
-    getDescInxInNewlyCreatedCache( char *path, int flags );
-    int
-    fillDirStat( struct stat *stbuf, uint ctime, uint mtime, uint atime );
-    int
-    fillFileStat( struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
-                  uint mtime, uint atime );
-    int
-    irodsMknodWithCache( char *path, mode_t mode, char *cachePath );
-    int
-    irodsOpenWithFileCache( iFuseConn_t *iFuseConn, char *path, int flags );
-    int
-    getFileCachePath( const char *inPath, char *cachePath );
-    int
-    setAndMkFileCacheDir();
-    int
-    ifuseClose( iFuseDesc_t *desc );
-    int
-    ifuseFlush( int descInx );
-    int
-    _ifuseFlush( iFuseDesc_t *desc );
-    int
-    dataObjCreateByFusePath( rcComm_t *conn, int mode,
-                             char *irodsPath );
-    int
-    ifusePut( rcComm_t *conn, char *objPath, char *cachePath, int mode,
-              rodsLong_t srcSize );
-    int
-    freeFileCache( pathCache_t *tmpPathCache );
-    int
-    ifuseReconnect( iFuseConn_t *iFuseConn );
-    int
-    ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv );
-    int
-    getNewlyCreatedDescByPath( char *path );
-    int
-    renmeLocalPath( PathCacheTable *pctable, char *from, char *to, char *toIrodsPath );
-    int	_chkCacheExpire( pathCacheQue_t *pathCacheQue );
-    int _matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCacheQue_t *pathQueArray, pathCache_t **outPathCache );
-    int _iFuseConnInuse( iFuseConn_t *iFuseConn );
+int
+initIFuseDesc();
+int initFileCache();
+void initConn();
+int
+lockDesc( int descInx );
+int
+unlockDesc( int descInx );
+int
+iFuseConnInuse( iFuseConn_t *iFuseConn );
+iFuseConn_t *
+getIFuseConnByRcConn( rcComm_t *conn );
+int
+getIFuseConnByPath( iFuseConn_t **iFuseConn, char *localPath,
+                    rodsEnv *myRodsEnv );
+int
+_getIFuseConn( iFuseConn_t **iFuseConn, rodsEnv *MyRodsEnv );
+int
+useIFuseConn( iFuseConn_t *iFuseConn );
+int
+_useFreeIFuseConn( iFuseConn_t *iFuseConn );
+int
+_useIFuseConn( iFuseConn_t *iFuseConn );
+int
+unuseIFuseConn( iFuseConn_t *iFuseConn );
+int
+useConn( rcComm_t *conn );
+void
+connManager();
+int
+disconnectAll();
+int
+signalConnManager();
+int
+getNumConn();
+int
+iFuseDescInuse();
+int
+checkFuseDesc( int descInx );
+PathCacheTable*
+initPathCache();
+int
+getHashSlot( int value, int numHashSlot );
+int
+chkCacheExpire( pathCacheQue_t *pathCacheQue );
+int
+addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray,
+                struct stat *stbuf, pathCache_t **outPathCache );
+int
+_addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray,
+                 struct stat *stbuf, pathCache_t **outPathCache );
+int
+addToCacheSlot( char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue,
+                struct stat *stbuf, pathCache_t **outPathCache );
+int
+pathSum( char *inPath );
+int
+isSpecialPath( char *inPath );
+int
+rmPathFromCache( char *inPath, Hashtable *pathQueArray );
+int
+_rmPathFromCache( char *inPath, Hashtable *pathQueArray );
+int
+addNewlyCreatedToCache( char *path, char *localPath, int descInx, int mode,
+                        pathCache_t **tmpPathCache );
+int
+ifuseFileCacheSwapOut( fileCache_t *newlyCreatedFile );
+int
+closeIrodsFd( rcComm_t *conn, int fd );
+int
+getDescInxInNewlyCreatedCache( char *path, int flags );
+int
+fillDirStat( struct stat *stbuf, uint ctime, uint mtime, uint atime );
+int
+fillFileStat( struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
+              uint mtime, uint atime );
+int
+irodsMknodWithCache( char *path, mode_t mode, char *cachePath );
+int
+irodsOpenWithFileCache( iFuseConn_t *iFuseConn, char *path, int flags );
+int
+getFileCachePath( const char *inPath, char *cachePath );
+int
+setAndMkFileCacheDir();
+int
+ifuseClose( iFuseDesc_t *desc );
+int
+ifuseFlush( int descInx );
+int
+_ifuseFlush( iFuseDesc_t *desc );
+int
+dataObjCreateByFusePath( rcComm_t *conn, int mode,
+                         char *irodsPath );
+int
+ifusePut( rcComm_t *conn, char *objPath, char *cachePath, int mode,
+          rodsLong_t srcSize );
+int
+freeFileCache( pathCache_t *tmpPathCache );
+int
+ifuseReconnect( iFuseConn_t *iFuseConn );
+int
+ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv );
+int
+getNewlyCreatedDescByPath( char *path );
+int
+renmeLocalPath( PathCacheTable *pctable, char *from, char *to, char *toIrodsPath );
+int	_chkCacheExpire( pathCacheQue_t *pathCacheQue );
+int _matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCacheQue_t *pathQueArray, pathCache_t **outPathCache );
+int _iFuseConnInuse( iFuseConn_t *iFuseConn );
 #ifdef  __cplusplus
 }
 #endif

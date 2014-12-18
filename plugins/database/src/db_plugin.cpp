@@ -1258,28 +1258,28 @@ int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
 int
 convertTypeOption( const char *typeStr ) {
     if ( strcmp( typeStr, "-d" ) == 0 ) {
-        return( 1 );    /* dataObj */
+        return ( 1 );   /* dataObj */
     }
     if ( strcmp( typeStr, "-D" ) == 0 ) {
-        return( 1 );    /* dataObj */
+        return ( 1 );   /* dataObj */
     }
     if ( strcmp( typeStr, "-c" ) == 0 ) {
-        return( 2 );    /* collection */
+        return ( 2 );   /* collection */
     }
     if ( strcmp( typeStr, "-C" ) == 0 ) {
-        return( 2 );    /* collection */
+        return ( 2 );   /* collection */
     }
     if ( strcmp( typeStr, "-r" ) == 0 ) {
-        return( 3 );    /* resource */
+        return ( 3 );   /* resource */
     }
     if ( strcmp( typeStr, "-R" ) == 0 ) {
-        return( 3 );    /* resource */
+        return ( 3 );   /* resource */
     }
     if ( strcmp( typeStr, "-u" ) == 0 ) {
-        return( 4 );    /* user */
+        return ( 4 );   /* user */
     }
     if ( strcmp( typeStr, "-U" ) == 0 ) {
-        return( 4 );    /* user */
+        return ( 4 );   /* user */
     }
     return 0;
 }
@@ -1494,7 +1494,7 @@ findAVU( char *attribute, char *value, char *units ) {
     }
 // =-=-=-=-=-=-=-
 // JMC - backport 4836
-    return( status ); // JMC - backport 4836
+    return ( status ); // JMC - backport 4836
 }
 
 /*
@@ -1672,7 +1672,7 @@ int setOverQuota( rsComm_t *rsComm ) {
     status =  cmlExecuteNoAnswerSql(
                   "update R_QUOTA_MAIN set quota_over = -quota_limit", &icss );
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        return( 0 );    /* no quotas, done */
+        return ( 0 );   /* no quotas, done */
     }
     if ( status != 0 ) {
         return status;
@@ -8676,7 +8676,8 @@ checkLevel:
 
             OK = 1;
 
-        } else if( *_option_value == '\0' ) {
+        }
+        else if ( *_option_value == '\0' ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "argument is empty" );
@@ -9180,7 +9181,7 @@ checkLevel:
         }
 
         /* the paths must begin and end with / */
-        if ( *_old_path != '/' or *_new_path != '/' ) {
+        if ( *_old_path != '/' or * _new_path != '/' ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid path" );
         }
         len = strlen( _old_path );
@@ -16390,7 +16391,7 @@ checkLevel:
         char cml_res[ MAX_NAME_LEN ];
         char sql[] = { "select name from mysql.func" };
         std::vector<std::string> bindVars;
-        int status = cmlGetStringValueFromSql( sql, cml_res, sizeof(cml_res), bindVars, &icss );
+        int status = cmlGetStringValueFromSql( sql, cml_res, sizeof( cml_res ), bindVars, &icss );
         if ( status < 0 ) {
             return ERROR( status, "failed to call sql to determine UDF" );
         }

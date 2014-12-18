@@ -61,19 +61,19 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcPhyPathReg( rcComm_t *conn, dataObjInp_t *phyPathRegInp );
+/* prototype for the client call */
+int
+rcPhyPathReg( rcComm_t *conn, dataObjInp_t *phyPathRegInp );
 
-    /* rcPhyPathReg - Reg a iRODS data object.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *	objPath - the path of the data object.
-     *
-     * OutPut -
-     *   int status - The status of the operation.
-     */
+/* rcPhyPathReg - Reg a iRODS data object.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *	objPath - the path of the data object.
+ *
+ * OutPut -
+ *   int status - The status of the operation.
+ */
 
 #ifdef __cplusplus
 }

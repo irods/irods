@@ -29,10 +29,10 @@ rsGetXmsgTicket( rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
-                     xmsgTicketInfo_t **outXmsgTicketInfo );
+/* prototype for the client call */
+int
+rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
+                 xmsgTicketInfo_t **outXmsgTicketInfo );
 
 #ifdef __cplusplus
 }

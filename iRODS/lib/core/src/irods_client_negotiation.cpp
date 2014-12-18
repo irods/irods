@@ -70,7 +70,7 @@ namespace irods {
     public:
         client_server_negotiations_context() {
             // =-=-=-=-=-=-=-
-            // initialize the neogitation context
+            // initialize the negotiation context
             cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REQUIRE,   0 ) );
             cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_DONT_CARE, 1 ) );
             cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REFUSE,    2 ) );

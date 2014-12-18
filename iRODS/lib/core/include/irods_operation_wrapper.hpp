@@ -83,7 +83,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -134,7 +134,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -185,7 +185,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -237,7 +237,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -290,7 +290,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -345,7 +345,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -400,7 +400,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -456,7 +456,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -514,7 +514,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -572,7 +572,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -631,7 +631,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 
@@ -691,7 +691,7 @@ namespace irods {
                 // call the pre-rule for this op
                 std::string pre_results;
                 error ret = rule_exec_mgr_->exec_pre_op( _ctx.comm(), kvp, pre_results );
-                if( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
                     return PASS( ret );
                 }
 

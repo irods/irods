@@ -61,20 +61,20 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath );
 extern "C" {
 #endif
 
-    /* prototype for the client call */
-    int
-    rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
+/* prototype for the client call */
+int
+rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
 
-    /* rcExecCmd - Execute a command on the server.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   execCmd_t *execCmdInp - the execCmd input
-     *
-     * OutPut -
-     *   bytesBuf_t *cmdOutBBuf - The stdout and stderr of the command is stored
-     *    int this bytesBuf.
-     *   int status - status of the operation.
-     */
+/* rcExecCmd - Execute a command on the server.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   execCmd_t *execCmdInp - the execCmd input
+ *
+ * OutPut -
+ *   bytesBuf_t *cmdOutBBuf - The stdout and stderr of the command is stored
+ *    int this bytesBuf.
+ *   int status - status of the operation.
+ */
 
 #ifdef __cplusplus
 }

@@ -51,10 +51,10 @@ _rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
-                   simpleQueryOut_t **simpleQueryOut );
+/* prototype for the client call */
+int
+rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
+               simpleQueryOut_t **simpleQueryOut );
 
 #ifdef __cplusplus
 }

@@ -46,14 +46,14 @@ remote server */
 
 typedef struct {
     char cmd[LONG_NAME_LEN];
-        char cmdArgv[HUGE_NAME_LEN];
-        char execAddr[LONG_NAME_LEN];
-        char hintPath[MAX_NAME_LEN];
-        int threadId;
-        int addPathToArgv;
-        char rescName[MAX_NAME_LEN];
-        ruleExecInfo_t rei;
-    } thrInp_t;
+    char cmdArgv[HUGE_NAME_LEN];
+    char execAddr[LONG_NAME_LEN];
+    char hintPath[MAX_NAME_LEN];
+    int threadId;
+    int addPathToArgv;
+    char rescName[MAX_NAME_LEN];
+    ruleExecInfo_t rei;
+} thrInp_t;
 
 typedef struct {
     char serverName[LONG_NAME_LEN];

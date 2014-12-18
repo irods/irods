@@ -37,9 +37,9 @@ rsSslEnd( rsComm_t *rsComm, sslEndInp_t *sslEndInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
+/* prototype for the client call */
+int
+rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
 
 #ifdef __cplusplus
 }

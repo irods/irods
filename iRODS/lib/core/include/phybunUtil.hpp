@@ -16,12 +16,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
-                rodsPathInp_t *rodsPathInp );
-    int
-    initCondForPhybunOpr( rodsArguments_t *rodsArgs,
-                          structFileExtAndRegInp_t *phyBundleCollInp );
+int
+phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
+            rodsPathInp_t *rodsPathInp );
+int
+initCondForPhybunOpr( rodsArguments_t *rodsArgs,
+                      structFileExtAndRegInp_t *phyBundleCollInp );
 
 #ifdef __cplusplus
 }

@@ -39,9 +39,9 @@ _rsGeneralUpdate( generalUpdateInp_t *generalUpdateInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp );
+/* prototype for the client call */
+int
+rcGeneralUpdate( rcComm_t *conn, generalUpdateInp_t *generalUpdateInp );
 
 #ifdef __cplusplus
 }

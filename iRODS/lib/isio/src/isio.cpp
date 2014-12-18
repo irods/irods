@@ -412,7 +412,7 @@ isioFileWrite( int fileIndex, void *buffer, int countToWrite ) {
             return status;
         }
 
-        return( status ); /* total bytes written */
+        return ( status ); /* total bytes written */
     }
 
     newBufSize = ( 2 * countToWrite ) + 8; /* Possible next size */

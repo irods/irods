@@ -54,10 +54,10 @@ remoteFileGetFsFreeSpace( rsComm_t *rsComm,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileGetFsFreeSpace( rcComm_t *conn,
-                          fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
-                          fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
+int
+rcFileGetFsFreeSpace( rcComm_t *conn,
+                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut );
 
 #ifdef __cplusplus
 }

@@ -46,23 +46,23 @@ l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag );
-    int
-    _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
-               collOprStat_t **collOprStat );
+/* prototype for the client call */
+int
+rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag );
+int
+_rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
+           collOprStat_t **collOprStat );
 
-    /* rcRmColl - Recursively Remove a iRODS collection.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   collInp_t *collInp - generic coll input. Relevant items are:
-     *      collName - the collection to be registered.
-     *      condInput - condition input (optional) - currently not used.
-     *
-     * OutPut -
-     *   int status - status of the operation.
-     */
+/* rcRmColl - Recursively Remove a iRODS collection.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   collInp_t *collInp - generic coll input. Relevant items are:
+ *      collName - the collection to be registered.
+ *      condInput - condition input (optional) - currently not used.
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
 
 #ifdef __cplusplus
 }

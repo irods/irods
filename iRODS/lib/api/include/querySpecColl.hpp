@@ -52,10 +52,10 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
-                     genQueryOut_t **genQueryOut );
+/* prototype for the client call */
+int
+rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp,
+                 genQueryOut_t **genQueryOut );
 
 #ifdef __cplusplus
 }

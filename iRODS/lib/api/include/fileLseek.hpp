@@ -92,9 +92,9 @@ remoteFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
-                 fileLseekOut_t **fileLseekOut );
+int
+rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
+             fileLseekOut_t **fileLseekOut );
 
 #ifdef __cplusplus
 }

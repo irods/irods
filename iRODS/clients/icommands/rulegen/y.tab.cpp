@@ -1158,7 +1158,7 @@ yytnamerr( char *yyres, const char *yystr ) {
                 if ( *++yyp != '\\' ) {
                     goto do_not_strip_quotes;
                 }
-                /* Fall through.  */
+            /* Fall through.  */
             default:
                 if ( yyres ) {
                     yyres[yyn] = *yyp;
@@ -1493,7 +1493,7 @@ yysetstate:
         {
             yytype_int16 *yyss1 = yyss;
             union yyalloc *yyptr =
-                        ( union yyalloc * ) YYSTACK_ALLOC( YYSTACK_BYTES( yystacksize ) );
+                    ( union yyalloc * ) YYSTACK_ALLOC( YYSTACK_BYTES( yystacksize ) );
             if ( ! yyptr ) {
                 goto yyexhaustedlab;
             }
@@ -1627,351 +1627,351 @@ yyreduce:
     switch ( yyn ) {
     case 2:
 #line 51 "rulegen.y"
-    { }
-    break;
+        { }
+        break;
 
     case 3:
 #line 52 "rulegen.y"
-    { print_final( ( yyvsp[( 2 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), ( yyvsp[( 4 ) - ( 4 )].s ) ); }
-    break;
+        { print_final( ( yyvsp[( 2 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), ( yyvsp[( 4 ) - ( 4 )].s ) ); }
+        break;
 
     case 4:
 #line 56 "rulegen.y"
-    { ( yyval.s ) = ( yyvsp[( 2 ) - ( 2 )].s ); }
-    break;
+        { ( yyval.s ) = ( yyvsp[( 2 ) - ( 2 )].s ); }
+        break;
 
     case 5:
 #line 59 "rulegen.y"
-    { ( yyval.s ) = ( yyvsp[( 2 ) - ( 2 )].s ); }
-    break;
+        { ( yyval.s ) = ( yyvsp[( 2 ) - ( 2 )].s ); }
+        break;
 
     case 6:
 #line 63 "rulegen.y"
-    { ( yyval.s ) = stitch( RLLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( RLLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 7:
 #line 64 "rulegen.y"
-    { ( yyval.s ) = stitch( RLLIST, ( yyvsp[( 1 ) - ( 2 )].s ), ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( RLLIST, ( yyvsp[( 1 ) - ( 2 )].s ), ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL ); }
+        break;
 
     case 8:
 #line 67 "rulegen.y"
-    { ( yyval.s ) = stitch( RULE, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( RULE, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
+        break;
 
     case 9:
 #line 68 "rulegen.y"
-    { ( yyval.s ) = stitch( RULE, ( yyvsp[( 1 ) - ( 5 )].s ), ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 4 ) - ( 5 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( RULE, ( yyvsp[( 1 ) - ( 5 )].s ), ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 4 ) - ( 5 )].s ), NULL ); }
+        break;
 
     case 10:
 #line 72 "rulegen.y"
-    {( yyval.s ) = stitch( ACDEF, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( ACDEF, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 11:
 #line 73 "rulegen.y"
-    {( yyval.s ) = stitch( ACDEF, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( ACDEF, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
+        break;
 
     case 12:
 #line 77 "rulegen.y"
-    {( yyval.s ) = stitch( MICSER, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( MICSER, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 13:
 #line 78 "rulegen.y"
-    {( yyval.s ) = stitch( MICSER, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( MICSER, ( yyvsp[( 1 ) - ( 4 )].s ), ( yyvsp[( 3 ) - ( 4 )].s ), NULL, NULL ); }
+        break;
 
     case 15:
 #line 86 "rulegen.y"
-    { ( yyval.s ) = stitch( ARGVAL, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ARGVAL, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 16:
 #line 87 "rulegen.y"
-    { ( yyval.s ) = stitch( ARGVAL, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ARGVAL, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 17:
 #line 90 "rulegen.y"
-    { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 18:
 #line 91 "rulegen.y"
-    { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 19:
 #line 92 "rulegen.y"
-    { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 20:
 #line 96 "rulegen.y"
-    { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 21:
 #line 97 "rulegen.y"
-    { ( yyval.s ) = stitch( EMPTYSTMT, NULL, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( EMPTYSTMT, NULL, NULL, NULL, NULL ); }
+        break;
 
     case 22:
 #line 100 "rulegen.y"
-    { ( yyval.s ) = stitch( BRAC, NULL, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( BRAC, NULL, NULL, NULL, NULL ); }
+        break;
 
     case 23:
 #line 101 "rulegen.y"
-    { ( yyval.s ) = stitch( BRAC, ( yyvsp[( 2 ) - ( 3 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( BRAC, ( yyvsp[( 2 ) - ( 3 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 24:
 #line 106 "rulegen.y"
-    { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 25:
 #line 108 "rulegen.y"
-    { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 2 )].s ), ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STLIST, ( yyvsp[( 1 ) - ( 2 )].s ), ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL ); }
+        break;
 
     case 29:
 #line 115 "rulegen.y"
-    {}
-    break;
+        {}
+        break;
 
     case 30:
 #line 116 "rulegen.y"
-    {}
-    break;
+        {}
+        break;
 
     case 32:
 #line 121 "rulegen.y"
-    { ( yyval.s ) = stitch( ON, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ON, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 33:
 #line 123 "rulegen.y"
-    { ( yyval.s ) = stitch( ONORLIST, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 5 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ONORLIST, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 5 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL ); }
+        break;
 
     case 34:
 #line 128 "rulegen.y"
-    { ( yyval.s ) = stitch( WHILE, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( WHILE, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 35:
 #line 130 "rulegen.y"
-    { ( yyval.s ) = stitch( FOR, ( yyvsp[( 3 ) - ( 9 )].s ), ( yyvsp[( 5 ) - ( 9 )].s ), ( yyvsp[( 7 ) - ( 9 )].s ), ( yyvsp[( 9 ) - ( 9 )].s ) ); }
-    break;
+        { ( yyval.s ) = stitch( FOR, ( yyvsp[( 3 ) - ( 9 )].s ), ( yyvsp[( 5 ) - ( 9 )].s ), ( yyvsp[( 7 ) - ( 9 )].s ), ( yyvsp[( 9 ) - ( 9 )].s ) ); }
+        break;
 
     case 36:
 #line 132 "rulegen.y"
-    { ( yyval.s ) = stitch( IFTHEN, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( IFTHEN, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL, NULL ); }
+        break;
 
     case 37:
 #line 134 "rulegen.y"
-    { ( yyval.s ) = stitch( IFTHENELSE, ( yyvsp[( 3 ) - ( 8 )].s ), ( yyvsp[( 6 ) - ( 8 )].s ), ( yyvsp[( 8 ) - ( 8 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( IFTHENELSE, ( yyvsp[( 3 ) - ( 8 )].s ), ( yyvsp[( 6 ) - ( 8 )].s ), ( yyvsp[( 8 ) - ( 8 )].s ), NULL ); }
+        break;
 
     case 38:
 #line 137 "rulegen.y"
-    { ( yyval.s ) = stitch( ORON, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ORON, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 39:
 #line 138 "rulegen.y"
-    { ( yyval.s ) = stitch( OR, ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( OR, ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 40:
 #line 140 "rulegen.y"
-    { ( yyval.s ) = stitch( ORONORLIST, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 5 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ORONORLIST, ( yyvsp[( 3 ) - ( 6 )].s ), ( yyvsp[( 5 ) - ( 6 )].s ), ( yyvsp[( 6 ) - ( 6 )].s ), NULL ); }
+        break;
 
     case 41:
 #line 142 "rulegen.y"
-    { ( yyval.s ) = stitch( ORORLIST, ( yyvsp[( 2 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ORORLIST, ( yyvsp[( 2 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 42:
 #line 146 "rulegen.y"
-    { ( yyval.s ) = stitch( AC_REAC, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( AC_REAC, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 43:
 #line 147 "rulegen.y"
-    { ( yyval.s ) = stitch( AC_REAC, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( AC_REAC, ( yyvsp[( 1 ) - ( 1 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 44:
 #line 152 "rulegen.y"
-    { ( yyval.s ) = stitch( DELAY, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( DELAY, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 45:
 #line 154 "rulegen.y"
-    { ( yyval.s ) = stitch( REMOTE, ( yyvsp[( 3 ) - ( 7 )].s ), ( yyvsp[( 5 ) - ( 7 )].s ), ( yyvsp[( 7 ) - ( 7 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REMOTE, ( yyvsp[( 3 ) - ( 7 )].s ), ( yyvsp[( 5 ) - ( 7 )].s ), ( yyvsp[( 7 ) - ( 7 )].s ), NULL ); }
+        break;
 
     case 46:
 #line 156 "rulegen.y"
-    { ( yyval.s ) = stitch( PARALLEL, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( PARALLEL, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 47:
 #line 158 "rulegen.y"
-    { ( yyval.s ) = stitch( ONEOF, ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ONEOF, ( yyvsp[( 2 ) - ( 2 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 48:
 #line 160 "rulegen.y"
-    { ( yyval.s ) = stitch( SOMEOF, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( SOMEOF, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 49:
 #line 162 "rulegen.y"
-    { ( yyval.s ) = stitch( FOREACH, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( FOREACH, ( yyvsp[( 3 ) - ( 5 )].s ), ( yyvsp[( 5 ) - ( 5 )].s ), NULL, NULL ); }
+        break;
 
     case 50:
 #line 166 "rulegen.y"
-    { ( yyval.s ) = stitch( INPASS, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( INPASS, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 52:
 #line 171 "rulegen.y"
-    { ( yyval.s ) = stitch( INPASSLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( INPASSLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 55:
 #line 179 "rulegen.y"
-    { ( yyval.s ) = stitch( OUTPASSLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( OUTPASSLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 56:
 #line 183 "rulegen.y"
-    { ( yyval.s ) = stitch( ASSIGN, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ASSIGN, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 58:
 #line 188 "rulegen.y"
-    { ( yyval.s ) = stitch( ASLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ASLIST, ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 60:
 #line 193 "rulegen.y"
-    { ( yyval.s ) = stitch( PAREXP, ( yyvsp[( 2 ) - ( 3 )].s ), NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( PAREXP, ( yyvsp[( 2 ) - ( 3 )].s ), NULL, NULL, NULL ); }
+        break;
 
     case 61:
 #line 194 "rulegen.y"
-    { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 62:
 #line 195 "rulegen.y"
-    { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 63:
 #line 196 "rulegen.y"
-    { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 64:
 #line 197 "rulegen.y"
-    { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( ( yyvsp[( 2 ) - ( 3 )].i ), ( yyvsp[( 1 ) - ( 3 )].s ), ( yyvsp[( 3 ) - ( 3 )].s ), NULL, NULL ); }
+        break;
 
     case 65:
 #line 201 "rulegen.y"
-    {( yyval.s ) = stitch( TRUE, NULL, NULL, NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( TRUE, NULL, NULL, NULL, NULL ); }
+        break;
 
     case 66:
 #line 202 "rulegen.y"
-    {( yyval.s ) = stitch( FALSE, NULL, NULL, NULL, NULL ); }
-    break;
+        {( yyval.s ) = stitch( FALSE, NULL, NULL, NULL, NULL ); }
+        break;
 
     case 68:
 #line 205 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "==", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "==", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 69:
 #line 207 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "!=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "!=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 70:
 #line 209 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "<", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "<", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 71:
 #line 211 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), ">", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), ">", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 72:
 #line 213 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "<=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "<=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 73:
 #line 215 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), ">=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), ">=", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 74:
 #line 217 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "like", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 3 )].s ), "like", ( yyvsp[( 3 ) - ( 3 )].s ), NULL ); }
+        break;
 
     case 75:
 #line 219 "rulegen.y"
-    { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 4 )].s ), "not like", ( yyvsp[( 4 ) - ( 4 )].s ), NULL ); }
-    break;
+        { ( yyval.s ) = stitch( REL_EXP, ( yyvsp[( 1 ) - ( 4 )].s ), "not like", ( yyvsp[( 4 ) - ( 4 )].s ), NULL ); }
+        break;
 
     case 76:
 #line 222 "rulegen.y"
-    { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 77:
 #line 223 "rulegen.y"
-    { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 78:
 #line 224 "rulegen.y"
-    { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 79:
 #line 227 "rulegen.y"
-    { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 80:
 #line 228 "rulegen.y"
-    { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( Q_STR_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
     case 81:
 #line 229 "rulegen.y"
-    { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
-    break;
+        { ( yyval.s ) = stitch( NUM_LIT, yytext, NULL, NULL, NULL ); }
+        break;
 
 
-    /* Line 1267 of yacc.c.  */
+        /* Line 1267 of yacc.c.  */
 #line 1985 "y.tab.c"
     default:
         break;

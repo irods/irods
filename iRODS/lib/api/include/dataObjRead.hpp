@@ -34,22 +34,22 @@ _l3Read( rsComm_t *rsComm, int l3descInx,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcDataObjRead - Read an opened iRODS data object descriptor.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *fileReadInp - Relevant items are:
-     *      l1descInx - the iRODS data object descriptor to read.
-     *      len - the number of bytes to read
-     *
-     * OutPut -
-     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
-     *   bytesBuf_t *dataObjReadOutBBuf - the bytesBuf for the read output.
-     */
+/* prototype for the client call */
+/* rcDataObjRead - Read an opened iRODS data object descriptor.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *fileReadInp - Relevant items are:
+ *      l1descInx - the iRODS data object descriptor to read.
+ *      len - the number of bytes to read
+ *
+ * OutPut -
+ *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+ *   bytesBuf_t *dataObjReadOutBBuf - the bytesBuf for the read output.
+ */
 
-    int
-    rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
-                   bytesBuf_t *dataObjReadOutBBuf );
+int
+rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
+               bytesBuf_t *dataObjReadOutBBuf );
 
 #ifdef __cplusplus
 }

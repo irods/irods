@@ -372,7 +372,7 @@ cllCheckPending( const char *sql, int option, int dbType ) {
     if ( pendingAudits > 0 ) {
         rodsLog( LOG_NOTICE,
                  "Notice, pending Auditing SQL committed at cllDisconnect" );
-        return( 1 ); /* tell caller (cllDisconect) to do a commit */
+        return ( 1 ); /* tell caller (cllDisconect) to do a commit */
     }
     return 0;
 }

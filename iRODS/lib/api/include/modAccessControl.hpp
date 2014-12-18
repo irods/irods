@@ -52,9 +52,9 @@ _rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlIn
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp );
+/* prototype for the client call */
+int
+rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp );
 
 #ifdef __cplusplus
 }

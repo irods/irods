@@ -36,9 +36,9 @@ remoteFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
-               bytesBuf_t *fileGetOutBBuf );
+int
+rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp,
+           bytesBuf_t *fileGetOutBBuf );
 #ifdef __cplusplus
 }
 #endif

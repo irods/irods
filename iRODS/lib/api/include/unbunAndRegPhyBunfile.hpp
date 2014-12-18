@@ -48,21 +48,21 @@ rmLinkedFilesInUnixDir( char *phyBunDir );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcUnbunAndRegPhyBunfile - Unbundle a physical bundle file specified by
-     * FILE_PATH_KW and register each subfile as replica. This call cannot be
-     * called by normal users directly.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *      objPath - the path of the data object.
-     *      condInput - conditional Input
-     *	    FILE_PATH_KW - the phyical path of the bundled file.
-     *          DEST_RESC_NAME_KW - "value" = The destination Resource.
-     *   return value - The status of the operation.
-     */
-    int
-    rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp );
+/* prototype for the client call */
+/* rcUnbunAndRegPhyBunfile - Unbundle a physical bundle file specified by
+ * FILE_PATH_KW and register each subfile as replica. This call cannot be
+ * called by normal users directly.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *      objPath - the path of the data object.
+ *      condInput - conditional Input
+ *	    FILE_PATH_KW - the phyical path of the bundled file.
+ *          DEST_RESC_NAME_KW - "value" = The destination Resource.
+ *   return value - The status of the operation.
+ */
+int
+rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp );
 #ifdef __cplusplus
 }
 #endif

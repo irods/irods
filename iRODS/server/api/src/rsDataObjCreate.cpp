@@ -231,9 +231,9 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
 
         // to make cppcheck happy before these things go away for good #1472
-        if (myRescGrpInfo) {
-        	delete myRescGrpInfo->rescInfo;
-        	delete myRescGrpInfo;
+        if ( myRescGrpInfo ) {
+            delete myRescGrpInfo->rescInfo;
+            delete myRescGrpInfo;
         }
         // #1472
 
@@ -343,7 +343,7 @@ _rsDataObjCreateWithResc(
 
     }
     else {
-    	rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
+        rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
 
     }
 
@@ -575,8 +575,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
     // adt #1472
 
     // get resource name
-    if (!strlen(rei.rescName)) {
-    	irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, _resc_name );
+    if ( !strlen( rei.rescName ) ) {
+        irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, _resc_name );
 
         if ( !set_err.ok() ) {
             irods::log( PASS( set_err ) );
@@ -584,13 +584,13 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
         }
     }
     else {
-    	_resc_name = rei.rescName;
+        _resc_name = rei.rescName;
     }
 
     // also converts to rescGrpInfo_t (for now)
     *myRescGrpInfo = new rescGrpInfo_t;
-    bzero(*myRescGrpInfo, sizeof(rescGrpInfo_t));
-    (*myRescGrpInfo)->rescInfo = new rescInfo_t;
+    bzero( *myRescGrpInfo, sizeof( rescGrpInfo_t ) );
+    ( *myRescGrpInfo )->rescInfo = new rescInfo_t;
 
     irods::error grp_err = irods::get_resc_grp_info( _resc_name, **myRescGrpInfo );
     if ( !grp_err.ok() ) {

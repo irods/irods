@@ -29,14 +29,14 @@
 extern "C" {
 #endif
 
-    /* defines some commonly used dataTypes */
+/* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
 #define TAR_DT_STR        "tar file"
 #define GZIP_TAR_DT_STR   "gzipTar"  // JMC - backport 4632
 #define BZIP2_TAR_DT_STR  "bzip2Tar" // JMC - backport 4632
 #define ZIP_DT_STR        "zipFile"  // JMC - backport 4633
 #define MSSO_DT_STR       "msso file"
-    /* bundle are types for internal phybun use */ // JMC - backport 4658
+/* bundle are types for internal phybun use */ // JMC - backport 4658
 #define TAR_BUNDLE_DT_STR       "tar bundle"       // JMC - backport 4658
 #define GZIP_TAR_BUNDLE_DT_STR  "gzipTar bundle"   // JMC - backport 4658
 #define BZIP2_TAR_BUNDLE_DT_STR "bzip2Tar bundle"  // JMC - backport 4658
@@ -45,75 +45,75 @@ extern "C" {
 #define HAAW_DT_STR             "haaw file"
 #define MAX_LINK_CNT    20      /* max number soft link in a path */
 
-    typedef struct RescInfo {
-        char rescName[NAME_LEN];
-        rodsLong_t rescId;
-        char zoneName[NAME_LEN];
-        char rescLoc[NAME_LEN];
-        char rescType[NAME_LEN];
-        int rescTypeInx;
-        int rescClassInx;
-        int rescStatus;
-        int paraOpr;
-        char rescClass[NAME_LEN];
-        char rescVaultPath[MAX_NAME_LEN];
-        char rescInfo[LONG_NAME_LEN];
-        char rescComments[LONG_NAME_LEN];
-        char gateWayAddr[NAME_LEN];
-        rodsLong_t rescMaxObjSize;
-        rodsLong_t freeSpace;
-        char freeSpaceTimeStamp[TIME_LEN];
-        time_t freeSpaceTime;       /* last time freeSpace was checked */
-        char rescCreate[TIME_LEN];
-        char rescModify[TIME_LEN];
-        void *rodsServerHost;
-        rodsLong_t quotaLimit;
-        rodsLong_t quotaOverrun;
-        char rescChildren[MAX_PATH_ALLOWED];
-        char rescContext[MAX_PATH_ALLOWED];
-        char rescParent[MAX_PATH_ALLOWED];
-    } rescInfo_t;
+typedef struct RescInfo {
+    char rescName[NAME_LEN];
+    rodsLong_t rescId;
+    char zoneName[NAME_LEN];
+    char rescLoc[NAME_LEN];
+    char rescType[NAME_LEN];
+    int rescTypeInx;
+    int rescClassInx;
+    int rescStatus;
+    int paraOpr;
+    char rescClass[NAME_LEN];
+    char rescVaultPath[MAX_NAME_LEN];
+    char rescInfo[LONG_NAME_LEN];
+    char rescComments[LONG_NAME_LEN];
+    char gateWayAddr[NAME_LEN];
+    rodsLong_t rescMaxObjSize;
+    rodsLong_t freeSpace;
+    char freeSpaceTimeStamp[TIME_LEN];
+    time_t freeSpaceTime;       /* last time freeSpace was checked */
+    char rescCreate[TIME_LEN];
+    char rescModify[TIME_LEN];
+    void *rodsServerHost;
+    rodsLong_t quotaLimit;
+    rodsLong_t quotaOverrun;
+    char rescChildren[MAX_PATH_ALLOWED];
+    char rescContext[MAX_PATH_ALLOWED];
+    char rescParent[MAX_PATH_ALLOWED];
+} rescInfo_t;
 
-    /* link of resource in resource group */
+/* link of resource in resource group */
 
-    typedef struct RescGrpInfo {
-        char rescGroupName[NAME_LEN];
-        rescInfo_t *rescInfo;
-        int status;		/* SYS_RESC_IS_DOWN - one of the resource is down
+typedef struct RescGrpInfo {
+    char rescGroupName[NAME_LEN];
+    rescInfo_t *rescInfo;
+    int status;		/* SYS_RESC_IS_DOWN - one of the resource is down
 			 * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
-        int dummy;
-        struct RescGrpInfo *cacheNext; 	/* this is for cached resource grp */
-        struct RescGrpInfo *next;
-    } rescGrpInfo_t ;
+    int dummy;
+    struct RescGrpInfo *cacheNext; 	/* this is for cached resource grp */
+    struct RescGrpInfo *next;
+} rescGrpInfo_t ;
 
-    typedef struct RescCacheInfo {
-        char inpRescName[NAME_LEN];
-        rescGrpInfo_t *rescGrpInfo;
-        struct RescCacheInfo *next;
-    } rescCacheInfo_t;
+typedef struct RescCacheInfo {
+    char inpRescName[NAME_LEN];
+    rescGrpInfo_t *rescGrpInfo;
+    struct RescCacheInfo *next;
+} rescCacheInfo_t;
 
-    /* special collection */
+/* special collection */
 
-    typedef enum {         /* class of SpecColl */
-        NO_SPEC_COLL,
-        STRUCT_FILE_COLL,
-        MOUNTED_COLL,
-        LINKED_COLL
-    } specCollClass_t;
+typedef enum {         /* class of SpecColl */
+    NO_SPEC_COLL,
+    STRUCT_FILE_COLL,
+    MOUNTED_COLL,
+    LINKED_COLL
+} specCollClass_t;
 
-    typedef enum {                /* structFile type */
-        NONE_STRUCT_FILE_T = 0,   /* no known type */
-        HAAW_STRUCT_FILE_T = 1,   /* the UK eScience structFile */
-        TAR_STRUCT_FILE_T  = 2,   /* The tar structFile */
-        MSSO_STRUCT_FILE_T = 3,   /* The workflow structFile */
-    } structFileType_t;
+typedef enum {                /* structFile type */
+    NONE_STRUCT_FILE_T = 0,   /* no known type */
+    HAAW_STRUCT_FILE_T = 1,   /* the UK eScience structFile */
+    TAR_STRUCT_FILE_T  = 2,   /* The tar structFile */
+    MSSO_STRUCT_FILE_T = 3,   /* The workflow structFile */
+} structFileType_t;
 
-    typedef enum {          /* specColl operation type */
-        NOT_SPEC_COLL_OPR,
-        NON_STRUCT_FILE_SPEC_COLL_OPR,
-        STRUCT_FILE_SPEC_COLL_OPR,
-        NORMAL_OPR_ON_STRUCT_FILE_COLL
-    } structFileOprType_t;
+typedef enum {          /* specColl operation type */
+    NOT_SPEC_COLL_OPR,
+    NON_STRUCT_FILE_SPEC_COLL_OPR,
+    STRUCT_FILE_SPEC_COLL_OPR,
+    NORMAL_OPR_ON_STRUCT_FILE_COLL
+} structFileOprType_t;
 
 #define HAAW_STRUCT_FILE_STR      "haawStructFile"
 #define TAR_STRUCT_FILE_STR       "tarStructFile"
@@ -125,175 +125,175 @@ extern "C" {
 
 #define UNMOUNT_STR               "unmount"
 
-    typedef struct SpecColl {
-        specCollClass_t collClass;
-        structFileType_t type;
-        char collection[MAX_NAME_LEN];  /* structured file or mounted collection */
-        char objPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-logical path of structFile
+typedef struct SpecColl {
+    specCollClass_t collClass;
+    structFileType_t type;
+    char collection[MAX_NAME_LEN];  /* structured file or mounted collection */
+    char objPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-logical path of structFile
                                           * MOUNTED_COLL - NA
                                           */
-        char resource[NAME_LEN];         /* the resource */
-        char rescHier[MAX_NAME_LEN];     // the resource hierarchy
-        char phyPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-the phyPath of structFile
+    char resource[NAME_LEN];         /* the resource */
+    char rescHier[MAX_NAME_LEN];     // the resource hierarchy
+    char phyPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-the phyPath of structFile
                                           * MOUNTED_COLL-the phyPath od mounted
                                           * directory
                                           */
-        char cacheDir[MAX_NAME_LEN];     /* STRUCT_FILE_COLL-the directory where
+    char cacheDir[MAX_NAME_LEN];     /* STRUCT_FILE_COLL-the directory where
                                           * the cache tree is kept
                                           */
-        int cacheDirty;                  /* Whether the cache has been written */
-        int replNum;
-    } specColl_t;
+    int cacheDirty;                  /* Whether the cache has been written */
+    int replNum;
+} specColl_t;
 
-    typedef enum {
-        UNKNOWN_COLL_PERM,
-        READ_COLL_PERM,
-        WRITE_COLL_PERM
-    } specCollPerm_t;
+typedef enum {
+    UNKNOWN_COLL_PERM,
+    READ_COLL_PERM,
+    WRITE_COLL_PERM
+} specCollPerm_t;
 
-    typedef struct SpecCollCache {
-        specCollPerm_t perm;
-        specColl_t specColl;
-        char collId[NAME_LEN];
-        char ownerName[NAME_LEN];
-        char ownerZone[NAME_LEN];
-        char createTime[NAME_LEN];
-        char modifyTime[NAME_LEN];
-        struct SpecCollCache *next;
-    } specCollCache_t;
+typedef struct SpecCollCache {
+    specCollPerm_t perm;
+    specColl_t specColl;
+    char collId[NAME_LEN];
+    char ownerName[NAME_LEN];
+    char ownerZone[NAME_LEN];
+    char createTime[NAME_LEN];
+    char modifyTime[NAME_LEN];
+    struct SpecCollCache *next;
+} specCollCache_t;
 
-    /* definition for replStatus (isDirty) */
+/* definition for replStatus (isDirty) */
 #define OLD_COPY        0x0
 #define NEWLY_CREATED_COPY      0x1
 #define OPEN_EXISTING_COPY      0x10
 #define FILE_PATH_HAS_CHG       0x20
 
-    /* keyValPair_t - str key, str value pair */
-    typedef struct KeyValPair {
-        int len;
-        char **keyWord;     /* array of keywords */
-        char **value;       /* pointer to an array of values */
-    } keyValPair_t;
+/* keyValPair_t - str key, str value pair */
+typedef struct KeyValPair {
+    int len;
+    char **keyWord;     /* array of keywords */
+    char **value;       /* pointer to an array of values */
+} keyValPair_t;
 
-    /* definition for flags in dataObjInfo_t */
+/* definition for flags in dataObjInfo_t */
 #define NO_COMMIT_FLAG  0x1  /* used in chlModDataObjMeta and chlRegDataObj */
 
-    typedef struct DataObjInfo {
-        char objPath[MAX_NAME_LEN];
-        char rescName[NAME_LEN];       /* This could be resource group */
-        char rescHier[MAX_NAME_LEN];   // The hierarchy of resources within which the object resides
-        char rescGroupName[NAME_LEN];       /* This could be resource group */
-        char dataType[NAME_LEN];
-        rodsLong_t dataSize;
-        char chksum[NAME_LEN];
-        char version[NAME_LEN];
-        char filePath[MAX_NAME_LEN];
-        rescInfo_t *rescInfo;
-        char dataOwnerName[NAME_LEN];
-        char dataOwnerZone[NAME_LEN];
-        int  replNum;
-        int  replStatus;     /* isDirty flag */
-        char statusString[NAME_LEN];
-        rodsLong_t  dataId;
-        rodsLong_t  collId;
-        int  dataMapId;
-        int flags;          /* used in chlModDataObjMeta and chlRegDataObj */
-        char dataComments[LONG_NAME_LEN];
-        char dataMode[SHORT_STR_LEN];
-        char dataExpiry[TIME_LEN];
-        char dataCreate[TIME_LEN];
-        char dataModify[TIME_LEN];
-        char dataAccess[NAME_LEN];
-        int  dataAccessInx;
-        int  writeFlag;
-        char destRescName[NAME_LEN];
-        char backupRescName[NAME_LEN];
-        char subPath[MAX_NAME_LEN];
-        specColl_t *specColl;
-        int regUid;                /* the UNIX uid the registering user */
-        int otherFlags;    /* not used for now */
-        keyValPair_t condInput;
-        char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
-        struct DataObjInfo *next;
-    } dataObjInfo_t ;
+typedef struct DataObjInfo {
+    char objPath[MAX_NAME_LEN];
+    char rescName[NAME_LEN];       /* This could be resource group */
+    char rescHier[MAX_NAME_LEN];   // The hierarchy of resources within which the object resides
+    char rescGroupName[NAME_LEN];       /* This could be resource group */
+    char dataType[NAME_LEN];
+    rodsLong_t dataSize;
+    char chksum[NAME_LEN];
+    char version[NAME_LEN];
+    char filePath[MAX_NAME_LEN];
+    rescInfo_t *rescInfo;
+    char dataOwnerName[NAME_LEN];
+    char dataOwnerZone[NAME_LEN];
+    int  replNum;
+    int  replStatus;     /* isDirty flag */
+    char statusString[NAME_LEN];
+    rodsLong_t  dataId;
+    rodsLong_t  collId;
+    int  dataMapId;
+    int flags;          /* used in chlModDataObjMeta and chlRegDataObj */
+    char dataComments[LONG_NAME_LEN];
+    char dataMode[SHORT_STR_LEN];
+    char dataExpiry[TIME_LEN];
+    char dataCreate[TIME_LEN];
+    char dataModify[TIME_LEN];
+    char dataAccess[NAME_LEN];
+    int  dataAccessInx;
+    int  writeFlag;
+    char destRescName[NAME_LEN];
+    char backupRescName[NAME_LEN];
+    char subPath[MAX_NAME_LEN];
+    specColl_t *specColl;
+    int regUid;                /* the UNIX uid the registering user */
+    int otherFlags;    /* not used for now */
+    keyValPair_t condInput;
+    char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
+    struct DataObjInfo *next;
+} dataObjInfo_t ;
 
-    /* collInfo_t definitions:
-     * collInfo1:
-     *   MOUNTED_COLL - physical directory path
-     *   LINKED_COLL - linked logical path
-     *   TAR_STRUCT_FILE_T - logical path of the tar file
-     * collInfo2:
-     *   MOUNTED_COLL - resource
-     *   LINKED_COLL - none
-     *   TAR_STRUCT_FILE_T - cacheDirPath;;;resource;;;cacheDirty
-     */
-    typedef struct CollInfo {
-        rodsLong_t collId;
-        char collName[MAX_NAME_LEN];
-        char collParentName[MAX_NAME_LEN];
-        char collOwnerName[NAME_LEN];
-        char collOwnerZone[NAME_LEN];
-        int  collMapId;
-        int  collAccessInx;
-        char collComments[LONG_NAME_LEN];
-        char collInheritance[LONG_NAME_LEN];
-        char collExpiry[TIME_LEN];
-        char collCreate[TIME_LEN];
-        char collModify[TIME_LEN];
-        char collAccess[NAME_LEN];
-        char collType[NAME_LEN];
-        char collInfo1[MAX_NAME_LEN];
-        char collInfo2[MAX_NAME_LEN];
-        keyValPair_t condInput;
+/* collInfo_t definitions:
+ * collInfo1:
+ *   MOUNTED_COLL - physical directory path
+ *   LINKED_COLL - linked logical path
+ *   TAR_STRUCT_FILE_T - logical path of the tar file
+ * collInfo2:
+ *   MOUNTED_COLL - resource
+ *   LINKED_COLL - none
+ *   TAR_STRUCT_FILE_T - cacheDirPath;;;resource;;;cacheDirty
+ */
+typedef struct CollInfo {
+    rodsLong_t collId;
+    char collName[MAX_NAME_LEN];
+    char collParentName[MAX_NAME_LEN];
+    char collOwnerName[NAME_LEN];
+    char collOwnerZone[NAME_LEN];
+    int  collMapId;
+    int  collAccessInx;
+    char collComments[LONG_NAME_LEN];
+    char collInheritance[LONG_NAME_LEN];
+    char collExpiry[TIME_LEN];
+    char collCreate[TIME_LEN];
+    char collModify[TIME_LEN];
+    char collAccess[NAME_LEN];
+    char collType[NAME_LEN];
+    char collInfo1[MAX_NAME_LEN];
+    char collInfo2[MAX_NAME_LEN];
+    keyValPair_t condInput;
 
-        struct CollInfo *next;
-    } collInfo_t;
+    struct CollInfo *next;
+} collInfo_t;
 
-    typedef struct RuleInfo {
-        int TDB;
-    } ruleInfo_t;
+typedef struct RuleInfo {
+    int TDB;
+} ruleInfo_t;
 
-    /* inxIvalPair_t - int index, int value pair */
+/* inxIvalPair_t - int index, int value pair */
 
-    typedef struct InxIvalPair {
-        int len;
-        int *inx;           /* pointer to an array of int index */
-        int *value;       /* pointer to an array of int value values */
-    } inxIvalPair_t;
+typedef struct InxIvalPair {
+    int len;
+    int *inx;           /* pointer to an array of int index */
+    int *value;       /* pointer to an array of int value values */
+} inxIvalPair_t;
 
-    /* inxValPair_t - int index, str value pair */
+/* inxValPair_t - int index, str value pair */
 
-    typedef struct InxValPair {
-        int len;
-        int *inx;          /* pointer to an array of int index */
-        char **value;       /* pointer to an array of str value values */
-    } inxValPair_t;
+typedef struct InxValPair {
+    int len;
+    int *inx;          /* pointer to an array of int index */
+    char **value;       /* pointer to an array of str value values */
+} inxValPair_t;
 
-    /* strArray_t - just a single array */
-    typedef struct StrArray {
-        int len;
-        int size;
-        char *value;        /* char aray of [len][size] */
-    } strArray_t;
+/* strArray_t - just a single array */
+typedef struct StrArray {
+    int len;
+    int size;
+    char *value;        /* char aray of [len][size] */
+} strArray_t;
 
-    /* intArray_t - just a single array */
-    typedef struct IntArray {
-        int len;
-        int *value;        /* int aray of [len] */
-    } intArray_t;
+/* intArray_t - just a single array */
+typedef struct IntArray {
+    int len;
+    int *value;        /* int aray of [len] */
+} intArray_t;
 
 
-    /* definition for RescTypeDef */
+/* definition for RescTypeDef */
 
-    typedef enum {  /* resource category */
-        FILE_CAT,
-        DB_CAT
-    } rescCat_t;
+typedef enum {  /* resource category */
+    FILE_CAT,
+    DB_CAT
+} rescCat_t;
 
 #define DEFAULT_FILE_MODE       0600
 #define DEFAULT_DIR_MODE        0750
 
-    /* definition for chkPathPerm */
+/* definition for chkPathPerm */
 
 #define DISALLOW_PATH_REG       0       /* disallow path registration */ // JMC - backport 4774
 #define NO_CHK_PATH_PERM            1 // JMC - backport 4758
@@ -305,22 +305,22 @@ extern "C" {
 #define DO_CHK_PATH_PERM_STR        "doChkPathPerm"       // JMC - backport 4774
 #define CHK_NON_VAULT_PATH_PERM_STR "chkNonVaultPathPerm" // JMC - backport 4774
 
-    /* definition for stageFlag to specify whether staging is required */
+/* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0
 #define STAGE_SRC         1
 #define SYNC_DEST         2
 
-    /* definition for trash policy */
+/* definition for trash policy */
 
 #define DO_TRASH_CAN    0
 #define NO_TRASH_CAN    1
 
-    typedef enum {
-        NO_CREATE_PATH,
-        CREATE_PATH
-    } createPath_t;
+typedef enum {
+    NO_CREATE_PATH,
+    CREATE_PATH
+} createPath_t;
 
-    /* definition for classType */
+/* definition for classType */
 
 #define CACHE_CL        0
 #define ARCHIVAL_CL     1
@@ -334,52 +334,52 @@ extern "C" {
 //    int classType;
 //} rescClass_t;
 
-    /* transStat_t is being replaced by transferStat_t because of the 64 bits
-     * padding */
-    typedef struct {
-        int numThreads;
-        rodsLong_t bytesWritten;
-    } transStat_t;
+/* transStat_t is being replaced by transferStat_t because of the 64 bits
+ * padding */
+typedef struct {
+    int numThreads;
+    rodsLong_t bytesWritten;
+} transStat_t;
 
-    typedef struct {
-        int numThreads;
-        int flags;          /* padding to 64 bits */
-        rodsLong_t bytesWritten;
-    } transferStat_t;
+typedef struct {
+    int numThreads;
+    int flags;          /* padding to 64 bits */
+    rodsLong_t bytesWritten;
+} transferStat_t;
 
 #define FILE_CNT_PER_STAT_OUT   10      /* the default file count per 
     * collOprStat output */
-    typedef struct {
-        int filesCnt;
-        int totalFileCnt;
-        rodsLong_t bytesWritten;
-        char lastObjPath[MAX_NAME_LEN];
-    } collOprStat_t;
+typedef struct {
+    int filesCnt;
+    int totalFileCnt;
+    rodsLong_t bytesWritten;
+    char lastObjPath[MAX_NAME_LEN];
+} collOprStat_t;
 
-    /* tagStruct_t - tagged keyword structure
-       preTag  defines the reg exp to find beginning of value
-       postTag defines the reg exp to be checked to find end of value
-       the value found between the tags is associated with the KeyWord*/
-    typedef struct TagStruct {
-        int len;
-        char **preTag;     /* array of prestring tag */
-        char **postTag;     /* array of poststring tag */
-        char **keyWord;       /* pointer to an array of KeyWords */
-    } tagStruct_t;
+/* tagStruct_t - tagged keyword structure
+   preTag  defines the reg exp to find beginning of value
+   postTag defines the reg exp to be checked to find end of value
+   the value found between the tags is associated with the KeyWord*/
+typedef struct TagStruct {
+    int len;
+    char **preTag;     /* array of prestring tag */
+    char **postTag;     /* array of poststring tag */
+    char **keyWord;       /* pointer to an array of KeyWords */
+} tagStruct_t;
 
-    typedef struct Subfile {
-        rodsHostAddr_t addr;
-        char subFilePath[MAX_NAME_LEN];
-        int mode;
-        int flags;
-        rodsLong_t offset;
-        specColl_t *specColl;
-    } subFile_t;
+typedef struct Subfile {
+    rodsHostAddr_t addr;
+    char subFilePath[MAX_NAME_LEN];
+    int mode;
+    int flags;
+    rodsLong_t offset;
+    specColl_t *specColl;
+} subFile_t;
 
-    typedef struct StructFileTypeDef {
-        char *typeName;
-        structFileType_t type;
-    } structFileTypeDef_t;
+typedef struct StructFileTypeDef {
+    char *typeName;
+    structFileType_t type;
+} structFileTypeDef_t;
 
 #ifdef __cplusplus
 }

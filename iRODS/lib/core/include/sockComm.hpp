@@ -48,34 +48,34 @@ extern "C" {
 // =-=-=-=-=-=-=-
 // other legacy functions
 int sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto );
-    int rodsSetSockOpt( int sock, int windowSize );
-    int myRead( int sock, void *buf, int len, int *bytesRead, struct timeval *tv );
-    int myWrite( int sock, void *buf, int len, int *bytesWritten );
-    int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
-    int connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
-                                 int timeoutFlag );
-    int connectToRhostWithTout( int sock, struct sockaddr *sin );
-    int rodsSleep( int sec, int microSec );
-    int setConnAddr( rcComm_t *conn );
-    int setRemoteAddr( int sock, struct sockaddr_in *remoteAddr );
-    int setLocalAddr( int sock, struct sockaddr_in *localAddr );
-    int sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag );
-    int connectToRhostPortal( char *rodsHost, int rodsPort, int cookie, int windowSize );
-    int rsAcceptConn( rsComm_t *svrComm );
-    char* rods_inet_ntoa( struct in_addr in );
-    int irodsCloseSock( int sock );
-    int addUdpPortToPortList( portList_t *thisPortList, int udpport );
-    int getUdpPortFromPortList( portList_t *thisPortList );
-    int getTcpPortFromPortList( portList_t *thisPortList );
-    int addUdpSockToPortList( portList_t *thisPortList, int udpsock );
-    int getUdpSockFromPortList( portList_t *thisPortList );
-    int getTcpSockFromPortList( portList_t *thisPortList );
-    int isReadMsgError( int status );
-    int svrSwitchConnect( rsComm_t *rsComm );
-    int cliSwitchConnect( rcComm_t *conn );
-    int redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag );
-    int rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag );
-    int mySockClose( int sock ); // server stop fcn <==> rsAccept?
+int rodsSetSockOpt( int sock, int windowSize );
+int myRead( int sock, void *buf, int len, int *bytesRead, struct timeval *tv );
+int myWrite( int sock, void *buf, int len, int *bytesWritten );
+int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
+int connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
+                             int timeoutFlag );
+int connectToRhostWithTout( int sock, struct sockaddr *sin );
+int rodsSleep( int sec, int microSec );
+int setConnAddr( rcComm_t *conn );
+int setRemoteAddr( int sock, struct sockaddr_in *remoteAddr );
+int setLocalAddr( int sock, struct sockaddr_in *localAddr );
+int sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag );
+int connectToRhostPortal( char *rodsHost, int rodsPort, int cookie, int windowSize );
+int rsAcceptConn( rsComm_t *svrComm );
+char* rods_inet_ntoa( struct in_addr in );
+int irodsCloseSock( int sock );
+int addUdpPortToPortList( portList_t *thisPortList, int udpport );
+int getUdpPortFromPortList( portList_t *thisPortList );
+int getTcpPortFromPortList( portList_t *thisPortList );
+int addUdpSockToPortList( portList_t *thisPortList, int udpsock );
+int getUdpSockFromPortList( portList_t *thisPortList );
+int getTcpSockFromPortList( portList_t *thisPortList );
+int isReadMsgError( int status );
+int svrSwitchConnect( rsComm_t *rsComm );
+int cliSwitchConnect( rcComm_t *conn );
+int redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp, rodsEnv *myEnv, int reconnFlag );
+int rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag );
+int mySockClose( int sock ); // server stop fcn <==> rsAccept?
 #ifdef __cplusplus
 }
 #endif

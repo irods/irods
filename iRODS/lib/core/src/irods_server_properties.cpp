@@ -556,43 +556,43 @@ namespace irods {
         if ( status < 0 ) {
             return ERROR( status, "failure in getRodsEnv" );
         }
-        result = config_props_.set<std::string>( 
+        result = config_props_.set<std::string>(
                      irods::CFG_ZONE_NAME_KW,
                      env.rodsZone );
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             irods::log( PASS( result ) );
 
         }
 
-        result = config_props_.set<std::string>( 
+        result = config_props_.set<std::string>(
                      irods::CFG_ZONE_USER,
                      env.rodsUserName );
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             irods::log( PASS( result ) );
 
         }
 
-        result = config_props_.set<std::string>( 
+        result = config_props_.set<std::string>(
                      irods::CFG_ZONE_AUTH_SCHEME,
                      env.rodsAuthScheme );
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             irods::log( PASS( result ) );
 
         }
 
-        result = config_props_.set<int>( 
+        result = config_props_.set<int>(
                      irods::CFG_ZONE_PORT,
                      env.rodsPort );
-        if( !result.ok() ) {
+        if ( !result.ok() ) {
             irods::log( PASS( result ) );
 
         }
 
-        if( 0 != env.xmsgPort ) {
-            result = config_props_.set<int>( 
+        if ( 0 != env.xmsgPort ) {
+            result = config_props_.set<int>(
                          irods::CFG_XMSG_PORT,
                          env.xmsgPort );
-            if( !result.ok() ) {
+            if ( !result.ok() ) {
                 irods::log( PASS( result ) );
 
             }

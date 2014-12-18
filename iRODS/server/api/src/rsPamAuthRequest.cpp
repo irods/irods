@@ -110,7 +110,7 @@ runPamAuthCheck( char *username, char *password ) {
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }
-    return( SYS_FORK_ERROR ); /* avoid compiler warning */
+    return ( SYS_FORK_ERROR ); /* avoid compiler warning */
 }
 
 int

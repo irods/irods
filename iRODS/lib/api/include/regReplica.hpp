@@ -37,21 +37,21 @@ _rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp );
+/* prototype for the client call */
+int
+rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp );
 
-    /* rcRegReplica - Unregister a iRODS dataObject.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   regReplica_t *regReplicaInp - the dataObj to replicate
-     *
-     * OutPut -
-     *   int status - status of the operation.
-     */
+/* rcRegReplica - Unregister a iRODS dataObject.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   regReplica_t *regReplicaInp - the dataObj to replicate
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
 
-    //int
-    //clearRegReplicaInp( regReplica_t *regReplicaInp );
+//int
+//clearRegReplicaInp( regReplica_t *regReplicaInp );
 
 #ifdef __cplusplus
 }

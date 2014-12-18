@@ -12,11 +12,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    regUtil( rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp );
-    int
-    initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-                    dataObjInp_t *dataObjOprInp );
+int
+regUtil( rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp );
+int
+initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+                dataObjInp_t *dataObjOprInp );
 
 #ifdef __cplusplus
 }

@@ -141,7 +141,7 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
 int
 getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                 dataObjInp_t *dataObjInp ) {
+                      dataObjInp_t *dataObjInp ) {
     char *filePath;
     vaultPathPolicy_t vaultPathPolicy;
     int status;

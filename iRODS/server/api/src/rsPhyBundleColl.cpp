@@ -738,7 +738,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
             }
         }
 
-        l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, std::string(rescGrpInfo->rescInfo->rescName) /* for now #1472 */ );
+        l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, std::string( rescGrpInfo->rescInfo->rescName ) /* for now #1472 */ );
 
         clearKeyVal( &dataObjInp->condInput );
     }

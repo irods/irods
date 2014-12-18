@@ -23,10 +23,10 @@ make -j4
 # run astyle
 source $IRODSROOT/meta/astyleparams
 cd $IRODSROOT
-$ASTYLEBIN ${ASTYLE_PARAMETERS} --exclude=external -v -r *.hpp *.cpp
+$ASTYLEBIN ${ASTYLE_PARAMETERS} --exclude=external --exclude=meta -v -r *.hpp *.cpp
 
 # clean up this run
-cd $IRODSROOT/meta
-rm -rf $GZFILE
-rm -rf astyle
+#cd $IRODSROOT/meta
+#rm -rf $GZFILE
+#rm -rf astyle
 

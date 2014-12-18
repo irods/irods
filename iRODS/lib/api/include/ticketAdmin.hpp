@@ -36,19 +36,19 @@ extern "C" {
 #endif
 #if defined(RODS_SERVER)
 #define RS_TICKET_ADMIN rsTicketAdmin
-    /* prototype for the server handler */
-    int
-    rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
+/* prototype for the server handler */
+int
+rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
 
-    int
-    _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
+int
+_rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp );
 #else
 #define RS_TICKET_ADMIN NULL
 #endif
 
-    /* prototype for the client call */
-    int
-    rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp );
+/* prototype for the client call */
+int
+rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp );
 
 #ifdef __cplusplus
 }

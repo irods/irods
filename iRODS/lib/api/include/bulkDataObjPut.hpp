@@ -44,23 +44,23 @@ rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
-     * bulkOprInpBBuf contains the bundled local files in tar format.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   bulkOprInp_t *bulkOprInp - generic dataObj input. Relevant items are:
-     *      objPath - the collection path under which the files are to be untar.
-     *      condInput - conditional Input
-     *          FORCE_FLAG_KW - overwrite an existing data object
-     *          DATA_TYPE_KW - "value" = the data type of the file.
-     *          DEST_RESC_NAME_KW - "value" = The destination Resource.
-     *   return value - The status of the operation.
-     */
+/* prototype for the client call */
+/* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
+ * bulkOprInpBBuf contains the bundled local files in tar format.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   bulkOprInp_t *bulkOprInp - generic dataObj input. Relevant items are:
+ *      objPath - the collection path under which the files are to be untar.
+ *      condInput - conditional Input
+ *          FORCE_FLAG_KW - overwrite an existing data object
+ *          DATA_TYPE_KW - "value" = the data type of the file.
+ *          DEST_RESC_NAME_KW - "value" = The destination Resource.
+ *   return value - The status of the operation.
+ */
 
-    int
-    rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-                      bytesBuf_t *bulkOprInpBBuf );
+int
+rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
+                  bytesBuf_t *bulkOprInpBBuf );
 #ifdef __cplusplus
 }
 #endif

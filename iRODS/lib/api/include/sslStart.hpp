@@ -38,8 +38,8 @@ rsSslStart( rsComm_t *rsComm, sslStartInp_t *sslStartInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp );
+int
+rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp );
 
 #ifdef __cplusplus
 }

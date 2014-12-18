@@ -31,20 +31,20 @@ l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
+/* prototype for the client call */
+int
+rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
 
-    /* rcCollCreate - Create a iRODS collection.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   collInp_t *collInp - generic coll input. Relevant items are:
-     *      collName - the collection to be registered.
-     *      condInput - condition input (optional) - currently not used.
-     *
-     * OutPut -
-     *   int status - status of the operation.
-     */
+/* rcCollCreate - Create a iRODS collection.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   collInp_t *collInp - generic coll input. Relevant items are:
+ *      collName - the collection to be registered.
+ *      condInput - condition input (optional) - currently not used.
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
 #ifdef __cplusplus
 }
 #endif

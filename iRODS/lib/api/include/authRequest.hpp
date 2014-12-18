@@ -42,9 +42,9 @@ _rsAuthRequestGetChallenge();
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcAuthRequest( rcComm_t *conn, authRequestOut_t **authRequestOut );
+/* prototype for the client call */
+int
+rcAuthRequest( rcComm_t *conn, authRequestOut_t **authRequestOut );
 
 #ifdef __cplusplus
 }

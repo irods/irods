@@ -46,8 +46,8 @@ remoteFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp );
+int
+rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp );
 #ifdef __cplusplus
 }
 #endif

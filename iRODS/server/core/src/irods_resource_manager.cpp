@@ -897,7 +897,8 @@ namespace irods {
                         log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
                         result = ret.code();
                     }
-                } catch ( const boost::bad_function_call& ) {
+                }
+                catch ( const boost::bad_function_call& ) {
                     rodsLog( LOG_ERROR, "maintenance operation threw boost::bad_function_call" );
                     result = SYS_INTERNAL_ERR;
                 }

@@ -362,11 +362,11 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
         case 'g':
             rodsArgs->global = True;
             break;
-            // Ticket 1457 - No longer Supporting Resource groups.
-            //case 'G':
-            //   rodsArgs->rescGroup=True;
-            //   rodsArgs->rescGroupString=optarg;
-            //   break;
+        // Ticket 1457 - No longer Supporting Resource groups.
+        //case 'G':
+        //   rodsArgs->rescGroup=True;
+        //   rodsArgs->rescGroupString=optarg;
+        //   break;
         case 'H':
             rodsArgs->hostAddr = True;
             rodsArgs->hostAddrString = optarg;
@@ -486,7 +486,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             /* noop; Z is placeholder for the long options */
             break;
 
-            /* The following are also -- options */
+        /* The following are also -- options */
         case 'x':
             rodsArgs->extract = True;
             break;

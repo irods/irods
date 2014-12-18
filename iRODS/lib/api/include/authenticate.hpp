@@ -53,10 +53,10 @@ _rsAuthenticate( rsComm_t *rsComm, AuthenticateInp_t *authenticateInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
-                    AuthenticateOut_t **authenticateOut );
+/* prototype for the client call */
+int
+rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
+                AuthenticateOut_t **authenticateOut );
 
 #ifdef __cplusplus
 }

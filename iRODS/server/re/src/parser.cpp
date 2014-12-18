@@ -2357,7 +2357,7 @@ StringList *getVarNamesInExprNodeAux( Node *expr, StringList *vars, Region *r ) 
             nvars->str = expr->text;
             return nvars;
         }
-        /* non var */
+    /* non var */
     default:
         for ( i = 0; i < expr->degree; i++ ) {
             vars = getVarNamesInExprNodeAux( expr->subtrees[i], vars, r );

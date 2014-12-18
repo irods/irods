@@ -48,10 +48,10 @@ remoteFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
-               bytesBuf_t *filePutInpBBuf,
-               filePutOut_t** );
+int
+rcFilePut( rcComm_t *conn, fileOpenInp_t *filePutInp,
+           bytesBuf_t *filePutInpBBuf,
+           filePutOut_t** );
 #ifdef __cplusplus
 }
 #endif

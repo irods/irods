@@ -61,7 +61,7 @@ mkrodsdir() {
 #else
     mkdir( dirName, mode );
 #endif
-    return( 0 ); /* no error messages as it normally fails */
+    return ( 0 ); /* no error messages as it normally fails */
 }
 
 void

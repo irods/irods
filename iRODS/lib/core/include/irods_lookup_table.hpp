@@ -18,8 +18,8 @@ namespace irods {
 // class to manage tables of plugins.  employing a class in order to use
 // RAII for adding entries to the table now that it is not a static array
     template < typename ValueType,
-             typename KeyType = std::string,
-             typename HashType = irods_string_hash >
+               typename KeyType = std::string,
+               typename HashType = irods_string_hash >
     class lookup_table {
     protected:
         typedef HASH_TYPE< KeyType, ValueType, HashType > irods_hash_map;

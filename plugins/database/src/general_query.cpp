@@ -232,7 +232,7 @@ tablePresent( char *table, char *sqlText ) {
         if ( debug > 1 ) {
             printf( "tablePresent return 0 (simple)\n" );
         }
-        return( 0 ); /* simple case */
+        return ( 0 ); /* simple case */
     }
 
     tokens = 0;
@@ -257,7 +257,7 @@ tablePresent( char *table, char *sqlText ) {
         printf( "tablePresent tokens=%d\n", tokens );
     }
     if ( tokens == 2 ) {
-        return( 1 ); /* 2 tokens and did match, is present */
+        return ( 1 ); /* 2 tokens and did match, is present */
     }
 
     /* have to check if the token appears in the first or second position */
@@ -333,7 +333,7 @@ tScan( int table, int link ) {
         if ( debug > 1 ) {
             printf( "%d returning cycler\n", table );
         }
-        return( thisKeep ); /* do no more for cyclers */
+        return ( thisKeep ); /* do no more for cyclers */
     }
 
     Tables[table].flag = 3; /* Done with this one, skip it if found again */
@@ -506,7 +506,7 @@ tCycleChk( int table, int link, int thisTreeNum ) {
         if ( debug > 1 ) {
             printf( "%d returning cycler\n", table );
         }
-        return( thisKeep ); /* do no more for cyclers */
+        return ( thisKeep ); /* do no more for cyclers */
     }
 
     for ( i = 0; i < nLinks; i++ ) {
@@ -1450,7 +1450,7 @@ insertWhere( char *condition, int option ) {
             cllBindVarCount--; /* undo bind-var as it is not included now */
             int status = addInClauseToWhereForParentOf( thisBindVar ); // JMC - backport 4848
             if ( status < 0 ) {
-                return( status );    // JMC - backport 4848
+                return ( status );   // JMC - backport 4848
             }
         }
         else {
@@ -1633,7 +1633,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
 
                 }
 
-                snprintf( userZone, sizeof( userZone), "%s", zoneName.c_str() );
+                snprintf( userZone, sizeof( userZone ), "%s", zoneName.c_str() );
                 rodsLog( LOG_ERROR, "userZone1=:%s:\n", userZone );
             }
             rodsLog( LOG_DEBUG, "spQuery(1) userZone2=:%s:\n", userZone );

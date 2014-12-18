@@ -41,19 +41,19 @@ procChksumForClose( rsComm_t *rsComm, int l1descInx, char **chksumStr );
 extern "C" {
 #endif
 
-    /* prototype for the client call */
-    /* rcDataObjClose - Close an opened iRODS data object descriptor.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjCloseInp_t *dataObjCloseInp - Relevant items are:
-     *	l1descInx - the iRODS data object descriptor to close.
-     *
-     * OutPut -
-     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
-     */
+/* prototype for the client call */
+/* rcDataObjClose - Close an opened iRODS data object descriptor.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjCloseInp_t *dataObjCloseInp - Relevant items are:
+ *	l1descInx - the iRODS data object descriptor to close.
+ *
+ * OutPut -
+ *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+ */
 
-    int
-    rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp );
+int
+rcDataObjClose( rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp );
 
 #ifdef __cplusplus
 }

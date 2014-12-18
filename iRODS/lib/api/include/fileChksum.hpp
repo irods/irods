@@ -50,9 +50,9 @@ fileChksum( rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, cha
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
-                  char **chksumStr );
+int
+rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
+              char **chksumStr );
 
 #ifdef __cplusplus
 }

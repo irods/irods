@@ -53,12 +53,12 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp );
+/* prototype for the client call */
+int
+rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp );
 
-    void
-    clearModAVUMetadataInp( void * voidInp );
+void
+clearModAVUMetadataInp( void * voidInp );
 
 #ifdef __cplusplus
 }

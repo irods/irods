@@ -12,9 +12,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
-               rodsPathInp_t *rodsPathInp );
+int
+mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
+           rodsPathInp_t *rodsPathInp );
 
 #ifdef __cplusplus
 }

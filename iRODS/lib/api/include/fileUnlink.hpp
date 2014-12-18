@@ -44,8 +44,8 @@ remoteFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp );
+int
+rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp );
 #ifdef __cplusplus
 }
 #endif

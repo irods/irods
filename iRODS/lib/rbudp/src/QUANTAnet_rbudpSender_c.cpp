@@ -208,7 +208,7 @@ udpSend( rbudpSender_t *rbudpSender ) {
             bcopy( &rbudpSender->sendHeader, msg,
                    rbudpSender->rbudpBase.headerSize );
             bcopy( ( char* )( ( char* )rbudpSender->rbudpBase.mainBuffer +
-                              ( rbudpSender->sendHeader.seq*
+                              ( rbudpSender->sendHeader.seq *
                                 rbudpSender->rbudpBase.payloadSize ) ),
                    msg + rbudpSender->rbudpBase.headerSize,
                    actualPayloadSize );

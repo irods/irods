@@ -44,7 +44,7 @@ generalInsert( generalUpdateInp_t generalUpdateInp ) {
         j = sGetColumnInfo( generalUpdateInp.values.inx[i],
                             &tableName, &columnName );
         if ( generalUpdateInp.values.inx[i] < MAX_CORE_TABLE_VALUE ) {
-            return( CAT_TABLE_ACCESS_DENIED ); /* only extended icat tables allowed*/
+            return ( CAT_TABLE_ACCESS_DENIED ); /* only extended icat tables allowed*/
         }
         if ( updateDebug ) {
             printf( "j=%d\n", j );
@@ -137,7 +137,7 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
 
     for ( i = 0; i < generalUpdateInp.values.len; i++ ) {
         if ( generalUpdateInp.values.inx[i] < MAX_CORE_TABLE_VALUE ) {
-            return( CAT_TABLE_ACCESS_DENIED ); /* only extended icat tables allowed*/
+            return ( CAT_TABLE_ACCESS_DENIED ); /* only extended icat tables allowed*/
         }
         j = sGetColumnInfo( generalUpdateInp.values.inx[i],
                             &tableName, &columnName );

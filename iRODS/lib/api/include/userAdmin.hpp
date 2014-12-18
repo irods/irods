@@ -49,9 +49,9 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcUserAdmin( rcComm_t *conn, userAdminInp_t *userAdminInp );
+/* prototype for the client call */
+int
+rcUserAdmin( rcComm_t *conn, userAdminInp_t *userAdminInp );
 #ifdef __cplusplus
 }
 #endif

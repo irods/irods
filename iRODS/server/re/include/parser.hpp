@@ -115,7 +115,7 @@ typedef struct {
 		BUILD_NODE(TK_TEXT, cons, loc, 0, 0); \
 		SWAP; \
 		BUILD_NODE(N_APPLICATION, APPLICATION, loc, 2, 2); \
- 
+
 #define PARSER_FUNC_PROTO(l) \
 void CONCAT(nextRuleGen, l)(Pointer* e, ParserContext *context)
 #define PARSER_FUNC_PROTO1(l, p) \
@@ -316,7 +316,7 @@ goto CONCAT(exit, l);
 int COUNTER(l) = 0; \
 LOOP_BEGIN(l) \
 	TRY(l) \
- 
+
 #define REPEAT_END(l) \
 		COUNTER(l)++; \
 	OR(l) \
@@ -327,11 +327,11 @@ LOOP_END(l)
 #define LIST_BEGIN(l) \
 	int COUNTER(l) = 0; \
 	LOOP_BEGIN(l) \
- 
+
 #define LIST_DELIM(l) \
 	COUNTER(l)++; \
 	TRY(l) \
- 
+
 #define LIST_END(l) \
 	OR(l) \
 		DONE(l); \

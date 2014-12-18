@@ -41,9 +41,9 @@ remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
-                 bytesBuf_t *fileWriteInpBBuf );
+int
+rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
+             bytesBuf_t *fileWriteInpBBuf );
 #ifdef __cplusplus
 }
 #endif

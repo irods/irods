@@ -44,19 +44,19 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd ); // JMC - 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcDataObjLock - Lock a iRODS data object.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *     objPath - the path of the data object.
-     *     condInput - condition input (optional).
-     * OutPut -
-     *   int the file descriptor of the locked object - an integer descriptor.
-     */
+/* prototype for the client call */
+/* rcDataObjLock - Lock a iRODS data object.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *     objPath - the path of the data object.
+ *     condInput - condition input (optional).
+ * OutPut -
+ *   int the file descriptor of the locked object - an integer descriptor.
+ */
 
-    int
-    rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp );
+int
+rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
 }

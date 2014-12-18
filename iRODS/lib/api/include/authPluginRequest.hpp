@@ -41,10 +41,10 @@ extern "C" {
 #endif
 // =-=-=-=-=-=-=-
 // prototype for client
-    int rcAuthPluginRequest(
-        rcComm_t*,              // server comm ptr
-        authPluginReqInp_t*,    // incoming struct with scheme
-        authPluginReqOut_t** ); // response from agent
+int rcAuthPluginRequest(
+    rcComm_t*,              // server comm ptr
+    authPluginReqInp_t*,    // incoming struct with scheme
+    authPluginReqOut_t** ); // response from agent
 #ifdef __cplusplus
 }
 #endif

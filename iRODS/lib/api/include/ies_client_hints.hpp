@@ -25,9 +25,9 @@ extern "C" {
 #endif
 // =-=-=-=-=-=-=-
 // prototype for client
-    int rcIESClientHints(
-        rcComm_t*,      // server comm ptr
-        bytesBuf_t** ); // json response
+int rcIESClientHints(
+    rcComm_t*,      // server comm ptr
+    bytesBuf_t** ); // json response
 #ifdef __cplusplus
 }
 #endif

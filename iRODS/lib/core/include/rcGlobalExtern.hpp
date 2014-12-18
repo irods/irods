@@ -38,7 +38,7 @@ extern struct timeval SysTimingVal;
 #ifdef __cplusplus
 extern "C" {
 #endif
-    extern guiProgressCallback gGuiProgressCB;
+extern guiProgressCallback gGuiProgressCB;
 
 #ifdef __cplusplus
 }

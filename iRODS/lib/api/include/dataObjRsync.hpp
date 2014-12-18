@@ -40,35 +40,35 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcDataObjRsync - Synchronize the data between a  local  copy  (local file
-     * system)  and the copy stored in iRODS or between two iRODS copies.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *      objPath - the path of the data object.
-     *      condInput - conditional Input
-     *          ALL_KW - update all copies.
-     *	    FORCE_FLAG_KW - always needed.
-     *	    VERIFY_BY_SIZE_KW - use size instead of checksum value.
-     *          DEST_RESC_NAME_KW - "value" = The destination Resource.
-     *	    RSYNC_MODE_KW - valid "value" are :
-     *	        IRODS_TO_IRODS - sync an iRODS object to an iRODS object.
-     *		IRODS_TO_LOCAL - sync a local file to an iRODS object.
-     *		LOCAL_TO_IRODS - sync an iRODS object to a local file.
-     *	    RSYNC_DEST_PATH_KW - "value" = the destination path.
-     *		If RSYNC_MODE_KW == IRODS_TO_IRODS, it is an iRODS path.
-     *		if RSYNC_MODE_KW == IRODS_TO_LOCAL, it is an iRODS object.
-     *		if RSYNC_MODE_KW == LOCAL_TO_IRODS, it is a local file.
-     *	    RSYNC_CHKSUM_KW - "value" = checksum value.
-     *   return value - The status of the operation.
-     */
+/* prototype for the client call */
+/* rcDataObjRsync - Synchronize the data between a  local  copy  (local file
+ * system)  and the copy stored in iRODS or between two iRODS copies.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *      objPath - the path of the data object.
+ *      condInput - conditional Input
+ *          ALL_KW - update all copies.
+ *	    FORCE_FLAG_KW - always needed.
+ *	    VERIFY_BY_SIZE_KW - use size instead of checksum value.
+ *          DEST_RESC_NAME_KW - "value" = The destination Resource.
+ *	    RSYNC_MODE_KW - valid "value" are :
+ *	        IRODS_TO_IRODS - sync an iRODS object to an iRODS object.
+ *		IRODS_TO_LOCAL - sync a local file to an iRODS object.
+ *		LOCAL_TO_IRODS - sync an iRODS object to a local file.
+ *	    RSYNC_DEST_PATH_KW - "value" = the destination path.
+ *		If RSYNC_MODE_KW == IRODS_TO_IRODS, it is an iRODS path.
+ *		if RSYNC_MODE_KW == IRODS_TO_LOCAL, it is an iRODS object.
+ *		if RSYNC_MODE_KW == LOCAL_TO_IRODS, it is a local file.
+ *	    RSYNC_CHKSUM_KW - "value" = checksum value.
+ *   return value - The status of the operation.
+ */
 
-    int
-    rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp );
-    int
-    _rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp,
-                     msParamArray_t **outParamArray );
+int
+rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp );
+int
+_rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp,
+                 msParamArray_t **outParamArray );
 
 #ifdef __cplusplus
 }

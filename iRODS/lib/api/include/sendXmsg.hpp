@@ -28,9 +28,9 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp );
+/* prototype for the client call */
+int
+rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp );
 
 #ifdef __cplusplus
 }

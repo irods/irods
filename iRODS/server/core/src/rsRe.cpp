@@ -17,7 +17,7 @@ int
 initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet ) {
     int status;
     if ( strcmp( ruleSet, ruleSetInitialized ) == 0 ) {
-        return( 0 ); /* already done */
+        return ( 0 ); /* already done */
     }
     status = initRuleStruct( processType, svrComm, ruleSet, dvmSet, fnmSet );
     if ( status == 0 ) {

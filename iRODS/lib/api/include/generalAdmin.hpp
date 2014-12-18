@@ -35,19 +35,19 @@ extern "C" {
 #endif
 #if defined(RODS_SERVER)
 #define RS_GENERAL_ADMIN rsGeneralAdmin
-    /* prototype for the server handler */
-    int
-    rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
+/* prototype for the server handler */
+int
+rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
 
-    int
-    _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
+int
+_rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp );
 #else
 #define RS_GENERAL_ADMIN NULL
 #endif
 
-    /* prototype for the client call */
-    int
-    rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp );
+/* prototype for the client call */
+int
+rcGeneralAdmin( rcComm_t *conn, generalAdminInp_t *generalAdminInp );
 
 #ifdef __cplusplus
 }

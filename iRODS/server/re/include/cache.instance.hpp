@@ -57,7 +57,7 @@
 #define TRAVERSE_ARRAY_END(type, size, f) \
 	} \
 	MK_POINTER(&(ecopy->f)); \
- 
+
 #define GET_VAR_ARRAY_LEN(type, size, f) \
 	type* l = ptr->f; \
 	while(*l != (type) 0) { \

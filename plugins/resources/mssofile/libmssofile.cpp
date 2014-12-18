@@ -405,7 +405,7 @@ extern "C" {
         if ( status < 0 ) {
             i = UNIX_FILE_CREATE_ERR - status;
             if ( i == EEXIST ) {
-                return( 0 );    /* file already exists */
+                return ( 0 );   /* file already exists */
             }
             rodsLog( LOG_ERROR,
                      "mkMssoMpfRunFile: rsFileCreate for %s error, status = %d",

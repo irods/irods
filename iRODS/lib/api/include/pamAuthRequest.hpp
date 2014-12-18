@@ -47,9 +47,9 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcPamAuthRequest( rcComm_t *conn, pamAuthRequestInp_t *pamAuthRequestInp,
-                      pamAuthRequestOut_t **pamAuthRequestOut );
+int
+rcPamAuthRequest( rcComm_t *conn, pamAuthRequestInp_t *pamAuthRequestInp,
+                  pamAuthRequestOut_t **pamAuthRequestOut );
 
 #ifdef __cplusplus
 }

@@ -23,7 +23,7 @@ namespace irods {
       *         and provides an interface for execution in a pre and post operation condition
       **/
     class operation_rule_execution_manager : public
-            operation_rule_execution_manager_base {
+        operation_rule_execution_manager_base {
     public:
         /// =-=-=-=-=-=-=-
         /// @brief Constructor

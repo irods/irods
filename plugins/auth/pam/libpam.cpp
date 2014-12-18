@@ -302,7 +302,7 @@ extern "C" {
             perror( "execl" );
             printf( "execl failed %d\n", i );
         }
-        return( SYS_FORK_ERROR ); /* avoid compiler warning */
+        return ( SYS_FORK_ERROR ); /* avoid compiler warning */
 
     } // run_pam_auth_check
 

@@ -339,7 +339,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     }
 
     if ( fd == 0 ) {
-        return( 0 );    /* user canceled */
+        return ( 0 );   /* user canceled */
     }
 
     i = obfiSetTimeFromFile( fd );

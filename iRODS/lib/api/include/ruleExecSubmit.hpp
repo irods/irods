@@ -62,12 +62,12 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
-                      char **ruleExecId );
+int
+rcRuleExecSubmit( rcComm_t *conn, ruleExecSubmitInp_t *ruleExecSubmitInp,
+                  char **ruleExecId );
 
-    int
-    getReiFilePath( char *reiFilePath, char *userName );
+int
+getReiFilePath( char *reiFilePath, char *userName );
 #ifdef __cplusplus
 }
 #endif

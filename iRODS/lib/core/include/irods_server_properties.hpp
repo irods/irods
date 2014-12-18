@@ -104,8 +104,8 @@ namespace irods {
 
     template< typename T >
     error get_server_property(
-              const std::string& _prop,
-              T&                 _val ) {
+        const std::string& _prop,
+        T&                 _val ) {
         irods::server_properties& props =
             irods::server_properties::getInstance();
         irods::error ret = props.capture_if_needed();
@@ -113,8 +113,8 @@ namespace irods {
             return PASS( ret );
         }
         ret = props.get_property< T > (
-                    _prop,
-                    _val );
+                  _prop,
+                  _val );
         if ( !ret.ok() ) {
             return PASS( ret );
 

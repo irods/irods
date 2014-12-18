@@ -37,20 +37,20 @@ l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp );
+/* prototype for the client call */
+int
+rcDataObjTruncate( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-    /* rcDataObjTruncate - Truncate a iRODS data object.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *	objPath - the path of the data object.
-     *      dataSize - the size to truncate to
-     *
-     * OutPut -
-     *   return value - The status of the operation.
-     */
+/* rcDataObjTruncate - Truncate a iRODS data object.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *	objPath - the path of the data object.
+ *      dataSize - the size to truncate to
+ *
+ * OutPut -
+ *   return value - The status of the operation.
+ */
 
 #ifdef __cplusplus
 }

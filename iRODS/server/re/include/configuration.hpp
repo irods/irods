@@ -76,32 +76,32 @@ typedef struct cache {
 			ruleEngineConfig.l##Region = NULL; \
 			ruleEngineConfig.l##Region##Status = UNINITIALIZED; \
 		} \
- 
+
 #define delayClearRegion(u, l) \
 		if((resources & RESC_REGION_##u) && isComponentAllocated(ruleEngineConfig.l##Region##Status)) { \
 			listAppendNoRegion(&regionsToClear, ruleEngineConfig.l##Region); \
 			ruleEngineConfig.l##Region = NULL; \
 			ruleEngineConfig.l##Region##Status = UNINITIALIZED; \
 		} \
- 
+
 #define createRegion(u, l) \
 		if(ruleEngineConfig.l##Region##Status != INITIALIZED) { \
 			ruleEngineConfig.l##Region = make_region(0, NULL); \
 			ruleEngineConfig.l##Region##Status = INITIALIZED; \
 		} \
- 
+
 #define clearRuleSet(u, l) \
 		if((resources & RESC_##u##_RULE_SET) && isComponentInitialized(ruleEngineConfig.l##RuleSetStatus)) { \
 			ruleEngineConfig.l##RuleSet = NULL; \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
 		} \
- 
+
 #define delayClearRuleSet(u, l) \
 		if((resources & RESC_##u##_RULE_SET) && isComponentInitialized(ruleEngineConfig.l##RuleSetStatus)) { \
 			ruleEngineConfig.l##RuleSet = NULL; \
 			ruleEngineConfig.l##RuleSetStatus = UNINITIALIZED; \
 		} \
- 
+
 #define delayClearFuncDescIndex(u, l) \
 		if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentInitialized(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 			listAppendNoRegion(&envToClear, ruleEngineConfig.l##FuncDescIndex); \
@@ -110,28 +110,28 @@ typedef struct cache {
 		} else if((resources & RESC_##u##_FUNC_DESC_INDEX) && ruleEngineConfig.l##FuncDescIndexStatus == COMPRESSED) { \
 			ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
 		} \
- 
+
 #define createRuleSet(u, l) \
 		if(!isComponentInitialized(ruleEngineConfig.l##RuleSetStatus)) { \
 			ruleEngineConfig.l##RuleSet = (RuleSet *)region_alloc(ruleEngineConfig.l##Region, sizeof(RuleSet)); \
 			ruleEngineConfig.l##RuleSet->len = 0; \
 			ruleEngineConfig.l##RuleSetStatus = INITIALIZED; \
 		} \
- 
+
 #define clearFuncDescIndex(u, l) \
 	if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentAllocated(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 		/* deleteEnv(ruleEngineConfig.l##FuncDescIndex, 1); */\
 		ruleEngineConfig.l##FuncDescIndex = NULL; \
 		ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \
 	} \
- 
+
 #define createFuncDescIndex(u, l) \
 	if(!isComponentInitialized(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 		ruleEngineConfig.l##FuncDescIndex = newEnv(NULL, NULL, NULL, ruleEngineConfig.l##Region); \
 		ruleEngineConfig.l##FuncDescIndex->current = newHashTable2(1000, ruleEngineConfig.l##Region); \
 		ruleEngineConfig.l##FuncDescIndexStatus = INITIALIZED; \
 	} \
- 
+
 extern RuleEngineStatus _ruleEngineStatus;
 extern int isServer;
 extern Cache ruleEngineConfig;

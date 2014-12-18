@@ -415,11 +415,11 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
                 var->inOutStruct = arr2;
                 var->type = strdup( IntArray_MS_T );
                 break;
-                /*case T_IRODS:
-                    var->inOutStruct = res->value.uninterpreted.inOutStruct;
-                    var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
-                    var->type = strdup(KeyValPair_MS_T);
-                    break;*/
+            /*case T_IRODS:
+                var->inOutStruct = res->value.uninterpreted.inOutStruct;
+                var->inpOutBuf = res->value.uninterpreted.inOutBuffer;
+                var->type = strdup(KeyValPair_MS_T);
+                break;*/
             default:
                 /* current there is no existing packing instructions for arbitrary collection */
                 /* report error */

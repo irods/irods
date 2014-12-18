@@ -41,24 +41,24 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType );
 #define PRESERVE_DIR_CONT      0x40    /* preserve the content of cachrdir */ // JMC - backport 4657
 
 #ifdef __cplusplus
-        extern "C" {
+extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcSyncMountedColl( rcComm_t *conn, dataObjInp_t *syncMountedCollInp );
+/* prototype for the client call */
+int
+rcSyncMountedColl( rcComm_t *conn, dataObjInp_t *syncMountedCollInp );
 
-    /* rcSyncMountedColl - Sync the mounted structured file with the cache.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *	objPath - the path of the Mounted collection.
-     *      oprType - PURGE_STRUCT_FILE_CACHE - purge the cache after the sync
-     *                DELETE_STRUCT_FILE - delete the structured file and
-     *		  the cache
-     *
-     * OutPut -
-     *   int status - The status of the operation.
-     */
+/* rcSyncMountedColl - Sync the mounted structured file with the cache.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *	objPath - the path of the Mounted collection.
+ *      oprType - PURGE_STRUCT_FILE_CACHE - purge the cache after the sync
+ *                DELETE_STRUCT_FILE - delete the structured file and
+ *		  the cache
+ *
+ * OutPut -
+ *   int status - The status of the operation.
+ */
 
 #ifdef __cplusplus
 }

@@ -51,10 +51,10 @@ _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcSpecificQuery( rcComm_t *conn, specificQueryInp_t *specificQueryInp,
-                     genQueryOut_t **genQueryOut );
+/* prototype for the client call */
+int
+rcSpecificQuery( rcComm_t *conn, specificQueryInp_t *specificQueryInp,
+                 genQueryOut_t **genQueryOut );
 
 #ifdef __cplusplus
 }

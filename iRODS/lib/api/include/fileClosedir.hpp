@@ -38,8 +38,8 @@ remoteFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp );
+int
+rcFileClosedir( rcComm_t *conn, fileClosedirInp_t *fileClosedirInp );
 #ifdef __cplusplus
 }
 #endif

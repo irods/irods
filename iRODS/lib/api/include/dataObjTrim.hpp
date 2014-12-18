@@ -33,21 +33,21 @@ trimDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
-     *      objPath - the path of the data object.
-     *      condInput - conditional Input
-     *	    COPIES_KW - The number of copies to retain. Default is 2.
-     *          REPL_NUM_KW  - "value" = The replica number to trim.
-     *          RESC_NAME_KW - "value" = The Resource to trim.
-     *          ADMIN_KW - Admin trim other users' files.
-     *   return value - The status of the operation.
-     */
-    int
-    rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp );
+/* prototype for the client call */
+/* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
+ *      objPath - the path of the data object.
+ *      condInput - conditional Input
+ *	    COPIES_KW - The number of copies to retain. Default is 2.
+ *          REPL_NUM_KW  - "value" = The replica number to trim.
+ *          RESC_NAME_KW - "value" = The Resource to trim.
+ *          ADMIN_KW - Admin trim other users' files.
+ *   return value - The status of the operation.
+ */
+int
+rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
 }

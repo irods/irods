@@ -34,10 +34,10 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 extern "C" {
 #endif
 
-    /* prototype for the client call */
-    int
-    rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
-                genQueryOut_t **genQueryOut );
+/* prototype for the client call */
+int
+rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
+            genQueryOut_t **genQueryOut );
 
 #ifdef __cplusplus
 }

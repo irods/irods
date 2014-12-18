@@ -46,8 +46,8 @@ remoteFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp );
+int
+rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp );
 #ifdef __cplusplus
 }
 #endif

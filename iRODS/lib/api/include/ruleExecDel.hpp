@@ -35,8 +35,8 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp );
+int
+rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp );
 
 #ifdef __cplusplus
 }

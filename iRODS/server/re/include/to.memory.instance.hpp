@@ -16,7 +16,7 @@
 	insertIntoHashTable(objectMap, key, ptr1); \
 	memcpy(ptr1, ptr, sizeof(T)); \
 	ptr = ptr1; \
- 
+
 #define TRAVERSE_END(T) \
 	return ptr;
 
@@ -34,7 +34,7 @@
 
 #define TRAVERSE_ARRAY_END(T, size, f) \
 	} \
- 
+
 #define TRAVERSE_PTR_TAPP(fn, f, cpfn) \
 	CASCADE_NULL(ptr->f = fn(ptr->f, cpfn, objectMap));
 
@@ -50,5 +50,5 @@
 		  l++; \
 	  } \
 	  int len = l - ptr->f + 1; \
- 
+
 #endif

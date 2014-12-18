@@ -33,23 +33,23 @@ _l3Write( rsComm_t *rsComm, int l3descInx,
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
-     * an opened iRODS data object descriptor.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjWriteInp_t *dataObjWriteInp - Relevant items are:
-     *      l1descInx - the iRODS data object descriptor to write.
-     *      len - the number of bytes to write
-     *   bytesBuf_t *dataObjWriteInpBBuf - the bytesBuf for the write input.
-     *
-     * OutPut -
-     *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
-     */
+/* prototype for the client call */
+/* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to
+ * an opened iRODS data object descriptor.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjWriteInp_t *dataObjWriteInp - Relevant items are:
+ *      l1descInx - the iRODS data object descriptor to write.
+ *      len - the number of bytes to write
+ *   bytesBuf_t *dataObjWriteInpBBuf - the bytesBuf for the write input.
+ *
+ * OutPut -
+ *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+ */
 
-    int
-    rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
-                    bytesBuf_t *dataObjWriteInpBBuf );
+int
+rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
+                bytesBuf_t *dataObjWriteInpBBuf );
 
 #ifdef __cplusplus
 }

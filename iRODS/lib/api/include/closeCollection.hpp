@@ -27,19 +27,19 @@ rsCloseCollection( rsComm_t *rsComm, int *handleInxInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
+/* prototype for the client call */
 
-    int
-    rcCloseCollection( rcComm_t *conn, int handleInxInp );
+int
+rcCloseCollection( rcComm_t *conn, int handleInxInp );
 
-    /* rcCloseCollection - Close a iRODS collection.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   int handleInxInp - the handleInx (collection handle index) to close.
-     *
-     * OutPut -
-     *   int status - status of the operation.
-     */
+/* rcCloseCollection - Close a iRODS collection.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   int handleInxInp - the handleInx (collection handle index) to close.
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
 #ifdef __cplusplus
 }
 #endif

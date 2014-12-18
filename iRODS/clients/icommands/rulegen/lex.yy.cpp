@@ -752,7 +752,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 
         switch ( yy_act ) {
-            /* beginning of action switch */
+        /* beginning of action switch */
         case 0: /* must back up */
             /* undo the effects of YY_DO_BEFORE_ACTION */
             *yy_cp = yy_hold_char;
@@ -762,258 +762,258 @@ do_action:	/* This label is used only to access EOF actions. */
 
         case 1:
             YY_RULE_SETUP
-#line 14 "rulegen.l"
+#line 14 "rulegen.l" 
             { count();  }
             YY_BREAK
         case 2:
             YY_RULE_SETUP
-#line 15 "rulegen.l"
-            { count(); return( DELAY ); }
+#line 15 "rulegen.l" 
+            { count(); return ( DELAY ); }
             YY_BREAK
         case 3:
             YY_RULE_SETUP
-#line 16 "rulegen.l"
-            { count(); return( DELAY ); }
+#line 16 "rulegen.l" 
+            { count(); return ( DELAY ); }
             YY_BREAK
         case 4:
             YY_RULE_SETUP
-#line 17 "rulegen.l"
-            { count(); return( REMOTE ); }
+#line 17 "rulegen.l" 
+            { count(); return ( REMOTE ); }
             YY_BREAK
         case 5:
             YY_RULE_SETUP
-#line 18 "rulegen.l"
-            { count(); return( REMOTE ); }
+#line 18 "rulegen.l" 
+            { count(); return ( REMOTE ); }
             YY_BREAK
         case 6:
             YY_RULE_SETUP
-#line 19 "rulegen.l"
-            { count(); return( PARALLEL ); }
+#line 19 "rulegen.l" 
+            { count(); return ( PARALLEL ); }
             YY_BREAK
         case 7:
             YY_RULE_SETUP
-#line 20 "rulegen.l"
-            { count(); return( ONEOF ); }
+#line 20 "rulegen.l" 
+            { count(); return ( ONEOF ); }
             YY_BREAK
         case 8:
             YY_RULE_SETUP
-#line 21 "rulegen.l"
-            { count(); return( SOMEOF ); }
+#line 21 "rulegen.l" 
+            { count(); return ( SOMEOF ); }
             YY_BREAK
         case 9:
             YY_RULE_SETUP
-#line 22 "rulegen.l"
-            { count(); return( FOREACH ); }
+#line 22 "rulegen.l" 
+            { count(); return ( FOREACH ); }
             YY_BREAK
         case 10:
             YY_RULE_SETUP
-#line 23 "rulegen.l"
-            { count(); return( FOREACH ); }
+#line 23 "rulegen.l" 
+            { count(); return ( FOREACH ); }
             YY_BREAK
         case 11:
             YY_RULE_SETUP
-#line 24 "rulegen.l"
-            { count(); return( FOREACH ); }
+#line 24 "rulegen.l" 
+            { count(); return ( FOREACH ); }
             YY_BREAK
         case 12:
             YY_RULE_SETUP
-#line 25 "rulegen.l"
-            { count(); return( LIKE ); }
+#line 25 "rulegen.l" 
+            { count(); return ( LIKE ); }
             YY_BREAK
         case 13:
             YY_RULE_SETUP
-#line 26 "rulegen.l"
-            { count(); return( NOT ); }
+#line 26 "rulegen.l" 
+            { count(); return ( NOT ); }
             YY_BREAK
         case 14:
             YY_RULE_SETUP
-#line 27 "rulegen.l"
-            { count(); return( FOR ); }
+#line 27 "rulegen.l" 
+            { count(); return ( FOR ); }
             YY_BREAK
         case 15:
             YY_RULE_SETUP
-#line 28 "rulegen.l"
-            { count(); return( FOR ); }
+#line 28 "rulegen.l" 
+            { count(); return ( FOR ); }
             YY_BREAK
         case 16:
             YY_RULE_SETUP
-#line 29 "rulegen.l"
-            { count(); return( IF ); }
+#line 29 "rulegen.l" 
+            { count(); return ( IF ); }
             YY_BREAK
         case 17:
             YY_RULE_SETUP
-#line 30 "rulegen.l"
-            { count(); return( IF ); }
+#line 30 "rulegen.l" 
+            { count(); return ( IF ); }
             YY_BREAK
         case 18:
             YY_RULE_SETUP
-#line 31 "rulegen.l"
-            { count(); return( THEN ); }
+#line 31 "rulegen.l" 
+            { count(); return ( THEN ); }
             YY_BREAK
         case 19:
             YY_RULE_SETUP
-#line 32 "rulegen.l"
-            { count(); return( ELSE ); }
+#line 32 "rulegen.l" 
+            { count(); return ( ELSE ); }
             YY_BREAK
         case 20:
             YY_RULE_SETUP
-#line 33 "rulegen.l"
-            { count(); return( WHILE ); }
+#line 33 "rulegen.l" 
+            { count(); return ( WHILE ); }
             YY_BREAK
         case 21:
             YY_RULE_SETUP
-#line 34 "rulegen.l"
-            { count(); return( WHILE ); }
+#line 34 "rulegen.l" 
+            { count(); return ( WHILE ); }
             YY_BREAK
         case 22:
             YY_RULE_SETUP
-#line 35 "rulegen.l"
-            { count(); return( ON ); }
+#line 35 "rulegen.l" 
+            { count(); return ( ON ); }
             YY_BREAK
         case 23:
             YY_RULE_SETUP
-#line 36 "rulegen.l"
-            { count(); return( OR ); }
+#line 36 "rulegen.l" 
+            { count(); return ( OR ); }
             YY_BREAK
         case 24:
             YY_RULE_SETUP
-#line 37 "rulegen.l"
-            { count(); return( ORON ); }
+#line 37 "rulegen.l" 
+            { count(); return ( ORON ); }
             YY_BREAK
         case 25:
             YY_RULE_SETUP
-#line 38 "rulegen.l"
-            { count(); return( DELAY ); }
+#line 38 "rulegen.l" 
+            { count(); return ( DELAY ); }
             YY_BREAK
         case 26:
             YY_RULE_SETUP
-#line 39 "rulegen.l"
-            { count(); return( DELAY ); }
+#line 39 "rulegen.l" 
+            { count(); return ( DELAY ); }
             YY_BREAK
         case 27:
             YY_RULE_SETUP
-#line 40 "rulegen.l"
-            { count(); return( REMOTE ); }
+#line 40 "rulegen.l" 
+            { count(); return ( REMOTE ); }
             YY_BREAK
         case 28:
             YY_RULE_SETUP
-#line 41 "rulegen.l"
-            { count(); return( REMOTE ); }
+#line 41 "rulegen.l" 
+            { count(); return ( REMOTE ); }
             YY_BREAK
         case 29:
             YY_RULE_SETUP
-#line 42 "rulegen.l"
-            { count(); return( PARALLEL ); }
+#line 42 "rulegen.l" 
+            { count(); return ( PARALLEL ); }
             YY_BREAK
         case 30:
             YY_RULE_SETUP
-#line 43 "rulegen.l"
-            { count(); return( ONEOF ); }
+#line 43 "rulegen.l" 
+            { count(); return ( ONEOF ); }
             YY_BREAK
         case 31:
             YY_RULE_SETUP
-#line 44 "rulegen.l"
-            { count(); return( SOMEOF ); }
+#line 44 "rulegen.l" 
+            { count(); return ( SOMEOF ); }
             YY_BREAK
         case 32:
             YY_RULE_SETUP
-#line 45 "rulegen.l"
-            { count(); return( FOREACH ); }
+#line 45 "rulegen.l" 
+            { count(); return ( FOREACH ); }
             YY_BREAK
         case 33:
             YY_RULE_SETUP
-#line 46 "rulegen.l"
-            { count(); return( FOREACH ); }
+#line 46 "rulegen.l" 
+            { count(); return ( FOREACH ); }
             YY_BREAK
         case 34:
             YY_RULE_SETUP
-#line 47 "rulegen.l"
-            { count(); return( LIKE ); }
+#line 47 "rulegen.l" 
+            { count(); return ( LIKE ); }
             YY_BREAK
         case 35:
             YY_RULE_SETUP
-#line 48 "rulegen.l"
-            { count(); return( NOT ); }
+#line 48 "rulegen.l" 
+            { count(); return ( NOT ); }
             YY_BREAK
         case 36:
             YY_RULE_SETUP
-#line 49 "rulegen.l"
-            { count(); return( FOR ); }
+#line 49 "rulegen.l" 
+            { count(); return ( FOR ); }
             YY_BREAK
         case 37:
             YY_RULE_SETUP
-#line 50 "rulegen.l"
-            { count(); return( FOR ); }
+#line 50 "rulegen.l" 
+            { count(); return ( FOR ); }
             YY_BREAK
         case 38:
             YY_RULE_SETUP
-#line 51 "rulegen.l"
-            { count(); return( IF ); }
+#line 51 "rulegen.l" 
+            { count(); return ( IF ); }
             YY_BREAK
         case 39:
             YY_RULE_SETUP
-#line 52 "rulegen.l"
-            { count(); return( IF ); }
+#line 52 "rulegen.l" 
+            { count(); return ( IF ); }
             YY_BREAK
         case 40:
             YY_RULE_SETUP
-#line 53 "rulegen.l"
-            { count(); return( THEN ); }
+#line 53 "rulegen.l" 
+            { count(); return ( THEN ); }
             YY_BREAK
         case 41:
             YY_RULE_SETUP
-#line 54 "rulegen.l"
-            { count(); return( ELSE ); }
+#line 54 "rulegen.l" 
+            { count(); return ( ELSE ); }
             YY_BREAK
         case 42:
             YY_RULE_SETUP
-#line 55 "rulegen.l"
-            { count(); return( WHILE ); }
+#line 55 "rulegen.l" 
+            { count(); return ( WHILE ); }
             YY_BREAK
         case 43:
             YY_RULE_SETUP
-#line 56 "rulegen.l"
-            { count(); return( WHILE ); }
+#line 56 "rulegen.l" 
+            { count(); return ( WHILE ); }
             YY_BREAK
         case 44:
             YY_RULE_SETUP
-#line 57 "rulegen.l"
-            { count(); return( ON ); }
+#line 57 "rulegen.l" 
+            { count(); return ( ON ); }
             YY_BREAK
         case 45:
             YY_RULE_SETUP
-#line 58 "rulegen.l"
-            { count(); return( OR ); }
+#line 58 "rulegen.l" 
+            { count(); return ( OR ); }
             YY_BREAK
         case 46:
             YY_RULE_SETUP
-#line 59 "rulegen.l"
-            { count(); return( ORON ); }
+#line 59 "rulegen.l" 
+            { count(); return ( ORON ); }
             YY_BREAK
         case 47:
             YY_RULE_SETUP
-#line 60 "rulegen.l"
-            { count(); return( INPUT ); }
+#line 60 "rulegen.l" 
+            { count(); return ( INPUT ); }
             YY_BREAK
         case 48:
             YY_RULE_SETUP
-#line 61 "rulegen.l"
-            { count(); return( OUTPUT ); }
+#line 61 "rulegen.l" 
+            { count(); return ( OUTPUT ); }
             YY_BREAK
         case 49:
             YY_RULE_SETUP
-#line 64 "rulegen.l"
-            { count(); return( Q_STR_LIT ); }
+#line 64 "rulegen.l" 
+            { count(); return ( Q_STR_LIT ); }
             YY_BREAK
         case 50:
             YY_RULE_SETUP
-#line 65 "rulegen.l"
-            { count(); return( STR_LIT ); }
+#line 65 "rulegen.l" 
+            { count(); return ( STR_LIT ); }
             YY_BREAK
         case 51:
             YY_RULE_SETUP
-#line 66 "rulegen.l"
-            { count(); return( STR_LIT ); }
+#line 66 "rulegen.l" 
+            { count(); return ( STR_LIT ); }
             YY_BREAK
         case 52:
 #line 68 "rulegen.l"
@@ -1031,38 +1031,38 @@ do_action:	/* This label is used only to access EOF actions. */
             YY_BREAK
         case 56:
             YY_RULE_SETUP
-#line 72 "rulegen.l"
-            { count(); return( yylval.i = AND_OP ); }
+#line 72 "rulegen.l" 
+            { count(); return ( yylval.i = AND_OP ); }
             YY_BREAK
         case 57:
             YY_RULE_SETUP
-#line 73 "rulegen.l"
-            { count(); return( yylval.i = OR_OP ); }
+#line 73 "rulegen.l" 
+            { count(); return ( yylval.i = OR_OP ); }
             YY_BREAK
         case 58:
             YY_RULE_SETUP
-#line 74 "rulegen.l"
-            { count(); return( yylval.i = LE_OP ); }
+#line 74 "rulegen.l" 
+            { count(); return ( yylval.i = LE_OP ); }
             YY_BREAK
         case 59:
             YY_RULE_SETUP
-#line 75 "rulegen.l"
-            { count(); return( yylval.i = GE_OP ); }
+#line 75 "rulegen.l" 
+            { count(); return ( yylval.i = GE_OP ); }
             YY_BREAK
         case 60:
             YY_RULE_SETUP
-#line 76 "rulegen.l"
-            { count(); return( yylval.i = EQ_OP ); }
+#line 76 "rulegen.l" 
+            { count(); return ( yylval.i = EQ_OP ); }
             YY_BREAK
         case 61:
             YY_RULE_SETUP
-#line 77 "rulegen.l"
-            { count(); return( yylval.i = NE_OP ); }
+#line 77 "rulegen.l" 
+            { count(); return ( yylval.i = NE_OP ); }
             YY_BREAK
         case 62:
             YY_RULE_SETUP
-#line 78 "rulegen.l"
-            { count(); return( yylval.i = ACRAC_SEP ); }
+#line 78 "rulegen.l" 
+            { count(); return ( yylval.i = ACRAC_SEP ); }
             YY_BREAK
         case 63:
 #line 80 "rulegen.l"
@@ -1108,24 +1108,24 @@ do_action:	/* This label is used only to access EOF actions. */
 #line 100 "rulegen.l"
         case 84:
             YY_RULE_SETUP
-#line 100 "rulegen.l"
+#line 100 "rulegen.l" 
             { count(); return yylval.i = *yytext; }
             YY_BREAK
         case 85:
             YY_RULE_SETUP
-#line 102 "rulegen.l"
+#line 102 "rulegen.l" 
             { count();  return yylval.i = *yytext; }
             YY_BREAK
         case 86:
             YY_RULE_SETUP
-#line 103 "rulegen.l"
+#line 103 "rulegen.l" 
             { count();  return yylval.i = *yytext; }
             YY_BREAK
         case 87:
 #line 106 "rulegen.l"
         case 88:
             YY_RULE_SETUP
-#line 106 "rulegen.l"
+#line 106 "rulegen.l" 
             { count(); /* Ignore lines that start with '#' */ }
             YY_BREAK
         case 89:
@@ -1540,7 +1540,7 @@ static int yyinput() {
                 /* Reset buffer status. */
                 yyrestart( yyin );
 
-                /* fall through */
+            /* fall through */
 
             case EOB_ACT_END_OF_FILE: {
                 if ( yywrap() ) {

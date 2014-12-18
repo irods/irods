@@ -453,10 +453,10 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
 
-	irods::error resc_err = irods::is_resc_live(dataObjInfo->rescName);
-	if (!resc_err.ok()) {
-		return resc_err.code();
-	}
+    irods::error resc_err = irods::is_resc_live( dataObjInfo->rescName );
+    if ( !resc_err.ok() ) {
+        return resc_err.code();
+    }
 
 
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {

@@ -126,7 +126,7 @@ int cmlClose( icatSessionStruct *icss ) {
     static int pending = 0;
 
     if ( pending == 1 ) {
-        return( 0 );    /* avoid hang if stuck doing this */
+        return ( 0 );   /* avoid hang if stuck doing this */
     }
     pending = 1;
 
@@ -151,7 +151,7 @@ int cmlExecuteNoAnswerSql( const char *sql,
     i = cllExecSqlNoResult( icss, sql );
     if ( i ) {
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -237,7 +237,7 @@ int cmlGetOneRowFromSql( const char *sql,
                                 emptyBindVars );
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -290,7 +290,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
 
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -306,7 +306,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
         cVal[j] = icss->stmtPtr[stmtNum]->resultValue[j];
     }
 
-    return( stmtNum ); /* 0 or positive is the statement number */
+    return ( stmtNum ); /* 0 or positive is the statement number */
 }
 
 /*
@@ -341,7 +341,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
 
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -381,7 +381,7 @@ int cmlGetFirstRowFromSql( const char *sql,
     if ( i != 0 ) {
         *statement = 0;
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -519,7 +519,7 @@ int cmlGetMultiRowStringValuesFromSql( const char *sql,
     i = cllExecSqlWithResultBV( icss, &stmtNum, sql, bindVars );
     if ( i != 0 ) {
         if ( i <= CAT_ENV_ERR ) {
-            return( i );    /* already an iRODS error code */
+            return ( i );   /* already an iRODS error code */
         }
         return CAT_SQL_ERR;
     }
@@ -1633,7 +1633,7 @@ int cmlCheckGroupAdminAccess( const char *userName, const char *userZone,
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( *groupName == '\0' ) {
-        return( 0 );  /* caller is requesting no check for a particular group,
+        return ( 0 );  /* caller is requesting no check for a particular group,
              so if the above check passed, the user is OK */
     }
     // =-=-=-=-=-=-=-

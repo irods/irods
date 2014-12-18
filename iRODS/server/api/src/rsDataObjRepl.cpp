@@ -104,11 +104,11 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // make sure tmp_dest_resc exists and is available
     if ( !tmp_dest_resc.empty() ) {
-    	irods::error resc_err = irods::is_resc_live(tmp_dest_resc);
-    	if (!resc_err.ok()) {
-			irods::log( resc_err );
-			return resc_err.code();
-    	}
+        irods::error resc_err = irods::is_resc_live( tmp_dest_resc );
+        if ( !resc_err.ok() ) {
+            irods::log( resc_err );
+            return resc_err.code();
+        }
     }
 
     // =-=-=-=-=-=-=-
@@ -569,7 +569,7 @@ _rsDataObjReplNewCopy(
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-        		destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
+                                  destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }
@@ -626,7 +626,7 @@ _rsDataObjReplS(
     dataObjInfo_t *myDestDataObjInfo = NULL;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
-    		rescGroupName, destDataObjInfo, updateFlag );
+                                    rescGroupName, destDataObjInfo, updateFlag );
 
     if ( l1descInx < 0 ) {
         return l1descInx;
@@ -695,26 +695,26 @@ dataObjOpenForRepl(
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
 
-	irods::error resc_err;
+    irods::error resc_err;
 
     char *my_resc_name; // replaces myDestRescInfo
-    if (_resc_name && strlen(_resc_name)) {
-    	my_resc_name = _resc_name;
+    if ( _resc_name && strlen( _resc_name ) ) {
+        my_resc_name = _resc_name;
     }
     else {
-    	my_resc_name = inpDestDataObjInfo->rescName;
+        my_resc_name = inpDestDataObjInfo->rescName;
     }
 
-	resc_err = irods::is_resc_live(my_resc_name);
-	if (!resc_err.ok()) {
-		return resc_err.code();
-	}
+    resc_err = irods::is_resc_live( my_resc_name );
+    if ( !resc_err.ok() ) {
+        return resc_err.code();
+    }
 
 
-	resc_err = irods::is_resc_live(inpSrcDataObjInfo->rescName);
-	if (!resc_err.ok()) {
-		return resc_err.code();
-	}
+    resc_err = irods::is_resc_live( inpSrcDataObjInfo->rescName );
+    if ( !resc_err.ok() ) {
+        return resc_err.code();
+    }
 
 
     dataObjInfo_t * srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
@@ -1321,7 +1321,7 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     int status;
 
     std::string resc_loc;
-    std::string resc_hier(destDataObjInfo->rescHier);
+    std::string resc_hier( destDataObjInfo->rescHier );
 
     memset( &file_stage, 0, sizeof( file_stage ) );
     file_stage.dataSize      = srcDataObjInfo->dataSize;

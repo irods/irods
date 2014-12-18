@@ -261,20 +261,20 @@ namespace irods {
 
 
 /// @brief Given a resource name, checks that the resource exists and is not flagged as down
-    error is_resc_live(const std::string& _resc_name) {
+    error is_resc_live( const std::string& _resc_name ) {
 
-    	// Try to get resource status
+        // Try to get resource status
         int status = 0;
         error resc_err = get_resource_property< int >( _resc_name, RESOURCE_STATUS, status );
 
-        if (resc_err.ok()) {
+        if ( resc_err.ok() ) {
             if ( status == INT_RESC_STATUS_DOWN ) {
                 std::stringstream msg;
                 msg << "Resource [";
                 msg << _resc_name;
                 msg << "] is down";
 
-            	return ERROR( SYS_RESC_IS_DOWN, msg.str() );
+                return ERROR( SYS_RESC_IS_DOWN, msg.str() );
             }
         }
         else {
@@ -349,14 +349,14 @@ namespace irods {
         std::vector< std::string >::iterator itr = resources.begin();
         for ( ; itr != resources.end(); ++itr ) {
 
-        	error resc_err = is_resc_live(*itr);
-        	if (resc_err.ok()) {
-            	// live resource found
-            	default_resc_name = *itr;
-        	}
-        	else {
-        		irods::log(resc_err);
-        	}
+            error resc_err = is_resc_live( *itr );
+            if ( resc_err.ok() ) {
+                // live resource found
+                default_resc_name = *itr;
+            }
+            else {
+                irods::log( resc_err );
+            }
 
         } // for itr
 
@@ -366,38 +366,38 @@ namespace irods {
         if ( "preferred" == _option && !cond_input_resc.empty() ) {
             // =-=-=-=-=-=-=-
             // determine if the resource is live
-        	error resc_err = is_resc_live(cond_input_resc);
-        	if (resc_err.ok()) {
+            error resc_err = is_resc_live( cond_input_resc );
+            if ( resc_err.ok() ) {
                 // =-=-=-=-=-=-=-
                 // we found a live one, we're good to go
-        		_resc_name = cond_input_resc;
-        		return SUCCESS();
-        	}
+                _resc_name = cond_input_resc;
+                return SUCCESS();
+            }
 
         }
         else if ( "forced" == _option && _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             // stick with the default found above, its forced.
-        	_resc_name = default_resc_name;
+            _resc_name = default_resc_name;
             return SUCCESS();
 
         }
         else {
             // =-=-=-=-=-=-=-
             // try the conditional input string, if not go back to the default resource
-        	error resc_err = is_resc_live(cond_input_resc);
+            error resc_err = is_resc_live( cond_input_resc );
             if ( resc_err.ok() ) {
-				// =-=-=-=-=-=-=-
-				// we found a live one, go!
-            	_resc_name = cond_input_resc;
-				return SUCCESS();
+                // =-=-=-=-=-=-=-
+                // we found a live one, go!
+                _resc_name = cond_input_resc;
+                return SUCCESS();
 
             }
             else {
                 // =-=-=-=-=-=-=-
                 // otherwise go back to the old, default we had before
-            	error resc_err = is_resc_live(default_resc_name);
+                error resc_err = is_resc_live( default_resc_name );
                 if ( resc_err.ok() ) {
-                	_resc_name = default_resc_name;
+                    _resc_name = default_resc_name;
                     return SUCCESS();
 
                 }

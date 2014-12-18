@@ -42,23 +42,23 @@ svrRegReplByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
-                      genQueryOut_t **bulkDataObjRegOut );
+/* prototype for the client call */
+int
+rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
+                  genQueryOut_t **bulkDataObjRegOut );
 
-    /* rcBulkDataObjReg - Bulk Reg of iRODS data objects.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   genQueryOut_t *bulkDataObjRegInp - generic arrays of metadata including
-     *      COL_DATA_NAME, COL_DATA_SIZE, COL_DATA_TYPE_NAME, COL_D_RESC_NAME,
-     *      COL_D_DATA_PATH and OPR_TYPE_INX.
-     *
-     * OutPut -
-     *    genQueryOut_t *bulkDataObjRegOut - arrays of metadata for COL_D_DATA_ID.
-     * Return -
-     *   int status - The status of the operation.
-     */
+/* rcBulkDataObjReg - Bulk Reg of iRODS data objects.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   genQueryOut_t *bulkDataObjRegInp - generic arrays of metadata including
+ *      COL_DATA_NAME, COL_DATA_SIZE, COL_DATA_TYPE_NAME, COL_D_RESC_NAME,
+ *      COL_D_DATA_PATH and OPR_TYPE_INX.
+ *
+ * OutPut -
+ *    genQueryOut_t *bulkDataObjRegOut - arrays of metadata for COL_D_DATA_ID.
+ * Return -
+ *   int status - The status of the operation.
+ */
 
 #ifdef __cplusplus
 }

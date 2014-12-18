@@ -58,8 +58,8 @@ remoteFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheIn
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp );
+int
+rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp );
 #ifdef __cplusplus
 }
 #endif

@@ -36,9 +36,9 @@ chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp );
+/* prototype for the client call */
+int
+rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp );
 
 #ifdef __cplusplus
 }

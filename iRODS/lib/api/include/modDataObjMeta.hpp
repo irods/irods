@@ -36,18 +36,18 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp );
 #ifdef __cplusplus
 extern "C" {
 #endif
-    /* prototype for the client call */
-    int
-    rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp );
+/* prototype for the client call */
+int
+rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp );
 
-    /* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
-     * Input -
-     *   rcComm_t *conn - The client connection handle.
-     *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
-     *
-     * OutPut -
-     *   int status - status of the operation.
-     */
+/* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
 
 //    int
 //    clearModDataObjMetaInp( modDataObjMeta_t *modDataObjMetaInp );
