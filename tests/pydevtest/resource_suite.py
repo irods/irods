@@ -1044,6 +1044,22 @@ class ResourceSuite(ResourceBase):
         assertiCmdFail(s.sessions[2], "irm " + self.testfile)  # write perm should not be allowed to remove
         assertiCmd(s.sessions[2], "ils -AL " + self.testfile, "LIST", self.testfile)  # should still be listed
 
+    def test_irm_repeated_many_times(self):
+        # repeat count
+        many_times = 50
+        # create file
+        filename = "originalfile.txt"
+        filepath = os.path.abspath(filename)
+        pydevtest_common.make_file(filepath, 15)
+        # define
+        trashpath = "/" + s.adminsession.getZoneName() + "/trash/home/" + s.adminsession.getUserName() + \
+            "/" + s.adminsession.sessionId
+        # loop
+        for i in range(many_times):
+            assertiCmd(s.adminsession, "iput " + filename, "EMPTY")  # put the file
+            assertiCmd(s.adminsession, "irm " + filename, "EMPTY")  # delete the file
+            assertiCmd(s.adminsession, "ils -L " + trashpath, "STDOUT", filename)
+
     ###################
     # irmtrash
     ###################
