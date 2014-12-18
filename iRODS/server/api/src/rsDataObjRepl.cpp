@@ -627,8 +627,8 @@ _rsDataObjReplS(
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *myDestDataObjInfo = NULL;
 
-    l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo,
-                                    rescGroupName, rescGroupName, destDataObjInfo, updateFlag );
+    l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
+    		rescGroupName, destDataObjInfo, updateFlag );
 
     if ( l1descInx < 0 ) {
         return l1descInx;
@@ -693,34 +693,31 @@ dataObjOpenForRepl(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * inpSrcDataObjInfo,
-    rescInfo_t * destRescInfo,
-    char* rescGroupName,  // old
-    char* _resc_name,	// new
+    char* _resc_name,
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
 
-    rescInfo_t *myDestRescInfo = 0;
-    if ( destRescInfo == NULL ) {
-        myDestRescInfo = inpDestDataObjInfo->rescInfo;
+	irods::error resc_err;
+
+    char *my_resc_name; // replaces myDestRescInfo
+    if (_resc_name && strlen(_resc_name)) {
+    	my_resc_name = _resc_name;
     }
     else {
-        myDestRescInfo = destRescInfo;
+    	my_resc_name = inpDestDataObjInfo->rescName;
     }
 
-//    if ( inpSrcDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-//        return SYS_RESC_IS_DOWN;
-//    }
-	irods::error resc_err = irods::is_resc_live(inpSrcDataObjInfo->rescName);
+	resc_err = irods::is_resc_live(my_resc_name);
 	if (!resc_err.ok()) {
 		return resc_err.code();
 	}
-	//
 
 
+	resc_err = irods::is_resc_live(inpSrcDataObjInfo->rescName);
+	if (!resc_err.ok()) {
+		return resc_err.code();
+	}
 
-    if ( myDestRescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-        return SYS_RESC_IS_DOWN;
-    }
 
     dataObjInfo_t * srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     if ( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
@@ -789,7 +786,7 @@ dataObjOpenForRepl(
         // set a creation operation
         op_name = irods::CREATE_OPERATION;
 
-        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, rescGroupName );
+        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, _resc_name );
         replStatus = srcDataObjInfo->replStatus;
     }
 
@@ -805,7 +802,7 @@ dataObjOpenForRepl(
         memset( &dest_inp, 0, sizeof( dest_inp ) );
         memset( &dest_inp.condInput, 0, sizeof( dest_inp.condInput ) );
         strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-        addKeyVal( &( dest_inp.condInput ), RESC_NAME_KW, myDestRescInfo->rescName );
+        addKeyVal( &( dest_inp.condInput ), RESC_NAME_KW, my_resc_name );
 
         irods::error ret = irods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
         clearKeyVal( &dest_inp.condInput );

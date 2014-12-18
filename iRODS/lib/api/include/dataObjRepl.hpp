@@ -40,8 +40,8 @@ _rsDataObjReplS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag );
 int
 dataObjOpenForRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                    dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo,
-                    char *rescGroupName, char* _resc_name, dataObjInfo_t *destDataObjInfo, int updateFlag );
+                    dataObjInfo_t *srcDataObjInfo, char* _resc_name, dataObjInfo_t *destDataObjInfo, int updateFlag );
+
 int
 dataObjCopy( rsComm_t *rsComm, int l1descInx );
 int
