@@ -2064,19 +2064,19 @@ extern "C" {
             ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
 
         }
-        strncpy( icss.databaseUsername, prop.c_str(), DB_USERNAME_LEN );
+        snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
 
         ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
         if ( !ret.ok() ) {
             ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
         }
-        strncpy( icss.databasePassword, prop.c_str(), DB_PASSWORD_LEN );
+        snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
 
         ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
         if ( !ret.ok() ) {
             ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
         }
-        strncpy( icss.database_plugin_type, prop.c_str(), NAME_LEN );
+        snprintf( icss.database_plugin_type, NAME_LEN, "%s", prop.c_str() );
 
         // =-=-=-=-=-=-=-
         // call open in mid level
@@ -2111,12 +2111,12 @@ extern "C" {
 
         ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
         if ( ret.ok() ) {
-            strncpy( irods_pam_password_min_time, prop.c_str(), NAME_LEN );
+            snprintf( irods_pam_password_min_time, NAME_LEN, "%s", prop.c_str() );
         }
 
         ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
         if ( ret.ok() ) {
-            strncpy( irods_pam_password_max_time, prop.c_str(), NAME_LEN );
+            snprintf( irods_pam_password_max_time, NAME_LEN, "%s", prop.c_str() );
         }
 
         if ( irods_pam_auth_no_extend ) {
