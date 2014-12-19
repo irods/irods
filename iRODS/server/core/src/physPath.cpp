@@ -146,6 +146,11 @@ getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     vaultPathPolicy_t vaultPathPolicy;
     int status;
 
+    if (!dataObjInfo) {
+        rodsLog( LOG_ERROR, "getFilePathName: input dataObjInfo is NULL" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
     if ( dataObjInp != NULL &&
             ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
             && strlen( filePath ) > 0 ) {
@@ -156,7 +161,7 @@ getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     /* Make up a physical path */
-    if ( dataObjInfo != NULL && dataObjInfo->rescName[0] == '\0' ) {
+    if ( dataObjInfo->rescName[0] == '\0' ) {
         rodsLog( LOG_ERROR,
                  "getFilePathName: rescName for %s not resolved",
                  dataObjInp->objPath );
