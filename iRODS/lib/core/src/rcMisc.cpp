@@ -200,13 +200,12 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     // This regex matches usernames with no hashes and optionally one at symbol,
     // and then optionally a hash followed by a zone name containing no hashes.
     //
-    // Username must be between 3 and NAME_LEN-1 characters.
-    // Username must start and end with a word character.
-    // Username may contain non consecutive dashes and dots.
-    const boost::regex expression( "(\\w+([.-]\\w+)*([.-]?@([.-]?\\w+)*)?)(#([^#]*))?" );
+    // Username must be between 1 and NAME_LEN-1 characters.
+    // Username may contain any combination of word characters, @ symbols, dashes, and dots.
+    const boost::regex expression( "((\\w|[-.@])+)(#([^#]*))?" );
     try {
         const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str( 1 ).size() >= NAME_LEN || matches.str( 1 ).size() < 3 || matches.str( 6 ).size() >= NAME_LEN ) {
+        if ( !matched || matches.str( 1 ).size() >= NAME_LEN || matches.str( 1 ).size() < 1 || matches.str( 4 ).size() >= NAME_LEN ) {
             if ( userName != NULL ) {
                 userName[0] = '\0';
             }
