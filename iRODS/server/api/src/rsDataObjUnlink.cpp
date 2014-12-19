@@ -453,7 +453,8 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
 
 
-    irods::error resc_err = irods::is_resc_live( dataObjInfo->rescName );
+//    irods::error resc_err = irods::is_resc_live( dataObjInfo->rescName );
+    irods::error resc_err = irods::is_hier_live( dataObjInfo->rescHier );
     if ( !resc_err.ok() ) {
         return resc_err.code();
     }
