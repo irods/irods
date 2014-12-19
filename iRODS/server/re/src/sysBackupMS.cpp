@@ -135,7 +135,7 @@ int loadDirToLocalResc( ruleExecInfo_t *rei, char *dirPath, size_t offset,
             boost::system::error_code error;
             boost::filesystem::copy( boost::filesystem::path( absPath ), boost::filesystem::path( destPath ), error );
             if ( error.value() ) {
-                rodsLog( LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", error );
+                rodsLog( LOG_ERROR, "loadDirToLocalResc: cp error, status = %d.", error.message().c_str() );
                 rei->status = FILE_OPEN_ERR;
             }
 
