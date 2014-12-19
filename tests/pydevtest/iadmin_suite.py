@@ -367,7 +367,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_iadmin_mkuser(self):
 
         # A few examples of valid and invalid usernames
-        valid = ['bob',
+        valid = ['bo',
+                 'bob',
                  'jim-bob',
                  'boB',
                  '123.456',
