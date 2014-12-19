@@ -15,14 +15,16 @@ if len(sys.argv) != 4:
     sys.exit('Usage: {1} filename <comma separated key list> new_value'.format(sys.argv[0]))
 
 filename = sys.argv[1]
-key_list  = sys.argv[2].split(',')
+key_list = sys.argv[2].split(',')
 the_value = sys.argv[3]
+
 
 def make_nested_dict_from_key_list(keys, value):
     constructed = {keys[-1]: value}
     for k in keys[-2::-1]:
         constructed = {k: constructed}
     return constructed
+
 
 def update_recursive(orig_dict, new_dict):
     for key, val in new_dict.items():

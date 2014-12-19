@@ -12,6 +12,7 @@ def get_install_dir():
 
 
 class CompatibilityDict(dict):
+
     def __init__(self, compatibility_listing, *args, **kwargs):
         super(CompatibilityDict, self).__init__(*args, **kwargs)
         key_dict = {}

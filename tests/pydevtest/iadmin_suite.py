@@ -960,10 +960,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"
-        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
-        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment '"+mycomment+"'")
-        assertiCmd(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
-        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment ''")
-        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
-
-
+        assertiCmdFail(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)
+        assertiCmd(s.adminsession, "iadmin modresc " + self.testresc + " comment '" + mycomment + "'")
+        assertiCmd(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)
+        assertiCmd(s.adminsession, "iadmin modresc " + self.testresc + " comment ''")
+        assertiCmdFail(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)

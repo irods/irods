@@ -228,11 +228,12 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L", "STDOUT", self.testfile)  # debug
 
     def test_iphymv_admin_mode(self):
-        pydevtest_common.touch( "file.txt" )
+        pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
-        assertiCmd(s.adminsession, "iphymv -r -M -R " + self.testresc + " " + homepath, "EMPTY" )  # creates replica
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + \
+            s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
+        assertiCmd(s.adminsession, "iphymv -r -M -R " + self.testresc + " " + homepath, "EMPTY")  # creates replica
 
     ###################
     # iput
@@ -341,9 +342,10 @@ class ResourceSuite(ResourceBase):
     def test_local_iput_with_really_big_file__ticket_1623(self):
         filename = "reallybigfile.txt"
         # file size larger than 32 bit int
-        pydevtest_common.make_file(filename, pow(2,31)+100)
+        pydevtest_common.make_file(filename, pow(2, 31) + 100)
         print "file size = [" + str(os.stat(filename).st_size) + "]"
-        assertiCmd(s.adminsession, "ils -L " + filename, 'STDERR', [filename, "does not exist"]) # should not be listed
+        # should not be listed
+        assertiCmd(s.adminsession, "ils -L " + filename, 'STDERR', [filename, "does not exist"])
         assertiCmd(s.adminsession, "iput " + filename)  # iput
         assertiCmd(s.adminsession, "ils -L " + filename, 'STDOUT', filename)  # should be listed
         output = commands.getstatusoutput('rm ' + filename)
@@ -975,11 +977,12 @@ class ResourceSuite(ResourceBase):
         output = commands.getstatusoutput('rm ' + filepath)
 
     def test_irepl_with_admin_mode(self):
-        pydevtest_common.touch( "file.txt" )
+        pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
-        assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + homepath, "EMPTY" )  # creates replica
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + \
+            s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
+        assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + homepath, "EMPTY")  # creates replica
 
     ###################
     # irm
@@ -1078,9 +1081,10 @@ class ResourceSuite(ResourceBase):
     ###################
 
     def test_itrim_with_admin_mode(self):
-        pydevtest_common.touch( "file.txt" )
+        pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.getZoneName() + "/home/" + s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
-        assertiCmd(s.sessions[1], "irepl -R " + self.testresc + " -r " + homepath, "EMPTY" )  # creates replica
-        assertiCmd(s.adminsession, "itrim -M -N1 -r " + homepath, "LIST", "Number of files trimmed = 100." )
+        homepath = "/" + s.adminsession.getZoneName() + "/home/" + \
+            s.sessions[1].getUserName() + "/" + s.sessions[1].sessionId
+        assertiCmd(s.sessions[1], "irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
+        assertiCmd(s.adminsession, "itrim -M -N1 -r " + homepath, "LIST", "Number of files trimmed = 100.")

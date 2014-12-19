@@ -12,9 +12,6 @@ from resource_suite import ResourceBase
 import time
 
 
-
-
-
 class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup": [], "teardown": []}

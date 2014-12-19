@@ -18,8 +18,10 @@ def print_debug(*args, **kwargs):
     if DEBUG:
         print(*args, **kwargs)
 
+
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
 
 def get_current_schema_version(cfg):
     dbtype = cfg.get('catalog_database_type')
@@ -41,9 +43,11 @@ def get_current_schema_version(cfg):
     if (
         dbtype == 'postgres' and 'relation "r_grid_configuration" does not exist' in result[2].decode('utf-8')
         or
-        dbtype == 'mysql' and "Table '{database}.R_GRID_CONFIGURATION' doesn't exist".format(database=cfg.get('Database')) in result[2].decode('utf-8')
+        dbtype == 'mysql' and "Table '{database}.R_GRID_CONFIGURATION' doesn't exist".format(
+            database=cfg.get('Database')) in result[2].decode('utf-8')
         or
-        dbtype == 'oracle' and 'table or view does not exist' in result[1].decode('utf-8') # sqlplus puts the output into stdout
+        # sqlplus puts the output into stdout
+        dbtype == 'oracle' and 'table or view does not exist' in result[1].decode('utf-8')
     ):
 
         # create and populate configuration table

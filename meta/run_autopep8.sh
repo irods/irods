@@ -4,4 +4,5 @@ cd $IRODSROOT
 # updates all .py files in tree
 # updates files in place
 # line wrap at 119
-autopep8 -j 0 --recursive --in-place --max-line-length 119 .
+# exclude external/
+autopep8 -j 0 --recursive --in-place --max-line-length 119 --exclude external .
