@@ -376,8 +376,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                  'user.@.email',
                  '___haysoos___']
 
-        invalid = ['bo',
-                   '.bob',
+        invalid = ['.bob',
                    'bob.',
                    'jim--bob',
                    'user@email.',
