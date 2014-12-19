@@ -9,6 +9,8 @@
 #	clean		clean out all object files
 #
 
+include ../../config/external_versions.txt
+
 ifndef buildDir
 buildDir =	$(CURDIR)/../..
 endif
@@ -114,10 +116,9 @@ endif
 
 CFLAGS:=$(filter-out -DUSE_BOOST,$(CFLAGS))
 
-CFLAGS += -I../../../external/jansson-2.7/src/
-AG_LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
-LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
-
+# include jansson for zonereport
+CFLAGS += -I../../../external/$(JANSSONVERSION)/src/
+LDFLAGS += ../../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
 
 
 #

@@ -1,10 +1,12 @@
 include VERSION
 
+include ./iRODS/config/external_versions.txt
+
 MANUAL=irods-manual-$(IRODSVERSION).pdf
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm manual squeaky_clean clean libs plugins plugins-nodb plugins-db irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
+.PHONY : default all epm manual squeaky_clean clean libs plugins plugins-nodb plugins-db code-generation irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
 
 default : external-build libs plugins irods
 
@@ -27,7 +29,7 @@ external : external-build
 external-build :
 	@$(MAKE) -C external default
 
-libs : external-build
+libs : code-generation external-build
 	@$(MAKE) -C iRODS libs
 
 clients : libs
@@ -42,7 +44,15 @@ plugins-nodb : libs external-build
 plugins-db : libs external-build irods
 	@$(MAKE) -C plugins database
 
-irods : libs external-build
+code-generation : external
+	@# generate the json derived code for the new api
+	@./external/$(AVROVERSION)/build/avrogencpp \
+		-n irods \
+		-o ./iRODS/lib/core/include/server_control_plane_command.hpp \
+		-i ./irods_schema_messaging/v1/server_control_plane_command.json
+
+
+irods : libs
 	@$(MAKE) -C iRODS
 
 docs : epm manual doxygen

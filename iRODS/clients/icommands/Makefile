@@ -9,6 +9,8 @@
 #	clean		clean out all object files
 #
 
+include ../../config/external_versions.txt
+
 ifndef buildDir
 buildDir =	$(CURDIR)/../..
 endif
@@ -151,13 +153,16 @@ LDFLAGS +=	$(LIBRARY) $(MODULE_LDFLAGS) $(CL_LDADD)
 
 LDFLAGS += $(BOOST_LIBS)
 
-CFLAGS += -I../../../external/jansson-2.7/src/
-CFLAGS += -I../../../external/zeromq-4.0.5/include/
-CFLAGS += -I../../../external/avro-cpp-1.7.7/
+# include jansson for zonereport
+CFLAGS += -I../../../external/$(JANSSONVERSION)/src/
+LDFLAGS += ../../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
 
-LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
-LDFLAGS += ../../../external/zeromq-4.0.5/src/.libs/libzmq.a
-LDFLAGS += ../../../external/avro-cpp-1.7.7/build/libavrocpp_s.a
+# include for control plane
+CFLAGS += -I../../../external/$(ZEROMQVERSION)/include/
+LDFLAGS += ../../../external/$(ZEROMQVERSION)/src/.libs/libzmq.a
+
+CFLAGS += -I../../../external/$(AVROVERSION)
+LDFLAGS += ../../../external/$(AVROVERSION)/build/libavrocpp_s.a
 
 LDFLAGS += -lz
 

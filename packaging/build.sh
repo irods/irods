@@ -1219,13 +1219,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSHOMEDIRECTORY,$irods_home_directory, ./lib/core/include/irods_home_directory.hpp.src > $TMPFILE
     rsync -c $TMPFILE ./lib/core/include/irods_home_directory.hpp
     rm -f $TMPFILE
-    
-    ###########################################
-    # generate the json derived code for the new api
-    $BUILDDIR/external/avro-cpp-1.7.7/build/avrogencpp \
-        -n irods \
-        -o $BUILDDIR/iRODS/lib/core/include/server_control_plane_command.hpp \
-        -i $BUILDDIR/irods_schema_messaging/v1/server_control_plane_command.json
 
     ###########################################
     # single 'make' time on an 8 core machine

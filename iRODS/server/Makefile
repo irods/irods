@@ -12,6 +12,8 @@
 #
 # To see the gcc command lines as executed, change "@$(CC)" to "$(CC)".
 
+include ../config/external_versions.txt
+
 ifndef buildDir
 buildDir =	$(CURDIR)/..
 endif
@@ -298,16 +300,16 @@ test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
 
 
 # temp include jansson for zonereport
-CFLAGS += -I../../external/jansson-2.7/src/
-AG_LDADD += ../../external/jansson-2.7/src/.libs/libjansson.a
-LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
+CFLAGS += -I../../external/$(JANSSONVERSION)/src/
+AG_LDADD += ../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
+LDFLAGS += ../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
 
 # temp include for control plane
-INCLUDES +=	-I$(buildDir)/../external/zeromq-4.0.5/include/
-LDFLAGS += $(buildDir)/../external/zeromq-4.0.5/src/.libs/libzmq.a
+INCLUDES +=	-I$(buildDir)/../external/$(ZEROMQVERSION)/include/
+LDFLAGS += $(buildDir)/../external/$(ZEROMQVERSION)/src/.libs/libzmq.a
 
-INCLUDES +=	-I$(buildDir)/../external/avro-cpp-1.7.7/
-LDFLAGS += $(buildDir)/../external/avro-cpp-1.7.7/build/libavrocpp_s.a -lz
+INCLUDES +=	-I$(buildDir)/../external/$(AVROVERSION)
+LDFLAGS += $(buildDir)/../external/$(AVROVERSION)/build/libavrocpp_s.a -lz
 
 
 # Clean

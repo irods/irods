@@ -221,8 +221,7 @@ $(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
 avro : $(AVROVERSIONMAKE)
 	@$(MAKE) -C $(AVROVERSION)/build avrocpp
 	@$(MAKE) -C $(AVROVERSION)/build avrogencpp
-	@EXTERNALS_DIR=`echo $$PWD | sed "s/\([^-A-Za-z0-9._/]\)/\\\\\\\\\1/g"`; \
-	    ln -s $$EXTERNALS_DIR/$(AVROVERSION)/api/ $$EXTERNALS_DIR/$(AVROVERSION)/avro
+	@cd $(AVROVERSION); rm -f ./avro; ln -s ./api avro
 
 $(ZEROMQVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(ZEROMQVERSIONARCHIVE) 2>&1
