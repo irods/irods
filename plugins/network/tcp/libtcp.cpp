@@ -660,17 +660,17 @@ extern "C" {
     // the network plugin base class for handling
     // tcp communications
     class tcp_network_plugin : public irods::network {
-    public:
-        tcp_network_plugin(
-            const std::string& _nm,
-            const std::string& _ctx ) :
-            irods::network(
-                _nm,
-                _ctx ) {
-        } // ctor
+        public:
+            tcp_network_plugin(
+                const std::string& _nm,
+                const std::string& _ctx ) :
+                irods::network(
+                    _nm,
+                    _ctx ) {
+            } // ctor
 
-        ~tcp_network_plugin() {
-        }
+            ~tcp_network_plugin() {
+            }
 
     }; // class tcp_network_plugin
 

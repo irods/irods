@@ -948,38 +948,38 @@ extern "C" {
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
     class univ_mss_resource : public irods::resource {
-    public:
-        univ_mss_resource( const std::string& _inst_name,
-                           const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
+        public:
+            univ_mss_resource( const std::string& _inst_name,
+                               const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
 
-            // =-=-=-=-=-=-=-
-            // check the context string for inappropriate path behavior
-            if ( context_.find( "/" ) != std::string::npos ) {
-                std::stringstream msg;
-                msg << "univmss resource :: the path [";
-                msg << context_;
-                msg << "] should be a single file name which should reside in iRODS/server/bin/cmd/";
-                rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
+                // =-=-=-=-=-=-=-
+                // check the context string for inappropriate path behavior
+                if ( context_.find( "/" ) != std::string::npos ) {
+                    std::stringstream msg;
+                    msg << "univmss resource :: the path [";
+                    msg << context_;
+                    msg << "] should be a single file name which should reside in iRODS/server/bin/cmd/";
+                    rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
+                }
+
+                // =-=-=-=-=-=-=-
+                // assign context string as the univ mss script to call
+                properties_.set< std::string >( SCRIPT_PROP, context_ );
             }
 
-            // =-=-=-=-=-=-=-
-            // assign context string as the univ mss script to call
-            properties_.set< std::string >( SCRIPT_PROP, context_ );
-        }
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
+                _flg = false;
+                return SUCCESS();
+            }
 
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            _flg = false;
-            return SUCCESS();
-        }
-
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            return ERROR( -1, "nop" );
-        }
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+                return ERROR( -1, "nop" );
+            }
 
     }; // class univ_mss_resource
 

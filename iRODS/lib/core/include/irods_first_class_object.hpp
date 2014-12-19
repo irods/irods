@@ -18,24 +18,24 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // base class for all object types
     class first_class_object {
-    public:
-        // =-=-=-=-=-=-=-
-        // Constructors
-        first_class_object() {};
+        public:
+            // =-=-=-=-=-=-=-
+            // Constructors
+            first_class_object() {};
 
-        // =-=-=-=-=-=-=-
-        // Destructor
-        virtual ~first_class_object() {};
+            // =-=-=-=-=-=-=-
+            // Destructor
+            virtual ~first_class_object() {};
 
-        // =-=-=-=-=-=-=-
-        // plugin resolution operators
-        virtual error resolve(
-            const std::string&, // plugin interface
-            plugin_ptr& ) = 0;  // resolved plugin
+            // =-=-=-=-=-=-=-
+            // plugin resolution operators
+            virtual error resolve(
+                const std::string&, // plugin interface
+                plugin_ptr& ) = 0;  // resolved plugin
 
-        // =-=-=-=-=-=-=-
-        // accessor for rule engine variables
-        virtual error get_re_vars( keyValPair_t& ) = 0;
+            // =-=-=-=-=-=-=-
+            // accessor for rule engine variables
+            virtual error get_re_vars( keyValPair_t& ) = 0;
 
     }; // class first_class_object
 

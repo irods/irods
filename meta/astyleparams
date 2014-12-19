@@ -1,2 +1,2 @@
-ASTYLE_PARAMETERS="-n --pad-header --pad-oper --unpad-paren --pad-paren-in --keep-one-line-statements --keep-one-line-blocks --add-brackets --break-closing-brackets --indent-namespaces --style=java"
+ASTYLE_PARAMETERS="-n --pad-header --pad-oper --unpad-paren --pad-paren-in --keep-one-line-statements --keep-one-line-blocks --add-brackets --break-closing-brackets --indent-namespaces --indent-classes --style=java"
 

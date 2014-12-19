@@ -483,53 +483,53 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class mso_resource : public irods::resource {
-        // =-=-=-=-=-=-=-
-        // 3a. create a class to provide maintenance operations, this is only for example
-        //     and will not be called.
-        class maintenance_operation {
+            // =-=-=-=-=-=-=-
+            // 3a. create a class to provide maintenance operations, this is only for example
+            //     and will not be called.
+            class maintenance_operation {
+                public:
+                    maintenance_operation( const std::string& _n ) : name_( _n ) {
+                    }
+
+                    maintenance_operation( const maintenance_operation& _rhs ) {
+                        name_ = _rhs.name_;
+                    }
+
+                    maintenance_operation& operator=( const maintenance_operation& _rhs ) {
+                        name_ = _rhs.name_;
+                        return *this;
+                    }
+
+                    irods::error operator()( rcComm_t* ) {
+                        rodsLog( LOG_NOTICE, "mso_resource::post_disconnect_maintenance_operation - [%s]",
+                                 name_.c_str() );
+                        return SUCCESS();
+                    }
+
+                private:
+                    std::string name_;
+
+            }; // class maintenance_operation
+
         public:
-            maintenance_operation( const std::string& _n ) : name_( _n ) {
-            }
+            mso_resource( const std::string& _inst_name,
+                          const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+            } // ctor
 
-            maintenance_operation( const maintenance_operation& _rhs ) {
-                name_ = _rhs.name_;
-            }
 
-            maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                name_ = _rhs.name_;
-                return *this;
-            }
-
-            irods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "mso_resource::post_disconnect_maintenance_operation - [%s]",
-                         name_.c_str() );
+            irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+                _b = false;
                 return SUCCESS();
             }
 
-        private:
-            std::string name_;
 
-        }; // class maintenance_operation
-
-    public:
-        mso_resource( const std::string& _inst_name,
-                      const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-        } // ctor
-
-
-        irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
-            _b = false;
-            return SUCCESS();
-        }
-
-
-        // =-=-=-=-=-=-=-
-        // 3b. pass along a functor for maintenance work after
-        //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            return ERROR( -1, "nop" );
-        }
+            // =-=-=-=-=-=-=-
+            // 3b. pass along a functor for maintenance work after
+            //     the client disconnects, uncomment the first two lines for effect.
+            irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+                return ERROR( -1, "nop" );
+            }
 
     }; // class mso_resource
 

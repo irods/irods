@@ -28,46 +28,46 @@ namespace irods {
      *
      **/
     class ms_table_entry : public plugin_base {
-    public:
+        public:
 
-        typedef int ( *ms_func_ptr )( ... );
+            typedef int ( *ms_func_ptr )( ... );
 
-        // =-=-=-=-=-=-=-
-        // Attributes
-        int          num_args_;
-        ms_func_ptr  call_action_;
+            // =-=-=-=-=-=-=-
+            // Attributes
+            int          num_args_;
+            ms_func_ptr  call_action_;
 
-        // =-=-=-=-=-=-=-
-        // Constructors
-        ms_table_entry( );
+            // =-=-=-=-=-=-=-
+            // Constructors
+            ms_table_entry( );
 
-        // =-=-=-=-=-=-=-
-        // NOTE :: this ctor should be called by plugin authors
-        ms_table_entry(
-            int ); // num ms args
+            // =-=-=-=-=-=-=-
+            // NOTE :: this ctor should be called by plugin authors
+            ms_table_entry(
+                int ); // num ms args
 
-        // =-=-=-=-=-=-=-
-        // NOTE :: called internally for static plugins
-        ms_table_entry(
-            const std::string&,  // ms name
-            int,                 // num ms args
-            ms_func_ptr );       // function pointer
+            // =-=-=-=-=-=-=-
+            // NOTE :: called internally for static plugins
+            ms_table_entry(
+                const std::string&,  // ms name
+                int,                 // num ms args
+                ms_func_ptr );       // function pointer
 
-        // =-=-=-=-=-=-=-
-        // copy ctor
-        ms_table_entry( const ms_table_entry& _rhs );
+            // =-=-=-=-=-=-=-
+            // copy ctor
+            ms_table_entry( const ms_table_entry& _rhs );
 
-        // =-=-=-=-=-=-=-
-        // Assignment Operator - necessary for stl containers
-        ms_table_entry& operator=( const ms_table_entry& _rhs );
+            // =-=-=-=-=-=-=-
+            // Assignment Operator - necessary for stl containers
+            ms_table_entry& operator=( const ms_table_entry& _rhs );
 
-        // =-=-=-=-=-=-=-
-        // Destructor
-        virtual ~ms_table_entry();
+            // =-=-=-=-=-=-=-
+            // Destructor
+            virtual ~ms_table_entry();
 
-        // =-=-=-=-=-=-=-
-        // Lazy Loader for MS Fcn Ptr
-        error delay_load( void* _h );
+            // =-=-=-=-=-=-=-
+            // Lazy Loader for MS Fcn Ptr
+            error delay_load( void* _h );
 
     }; // class ms_table_entry
 

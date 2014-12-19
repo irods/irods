@@ -1556,27 +1556,27 @@ extern "C" {
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
     class compound_resource : public irods::resource {
-    public:
-        compound_resource( const std::string& _inst_name,
-                           const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-            // =-=-=-=-=-=-=-
-            // set the start operation to identify the cache and archive children
-            set_start_operation( "compound_start_operation" );
-        }
+        public:
+            compound_resource( const std::string& _inst_name,
+                               const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+                // =-=-=-=-=-=-=-
+                // set the start operation to identify the cache and archive children
+                set_start_operation( "compound_start_operation" );
+            }
 
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            _flg = false;
-            return SUCCESS();
-        }
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
+                _flg = false;
+                return SUCCESS();
+            }
 
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            return ERROR( -1, "nop" );
-        }
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+                return ERROR( -1, "nop" );
+            }
 
     }; // class compound_resource
 

@@ -2529,12 +2529,12 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class mssofilesystem_resource : public irods::resource {
-    public:
-        mssofilesystem_resource(
-            const std::string& _inst_name,
-            const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-        } // ctor
+        public:
+            mssofilesystem_resource(
+                const std::string& _inst_name,
+                const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+            } // ctor
 
     }; // class mssofilesystem_resource
 

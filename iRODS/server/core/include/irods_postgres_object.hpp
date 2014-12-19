@@ -18,43 +18,43 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // @brief postgres object class
     class postgres_object : public database_object {
-    public:
-        // =-=-=-=-=-=-=-
-        // Constructors
-        postgres_object();
-        postgres_object( const postgres_object& );
+        public:
+            // =-=-=-=-=-=-=-
+            // Constructors
+            postgres_object();
+            postgres_object( const postgres_object& );
 
-        // =-=-=-=-=-=-=-
-        // Destructors
-        virtual ~postgres_object();
+            // =-=-=-=-=-=-=-
+            // Destructors
+            virtual ~postgres_object();
 
-        // =-=-=-=-=-=-=-
-        // Operators
-        virtual postgres_object& operator=( const postgres_object& );
+            // =-=-=-=-=-=-=-
+            // Operators
+            virtual postgres_object& operator=( const postgres_object& );
 
-        // =-=-=-=-=-=-=-
-        /// @brief Comparison operator
-        virtual bool operator==( const postgres_object& _rhs ) const;
+            // =-=-=-=-=-=-=-
+            /// @brief Comparison operator
+            virtual bool operator==( const postgres_object& _rhs ) const;
 
-        // =-=-=-=-=-=-=-
-        // plugin resolution operation
-        virtual error resolve(
-            const std::string&, // plugin interface
-            plugin_ptr& );      // resolved plugin
+            // =-=-=-=-=-=-=-
+            // plugin resolution operation
+            virtual error resolve(
+                const std::string&, // plugin interface
+                plugin_ptr& );      // resolved plugin
 
-        // =-=-=-=-=-=-=-
-        // accessor for rule engine variables
-        virtual error get_re_vars( keyValPair_t& );
+            // =-=-=-=-=-=-=-
+            // accessor for rule engine variables
+            virtual error get_re_vars( keyValPair_t& );
 
-        // =-=-=-=-=-=-=-
-        // Accessors
+            // =-=-=-=-=-=-=-
+            // Accessors
 
-        // =-=-=-=-=-=-=-
-        // Mutators
+            // =-=-=-=-=-=-=-
+            // Mutators
 
-    private:
-        // =-=-=-=-=-=-=-
-        // Attributes
+        private:
+            // =-=-=-=-=-=-=-
+            // Attributes
 
     }; // postgres_object
 

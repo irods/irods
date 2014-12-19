@@ -65,70 +65,70 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief convenience class to initialize the table and index map for negotiations
     class client_server_negotiations_context {
-        typedef std::map < std::string, int > negotiation_map_t;
-        typedef std::pair< std::string, int > negotiation_pair_t;
-    public:
-        client_server_negotiations_context() {
-            // =-=-=-=-=-=-=-
-            // initialize the negotiation context
-            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REQUIRE,   0 ) );
-            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_DONT_CARE, 1 ) );
-            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REFUSE,    2 ) );
+            typedef std::map < std::string, int > negotiation_map_t;
+            typedef std::pair< std::string, int > negotiation_pair_t;
+        public:
+            client_server_negotiations_context() {
+                // =-=-=-=-=-=-=-
+                // initialize the negotiation context
+                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REQUIRE,   0 ) );
+                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_DONT_CARE, 1 ) );
+                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REFUSE,    2 ) );
 
-            // =-=-=-=-=-=-=-
-            // table is indexed as[ CLIENT ][ SERVER ]
-            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
-            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
-            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
-            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
-            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
-            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
-            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
-            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
-            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
+                // =-=-=-=-=-=-=-
+                // table is indexed as[ CLIENT ][ SERVER ]
+                client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
+                client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
+                client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
+                client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
+                client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
+                client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
+                client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
+                client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
+                client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
 
-        } // ctor
+            } // ctor
 
-        error operator()(
-            const std::string& _cli_policy,
-            const std::string& _svr_policy,
-            std::string&       _result ) {
-            // =-=-=-=-=-=-=-
-            // convert client policy to an index
-            // in order to reference the negotiation table
-            int cli_idx = cs_neg_param_map[ _cli_policy ];
-            if ( cli_idx > 2 || cli_idx < 0 ) {
-                return ERROR( SYS_INVALID_INPUT_PARAM,
-                              "client policy index is out of bounds" );
+            error operator()(
+                const std::string& _cli_policy,
+                const std::string& _svr_policy,
+                std::string&       _result ) {
+                // =-=-=-=-=-=-=-
+                // convert client policy to an index
+                // in order to reference the negotiation table
+                int cli_idx = cs_neg_param_map[ _cli_policy ];
+                if ( cli_idx > 2 || cli_idx < 0 ) {
+                    return ERROR( SYS_INVALID_INPUT_PARAM,
+                                  "client policy index is out of bounds" );
 
-            }
+                }
 
-            // =-=-=-=-=-=-=-
-            // convert server policy to an index
-            // in order to reference the negotiation table
-            int svr_idx = cs_neg_param_map[ _svr_policy ];
-            if ( svr_idx > 2 || svr_idx < 0 ) {
-                return ERROR( SYS_INVALID_INPUT_PARAM,
-                              "server policy index is out of bounds" );
+                // =-=-=-=-=-=-=-
+                // convert server policy to an index
+                // in order to reference the negotiation table
+                int svr_idx = cs_neg_param_map[ _svr_policy ];
+                if ( svr_idx > 2 || svr_idx < 0 ) {
+                    return ERROR( SYS_INVALID_INPUT_PARAM,
+                                  "server policy index is out of bounds" );
 
-            }
+                }
 
-            // =-=-=-=-=-=-=-
-            // politely ask for the SSL usage results
-            _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
+                // =-=-=-=-=-=-=-
+                // politely ask for the SSL usage results
+                _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
 
-            return SUCCESS();
+                return SUCCESS();
 
-        } // operator()
+            } // operator()
 
-    private:
-        /// =-=-=-=-=-=-=-
-        /// @brief table which describes the negotiation choices
-        std::string client_server_negotiations_table[3][3];
+        private:
+            /// =-=-=-=-=-=-=-
+            /// @brief table which describes the negotiation choices
+            std::string client_server_negotiations_table[3][3];
 
-        /// =-=-=-=-=-=-=-
-        /// @brief map from policy to a table index
-        negotiation_map_t cs_neg_param_map;
+            /// =-=-=-=-=-=-=-
+            /// @brief map from policy to a table index
+            negotiation_map_t cs_neg_param_map;
 
     }; // class client_server_negotiations_context
 

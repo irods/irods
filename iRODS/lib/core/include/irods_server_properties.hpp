@@ -25,80 +25,80 @@ namespace irods {
 
     class server_properties {
 
-    public:
-        /**
-         * @brief Access method for the singleton
-         */
-        static server_properties& getInstance();
+        public:
+            /**
+             * @brief Access method for the singleton
+             */
+            static server_properties& getInstance();
 
-        /**
-         * @brief Read server configuration and fill server_properties::properties
-         */
-        error capture( );
+            /**
+             * @brief Read server configuration and fill server_properties::properties
+             */
+            error capture( );
 
-        /**
-         * @brief capture the legacy version: server.config
-         */
-        error capture_legacy();
+            /**
+             * @brief capture the legacy version: server.config
+             */
+            error capture_legacy();
 
-        /**
-         * @brief capture the new json version: server_config.json
-         */
-        error capture_json( const std::string& );
+            /**
+             * @brief capture the new json version: server_config.json
+             */
+            error capture_json( const std::string& );
 
-        /**
-         * @brief Read server configuration if it has not been read already.
-         **/
-        error capture_if_needed();
+            /**
+             * @brief Read server configuration if it has not been read already.
+             **/
+            error capture_if_needed();
 
-        /**
-         * @brief Get a property from the map if it exists.  catch the exception in the case where
-         * the template types may not match and return success/fail
-         */
-        template< typename T >
-        error get_property( const std::string& _key, T& _val ) {
-            error ret = config_props_.get< T >( _key, _val );
-            if ( !ret.ok() ) {
-                ret = config_props_.get< T >( key_map_[ _key ], _val );
+            /**
+             * @brief Get a property from the map if it exists.  catch the exception in the case where
+             * the template types may not match and return success/fail
+             */
+            template< typename T >
+            error get_property( const std::string& _key, T& _val ) {
+                error ret = config_props_.get< T >( _key, _val );
+                if ( !ret.ok() ) {
+                    ret = config_props_.get< T >( key_map_[ _key ], _val );
+                }
+                return PASS( ret );
             }
-            return PASS( ret );
-        }
 
-        template< typename T >
-        error set_property( const std::string& _key, const T& _val ) {
-            error ret = config_props_.set< T >( _key, _val );
-            if ( !ret.ok() ) {
-                ret = config_props_.set< T >( key_map_[ _key ], _val );
+            template< typename T >
+            error set_property( const std::string& _key, const T& _val ) {
+                error ret = config_props_.set< T >( _key, _val );
+                if ( !ret.ok() ) {
+                    ret = config_props_.set< T >( key_map_[ _key ], _val );
+                }
+                return PASS( ret );
             }
-            return PASS( ret );
-        }
 
-        error delete_property( const std::string& _key ) {
-            size_t n = config_props_.erase( _key );
-            if ( n != 1 ) {
-                std::string msg( "failed to erase key: " );
-                msg += _key;
-                return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
+            error delete_property( const std::string& _key ) {
+                size_t n = config_props_.erase( _key );
+                if ( n != 1 ) {
+                    std::string msg( "failed to erase key: " );
+                    msg += _key;
+                    return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
+                }
+                else {
+                    return SUCCESS();
+                }
             }
-            else {
-                return SUCCESS();
-            }
-        }
 
-    private:
-        // Disable constructors
-        server_properties( server_properties const& );
-        server_properties( );
-        void operator=( server_properties const& );
+        private:
+            // Disable constructors
+            server_properties( server_properties const& );
+            server_properties( );
+            void operator=( server_properties const& );
 
-        /**
-         * @brief properties lookup table
-         */
-        configuration_parser config_props_;
+            /**
+             * @brief properties lookup table
+             */
+            configuration_parser config_props_;
 
-        /// @brief map of old keys to new keys
-        lookup_table< std::string > key_map_;
-        bool captured_;
+            /// @brief map of old keys to new keys
+            lookup_table< std::string > key_map_;
+            bool captured_;
 
     }; // class server_properties
 

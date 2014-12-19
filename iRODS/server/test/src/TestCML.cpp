@@ -15,21 +15,21 @@ static char **g_argv;
 Tests the most basic cml calls.
 */
 class TestCmlEnv : public ::TestBase {
-protected:
-    virtual void SetUp() {
-        TestBase::setUserPass( g_argv[1], g_argv[2] );
-        if ( cmlOpen( &_icss ) == SQL_ERROR ) {
-            // ODBC docs suggest this is a memory allocation error, bail out
-            cout << "TestCmlEnv::Setup():cmlOpen() - out of memory" << endl;
-            exit( 1 );
+    protected:
+        virtual void SetUp() {
+            TestBase::setUserPass( g_argv[1], g_argv[2] );
+            if ( cmlOpen( &_icss ) == SQL_ERROR ) {
+                // ODBC docs suggest this is a memory allocation error, bail out
+                cout << "TestCmlEnv::Setup():cmlOpen() - out of memory" << endl;
+                exit( 1 );
+            }
         }
-    }
 
-    virtual void TearDown() {
-        if ( cmlClose( &_icss ) != 0 ) {
-            cout << "TestCmlEnv::TearDown():cmlCloseEnv() - failed" << endl;
+        virtual void TearDown() {
+            if ( cmlClose( &_icss ) != 0 ) {
+                cout << "TestCmlEnv::TearDown():cmlCloseEnv() - failed" << endl;
+            }
         }
-    }
 };
 
 TEST_F( TestCmlEnv, HandlesRodsEnv ) {
@@ -45,53 +45,53 @@ TEST_F( TestCmlEnv, HandlesNullEmptySql ) {
 Tests most calls.
 */
 class TestCmlFunctions : public ::TestCmlEnv {
-protected:
-    virtual void SetUp() {
-        TestCmlEnv::SetUp();
-        // setup the database for our tests
-        if ( getRodsEnv( &_myEnv ) < 0 ) {
-            exit( 1 );
-        }
-        int i;
+    protected:
+        virtual void SetUp() {
+            TestCmlEnv::SetUp();
+            // setup the database for our tests
+            if ( getRodsEnv( &_myEnv ) < 0 ) {
+                exit( 1 );
+            }
+            int i;
 
-        // get next sequence value
-        int nextseqval = cmlGetNextSeqVal( &_icss );
+            // get next sequence value
+            int nextseqval = cmlGetNextSeqVal( &_icss );
 
-        // insert a sample row
-        snprintf( _sql, sizeof( _sql ), "insert into R_COLL_MAIN (coll_id, " \
-                  "parent_coll_name, coll_name, coll_owner_name, coll_owner_zone) " \
-                  "values (%i, \'%s\', \'%s\', \'%s\', \'%s\')", nextseqval,
-                  PARENT_OF_A, A_VALUE, _myEnv.rodsUserName, _myEnv.rodsZone );
-        if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
-            cllGetLastErrorMessage( _msg, sizeof( _msg ) );
-            printf( "%s\n", _msg );
-            return;
+            // insert a sample row
+            snprintf( _sql, sizeof( _sql ), "insert into R_COLL_MAIN (coll_id, " \
+                      "parent_coll_name, coll_name, coll_owner_name, coll_owner_zone) " \
+                      "values (%i, \'%s\', \'%s\', \'%s\', \'%s\')", nextseqval,
+                      PARENT_OF_A, A_VALUE, _myEnv.rodsUserName, _myEnv.rodsZone );
+            if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
+                cllGetLastErrorMessage( _msg, sizeof( _msg ) );
+                printf( "%s\n", _msg );
+                return;
+            }
+            snprintf( _sql, sizeof( _sql ), "commit" );
+            if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
+                cllGetLastErrorMessage( _msg, sizeof( _msg ) );
+                printf( "%s\n", _msg );
+                return;
+            }
         }
-        snprintf( _sql, sizeof( _sql ), "commit" );
-        if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
-            cllGetLastErrorMessage( _msg, sizeof( _msg ) );
-            printf( "%s\n", _msg );
-            return;
-        }
-    }
 
-    virtual void TearDown() {
-        // tear down the database changed used for our tests
-        int i;
-        snprintf( _sql, sizeof( _sql ), "delete from R_COLL_MAIN where "\
-                  "coll_name = \'a\' and coll_owner_name = \'%s\' and "\
-                  "coll_owner_zone = \'%s\'", _myEnv.rodsUserName, _myEnv.rodsZone );
-        if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
-            cllGetLastErrorMessage( _msg, sizeof( _msg ) );
-            printf( "%s\n", _msg );
+        virtual void TearDown() {
+            // tear down the database changed used for our tests
+            int i;
+            snprintf( _sql, sizeof( _sql ), "delete from R_COLL_MAIN where "\
+                      "coll_name = \'a\' and coll_owner_name = \'%s\' and "\
+                      "coll_owner_zone = \'%s\'", _myEnv.rodsUserName, _myEnv.rodsZone );
+            if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
+                cllGetLastErrorMessage( _msg, sizeof( _msg ) );
+                printf( "%s\n", _msg );
+            }
+            snprintf( _sql, sizeof( _sql ), "commit" );
+            if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
+                cllGetLastErrorMessage( _msg, sizeof( _msg ) );
+                printf( "%s\n", _msg );
+            }
+            TestCmlEnv::TearDown();
         }
-        snprintf( _sql, sizeof( _sql ), "commit" );
-        if ( ( i = cmlExecuteNoAnswerSql( _sql, &_icss ) ) ) {
-            cllGetLastErrorMessage( _msg, sizeof( _msg ) );
-            printf( "%s\n", _msg );
-        }
-        TestCmlEnv::TearDown();
-    }
 
 };
 

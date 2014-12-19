@@ -807,45 +807,45 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class deferred_resource : public irods::resource {
-    public:
-        deferred_resource(
-            const std::string& _inst_name,
-            const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-            // =-=-=-=-=-=-=-
-            // extract the defer policy from the context string
-            irods::kvp_map_t kvp;
-            irods::error ret = irods::parse_kvp_string(
-                                   _context,
-                                   kvp );
-            if ( kvp.end() != kvp.find( DEFER_POLICY_KEY ) ) {
-                properties_.set< std::string >(
-                    DEFER_POLICY_KEY,
-                    kvp[ DEFER_POLICY_KEY ] );
+        public:
+            deferred_resource(
+                const std::string& _inst_name,
+                const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+                // =-=-=-=-=-=-=-
+                // extract the defer policy from the context string
+                irods::kvp_map_t kvp;
+                irods::error ret = irods::parse_kvp_string(
+                                       _context,
+                                       kvp );
+                if ( kvp.end() != kvp.find( DEFER_POLICY_KEY ) ) {
+                    properties_.set< std::string >(
+                        DEFER_POLICY_KEY,
+                        kvp[ DEFER_POLICY_KEY ] );
+                }
+                else {
+                    properties_.set< std::string >(
+                        DEFER_POLICY_KEY,
+                        DEFER_POLICY_LOCALHOST );
+                    rodsLog(
+                        LOG_DEBUG,
+                        "deferred_resource :: using localhost policy, none specificed" );
+                }
+
             }
-            else {
-                properties_.set< std::string >(
-                    DEFER_POLICY_KEY,
-                    DEFER_POLICY_LOCALHOST );
-                rodsLog(
-                    LOG_DEBUG,
-                    "deferred_resource :: using localhost policy, none specificed" );
+
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
+                _flg = false;
+                return ERROR( -1, "nop" );
             }
 
-        }
-
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            _flg = false;
-            return ERROR( -1, "nop" );
-        }
-
-        // =-=-=-=-=-=-
-        // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            return ERROR( -1, "nop" );
-        }
+            // =-=-=-=-=-=-
+            // override from plugin_base
+            irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+                return ERROR( -1, "nop" );
+            }
 
     }; // class
 

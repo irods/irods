@@ -1658,26 +1658,26 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class repl_resource : public irods::resource {
 
-    public:
-        repl_resource(
-            const std::string& _inst_name,
-            const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-        } // ctor
+        public:
+            repl_resource(
+                const std::string& _inst_name,
+                const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+            } // ctor
 
-        irods::error post_disconnect_maintenance_operation(
-            irods::pdmo_type& ) {
-            irods::error result = SUCCESS();
-            // nothing to do
-            return result;
-        }
+            irods::error post_disconnect_maintenance_operation(
+                irods::pdmo_type& ) {
+                irods::error result = SUCCESS();
+                // nothing to do
+                return result;
+            }
 
-        irods::error need_post_disconnect_maintenance_operation(
-            bool& _flag ) {
-            irods::error result = SUCCESS();
-            _flag = false;
-            return result;
-        }
+            irods::error need_post_disconnect_maintenance_operation(
+                bool& _flag ) {
+                irods::error result = SUCCESS();
+                _flag = false;
+                return result;
+            }
 
     }; // class repl_resource
 

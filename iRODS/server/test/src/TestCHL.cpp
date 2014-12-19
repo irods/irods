@@ -18,41 +18,41 @@ static char **g_argv;
 Tests the most basic chl calls.
 */
 class TestChlEnv : public ::TestBase {
-protected:
-    rsComm_t *_comm;
-    rodsServerConfig_t _serverConfig;
+    protected:
+        rsComm_t *_comm;
+        rodsServerConfig_t _serverConfig;
 
-    virtual void SetUp() {
-        rodsLogLevel( LOG_NOTICE );
-        TestBase::setUserPass( g_argv[1], g_argv[2] );
-        _comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
-        memset( _comm, 0, sizeof( rsComm_t ) );
-        if ( getRodsEnv( &_myEnv ) < 0 ) {
-            cerr << "getRodsEnv() failed" << endl;
-            exit( 1 );
+        virtual void SetUp() {
+            rodsLogLevel( LOG_NOTICE );
+            TestBase::setUserPass( g_argv[1], g_argv[2] );
+            _comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
+            memset( _comm, 0, sizeof( rsComm_t ) );
+            if ( getRodsEnv( &_myEnv ) < 0 ) {
+                cerr << "getRodsEnv() failed" << endl;
+                exit( 1 );
+            }
+            memset( &_serverConfig, 0, sizeof( _serverConfig ) );
+            int err;
+            if ( ( err = readServerConfig( &_serverConfig ) ) != 0 ) {
+                cerr << "Failed to read server config: " << err << endl;
+                exit( 1 );
+            }
+            strncpy( _comm->clientUser.userName, _myEnv.rodsUserName,
+                     sizeof( _comm->clientUser.userName ) );
+            strncpy( _comm->clientUser.rodsZone, _myEnv.rodsZone,
+                     sizeof( _comm->clientUser.rodsZone ) );
+            if ( chlOpen( _serverConfig.DBUsername, _serverConfig.DBPassword ) !=
+                    0 ) {
+                cout << "TestChlEnv::Setup():chlOpen() - failed" << endl;
+                exit( 1 );
+            }
         }
-        memset( &_serverConfig, 0, sizeof( _serverConfig ) );
-        int err;
-        if ( ( err = readServerConfig( &_serverConfig ) ) != 0 ) {
-            cerr << "Failed to read server config: " << err << endl;
-            exit( 1 );
-        }
-        strncpy( _comm->clientUser.userName, _myEnv.rodsUserName,
-                 sizeof( _comm->clientUser.userName ) );
-        strncpy( _comm->clientUser.rodsZone, _myEnv.rodsZone,
-                 sizeof( _comm->clientUser.rodsZone ) );
-        if ( chlOpen( _serverConfig.DBUsername, _serverConfig.DBPassword ) !=
-                0 ) {
-            cout << "TestChlEnv::Setup():chlOpen() - failed" << endl;
-            exit( 1 );
-        }
-    }
 
-    virtual void TearDown() {
-        if ( chlClose() != 0 ) {
-            cout << "TestChlEnv::TearDown():chlCloseEnv() - failed" << endl;
+        virtual void TearDown() {
+            if ( chlClose() != 0 ) {
+                cout << "TestChlEnv::TearDown():chlCloseEnv() - failed" << endl;
+            }
         }
-    }
 };
 
 //TEST_F( TestChlEnv, HandlesConnected ) {

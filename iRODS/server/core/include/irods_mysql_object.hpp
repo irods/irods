@@ -18,43 +18,43 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // @brief mysql object class
     class mysql_object : public database_object {
-    public:
-        // =-=-=-=-=-=-=-
-        // Constructors
-        mysql_object();
-        mysql_object( const mysql_object& );
+        public:
+            // =-=-=-=-=-=-=-
+            // Constructors
+            mysql_object();
+            mysql_object( const mysql_object& );
 
-        // =-=-=-=-=-=-=-
-        // Destructors
-        virtual ~mysql_object();
+            // =-=-=-=-=-=-=-
+            // Destructors
+            virtual ~mysql_object();
 
-        // =-=-=-=-=-=-=-
-        // Operators
-        virtual mysql_object& operator=( const mysql_object& );
+            // =-=-=-=-=-=-=-
+            // Operators
+            virtual mysql_object& operator=( const mysql_object& );
 
-        // =-=-=-=-=-=-=-
-        /// @brief Comparison operator
-        virtual bool operator==( const mysql_object& _rhs ) const;
+            // =-=-=-=-=-=-=-
+            /// @brief Comparison operator
+            virtual bool operator==( const mysql_object& _rhs ) const;
 
-        // =-=-=-=-=-=-=-
-        // plugin resolution operation
-        virtual error resolve(
-            const std::string&, // plugin interface
-            plugin_ptr& );      // resolved plugin
+            // =-=-=-=-=-=-=-
+            // plugin resolution operation
+            virtual error resolve(
+                const std::string&, // plugin interface
+                plugin_ptr& );      // resolved plugin
 
-        // =-=-=-=-=-=-=-
-        // accessor for rule engine variables
-        virtual error get_re_vars( keyValPair_t& );
+            // =-=-=-=-=-=-=-
+            // accessor for rule engine variables
+            virtual error get_re_vars( keyValPair_t& );
 
-        // =-=-=-=-=-=-=-
-        // Accessors
+            // =-=-=-=-=-=-=-
+            // Accessors
 
-        // =-=-=-=-=-=-=-
-        // Mutators
+            // =-=-=-=-=-=-=-
+            // Mutators
 
-    private:
-        // =-=-=-=-=-=-=-
-        // Attributes
+        private:
+            // =-=-=-=-=-=-=-
+            // Attributes
 
     }; // mysql_object
 

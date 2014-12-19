@@ -15,20 +15,20 @@ static char * pass = NULL;
 Tests the most basic cll calls.
 */
 class TestCllEnv : public ::TestBase {
-protected:
-    virtual void SetUp() {
-        if ( cllOpenEnv( &_icss ) == SQL_ERROR ) {
-            // ODBC docs suggest this is a memory allocation error, bail out
-            cout << "TestCllEnv::Setup():cllOpenEnv() - out of memory" << endl;
-            exit( 1 );
+    protected:
+        virtual void SetUp() {
+            if ( cllOpenEnv( &_icss ) == SQL_ERROR ) {
+                // ODBC docs suggest this is a memory allocation error, bail out
+                cout << "TestCllEnv::Setup():cllOpenEnv() - out of memory" << endl;
+                exit( 1 );
+            }
         }
-    }
 
-    virtual void TearDown() {
-        if ( cllCloseEnv( &_icss ) != 0 ) {
-            cout << "TestCllEnv::TearDown():cllCloseEnv() - failed" << endl;
+        virtual void TearDown() {
+            if ( cllCloseEnv( &_icss ) != 0 ) {
+                cout << "TestCllEnv::TearDown():cllCloseEnv() - failed" << endl;
+            }
         }
-    }
 };
 
 TEST_F( TestCllEnv, HandlesNullIcss ) {
@@ -56,17 +56,17 @@ TEST_F( TestCllEnv, HandlesGoodUserPass ) {
 Tests most cll calls.  This class assumes the TestCllEnv tests were successful.
 */
 class TestCllFunctions : public ::TestCllEnv {
-protected:
-    virtual void SetUp() {
-        TestCllEnv::SetUp();
-        TestBase::setUserPass( user, pass );
-        cllConnect( &_icss );
-    }
+    protected:
+        virtual void SetUp() {
+            TestCllEnv::SetUp();
+            TestBase::setUserPass( user, pass );
+            cllConnect( &_icss );
+        }
 
-    virtual void TearDown() {
-        cllDisconnect( &_icss );
-        TestCllEnv::TearDown();
-    }
+        virtual void TearDown() {
+            cllDisconnect( &_icss );
+            TestCllEnv::TearDown();
+        }
 };
 
 TEST_F( TestCllFunctions, HandlesSQL ) {

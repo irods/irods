@@ -6,17 +6,17 @@
 
 class TestBase : public ::testing::Test {
 
-protected:
-    icatSessionStruct _icss;
-    rodsEnv _myEnv;
-    char    _msg[1024];
-    char    _sql[1024];
+    protected:
+        icatSessionStruct _icss;
+        rodsEnv _myEnv;
+        char    _msg[1024];
+        char    _sql[1024];
 
-    TestBase();
-    virtual ~TestBase();
-    virtual void SetUp();
-    virtual void setUserPass( const char *user, const char *pass );
-    virtual void TearDown();
-    void PrintRows( int stmt );
+        TestBase();
+        virtual ~TestBase();
+        virtual void SetUp();
+        virtual void setUserPass( const char *user, const char *pass );
+        virtual void TearDown();
+        void PrintRows( int stmt );
 };
 

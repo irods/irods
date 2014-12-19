@@ -470,17 +470,17 @@ extern "C" {
     // the auth plugin base class for handling
     // native authentication
     class pam_auth_plugin : public irods::auth {
-    public:
-        pam_auth_plugin(
-            const std::string& _nm,
-            const std::string& _ctx ) :
-            irods::auth(
-                _nm,
-                _ctx ) {
-        } // ctor
+        public:
+            pam_auth_plugin(
+                const std::string& _nm,
+                const std::string& _ctx ) :
+                irods::auth(
+                    _nm,
+                    _ctx ) {
+            } // ctor
 
-        ~pam_auth_plugin() {
-        }
+            ~pam_auth_plugin() {
+            }
 
     }; // class pam_auth_plugin
 

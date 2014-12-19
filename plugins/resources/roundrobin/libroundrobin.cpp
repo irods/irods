@@ -1216,19 +1216,19 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class roundrobin_resource : public irods::resource {
-    public:
-        roundrobin_resource( const std::string& _inst_name,
-                             const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-            // =-=-=-=-=-=-=-
-            // assign context string as the next_child string
-            // in the property map.  this is used to keep track
-            // of the last used child in the vector
-            properties_.set< std::string >( NEXT_CHILD_PROP, context_ );
-            rodsLog( LOG_DEBUG, "roundrobin_resource :: next_child [%s]", context_.c_str() );
+        public:
+            roundrobin_resource( const std::string& _inst_name,
+                                 const std::string& _context ) :
+                irods::resource( _inst_name, _context ) {
+                // =-=-=-=-=-=-=-
+                // assign context string as the next_child string
+                // in the property map.  this is used to keep track
+                // of the last used child in the vector
+                properties_.set< std::string >( NEXT_CHILD_PROP, context_ );
+                rodsLog( LOG_DEBUG, "roundrobin_resource :: next_child [%s]", context_.c_str() );
 
-            set_start_operation( "round_robin_start_operation" );
-        }
+                set_start_operation( "round_robin_start_operation" );
+            }
 
     }; // class
 

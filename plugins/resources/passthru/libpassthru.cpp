@@ -788,14 +788,14 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class passthru_resource : public irods::resource {
-    public:
-        passthru_resource(
-            const std::string& _inst_name,
-            const std::string& _context ) :
-            irods::resource(
-                _inst_name,
-                _context ) {
-        } // ctor
+        public:
+            passthru_resource(
+                const std::string& _inst_name,
+                const std::string& _context ) :
+                irods::resource(
+                    _inst_name,
+                    _context ) {
+            } // ctor
 
     }; // class passthru_resource
 

@@ -15,52 +15,52 @@ namespace irods {
 //        without the need to rewrite plugin interfaces as well as
 //        pass along references rather than pointers
     class auth_plugin_context : public plugin_context {
-    public:
-        // =-=-=-=-=-=-=-
-        // ctor
-        auth_plugin_context(
-            plugin_property_map&    _prop_map,
-            first_class_object_ptr  _fco,
-            const std::string&      _results ) :
-            plugin_context( _prop_map,
-                            _fco,
-                            _results ) {
-        } // ctor
+        public:
+            // =-=-=-=-=-=-=-
+            // ctor
+            auth_plugin_context(
+                plugin_property_map&    _prop_map,
+                first_class_object_ptr  _fco,
+                const std::string&      _results ) :
+                plugin_context( _prop_map,
+                                _fco,
+                                _results ) {
+            } // ctor
 
-        // =-=-=-=-=-=-=-
-        // test to determine if contents are valid
-        virtual error valid() {
-            return SUCCESS();
+            // =-=-=-=-=-=-=-
+            // test to determine if contents are valid
+            virtual error valid() {
+                return SUCCESS();
 
-        } // valid
+            } // valid
 
-        // =-=-=-=-=-=-=-
-        // test to determine if contents are valid
-        template < typename OBJ_TYPE >
-        error valid() {
-            // =-=-=-=-=-=-=
-            // trap case of non type related checks
-            error ret = valid();
+            // =-=-=-=-=-=-=-
+            // test to determine if contents are valid
+            template < typename OBJ_TYPE >
+            error valid() {
+                // =-=-=-=-=-=-=
+                // trap case of non type related checks
+                error ret = valid();
 
-            // =-=-=-=-=-=-=
-            // trap case of incorrect type for first class object
-            try {
-                boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
-            }
-            catch ( const std::bad_cast& ) {
-                ret = PASSMSG( "invalid type for fco cast", ret );
-            }
+                // =-=-=-=-=-=-=
+                // trap case of incorrect type for first class object
+                try {
+                    boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
+                }
+                catch ( const std::bad_cast& ) {
+                    ret = PASSMSG( "invalid type for fco cast", ret );
+                }
 
-            return ret;
+                return ret;
 
-        } // valid
+            } // valid
 
-        // =-=-=-=-=-=-=-
-        // accessors
+            // =-=-=-=-=-=-=-
+            // accessors
 
-    protected:
-        // =-=-=-=-=-=-=-
-        // attributes
+        protected:
+            // =-=-=-=-=-=-=-
+            // attributes
 
     }; // class auth_plugin_context
 

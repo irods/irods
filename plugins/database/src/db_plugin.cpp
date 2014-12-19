@@ -16416,27 +16416,27 @@ checkLevel:
     // the network plugin base class for handling
     // tcp communications
     class postgres_database_plugin : public irods::database {
-    public:
-        postgres_database_plugin(
-            const std::string& _nm,
-            const std::string& _ctx ) :
-            irods::database(
-                _nm,
-                _ctx ) {
-            // =-=-=-=-=-=-=-
-            // create a property for the icat session
-            // which will manage the lifetime of the db
-            // connection - use a copy ctor to init
-            icatSessionStruct icss;
-            bzero( &icss, sizeof( icss ) );
-            properties_.set< icatSessionStruct >( ICSS_PROP, icss );
+        public:
+            postgres_database_plugin(
+                const std::string& _nm,
+                const std::string& _ctx ) :
+                irods::database(
+                    _nm,
+                    _ctx ) {
+                // =-=-=-=-=-=-=-
+                // create a property for the icat session
+                // which will manage the lifetime of the db
+                // connection - use a copy ctor to init
+                icatSessionStruct icss;
+                bzero( &icss, sizeof( icss ) );
+                properties_.set< icatSessionStruct >( ICSS_PROP, icss );
 
-            set_start_operation( "db_start_operation" );
+                set_start_operation( "db_start_operation" );
 
-        } // ctor
+            } // ctor
 
-        ~postgres_database_plugin() {
-        }
+            ~postgres_database_plugin() {
+            }
 
     }; // class postgres_database_plugin
 

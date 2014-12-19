@@ -78,28 +78,28 @@ typedef char* STR;
 
 template<typename T>
 class ParamType {
-public:
-    typedef T* type;
-    typedef T& refType;
-    static type defaultValue() {
-        return NULL;
-    }
-    static refType convert( type& obj ) {
-        return *obj;
-    }
+    public:
+        typedef T* type;
+        typedef T& refType;
+        static type defaultValue() {
+            return NULL;
+        }
+        static refType convert( type& obj ) {
+            return *obj;
+        }
 };
 
 template<>
 class ParamType <STR> {
-public:
-    typedef char* type;
-    typedef STR& refType;
-    static type defaultValue() {
-        return NULL;
-    }
-    static refType convert( type& obj ) {
-        return obj;
-    }
+    public:
+        typedef char* type;
+        typedef STR& refType;
+        static type defaultValue() {
+            return NULL;
+        }
+        static refType convert( type& obj ) {
+            return obj;
+        }
 };
 
 #define INPUT (0)

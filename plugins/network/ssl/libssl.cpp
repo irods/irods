@@ -1283,17 +1283,17 @@ extern "C" {
     // the network plugin base class for handling
     // ssl communications
     class ssl_network_plugin : public irods::network {
-    public:
-        ssl_network_plugin(
-            const std::string& _nm,
-            const std::string& _ctx ) :
-            irods::network(
-                _nm,
-                _ctx ) {
-        } // ctor
+        public:
+            ssl_network_plugin(
+                const std::string& _nm,
+                const std::string& _ctx ) :
+                irods::network(
+                    _nm,
+                    _ctx ) {
+            } // ctor
 
-        ~ssl_network_plugin() {
-        }
+            ~ssl_network_plugin() {
+            }
 
     }; // class ssl_network_plugin
 
