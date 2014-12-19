@@ -260,7 +260,29 @@ namespace irods {
     } // resource_to_resc_grp_info
 
 
-/// @brief Given a resource name, checks that the resource exists and is not flagged as down
+    /// @brief Checks that all resources in a hierarchy are live
+    error is_hier_live( const std::string& _resc_hier ) {
+        error res;
+        hierarchy_parser parser;
+
+        res = parser.set_string( _resc_hier );
+        if ( !res.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to parse hierarchy string \"" << _resc_hier << "\"";
+            return PASSMSG( msg.str(), res );
+        }
+
+        hierarchy_parser::const_iterator it = parser.begin();
+        for ( ; res.ok() && it != parser.end(); ++it ) {
+            res = is_resc_live(*it);
+        }
+
+        return res;
+    }
+
+
+    /// @brief Given a resource name, checks that the resource exists and is not flagged as down
     error is_resc_live( const std::string& _resc_name ) {
 
         // Try to get resource status
