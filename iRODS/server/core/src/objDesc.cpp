@@ -549,28 +549,10 @@ initDataObjInfoForRepl(
 
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
-    destDataObjInfo->rescInfo = new rescInfo_t;
 
-//    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( destDataObjInfo->rescInfo->rescName, _resc_name, NAME_LEN );    // #1472
-
-    // Removing this block breaks test_resource_types.Test_UnixFileSystem_Resource.test_beginning_from_devtest #1472
-    if ( _resc_name != NULL && strlen( _resc_name ) > 0 ) {
-        rstrcpy( destDataObjInfo->rescGroupName, _resc_name,
-                 NAME_LEN );
-    }
-    else if ( strlen( destDataObjInfo->rescGroupName ) > 0 ) {
-        /* need to verify whether destRescInfo belongs to
-         * destDataObjInfo->rescGroupName */
-        rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
-        //if ( getRescInGrp( rsComm, destRescInfo->rescName,
-        //                  destDataObjInfo->rescGroupName, NULL ) < 0 ) {
-        //
-        /* destResc is not in destRescGrp */
-        destDataObjInfo->rescGroupName[0] = '\0';
-        //}
-    } // else
     // #1472
+    destDataObjInfo->rescInfo = NULL;
+    destDataObjInfo->rescGroupName[0] = '\0';
 
     return 0;
 }
