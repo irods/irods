@@ -440,9 +440,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             dataOprInp->dataSize = dataObjInp->dataSize;
         }
         dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
     }
     else if ( oprType == GET_OPR ) {
         if ( dataObjInfo->dataSize > 0 ) {
@@ -452,38 +449,24 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             dataOprInp->dataSize = dataObjInp->dataSize;
         }
         dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
     }
     else if ( oprType == SAME_HOST_COPY_OPR ) {
         int srcL1descInx = L1desc[l1descInx].srcL1descInx;
         int srcL3descInx = L1desc[srcL1descInx].l3descInx;
         dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
         dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
         dataOprInp->srcL3descInx = srcL3descInx;
-        dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
     }
     else if ( oprType == COPY_TO_REM_OPR ) {
         int srcL1descInx = L1desc[l1descInx].srcL1descInx;
         int srcL3descInx = L1desc[srcL1descInx].l3descInx;
         dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
         dataOprInp->srcL3descInx = srcL3descInx;
-        if ( L1desc[srcL1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->srcRescTypeInx =
-                L1desc[srcL1descInx].dataObjInfo->rescInfo->rescTypeInx;
-        }
     }
     else if ( oprType == COPY_TO_LOCAL_OPR ) {
         int srcL1descInx = L1desc[l1descInx].srcL1descInx;
         dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
         dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if ( L1desc[l1descInx].remoteZoneHost == NULL ) {
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        }
     }
     if ( getValByKey( &dataObjInp->condInput, STREAMING_KW ) != NULL ) {
         addKeyVal( &dataOprInp->condInput, STREAMING_KW, "" );
@@ -494,22 +477,21 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
     }
 
     if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
-        if ( dataObjInfo->rescInfo != NULL ) {
-            /* only do unix fs */
-            // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-            // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-            std::string type;
-            irods::error err = irods::get_resource_property< std::string >(
-                                   dataObjInfo->rescInfo->rescName, irods::RESOURCE_TYPE, type );
-            if ( !err.ok() ) {
-                irods::log( PASS( err ) );
-            }
-            else {
-                if ( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC ::
-                    addKeyVal( &dataOprInp->condInput, RBUDP_TRANSFER_KW, "" );
-                }
-            }
-        }
+
+		/* only do unix fs */
+		// JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+		// JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
+		std::string type;
+		irods::error err = irods::get_resc_type_for_hier_string(dataObjInfo->rescHier, type );
+
+		if ( !err.ok() ) {
+			irods::log( PASS( err ) );
+		}
+		else {
+			if ( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC ::
+				addKeyVal( &dataOprInp->condInput, RBUDP_TRANSFER_KW, "" );
+			}
+		}
     }
 
     if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
