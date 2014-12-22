@@ -536,6 +536,11 @@ initDataObjInfoForRepl(
     destDataObjInfo->rescInfo = NULL;
     destDataObjInfo->rescGroupName[0] = '\0';
 
+    // Can't remove just now...  #1472
+	if ( _resc_name && strlen( _resc_name ) ) {
+		rstrcpy( destDataObjInfo->rescGroupName, _resc_name, NAME_LEN );
+	}
+
     return 0;
 }
 

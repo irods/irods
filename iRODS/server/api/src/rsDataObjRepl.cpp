@@ -323,7 +323,7 @@ _rsDataObjRepl(
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
-                                        &myRescGrpInfo,   &destDataObjInfo,
+                                        &myRescGrpInfo, resc_name, &destDataObjInfo,
                                         &dataObjInp->condInput );
 
         if ( status == HAVE_GOOD_COPY ) {
@@ -600,7 +600,7 @@ _rsDataObjReplNewCopy(
 
 /* _rsDataObjReplS - replicate a single obj
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated.
- *   rescGroupName - only meaningful if the destDataObj does not exist.
+ *   _resc_name - only meaningful if the destDataObj does not exist.
  *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
  *      If destDataObjInfo == NULL, dest is new and no output is required.
  *      If destDataObjInfo != NULL:
@@ -615,7 +615,7 @@ _rsDataObjReplS(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * srcDataObjInfo,
-    char * rescGroupName,
+    char * _resc_name,
     dataObjInfo_t * destDataObjInfo,
     int updateFlag ) {
     // =-=-=-=-=-=-=-
@@ -626,7 +626,7 @@ _rsDataObjReplS(
     dataObjInfo_t *myDestDataObjInfo = NULL;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
-                                    rescGroupName, destDataObjInfo, updateFlag );
+                                    _resc_name, destDataObjInfo, updateFlag );
 
     if ( l1descInx < 0 ) {
         return l1descInx;

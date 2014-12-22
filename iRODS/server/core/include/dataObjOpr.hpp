@@ -51,7 +51,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead, char *preferedResc,
 int
 requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum );
 dataObjInfo_t *
-chkCopyInResc( dataObjInfo_t *&dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier );
+chkCopyInResc( dataObjInfo_t *&dataObjInfoHead, const std::string& _resc_name, const char* destRescHier );
 int
 chkAndTrimCopyInRescGrp( dataObjInfo_t **dataObjInfoHead,
                          rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag );
@@ -72,7 +72,7 @@ int
 getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead );
 int
 resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
-                       dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+                       dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo, const std::string& _resc_name,
                        dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput );
 int
 matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
@@ -84,7 +84,9 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      keyValPair_t *condInput, int multiCopyFlag );
 int
 matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
-                     rescGrpInfo_t **rescGrpInfoHead, int trimjFlag,
+                    // rescGrpInfo_t **rescGrpInfoHead,
+					 const std::string& _resc_name,
+					 int trimjFlag,
                      dataObjInfo_t **trimmedDataObjInfo );
 int
 resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
