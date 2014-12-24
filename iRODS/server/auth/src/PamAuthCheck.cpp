@@ -1,13 +1,15 @@
 /*
-  This program does a PAM authentication check using the username on
-  the command line and reading the password from stdin (to be more
-  secure).  When PAM mode is enabled and users request LDAP/PAM
+  This program performs a PAM authentication check, taking the username from
+  the first command line argument and reading the password from stdin (for
+  security). When PAM mode is enabled and users request LDAP/PAM
   authentication (irodsAuthScheme of 'PAM' or 'pam'), the irodsAgent
-  spawns this process and writes the input password on stdin.  You can
-  also run this manually, entering the password after PamAuthCheck is
-  started; which will be echoed:
-  $ ./PamAuthCheck testuser2
-  asfkskdlfkd
+  spawns this process.
+
+  This program can be run manually, to directly check that PAM
+  is configured correctly for iRODS.
+
+  $ ./PamAuthCheck username
+  password
   Authenticated
   $
 
@@ -21,12 +23,9 @@
     sudo chown root PamAuthCheck
     sudo chmod u+s PamAuthCheck
 
-  You may need to add the following (or equivalent) to the /etc/pam.conf file.
-  # check authorization
-  check   auth       required     pam_unix_auth.so
-  check   account    required     pam_unix_acct.so
+  You will need to create the file "/etc/pam.d/irods" and configure it
+  according to your specific authentication requirements.
 
-  Loosely based on various PAM examples.
 */
 
 #include <security/pam_appl.h>
