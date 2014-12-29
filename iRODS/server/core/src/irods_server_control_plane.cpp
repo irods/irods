@@ -272,8 +272,6 @@ namespace irods {
 
         }
 
-        return SUCCESS();
-
     } // forward_command
 
     error server_control_executor::get_resource_host_names(
