@@ -229,7 +229,7 @@ $(ZEROMQVERSIONARCHIVE) :
 $(ZEROMQVERSIONMAKE) : $(ZEROMQVERSIONARCHIVE)
 	@tar zxf $(ZEROMQVERSIONARCHIVE)
 	@cd $(ZEROMQVERSION) ; \
-		./configure
+		env ac_cv_lib_sodium_sodium_init="no" ./configure
 
 zeromq : $(ZEROMQVERSIONMAKE)
 	@$(MAKE) -C $(ZEROMQVERSION)
