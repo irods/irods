@@ -84,9 +84,9 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      keyValPair_t *condInput, int multiCopyFlag );
 int
 matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
-                    // rescGrpInfo_t **rescGrpInfoHead,
-					 const std::string& _resc_name,
-					 int trimjFlag,
+                     // rescGrpInfo_t **rescGrpInfoHead,
+                     const std::string& _resc_name,
+                     int trimjFlag,
                      dataObjInfo_t **trimmedDataObjInfo );
 int
 resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,

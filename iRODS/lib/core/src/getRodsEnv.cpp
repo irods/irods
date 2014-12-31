@@ -392,12 +392,12 @@ extern "C" {
         capture_string_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_CONTROL_PLANE_KEY,
+            irods::CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
             _env->irodsCtrlPlaneKey );
         capture_integer_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_CONTROL_PLANE_PORT,
+            irods::CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
             _env->irodsCtrlPlanePort );
 
         return 0;

@@ -868,8 +868,8 @@ requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
 
 dataObjInfo_t *
 chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
-		const std::string& _resc_name, /* default resource returned by rule engine */
-		const char* destRescHier /* from optional condInput */) {
+               const std::string& _resc_name, /* default resource returned by rule engine */
+               const char* destRescHier /* from optional condInput */ ) {
 
     dataObjInfo_t *tmpDataObjInfo;
 
@@ -878,19 +878,19 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
 
 
     while ( tmpDataObjInfo != NULL ) {
-		// No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
-		// match as well. - hcj
-		if ( strcmp( tmpDataObjInfo->rescInfo->rescName, _resc_name.c_str() ) == 0 &&
-				( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
-			if ( prev != NULL ) {
-				prev->next = tmpDataObjInfo->next;
-			}
-			else {
-				dataObjInfoHead = tmpDataObjInfo->next;
-			}
-			tmpDataObjInfo->next = NULL;
-			return tmpDataObjInfo;
-		}
+        // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
+        // match as well. - hcj
+        if ( strcmp( tmpDataObjInfo->rescInfo->rescName, _resc_name.c_str() ) == 0 &&
+                ( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
+            if ( prev != NULL ) {
+                prev->next = tmpDataObjInfo->next;
+            }
+            else {
+                dataObjInfoHead = tmpDataObjInfo->next;
+            }
+            tmpDataObjInfo->next = NULL;
+            return tmpDataObjInfo;
+        }
 
         prev = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
@@ -935,9 +935,9 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
 // will cleanup commented out code if all goes well #1472
 int
 matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
- //                    rescGrpInfo_t **rescGrpInfoHead,
-					 const std::string& _resc_name, // replaces rescGrpInfoHead
-					 int trimjFlag,
+//                    rescGrpInfo_t **rescGrpInfoHead,
+                     const std::string& _resc_name, // replaces rescGrpInfoHead
+                     int trimjFlag,
                      dataObjInfo_t **trimmedDataObjInfo ) {
 
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo, *nextDataObjInfo;
@@ -1037,8 +1037,8 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             /* no match */
             if ( ( trimjFlag & TRIM_UNMATCHED_OBJ_INFO ) ||
                     ( ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) &&
-                    		!_resc_name.empty() &&
-							strcmp( tmpDataObjInfo->rescGroupName, _resc_name.c_str() ) == 0 ) ) {
+                      !_resc_name.empty() &&
+                      strcmp( tmpDataObjInfo->rescGroupName, _resc_name.c_str() ) == 0 ) ) {
                 /* take it out */
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
                     *dataObjInfoHead = tmpDataObjInfo->next;
@@ -1431,7 +1431,7 @@ int
 resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                        dataObjInfo_t **oldDataObjInfoHead,
                        rescGrpInfo_t **destRescGrpInfo,
-					   const std::string& _resc_name, // replaces destRescGrpInfo above
+                       const std::string& _resc_name, // replaces destRescGrpInfo above
                        dataObjInfo_t **destDataObjInfo,
                        keyValPair_t *condInput ) {
     int status = 0;
@@ -1533,15 +1533,15 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
     }
 
     if ( multiCopyFlag ) {
-        matchAndTrimRescGrp( dataObjInfoHead, (*destRescGrpInfo)->rescGroupName,
+        matchAndTrimRescGrp( dataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
                              REQUE_MATCHED_RESC_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, (*destRescGrpInfo)->rescGroupName,
+        matchAndTrimRescGrp( oldDataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
                              REQUE_MATCHED_RESC_INFO, NULL );
     }
     else {
-        matchAndTrimRescGrp( dataObjInfoHead, (*destRescGrpInfo)->rescGroupName,
+        matchAndTrimRescGrp( dataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
                              TRIM_MATCHED_RESC_INFO | TRIM_MATCHED_OBJ_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, (*destRescGrpInfo)->rescGroupName,
+        matchAndTrimRescGrp( oldDataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
                              TRIM_MATCHED_RESC_INFO, NULL );
     }
 

@@ -26,7 +26,7 @@ namespace irods {
         const std::string&,   // hier string
         int&,                 // local flag
         rodsServerHost_t*& ); // server host
-	error get_resc_type_for_hier_string(const std::string&, std::string& );
+    error get_resc_type_for_hier_string( const std::string&, std::string& );
 
 // =-=-=-=-=-=-=-
 /// @brief function which returns the host name for a given hier string

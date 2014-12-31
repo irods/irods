@@ -14,7 +14,8 @@
 #include "server_control_plane_command.hpp"
 
 int usage() {
-    std::cout << "FIXME" << std::endl;
+    std::cout << "Usage: irods-grid [status,shutdown,pause,resume] hosts <fqdn1> <fqdn2> ..." << std::endl;
+    std::cout << "       irods-grid [status,shutdown,pause,resume] all" << std::endl;
     return 0;
 
 } // usage
@@ -75,13 +76,21 @@ int main(
 
         }
     }
+    else {
+        std::cout << "invalid number of command line options : "
+                  << cmd_line.size()
+                  << std::endl;
+        return usage();
+
+    }
 
     // serialize remaining command line parameters as hosts, using
     // numbered host keywords as the keys
     for ( size_t i = 3;
             i < cmd_line.size();
             ++i ) {
-        std::stringstream ss; ss << i - 3;
+        std::stringstream ss;
+        ss << i - 3;
         cmd.options[ irods::SERVER_CONTROL_HOST_KW + ss.str() ] = cmd_line[ i ];
 
     }

@@ -146,7 +146,7 @@ getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     vaultPathPolicy_t vaultPathPolicy;
     int status;
 
-    if (!dataObjInfo) {
+    if ( !dataObjInfo ) {
         rodsLog( LOG_ERROR, "getFilePathName: input dataObjInfo is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }

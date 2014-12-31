@@ -478,20 +478,20 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
 
     if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
 
-		/* only do unix fs */
-		// JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-		// JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-		std::string type;
-		irods::error err = irods::get_resc_type_for_hier_string(dataObjInfo->rescHier, type );
+        /* only do unix fs */
+        // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+        // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
+        std::string type;
+        irods::error err = irods::get_resc_type_for_hier_string( dataObjInfo->rescHier, type );
 
-		if ( !err.ok() ) {
-			irods::log( PASS( err ) );
-		}
-		else {
-			if ( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC ::
-				addKeyVal( &dataOprInp->condInput, RBUDP_TRANSFER_KW, "" );
-			}
-		}
+        if ( !err.ok() ) {
+            irods::log( PASS( err ) );
+        }
+        else {
+            if ( irods::RESOURCE_TYPE_NATIVE == type ) { // JMC ::
+                addKeyVal( &dataOprInp->condInput, RBUDP_TRANSFER_KW, "" );
+            }
+        }
     }
 
     if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
@@ -537,9 +537,9 @@ initDataObjInfoForRepl(
     destDataObjInfo->rescGroupName[0] = '\0';
 
     // Can't remove just now...  #1472
-	if ( _resc_name && strlen( _resc_name ) ) {
-		rstrcpy( destDataObjInfo->rescGroupName, _resc_name, NAME_LEN );
-	}
+    if ( _resc_name && strlen( _resc_name ) ) {
+        rstrcpy( destDataObjInfo->rescGroupName, _resc_name, NAME_LEN );
+    }
 
     return 0;
 }

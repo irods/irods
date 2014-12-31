@@ -330,7 +330,7 @@ serverMain( char *logDir ) {
 
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
-    irods::server_control_plane ctrl_plane( irods::CFG_SVR_CONTROL_PLANE_PORT );
+    irods::server_control_plane ctrl_plane( irods::CFG_SERVER_CONTROL_PLANE_PORT );
 
 
 
@@ -437,7 +437,7 @@ serverMain( char *logDir ) {
 #endif
     }
 
-    // JMC :: sleeping 2 hrs? - PurgeLockFileThread->join();
+    PurgeLockFileThread->join();
     procChildren( &ConnectedAgentHead );
     stopProcConnReqThreads();
 
@@ -1267,15 +1267,28 @@ procBadReq() {
 // JMC - backport 4612
 void
 purgeLockFileWorkerTask() {
-    int status;
+    size_t wait_time_ms = 0;
+    const size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
+
     irods::server_state& state = irods::server_state::instance();
     while ( irods::server_state::STOPPED != state() ) {
-        rodsSleep( LOCK_FILE_PURGE_TIME, 0 );
-        status = purgeLockFileDir( 1 );
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "purgeLockFileWorkerTask: purgeLockFileDir failed" );
-        }
-    }
-}
+        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME );
+        wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME;
+
+        if ( wait_time_ms >= purge_time_ms ) {
+            wait_time_ms = 0;
+            int status = purgeLockFileDir( 1 );
+            if ( status < 0 ) {
+                rodsLogError(
+                    LOG_ERROR,
+                    status,
+                    "purgeLockFileWorkerTask: purgeLockFileDir failed" );
+            }
+
+        } // if
+
+    } // while
+
+} // purgeLockFileWorkerTask
+
 // =-=-=-=-=-=-=-

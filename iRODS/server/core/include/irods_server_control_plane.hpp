@@ -24,6 +24,12 @@ namespace irods {
     const std::string SERVER_CONTROL_HOSTS_OPT( "hosts" );
     const std::string SERVER_CONTROL_SUCCESS( "server_control_success" );
 
+    // this is a hand-chosen polling time for the control plane
+    static const double SERVER_CONTROL_POLLING_TIME = 500; // milliseconds
+
+    // derived from above - used to wait for the server to shut down or resume
+    static const double SERVER_CONTROL_FWD_SLEEP_TIME = ( SERVER_CONTROL_POLLING_TIME / 1000.0 ) / 4.0; // seconds
+
     class server_control_executor {
         public:
             // @brief constructor
@@ -39,10 +45,10 @@ namespace irods {
             typedef std::vector< std::string >                host_list_t;
 
             // members
-            server_control_executor( server_control_executor& ) {}
+            server_control_executor( const server_control_executor& ) {}
             error process_operation(
-                zmq::message_t&,  // incoming msg
-                std::string& );   // outgoing text
+                const zmq::message_t&, // incoming msg
+                std::string& );        // outgoing text
 
             error extract_command_parameters(
                 const irods::control_plane_command&, // incoming command
@@ -79,11 +85,9 @@ namespace irods {
             const std::string port_prop_;
             boost::unordered_map< std::string, ctrl_func_t >  op_map_;
             std::string my_host_name_;
-            std::string ies_host_name_;
+            std::string icat_host_name_;
 
     }; // class server_control_executor
-
-
 
     class server_control_plane {
         public:
