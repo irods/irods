@@ -84,7 +84,7 @@ namespace irods {
     const std::string CFG_SERVER_CONTROL_PLANE_PORT( "server_control_plane_port" );
     const std::string CFG_RULE_ENGINE_CONTROL_PLANE_PORT( "rule_engine_control_plane_port" );
     const std::string CFG_SERVER_CONTROL_PLANE_KEY( "server_control_plane_key" );
-    const std::string CFG_SERVER_CONTROL_PLANE_TIMEOUT( "server_control_plane_timeout" );
+    const std::string CFG_SERVER_CONTROL_PLANE_TIMEOUT( "server_control_plane_timeout_milliseconds" );
 
 }; // namespace irods
 

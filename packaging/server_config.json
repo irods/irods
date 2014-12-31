@@ -26,7 +26,7 @@
     "environment_variables": {},
     "server_control_plane_key": "temp_32_byte_key_for_ctrl__plane",
     "server_control_plane_port": 1248,
-    "server_control_plane_timeout": 10000,
+    "server_control_plane_timeout_milliseconds": 10000,
     "rule_engine_control_plane_port": 1249
 }
 
