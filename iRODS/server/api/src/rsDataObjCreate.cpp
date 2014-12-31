@@ -332,6 +332,15 @@ _rsDataObjCreateWithResc(
     }
 
     dataObjInfo->rescInfo = new rescInfo_t;  // leave that on for now #1472
+    irods::error err = irods::get_resc_info( _resc_name, *dataObjInfo->rescInfo );
+    if ( !err.ok() ) {
+        std::stringstream msg;
+        msg << "failed to get resource info [";
+        msg << dataObjInfo->rescName << "]";
+        irods::log( PASSMSG( msg.str(), err ) );
+        freeDataObjInfo( dataObjInfo );
+        return err.code();
+    }
 
     rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
 
@@ -643,4 +652,3 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
 
     return 0; // JMC - should this be 1 per above block?
 }
-
