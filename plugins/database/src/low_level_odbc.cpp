@@ -454,28 +454,19 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
     cllBindVarCountPrev = cllBindVarCount; /* save in case we need to log error */
     cllBindVarCount = 0; /* reset for next call */
 
-    if ( myBindVarCount > 0 ) {
-        rodsLogSql( "SQLPrepare" );
-        SQLRETURN stat = SQLPrepare( myHstmt, ( unsigned char * )sql, strlen( sql ) );
+    for ( int i = 0; i < myBindVarCount; ++i ) {
+        SQLRETURN stat = SQLBindParameter( myHstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
+                                 SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen(cllBindVars[i]), 0 );
+        char tmpStr[TMP_STR_LEN];
+        snprintf( tmpStr, sizeof(tmpStr), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
+        rodsLogSql( tmpStr );
         if ( stat != SQL_SUCCESS ) {
-            rodsLog( LOG_ERROR, "bindTheVariables: SQLPrepare failed: %d",
-                     stat );
+            rodsLog( LOG_ERROR,
+                     "bindTheVariables: SQLBindParameter failed: %d", stat );
             return -1;
         }
-
-        for ( int i = 0; i < myBindVarCount; i++ ) {
-            stat = SQLBindParameter( myHstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                     SQL_C_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), 0, 0 );
-            char tmpStr[TMP_STR_LEN + 2];
-            snprintf( tmpStr, TMP_STR_LEN, "bindVar[%d]=%s", i + 1, cllBindVars[i] );
-            rodsLogSql( tmpStr );
-            if ( stat != SQL_SUCCESS ) {
-                rodsLog( LOG_ERROR,
-                         "bindTheVariables: SQLBindParameter failed: %d", stat );
-                return -1;
-            }
-        }
     }
+
     return 0;
 }
 
@@ -805,26 +796,13 @@ cllExecSqlWithResultBV(
 
     myStatement->stmtPtr = hstmt;
 
-    bool prepared = false;
     for ( int i = 0; i < bindVars.size(); i++ ) {
         if ( !bindVars[i].empty() ) {
-            //first time binding parameters?
-            if ( !prepared ) {
-                rodsLogSql( "SQLPrepare" );
-                stat = SQLPrepare( hstmt, ( unsigned char * )sql, strlen( sql ) );
-                if ( stat != SQL_SUCCESS ) {
-                    rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLPrepare failed: %d",
-                             stat );
-                    return -1;
-                }
-                prepared = true;
-            }
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                     SQL_C_CHAR, 0, 0, &bindVars[i][0], 0, 0 );
-            char tmpStr[TMP_STR_LEN + 2];
-            snprintf( tmpStr, TMP_STR_LEN,
-                      "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+                                     SQL_CHAR, 0, 0, const_cast<char*>(bindVars[i].c_str()), bindVars[i].size(), 0 );
+            char tmpStr[TMP_STR_LEN];
+            snprintf( tmpStr, sizeof(tmpStr), "bindVar%d=%s", i + 1, bindVars[i].c_str() );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
                 rodsLog( LOG_ERROR,
@@ -834,13 +812,7 @@ cllExecSqlWithResultBV(
         }
     }
     rodsLogSql( sql );
-    //did we bind parameters?
-    if ( prepared ) {
-        stat = SQLExecute( hstmt );
-    }
-    else {
-        stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
-    }
+    stat = SQLExecDirect( hstmt, ( unsigned char * )sql, strlen( sql ) );
 
     switch ( stat ) {
     case SQL_SUCCESS:
