@@ -1,6 +1,3 @@
-
-
-
 #include "irods_configuration_parser.hpp"
 #include "irods_log.hpp"
 
@@ -91,25 +88,20 @@ namespace irods {
 
     error configuration_parser::load_json_object(
         const std::string&              _file ) {
-        json_t*      json = 0;
         json_error_t error;
 
-        json = json_load_file(
-                   _file.c_str(),
-                   0, &error );
+        json_t *json = json_load_file(_file.c_str(), 0, &error );
         if ( !json ) {
             std::string msg( "failed to load file [" );
             msg += _file;
             msg += "] json error [";
             msg += error.text;
             msg += "]";
-            return ERROR(
-                       -1,
-                       msg );
-
+            return ERROR( -1, msg );
         }
 
         irods::error ret = parse_json_object( json, root_ );
+        json_decref(json);
 
         return ret;
 
@@ -202,4 +194,3 @@ namespace irods {
     }
 
 }; // namespace irods
-
