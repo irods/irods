@@ -30,7 +30,6 @@ fileCache_t *newFileCache( int iFd, char *objPath, char *localPath, char *cacheF
     return fileCache;
 }
 
-/* precond: fileCache locked or single thread use */
 pathCache_t *newPathCache( char *inPath, fileCache_t *fileCache, struct stat *stbuf, time_t cachedTime ) {
     pathCache_t *tmpPathCache;
 
@@ -42,7 +41,7 @@ pathCache_t *newPathCache( char *inPath, fileCache_t *fileCache, struct stat *st
     tmpPathCache->localPath = strdup( inPath );
     tmpPathCache->cachedTime = cachedTime;
     tmpPathCache->expired = 0;
-    REF_NO_LOCK( tmpPathCache->fileCache, fileCache );
+    REF( tmpPathCache->fileCache, fileCache );
     tmpPathCache->iFuseConn = NULL;
     INIT_STRUCT_LOCK( *tmpPathCache );
     if ( stbuf != NULL ) {

@@ -43,17 +43,7 @@ _matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCache_t **out
 }
 
 int
-addPathToCache( pthread_mutex_t *PathCacheLock, char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray, struct stat *stbuf, pathCache_t **outPathCache ) {
-    int status;
-
-    LOCK( *PathCacheLock );
-    status = _addPathToCache( inPath, fileCache, pathQueArray, stbuf, outPathCache );
-    UNLOCK( *PathCacheLock );
-    return status;
-}
-
-int
-_addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray, struct stat *stbuf, pathCache_t **outPathCache ) {
+addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray, struct stat *stbuf, pathCache_t **outPathCache ) {
     pathCache_t *tmpPathCache = newPathCache( inPath, fileCache, stbuf, time( 0 ) );
     insertIntoHashTable( pathQueArray, inPath, tmpPathCache );
     if ( outPathCache != NULL ) {
@@ -131,13 +121,13 @@ int _pathNotExist( PathCacheTable *pctable, char *path ) {
 int _pathExist( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
     _rmPathFromCache( ( char * ) inPath, pctable->PathArrayTable );
     _rmPathFromCache( ( char * ) inPath, pctable->NonExistPathTable );
-    _addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
+    addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
     return 0;
 }
 
 int _pathReplace( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
     _rmPathFromCache( inPath, pctable->PathArrayTable );
-    _addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
+    addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
     deleteFromHashTable( pctable->NonExistPathTable, ( char * ) inPath );
     return 0;
 }
