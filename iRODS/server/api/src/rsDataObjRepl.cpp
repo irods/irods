@@ -323,7 +323,8 @@ _rsDataObjRepl(
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
-                                        &myRescGrpInfo, resc_name, &destDataObjInfo,
+                                        // &myRescGrpInfo,  // #1472
+										resc_name, &destDataObjInfo,
                                         &dataObjInp->condInput );
 
         if ( status == HAVE_GOOD_COPY ) {

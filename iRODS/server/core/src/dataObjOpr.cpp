@@ -1430,7 +1430,7 @@ chkOrphanDir( rsComm_t *rsComm, char *dirPath, char *rescName ) {
 int
 resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                        dataObjInfo_t **oldDataObjInfoHead,
-                       rescGrpInfo_t **destRescGrpInfo,
+                    //   rescGrpInfo_t **destRescGrpInfo,
                        const std::string& _resc_name, // replaces destRescGrpInfo above
                        dataObjInfo_t **destDataObjInfo,
                        keyValPair_t *condInput ) {
@@ -1457,8 +1457,8 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
         *dataObjInfoHead = matchedOldDataObjInfo;
     }
 
-    if ( ( *destRescGrpInfo )->next == NULL ||
-            strlen( ( *destRescGrpInfo )->rescGroupName ) == 0 ) {
+//    if ( ( *destRescGrpInfo )->next == NULL ||
+//            strlen( ( *destRescGrpInfo )->rescGroupName ) == 0 ) {
         /* single target resource */
         char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
         if ( ( *destDataObjInfo = chkCopyInResc( *dataObjInfoHead,
@@ -1468,16 +1468,16 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
             *destDataObjInfo = NULL; // JMC - backport 4594
             return HAVE_GOOD_COPY;
         }
-    }
-    else {
-        /* target resource is a resource group with multi resources */
-        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
-                             TRIM_MATCHED_RESC_INFO, NULL );
-        if ( *destRescGrpInfo == NULL ) {
-            /* have a good copy in all resc in resc group */
-            return HAVE_GOOD_COPY;
-        }
-    }
+//    }
+//    else {
+//        /* target resource is a resource group with multi resources */
+//        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
+//                             TRIM_MATCHED_RESC_INFO, NULL );
+//        if ( *destRescGrpInfo == NULL ) {
+//            /* have a good copy in all resc in resc group */
+//            return HAVE_GOOD_COPY;
+//        }
+//    }
     /* handle the old dataObj */
     if ( getValByKey( condInput, ALL_KW ) != NULL ) {
         dataObjInfo_t *trimmedDataObjInfo = NULL;
@@ -1495,13 +1495,19 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
             /* see if there is any resc that is not used */
             matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
                                  TRIM_MATCHED_RESC_INFO, NULL );
-            if ( *destRescGrpInfo != NULL ) {
-                /* just creat a new one in myRescGrpInfo */
-                *destDataObjInfo = NULL;
-            }
-            else {   // // JMC - backport 4594
-                dequeDataObjInfo( oldDataObjInfoHead, *destDataObjInfo );
-            }
+
+            // #1472
+//            if ( *destRescGrpInfo != NULL ) {
+//                /* just creat a new one in myRescGrpInfo */
+//                *destDataObjInfo = NULL;
+//            }
+//            else {   // // JMC - backport 4594
+//                dequeDataObjInfo( oldDataObjInfoHead, *destDataObjInfo );
+//            }
+            dequeDataObjInfo( oldDataObjInfoHead, *destDataObjInfo );
+            //
+
+
         }
     }
     return NO_GOOD_COPY;
