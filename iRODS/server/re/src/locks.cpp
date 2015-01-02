@@ -34,7 +34,12 @@ int lockMutex( mutex_type **mutex ) {
 }
 
 void unlockMutex( mutex_type **mutex ) {
-    ( *mutex )->unlock();
+    try {
+        ( *mutex )->unlock();
+    }
+    catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "unlock threw a boost::interprocess::interprocess_exception." );
+    }
     delete *mutex;
 }
 
