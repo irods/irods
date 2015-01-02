@@ -1510,7 +1510,7 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
 int
 resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      dataObjInfo_t **oldDataObjInfoHead,
-                     rescGrpInfo_t **destRescGrpInfo,
+					 const std::string& _resc_name,
                      keyValPair_t *condInput,
                      int multiCopyFlag ) {
     int status;
@@ -1533,19 +1533,19 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
     }
 
     if ( multiCopyFlag ) {
-        matchAndTrimRescGrp( dataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
+        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
                              REQUE_MATCHED_RESC_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
+        matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
                              REQUE_MATCHED_RESC_INFO, NULL );
     }
     else {
-        matchAndTrimRescGrp( dataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
+        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
                              TRIM_MATCHED_RESC_INFO | TRIM_MATCHED_OBJ_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, ( *destRescGrpInfo )->rescGroupName,
+        matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
                              TRIM_MATCHED_RESC_INFO, NULL );
     }
 
-    if ( *destRescGrpInfo == NULL ) {
+    if ( _resc_name.empty() ) {
         if ( *dataObjInfoHead == NULL ) {
             return CAT_NO_ROWS_FOUND;
         }

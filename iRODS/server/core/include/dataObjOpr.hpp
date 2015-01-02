@@ -80,7 +80,7 @@ matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
                              dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo );
 int
 resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
-                     dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+                     dataObjInfo_t **oldDataObjInfoHead, const std::string& _resc_name,
                      keyValPair_t *condInput, int multiCopyFlag );
 int
 matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,

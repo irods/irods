@@ -127,7 +127,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    status = resolveInfoForPhymv( &dataObjInfoHead, &oldDataObjInfoHead, &myRescGrpInfo, &dataObjInp->condInput, multiCopyFlag );
+    status = resolveInfoForPhymv( &dataObjInfoHead, &oldDataObjInfoHead, resc_name, &dataObjInp->condInput, multiCopyFlag );
 
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
