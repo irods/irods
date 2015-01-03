@@ -515,7 +515,7 @@ int
 initDataObjInfoForRepl(
     dataObjInfo_t* destDataObjInfo,
     dataObjInfo_t* srcDataObjInfo,
-    char*          _resc_name ) {
+    const char*	   _resc_name ) {
 
 
     memset( destDataObjInfo, 0, sizeof( dataObjInfo_t ) );

@@ -338,15 +338,15 @@ _rsDataObjRepl(
 
             // =-=-=-=-=-=-=-
             // JMC - backport 4494
-            if ( backupFlag == 0 && myRescGrpInfo != NULL        &&
-                    ( allFlag == 1 || myRescGrpInfo->next == NULL ) &&
-                    ( myRescGrpInfo->status < 0 ) ) {
-                status = myRescGrpInfo->status;
-                // =-=-=-=-=-=-=-
-            }
-            else {
-                status = 0;
-            }
+//            if ( backupFlag == 0 && myRescGrpInfo != NULL        &&
+//                    ( allFlag == 1 || myRescGrpInfo->next == NULL ) &&
+//                    ( myRescGrpInfo->status < 0 ) ) {
+//                status = myRescGrpInfo->status;
+//                // =-=-=-=-=-=-=-
+//            }
+//            else {
+//                status = 0;
+//            }
 
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
@@ -356,7 +356,8 @@ _rsDataObjRepl(
                 delete myRescGrpInfo;
             }
 
-            return status;
+//            return status;
+            return 0;
         }
         else if ( status < 0 ) {
             freeAllDataObjInfo( dataObjInfoHead );
@@ -415,10 +416,10 @@ _rsDataObjRepl(
         }
     }
 
-    if ( myRescGrpInfo != NULL ) {	// can't remove just now #1472
+    if ( !resc_name.empty() ) {
         /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
-                                        myRescGrpInfo, transStat,
+                                        resc_name, transStat,
                                         outDataObjInfo );
         if ( status < 0 ) {
             savedStatus = status;
@@ -546,7 +547,7 @@ _rsDataObjReplNewCopy(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
     dataObjInfo_t *srcDataObjInfoHead,
-    rescGrpInfo_t *destRescGrpInfo,
+	const std::string& _resc_name,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
     // =-=-=-=-=-=-=-
@@ -569,7 +570,7 @@ _rsDataObjReplNewCopy(
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                  destRescGrpInfo->rescGroupName, outDataObjInfo, 0 );
+                                  /*destRescGrpInfo->rescGroupName*/ _resc_name.c_str(), outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }
@@ -589,13 +590,14 @@ _rsDataObjReplNewCopy(
         savedStatus = status;
     }
 
-    if ( savedStatus == 0 && destRescGrpInfo->status < 0 ) {
-        /* resource down or quota overrun */
-        return destRescGrpInfo->status;
-    }
-    else {
-        return savedStatus;
-    }
+    return savedStatus;
+//    if ( savedStatus == 0 && destRescGrpInfo->status < 0 ) {
+//        /* resource down or quota overrun */
+//        return destRescGrpInfo->status;
+//    }
+//    else {
+//        return savedStatus;
+//    }
 }
 
 /* _rsDataObjReplS - replicate a single obj
@@ -615,7 +617,7 @@ _rsDataObjReplS(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * srcDataObjInfo,
-    char * _resc_name,
+    const char * _resc_name,
     dataObjInfo_t * destDataObjInfo,
     int updateFlag ) {
     // =-=-=-=-=-=-=-
@@ -691,13 +693,13 @@ dataObjOpenForRepl(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * inpSrcDataObjInfo,
-    char* _resc_name,
+    const char* _resc_name,
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
 
     irods::error resc_err;
 
-    char *my_resc_name; // replaces myDestRescInfo
+    const char *my_resc_name; // replaces myDestRescInfo
     if ( _resc_name && strlen( _resc_name ) ) {
         my_resc_name = _resc_name;
     }

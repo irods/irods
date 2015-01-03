@@ -32,15 +32,15 @@ _rsDataObjReplUpdate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                       transferStat_t *transStat );
 int
 _rsDataObjReplNewCopy( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                       dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+                       dataObjInfo_t *srcDataObjInfoHead, const std::string& _resc_name,
                        transferStat_t *transStat, dataObjInfo_t *outDataObjInfo );
 int
 _rsDataObjReplS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t *srcDataObjInfo, char *rescName,
+                 dataObjInfo_t *srcDataObjInfo, const char *rescName,
                  dataObjInfo_t *destDataObjInfo, int updateFlag );
 int
 dataObjOpenForRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                    dataObjInfo_t *srcDataObjInfo, char* _resc_name, dataObjInfo_t *destDataObjInfo, int updateFlag );
+                    dataObjInfo_t *srcDataObjInfo, const char* _resc_name, dataObjInfo_t *destDataObjInfo, int updateFlag );
 
 int
 dataObjCopy( rsComm_t *rsComm, int l1descInx );
