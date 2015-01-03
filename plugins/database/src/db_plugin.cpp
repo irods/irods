@@ -16392,7 +16392,7 @@ checkLevel:
         char sql[] = { "select name from mysql.func" };
         std::vector<std::string> bindVars;
         int status = cmlGetStringValueFromSql( sql, cml_res, sizeof( cml_res ), bindVars, &icss );
-        if ( status < 0 ) {
+        if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
             return ERROR( status, "failed to call sql to determine UDF" );
         }
 
@@ -16548,4 +16548,3 @@ checkLevel:
     } // plugin_factory
 
 }; // extern "C"
-
