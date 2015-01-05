@@ -54,13 +54,13 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
         return SYS_INVALID_ZONE_NAME;
     }
 
-    rescGrpInfo_t rescGrpInfo;
-    rescGrpInfo.rescInfo = NULL;
-    irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
-    if ( !err.ok() ) {
-        irods::log( PASS( err ) );
-        return err.code();
-    }
+//    rescGrpInfo_t rescGrpInfo;
+//    rescGrpInfo.rescInfo = NULL;
+//    irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
+//    if ( !err.ok() ) {
+//        irods::log( PASS( err ) );
+//        return err.code();
+//    }
 
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
@@ -113,7 +113,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
 
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsPhyBundleColl( rsComm, phyBundleCollInp, &rescGrpInfo );
+        status = _rsPhyBundleColl( rsComm, phyBundleCollInp, destRescName );
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = remotePhyBundleColl( rsComm, phyBundleCollInp, rodsServerHost );
@@ -129,9 +129,9 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
 int
 _rsPhyBundleColl( rsComm_t*                 rsComm,
                   structFileExtAndRegInp_t* phyBundleCollInp,
-                  rescGrpInfo_t*            rescGrpInfo ) {
-    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
-    char*       myRescName = myRescInfo->rescName;
+                  const char *_resc_name ) {
+//    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
+//    char*       myRescName = myRescInfo->rescName;
 
     collInp_t collInp;
     bzero( &collInp, sizeof( collInp ) );
@@ -166,7 +166,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     char* rescHier = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
     dataObjInp_t dataObjInp;
     int   l1descInx = createPhyBundleDataObj( rsComm, phyBundleCollInp->collection,
-                      rescGrpInfo, rescHier, &dataObjInp, dataType ); // JMC - backport 4658
+                      _resc_name, rescHier, &dataObjInp, dataType ); // JMC - backport 4658
 
     if ( l1descInx < 0 ) {
         return l1descInx;
@@ -241,7 +241,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                     else {
                         /* create a new bundle file */
                         l1descInx = createPhyBundleDataObj( rsComm,
-                                                            phyBundleCollInp->collection, rescGrpInfo,
+                                                            phyBundleCollInp->collection, _resc_name,
                                                             rescHier, &dataObjInp, dataType ); // JMC - backport 4658
 
                         if ( l1descInx < 0 ) {
@@ -264,7 +264,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
                     }
                 }       /* end of new bundle file */
-                status = replAndAddSubFileToDir( rsComm, &curSubFileCond, myRescName, phyBunDir, &bunReplCacheHeader );
+                status = replAndAddSubFileToDir( rsComm, &curSubFileCond, _resc_name, phyBunDir, &bunReplCacheHeader );
                 if ( status < 0 ) {
                     savedStatus = status;
                     rodsLog( LOG_ERROR,
@@ -293,7 +293,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  * This bug has been fixed since 3.1 */
             }
             else if ( ( collEnt->replStatus > 0 || curSubFileCond.subPhyPath[0] == '\0' ) &&  // JMC - backport 4755
-                      strcmp( collEnt->resource, myRescName ) == 0 ) {
+                      strcmp( collEnt->resource, _resc_name ) == 0 ) {
                 /* have a good copy in cache resource */
                 setSubPhyPath( phyBunDir, curSubFileCond.dataId, curSubFileCond.subPhyPath );
                 rstrcpy( curSubFileCond.cachePhyPath, collEnt->phyPath, MAX_NAME_LEN );
@@ -309,7 +309,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     /* handle any remaining */
 
     status = replAndAddSubFileToDir( rsComm, &curSubFileCond,
-                                     myRescName, phyBunDir, &bunReplCacheHeader );
+                                     _resc_name, phyBunDir, &bunReplCacheHeader );
     if ( status < 0 ) {
         savedStatus = status;
         rodsLog( LOG_ERROR,
@@ -338,7 +338,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
 int
 replAndAddSubFileToDir( rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
-                        char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader ) {
+                        const char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader ) {
     int status;
     dataObjInfo_t dataObjInfo;
 
@@ -629,7 +629,7 @@ isDataObjBundled( collEnt_t *collEnt ) {
 
 int
 replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
-                      char *rescName, char* rescHier, char* dstRescHier,
+                      const char *rescName, char* rescHier, char* dstRescHier,
                       int adminFlag, dataObjInfo_t *outCacheObjInfo ) {
     transferStat_t transStat;
     dataObjInp_t dataObjInp;
@@ -670,20 +670,20 @@ createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
 
 int
 createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
-                        rescGrpInfo_t *rescGrpInfo, const char* rescHier, dataObjInp_t *dataObjInp,
+                        const std::string& _resc_name, const char* rescHier, dataObjInp_t *dataObjInp, // should be able to only use rescHier
                         char* dataType ) { // JMC - backport 4658
     int myRanNum;
     int l1descInx;
     int status;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
-    if ( !rescGrpInfo || !rescGrpInfo->rescInfo ) {
-        return SYS_NULL_INPUT;
+    if ( _resc_name.empty() ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     std::string type;
     irods::error err = irods::get_resource_property< std::string >(
-                           rescGrpInfo->rescInfo->rescName,
+                           _resc_name,
                            irods::RESOURCE_TYPE,
                            type );
     if ( !err.ok() ) {
@@ -738,7 +738,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
             }
         }
 
-        l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, std::string( rescGrpInfo->rescInfo->rescName ) /* for now #1472 */ );
+        l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, _resc_name );
 
         clearKeyVal( &dataObjInp->condInput );
     }

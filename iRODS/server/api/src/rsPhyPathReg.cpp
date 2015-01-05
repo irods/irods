@@ -68,7 +68,7 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 int
 irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     int status;
-    rescGrpInfo_t *rescGrpInfo = NULL;
+//    rescGrpInfo_t *rescGrpInfo = NULL;
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag;
     //int rescCnt;
@@ -249,15 +249,15 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     std::string resc_name;
     parser.first_resc( resc_name );
 
-    rescGrpInfo = new rescGrpInfo_t;
-    rescGrpInfo->rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_grp_info( resc_name, *rescGrpInfo );
-    if ( !err.ok() ) {
-        irods::log( PASS( err ) );
-        delete rescGrpInfo->rescInfo;
-        delete rescGrpInfo;
-        return -1;
-    }
+//    rescGrpInfo = new rescGrpInfo_t;
+//    rescGrpInfo->rescInfo = new rescInfo_t;
+//    irods::error err = irods::get_resc_grp_info( resc_name, *rescGrpInfo );
+//    if ( !err.ok() ) {
+//        irods::log( PASS( err ) );
+//        delete rescGrpInfo->rescInfo;
+//        delete rescGrpInfo;
+//        return -1;
+//    }
 
     std::string last_resc;
     parser.last_resc( last_resc );
@@ -269,8 +269,8 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                            location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in get_resource_property", ret ) );
-        delete rescGrpInfo->rescInfo;
-        delete rescGrpInfo;
+//        delete rescGrpInfo->rescInfo;
+//        delete rescGrpInfo;
         return -1;
     }
 
@@ -279,7 +279,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     remoteFlag = resolveHost( &addr, &rodsServerHost );
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsPhyPathReg( rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
+        status = _rsPhyPathReg( rsComm, phyPathRegInp, resc_name.c_str(), rodsServerHost );
 
     }
     else if ( remoteFlag == REMOTE_HOST ) {
@@ -288,22 +288,22 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-            delete rescGrpInfo->rescInfo;
-            delete rescGrpInfo;
+//            delete rescGrpInfo->rescInfo;
+//            delete rescGrpInfo;
             return remoteFlag;
         }
         else {
             rodsLog( LOG_ERROR,
                      "rsPhyPathReg: resolveHost returned unrecognized value %d",
                      remoteFlag );
-            delete rescGrpInfo->rescInfo;
-            delete rescGrpInfo;
+//            delete rescGrpInfo->rescInfo;
+//            delete rescGrpInfo;
             return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-    delete rescGrpInfo->rescInfo;
-    delete rescGrpInfo;
+//    delete rescGrpInfo->rescInfo;
+//    delete rescGrpInfo;
     return status;
 }
 
@@ -335,7 +335,7 @@ remotePhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
 int
 _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
-               rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost ) {
+               const char *_resc_name, rodsServerHost_t *rodsServerHost ) {
     int status = 0;
     fileOpenInp_t chkNVPathPermInp;
     char *tmpFilePath = 0;
@@ -360,8 +360,8 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     rstrcpy( dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.filePath, filePath, MAX_NAME_LEN );
     dataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo.rescInfo, rescGrpInfo->rescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, NAME_LEN );
+//    memcpy( dataObjInfo.rescInfo, rescGrpInfo->rescInfo, sizeof( rescInfo_t ) );
+    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
@@ -411,7 +411,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                               resc_hier ); //rescGrpInfo->rescInfo);
         }
 
-        status = dirPathReg( rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo );
+        status = dirPathReg( rsComm, phyPathRegInp, filePath, _resc_name );
         if ( excludePatternFile != NULL ) {
             freePathnamePatterns( ExcludePatterns );
             ExcludePatterns = NULL;
@@ -420,16 +420,24 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     }
     else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != NULL && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
 
-        status = mountFileDir( rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo );
+    	// Get resource path
+    	std::string resc_vault_path;
+    	irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_PATH, resc_vault_path );
+    	if ( !ret.ok() ) {
+    		irods::log PASSMSG( "dirPathReg - failed in get_resource_property", ret );
+    		return ret.code();
+    	}
+
+        status = mountFileDir( rsComm, phyPathRegInp, filePath, resc_vault_path.c_str() );
 
     }
     else {
         if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
-            status = filePathRegRepl( rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo );
+            status = filePathRegRepl( rsComm, phyPathRegInp, filePath, _resc_name );
 
         }
         else {
-            status = filePathReg( rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo );
+            status = filePathReg( rsComm, phyPathRegInp, filePath, _resc_name );
         }
     }
 
@@ -438,7 +446,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
 int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-                 rescInfo_t *rescInfo ) {
+					const char *_resc_name ) {
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
     regReplica_t regReplicaInp;
     char *rescGroupName = NULL;
@@ -465,8 +473,8 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
     destDataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( destDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( destDataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
+//    memcpy( destDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
     if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
                                         RESC_GROUP_NAME_KW ) ) != NULL ) {
         rstrcpy( destDataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
@@ -491,7 +499,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
 int
 filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-             rescInfo_t *rescInfo ) {
+             const char *_resc_name ) {
     dataObjInfo_t dataObjInfo;
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
 
@@ -505,8 +513,8 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     dataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( dataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
+//    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
@@ -564,7 +572,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
 int
 dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-            rescInfo_t *rescInfo ) {
+			const char *_resc_name ) {
     rodsStat_t *myStat = NULL;
     fileStatInp_t fileStatInp;
     collInp_t collCreateInp;
@@ -608,7 +616,18 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         /* original directory meta-data                   */
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
         rstrcpy( fileStatInp.fileName, filePath, MAX_NAME_LEN );
-        rstrcpy( fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN );
+
+        // Get resource location
+        std::string location;
+        irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_LOCATION, location );
+        if ( !ret.ok() ) {
+            irods::log PASSMSG( "dirPathReg - failed in get_resource_property", ret );
+            return ret.code();
+        }
+
+        snprintf( fileStatInp.addr.hostAddr, NAME_LEN, "%s", location.c_str() );
+
+
         rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
         rstrcpy( fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
 
@@ -716,18 +735,18 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             subPhyPathRegInp.dataSize = myStat->st_size;
             if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
                 status = filePathRegRepl( rsComm, &subPhyPathRegInp,
-                                          fileStatInp.fileName, rescInfo );
+                                          fileStatInp.fileName, _resc_name );
             }
             else {
                 addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW,
                            fileStatInp.fileName );
                 status = filePathReg( rsComm, &subPhyPathRegInp,
-                                      fileStatInp.fileName, rescInfo );
+                                      fileStatInp.fileName, _resc_name );
             }
         }
         else if ( ( myStat->st_mode & S_IFDIR ) != 0 ) {    /* a directory */
             status = dirPathReg( rsComm, &subPhyPathRegInp,
-                                 fileStatInp.fileName, rescInfo );
+                                 fileStatInp.fileName, _resc_name );
         }
         free( myStat );
         free( rodsDirent ); // JMC - backport 4835
@@ -746,7 +765,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 int mountFileDir( rsComm_t*     rsComm,
                   dataObjInp_t* phyPathRegInp,
                   char*         filePath,
-                  rescInfo_t*   rescInfo ) {
+				  const char *rescVaultPath ) {
     collInp_t collCreateInp;
     int status;
     fileStatInp_t fileStatInp;
@@ -854,7 +873,7 @@ int mountFileDir( rsComm_t*     rsComm,
         char outLogPath[MAX_NAME_LEN];
         int status1;
         /* see if the phyPath is mapped into a real collection */
-        if ( getLogPathFromPhyPath( filePath, rescInfo, outLogPath ) >= 0 &&
+        if ( getLogPathFromPhyPath( filePath, rescVaultPath, outLogPath ) >= 0 &&
                 strcmp( outLogPath, phyPathRegInp->objPath ) != 0 ) {
             /* log path not the same as input objPath */
             if ( isColl( rsComm, outLogPath, NULL ) >= 0 ) {

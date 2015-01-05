@@ -95,7 +95,7 @@ extern "C" {
     int
     getDefDirMode();
     int
-    getLogPathFromPhyPath( char *phyPath, rescInfo_t *rescInfo, char *outLogPath );
+    getLogPathFromPhyPath( char *phyPath, const char *rescVaultPath, char *outLogPath );
     int
     rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath );
 // =-=-=-=-=-=-=-

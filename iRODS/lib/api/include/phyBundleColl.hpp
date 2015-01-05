@@ -9,6 +9,10 @@
 
 /* This is a Object File I/O call */
 
+// =-=-=-=-=-=-=-
+// stl includes
+#include <string>
+
 #include "rods.hpp"
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
@@ -61,9 +65,9 @@ remotePhyBundleColl( rsComm_t *rsComm,
                      structFileExtAndRegInp_t *phyBundleCollInp, rodsServerHost_t *rodsServerHost );
 int
 _rsPhyBundleColl( rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
-                  rescGrpInfo_t *rescGrpInfo );
+					const char *_resc_name );
 int
-createPhyBundleDataObj( rsComm_t *rsComm, char *collection, rescGrpInfo_t *rescGrpInfo,
+createPhyBundleDataObj( rsComm_t *rsComm, char *collection, const std::string& _resc_name,
                         const char* rescHier, dataObjInp_t *dataObjInp, char *dataType ); // JMC - backport 4658
 int
 createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
@@ -73,7 +77,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *outPath,
                 int myRanNum );
 int
 replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
-                      char *rescName, char* rescHier, char* destRescHier, int adminFlag, dataObjInfo_t *outCacheObjInfo );
+                      const char *rescName, char* rescHier, char* destRescHier, int adminFlag, dataObjInfo_t *outCacheObjInfo );
 int
 isDataObjBundled( collEnt_t *collEnt );
 int
@@ -83,7 +87,7 @@ addSubFileToDir( curSubFileCond_t *curSubFileCond,
                  bunReplCacheHeader_t *bunReplCacheHeader );
 int
 replAndAddSubFileToDir( rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
-                        char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader );
+                        const char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader );
 int
 bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
                       char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag ); // JMC - backport 4528

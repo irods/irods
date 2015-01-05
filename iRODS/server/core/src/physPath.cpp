@@ -1137,18 +1137,18 @@ getDefDirMode() {
 }
 
 int
-getLogPathFromPhyPath( char *phyPath, rescInfo_t *rescInfo, char *outLogPath ) {
+getLogPathFromPhyPath( char *phyPath, const char *rescVaultPath, char *outLogPath ) {
     int len;
     char *tmpPtr;
     zoneInfo_t *tmpZoneInfo = NULL;
     int status;
 
-    if ( phyPath == NULL || rescInfo == NULL || outLogPath == NULL ) {
+    if ( !phyPath || !rescVaultPath || !outLogPath ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    len = strlen( rescInfo->rescVaultPath );
-    if ( strncmp( rescInfo->rescVaultPath, phyPath, len ) != 0 ) {
+    len = strlen( rescVaultPath );
+    if ( strncmp( rescVaultPath, phyPath, len ) != 0 ) {
         return -1;
     }
     tmpPtr = phyPath + len;
