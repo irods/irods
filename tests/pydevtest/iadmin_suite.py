@@ -4,6 +4,7 @@ if (sys.version_info >= (2, 7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
+import pydevtest_common
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
 import pydevtest_sessions as s
 import commands
@@ -42,7 +43,6 @@ def write_host_access_control(filename, username, group, address, mask):
             sort_keys=True,
             indent=4,
             ensure_ascii=False)
-
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -973,3 +973,21 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)
         assertiCmd(s.adminsession, "iadmin modresc " + self.testresc + " comment ''")
         assertiCmdFail(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)
+
+    def test_irmtrash_admin_2461(self):
+        # 'irmtrash -M' was not deleting the r_objt_metamap entries for  collections it was deleting
+        #  leading to orphaned avu's that 'iadmin rum' could never remove
+        collection_basename  = sys._getframe().f_code.co_name
+        assertiCmd(s.adminsession, 'imkdir {collection_basename}'.format(**vars()))
+        file_basename = 'dummy_file_to_trigger_recursive_rm'
+        pydevtest_common.make_file(file_basename, 10)
+        file_irods_path = os.path.join(collection_basename, file_basename)
+        assertiCmd(s.adminsession, 'iput {file_basename} {file_irods_path}'.format(**vars()))
+        a, v, u = ('attribute_'+collection_basename, 'value_'+collection_basename, 'unit_'+collection_basename)
+        assertiCmd(s.adminsession, 'imeta add -C {collection_basename} {a} {v} {u}'.format(**vars()))
+        assertiCmd(s.adminsession, 'imeta ls -C {collection_basename}'.format(**vars()), 'STDOUT_MULTILINE', [a, v, u])
+        assertiCmd(s.adminsession, 'irm -r {collection_basename}'.format(**vars()))
+        assertiCmd(s.adminsession, 'irmtrash -M')
+        assertiCmd(s.adminsession, 'iadmin rum')
+        assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()),
+                       'STDOUT', a)
