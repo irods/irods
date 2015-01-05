@@ -44,6 +44,7 @@ const char *cllBindVars[MAX_BIND_VARS];
 int cllBindVarCountPrev = 0; /* cllBindVarCount earlier in processing */
 
 SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
+const static SQLLEN GLOBAL_SQL_NTS = SQL_NTS;
 
 /* Different argument types are needed on at least Ubuntu 11.04 on a
    64-bit host when using MySQL, but may or may not apply to all
@@ -456,7 +457,7 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
 
     for ( int i = 0; i < myBindVarCount; ++i ) {
         SQLRETURN stat = SQLBindParameter( myHstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                 SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen(cllBindVars[i]), 0 );
+                                           SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen(cllBindVars[i]), const_cast<SQLLEN*>(&GLOBAL_SQL_NTS) );
         char tmpStr[TMP_STR_LEN];
         snprintf( tmpStr, sizeof(tmpStr), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
         rodsLogSql( tmpStr );
@@ -800,7 +801,7 @@ cllExecSqlWithResultBV(
         if ( !bindVars[i].empty() ) {
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                     SQL_CHAR, 0, 0, const_cast<char*>(bindVars[i].c_str()), bindVars[i].size(), 0 );
+                                     SQL_CHAR, 0, 0, const_cast<char*>(bindVars[i].c_str()), bindVars[i].size(), const_cast<SQLLEN*>(&GLOBAL_SQL_NTS) );
             char tmpStr[TMP_STR_LEN];
             snprintf( tmpStr, sizeof(tmpStr), "bindVar%d=%s", i + 1, bindVars[i].c_str() );
             rodsLogSql( tmpStr );
