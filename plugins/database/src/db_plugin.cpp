@@ -6789,8 +6789,7 @@ extern "C" {
                       "delete from R_OBJT_ACCESS where object_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
                       &icss );
         if ( status != 0 ) {
-            /* error, but let it fall thru to below,
-                                   probably doesn't exist */
+            /* error, but let it fall thru to below, probably doesn't exist */
             rodsLog( LOG_NOTICE,
                      "chlDelCollByAdmin delete access failure %d",
                      status );
@@ -6798,6 +6797,28 @@ extern "C" {
         }
 
         /* Remove associated AVUs, if any */
+        if ( logSQL != 0 ) {
+            rodsLog( LOG_SQL, "chlDelCollByAdmin SQL 3 " );
+        }
+        {
+            std::vector<std::string> bindVars;
+            bindVars.push_back( _coll_info->collName );
+            status = cmlGetIntegerValueFromSql(
+                                               "select coll_id from R_COLL_MAIN where coll_name=?",
+                                               &iVal, bindVars, &icss );
+        }
+
+        if ( status != 0 ) {
+            _rollback( "db_del_coll_by_admin_op" );
+            std::stringstream msg;
+            msg << "db_del_coll_by_admin_op: should be exactly one collection id corresponding to collection name ["
+                << _coll_info->collName
+                << "]. status ["
+                << status
+                << "]";
+            return ERROR( status, msg.str().c_str() );
+        }
+
         snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
         removeMetaMapAndAVU( collIdNum );
 
@@ -6837,7 +6858,7 @@ extern "C" {
         /* delete the row if it exists */
         cllBindVars[cllBindVarCount++] = _coll_info->collName;
         if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlDelCollByAdmin SQL 3" );
+            rodsLog( LOG_SQL, "chlDelCollByAdmin SQL 4" );
         }
         status =  cmlExecuteNoAnswerSql( "delete from R_COLL_MAIN where coll_name=?",
                                          &icss );
