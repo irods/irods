@@ -204,7 +204,6 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     int status;
     rescInfo_t *rescInfo;
     char phyBunDir[MAX_NAME_LEN];
-    rescGrpInfo_t *myRescGrpInfo;
     std::string resc_name;
     dataObjInp_t dataObjInp;
     rodsObjStat_t *myRodsObjStat = NULL;
@@ -228,35 +227,53 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           freeRodsObjStat (myRodsObjStat);
           return status;
           }*/
-        irods::resource_ptr resc;
-        myRescGrpInfo = new rescGrpInfo_t;
-        myRescGrpInfo->rescInfo = new rescInfo_t;
-        irods::error err = irods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
-        if ( !err.ok() ) {
-            delete myRescGrpInfo->rescInfo;
-            delete myRescGrpInfo;
 
-            std::stringstream msg;
-            msg << "failed to get resource info [";
-            msg << myRodsObjStat->specColl->resource << "]";
-            irods::log( PASSMSG( msg.str(), err ) );
-            freeRodsObjStat( myRodsObjStat );
-            return err.code();
-        }
+    	resc_name = myRodsObjStat->specColl->resource;
+
+//        irods::resource_ptr resc;
+//        myRescGrpInfo = new rescGrpInfo_t;
+//        myRescGrpInfo->rescInfo = new rescInfo_t;
+//        irods::error err = irods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
+//        if ( !err.ok() ) {
+//            delete myRescGrpInfo->rescInfo;
+//            delete myRescGrpInfo;
+//
+//            std::stringstream msg;
+//            msg << "failed to get resource info [";
+//            msg << myRodsObjStat->specColl->resource << "]";
+//            irods::log( PASSMSG( msg.str(), err ) );
+//            freeRodsObjStat( myRodsObjStat );
+//            return err.code();
+//        }
     }
     else {
-        status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name, &myRescGrpInfo );
-        if ( status < 0 || myRescGrpInfo == NULL ) { // JMC cppcheck
+        status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name );
+        if ( status < 0 || resc_name.empty() ) { // JMC cppcheck
             freeRodsObjStat( myRodsObjStat );
             return status;
         }
     }
     /* just take the top one */
-    rescInfo = myRescGrpInfo->rescInfo;
+//    rescInfo = myRescGrpInfo->rescInfo;
+
+
+    rescInfo = new rescInfo_t;
+    irods::error err = irods::get_resc_info( resc_name, *rescInfo );
+    if ( !err.ok() ) {
+        std::stringstream msg;
+        msg << "failed to get resource info for [";
+        msg << resc_name << "]";
+        irods::log( PASSMSG( msg.str(), err ) );
+        return err.code();
+    }
+
+
+
+
+
     status = createBunDirForBulkPut( rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir );
     if ( status < 0 ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
+        delete rescInfo;
         freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
@@ -267,8 +284,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
     status = rsMkCollR( rsComm, "/", bulkOprInp->objPath );
     if ( status < 0 ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
+        delete rescInfo;
         freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
@@ -283,8 +299,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     status = unbunBulkBuf( rsComm, &dataObjInp, bulkOprInp, bulkOprInpBBuf );
 
     freeRodsObjStat( myRodsObjStat );
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
+    delete rescInfo;
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

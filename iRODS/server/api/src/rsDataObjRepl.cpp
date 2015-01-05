@@ -194,7 +194,6 @@ _rsDataObjRepl(
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfo = NULL;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
     std::string resc_name;
     ruleExecInfo_t rei;
     int multiCopyFlag;
@@ -308,7 +307,7 @@ _rsDataObjRepl(
 
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__ );
         return status;
@@ -336,38 +335,18 @@ _rsDataObjRepl(
                 outDataObjInfo->next = NULL;
             }
 
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4494
-//            if ( backupFlag == 0 && myRescGrpInfo != NULL        &&
-//                    ( allFlag == 1 || myRescGrpInfo->next == NULL ) &&
-//                    ( myRescGrpInfo->status < 0 ) ) {
-//                status = myRescGrpInfo->status;
-//                // =-=-=-=-=-=-=-
-//            }
-//            else {
-//                status = 0;
-//            }
-
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            if ( myRescGrpInfo ) {
-                delete myRescGrpInfo->rescInfo;
-                delete myRescGrpInfo;
-            }
 
-//            return status;
             return 0;
         }
         else if ( status < 0 ) {
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-            if ( myRescGrpInfo ) {
-                delete myRescGrpInfo->rescInfo;
-                delete myRescGrpInfo;
-            }
             rodsLog( LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__ );
+
             return status;
         }
         /* NO_GOOD_COPY drop through here */
@@ -380,8 +359,7 @@ _rsDataObjRepl(
         freeAllDataObjInfo( dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
         freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
+
         return status;
     }
 
@@ -400,8 +378,7 @@ _rsDataObjRepl(
                 freeAllDataObjInfo( dataObjInfoHead );
                 freeAllDataObjInfo( oldDataObjInfoHead );
                 freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
-                delete myRescGrpInfo->rescInfo;
-                delete myRescGrpInfo;
+
                 return 0;
             }
             else {   // JMC - backport 4494
@@ -428,8 +405,6 @@ _rsDataObjRepl(
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
 
     return savedStatus;
 }
@@ -591,14 +566,8 @@ _rsDataObjReplNewCopy(
     }
 
     return savedStatus;
-//    if ( savedStatus == 0 && destRescGrpInfo->status < 0 ) {
-//        /* resource down or quota overrun */
-//        return destRescGrpInfo->status;
-//    }
-//    else {
-//        return savedStatus;
-//    }
 }
+
 
 /* _rsDataObjReplS - replicate a single obj
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated.

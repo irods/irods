@@ -221,29 +221,17 @@ int
 _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     int status;
-    rescGrpInfo_t* myRescGrpInfo  = 0;
     int l1descInx;
     std::string resc_name;
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
-    if ( status < 0 ) {
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
+    if ( status < 0 || resc_name.empty()) {
         rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
-
-        // to make cppcheck happy before these things go away for good #1472
-        if ( myRescGrpInfo ) {
-            delete myRescGrpInfo->rescInfo;
-            delete myRescGrpInfo;
-        }
-        // #1472
-
         return status;
     }
 
     status = l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, resc_name );
-
-    delete myRescGrpInfo->rescInfo;
-    delete myRescGrpInfo;
 
     // JMC - legacy resource - if (status < 0) {
     if ( status >= 0 ) {
@@ -553,7 +541,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * or an error code.
  */
 
-int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name, rescGrpInfo_t** myRescGrpInfo ) {
+int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name ) {
     int            status;
     ruleExecInfo_t rei;
 
@@ -597,18 +585,18 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
     }
 
     // also converts to rescGrpInfo_t (for now)
-    *myRescGrpInfo = new rescGrpInfo_t;
-    bzero( *myRescGrpInfo, sizeof( rescGrpInfo_t ) );
-    ( *myRescGrpInfo )->rescInfo = new rescInfo_t;
+//    *myRescGrpInfo = new rescGrpInfo_t;
+//    bzero( *myRescGrpInfo, sizeof( rescGrpInfo_t ) );
+//    ( *myRescGrpInfo )->rescInfo = new rescInfo_t;
 
-    irods::error grp_err = irods::get_resc_grp_info( _resc_name, **myRescGrpInfo );
-    if ( !grp_err.ok() ) {
-        delete( *myRescGrpInfo )->rescInfo;
-        delete( *myRescGrpInfo );
-        *myRescGrpInfo = NULL;
-        irods::log( PASS( grp_err ) );
-        return SYS_INVALID_RESC_INPUT;
-    }
+//    irods::error grp_err = irods::get_resc_grp_info( _resc_name, **myRescGrpInfo );
+//    if ( !grp_err.ok() ) {
+//        delete( *myRescGrpInfo )->rescInfo;
+//        delete( *myRescGrpInfo );
+//        *myRescGrpInfo = NULL;
+//        irods::log( PASS( grp_err ) );
+//        return SYS_INVALID_RESC_INPUT;
+//    }
 
 
 //    if ( rei.rgi == NULL ) {

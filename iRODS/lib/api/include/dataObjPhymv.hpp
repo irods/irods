@@ -25,7 +25,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 transferStat_t **transferStat );
 int
 _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+                 dataObjInfo_t *srcDataObjInfoHead, const char *resc_name,
                  transferStat_t *transStat, int multiCopyFlag );
 #else
 #define RS_DATA_OBJ_PHYMV NULL

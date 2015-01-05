@@ -31,7 +31,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status = 0;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
     ruleExecInfo_t rei;
     int multiCopyFlag = 0;
     char *accessPerm = NULL;
@@ -99,10 +98,8 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
+    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
         return status;
     }
 
@@ -122,8 +119,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath );
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
         return status;
     }
 
@@ -132,10 +127,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
-        if ( myRescGrpInfo ) {
-            delete myRescGrpInfo->rescInfo;
-            delete myRescGrpInfo;
-        }
         if ( status == CAT_NO_ROWS_FOUND ) {
             return 0;
         }
@@ -144,61 +135,55 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
 
-    status = _rsDataObjPhymv( rsComm, dataObjInp, dataObjInfoHead,
-                              myRescGrpInfo, *transStat, multiCopyFlag );
+    status = _rsDataObjPhymv( rsComm, dataObjInp, dataObjInfoHead, resc_name.c_str(),
+                              *transStat, multiCopyFlag );
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    if ( myRescGrpInfo ) {
-        delete myRescGrpInfo->rescInfo;
-        delete myRescGrpInfo;
-    }
 
     return status;
 }
 
 int
 _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+                 dataObjInfo_t *srcDataObjInfoHead, const char *_resc_name,
                  transferStat_t *transStat, int multiCopyFlag ) {
     dataObjInfo_t *srcDataObjInfo;
-    rescGrpInfo_t *tmpRescGrpInfo;
     int status = 0;
     int savedStatus = 0;
 
-    tmpRescGrpInfo = destRescGrpInfo;
-    srcDataObjInfo = srcDataObjInfoHead;
-    while ( tmpRescGrpInfo != NULL ) {
-        while ( srcDataObjInfo != NULL ) {
-            /* use _rsDataObjReplS for the phymv */
-            dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
-            status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                      tmpRescGrpInfo->rescGroupName, NULL, 0 );
 
-            if ( multiCopyFlag == 0 ) {
-                if ( status >= 0 ) {
-                    srcDataObjInfo = srcDataObjInfo->next;
-                }
-                else {
-                    savedStatus = status;
-                }
-                /* use another resc */
-                break;
-            }
-            else {
-                if ( status < 0 ) {
-                    savedStatus = status;
-                    /* use another resc */
-                    break;
-                }
-            }
-            srcDataObjInfo = srcDataObjInfo->next;
-        }
-        if ( status >= 0 ) {
-            transStat->numThreads = dataObjInp->numThreads;
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
+    srcDataObjInfo = srcDataObjInfoHead;
+
+	while ( srcDataObjInfo != NULL ) {
+		/* use _rsDataObjReplS for the phymv */
+		dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
+		status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
+								  _resc_name, NULL, 0 );
+
+		if ( multiCopyFlag == 0 ) {
+			if ( status >= 0 ) {
+				srcDataObjInfo = srcDataObjInfo->next;
+			}
+			else {
+				savedStatus = status;
+			}
+			/* use another resc */
+			break;
+		}
+		else {
+			if ( status < 0 ) {
+				savedStatus = status;
+				/* use another resc */
+				break;
+			}
+		}
+		srcDataObjInfo = srcDataObjInfo->next;
+	}
+	if ( status >= 0 ) {
+		transStat->numThreads = dataObjInp->numThreads;
+	}
+
 
     if ( srcDataObjInfo != NULL ) {
         /* not everything got moved */

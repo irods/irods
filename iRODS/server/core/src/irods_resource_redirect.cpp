@@ -254,23 +254,11 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // this is a 'create' operation and no resource is specified,
             // query the server for the default or other resource to use
-            rescGrpInfo_t* grp_info = 0;
-            int status = getRescGrpForCreate( _comm, _data_obj_inp, resc_name, &grp_info );
-            if ( status < 0 || !grp_info || !grp_info->rescInfo ) {
+            int status = getRescGrpForCreate( _comm, _data_obj_inp, resc_name );
+            if ( status < 0 || resc_name.empty() ) {
                 // =-=-=-=-=-=-=-
-                // clean up memory
-                delete grp_info->rescInfo;
-                delete grp_info;
                 return ERROR( status, "failed in getRescGrpForCreate" );
             }
-
-            resc_name = grp_info->rescInfo->rescName;
-
-            // =-=-=-=-=-=-=-
-            // clean up memory
-            delete grp_info->rescInfo;
-            delete grp_info;
-
         }
         else {
             resc_name = _key_word;
