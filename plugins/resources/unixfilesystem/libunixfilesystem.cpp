@@ -89,20 +89,24 @@ static irods::error unix_file_copy_plugin(
 
     irods::error result = SUCCESS();
 
-    struct stat statbuf;
-    int status = stat( srcFileName, &statbuf );
-    int err_status = UNIX_FILE_STAT_ERR - errno;
-    if ( ( result = ASSERT_ERROR( status >= 0, err_status, "Stat of \"%s\" error, status = %d",
-                                  srcFileName, err_status ) ).ok() ) {
-
-        int inFd = open( srcFileName, O_RDONLY, 0 );
-        err_status = UNIX_FILE_OPEN_ERR - errno;
-        if ( inFd < 0 ) {
+    int inFd = open( srcFileName, O_RDONLY, 0 );
+    int err_status = UNIX_FILE_OPEN_ERR - errno;
+    if ( inFd < 0 ) {
+        std::stringstream msg_stream;
+        msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << err_status;
+        result = ERROR( err_status, msg_stream.str() );
+    }
+    else {
+        struct stat statbuf;
+        int status = stat( srcFileName, &statbuf );
+        err_status = errno;
+        if ( status < 0 ) {
+            close( inFd );
             std::stringstream msg_stream;
-            msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << status;
-            result = ERROR( err_status, msg_stream.str() );
+            msg_stream << "stat failed on \"" << srcFileName << "\", status: " << err_status;
+            result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
         }
-        else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
             close( inFd ); // JMC cppcheck - resource
             std::stringstream msg_stream;
             msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
@@ -113,37 +117,41 @@ static irods::error unix_file_copy_plugin(
             err_status = UNIX_FILE_OPEN_ERR - errno;
             if ( outFd < 0 ) {
                 std::stringstream msg_stream;
-                msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << status;
+                msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << err_status;
                 result = ERROR( err_status, msg_stream.str() );
             }
-            else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-                close( outFd ); // JMC cppcheck - resource
-                std::stringstream msg_stream;
-                msg_stream << "destFileName \"" << destFileName << "\" is not a regular file.";
-                result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
-            }
             else {
-                char myBuf[TRANS_BUF_SZ];
-                int bytesRead;
-                rodsLong_t bytesCopied = 0;
-                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                    int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
-                    err_status = UNIX_FILE_WRITE_ERR - errno;
-                    if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                                  destFileName, status ) ).ok() ) {
-                        bytesCopied += bytesWritten;
+                status = stat( destFileName, &statbuf );
+                err_status = errno;
+                if ( status < 0 ) {
+                    close( outFd );
+                    std::stringstream msg_stream;
+                    msg_stream << "stat failed on \"" << destFileName << "\", status: " << err_status;
+                    result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
+                }
+                else {
+                    char myBuf[TRANS_BUF_SZ];
+                    int bytesRead;
+                    rodsLong_t bytesCopied = 0;
+                    while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
+                        int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+                        err_status = UNIX_FILE_WRITE_ERR - errno;
+                        if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
+                                                        destFileName, status ) ).ok() ) {
+                            bytesCopied += bytesWritten;
+                        }
+                    }
+
+                    close( outFd );
+
+                    if ( result.ok() ) {
+                        result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
+                                bytesCopied, statbuf.st_size, srcFileName );
                     }
                 }
-
-                close( outFd );
-
-                if ( result.ok() ) {
-                    result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                                           bytesCopied, statbuf.st_size, srcFileName );
-                }
             }
-            close( inFd );
         }
+        close( inFd );
     }
     return result;
 }
