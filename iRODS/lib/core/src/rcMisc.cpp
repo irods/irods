@@ -1919,7 +1919,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -1935,7 +1935,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -1952,7 +1952,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         s = tstr;
         while ( isdigit( *s ) ) {
             s++;
@@ -1980,7 +1980,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         s = tstr;
         while ( isdigit( *s ) ) {
             s++;
@@ -2008,7 +2008,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -2037,7 +2037,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -2054,7 +2054,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         convertDateFormat( tstr, currTime );
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
@@ -2073,7 +2073,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         while ( isspace( *s ) ) {
             s++;
         }
-        strcpy( tstr, s );
+        snprintf( tstr, sizeof( tstr ), "%s", s );
         s = tstr;
         while ( isdigit( *s ) ) {
             s++;
