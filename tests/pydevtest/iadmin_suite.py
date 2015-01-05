@@ -819,11 +819,27 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"irule -F rule1_2242.r", "LIST", "failmsg" )
         assertiCmd(s.adminsession,"irule -F rule2_2242.r", "EMPTY" )
 
+    def test_irmtrash_admin_2461(self):
+        # 'irmtrash -M' was not deleting the r_objt_metamap entries for  collections it was deleting
+        #  leading to orphaned avu's that 'iadmin rum' could never remove
 
+        def make_file(f_name, f_size, source='/dev/zero'):
+            output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
+            if output[0] != 0:
+                sys.stderr.write(output[1] + '\n')
+                raise OSError(output[0], "call to dd returned non-zero")
 
-
-
-
-
-
-
+        collection_basename  = sys._getframe().f_code.co_name
+        assertiCmd(s.adminsession, 'imkdir %s' % collection_basename)
+        file_basename = 'dummy_file_to_trigger_recursive_rm'
+        make_file(file_basename, 10)
+        file_irods_path = os.path.join(collection_basename, file_basename)
+        assertiCmd(s.adminsession, 'iput %s %s' % (file_basename, file_irods_path))
+        a, v, u = ('attribute_'+collection_basename, 'value_'+collection_basename, 'unit_'+collection_basename)
+        assertiCmd(s.adminsession, 'imeta add -C %s %s %s %s' % (collection_basename, a, v, u))
+        assertiCmd(s.adminsession, 'imeta ls -C %s' % collection_basename, 'STDOUT_MULTILINE', [a, v, u])
+        assertiCmd(s.adminsession, 'irm -r %s' % collection_basename)
+        assertiCmd(s.adminsession, 'irmtrash -M')
+        assertiCmd(s.adminsession, 'iadmin rum')
+        assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '%s'"''' % a,
+                       'STDOUT', a)
