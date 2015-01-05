@@ -271,14 +271,13 @@ getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo ) {
 
 int
 getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
-               //'keyValPair_t *condInput, char *destRescName, char *srcRescName)
                keyValPair_t *condInput, char *destRescHier, char *srcRescHier ) {
     ruleExecInfo_t rei;
     dataObjInp_t doinp;
     int status;
     int numDestThr = -1;
     int numSrcThr = -1;
-    rescGrpInfo_t *rescGrpInfo;
+
 
     if ( inpNumThr == NO_THREADING ) {
         return 0;
@@ -310,24 +309,24 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     initReiWithDataObjInp( &rei, rsComm, &doinp );
 
     if ( destRescHier != NULL ) {
+
+    	// get resource (hierarchy) location
+        std::string location;
+        irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
+        if ( !ret.ok() ) {
+            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
         irods::hierarchy_parser parser;
         parser.set_string( destRescHier );
 
         std::string last_resc;
         parser.last_resc( last_resc );
 
-
-        rescGrpInfo = new rescGrpInfo_t;
-        rescGrpInfo->rescInfo = new rescInfo_t;
-        //status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
-
-        // =-=-=-=-=-=-=-
-        // get rescGrpInfo_t from resource name
-        irods::error err = irods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
+        irods::error err = irods::is_resc_live( last_resc.c_str() );
         if ( err.ok() ) {
-            rei.rgi = rescGrpInfo;
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
-//            delete rescGrpInfo;
 
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -340,9 +339,8 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                     return 0;
                 }
                 else if ( numDestThr == 1 && srcRescHier == NULL &&
-                          isLocalHost( rescGrpInfo->rescInfo->rescLoc ) ) {
-                    //            delete rescGrpInfo;
-                    /* one thread and resouce on local host */
+                          isLocalHost( location.c_str() ) ) {
+                    /* one thread and resource on local host */
                     return 0;
                 }
             }
@@ -354,23 +352,24 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             return numDestThr;
         }
 
+    	// get resource (hierarchy) location
+        std::string location;
+        irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
+        if ( !ret.ok() ) {
+            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
         irods::hierarchy_parser parser;
         parser.set_string( srcRescHier );
 
         std::string last_resc;
         parser.last_resc( last_resc );
 
-        rescGrpInfo = new rescGrpInfo_t;
-        rescGrpInfo->rescInfo = new rescInfo_t;
-        // =-=-=-=-=-=-=-
-        // convert the resource into the rescGrpInfo_t
-        irods::error err = irods::get_resc_grp_info( last_resc.c_str(), *rescGrpInfo );
+        irods::error err = irods::is_resc_live( last_resc.c_str() );
 
-        //status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
         if ( err.ok() ) {
-            rei.rgi = rescGrpInfo;
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
-//              delete rescGrpInfo;
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",

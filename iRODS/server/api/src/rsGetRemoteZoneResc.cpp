@@ -21,8 +21,6 @@
 int
 rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      rodsHostAddr_t **rescAddr ) {
-    //rescInfo_t *rescInfo = NULL;
-    //rescGrpInfo_t *myRescGrpInfo = NULL;
 
     // =-=-=-=-=-=-=-
     // acquire the operation requested

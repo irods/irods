@@ -229,22 +229,6 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           }*/
 
     	resc_name = myRodsObjStat->specColl->resource;
-
-//        irods::resource_ptr resc;
-//        myRescGrpInfo = new rescGrpInfo_t;
-//        myRescGrpInfo->rescInfo = new rescInfo_t;
-//        irods::error err = irods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
-//        if ( !err.ok() ) {
-//            delete myRescGrpInfo->rescInfo;
-//            delete myRescGrpInfo;
-//
-//            std::stringstream msg;
-//            msg << "failed to get resource info [";
-//            msg << myRodsObjStat->specColl->resource << "]";
-//            irods::log( PASSMSG( msg.str(), err ) );
-//            freeRodsObjStat( myRodsObjStat );
-//            return err.code();
-//        }
     }
     else {
         status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name );
@@ -253,10 +237,8 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             return status;
         }
     }
+
     /* just take the top one */
-//    rescInfo = myRescGrpInfo->rescInfo;
-
-
     rescInfo = new rescInfo_t;
     irods::error err = irods::get_resc_info( resc_name, *rescInfo );
     if ( !err.ok() ) {

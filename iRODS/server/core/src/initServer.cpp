@@ -2290,7 +2290,7 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 
 int
-isLocalHost( char *hostAddr ) {
+isLocalHost( const char *hostAddr ) {
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     rodsHostAddr_t addr;

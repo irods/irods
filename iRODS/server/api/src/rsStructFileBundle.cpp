@@ -24,9 +24,8 @@ rsStructFileBundle( rsComm_t *rsComm,
     int status;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
-//    rodsHostAddr_t rescAddr;
     dataObjInp_t dataObjInp;
-//    rescGrpInfo_t *rescGrpInfo = NULL;
+
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath,

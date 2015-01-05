@@ -262,11 +262,6 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
                     bytesBuf_t*   dataObjInpBBuf ) {
     int bytesWritten;
     int l1descInx;
-//    char rescGroupName[NAME_LEN];		//#1472
-//    rescInfo_t *rescInfo = NULL;
-//    rescGrpInfo_t *myRescGrpInfo = NULL;
-//    rescGrpInfo_t *tmpRescGrpInfo = NULL;
-//    rescInfo_t *tmpRescInfo = NULL;
     int status;
     openedDataObjInp_t dataObjCloseInp;
     std::string resc_name;
@@ -290,26 +285,6 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
 
     bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
 
-
-
-//    if ( bytesWritten < 0 ) {
-//        myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-//        if ( getStructFileType( myDataObjInfo->specColl ) < 0 &&
-//                strlen( myDataObjInfo->rescGroupName ) > 0 &&
-//                ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) == 0 ) {
-//            /* getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) { */
-//            /* File not in specColl and resc is a resc group and not
-//             * overwriting existing data. Save resc info in case the put fail
-//             */
-//            rstrcpy( rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN );
-////            rescInfo = myDataObjInfo->rescInfo;
-//        }
-//        else {
-//            rescGroupName[0] = '\0';
-////            rescInfo = NULL;
-//        }
-//    }
-
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
     L1desc[l1descInx].oprStatus = bytesWritten;
@@ -323,61 +298,10 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     if ( bytesWritten >= 0 ) {
         return status;
     }
-//    else if ( strlen( rescGroupName ) == 0 ) {
-//        return bytesWritten;
-//    }
 
-    // Should not need to go beyond that point #1472
     return bytesWritten;
-    // #1472
-
-
-
-//    /* get here when Put failed. and rescGroupName is a valid resc group.
-//     * Try other resc in the resc group */
-//    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name, &myRescGrpInfo );
-//    if ( status < 0 ) {
-//        return bytesWritten;
-//    }
-//    tmpRescGrpInfo = myRescGrpInfo;
-//    while ( tmpRescGrpInfo != NULL ) {
-//        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-//        if ( rescInfo == tmpRescInfo ) {
-//            /* already tried this resc */
-//            tmpRescGrpInfo = tmpRescGrpInfo->next;
-//            continue;
-//        }
-//        l1descInx = _rsDataObjCreateWithRescInfo( rsComm,
-//                    dataObjInp, resc_name, myRescGrpInfo->rescGroupName );
-//        if ( l1descInx <= 2 ) {
-//            if ( l1descInx >= 0 ) {
-//                rodsLog( LOG_ERROR,
-//                         "l3DataPutSingleBuf:_rsDataObjCreateWithRI %s err,stat = %d",
-//                         dataObjInp->objPath, l1descInx );
-//            }
-//        }
-//        else {
-//            bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp,
-//                                                dataObjInpBBuf );
-//            dataObjCloseInp.l1descInx = l1descInx;
-//            L1desc[l1descInx].oprStatus = bytesWritten;
-//            status = rsDataObjClose( rsComm, &dataObjCloseInp );
-//            if ( status < 0 ) {
-//                rodsLog( LOG_DEBUG,
-//                         "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
-//                         l1descInx, status );
-//            }
-//            if ( bytesWritten >= 0 ) {
-//                bytesWritten = status;
-//                break;
-//            }
-//        }
-//        tmpRescGrpInfo = tmpRescGrpInfo->next;
-//    }
-//    delete myRescGrpInfo->rescInfo;
-//    delete myRescGrpInfo;
-//    return bytesWritten;
 }
+
 
 int
 _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,

@@ -739,7 +739,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
         numInfo = 50;
     }
 
-    memset( myDataObjInfo, 0, numInfo * sizeof( rescGrpInfo_t * ) );
+    memset( myDataObjInfo, 0, numInfo * sizeof( dataObjInfo_t * ) );
     /* fill the array randomly */
 
     tmpCnt = numInfo;
@@ -908,7 +908,6 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
  */
 int
 matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
-//                    rescGrpInfo_t **rescGrpInfoHead,
                      const std::string& _resc_name, // replaces rescGrpInfoHead
                      int trimjFlag,
                      dataObjInfo_t **trimmedDataObjInfo ) {
