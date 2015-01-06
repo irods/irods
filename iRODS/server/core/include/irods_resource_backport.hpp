@@ -13,15 +13,16 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // helper functions for knitting back into legacy irods code
     error resource_to_resc_info( rescInfo_t&, resource_ptr& );
+#if 0	// #1472
     error resource_to_resc_grp_info( rescGrpInfo_t&, resource_ptr& );
+    error get_resc_grp_info( std::string, rescGrpInfo_t& );
+#endif
     error is_resc_live( const std::string& );
     error is_hier_live( const std::string& );
     error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, std::string& );
     error resolve_resource_name( std::string, keyValPair_t*, std::string& );
-
     error get_host_status_by_host_info( rodsServerHost_t* );
     error get_resc_info( std::string, rescInfo_t& );
-    error get_resc_grp_info( std::string, rescGrpInfo_t& );
     error get_host_for_hier_string(
         const std::string&,   // hier string
         int&,                 // local flag

@@ -227,6 +227,7 @@ namespace irods {
 
     } // resource_to_resc_info
 
+#if 0	// #1472
 // =-=-=-=-=-=-=-
 // helper function to extract useful bits from a resource plugin and fill in a
 // resource group info structure.
@@ -258,6 +259,7 @@ namespace irods {
         return SUCCESS();
 
     } // resource_to_resc_grp_info
+#endif
 
 
     /// @brief Checks that all resources in a hierarchy are live
@@ -548,6 +550,7 @@ namespace irods {
 
     } // get_resc_info
 
+#if 0	// #1472
 // =-=-=-=-=-=-=-
 // helper function to save on typing - get legacy data struct
 // for resource group given a resource name
@@ -582,6 +585,7 @@ namespace irods {
 
 
     } // get_resc_grp_info
+#endif
 
     error get_host_for_hier_string(
         const std::string& _hier_str,      // hier string
