@@ -146,7 +146,7 @@ l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

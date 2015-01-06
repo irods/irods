@@ -61,7 +61,7 @@ int rsGetHostForGet(
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( hier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 

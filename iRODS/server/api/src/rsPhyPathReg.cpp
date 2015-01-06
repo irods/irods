@@ -385,7 +385,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsPhyPathReg - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 
@@ -589,7 +589,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "dirPathReg - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -764,7 +764,7 @@ int mountFileDir( rsComm_t*     rsComm,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "mountFileDir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -1084,7 +1084,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "structFileSupport - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -1253,7 +1253,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "readPathnamePatternsFromFile - failed in get_loc_for_hier_string", ret ) );
         return NULL;
     }
 

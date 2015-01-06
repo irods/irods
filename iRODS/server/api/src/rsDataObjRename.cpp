@@ -431,7 +431,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        irods::log( PASSMSG( "l3Rename - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

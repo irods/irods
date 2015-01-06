@@ -109,7 +109,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsExecCmd - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 

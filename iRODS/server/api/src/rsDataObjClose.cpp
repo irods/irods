@@ -756,7 +756,7 @@ l3Close( rsComm_t *rsComm, int l1descInx ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "l3Close - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

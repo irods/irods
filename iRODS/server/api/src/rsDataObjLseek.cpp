@@ -57,7 +57,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

@@ -1241,7 +1241,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3FileSync - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

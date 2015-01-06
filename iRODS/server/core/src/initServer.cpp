@@ -116,7 +116,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+        irods::log( PASSMSG( "resoAndConnHostByDataObjInfo - failed in get_loc_for_hier_string", ret ) );
         return ret.code();
     }
 

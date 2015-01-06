@@ -103,7 +103,7 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( specColl->rescHier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "rsSyncMountedColl - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 

@@ -318,7 +318,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 std::string location;
                 irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
                 if ( !ret.ok() ) {
-                    irods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
+                    irods::log( PASSMSG( "dataObjUnlinkS - failed in get_loc_for_hier_string", ret ) );
                     return ret.code();
                 }
 
@@ -448,7 +448,7 @@ l3Unlink( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Unlink - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

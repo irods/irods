@@ -182,7 +182,7 @@ l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Mkdir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

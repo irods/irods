@@ -314,7 +314,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 
@@ -356,7 +356,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_String", ret ) );
+            irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 

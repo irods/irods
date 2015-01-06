@@ -357,7 +357,7 @@ extern "C" {
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( spec_coll->rescHier, location );
         if ( !ret.ok() ) {
-            return PASSMSG( "failed in get_loc_for_hier_string", ret );
+            return PASSMSG( "extract_file - failed in get_loc_for_hier_string", ret );
         }
 
         cb_ctx_t cb_ctx;
@@ -2318,7 +2318,7 @@ extern "C" {
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( spec_coll->rescHier, location );
         if ( !ret.ok() ) {
-            return PASSMSG( "failed in get_loc_for_hier_string", ret );
+            return PASSMSG( "bundle_cache_dir - failed in get_loc_for_hier_string", ret );
         }
 
         // =-=-=-=-=-=-=-

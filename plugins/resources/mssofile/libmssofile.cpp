@@ -1433,7 +1433,7 @@ extern "C" {
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( specColl->rescHier, location );
         if ( !ret.ok() ) {
-            return PASS( ret );
+            return PASSMSG( "msso_file_create_plugin - failed in get_loc_for_hier_string", ret );
         }
 
         snprintf( MssoStructFileDesc[structFileInx].location, NAME_LEN, "%s", location.c_str() );

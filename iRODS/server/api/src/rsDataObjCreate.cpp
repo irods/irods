@@ -446,7 +446,7 @@ l3Create( rsComm_t *rsComm, int l1descInx ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Create - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Create - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -481,7 +481,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3CreateByObjInfo - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3CreateByObjInfo - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 

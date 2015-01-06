@@ -334,7 +334,7 @@ l3Open( rsComm_t *rsComm, int l1descInx ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Open - failed in specColl open", ret ) );
+        irods::log( PASSMSG( "l3Open - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -366,7 +366,7 @@ _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags ) {
     std::string location;
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "l3Open - failed in get_loc_for_hier_String", ret ) );
+        irods::log( PASSMSG( "l3Open - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
