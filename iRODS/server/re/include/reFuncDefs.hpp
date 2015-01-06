@@ -115,9 +115,11 @@ int copyRescInfo( rescInfo_t *from, rescInfo_t *to );
 
 int freeRescInfo( rescInfo_t *rs );
 
+#if 0	// #1472
 int copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to );
 
 int freeRescGrpInfo( rescGrpInfo_t *rs );
+#endif
 
 int copyKeyValPairStruct( keyValPair_t *from, keyValPair_t *to );
 

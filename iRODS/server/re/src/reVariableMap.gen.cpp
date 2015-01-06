@@ -579,6 +579,7 @@ ExprType *getVarTypeFromRescInfo( char *varMap, Region *r ) {
 }
 
 
+#if 0	// #1472
 int getValFromRescGrpInfo( char *varMap, rescGrpInfo_t *rei, Res **varValue, Region *r ) {
     char varName[NAME_LEN];
     char *varMapCPtr;
@@ -649,6 +650,7 @@ int getValFromRescGrpInfo( char *varMap, rescGrpInfo_t *rei, Res **varValue, Reg
 
     return UNDEFINED_VARIABLE_MAP_ERR;
 }
+
 int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue ) {
     char varName[NAME_LEN];
     char *varMapCPtr;
@@ -716,6 +718,8 @@ int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue
 
     return UNDEFINED_VARIABLE_MAP_ERR;
 }
+
+
 ExprType *getVarTypeFromRescGrpInfo( char *varMap, Region *r ) {
     char varName[NAME_LEN];
     char *varMapCPtr;
@@ -776,6 +780,7 @@ ExprType *getVarTypeFromRescGrpInfo( char *varMap, Region *r ) {
 
     return newErrorType( UNDEFINED_VARIABLE_MAP_ERR, r );
 }
+#endif
 
 
 int getValFromKeyValPair( char *varMap, keyValPair_t *rei, Res **varValue, Region *r ) {
@@ -2284,12 +2289,12 @@ int getValFromRuleExecInfo( char *varMap, ruleExecInfo_t *rei, Res **varValue, R
     }
 
 
-    if ( strcmp( varName, "rgi" ) == 0 ) {
-
-        i = getValFromRescGrpInfo( varMapCPtr, rei->rgi, varValue, r );
-
-        return i;
-    }
+//    if ( strcmp( varName, "rgi" ) == 0 ) {
+//
+//        i = getValFromRescGrpInfo( varMapCPtr, rei->rgi, varValue, r );
+//
+//        return i;
+//    }
 
 
     if ( strcmp( varName, "uoic" ) == 0 ) {
@@ -2438,12 +2443,12 @@ int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarVal
         return i;
     }
 
-    if ( strcmp( varName, "rgi" ) == 0 ) {
-
-        i = setValFromRescGrpInfo( varMapCPtr, &( rei->rgi ), newVarValue );
-
-        return i;
-    }
+//    if ( strcmp( varName, "rgi" ) == 0 ) {
+//
+//        i = setValFromRescGrpInfo( varMapCPtr, &( rei->rgi ), newVarValue );
+//
+//        return i;
+//    }
 
     if ( strcmp( varName, "uoic" ) == 0 ) {
 
@@ -2578,11 +2583,11 @@ ExprType *getVarTypeFromRuleExecInfo( char *varMap, Region *r ) {
     }
 
 
-    if ( strcmp( varName, "rgi" ) == 0 ) {
-
-        return getVarTypeFromRescGrpInfo( varMapCPtr, r );
-
-    }
+//    if ( strcmp( varName, "rgi" ) == 0 ) {
+//
+//        return getVarTypeFromRescGrpInfo( varMapCPtr, r );
+//
+//    }
 
 
     if ( strcmp( varName, "uoic" ) == 0 ) {

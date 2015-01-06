@@ -47,13 +47,13 @@ copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to ) {
         to->doi = NULL;
     }
 
-    if ( from->rgi != NULL ) {
-        to->rgi = ( rescGrpInfo_t* )mallocAndZero( sizeof( rescGrpInfo_t ) );
-        copyRescGrpInfo( from->rgi, to->rgi );
-    }
-    else {
-        to->rgi = NULL;
-    }
+//    if ( from->rgi != NULL ) {
+//        to->rgi = ( rescGrpInfo_t* )mallocAndZero( sizeof( rescGrpInfo_t ) );
+//        copyRescGrpInfo( from->rgi, to->rgi );
+//    }
+//    else {
+//        to->rgi = NULL;
+//    }
 
     if ( from->uoic != NULL ) {
         to->uoic = ( userInfo_t* )mallocAndZero( sizeof( userInfo_t ) );
@@ -126,9 +126,9 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
     if ( rs->doi != NULL ) {
         freeAllDataObjInfo( rs->doi );
     }
-    if ( rs->rgi != NULL ) {
-        freeRescGrpInfo( rs->rgi );
-    }
+//    if ( rs->rgi != NULL ) {
+//        freeRescGrpInfo( rs->rgi );
+//    }
     if ( rs->uoic != NULL ) {
         freeUserInfo( rs->uoic );
     }
@@ -178,6 +178,7 @@ copyCollInfo( collInfo_t *from, collInfo_t *to ) {
 }
 
 
+#if 0	// #1472
 int
 copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to ) {
     *to = *from;
@@ -188,17 +189,6 @@ copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to ) {
     else {
         to->next = NULL;
     }
-    return 0;
-}
-
-
-
-int
-freeCollInfo( collInfo_t *rs ) {
-    if ( rs->next != NULL ) {
-        freeCollInfo( rs->next );
-    }
-    free( rs );
     return 0;
 }
 
@@ -213,6 +203,18 @@ freeRescGrpInfo( rescGrpInfo_t *rs ) {
     free( rs );
     return 0;
 }
+#endif
+
+
+int
+freeCollInfo( collInfo_t *rs ) {
+    if ( rs->next != NULL ) {
+        freeCollInfo( rs->next );
+    }
+    free( rs );
+    return 0;
+}
+
 
 int
 copyUserInfo( userInfo_t *from, userInfo_t *to ) {
