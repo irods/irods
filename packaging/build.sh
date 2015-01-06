@@ -1242,9 +1242,17 @@ if [ "$BUILDIRODS" == "1" ] ; then
         echo ""
         echo "${text_green}${text_bold}Building [$DATABASE_PLUGIN_TYPE] database plugin...${text_reset}"
         if [ "$RUNINPLACE" == "1" ] ; then
-            $BUILDDIR/plugins/database/build.sh --run-in-place $DATABASE_PLUGIN_TYPE
+            if [ "$ORACLE_HOME" != "" ] ; then
+                ORACLE_HOME=$ORACLE_HOME $BUILDDIR/plugins/database/build.sh --run-in-place $DATABASE_PLUGIN_TYPE
+            else
+                $BUILDDIR/plugins/database/build.sh --run-in-place $DATABASE_PLUGIN_TYPE
+            fi
         else
-            $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+            if [ "$ORACLE_HOME" != "" ] ; then
+                ORACLE_HOME=$ORACLE_HOME $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+            else
+                $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+            fi
         fi
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         # build resource package
