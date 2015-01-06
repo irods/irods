@@ -2213,12 +2213,12 @@ convertDateFormat( char * s, char * currTime ) {
  *     nnnnm - an integer followed by 'm' ==> in min
  *     nnnnh - an integer followed by 'h' ==> in hours
  *     nnnnd - an integer followed by 'd' ==> in days
- *     nnnnd - an integer followed by 'y' ==> in years
+ *     nnnny - an integer followed by 'y' ==> in years
  *     dd.hh:mm:ss - where dd, hh, mm and ss are 2 digits integers representing
  *       days, hours minutes and seconds, repectively. Truncation from the
  *       end is allowed. e.g. 20:40 means mm:ss
- * The input can also be full calander time in the form:
- *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginnning is allowed.
+ * The input can also be full calendar time in the form:
+ *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginning is allowed.
  *       e.g., 2007-07-29.12 means noon of July 29, 2007.
  *
  */
@@ -2859,7 +2859,7 @@ setStateForRestart( rodsRestart_t * rodsRestart, rodsPath_t * targPath,
         /* check the restart collection */
         if ( strstr( targPath->outPath, rodsRestart->collection ) != NULL ) {
             /* just use the rodsRestart->collection because the
-             * targPath may be resolved into a differnet path */
+             * targPath may be resolved into a different path */
             rstrcpy( targPath->outPath, rodsRestart->collection, MAX_NAME_LEN );
             rodsRestart->restartState |= MATCHED_RESTART_COLL;
             rodsRestart->curCnt = 0;

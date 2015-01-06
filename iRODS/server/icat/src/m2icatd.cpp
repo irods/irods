@@ -544,7 +544,7 @@ localToUnixTime( char *localTime, char *unixTime ) {
  *       days, hours minutes and seconds, repectively. Truncation from the
  *       end is allowed. e.g. 20:40 means mm:ss
  * The input can also be full calander time in the form:
- *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginnning is allowed.
+ *    YYYY-MM-DD.hh:mm:ss  - Truncation from the beginning is allowed.
  *       e.g., 2007-07-29.12 means noon of July 29, 2007.
  *
  */
