@@ -106,28 +106,6 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
         else {
             remoteFlag = rodsServerHost->localFlag;
         }
-
-//        rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
-//
-//        //status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
-//        irods::error err = irods::get_resc_grp_info( tmpStr, *rescGrpInfo );
-//        if ( !err.ok() ) { // (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
-//            rodsLog( LOG_ERROR,
-//                     "_rsProcStat: _getRescInfo of %s error. stat = %d",
-//                     tmpStr, status );
-//            delete rescGrpInfo;
-//            return status;
-//        }
-//        rstrcpy( procStatInp->addr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN );
-//        rodsServerHost = ( rodsServerHost_t* )rescGrpInfo->rescInfo->rodsServerHost;
-//        if ( rodsServerHost == NULL ) {
-//            remoteFlag = SYS_INVALID_SERVER_HOST;
-//        }
-//        else {
-//            remoteFlag = rodsServerHost->localFlag;
-//        }
-//
-//        delete rescGrpInfo;
     }
     else {
         /* do the IES server */

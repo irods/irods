@@ -1019,8 +1019,6 @@ int msiPhyDataObjCreate( ruleExecInfo_t *rei ) {
 }
 
 int msiSetResourceList( ruleExecInfo_t *rei ) {
-//    int status;
-//    rescGrpInfo_t *myRescGrpInfo = NULL;
 
     /**** This is Just a Test Stub  ****/
     if ( reTestFlag > 0 ) {
@@ -1035,18 +1033,20 @@ int msiSetResourceList( ruleExecInfo_t *rei ) {
 
     return SYS_NOT_IMPLEMENTED;
 
+#if 0	// #1472
     /* I am just doing below what Mike wrote **/
     /* it might be a useful thing to geth this info from other rules
        and RCAT */
-//    status = getRescInfo( rei->rsComm,
-//                          NULL, &rei->doinp->condInput, &myRescGrpInfo );
-//    if ( status < 0 ) {
-//        return status;
-//    }
-//    sortResc( &myRescGrpInfo, &rei->doinp->condInput, NULL );
-//    rstrcpy( rei->doi->rescName, myRescGrpInfo->rescInfo->rescName, NAME_LEN );
-//    rei->rgi = myRescGrpInfo;
-//    return 0;
+    status = getRescInfo( rei->rsComm,
+                          NULL, &rei->doinp->condInput, &myRescGrpInfo );
+    if ( status < 0 ) {
+        return status;
+    }
+    sortResc( &myRescGrpInfo, &rei->doinp->condInput, NULL );
+    rstrcpy( rei->doi->rescName, myRescGrpInfo->rescInfo->rescName, NAME_LEN );
+    rei->rgi = myRescGrpInfo;
+    return 0;
+#endif
 }
 
 

@@ -2289,14 +2289,6 @@ int getValFromRuleExecInfo( char *varMap, ruleExecInfo_t *rei, Res **varValue, R
     }
 
 
-//    if ( strcmp( varName, "rgi" ) == 0 ) {
-//
-//        i = getValFromRescGrpInfo( varMapCPtr, rei->rgi, varValue, r );
-//
-//        return i;
-//    }
-
-
     if ( strcmp( varName, "uoic" ) == 0 ) {
 
         i = getValFromUserInfo( varMapCPtr, rei->uoic, varValue, r );
@@ -2443,13 +2435,6 @@ int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarVal
         return i;
     }
 
-//    if ( strcmp( varName, "rgi" ) == 0 ) {
-//
-//        i = setValFromRescGrpInfo( varMapCPtr, &( rei->rgi ), newVarValue );
-//
-//        return i;
-//    }
-
     if ( strcmp( varName, "uoic" ) == 0 ) {
 
         i = setValFromUserInfo( varMapCPtr, &( rei->uoic ), newVarValue );
@@ -2581,13 +2566,6 @@ ExprType *getVarTypeFromRuleExecInfo( char *varMap, Region *r ) {
         return getVarTypeFromDataObjInfo( varMapCPtr, r );
 
     }
-
-
-//    if ( strcmp( varName, "rgi" ) == 0 ) {
-//
-//        return getVarTypeFromRescGrpInfo( varMapCPtr, r );
-//
-//    }
 
 
     if ( strcmp( varName, "uoic" ) == 0 ) {

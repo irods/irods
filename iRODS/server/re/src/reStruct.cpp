@@ -47,14 +47,6 @@ copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to ) {
         to->doi = NULL;
     }
 
-//    if ( from->rgi != NULL ) {
-//        to->rgi = ( rescGrpInfo_t* )mallocAndZero( sizeof( rescGrpInfo_t ) );
-//        copyRescGrpInfo( from->rgi, to->rgi );
-//    }
-//    else {
-//        to->rgi = NULL;
-//    }
-
     if ( from->uoic != NULL ) {
         to->uoic = ( userInfo_t* )mallocAndZero( sizeof( userInfo_t ) );
         copyUserInfo( from->uoic, to->uoic );
@@ -126,9 +118,6 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
     if ( rs->doi != NULL ) {
         freeAllDataObjInfo( rs->doi );
     }
-//    if ( rs->rgi != NULL ) {
-//        freeRescGrpInfo( rs->rgi );
-//    }
     if ( rs->uoic != NULL ) {
         freeUserInfo( rs->uoic );
     }

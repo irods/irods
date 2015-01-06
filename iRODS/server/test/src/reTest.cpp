@@ -42,8 +42,6 @@ int main( int argc, char **argv ) {
     }
 
     rei->doi = mallocAndZero( sizeof( dataObjInfo_t ) );
-    rei->rgi = mallocAndZero( sizeof( rescGrpInfo_t ) );
-    rei->rgi->rescInfo = mallocAndZero( sizeof( rescInfo_t ) );
     rei->uoip = mallocAndZero( sizeof( userInfo_t ) );
     rei->uoic = mallocAndZero( sizeof( userInfo_t ) );
     rei->uoio = mallocAndZero( sizeof( userInfo_t ) );

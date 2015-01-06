@@ -54,14 +54,6 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
         return SYS_INVALID_ZONE_NAME;
     }
 
-//    rescGrpInfo_t rescGrpInfo;
-//    rescGrpInfo.rescInfo = NULL;
-//    irods::error err = irods::get_resc_grp_info( destRescName, rescGrpInfo );
-//    if ( !err.ok() ) {
-//        irods::log( PASS( err ) );
-//        return err.code();
-//    }
-
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then

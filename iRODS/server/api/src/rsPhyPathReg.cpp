@@ -68,13 +68,10 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 int
 irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     int status;
-//    rescGrpInfo_t *rescGrpInfo = NULL;
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag;
-    //int rescCnt;
     rodsHostAddr_t addr;
-    //char *rescGroupName = NULL;
-    //rescInfo_t *tmpRescInfo = NULL;
+
 
     // =-=-=-=-=-=-=-
     // NOTE:: resource_redirect can wipe out the specColl due to a call to getDataObjIncSpecColl
@@ -249,16 +246,6 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     std::string resc_name;
     parser.first_resc( resc_name );
 
-//    rescGrpInfo = new rescGrpInfo_t;
-//    rescGrpInfo->rescInfo = new rescInfo_t;
-//    irods::error err = irods::get_resc_grp_info( resc_name, *rescGrpInfo );
-//    if ( !err.ok() ) {
-//        irods::log( PASS( err ) );
-//        delete rescGrpInfo->rescInfo;
-//        delete rescGrpInfo;
-//        return -1;
-//    }
-
     std::string last_resc;
     parser.last_resc( last_resc );
 
@@ -360,7 +347,6 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     rstrcpy( dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.filePath, filePath, MAX_NAME_LEN );
     dataObjInfo.rescInfo = new rescInfo_t;
-//    memcpy( dataObjInfo.rescInfo, rescGrpInfo->rescInfo, sizeof( rescInfo_t ) );
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
@@ -408,7 +394,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         if ( excludePatternFile != NULL ) {
             ExcludePatterns = readPathnamePatternsFromFile( rsComm,
                               excludePatternFile,
-                              resc_hier ); //rescGrpInfo->rescInfo);
+                              resc_hier );
         }
 
         status = dirPathReg( rsComm, phyPathRegInp, filePath, _resc_name );
@@ -473,7 +459,6 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
     destDataObjInfo.rescInfo = new rescInfo_t;
-//    memcpy( destDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
     if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
                                         RESC_GROUP_NAME_KW ) ) != NULL ) {
@@ -513,7 +498,6 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     dataObjInfo.rescInfo = new rescInfo_t;
-//    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
