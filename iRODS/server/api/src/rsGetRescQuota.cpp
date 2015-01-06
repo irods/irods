@@ -45,8 +45,8 @@ int
 _rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
                  rescQuota_t **rescQuota ) {
     int status = 0;
-    rescGrpInfo_t *tmpRescGrpInfo = NULL;
-    rescGrpInfo_t *rescGrpInfo = 0;
+//    rescGrpInfo_t *tmpRescGrpInfo = NULL;
+//    rescGrpInfo_t *rescGrpInfo = 0;
 
     genQueryOut_t *genQueryOut = NULL;
 
@@ -61,41 +61,48 @@ _rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
                              getRescQuotaInp->rescName, &genQueryOut );
 
-    if ( status >= 0 ) {
-        queRescQuota( rescQuota, genQueryOut, NULL );
-        freeGenQueryOut( &genQueryOut );
-        return status;
+    // #1472
+    if (status >= 0) {
+    	queRescQuota( rescQuota, genQueryOut, NULL );
     }
-
-    /* not a resource. may be a resource group */
-    //status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
-    rescGrpInfo = new rescGrpInfo_t;
-    rescGrpInfo->rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
-    if ( !err.ok() ) {//(status < 0) {
-        rodsLog( LOG_ERROR,
-                 "_rsGetRescQuota: _getRescInfo of %s error for %s. stat = %d",
-                 getRescQuotaInp->rescName, getRescQuotaInp->zoneHint, status );
-        delete rescGrpInfo->rescInfo;
-        delete rescGrpInfo;
-        return status;
-    }
-
-    tmpRescGrpInfo = rescGrpInfo;
-    while ( tmpRescGrpInfo != NULL ) {
-        status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
-                                 tmpRescGrpInfo->rescInfo->rescName, &genQueryOut );
-
-        if ( status >= 0 ) {
-            queRescQuota( rescQuota, genQueryOut, tmpRescGrpInfo->rescGroupName );
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    delete rescGrpInfo->rescInfo;
-    delete rescGrpInfo;
     freeGenQueryOut( &genQueryOut );
+    return status;
 
-    return 0;
+//    if ( status >= 0 ) {
+//        queRescQuota( rescQuota, genQueryOut, NULL );
+//        freeGenQueryOut( &genQueryOut );
+//        return status;
+//    }
+//
+//    /* not a resource. may be a resource group */
+//    //status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
+//    rescGrpInfo = new rescGrpInfo_t;
+//    rescGrpInfo->rescInfo = new rescInfo_t;
+//    irods::error err = irods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
+//    if ( !err.ok() ) {//(status < 0) {
+//        rodsLog( LOG_ERROR,
+//                 "_rsGetRescQuota: _getRescInfo of %s error for %s. stat = %d",
+//                 getRescQuotaInp->rescName, getRescQuotaInp->zoneHint, status );
+//        delete rescGrpInfo->rescInfo;
+//        delete rescGrpInfo;
+//        return status;
+//    }
+//
+//    tmpRescGrpInfo = rescGrpInfo;
+//    while ( tmpRescGrpInfo != NULL ) {
+//        status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
+//                                 tmpRescGrpInfo->rescInfo->rescName, &genQueryOut );
+//
+//        if ( status >= 0 ) {
+//            queRescQuota( rescQuota, genQueryOut, tmpRescGrpInfo->rescGroupName );
+//        }
+//        tmpRescGrpInfo = tmpRescGrpInfo->next;
+//    }
+//    delete rescGrpInfo->rescInfo;
+//    delete rescGrpInfo;
+//    freeGenQueryOut( &genQueryOut );
+//
+//    return 0;
 }
 
 /* getQuotaByResc - get the quoto for an individual resource. The code is
@@ -219,6 +226,8 @@ fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
     return 0;
 }
 
+
+#if 0	// #1472
 int
 setRescQuota( rsComm_t *rsComm, char *zoneHint,
               rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
@@ -303,6 +312,7 @@ setRescQuota( rsComm_t *rsComm, char *zoneHint,
     return status;
 }
 
+
 int
 chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
     rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
@@ -361,6 +371,8 @@ chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
         return 0;
     }
 }
+#endif	// #1472
+
 
 int
 updatequotaOverrun( rescInfo_t *rescInfo, rodsLong_t dataSize, int flags ) {

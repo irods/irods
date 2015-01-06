@@ -581,16 +581,18 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
         _resc_name = rei.rescName;
     }
 
-//    status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
-//
-//    if ( status == SYS_RESC_QUOTA_EXCEEDED ) {
-//        if ( rei.rgi == NULL ) {
-//            delete( *myRescGrpInfo )->rescInfo;
-//            delete( *myRescGrpInfo );
-//            *myRescGrpInfo = NULL;
-//        }
-//        return SYS_RESC_QUOTA_EXCEEDED;
-//    }
+#if 0	// #1472
+    status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
+
+    if ( status == SYS_RESC_QUOTA_EXCEEDED ) {
+        if ( rei.rgi == NULL ) {
+            delete( *myRescGrpInfo )->rescInfo;
+            delete( *myRescGrpInfo );
+            *myRescGrpInfo = NULL;
+        }
+        return SYS_RESC_QUOTA_EXCEEDED;
+    }
+#endif
 
     return 0; // JMC - should this be 1 per above block?
 }
