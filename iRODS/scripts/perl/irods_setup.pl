@@ -1933,7 +1933,9 @@ sub configureIrodsUser
         "    \"irods_default_hash_scheme\": \"SHA256\",\n" .
         "    \"irods_match_hash_policy\": \"not_strict\",\n" .
         "    \"irods_server_control_plane_port\": 1248,\n" .
-        "    \"irods_server_control_plane_key\": \"temp_32_byte_key_for_ctrl__plane\"\n" .
+        "    \"irods_server_control_plane_key\": \"temp_32_byte_key_for_ctrl__plane\",\n" .
+        "    \"irods_server_control_plane_encryption_num_hash_rounds\": 16,\n" .
+        "    \"irods_server_control_plane_encryption_algorithm\": \"AES-256-CBC\"\n" .
         "}\n"
          );
 

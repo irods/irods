@@ -364,36 +364,56 @@ extern "C" {
             props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
             _env->irodsSSLCACertificatePath );
+
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
             _env->irodsSSLCACertificateFile );
+
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SSL_VERIFY_SERVER,
             _env->irodsSSLVerifyServer );
+
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
             _env->irodsSSLCertificateChainFile );
+
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
             _env->irodsSSLCertificateKeyFile );
+
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
+
+        // control plane variables
         capture_string_property(
             msg_lvl,
             props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
             _env->irodsCtrlPlaneKey );
+
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+            _env->irodsCtrlPlaneEncryptionNumHashRounds );
+
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
+            _env->irodsCtrlPlaneEncryptionAlgorithm );
+
         capture_integer_property(
             msg_lvl,
             props,

@@ -52,6 +52,8 @@ typedef struct {
     char irodsCtrlPlaneKey[MAX_NAME_LEN];
     int  irodsCtrlPlanePort;
 
+    int  irodsCtrlPlaneEncryptionNumHashRounds;
+    char irodsCtrlPlaneEncryptionAlgorithm[ HEADER_TYPE_LEN ];
 
 
 

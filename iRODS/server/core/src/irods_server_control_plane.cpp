@@ -9,37 +9,98 @@
 #include "irods_log.hpp"
 #include "irods_server_control_plane.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_buffer_encryption.hpp"
 
 #include "irods_server_state.hpp"
 #include "irods_stacktrace.hpp"
 
 namespace irods {
 
+
+    static error get_server_properties( 
+        const std::string&     _port_keyword,
+        int&                   _port,
+        int&                   _num_rounds,
+        buffer_crypt::array_t& _key,
+        std::string&           _algorithm ) {
+
+        error ret = get_server_property< int > (
+                        _port_keyword,
+                        _port );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        std::string key;
+        ret = get_server_property <
+              std::string > (
+                  CFG_SERVER_CONTROL_PLANE_KEY,
+                  key );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        ret = get_server_property <
+              int > (
+                  CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+                  _num_rounds );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        std::string encryption_algorithm;
+        ret = get_server_property <
+              std::string > (
+                  CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
+                  _algorithm );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        // convert string to array_t 
+        _key.assign( 
+            key.begin(),
+            key.end() );
+
+        return SUCCESS();
+
+    } // get_server_properties
+
     static error forward_server_control_command(
         const std::string& _name,
         const std::string& _host,
         const std::string& _port_keyword,
         std::string&       _output ) {
-        // fetch the server properties: port and timeout
-        int port = 0;
-        error ret = get_server_property< int > (
-                        _port_keyword,
-                        port );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
         int time_out = 0;
-        ret = get_server_property <
-              int > (
-                  CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                  time_out );
+        error ret = get_server_property <
+                        int > (
+                            CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                            time_out );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+        
+        int port = 0, num_hash_rounds = 0;
+        std::string encryption_algorithm;
+        buffer_crypt::array_t shared_secret;
+
+        ret = get_server_properties( 
+                  _port_keyword,
+                  port, 
+                  num_hash_rounds,
+                  shared_secret,
+                  encryption_algorithm );
         if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
+        // stringify the port
         std::stringstream port_sstr;
         port_sstr << port;
 
@@ -70,12 +131,33 @@ namespace irods {
         avro::encode( *e, cmd );
         boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
 
+        buffer_crypt crypt(
+                shared_secret.size(),  // key size
+                0,                     // salt size ( we dont send a salt )
+                num_hash_rounds,       // num hash rounds
+                encryption_algorithm.c_str());
+
+        buffer_crypt::array_t iv;
+        buffer_crypt::array_t data_to_send;
+        buffer_crypt::array_t data_to_encrypt( 
+                                  data->data(),
+                                  data->data()+data->size() );
+        ret = crypt.encrypt(
+                  shared_secret,
+                  iv,
+                  data_to_encrypt,
+                  data_to_send );
+        if( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
         // copy binary encoding into a zmq message for transport
-        zmq::message_t rep( data->size() );
+        zmq::message_t rep( data_to_send.size() );
         memcpy(
             rep.data(),
-            data->data(),
-            data->size() );
+            data_to_send.data(),
+            data_to_send.size() );
         zmq_skt.send( rep );
 
         // wait for the server reponse
@@ -364,14 +446,18 @@ namespace irods {
     } // get_resource_host_names
 
     void server_control_executor::operator()() {
-        int port = 0;
-        error ret = get_server_property <
-                    int > (
+
+        int port = 0, num_hash_rounds = 0;
+        buffer_crypt::array_t shared_secret; 
+        std::string encryption_algorithm;
+        error ret = get_server_properties( 
                         port_prop_,
-                        port );
-        if ( !ret.ok() ) {
-            log( PASS( ret ) );
-            // TODO :: throw fancy exception here
+                        port, 
+                        num_hash_rounds,
+                        shared_secret,
+                        encryption_algorithm );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return;
 
         }
@@ -417,11 +503,32 @@ namespace irods {
 
             }
 
-            zmq::message_t rep( rep_msg.size() );
+            buffer_crypt crypt(
+                    shared_secret.size(), // key size
+                    0,                    // salt size ( we dont send a salt )
+                    num_hash_rounds,      // num hash rounds
+                    encryption_algorithm.c_str());
+
+            buffer_crypt::array_t iv;
+            buffer_crypt::array_t data_to_send;
+            buffer_crypt::array_t data_to_encrypt( 
+                                      rep_msg.begin(),
+                                      rep_msg.end() );
+            ret = crypt.encrypt(
+                      shared_secret,
+                      iv,
+                      data_to_encrypt,
+                      data_to_send );
+            if( !ret.ok() ) {
+                irods::log( PASS( ret ) );
+
+            }
+
+            zmq::message_t rep( data_to_send.size() );
             memcpy(
                 rep.data(),
-                rep_msg.c_str(),
-                rep.size() );
+                data_to_send.data(),
+                data_to_send.size() );
 
             zmq_skt.send( rep );
 
@@ -695,10 +802,51 @@ namespace irods {
 
         }
 
+        int port = 0, num_hash_rounds = 0;
+        buffer_crypt::array_t shared_secret; 
+        std::string encryption_algorithm;
+        error ret = get_server_properties( 
+                        port_prop_,
+                        port, 
+                        num_hash_rounds,
+                        shared_secret,
+                        encryption_algorithm );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+
+        }
+
+        // decrypt the message before passing to avro
+        buffer_crypt crypt(
+                shared_secret.size(), // key size
+                0,                    // salt size ( we dont send a salt )
+                num_hash_rounds,      // num hash rounds
+                encryption_algorithm.c_str());
+
+        buffer_crypt::array_t iv;
+        buffer_crypt::array_t data_to_process;
+
+        const uint8_t* data_ptr = static_cast< const uint8_t* >( _msg.data() );
+        buffer_crypt::array_t data_to_decrypt( 
+                                  data_ptr, 
+                                  data_ptr + _msg.size() );
+        ret = crypt.decrypt(
+                  shared_secret,
+                  iv,
+                  data_to_decrypt,
+                  data_to_process );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+
+        }
+
+
         std::auto_ptr<avro::InputStream> in = avro::memoryInputStream(
                 static_cast<const uint8_t*>(
-                    _msg.data() ),
-                _msg.size() );
+                    data_to_process.data() ),
+                    data_to_process.size() );
         avro::DecoderPtr dec = avro::binaryDecoder();
         dec->init( *in );
 
@@ -707,12 +855,13 @@ namespace irods {
 
         std::string cmd_name, cmd_option;
         host_list_t cmd_hosts;
-        error ret = extract_command_parameters(
-                        cmd,
-                        cmd_name,
-                        cmd_option,
-                        cmd_hosts );
+        ret = extract_command_parameters(
+                  cmd,
+                  cmd_name,
+                  cmd_option,
+                  cmd_hosts );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
@@ -726,6 +875,7 @@ namespace irods {
                   cmd_hosts,
                   _output );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
@@ -734,6 +884,7 @@ namespace irods {
         ret = get_resource_host_names(
                   irods_hosts );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
@@ -749,6 +900,7 @@ namespace irods {
                   cmd_hosts,
                   valid_hosts );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
@@ -758,6 +910,7 @@ namespace irods {
                   valid_hosts,
                   _output );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
@@ -771,6 +924,7 @@ namespace irods {
                   cmd_hosts, // dont want sanitized
                   _output );
         if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return PASS( ret );
 
         }
