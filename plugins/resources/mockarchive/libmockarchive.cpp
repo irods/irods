@@ -389,22 +389,22 @@ extern "C" {
         int status;
         struct stat statbuf;
 
-        status = stat( srcFileName, &statbuf );
-
-        if ( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
-            rodsLog( LOG_ERROR,
-                     "mockArchiveCopyPlugin: stat of %s error, status = %d",
-                     srcFileName, status );
-            return status;
-        }
 
         inFd = open( srcFileName, O_RDONLY, 0 );
+        status = stat( srcFileName, &statbuf );
         if ( inFd < 0 ) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog( LOG_ERROR,
                      "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
+            return status;
+        }
+        else if ( status < 0 ) {
+            status = UNIX_FILE_STAT_ERR - errno;
+            rodsLog( LOG_ERROR,
+                     "mockArchiveCopyPlugin: stat of %s error, status = %d",
+                     srcFileName, status );
+            close( inFd ); // JMC cppcheck - resource
             return status;
         }
         else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
