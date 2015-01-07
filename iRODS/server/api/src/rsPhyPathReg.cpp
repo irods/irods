@@ -371,7 +371,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
         if ( !ret.ok() ) {
-            irods::log( PASSMSG( "rsPhyPathReg - failed in get_loc_for_hier_string", ret ) );
+            irods::log( PASSMSG( "_rsPhyPathReg - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
 
@@ -410,7 +410,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     	std::string resc_vault_path;
     	irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_PATH, resc_vault_path );
     	if ( !ret.ok() ) {
-    		irods::log PASSMSG( "dirPathReg - failed in get_resource_property", ret );
+    		irods::log PASSMSG( "_rsPhyPathReg - failed in get_resource_property", ret );
     		return ret.code();
     	}
 
@@ -529,7 +529,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
-                     "rodsPathReg: _dataObjChksum for %s failed, status = %d",
+                     "filePathReg: _dataObjChksum for %s failed, status = %d",
                      dataObjInfo.objPath, status );
             return status;
         }
@@ -539,7 +539,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     status = svrRegDataObj( rsComm, &dataObjInfo );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "filePathReg: rsRegDataObj for %s failed, status = %d",
+                 "filePathReg: svrRegDataObj for %s failed, status = %d",
                  dataObjInfo.objPath, status );
     }
     else {
@@ -906,7 +906,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         status = _rsSyncMountedColl( rsComm, rodsObjStatOut->specColl,
                                      PURGE_STRUCT_FILE_CACHE );
         if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "_rsSyncMountedColl failed in unmountFileDir with status %d", status );
+            rodsLog( LOG_ERROR, "unmountFileDir -  failed in _rsSyncMountedColl with status %d", status );
         }
     }
 
