@@ -52,9 +52,7 @@ int
 requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum );
 dataObjInfo_t *
 chkCopyInResc( dataObjInfo_t *&dataObjInfoHead, const std::string& _resc_name, const char* destRescHier );
-int
-chkAndTrimCopyInRescGrp( dataObjInfo_t **dataObjInfoHead,
-                         rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag );
+
 int
 initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
                       int ignoreCondInput );

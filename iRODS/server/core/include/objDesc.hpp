@@ -42,7 +42,6 @@ typedef struct l1desc {
     dataObjInfo_t *dataObjInfo;
     dataObjInfo_t *otherDataObjInfo;
     int copiesNeeded;
-    rescGrpInfo_t *moreRescGrpInfo;
     rodsLong_t bytesWritten;    /* mark whether it has been written */
     rodsLong_t dataSize;        /* this is the target size. The size in
                                  * dataObjInfo is the registered size */

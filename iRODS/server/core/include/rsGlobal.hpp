@@ -30,8 +30,6 @@ rodsServerHost_t *LocalServerHost = NULL;
 rodsServerHost_t *ServerHostHead = NULL;
 rodsServerHost_t *HostConfigHead = NULL;
 zoneInfo_t *ZoneInfoHead = NULL;
-rescGrpInfo_t *RescGrpInfo = NULL;
-rescGrpInfo_t *CachedRescGrpInfo = NULL;
 int RescGrpInit = 0;    /* whether initRescGrp has been called */
 
 /* global fileDesc */
