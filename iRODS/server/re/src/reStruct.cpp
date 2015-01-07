@@ -420,7 +420,7 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 
 int
 touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
-    int savedStatus = 0;
+    int status = 0;
     rescInfo_t *rescInfo = NULL;
 
     if ( myRei == NULL || rsComm == NULL ) {
@@ -447,7 +447,7 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
         irods::error err = irods::get_resc_info( rescName, *rescInfo );
         if ( !err.ok() ) {
             delete rescInfo;
-            savedStatus = err.code();
+            status = err.code();
             myRei->doi->rescInfo = NULL;
             std::stringstream msg;
             msg << "failed to resolve resource [";
@@ -461,38 +461,7 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
 
     }
 
-    if ( myRei->rgi != NULL ) {
-        rescGrpInfo_t *rescGrpInfo = myRei->rgi;
-        while ( rescGrpInfo != NULL ) {
-
-            rescInfo = new rescInfo_t;
-            irods::resource_ptr resc;
-            std::string rescName = rescGrpInfo->rescInfo->rescName; // save the resource name
-            irods::error err = irods::get_resc_info( rescName, *rescInfo );
-            delete rescGrpInfo->rescInfo;
-            if ( !err.ok() ) {
-                delete rescInfo;
-                savedStatus = err.code();
-                rescGrpInfo->rescInfo = NULL;
-                std::stringstream msg;
-                msg << "failed to resolve resource [";
-                msg << rescName;
-                msg << "]";
-                irods::log( PASSMSG( msg.str(), err ) );
-            }
-            else {
-                rescGrpInfo->rescInfo = rescInfo;
-            }
-
-            rescGrpInfo = rescGrpInfo->next;
-        }
-
-        if ( myRei->next != NULL ) {
-            free( myRei->next );
-            myRei->next = NULL;
-        }
-    }
-    return savedStatus;
+    return status;
 }
 
 

@@ -51,7 +51,6 @@
  *
  * \DolVarDependence rei->doinp->condInput,
  *                    rei->rsComm->proxyUser.authInfo.authFlag
- * \DolVarModified rei->rgi gets set to a group (possibly singleton) list of resources in the preferred order.
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none
@@ -110,8 +109,6 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence - rei->rgi (can be NULL), rei->doinp->condInput
- * \DolVarModified - rei->rgi
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none

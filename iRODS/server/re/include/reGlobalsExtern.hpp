@@ -56,7 +56,6 @@ typedef struct RuleExecInfo {
     int l1descInx;
     dataObjInp_t *doinp;	/* data object type input */
     dataObjInfo_t *doi;
-    rescGrpInfo_t *rgi; /* resource group */ // deprecated #1472
     char rescName[NAME_LEN]; // replaces rgi above
     userInfo_t *uoic;  /* client XXXX should get this from rsComm->clientUser */
     userInfo_t *uoip;  /* proxy XXXX should get this from rsComm->proxyUser */

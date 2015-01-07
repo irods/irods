@@ -401,7 +401,6 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         }
     }
     /* should not be here. do one with no resource */
-    rei.rgi = NULL;
     status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
