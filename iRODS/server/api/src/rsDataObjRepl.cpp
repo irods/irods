@@ -695,10 +695,7 @@ dataObjOpenForRepl(
     }
     *srcDataObjInfo = *inpSrcDataObjInfo;
 
-//    srcDataObjInfo->rescInfo = new rescInfo_t;
     srcDataObjInfo->rescInfo = NULL;
-//    memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
-//    memset(srcDataObjInfo->rescInfo, 0, sizeof (rescInfo_t));
 
     memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
     replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
@@ -746,8 +743,6 @@ dataObjOpenForRepl(
         memset( &myDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
         replKeyVal( &inpDestDataObjInfo->condInput, &myDestDataObjInfo->condInput );
 
-//        myDestDataObjInfo->rescInfo = new rescInfo_t;
-//        memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
         myDestDataObjInfo->rescInfo = NULL;	// #1472
 
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
@@ -870,10 +865,6 @@ dataObjOpenForRepl(
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
 
-        // deep copy of rescInfo
-// #1472
-//        inpDestDataObjInfo->rescInfo = ( rescInfo_t* )calloc( 1, sizeof( rescInfo_t ) );
-//        memcpy( inpDestDataObjInfo->rescInfo, myDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
         inpDestDataObjInfo->rescInfo = NULL;
 
         // =-=-=-=-=-=-=-
@@ -1442,7 +1433,6 @@ int
 _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead, keyValPair_t * condInput,
                           rescInfo_t **outCacheResc, int rmBunCopyFlag ) {
     int status;
-    //rescInfo_t *cacheResc;
     dataObjInp_t dataObjInp;
 
     bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -1455,11 +1445,10 @@ _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead,
         return status;
     }
 
-    //{
     if ( outCacheResc != NULL ) {
         *outCacheResc = ( *bunfileObjInfoHead )->rescInfo;
     }
-    //}
+
     addKeyVal( &dataObjInp.condInput, BUN_FILE_PATH_KW,  // JMC - backport 4768
                ( *bunfileObjInfoHead )->filePath );
     if ( rmBunCopyFlag > 0 ) {
