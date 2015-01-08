@@ -63,11 +63,10 @@ replToCacheRescOfCompObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 stageBundledData( rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead );
 int
-unbunAndStageBunfileObj( rsComm_t *rsComm, char *bunfileObjPath,
-                         rescInfo_t **outCacheResc );
+unbunAndStageBunfileObj( rsComm_t *rsComm, char *bunfileObjPath, char **outCacheRescName );
 int
 _unbunAndStageBunfileObj( rsComm_t *rsComm, dataObjInfo_t **bunfileObjInfoHead, keyValPair_t* condInput,
-                          rescInfo_t **outCacheResc, int rmBunCopyFlag );
+                          char **outCacheRescName, int rmBunCopyFlag );
 int
 stageDataFromCompToCache( rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
                           dataObjInfo_t *outCacheObjInfo );

@@ -1205,7 +1205,6 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
     int dst_create_path = 0;
-//    irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName,
     irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescName,
                        irods::RESOURCE_CREATE_PATH, dst_create_path );
     if ( !err.ok() ) {
@@ -1238,7 +1237,6 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
 
     rstrcpy( fileSyncToArchInp.addr.hostAddr, location.c_str(), NAME_LEN );
 
-    /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
     rstrcpy( fileSyncToArchInp.filename,      destDataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( fileSyncToArchInp.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
     rstrcpy( fileSyncToArchInp.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
@@ -1288,8 +1286,6 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     memset( &file_stage, 0, sizeof( file_stage ) );
     file_stage.dataSize      = srcDataObjInfo->dataSize;
 
-//    rstrcpy( file_stage.addr.hostAddr,
-//             destDataObjInfo->rescInfo->rescLoc, NAME_LEN );
 
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, resc_loc );
     if ( !ret.ok() ) {
@@ -1299,7 +1295,6 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     rstrcpy( file_stage.addr.hostAddr, resc_loc.c_str(), NAME_LEN );
 
 
-    /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
     rstrcpy( file_stage.cacheFilename, destDataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( file_stage.filename,      srcDataObjInfo->filePath,  MAX_NAME_LEN );
     rstrcpy( file_stage.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
@@ -1373,12 +1368,12 @@ int
 stageBundledData( rsComm_t * rsComm, dataObjInfo_t **subfileObjInfoHead ) {
     int status;
     dataObjInfo_t *dataObjInfoHead = *subfileObjInfoHead;
-    rescInfo_t *cacheResc;
+    char *cacheRescName;
     dataObjInp_t dataObjInp;
     dataObjInfo_t *cacheObjInfo;
 
     status = unbunAndStageBunfileObj( rsComm, dataObjInfoHead->filePath,
-                                      &cacheResc );
+                                      &cacheRescName );
 
     if ( status < 0 ) {
         return status;
@@ -1387,7 +1382,7 @@ stageBundledData( rsComm_t * rsComm, dataObjInfo_t **subfileObjInfoHead ) {
     /* query the bundle dataObj */
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN );
-    addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, cacheResc->rescName );
+    addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, cacheRescName );
     status = getDataObjInfo( rsComm, &dataObjInp, &cacheObjInfo, NULL, 0 );
     clearKeyVal( &dataObjInp.condInput );
     if ( status < 0 ) {
@@ -1404,8 +1399,7 @@ stageBundledData( rsComm_t * rsComm, dataObjInfo_t **subfileObjInfoHead ) {
 }
 
 int
-unbunAndStageBunfileObj( rsComm_t * rsComm, char * bunfileObjPath,
-                         rescInfo_t **outCacheResc ) {
+unbunAndStageBunfileObj( rsComm_t * rsComm, char * bunfileObjPath, char **outCacheRescName ) {
     dataObjInfo_t *bunfileObjInfoHead;
     dataObjInp_t dataObjInp;
     int status;
@@ -1422,7 +1416,7 @@ unbunAndStageBunfileObj( rsComm_t * rsComm, char * bunfileObjPath,
         return status;
     }
     status = _unbunAndStageBunfileObj( rsComm, &bunfileObjInfoHead, &dataObjInp.condInput,
-                                       outCacheResc, 0 );
+                                       outCacheRescName, 0 );
 
     freeAllDataObjInfo( bunfileObjInfoHead );
 
@@ -1431,7 +1425,7 @@ unbunAndStageBunfileObj( rsComm_t * rsComm, char * bunfileObjPath,
 
 int
 _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead, keyValPair_t * condInput,
-                          rescInfo_t **outCacheResc, int rmBunCopyFlag ) {
+                          char **outCacheRescName, int rmBunCopyFlag ) {
     int status;
     dataObjInp_t dataObjInp;
 
@@ -1445,8 +1439,8 @@ _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead,
         return status;
     }
 
-    if ( outCacheResc != NULL ) {
-        *outCacheResc = ( *bunfileObjInfoHead )->rescInfo;
+    if ( outCacheRescName != NULL ) {
+        *outCacheRescName = ( *bunfileObjInfoHead )->rescName;
     }
 
     addKeyVal( &dataObjInp.condInput, BUN_FILE_PATH_KW,  // JMC - backport 4768
