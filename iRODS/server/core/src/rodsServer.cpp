@@ -23,6 +23,7 @@
 
 // =-=-=-=-=-=-=-
 //
+#include "irods_exception.hpp"
 #include "irods_server_state.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
@@ -330,8 +331,14 @@ serverMain( char *logDir ) {
 
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
-    irods::server_control_plane ctrl_plane( irods::CFG_SERVER_CONTROL_PLANE_PORT );
+    try {
+        irods::server_control_plane ctrl_plane( irods::CFG_SERVER_CONTROL_PLANE_PORT );
+    } catch( irods::exception& e_ ) {
+        const char* what = e_.what();
+        std::cerr << what << std::endl;
+        return e_.code();
 
+    }
 
 
     startProcConnReqThreads();

@@ -12,6 +12,7 @@
 #include "irods_buffer_encryption.hpp"
 
 #include "irods_server_state.hpp"
+#include "irods_exception.hpp"
 #include "irods_stacktrace.hpp"
 
 namespace irods {
@@ -290,11 +291,9 @@ namespace irods {
     server_control_executor::server_control_executor(
         const std::string& _prop ) : port_prop_( _prop )  {
         if ( port_prop_.empty() ) {
-            log( ERROR(
-                     SYS_INVALID_INPUT_PARAM,
-                     "control_plane_port key is empty" ) );
-            // TODO :: throw fancy exception
-            return;
+            THROW(
+                SYS_INVALID_INPUT_PARAM,
+                "control_plane_port key is empty" );
         }
 
         op_map_[ SERVER_CONTROL_PAUSE ]    = operation_pause;
@@ -319,7 +318,9 @@ namespace irods {
                         CFG_ICAT_HOST_KW,
                         icat_host_name_ );
         if ( !ret.ok() ) {
-            log( PASS( ret ) );
+            THROW(
+                ret.code(),
+                ret.result() );
 
         }
 
@@ -329,7 +330,7 @@ namespace irods {
             rodsLog(
                 LOG_ERROR,
                 "server_control_executor - icat_host_name is localhost, not a fqdn" );
-            // TODO :: throw fancy exception here
+            // TODO :: throw fancy exception here when we disallow localhost
         }
 
     } // ctor
