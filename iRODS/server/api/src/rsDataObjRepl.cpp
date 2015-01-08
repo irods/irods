@@ -827,7 +827,6 @@ dataObjOpenForRepl(
 
     l1DataObjInp->numThreads = dataObjInp->numThreads =
                                    getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads,
-                                           //&dataObjInp->condInput, destRescName, srcRescName);
                                            &dataObjInp->condInput, dst_hier_str, srcDataObjInfo->rescHier );
 
     if ( ( l1DataObjInp->numThreads > 0 ||

@@ -352,8 +352,6 @@ foreach $rulefile (@rules)
     if ($rulefile =~ /rulemsiCollRepl/) { print "----- skipping deprecated -- $rulefile\n"; next; }
     if ($rulefile =~ /rulemsiDataObjGetWithOptions/) { print "----- skipping deprecated -- $rulefile\n"; next; }
 
-    if ($rulefile =~ /rulemsiServerBackup/) { $ssb=1; print "----- skipping serverbackup -- for speed only -- $rulefile\n"; next; }
-
 
     # run it
     runCmd( "irule -F $rulefile" );

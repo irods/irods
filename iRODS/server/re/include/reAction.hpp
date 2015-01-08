@@ -42,7 +42,6 @@ int msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t *re
 
 int msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei );
 int msiListEnabledMS( msParam_t *outKVPairs, ruleExecInfo_t *rei );
-int msiServerBackup( msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei );
 
 int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei );
 int msiSendStdoutAsEmail( msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei );
@@ -291,7 +290,6 @@ namespace irods {
         table_[ "msiBytesBufToStr" ] = new irods::ms_table_entry( "msiBytesBufToStr", 2, ( funcPtr ) msiBytesBufToStr );
         table_[ "msiApplyDCMetadataTemplate" ] = new irods::ms_table_entry( "msiApplyDCMetadataTemplate", 2, ( funcPtr ) msiApplyDCMetadataTemplate );
         table_[ "msiListEnabledMS" ] = new irods::ms_table_entry( "msiListEnabledMS", 1, ( funcPtr ) msiListEnabledMS );
-        table_[ "msiServerBackup" ] = new irods::ms_table_entry( "msiServerBackup", 2, ( funcPtr ) msiServerBackup );
         table_[ "msiSendStdoutAsEmail" ] = new irods::ms_table_entry( "msiSendStdoutAsEmail", 2, ( funcPtr ) msiSendStdoutAsEmail );
         table_[ "msiPrintKeyValPair" ] = new irods::ms_table_entry( "msiPrintKeyValPair", 2, ( funcPtr ) msiPrintKeyValPair );
         table_[ "msiGetValByKey" ] = new irods::ms_table_entry( "msiGetValByKey", 3, ( funcPtr ) msiGetValByKey );

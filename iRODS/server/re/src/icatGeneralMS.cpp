@@ -221,7 +221,6 @@ This documentation is generated from the iRODS code.
 
  \section msiadmin Admin Microservices
   Can only be called by an administrator
-  - #msiServerBackup - Copies iRODS server files to the local resource
   - #msiSetQuota - Sets disk usage quota for a user or group
 
  \section msimodules Module Microservices

@@ -357,9 +357,6 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             if "rulemsiDataObjReplWithOptions" in rulefile:
                 print "skipping " + rulefile + " ----- deprecated"
                 return False
-            if "rulemsiServerBackup" in rulefile:
-                print "skipping " + rulefile + " ----- serverbackup"
-                return False
             if "rulemsiExecStrCondQueryWithOptions" in rulefile:
                 print "skipping " + rulefile + " ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"
                 return False

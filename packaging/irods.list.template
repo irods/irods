@@ -584,7 +584,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiWriteRodsLo
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRdaToStdout.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRdaToStdout.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_http.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_http.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCollRsync.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCollRsync.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiServerBackup.r ./iRODS/clients/icommands/test/rules3.0/rulemsiServerBackup.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjput_z3950.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjput_z3950.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetCollectionPSmeta.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiMakeQuery.r ./iRODS/clients/icommands/test/rules3.0/rulemsiMakeQuery.r
