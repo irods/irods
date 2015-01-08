@@ -29,19 +29,19 @@ remotePhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                   rodsServerHost_t *rodsServerHost );
 int
 _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
-				const char *_resc_name, rodsServerHost_t *rodsServerHost );
+               const char *_resc_name, rodsServerHost_t *rodsServerHost );
 int
 filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-			const char *_resc_name );
+             const char *_resc_name );
 int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-				const char *_resc_name );
+                 const char *_resc_name );
 int
 dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-			const char *_resc_name );
+            const char *_resc_name );
 int
 mountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-				const char *rescVaultPath );
+              const char *rescVaultPath );
 int
 structFileReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp );
 int

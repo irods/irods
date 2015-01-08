@@ -459,40 +459,40 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *( *dataObjInfoHead );
 
 
-	rescInfo = ( *dataObjInfoHead )->rescInfo; // #1472 should probably use resc_name here. revisit
+    rescInfo = ( *dataObjInfoHead )->rescInfo; // #1472 should probably use resc_name here. revisit
 
-	myDataObjInfo->rescInfo = new rescInfo_t;
-	memcpy( myDataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    myDataObjInfo->rescInfo = new rescInfo_t;
+    memcpy( myDataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
 
-	rstrcpy( myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN );
-	rstrcpy( myDataObjInfo->rescGroupName, ( *dataObjInfoHead )->rescGroupName, NAME_LEN );
+    rstrcpy( myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN );
+    rstrcpy( myDataObjInfo->rescGroupName, ( *dataObjInfoHead )->rescGroupName, NAME_LEN );
 
-	char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-	if ( resc_hier ) {
-		rstrcpy( myDataObjInfo->rescHier, resc_hier, MAX_NAME_LEN ); // hier sent from upper level code
-	}
-	else {
-		rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescInfo->rescName for hier" );
-		rstrcpy( myDataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN ); // in kw else
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if ( resc_hier ) {
+        rstrcpy( myDataObjInfo->rescHier, resc_hier, MAX_NAME_LEN ); // hier sent from upper level code
+    }
+    else {
+        rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescInfo->rescName for hier" );
+        rstrcpy( myDataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN ); // in kw else
 
-	}
+    }
 
-	status = getFilePathName( rsComm, myDataObjInfo, dataObjInp );
+    status = getFilePathName( rsComm, myDataObjInfo, dataObjInp );
 
-	status = l3CreateByObjInfo( rsComm, dataObjInp, myDataObjInfo );
+    status = l3CreateByObjInfo( rsComm, dataObjInp, myDataObjInfo );
 
-	/* close it */
-	_l3Close( rsComm, status );
+    /* close it */
+    _l3Close( rsComm, status );
 
-	/* register the replica */
-	memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
-	regReplicaInp.srcDataObjInfo = *dataObjInfoHead;
-	regReplicaInp.destDataObjInfo = myDataObjInfo;
-	if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
-		addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
-	}
-	status = rsRegReplica( rsComm, &regReplicaInp );
-	clearKeyVal( &regReplicaInp.condInput );
+    /* register the replica */
+    memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
+    regReplicaInp.srcDataObjInfo = *dataObjInfoHead;
+    regReplicaInp.destDataObjInfo = myDataObjInfo;
+    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+        addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
+    }
+    status = rsRegReplica( rsComm, &regReplicaInp );
+    clearKeyVal( &regReplicaInp.condInput );
 
 
     if ( status < 0 ) {

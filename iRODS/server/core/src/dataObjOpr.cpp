@@ -1376,15 +1376,15 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
     }
 
 
-	/* single target resource */
-	char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
-	if ( ( *destDataObjInfo = chkCopyInResc( *dataObjInfoHead,
-							  _resc_name,
-							  destRescHier ) ) != NULL ) {
-		/* have a good copy already */
-		*destDataObjInfo = NULL; // JMC - backport 4594
-		return HAVE_GOOD_COPY;
-	}
+    /* single target resource */
+    char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
+    if ( ( *destDataObjInfo = chkCopyInResc( *dataObjInfoHead,
+                              _resc_name,
+                              destRescHier ) ) != NULL ) {
+        /* have a good copy already */
+        *destDataObjInfo = NULL; // JMC - backport 4594
+        return HAVE_GOOD_COPY;
+    }
 
     /* handle the old dataObj */
     if ( getValByKey( condInput, ALL_KW ) != NULL ) {
@@ -1412,7 +1412,7 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
 int
 resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      dataObjInfo_t **oldDataObjInfoHead,
-					 const std::string& _resc_name,
+                     const std::string& _resc_name,
                      keyValPair_t *condInput,
                      int multiCopyFlag ) {
     int status;

@@ -192,7 +192,8 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
     try {
         irods::server_control_plane ctrl_plane(
             irods::CFG_RULE_ENGINE_CONTROL_PLANE_PORT );
-    } catch( irods::exception& e_ ) {
+    }
+    catch ( irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return;

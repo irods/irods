@@ -310,7 +310,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
     if ( destRescHier != NULL ) {
 
-    	// get resource (hierarchy) location
+        // get resource (hierarchy) location
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {
@@ -352,7 +352,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             return numDestThr;
         }
 
-    	// get resource (hierarchy) location
+        // get resource (hierarchy) location
         std::string location;
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {

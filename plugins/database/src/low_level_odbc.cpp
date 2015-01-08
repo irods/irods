@@ -457,9 +457,9 @@ bindTheVariables( HSTMT myHstmt, const char *sql ) {
 
     for ( int i = 0; i < myBindVarCount; ++i ) {
         SQLRETURN stat = SQLBindParameter( myHstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                           SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen(cllBindVars[i]), const_cast<SQLLEN*>(&GLOBAL_SQL_NTS) );
+                                           SQL_CHAR, 0, 0, const_cast<char*>( cllBindVars[i] ), strlen( cllBindVars[i] ), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
         char tmpStr[TMP_STR_LEN];
-        snprintf( tmpStr, sizeof(tmpStr), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
+        snprintf( tmpStr, sizeof( tmpStr ), "bindVar[%d]=%s", i + 1, cllBindVars[i] );
         rodsLogSql( tmpStr );
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR,
@@ -801,9 +801,9 @@ cllExecSqlWithResultBV(
         if ( !bindVars[i].empty() ) {
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                     SQL_CHAR, 0, 0, const_cast<char*>(bindVars[i].c_str()), bindVars[i].size(), const_cast<SQLLEN*>(&GLOBAL_SQL_NTS) );
+                                     SQL_CHAR, 0, 0, const_cast<char*>( bindVars[i].c_str() ), bindVars[i].size(), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
             char tmpStr[TMP_STR_LEN];
-            snprintf( tmpStr, sizeof(tmpStr), "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+            snprintf( tmpStr, sizeof( tmpStr ), "bindVar%d=%s", i + 1, bindVars[i].c_str() );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
                 rodsLog( LOG_ERROR,

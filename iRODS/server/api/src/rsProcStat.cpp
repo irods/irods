@@ -80,8 +80,8 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     }
     else if ( ( tmpStr = getValByKey( &procStatInp->condInput, RESC_NAME_KW ) ) != NULL ) {
 
-    	std::string resc_name(tmpStr);
-    	irods::error ret = SUCCESS();
+        std::string resc_name( tmpStr );
+        irods::error ret = SUCCESS();
 
         // Get resource location
         std::string resc_loc;
@@ -94,7 +94,7 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
 
         // Get resource host
         std::string resc_host;
-        ret = irods::get_resource_property< rodsServerHost_t* >(resc_name, irods::RESOURCE_HOST, rodsServerHost );
+        ret = irods::get_resource_property< rodsServerHost_t* >( resc_name, irods::RESOURCE_HOST, rodsServerHost );
         if ( !ret.ok() ) {
             irods::log PASSMSG( "_rsProcStat - failed in get_resource_property", ret );
             return ret.code();

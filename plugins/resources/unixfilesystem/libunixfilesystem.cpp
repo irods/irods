@@ -128,7 +128,7 @@ static irods::error unix_file_copy_plugin(
                     int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
                     err_status = UNIX_FILE_WRITE_ERR - errno;
                     if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                    destFileName, status ) ).ok() ) {
+                                                  destFileName, status ) ).ok() ) {
                         bytesCopied += bytesWritten;
                     }
                 }
@@ -137,7 +137,7 @@ static irods::error unix_file_copy_plugin(
 
                 if ( result.ok() ) {
                     result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                            bytesCopied, statbuf.st_size, srcFileName );
+                                           bytesCopied, statbuf.st_size, srcFileName );
                 }
             }
         }
@@ -151,7 +151,7 @@ static irods::error unix_file_copy_plugin(
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
 irods::error unix_generate_full_path(
-        irods::plugin_property_map& _prop_map,
+    irods::plugin_property_map& _prop_map,
     const std::string&           _phy_path,
     std::string&                 _ret_string ) {
     irods::error result = SUCCESS();

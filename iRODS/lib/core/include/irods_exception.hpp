@@ -13,37 +13,37 @@
 namespace irods {
 
     class exception : public std::exception {
-    public:
-        exception(
-            const uint64_t     _code,
-            const std::string& _message,
-            const std::string& _file_name,
-            const uint32_t     _line_number,
-            const std::string& _function_name );
-        exception( const exception& );
-        virtual ~exception() throw();
+        public:
+            exception(
+                const uint64_t     _code,
+                const std::string& _message,
+                const std::string& _file_name,
+                const uint32_t     _line_number,
+                const std::string& _function_name );
+            exception( const exception& );
+            virtual ~exception() throw();
 
-        virtual const char* what() const throw();
+            virtual const char* what() const throw();
 
-        // accessors 
-        uint64_t    code() const { return code_; }
-        std::vector< std::string > message_stack() const { return message_stack_; }
-        std::string file_name() const { return file_name_; }
-        uint32_t    line_number() const { return line_number_; }
-        std::string function_name() const { return function_name_; }
-        std::string stack_trace() const { return stack_trace_; }
+            // accessors
+            uint64_t    code() const { return code_; }
+            std::vector< std::string > message_stack() const { return message_stack_; }
+            std::string file_name() const { return file_name_; }
+            uint32_t    line_number() const { return line_number_; }
+            std::string function_name() const { return function_name_; }
+            std::string stack_trace() const { return stack_trace_; }
 
-        // mutators
-        void add_message( const std::string& _m ) { message_stack_.push_back( _m ); }
+            // mutators
+            void add_message( const std::string& _m ) { message_stack_.push_back( _m ); }
 
-    private:
-        uint64_t                   code_;
-        std::vector< std::string > message_stack_;
-        uint32_t                   line_number_;
-        std::string                function_name_;
-        std::string                file_name_;
-        std::string                stack_trace_;
-        mutable std::string        what_;
+        private:
+            uint64_t                   code_;
+            std::vector< std::string > message_stack_;
+            uint32_t                   line_number_;
+            std::string                function_name_;
+            std::string                file_name_;
+            std::string                stack_trace_;
+            mutable std::string        what_;
 
     }; // class exception
 

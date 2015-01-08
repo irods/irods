@@ -102,10 +102,10 @@ int main(
     // build a encryption context
     std::string encryption_key( env.irodsCtrlPlaneKey );
     irods::buffer_crypt crypt(
-            encryption_key.size(), // key size
-            0,                     // salt size ( we dont send a salt )
-            env.irodsCtrlPlaneEncryptionNumHashRounds,
-            env.irodsCtrlPlaneEncryptionAlgorithm );
+        encryption_key.size(), // key size
+        0,                     // salt size ( we dont send a salt )
+        env.irodsCtrlPlaneEncryptionNumHashRounds,
+        env.irodsCtrlPlaneEncryptionAlgorithm );
 
     // standard zmq rep-req communication pattern
     zmq::context_t zmq_ctx( 1 );
@@ -124,28 +124,28 @@ int main(
     e->init( *out );
     avro::encode( *e, cmd );
     boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
-        
+
     // encrypt outgoing request
-    std::vector< unsigned char > enc_data( 
-                                     data->begin(), 
-                                     data->end() );
+    std::vector< unsigned char > enc_data(
+        data->begin(),
+        data->end() );
 
     irods::buffer_crypt::array_t iv;
     irods::buffer_crypt::array_t data_to_send;
-    irods::buffer_crypt::array_t in_buf( 
-                                     enc_data.begin(),
-                                     enc_data.end() );
-    irods::buffer_crypt::array_t shared_secret( 
-                                     encryption_key.begin(),
-                                     encryption_key.end() );
+    irods::buffer_crypt::array_t in_buf(
+        enc_data.begin(),
+        enc_data.end() );
+    irods::buffer_crypt::array_t shared_secret(
+        encryption_key.begin(),
+        encryption_key.end() );
     irods::error ret = crypt.encrypt(
                            shared_secret,
                            iv,
                            in_buf,
                            data_to_send );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::error err = PASS( ret );
-        std::cout << err.result() 
+        std::cout << err.result()
                   << std::endl;
         return -1;
 
@@ -165,7 +165,7 @@ int main(
 
     // decrypt the response
     const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
-    in_buf.assign( 
+    in_buf.assign(
         data_ptr,
         data_ptr + req.size() );
 
@@ -175,9 +175,9 @@ int main(
               iv,
               in_buf,
               decoded_data );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::error err = PASS( ret );
-        std::cout << err.result() 
+        std::cout << err.result()
                   << std::endl;
         return -1;
 
@@ -185,9 +185,9 @@ int main(
     }
 
     std::string rep_str(
-        reinterpret_cast< const char* >( 
+        reinterpret_cast< const char* >(
             decoded_data.data() ),
-            decoded_data.size() );
+        decoded_data.size() );
     if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
         std::cout << rep_str.data()
                   << std::endl;

@@ -189,7 +189,7 @@ int
 chkCacheExpire( pathCacheQue_t *pathCacheQue );
 int
 addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray,
-                 struct stat *stbuf, pathCache_t **outPathCache );
+                struct stat *stbuf, pathCache_t **outPathCache );
 int
 addToCacheSlot( char *inPath, char *fileCachePath, pathCacheQue_t *pathCacheQue,
                 struct stat *stbuf, pathCache_t **outPathCache );

@@ -322,7 +322,7 @@ _rsDataObjRepl(
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
-										resc_name, &destDataObjInfo,
+                                        resc_name, &destDataObjInfo,
                                         &dataObjInp->condInput );
 
         if ( status == HAVE_GOOD_COPY ) {
@@ -522,7 +522,7 @@ _rsDataObjReplNewCopy(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
     dataObjInfo_t *srcDataObjInfoHead,
-	const std::string& _resc_name,
+    const std::string& _resc_name,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
     // =-=-=-=-=-=-=-

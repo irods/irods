@@ -406,13 +406,13 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     }
     else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != NULL && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
 
-    	// Get resource path
-    	std::string resc_vault_path;
-    	irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_PATH, resc_vault_path );
-    	if ( !ret.ok() ) {
-    		irods::log PASSMSG( "_rsPhyPathReg - failed in get_resource_property", ret );
-    		return ret.code();
-    	}
+        // Get resource path
+        std::string resc_vault_path;
+        irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_PATH, resc_vault_path );
+        if ( !ret.ok() ) {
+            irods::log PASSMSG( "_rsPhyPathReg - failed in get_resource_property", ret );
+            return ret.code();
+        }
 
         status = mountFileDir( rsComm, phyPathRegInp, filePath, resc_vault_path.c_str() );
 
@@ -432,7 +432,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
 int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-					const char *_resc_name ) {
+                 const char *_resc_name ) {
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
     regReplica_t regReplicaInp;
     char *rescGroupName = NULL;
@@ -556,7 +556,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
 int
 dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-			const char *_resc_name ) {
+            const char *_resc_name ) {
     rodsStat_t *myStat = NULL;
     fileStatInp_t fileStatInp;
     collInp_t collCreateInp;
@@ -749,7 +749,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 int mountFileDir( rsComm_t*     rsComm,
                   dataObjInp_t* phyPathRegInp,
                   char*         filePath,
-				  const char *rescVaultPath ) {
+                  const char *rescVaultPath ) {
     collInp_t collCreateInp;
     int status;
     fileStatInp_t fileStatInp;

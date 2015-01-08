@@ -228,7 +228,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
           return status;
           }*/
 
-    	resc_name = myRodsObjStat->specColl->resource;
+        resc_name = myRodsObjStat->specColl->resource;
     }
     else {
         status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name );

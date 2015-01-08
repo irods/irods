@@ -90,7 +90,7 @@ namespace irods {
         const std::string&              _file ) {
         json_error_t error;
 
-        json_t *json = json_load_file(_file.c_str(), 0, &error );
+        json_t *json = json_load_file( _file.c_str(), 0, &error );
         if ( !json ) {
             std::string msg( "failed to load file [" );
             msg += _file;
@@ -101,7 +101,7 @@ namespace irods {
         }
 
         irods::error ret = parse_json_object( json, root_ );
-        json_decref(json);
+        json_decref( json );
 
         return ret;
 

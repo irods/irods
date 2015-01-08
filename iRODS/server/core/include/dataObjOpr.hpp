@@ -71,7 +71,7 @@ getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead );
 int
 resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                        dataObjInfo_t **oldDataObjInfoHead,
-					   const std::string& _resc_name,
+                       const std::string& _resc_name,
                        dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput );
 int
 matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,

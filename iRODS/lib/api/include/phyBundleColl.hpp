@@ -65,7 +65,7 @@ remotePhyBundleColl( rsComm_t *rsComm,
                      structFileExtAndRegInp_t *phyBundleCollInp, rodsServerHost_t *rodsServerHost );
 int
 _rsPhyBundleColl( rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
-					const char *_resc_name );
+                  const char *_resc_name );
 int
 createPhyBundleDataObj( rsComm_t *rsComm, char *collection, const std::string& _resc_name,
                         const char* rescHier, dataObjInp_t *dataObjInp, char *dataType ); // JMC - backport 4658

@@ -59,8 +59,8 @@ _rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
                              getRescQuotaInp->rescName, &genQueryOut );
 
-    if (status >= 0) {
-    	queRescQuota( rescQuota, genQueryOut, NULL );
+    if ( status >= 0 ) {
+        queRescQuota( rescQuota, genQueryOut, NULL );
     }
     freeGenQueryOut( &genQueryOut );
     return status;

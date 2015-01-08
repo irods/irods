@@ -18,7 +18,7 @@
 namespace irods {
 
 
-    static error get_server_properties( 
+    static error get_server_properties(
         const std::string&     _port_keyword,
         int&                   _port,
         int&                   _num_rounds,
@@ -62,8 +62,8 @@ namespace irods {
 
         }
 
-        // convert string to array_t 
-        _key.assign( 
+        // convert string to array_t
+        _key.assign(
             key.begin(),
             key.end() );
 
@@ -78,21 +78,21 @@ namespace irods {
         std::string&       _output ) {
         int time_out = 0;
         error ret = get_server_property <
-                        int > (
-                            CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                            time_out );
+                    int > (
+                        CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                        time_out );
         if ( !ret.ok() ) {
             return PASS( ret );
 
         }
-        
+
         int port = 0, num_hash_rounds = 0;
         std::string encryption_algorithm;
         buffer_crypt::array_t shared_secret;
 
-        ret = get_server_properties( 
+        ret = get_server_properties(
                   _port_keyword,
-                  port, 
+                  port,
                   num_hash_rounds,
                   shared_secret,
                   encryption_algorithm );
@@ -133,22 +133,22 @@ namespace irods {
         boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
 
         buffer_crypt crypt(
-                shared_secret.size(),  // key size
-                0,                     // salt size ( we dont send a salt )
-                num_hash_rounds,       // num hash rounds
-                encryption_algorithm.c_str());
+            shared_secret.size(),  // key size
+            0,                     // salt size ( we dont send a salt )
+            num_hash_rounds,       // num hash rounds
+            encryption_algorithm.c_str() );
 
         buffer_crypt::array_t iv;
         buffer_crypt::array_t data_to_send;
-        buffer_crypt::array_t data_to_encrypt( 
-                                  data->data(),
-                                  data->data()+data->size() );
+        buffer_crypt::array_t data_to_encrypt(
+            data->data(),
+            data->data() + data->size() );
         ret = crypt.encrypt(
                   shared_secret,
                   iv,
                   data_to_encrypt,
                   data_to_send );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
@@ -449,15 +449,15 @@ namespace irods {
     void server_control_executor::operator()() {
 
         int port = 0, num_hash_rounds = 0;
-        buffer_crypt::array_t shared_secret; 
+        buffer_crypt::array_t shared_secret;
         std::string encryption_algorithm;
-        error ret = get_server_properties( 
+        error ret = get_server_properties(
                         port_prop_,
-                        port, 
+                        port,
                         num_hash_rounds,
                         shared_secret,
                         encryption_algorithm );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return;
 
@@ -505,22 +505,22 @@ namespace irods {
             }
 
             buffer_crypt crypt(
-                    shared_secret.size(), // key size
-                    0,                    // salt size ( we dont send a salt )
-                    num_hash_rounds,      // num hash rounds
-                    encryption_algorithm.c_str());
+                shared_secret.size(), // key size
+                0,                    // salt size ( we dont send a salt )
+                num_hash_rounds,      // num hash rounds
+                encryption_algorithm.c_str() );
 
             buffer_crypt::array_t iv;
             buffer_crypt::array_t data_to_send;
-            buffer_crypt::array_t data_to_encrypt( 
-                                      rep_msg.begin(),
-                                      rep_msg.end() );
+            buffer_crypt::array_t data_to_encrypt(
+                rep_msg.begin(),
+                rep_msg.end() );
             ret = crypt.encrypt(
                       shared_secret,
                       iv,
                       data_to_encrypt,
                       data_to_send );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
 
             }
@@ -804,15 +804,15 @@ namespace irods {
         }
 
         int port = 0, num_hash_rounds = 0;
-        buffer_crypt::array_t shared_secret; 
+        buffer_crypt::array_t shared_secret;
         std::string encryption_algorithm;
-        error ret = get_server_properties( 
+        error ret = get_server_properties(
                         port_prop_,
-                        port, 
+                        port,
                         num_hash_rounds,
                         shared_secret,
                         encryption_algorithm );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return PASS( ret );
 
@@ -820,24 +820,24 @@ namespace irods {
 
         // decrypt the message before passing to avro
         buffer_crypt crypt(
-                shared_secret.size(), // key size
-                0,                    // salt size ( we dont send a salt )
-                num_hash_rounds,      // num hash rounds
-                encryption_algorithm.c_str());
+            shared_secret.size(), // key size
+            0,                    // salt size ( we dont send a salt )
+            num_hash_rounds,      // num hash rounds
+            encryption_algorithm.c_str() );
 
         buffer_crypt::array_t iv;
         buffer_crypt::array_t data_to_process;
 
         const uint8_t* data_ptr = static_cast< const uint8_t* >( _msg.data() );
-        buffer_crypt::array_t data_to_decrypt( 
-                                  data_ptr, 
-                                  data_ptr + _msg.size() );
+        buffer_crypt::array_t data_to_decrypt(
+            data_ptr,
+            data_ptr + _msg.size() );
         ret = crypt.decrypt(
                   shared_secret,
                   iv,
                   data_to_decrypt,
                   data_to_process );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return PASS( ret );
 
@@ -847,7 +847,7 @@ namespace irods {
         std::auto_ptr<avro::InputStream> in = avro::memoryInputStream(
                 static_cast<const uint8_t*>(
                     data_to_process.data() ),
-                    data_to_process.size() );
+                data_to_process.size() );
         avro::DecoderPtr dec = avro::binaryDecoder();
         dec->init( *in );
 

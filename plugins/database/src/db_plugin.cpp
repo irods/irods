@@ -6804,8 +6804,8 @@ extern "C" {
             std::vector<std::string> bindVars;
             bindVars.push_back( _coll_info->collName );
             status = cmlGetIntegerValueFromSql(
-                                               "select coll_id from R_COLL_MAIN where coll_name=?",
-                                               &iVal, bindVars, &icss );
+                         "select coll_id from R_COLL_MAIN where coll_name=?",
+                         &iVal, bindVars, &icss );
         }
 
         if ( status != 0 ) {

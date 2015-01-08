@@ -155,34 +155,34 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     srcDataObjInfo = srcDataObjInfoHead;
 
-	while ( srcDataObjInfo != NULL ) {
-		/* use _rsDataObjReplS for the phymv */
-		dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
-		status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-								  _resc_name, NULL, 0 );
+    while ( srcDataObjInfo != NULL ) {
+        /* use _rsDataObjReplS for the phymv */
+        dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
+        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
+                                  _resc_name, NULL, 0 );
 
-		if ( multiCopyFlag == 0 ) {
-			if ( status >= 0 ) {
-				srcDataObjInfo = srcDataObjInfo->next;
-			}
-			else {
-				savedStatus = status;
-			}
-			/* use another resc */
-			break;
-		}
-		else {
-			if ( status < 0 ) {
-				savedStatus = status;
-				/* use another resc */
-				break;
-			}
-		}
-		srcDataObjInfo = srcDataObjInfo->next;
-	}
-	if ( status >= 0 ) {
-		transStat->numThreads = dataObjInp->numThreads;
-	}
+        if ( multiCopyFlag == 0 ) {
+            if ( status >= 0 ) {
+                srcDataObjInfo = srcDataObjInfo->next;
+            }
+            else {
+                savedStatus = status;
+            }
+            /* use another resc */
+            break;
+        }
+        else {
+            if ( status < 0 ) {
+                savedStatus = status;
+                /* use another resc */
+                break;
+            }
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+    if ( status >= 0 ) {
+        transStat->numThreads = dataObjInp->numThreads;
+    }
 
 
     if ( srcDataObjInfo != NULL ) {
