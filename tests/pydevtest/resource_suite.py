@@ -217,6 +217,15 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "imv " + self.testfile + " " + copyfile, "ERROR", "CAT_NAME_EXISTS_AS_DATAOBJ")
         # local cleanup
 
+    def test_local_imv_collection_to_sibling_collection__ticket_2448(self):
+        assertiCmd(s.adminsession, "imkdir first_dir") # first collection
+        assertiCmd(s.adminsession, "icp " + self.testfile + " first_dir")  # add file
+        assertiCmd(s.adminsession, "imkdir second_dir") # second collection
+        assertiCmd(s.adminsession, "imv -v first_dir second_dir", "STDOUT", "first_dir") # imv into sibling
+        assertiCmdFail(s.adminsession, "ils -L", "STDOUT", "first_dir") # should not be listed
+        assertiCmd(s.adminsession, "ils -L second_dir", "STDOUT", "second_dir/first_dir") # should be listed
+        assertiCmd(s.adminsession, "ils -L second_dir/first_dir", "STDOUT", self.testfile) # should be listed
+
     ###################
     # iphymv
     ###################
