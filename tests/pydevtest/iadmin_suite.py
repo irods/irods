@@ -44,6 +44,7 @@ def write_host_access_control(filename, username, group, address, mask):
             indent=4,
             ensure_ascii=False)
 
+
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup": [], "teardown": []}
@@ -391,7 +392,6 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 #                    'user.',
 #                    'jamesbond..007',
 #                    '________________________________longer_than_NAME_LEN________________________________________________']
-
 
         # Test valid names
         for name in valid:
@@ -977,13 +977,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_irmtrash_admin_2461(self):
         # 'irmtrash -M' was not deleting the r_objt_metamap entries for  collections it was deleting
         #  leading to orphaned avu's that 'iadmin rum' could never remove
-        collection_basename  = sys._getframe().f_code.co_name
+        collection_basename = sys._getframe().f_code.co_name
         assertiCmd(s.adminsession, 'imkdir {collection_basename}'.format(**vars()))
         file_basename = 'dummy_file_to_trigger_recursive_rm'
         pydevtest_common.make_file(file_basename, 10)
         file_irods_path = os.path.join(collection_basename, file_basename)
         assertiCmd(s.adminsession, 'iput {file_basename} {file_irods_path}'.format(**vars()))
-        a, v, u = ('attribute_'+collection_basename, 'value_'+collection_basename, 'unit_'+collection_basename)
+        a, v, u = ('attribute_' + collection_basename, 'value_' + collection_basename, 'unit_' + collection_basename)
         assertiCmd(s.adminsession, 'imeta add -C {collection_basename} {a} {v} {u}'.format(**vars()))
         assertiCmd(s.adminsession, 'imeta ls -C {collection_basename}'.format(**vars()), 'STDOUT_MULTILINE', [a, v, u])
         assertiCmd(s.adminsession, 'irm -r {collection_basename}'.format(**vars()))
