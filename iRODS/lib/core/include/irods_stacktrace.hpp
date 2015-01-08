@@ -5,6 +5,7 @@
 
 #include <list>
 #include <string>
+#include <iostream>
 
 namespace irods {
 
@@ -22,7 +23,7 @@ namespace irods {
             error trace( void );
 
             /// @brief Dumps the current stack to stderr
-            error dump( void );
+            error dump( std::ostream& strm_ = std::cerr );
 
         private:
             /// @brief function to demangle the c++ function names

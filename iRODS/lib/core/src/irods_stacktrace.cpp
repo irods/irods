@@ -57,7 +57,7 @@ namespace irods {
         return result;
     }
 
-    error stacktrace::dump( void ) {
+    error stacktrace::dump( std::ostream& strm_ ) {
         error result = SUCCESS();
         unsigned int max_function_length = 0;
         for ( stacklist::const_iterator it = stack_.begin(); it != stack_.end(); ++it ) {
@@ -67,21 +67,21 @@ namespace irods {
             }
         }
         int frame = 0;
-        std::cerr << std::endl << "Dumping stack trace" << std::endl;
+        strm_ << std::endl << "Dumping stack trace" << std::endl;
         for ( stacklist::const_iterator it = stack_.begin(); it != stack_.end(); ++it ) {
             stack_entry_t entry = *it;
-            std::cerr << "<" << frame << ">";
-            std::cerr << "\t" << entry.function;
+            strm_ << "<" << frame << ">";
+            strm_ << "\t" << entry.function;
             int pad_amount = max_function_length - entry.function.length();
             for ( int i = 0; i < pad_amount; ++i ) {
-                std::cerr << " ";
+                strm_ << " ";
             }
-            std::cerr << "\t" << "Offset: " << entry.offset;
-            std::cerr << "\t" << "Address: " << entry.address;
-            std::cerr << std::endl;
+            strm_ << "\t" << "Offset: " << entry.offset;
+            strm_ << "\t" << "Address: " << entry.address;
+            strm_ << std::endl;
             ++frame;
         }
-        std::cerr << std::endl;
+        strm_ << std::endl;
         return result;
     }
 

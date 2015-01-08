@@ -113,6 +113,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/list.o \
 		$(libCoreObjDir)/hashtable.o \
 		$(libCoreObjDir)/region.o \
+		$(libCoreObjDir)/irods_exception.o  \
 		$(libCoreObjDir)/apiHandler.o 
 
 INCLUDES +=	-I$(libCoreIncDir)
