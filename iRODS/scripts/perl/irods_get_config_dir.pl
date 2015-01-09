@@ -5,7 +5,7 @@ use File::Spec;
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
 
-if( -e "/etc/irods/irods.config" )
+if( -e "/etc/irods/server_config.json" )
 {
         $configDir = "/etc/irods";
 }

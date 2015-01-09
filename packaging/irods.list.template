@@ -184,8 +184,8 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
     # detect current service account information
-    MYACCTNAME=`ls -l /etc/irods/irods.config | awk '{print $$3}'`
-    MYGROUPNAME=`ls -l /etc/irods/irods.config | awk '{print $$4}'`
+    MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $$3}'`
+    MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $$4}'`
     # populate configuration file
     echo "IRODS_SERVICE_ACCOUNT_NAME=$$MYACCTNAME " > $$SERVICE_ACCOUNT_CONFIG_FILE
     echo "IRODS_SERVICE_GROUP_NAME=$$MYGROUPNAME " >> $$SERVICE_ACCOUNT_CONFIG_FILE
@@ -367,7 +367,6 @@ c 644 root root /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
 c 644 root root /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 c 644 root root /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
 c 644 root root /etc/irods/hosts_config.json ./iRODS/server/config/hosts_config.json
-c 644 root root /etc/irods/irods.config ./iRODS/config/irods.config
 
 d 755 root root ${IRODS_HOME}/installLogs -
 

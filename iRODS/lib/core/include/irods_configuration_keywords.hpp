@@ -1,7 +1,7 @@
 
 
-#ifndef CONFIGURATION_KEYWORODS_HPP
-#define CONFIGURATION_KEYWORODS_HPP
+#ifndef CONFIGURATION_KEYWORDS_HPP
+#define CONFIGURATION_KEYWORDS_HPP
 
 #include <string>
 
@@ -126,7 +126,7 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // CONFIGURATION_KEYWORODS_HPP
+#endif // CONFIGURATION_KEYWORDS_HPP
 
 
 

@@ -7,31 +7,15 @@
 # Usage is:
 #	perl irods_setup.pl [options]
 #
-# Help options:
-#	--help      Show a list of options
-#
-# Verbosity options:
-# 	--quiet     Suppress all messages
-# 	--verbose   Output all messages (default)
-#
-#
-# This Perl script completes the installation of iRODS by creating
-# the iRODS database and tables (if needed), initializing
-# those tables, and setting up the user's initial iRODS account.
-# iRODS tests are run to insure that everything is working.
-#
-#	** There are no user-editable parameters in this file. **
-#
 use File::Spec;
 use File::Copy;
-#use File::Grep;
 use Cwd;
 use Cwd "abs_path";
 use Config;
 use File::Basename;
 use File::Path;
 
-$version{"irods_setup.pl"} = "Sept 2014";
+$version{"irods_setup.pl"} = "Jan 2015";
 
 # =-=-=-=-=-=-=-
 # detect the running environment (usually the service account user)
@@ -51,26 +35,6 @@ if( scalar(@ARGV) > 1 ) {
         $icatInstall = 1;
 }
 
-
-#
-# Design Notes:  Perl and OS compatability
-#	This script is written to work on Perl 5.0+ and on Linux,
-#	Mac, and Solaris.  Perl features intentionally not used
-#	because they are not available on Perl 5.0 include:
-#
-#		"\s"  in regular expressions is supposed to match
-#		all white space characters.  It fails in older Perl.
-#
-#		"use Errno;" to get error messages fails in older Perl.
-#
-#		File handle variables.  They fail in older Perl.
-#
-#		"qr/.../" is supposed to define a compiled regular
-#		expression that can be passed as an argument.  It
-#		fails with a syntax error in older Perl.
-#
-
-
 ########################################################################
 #
 # Confirm execution from the top-level iRODS directory.
@@ -79,8 +43,7 @@ $IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
-# Where is the configuration directory for iRODS?  This is where
-# support scripts are kept.
+# iRODS configuration directory
 $configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
 
 if ( ! -d $configDir )
@@ -126,11 +89,9 @@ require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
-#require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
+require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
-
-
 
 
 # Get the path to Perl.  We'll use it for running other Perl scripts.
@@ -153,18 +114,9 @@ my %thisHostAddresses = getCurrentHostAddresses( );
 # Name a log file.
 my $logFile = File::Spec->catfile( $logDir, "irods_setup.log" );
 
-# Set the number of seconds to sleep after starting or stopping the
-# database server.  This gives it time to start or stop before
-# we do anything more.  The actual number here is a guess.  Different
-# CPU speeds, host loads, or database versions may make this too little
-# or too much.
-my $databaseStartStopDelay = 8;		# Seconds
-
 # Set the default iRODS boot administrator name and password.
-# These are the defaults when iRODS is first installed.  After
-# the first user account has been created (done in this script),
-# these aren't needed any more.  The boot account is deleted
-# after the first run.
+# These are the defaults when iRODS is first installed.
+# The boot account is deleted after the first run.
 my $IRODS_ADMIN_BOOT_NAME     = "rodsBoot";
 my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 
@@ -178,7 +130,7 @@ my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 
 	# Process names need to be able to match on just 8 characters,
 	# due to limitations of SysV /bin/ps (such as Solaris) which
-	# only shows the 1st 8 characters.
+	# only shows the first 8 characters.
 );
 
 
@@ -190,95 +142,16 @@ my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
 # Check script usage.
 #
 
-# Don't allow root to run this.
-#if ( $thisUserID == 0 )
-#{
-#	printError( "Usage error:\n" );
-#	printError( "    This script should *not* be run as root.\n" );
-#	exit( 1 );
-#}
-
-
 # Initialize global flags.
 my $noAsk = 0;
 my $noHeader = 0;
 my $isUpgrade = 0;
 setPrintVerbose( 1 );
 
-
-# Parse the command-line.
-#my $arg;
-#foreach $arg (@ARGV)
-#{
-#	if ( $arg =~ /^-?-?h(elp)$/ )		# Help / usage
-#	{
-#		printUsage( );
-#		exit( 0 );
-#	}
-#	if ( $arg =~ /^-?-?q(uiet)$/ )		# Suppress output
-#	{
-#		setPrintVerbose( 0 );
-#		next;
-#	}
-#	if ( $arg =~ /^-?-?v(erbose)$/ )	# Enable output
-#	{
-#		setPrintVerbose( 1 );
-#		next;
-#	}
-#	if ( $arg =~ /^-?-?noa(sk)$/i )		# Suppress questions
-#	{
-#		$noAsk = 1;
-#		next;
-#	}
-#	if ( $arg =~ /^-?-?indent$/i )		# Indent everything
-#	{
-#		setMasterIndent( "        " );
-#		next;
-#	}
-#
-#	if ( $arg =~ /^-?-?noheader$/i )	# Suppress header message
-#	{
-#		$noHeader = 1;
-#		next;
-#	}
-#
-#	if ( $arg =~ /^-?-?(force)$/ )		# Force all actions
-#	{
-#		$force = 1;
-#		next;
-#	}
-#	if ( $arg =~ /-?-?upgrade/ ) 	# Upgrade mode
-#	{
-#		$isUpgrade = 1;
-#		next;
-#	}
-#
-#	printError( "Unknown option:  $arg\n" );
-#	printUsage( );
-#	exit( 1 );
-#}
-
-
-
-
-
 ########################################################################
 #
 # Confirm that prior setup stages have probably run.
 #
-# Make sure config/config.mk exists.  It is created by the 'configure'
-# script, which must be run first.  If the file doesn't exist, it
-# probably means scripts are being run out of order or that a prior
-# stage failed.
-# if ( ! -e $configMk )
-# {
-# 	printError( "Usage error:\n" );
-# 	printError( "    The file 'config.mk' is missing.  This probably\n" );
-# 	printError( "    means that prior setup stages have not been\n" );
-# 	printError( "    completed yet.\n" );
-# 	printError( "\n    Please run ./setup.\n" );
-# 	exit( 1 );
-# }
 
 # Make sure the i-command binaries exist.  They are built during 'make',
 # which should already have occurred.
@@ -293,135 +166,25 @@ if ( ! -e $iadmin )
 }
 
 
-
-
-
 ########################################################################
 #
-# Make sure the user wants to run this script.
+# Load and validate server configuration files.
 #
+load_server_config("/etc/irods/server_config.json");
+load_database_config("/etc/irods/database_config.json");
 
-#if ( ! $noHeader )
-#{
-#	printTitle( "Finish setting up iRODS\n" );
-#	printTitle( "------------------------------------------------------------------------\n" );
-#
-#	if ( ! $noAsk )
-#	{
-#		printNotice(
-#			"This script finishes setting up iRODS.  Depending upon your chosen\n",
-#			"configuration, it sets up the database and finishes setting iRODS\n",
-#			"settings..  It does not require administrator privileges.\n",
-#			"\n" );
-#		if ($force) 
-#		{
-#		    printNotice(
-#			"Also note that since you are using the --force option this script\n",
-#			"will also drop the database and/or the database tables destroying all\n",
-#			"state information.  Only continue if you want your iRODS system to start\n",
-#			"over completely.\n",
-#			"\n" );
-#		}
-#		if ( askYesNo( "    Continue (yes/no)?  " ) == 0 )
-#		{
-#			printNotice( "Canceled.\n" );
-#			exit( 1 );
-#		}
-#	}
-#}
-
-# =-=-=-=-=-=-=-
-# JMC :: pulled from utils_config.pl - the call to set up env vars
-#     :: was breaking the path to the system db binaries
-sub irodsLoadIrodsConfig()
-{
-
-	# Check that the configuration file exists.
-	if ( ! -e $irodsConfig )
-	{
-		printError( "\nConfiguration problem:\n" );
-		printError( "    The iRODS configuration file is missing.\n" );
-		printError( "        Configuration file:  $irodsConfig\n" );
-		return 0;
-	}
-
-
-	# Set default values that are overridden by the file.
-	$DATABASE_TYPE               = undef;
-	$DATABASE_HOME               = undef;
-	$DATABASE_LIB                = undef;
-	$DATABASE_EXCLUSIVE_TO_IRODS = undef;
-	$DATABASE_HOST               = undef;
-	$DATABASE_PORT               = undef;
-	$DATABASE_ADMIN_NAME         = undef;
-	$DATABASE_ADMIN_PASSWORD     = undef;
-
-	$IRODS_ADMIN_NAME     = undef;
-	$IRODS_ADMIN_PASSWORD = undef;
-	$IRODS_PORT           = undef;
-	$SVR_PORT_RANGE_START = undef;
-	$SVR_PORT_RANGE_END   = undef;
-	$IRODS_HOST           = undef;
-
-	$DB_KEY        = undef;
-	$DB_NAME       = undef;
-	$ZONE_NAME     = undef;
-	$RESOURCE_NAME = undef;
-	$RESOURCE_DIR  = undef;
-
-	# Legacy - no longer used
-	$ADMIN_NAME  = undef;
-	$ADMIN_PW    = undef;
-	$DB_PASSWORD = undef;
-	$rodsPort    = undef;
-
-	# Load the file.
-
-	#require $irodsConfig;
-	require "irods\.config";
-	
-	return 1;
-}
-
-########################################################################
-#
-# Load and validate irods.config.
-#
-# This function sets a large number of important global variables based
-# upon values in the irods.config file.  Those include the type of
-# database in use (if any), the path to that database, the host and
-# port for the database, and the initial account name and password
-# for the database and iRODS.
-#
-# This function also validates that the values look reasonable and
-# prints messages if they do not.
-#
-copyTemplateIfNeeded( $irodsConfig );
-
-# Restrict permissions on irods.config
-chmod( 0600, $irodsConfig );
-
-if ( irodsLoadIrodsConfig( ) == 0 )
-{
-	# Configuration failed to load or validate.  An error message
-	# has already been output.
-	exit( 1 );
-}
 # Make sure the home directory is set and valid.  If not, the installation
 # is probably being run out of order or a prior stage failed.
 if ( $IRODS_HOME eq "" || ! -e $IRODS_HOME )
 {
 	printError( "Usage error:\n" );
-	printError( "    The IRODS_HOME setting in 'irods.config' is empty\n" );
-	printError( "    or incorrect.  This probably means that prior\n" );
-	printError( "    setup stages have not been completed yet.\n" );
-	printError( "\n    Please run ./setup.\n" );
+	printError( "    The IRODS_HOME setting is empty or incorrect.\n" );
 	exit( 1 );
 }
 
 ########################################################################
 #
-# Open and initialize the log file.
+# Open and initialize the setup log file.
 #
 if ( -e $logFile )
 {
@@ -480,11 +243,7 @@ foreach $ver (keys %version)
 }
 
 # =-=-=-=-=-=-=-
-# JMC :: adding this value as we no longer require utils_config.pl
-$IRODS_DEFAULT_ZONE="tempZone";
-
-# =-=-=-=-=-=-=-
-# JMC :: if arguments are 0, then we will assume this is a RESOURCE installation.  we hope...
+# JMC :: if arguments are 0, we assume this is a RESOURCE installation.
 if( 1 == $icatInstall )
 {
 	$DATABASE_TYPE           = $ARGV[0];
@@ -573,7 +332,7 @@ elsif ( $DATABASE_TYPE eq "" )
 else
 {
 	# There is a database.  We need to configure it.
-	$totalSteps  = 5;
+	$totalSteps  = 4;
 	if ($isUpgrade) {$totalSteps=3;}
 	$currentStep = 0;
 
@@ -581,30 +340,25 @@ else
 	# are using a database.
 	$IRODS_ICAT_HOST = "";
 
-	## 1.  Prepare by starting/stopping servers.
-	#prepare( );
-
-	# 2.  Set up the user account for the database.
+	# 1.  Set up the user account for the database.
 	if (!$isUpgrade) {
 	    configureDatabaseUser( );
 	}
 
-	# 3.  Create the database schema and tables.
+	# 2.  Create the database schema and tables.
 	if (!$isUpgrade) {
 	    createDatabaseAndTables( );
 	}
 
-	# 4.  Configure database security settings and restart.
+	# 3.  Test database connection.
 	if (!$isUpgrade) {
-	    configureDatabaseSecurity( );
-	    restartDatabase( );
 	    testDatabase( );
 	}
 
-	# 5.  Configure 
+	# 4.  Configure 
 	configureIrodsServer( );
 
-	# 6.  Configure the iRODS user account.
+	# 5.  Configure the iRODS user account.
 	configureIrodsUser( );
 }
 
@@ -670,24 +424,6 @@ sub prepare()
 		printLog( "    Skipped.  Server already stopped.\n" );
 	}
 
-
-
-	# Start database if it isn't running.
-	#if ( $controlDatabase )
-	#{
-	#	printStatus( "Starting database server...\n" );
-	#	printLog( "\nStarting database server...\n" );
-	#	$status = startDatabase( );
-	#	if ( $status == 0 )
-	#	{
-	#		cleanAndExit( 1 );
-	#	}
-	#	if ( $status == 2 )
-	#	{
-	#		printStatus( "    Skipped.  Server already running.\n" );
-	#		printLog( "    Skipped.  Server already running.\n" );
-	#	}
-	#}
 }
 
 
@@ -718,7 +454,6 @@ sub configureDatabaseUser
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
 		Postgres_ConfigureDatabaseUser( );
-	#	Postgres_CreateAlternateDatabaseUser( );
 		return;
 	}
 
@@ -816,44 +551,6 @@ sub createDatabaseAndTables
 		return;
 	}
 
-
-
-#	# Give the user access to the iCAT database.
-#	#	Set the user's password.
-#	#
-#	#	If this script has been run before, then the
-#	#	password may already be set.  But we can't tell.
-#	#	So just do it again.
-#	if ( $DATABASE_TYPE eq "postgres" )
-#	{
-#		printStatus( "Setting database user password...\n" );
-#		printLog( "Setting database user password...\n" );
-#		my $tmpSql = createTempFilePath( "sql" );
-#
-#		my $sql = "alter user \"$DATABASE_ADMIN_NAME\" with password '$DATABASE_ADMIN_PASSWORD';";
-#		printLog( "    $sql\n" );
-#
-#		# Create an empty file first and make it unreadable by others
-#		printToFile( $tmpSql, "\n" );
-#		chmod( 0600, $tmpSql );
-#
-#		# Now add the password line(s)
-#		appendToFile( $tmpSql, "$sql\n" );
-#		
-#		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
-#		unlink( $tmpSql );
-#		if ( $status != 0 )
-#		{
-#			 printError( "\nInstall problem:\n" );
-#			 printError( "    Could not set database password.\n" );
-#			 printError( "        ", $output );
-#			 printLog( "\nSQL failed:\n" );
-#			 printLog( "    ", $output );
-#			 cleanAndExit( 1 );
-#		}
-#	}
-
-
 	# Create the tables.
 	#	The iCAT SQL files issue a number of instructions to
 	#	create tables and initialize state.  If this script
@@ -900,38 +597,6 @@ sub createDatabaseAndTables
 			"icatSysTables.sql",
 			"icatSysInserts.sql" );
 
-# =-=-=-=-=-=-=-
-# JMC :: This is now handled in build.sh as we do not want to depend on CC for installation
-#		if ( $ZONE_NAME ne $IRODS_DEFAULT) {
-#		    printStatus( "    Converting zone name in icatSysInserts.sql\n" );
-#		    printLog( "    Converting zone name in icatSysInserts.sql\n" );
-#		    my $sqlPath = File::Spec->catfile( $serverSqlDir, 
-#						       "icatSysInserts.sql");
-#		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir, 
-#						       "icatSysInserts.sql.orig");
-#		    if (!-e $sqlPathOrig) {
-#			rename($sqlPath, $sqlPathOrig);
-#		    }
-#		    unlink($sqlPath);
-#		    `cat $sqlPathOrig | sed s/$IRODS_DEFAULT_ZONE/$ZONE_NAME/g > $sqlPath`;
-#		}
-#
-#		printStatus( "    Converting SQL to $DATABASE_TYPE form.\n" );
-#		printLog( "    Converting SQL to $DATABASE_TYPE form.\n" );
-#		my $convertSqlScript = File::Spec->catfile( $serverSqlDir,"convertSql.pl");
-#		($status,$output) = run( "$perl $convertSqlScript $DATABASE_TYPE $serverSqlDir" );
-#		if ( $status != 0 )
-#		{
-#		    printError( "\nInstall problem:\n" );
-#		    printError( "    Could not run $convertSqlScript\n" );
-#		    printError( "        ", $output );
-#		    printLog( "\nInstall problem:\n" );
-#		    printLog( "    Could not run $convertSqlScript\n" );
-#		    printLog( "    ", $output );
-#		    cleanAndExit( 1 );
-#		}
-# =-=-=-=-=-=-=-
-    
 		my $alreadyCreated = 0;
 		my $sqlfile;
 		printStatus( "    Inserting iCAT tables...\n" );
@@ -998,8 +663,6 @@ sub createDatabaseAndTables
 		    printLog( "        ", $output );
 		}
 
-#		
-
 	}
 	if ( $tablesAlreadyCreated )
 	{
@@ -1007,163 +670,7 @@ sub createDatabaseAndTables
 		printLog( "    Skipped.  Tables already created.\n" );
 	}
 
-	# Create the Audit Extension SQL items if requested.
-	if ($AUDIT_EXT == 1) {
-		printStatus( "Inserting Audit Extensions...\n" );
-		printLog( "Inserting Audit Extensions...\n" );
-		my $auditExtSqlFile = File::Spec->catfile( $serverAuditExtSql,
-				       "ext.sql" );
-		copyTemplateIfNeeded( $auditExtSqlFile );
-		my %variables = (
-		    "rodsbuild", $DATABASE_ADMIN_NAME );
-
-		($status,$output) = replaceVariablesInFile( $auditExtSqlFile,
-				    "simple", 0, %variables );
-		if ( $status == 0 )
-		{
-		    printError( "\nInstall problem:\n" );
-		    printError( "    Cannot create ext.sql file.\n" );
-		    printLog( "\nCannot create ext.sql file.\n" );
-		    cleanAndExit( 1 );
-		}
-
-		($status,$output) = execute_sql( $DB_NAME, $auditExtSqlFile );
-		if ( $status != 0 )
-		{
-		    # Stop if it failed.
-		    printError( "\nInstall problem:\n" );
-		    printError( "    Could not create the iCAT AuditExttables.\n" );
-		    printError( "        ", $output );
-		    printLog( "\nSQL failed:\n" );
-		    printLog( "    ", $output );
-		    cleanAndExit( 1 );
-		}
-		printLog( "        ", $output );
-	}
 }
-
-
-
-
-
-#
-# @brief	Configure database security settings.
-#
-# Different databases have different configuration files for controlling
-# who can connect and how.  Here we adjust those based upon the selected
-# database.
-#
-# Output error messages and exit on problems.
-#
-sub configureDatabaseSecurity
-{
-	++$currentStep;
-	printSubtitle( "\n" );
-	printSubtitle( "Step $currentStep of $totalSteps:  Configuring database security...\n" );
-	printLog( "\n" );
-	printLog( "Configuring database security...\n" );
-	printLog( "------------------------------------------------------------------------\n" );
-	printLog( getCurrentDateTime( ) . "\n\n" );
-
-
-	# Postgres
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		if ( $controlDatabase )
-		{
-			Postgres_ConfigureDatabaseSecurity( );
-		}
-		else
-		{
-			printStatus( "Configuring security...\n" );
-			printStatus( "    Skipped.  Existing Postgres configured by DBA.\n" );
-			printLog( "    Skipped.  Existing Postgres configured by DBA.\n" );
-		}
-		return;
-	}
-
-	# Oracle
-	if ( $DATABASE_TYPE eq "oracle" )
-	{
-		printStatus( "Configuring security...\n" );
-		printStatus( "    Skipped.  Oracle database security configured by DBA.\n" );
-		printLog( "    Skipped.  Oracle database security configured by DBA.\n" );
-		return;
-	}
-
-	# MySQL
-	if ( $DATABASE_TYPE eq "mysql" )
-	{
-		printStatus( "Configuring security...\n" );
-		printStatus( "    Skipped.  MySQL database security configured by DBA.\n" );
-		printLog( "    Skipped.  MySQL database security configured by DBA.\n" );
-		return;
-	}
-
-	# Empty
-	if ( $DATABASE_TYPE eq "" )
-	{
-		printStatus( "Configuring security...\n" );
-		printStatus( "    Skipped.  No database to configure.\n" );
-		printLog( "    Skipped.  No database to configure.\n" );
-		return;
-	}
-
-
-	# Otherwise skip it.
-	printStatus( "Configuring security...\n" );
-	printStatus( "    Skipped.  Unsupported database type:  $DATABASE_TYPE.\n" );
-	printLog( "    Skipped.  Unsupported database type:  $DATABASE_TYPE.\n" );
-}
-
-
-
-
-
-#
-# @brief	Restart database.
-#
-# After changes to the database configuration, restart it.
-#
-# Output error messages and exit on problems.
-#
-sub restartDatabase()
-{
-	return if ( ! $controlDatabase );
-
-	if ( ! $databaseRestartNeeded )
-	{
-		printStatus( "Restarting database server...\n" );
-		printStatus( "    Skipped.  Not needed.\n" );
-		return;
-	}
-
-	printStatus( "Stopping database server...\n" );
-	my $status = stopDatabase( );
-	if ( $status == 0 )
-	{
-		# Databse wouldn't stop.
-		cleanAndExit( 1 );
-	}
-	if ( $status == 2 )
-	{
-		print( "    Skipped.  Database already stopped.\n" );
-	}
-
-	printStatus( "Starting database server...\n" );
-	$status = startDatabase( );
-	if ( $status == 0 )
-	{
-		# Databse wouldn't start.
-		cleanAndExit( 1 );
-	}
-	if ( $status == 2 )
-	{
-		print( "    Skipped.  Database already started.\n" );
-	}
-}
-
-
 
 
 
@@ -1185,13 +692,7 @@ sub testDatabase()
 
 	my $test_cll = File::Spec->catfile( $serverTestCLLBinDir, "test_cll" );
 
-	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
-
 	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
-	#if ( $DATABASE_TYPE eq "oracle" ) {
-	#    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
-    #    }
-
 	my ($status,$output) = run( "$exec_str" );
 
 	# scrub the password before logging and displaying
@@ -1246,21 +747,6 @@ sub configureIrodsServer
 	printLog( "------------------------------------------------------------------------\n" );
 	printLog( getCurrentDateTime( ) . "\n\n" );
 
-	# Generate the MD5 scrambled form of the database password.
-	#	We will be setting database connections to use MD5
-	#	scrambling below.  From then on, we'll need the
-	#	scrambling password.
-	printLog( "    Getting scrambled admin password...\n" );
-	#my $scrambledPassword = scramblePassword( $DATABASE_ADMIN_PASSWORD );
-	#if ( !defined( $scrambledPassword ) )
-	#{
-	#	printError( "\nInstall problem:\n" );
-	#	printError( "    Cannot scramble administrator password.\n" );
-	#	printLog( "\nCannot scramble adminstrator password.\n" );
-	#	cleanAndExit( 1 );
-	#}
-
-
 	# Update/set the iRODS server configuration.
 	#	Tell iRODS the database host (often this host),
 	#	the database administrator's name, and their MD5
@@ -1285,19 +771,21 @@ sub configureIrodsServer
                 }
             }
         }
-
 	my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
 
 	my %svr_variables = (
-		"icat_host",	    $host,
+        "icat_host",	    $host,
         "zone_name",        $ZONE_NAME,
         "zone_port",        $IRODS_PORT + 0, # convert to integer
         "zone_user",        $IRODS_ADMIN_NAME,
         "zone_auth_scheme", "native" );
         printStatus( "    Updating $serverConfigFile....\n" );
         printLog( "    Updating $serverConfigFile....\n" );
-	printLog( "        icat_host   = $host\n" );
-
+	printLog( "        icat_host        = $host\n" );
+        printLog( "        zone_name        = $ZONE_NAME\n" );
+        printLog( "        zone_port        = $IRODS_PORT\n" );
+        printLog( "        zone_user        = $IRODS_ADMIN_NAME\n" );
+        printLog( "        zone_auth_scheme = native\n" );
         $status = update_json_configuration_file(
                   $serverConfigFile,
                   %svr_variables );
@@ -1322,7 +810,7 @@ sub configureIrodsServer
             printLog( "    Updating $databaseConfigFile....\n" );
             printLog( "        catalog_database_type = $DATABASE_TYPE\n" );
             printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
-            printLog( "        db_password = $DATABASE_ADMIN_PASSWORD\n" );
+            printLog( "        db_password = XXXXX\n" );
             $status = update_json_configuration_file(
                     $databaseConfigFile,
                     %db_variables );
@@ -1415,11 +903,11 @@ sub configureIrodsServer
         }
     }
 
-    my %svr_variables = (
+        my %svr_variables = (
             "zone_name",        $ZONE_NAME,
             "zone_port",        1233,
             "zone_auth_scheme", "native" );
-    $status = update_json_configuration_file(
+        $status = update_json_configuration_file(
             $serverConfigFile,
             %svr_variables );
 
@@ -1433,18 +921,6 @@ sub configureIrodsServer
 	printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
 	
 	$ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
-	open( BOOTENV, "<$bootEnv" );
-	my $line;
-	foreach $line (<BOOTENV>)
-	{
-		printLog( "    ", $line );
-		if ( $line =~ "irods_port") {
-			$currentPort = substr($line, 10);
-			chomp($currentPort);
-		}
-	}
-
-	close( BOOTENV );
 
 	if ( startIrods( ) == 0 )
 	{
@@ -1476,17 +952,6 @@ sub configureIrodsServer
 	printLog( "\nOpening iRODS connection using boot password...\n" );
 	my $passwordsAlreadySet = 0;
 	($status,$output) = run( "$iinit $IRODS_ADMIN_BOOT_PASSWORD" );
-	if ( $status != 0 ) {
-        exit(999);
-    }
-
-    # need to repave the irods_port in the server_config.json to
-    # the configured port after using 1233 for irodsBoot user
-    my %svr_variables = (
-            "zone_port",  $IRODS_PORT + 0 );
-    update_json_configuration_file(
-            $serverConfigFile,
-            %svr_variables );
 
 	if ( $status != 0 )
 	{
@@ -1497,12 +962,12 @@ sub configureIrodsServer
 
                 # Delete the in-flight boot envfile;
                 delete $ENV{"IRODS_ENVIRONMENT_FILE"};
-                # Set up admin environment
-                $ENV{"IRODS_HOST"}=$thisHost;
-                $ENV{"IRODS_PORT"}=$IRODS_PORT;
-                $ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
-                $ENV{"IRODS_ZONE"}=$ZONE_NAME;
-                $ENV{"IRODS_AUTHENTICATION_SCHEME"}="native";
+
+                # need to repave the irods_port in the server_config.json to
+                # the configured port after using 1233 for irodsBoot user
+                my %svr_variables = ("zone_port",  $IRODS_PORT + 0 );
+                update_json_configuration_file( $serverConfigFile, %svr_variables );
+
                 # Restart the server with admin credentials
                 if ( stopIrods( ) == 0 )
                 {
@@ -1554,6 +1019,13 @@ sub configureIrodsServer
 
 	my $somethingFailed = 0;
 
+        # need to repave the irods_port in the server_config.json to
+        # the configured port after using 1233 for irodsBoot user
+        my %svr_variables = (
+            "zone_port",  $IRODS_PORT + 0 );
+        update_json_configuration_file(
+            $serverConfigFile,
+            %svr_variables );
 
 	# Create directories.
 	#	If the directory already exists, continue without
@@ -1582,7 +1054,7 @@ sub configureIrodsServer
 		elsif ( $status == 1 ) { $createdDirectory = 1; }
 	}
 
-        if ( !$somethingFailed )
+        if ( !$somethingFailed && $ENV{"IRODS_ENVIRONMENT_FILE"} ne "")
         {
                 printLog( "    Create /$ZONE_NAME/home/rodsBoot...\n" );
                 $status = imkdir( "/$ZONE_NAME/home/rodsBoot" );
@@ -1606,7 +1078,7 @@ sub configureIrodsServer
 		elsif ( $status == 1 ) { $createdDirectory = 1; }
 	}
 
-        if ( !$somethingFailed )
+        if ( !$somethingFailed && $ENV{"IRODS_ENVIRONMENT_FILE"} ne "")
         {
                 printLog( "    Create /$ZONE_NAME/trash/home/rodsBoot...\n" );
                 $status = imkdir( "/$ZONE_NAME/trash/home/rodsBoot" );
@@ -1798,6 +1270,7 @@ sub configureIrodsServer
                                 my ($status,$output) = run( $command );
                                 if ($status != 0)
                                 {
+                                        printLog(" -- $output\n");
                                         $somethingFailed = 1;
                                 }
                         }
@@ -1893,11 +1366,7 @@ sub configureIrodsUser
 	}
 
 
-	# Create a .rodsEnv file for the user, if needed.
-	#	We could check to see if the existing file (if any)
-	#	already matches the current configuration, but that's
-	#	more hassle than it's worth.  Just set it.  If we
-	#	set it to the same values, it doesn't hurt anything.
+	# Create a irods_environment.json file for the user, if needed.
 	printStatus( "Updating iRODS user's ~/.irods/irods_environment.json...\n" );
 	printLog( "Updating iRODS user's ~/.irods/irods_environment.json...\n" );
 	if ( ! -e $userIrodsDir )
@@ -1971,7 +1440,6 @@ sub configureIrodsUser
 		cleanAndExit( 1 );
 	}
 
-
         # Create the default resource, if needed.
         printStatus( "Creating default resource...\n" );
         printLog( "\nCreating default resource...\n" );
@@ -2025,8 +1493,7 @@ sub configureIrodsUser
         }
 
 
-	# Test it to be sure it is working by putting a
-	# dummy file and getting it.
+	# Test the new vault with an iput and iget
 	printStatus( "Testing resource...\n" );
 	printLog( "\nTesting resource...\n" );
 	my $tmpPutFile = "irods_put_$$.tmp";
@@ -2081,7 +1548,6 @@ sub configureIrodsUser
 	unlink( $tmpGetFile );
 
 }
-
 
 
 
@@ -2306,14 +1772,14 @@ sub stopIrods
 	#
 	# Design Notes:  The current version of this uses a file created
 	# 	by the irods server which records its PID and then finds
-	# 	the children, which should work well in most cases. 
+	# 	the children.
 	#
 	# Find and kill the server process IDs
 	$parentPid=getIrodsServerPid();
 	my @pids = getFamilyProcessIds( $parentPid );
 	my $found = 0;
 	$num = @pids;
-	print ( "Found $num processes:\n" );
+	print( "Found $num processes:\n" );
 	foreach $pid (@pids)
 	{
 		$found = 1;
@@ -2344,99 +1810,6 @@ sub stopIrods
 	return 1;
 }
 
-
-
-
-
-
-
-#
-# @brief	Start database server
-#
-# This function starts the database server and confirms that
-# it started.  However, if the database is not under our control,
-# this function does nothing.
-#
-# @return
-# 	A numeric code indicating success or failure:
-# 		0 = failure
-# 		1 = started
-# 		2 = already started
-# 		3 = not under our control
-#
-sub startDatabase()
-{
-	return 3 if ( !$controlDatabase );	# DB not under our control
-
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		return Postgres_startDatabase( );
-	}
-
-	if ( $DATABASE_TYPE eq "oracle" )
-	{
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "mysql" )
-	{
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "" )
-	{
-		return 0;
-	}
-
-	# Don't know how to start.
-	return 0;
-}
-
-
-
-
-
-#
-# @brief	Stop database server
-#
-# This function stops the database server and confirms that
-# it stopped.  However, if the database is not under our control,
-# this function does nothing.
-#
-# @return
-# 	A numeric code indicating success or failure:
-# 		0 = failure
-# 		1 = stopped
-# 		2 = already stopped
-# 		3 = not under our control
-#
-sub stopDatabase()
-{
-	return 3 if ( !$controlDatabase );	# DB not under our control
-
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		return Postgres_stopDatabase( );
-	}
-
-	if ( $DATABASE_TYPE eq "oracle" )
-	{
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "mysql" )
-	{
-		return 3;
-	}
-
-	if ( $DATABASE_TYPE eq "" )
-	{
-		return 0;
-	}
-
-	# Don't know how to stop.
-	return 0;
-}
 
 
 
@@ -2648,38 +2021,6 @@ sub ichown($$)
 
 
 
-
-
-#
-# @brief	Generate the MD5 scrambled form of a password.
-#
-# iRODS connections use MD5 scrambling.  This function uses
-# the iRODS 'iadmin' command to generate the MD5 form of a
-# password based upon a given scrambling key.
-#
-# @param	$password
-# 	the password to scramble
-# @return
-# 	the scrambled password, or undef on failure
-#
-sub scramblePassword($)
-{
-	my ($password) = @_;
-
-	# Generate the scrambled form of the database password.
-	my ($status,$output) = run( "$iadmin spass '$password' $DB_KEY" );
-	return undef if ( $status != 0 );	# Error
-
-	$output =~ /Scrambled form is:(.*)$/;
-	my $scrambled = $1;
-	chomp( $scrambled );
-	return $scrambled;
-}
-
-
-
-
-
 #
 # @brief	Send a file of SQL commands to the database.
 #
@@ -2791,17 +2132,6 @@ sub printUsage()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 ########################################################################
 #
 #  Postgres functions.
@@ -2811,46 +2141,6 @@ sub printUsage()
 #  	Postgres.  All of them output error messages on failure,
 #  	but none exit directly.
 #
-
-
-#
-# @brief	Create an Alternate Database User (if requested).
-#
-# This function creates the additional postgres user if the specified
-# name it is not the same as the OS usename.
-#
-sub Postgres_CreateAlternateDatabaseUser( )
-{
-	if ( $thisUser eq $DATABASE_ADMIN_NAME ) {
-		# Typical case, using the OS username for the DB user.
-		return;
-	}
-    
-	# Create the postgres user.
-	#   If this is an initial build/install of Postgres, no
-	#   password will be needed (yet) but to avoid the possibility
-	#   of getting stuck on a prompt, we include the password in 
-	#   an input file.
-	printStatus( "    Creating Postgres database user...\n" );
-	printLog( "\n    Creating Postgres database user...\n" );
-	my $tmpPassword = createTempFilePath( "create" );
-	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
-	chmod( 0600, $tmpPassword );
-
-	$CUSER=`$scripttoplevel/packaging/find_bin_postgres.sh`;
-	chomp $CUSER;
-	$CUSER=$CUSER . "/createuser";
-
-	($status,$output) = run( "sudo -u postgres $CUSER -s $DATABASE_ADMIN_NAME < $tmpPassword" );
-	if ( $status != 0 ) {
-		printStatus( "        Create user failed (which may be OK)...\n" );
-		printLog( "\n        Create user failed (which may be OK)...\n" );
-		printLog( "        $CUSER \n" );
-		printLog( "        $output" );
-		printLog( "        status: $status\n");
-	}
-	unlink( $tmpPassword );
-}
 
 #
 # @brief	Configure user accounts for a Postgres database.
@@ -3184,7 +2474,7 @@ sub Postgres_CreateDatabase()
 		}
 		
 		open( NEWCONFIGFILE, ">$userODBC" );
-		print ( NEWCONFIGFILE "[postgres]\n" .
+		print( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
@@ -3196,7 +2486,7 @@ sub Postgres_CreateDatabase()
 
 		close( NEWCONFIGFILE );
 
-		chmod( $userODBC, 0600 );
+		chmod( 0600, $userODBC );
 	} 
 	return 1;
 }
@@ -3216,64 +2506,30 @@ sub Postgres_CreateDatabase()
 #
 sub Oracle_CreateDatabase()
 {
-    # If force mode, drop the tables (similar to dropping the db
-    # in postgres.  The tables are then inserted later, if not present.
-    if ( $force )
-    {
-	printStatus( "CreateDatabase: dropping tables...\n" );
-	printLog( "CreateDatabase: dropping tables...\n" );
-	my @sqlfiles = (
-			"icatPurgeRecycleBin.sql",
-			"icatDropCoreTables.sql",
-			"icatDropSysTables.sql",
-			"icatPurgeRecycleBin.sql");
-	my $sqlfile;
-	foreach $sqlfile (@sqlfiles)
-	{
-	    printLog( "    $sqlfile...\n" );
-	    printLog( "    $sqlfile...\n" );
-	    printStatus ( "    $sqlfile...\n" );
-	    my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
-	    my ($status,$output) = Oracle_sql( "unused", $sqlPath );
-	    if ( $status != 0 )
-	    {
-		# Stop if any of the SQL scripts fail.
-		printError( "\nInstall problem:\n" );
-		printError( "    Could not drop the iCAT tables.\n" );
-		printError( "        ", $output );
-		printLog( "\nSQL failed:\n" );
-		printLog( "    ", $output );
-		cleanAndExit( 1 );
-	    }
-	}
-    }
-    else 
-    {
-	 printStatus( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
-	 printLog( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
-     }
+	printStatus( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
+	printLog( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
 
-    # =-=-=-=-=-=-=-
+	# =-=-=-=-=-=-=-
 	# configure the service accounts .odbc.ini file
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
-    # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
-    chomp($oracleOdbcLib);
+	# iRODS now supports a script to determine the path & lib name of the odbc driver
+	my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
+	chomp($oracleOdbcLib);
 
-    open( NEWCONFIGFILE, ">$userODBC" );
-    print ( NEWCONFIGFILE "[oracle]\n" .
+	open( NEWCONFIGFILE, ">$userODBC" );
+	print( NEWCONFIGFILE "[oracle]\n" .
             "Driver=$oracleOdbcLib\n" .
             "Database=$DB_NAME\n" .
             "Servername=$DATABASE_HOST\n" .
             "Port=$DATABASE_PORT\n" );
 
-    close( NEWCONFIGFILE );
+	close( NEWCONFIGFILE );
 
-    chmod( $userODBC, 0600 );
-    return 1;
+	chmod( 0600, $userODBC );
+	return 1;
 
 }
 
@@ -3293,44 +2549,10 @@ sub Oracle_CreateDatabase()
 #
 sub MySQL_CreateDatabase()
 {
-    # If force mode, drop the tables (similar to dropping the db
-    # in postgres.  The tables are then inserted later, if not present.
-    if ( $force )
-    {
-        printStatus( "CreateDatabase: dropping tables...\n" );
-        printLog( "CreateDatabase: dropping tables...\n" );
-        my @sqlfiles = (
-                "icatPurgeRecycleBin.sql",
-                "icatDropCoreTables.sql",
-                "icatDropSysTables.sql",
-                "icatPurgeRecycleBin.sql");
-        my $sqlfile;
-        foreach $sqlfile (@sqlfiles)
-        {
-            printLog( "    $sqlfile...\n" );
-            printStatus ( "    $sqlfile...\n" );
-            my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
-            my ($status,$output) = MySQL_sql( $DB_NAME, $sqlPath );
-            if ( $status != 0 )
-            {
-                # Stop if any of the SQL scripts fail.
-                printError( "\nInstall problem:\n" );
-                printError( "    Could not drop the iCAT tables.\n" );
-                printError( "        ", $output );
-                printLog( "\nSQL failed:\n" );
-                printLog( "    ", $output );
-                cleanAndExit( 1 );
-            }
-        }
-    }
-    else 
-    {
-        printStatus( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
-        printLog( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
-    }
+	printStatus( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
+	printLog( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
 
-
-    # =-=-=-=-=-=-=-
+	# =-=-=-=-=-=-=-
 	# configure the service accounts .odbc.ini file
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
@@ -3341,7 +2563,7 @@ sub MySQL_CreateDatabase()
     chomp($mysqlOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );
-    print ( NEWCONFIGFILE "[mysql]\n" .
+    print( NEWCONFIGFILE "[mysql]\n" .
             "Driver=$mysqlOdbcLib\n" .
             "Database=$DB_NAME\n" .
             "Server=$DATABASE_HOST\n" .
@@ -3350,7 +2572,7 @@ sub MySQL_CreateDatabase()
 
     close( NEWCONFIGFILE );
 
-    chmod( $userODBC, 0600 );
+    chmod( 0600, $userODBC );
     return 1;
 }
 
@@ -3586,110 +2808,6 @@ sub Postgres_updateODBC()
 }
 
 
-
-
-
-#
-# @brief	Configure security settings for a Postgres database.
-#
-# This function adjusts the default Postgres pg_hba.conf file to
-# require MD5 scrambling of passwords.
-#
-# Messages are output on errors.
-#
-sub Postgres_ConfigureDatabaseSecurity()
-{
-	# The Postgres host list.
-	my $pghbaconf = File::Spec->catfile( $databaseDataDir, "pg_hba.conf" );
-
-
-	# Configure Postgres so that ODBC will need to use MD5-password
-	# Check first to see if we've already modified the file
-	# during a previous run of the script.
-	printStatus( "Updating Postgres pg_hba.conf...\n" );
-	printLog( "Updating Postgres pg_hba.conf...\n" );
-
-	my $flagInsertedLines = "# iRODS connections:";
-
-	my $newPghbaconf = createTempFilePath( "pghba" );
-	my $pghbaAlreadyModified = 0;
-	my $pghbaLocalFound = 0;
-	open( NEWPGHBA,  ">$newPghbaconf" );
-	open( ORIGPGHBA, "<$pghbaconf" );
-	my $line;
-	foreach $line ( <ORIGPGHBA> )
-	{
-		# Note if we've already modified this file.
-		if ( $line =~ /^$flagInsertedLines/ )
-		{
-			$pghbaAlreadyModified = 1;
-		}
-
-		# Watch for a local line and make sure it is there.
-		elsif ( $line =~ /^local/i )
-		{
-			$pghbaLocalFound = 1;
-		}
-
-		# Replace any use of the 'trust' method with 'md5'.
-		if ( $line =~ /trust[ \t]*$/i )
-		{
-			$line =~ s/trust/md5/;
-		}
-
-		print( NEWPGHBA $line );
-	}
-
-	print( NEWPGHBA "\n$flagInsertedLines\n" );
-	print( NEWPGHBA "#     Force use of md5 scrambling for all connections.\n" );
-
-
-	# Legacy host list method:
-	#   Previous scripts added one or more 'host' lines using host IP
-	#   addresses.  Unfortunately, IP addresses change for hosts on
-	#   DHCP, so this isn't reliable.  Instead, we'll use match-all
-	#   entries below.
-	#foreach $ip (keys %thisHostAddresses)
-	#{
-	#	print( NEWPGHBA
-	#		"host    all         all         $ip  255.255.255.255   md5\n" );
-	#}
-
-	#  Instead:
-	#	use "0.0.0.0/0" to match all IPv4 addresses.
-	#	use "::/0" to match all IPv6 addresses.
-	print( NEWPGHBA "host    all         all         0.0.0.0/0             md5\n" );
-	print( NEWPGHBA "host    all         all         ::/0                  md5\n" );
-	if ( ! $pghbaLocalFound )
-	{
-		print( NEWPGHBA
-			"local   all         all                               md5\n" );
-	}
-	close( NEWPGHBA );
-	close( ORIGPGHBA );
-
-	if ( $pghbaAlreadyModified )
-	{
-		# We've already modified the file, so nevermind.
-		unlink( $newPghbaconf );
-		printStatus( "    Skipped.  File already uptodate.\n" );
-		printLog( "    Skipped.  File already uptodate.\n" );
-	}
-	else
-	{
-		# Remove the old file and copy in the modified file.
-		printLog( "    Removing old pg_hba.conf...\n" );
-		unlink( $pghbaconf );
-		printLog( "    Replacing with new pg_hba.conf...\n" );
-		move( $newPghbaconf, $pghbaconf );
-		$databaseRestartNeeded = 1;
-	}
-}
-
-
-
-
-
 #
 # @brief	Send a file of SQL commands to the Postgres database.
 #
@@ -3748,7 +2866,7 @@ sub Postgres_sql($$)
 sub Oracle_sql($$)
 {
     my ($databaseName,$sqlFilename) = @_;
-    my $connectArg, $i;
+    my ($connectArg, $i);
     $i = index($DATABASE_ADMIN_NAME, "@");
 
     $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
@@ -3796,80 +2914,3 @@ sub MySQL_sql($$)
 }
 
 
-#
-# @brief	Start Postgres server
-#
-# This function starts the Postgres server and confirms that
-# it started.
-#
-# Messages are output on errors.
-#
-# @return
-# 	A numeric code indicating success or failure:
-# 		0 = failure
-# 		1 = started
-# 		2 = already started
-#
-sub Postgres_startDatabase()
-{
-	# Is Postgres running?
-	my ($status,$output) = run( "$pgctl status" );
-	return 2 if ($status == 0);	# Already started
-
-	# Start it.
-	my $logpath = File::Spec->catfile( $databaseLogDir, "pgsql.log" );
-	($status,$output) = run( "$pgctl start -o '-i' -l $logpath" );
-	if ( $status != 0 )
-	{
-		printError( "Could not start Postgres database server.\n" );
-		printError( "    $output\n" );
-		printLog( "\nCould not start Postgres database server.\n" );
-		printLog( "    $output\n" );
-		return 0;
-	}
-
-	# Give it time to start up
-	sleep( $databaseStartStopDelay );
-	return 1;
-}
-
-
-
-
-
-#
-# @brief	Stop Postgres server
-#
-# This function stops the Postgres server and confirms that
-# it stopped.
-#
-# Messages are output on errors.
-#
-# @return
-# 	A numeric code indicating success or failure:
-# 		0 = failure
-# 		1 = stopped
-# 		2 = already stopped
-#
-sub Postgres_stopDatabase()
-{
-	# Is Postgres running?
-	my ($status,$output) = run( "$pgctl status" );
-	return 2 if ($status != 0);	# Already stopped
-
-	# Stoop it.
-	my $logpath = File::Spec->catfile( $databaseLogDir, "pgsql.log" );
-	($status,$output) = run( "$pgctl stop" );
-	if ( $status != 0 )
-	{
-		printError( "Could not stop Postgres database server.\n" );
-		printError( "    $output\n" );
-		printLog( "\nCould not stop Postgres database server.\n" );
-		printLog( "    $output\n" );
-		return 0;
-	}
-
-	# Give it time to stop
-	sleep( $databaseStartStopDelay );
-	return 1;
-}

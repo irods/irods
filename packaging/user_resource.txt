@@ -6,7 +6,7 @@ Welcome to iRODS.
 This installation of a resource server is currently incomplete.
 
 The following script will prompt for necessary iRODS iCAT server
-information and then populate your irods.config accordingly:
+information and then populate your server_config.json accordingly:
 
   sudo /var/lib/irods/packaging/setup_irods.sh
 

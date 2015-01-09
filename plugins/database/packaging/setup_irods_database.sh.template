@@ -3,7 +3,6 @@
 # templated variables
 DATABASETYPE="TEMPLATE_DATABASE_TYPE"
 DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
-IRODS_CONFIG_FILE="TEMPLATE_DEFAULT_IRODSCONFIG"
 
 # config
 SETUP_DATABASE_FLAG="/tmp/$USER/setup_irods_database.flag"
@@ -30,11 +29,26 @@ else
 fi
 
 # find server_config
-if [ "$DATABASETYPE" == "oracle" ] ; then
-    if [ "$RUNINPLACE" == "1" ] ;  then
-        server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
-    else
-        server_config="/etc/irods/server_config.json"
+if [ "$RUNINPLACE" == "1" ] ;  then
+    server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
+else
+    server_config="/etc/irods/server_config.json"
+fi
+
+# =-=-=-=-=-=-=-
+# copy database_config.json template into live config location
+if [ "$RUNINPLACE" == "1" ] ;  then
+    db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to $(dirname db_config)"
+        cp $DETECTEDDIR/database_config.json $db_config
+    fi
+
+else
+    db_config="/etc/irods/database_config.json"
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to /etc/irods"
+        cp $DETECTEDDIR/database_config.json $db_config
     fi
 fi
 
@@ -42,12 +56,12 @@ fi
 mkdir -p /tmp/$USER
 if [ -f $SETUP_DATABASE_FLAG ] ; then
     # have run this before, read the existing config file
-    DATABASEHOSTORIP=`grep "DATABASE_HOST =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
-    DATABASEPORT=`grep "DATABASE_PORT =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
-    DATABASENAME=`grep "DB_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
-    DATABASEUSER=`grep "DATABASE_ADMIN_NAME =" $IRODS_CONFIG_FILE | awk -F\' '{print $2}'`
+    DATABASEHOSTORIP=`python -c "import json; print json.load(open('$db_config'))['db_host']"`
+    DATABASEPORT=`python -c "import json; print json.load(open('$db_config'))['db_port']"`
+    DATABASENAME=`python -c "import json; print json.load(open('$db_config'))['db_name']"`
+    DATABASEUSER=`python -c "import json; print json.load(open('$db_config'))['db_username']"`
     if [ "$DATABASETYPE" == "oracle" ] ; then
-        ORACLEHOME=`grep "ORACLE_HOME" $server_config | awk -F"ORACLE_HOME" '{print $2}' | awk -F\: '{print $2}' | awk -F\" '{print $2}'`
+        ORACLEHOME=`python -c "import json; print json.load(open('$server_config'))['ORACLE_HOME']"`
     fi
     STATUS="loop"
 else
@@ -223,52 +237,29 @@ done
 touch $SETUP_DATABASE_FLAG
 echo "==================================================================="
 
-IRODS_CONFIG_TEMPFILE="/tmp/$USER/tmp.irods.config"
-echo "Updating irods.config..."
-sed -e "/^\$DATABASE_TYPE/s/^.*$/\$DATABASE_TYPE = '$DATABASETYPE';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-sed -e "/^\$DATABASE_ADMIN_NAME/s/^.*$/\$DATABASE_ADMIN_NAME = '$DATABASEUSER';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+TMPFILE="/tmp/$USER/database_config.json.tmp"
+echo "Updating $db_config..."
+    python $DETECTEDDIR/update_json.py $db_config string catalog_database_type $DATABASETYPE
+    python $DETECTEDDIR/update_json.py $db_config string db_username $DATABASEUSER
 
 if [ "$DATABASETYPE" != "oracle" ] ; then
-    # update irods.config
-    sed -e "/^\$DATABASE_HOST/s/^.*$/\$DATABASE_HOST = '$DATABASEHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-    sed -e "/^\$DATABASE_PORT/s/^.*$/\$DATABASE_PORT = '$DATABASEPORT';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-    sed -e "/^\$DB_NAME/s/^.*$/\$DB_NAME = '$DATABASENAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
-    mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
+    # update database_config.json
+    python $DETECTEDDIR/update_json.py $db_config string db_host $DATABASEHOSTORIP
+    python $DETECTEDDIR/update_json.py $db_config integer db_port $DATABASEPORT
+    python $DETECTEDDIR/update_json.py $db_config string db_name $DATABASENAME
 else
     # port can get repaved to empty string which causes positional
     # issues on the irods_setup.pl command line, we need it to have a value
     DATABASEPORT="DEFAULTPORT"
 fi
 
-# =-=-=-=-=-=-=-
-# update database flavor
-if [ "$RUNINPLACE" == "1" ] ;  then
-    db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
-    if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to $(dirname db_config)"
-        cp $DETECTEDDIR/database_config.json $db_config
-    fi
-
-else
-    db_config="/etc/irods/database_config.json"
-    if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to /etc/irods"
-        cp $DETECTEDDIR/database_config.json $db_config
-    fi
-fi
-TMPFILE="/tmp/$USER/setupdatabaseconfiguration.txt"
-sed -e "/^catalog_database_type /s/^.*$/catalog_database_type: \"$DATABASETYPE\",/" $db_config > $TMPFILE ; mv $TMPFILE $db_config
 echo ""
 
 # =-=-=-=-=-=-=-
 # update ORACLE_HOME in server_config.json
 if [ "$DATABASETYPE" == "oracle" ] ; then
     echo "Updating $server_config..."
-    python $DETECTEDDIR/update_json.py $server_config 'environment_variables,ORACLE_HOME' $ORACLEHOME
+    python $DETECTEDDIR/update_json.py $server_config string 'environment_variables,ORACLE_HOME' $ORACLEHOME
 fi
 
 # =-=-=-=-=-=-=-
@@ -279,6 +270,10 @@ echo ""
 echo "-----------------------------"
 echo "Running irods_setup.pl..."
 perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
+
+# =-=-=-=-=-=-=-
+# sanitize irods admin password
+python $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
 
 # =-=-=-=-=-=-=-
 # run update_catalog_schema.py

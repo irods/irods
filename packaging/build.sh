@@ -489,7 +489,6 @@ if [ "$1" == "clean" ] ; then
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -f iRODS/server/config/scriptMonPerf.config
-    rm -f iRODS/config/irods.config
     rm -f iRODS/lib/core/include/rodsVersion.hpp
     rm -f iRODS/lib/core/include/irods_ms_home.hpp
     rm -f iRODS/lib/core/include/irods_network_home.hpp
@@ -1004,11 +1003,6 @@ echo "-----------------------------"
 echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
 echo "-----------------------------"
 
-# set up own temporary configfile
-cd $BUILDDIR/iRODS
-TMPCONFIGFILE=/tmp/$USER/irods.config.epm
-mkdir -p $(dirname $TMPCONFIGFILE)
-
 # =-=-=-=-=-=-=-
 # populate VERSION.json from VERSION.json.dist with current information
 set_tmpfile
@@ -1027,24 +1021,19 @@ rsync -c /tmp/rodsVersion.hpp.2 ./iRODS/lib/core/include/rodsVersion.hpp
 rm -f /tmp/rodsVersion.hpp
 rm -f /tmp/rodsVersion.hpp.2
 
-# set up variables for icat configuration
 cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
+    # set up variables for icat configuration
     SERVER_TYPE="ICAT"
     SERVER_TYPE_LOWERCASE="icat"
-    # otherwise set up variables for resource configuration
-    EPMFILE="../packaging/irods.config.icat.epm"
-    cp $EPMFILE $TMPCONFIGFILE
 elif [ $1 == "resource" ] ; then
+    # set up variables for resource configuration
     SERVER_TYPE="RESOURCE"
-    SERVER_TYPE_LOWERCASE="resource"
-    EPMFILE="../packaging/irods.config.resource.epm"
-    cp $EPMFILE $TMPCONFIGFILE
+#     SERVER_TYPE_LOWERCASE="resource"
 elif [ $1 == "icommands" ] ; then
+    # set up variables for icommands
     SERVER_TYPE="ICOMMANDS"
     SERVER_TYPE_LOWERCASE="icommands"
-    EPMFILE="../packaging/irods.config.resource.epm"
-    cp $EPMFILE $TMPCONFIGFILE
 fi
 
 
@@ -1065,21 +1054,8 @@ if [ "$BUILDIRODS" == "1" ] ; then
     rm -f ./config/platform.mk
 
     # =-=-=-=-=-=-=-
-    # stage a tmp copy of irods.config in order for the utils 
-    # script to find it.  otherwise it errors out
-    cp ./config/irods.config.template ./config/irods.config
-
-    # =-=-=-=-=-=-=-
     # run configure to create Makefile, config.mk, platform.mk, etc.
     ./scripts/configure
-    # overwrite with our values
-    cp $TMPCONFIGFILE ./config/irods.config
-    # run with our updated irods.config
-    ./scripts/configure
-    # again to reset IRODS_HOME
-    if [ "$RUNINPLACE" != "1" ] ; then
-      cp $TMPCONFIGFILE ./config/irods.config
-    fi
 
     # handle issue with IRODS_HOME being overwritten by the configure script
     if [ "$RUNINPLACE" = "1" ] ; then
@@ -1113,6 +1089,33 @@ if [ "$BUILDIRODS" == "1" ] ; then
         detected_irods_config_dir="$detected_irods_home/iRODS/server/config"
     else
         detected_irods_config_dir="/etc/irods"
+    fi
+
+    # update build_dir to our absolute path
+    if [ "$SERVER_TYPE" == "ICAT" ] ; then
+        # detect database plugin type
+        DATABASE_PLUGIN_TYPE=$2
+        # turn on ICAT
+        set_tmpfile
+        sed -e "\,RODS_CAT=,s,^.*$,RODS_CAT=1," ./config/config.mk > $TMPFILE
+        mv $TMPFILE ./config/config.mk
+        # set database type
+        if [ "$DATABASE_PLUGIN_TYPE" == "postgres" ] ; then
+            set_tmpfile
+            sed -e "\,^#PSQICAT,s,^.*$,PSQICAT=1," ./config/config.mk > $TMPFILE
+            mv $TMPFILE ./config/config.mk
+        elif [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+            set_tmpfile
+            sed -e "\,^#MYICAT=,s,^.*$,MYICAT=1," ./config/config.mk > $TMPFILE
+            mv $TMPFILE ./config/config.mk
+        elif [ "$DATABASE_PLUGIN_TYPE" == "oracle" ] ; then
+            set_tmpfile
+            sed -e "\,^#ORAICAT=,s,^.*$,ORAICAT=1," ./config/config.mk > $TMPFILE
+            mv $TMPFILE ./config/config.mk
+        else
+            echo "unknown database type"
+            exit 1
+        fi
     fi
 
     # set RELEASE_FLAG accordingly
@@ -1247,7 +1250,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
         # build icat package
         $MAKEJCMD -C $BUILDDIR icat-package
         # build designated database plugin
-        DATABASE_PLUGIN_TYPE=$2
         echo ""
         echo "${text_green}${text_bold}Building [$DATABASE_PLUGIN_TYPE] database plugin...${text_reset}"
         if [ "$RUNINPLACE" == "1" ] ; then

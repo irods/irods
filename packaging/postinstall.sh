@@ -45,7 +45,6 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     python -c "from __future__ import print_function; import json; data=json.load(open('$IRODS_HOME_DIR/VERSION.json')); data['previous_version'] = json.load(open('$IRODS_HOME_DIR/VERSION.json.previous')); print(json.dumps(data, indent=4, sort_keys=True))" > $IRODS_HOME_DIR/VERSION.json.tmp
     mv $IRODS_HOME_DIR/VERSION.json.tmp $IRODS_HOME_DIR/VERSION.json
     rm $IRODS_HOME_DIR/VERSION.json.previous
-    
 fi
 
 # =-=-=-=-=-=-=-
@@ -157,8 +156,8 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
 else
     # =-=-=-=-=-=-=-
     if [ "$SERVER_TYPE" == "icat" ] ; then
-        # tell user about their irodsenv
-#        cat $IRODS_HOME_DIR/packaging/user_irodsenv.txt
+        # copy packaged server_config.json into live config directory
+        cp /var/lib/irods/packaging/server_config.json /etc/irods/
         # give user some guidance regarding database selection and installation
         cat $IRODS_HOME_DIR/packaging/user_icat.txt
     elif [ "$SERVER_TYPE" == "resource" ] ; then

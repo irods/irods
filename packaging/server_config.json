@@ -15,7 +15,16 @@
             "filename": "core"
         }
     ],
+    "zone_name": "tempZone",
+    "zone_user": "rods",
+    "zone_port": 1247,
+    "zone_auth_scheme" : "native",
+    "xmsg_port": 1279,
+    "server_port_range_start": 20000,
+    "server_port_range_end": 20199,
     "run_server_as_root": "false",
+    "default_resource_name": "demoResc",
+    "default_resource_directory": "/var/lib/irods/iRODS/Vault",
     "default_dir_mode": "0700",
     "default_file_mode": "0600",
     "default_hash_scheme": "SHA256",

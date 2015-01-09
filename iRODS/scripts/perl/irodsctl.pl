@@ -109,17 +109,10 @@ my $iRODSStartStopDelay = 4;  # Seconds
 
 ########################################################################
 #
-# Load and validate irods.config.
+# Load configuration files
 #
-if ( loadIrodsConfig( ) == 0 )
-{
-	# Configuration failed to load or validate.  An error message
-	# has already been output.
-	exit( 1 );
-}
-
-
-
+load_server_config("/etc/irods/server_config.json");
+load_database_config("/etc/irods/database_config.json");
 
 
 ########################################################################
@@ -166,85 +159,6 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # here and they'll be used the next time the iRODS servers are started
 # using this script.
 #
-# By default, the user's file in '~/.irods/irods_environment_file.json'
-# is used.  Override it by setting a file name here.
-# $IRODS_ENVIRONMENT_FILE = "/tmp/irods_environment.json"
-
-# irodsPort defines the port number the irodsServer is listening on.
-# The default port number is set in the .irodEnv file of the irods
-# admin starting the server. The irodsPort value set here (if set)
-# overrides the value set in the .irodEnv file.
-# $irodsPort = "5678";
-
-# spLogLevel defines the verbosity level of the server log.   See  rodsLog.c
-# and rodsLog.h for what they are. The default level is LOG_NOTICE.
-# $spLogLevel = "3";
-
-# spLogSql defines if sql will be logged or not.  The default is no logging.
-# $spLogSql = "1";
-
-# svrPortRangeStart and svrPortRangeEnd - A range of port numbers can be 
-# specified for the server's parallel I/O communication port. 
-# svrPortRangeStart specifies the first allowable port number and 
-# svrPortRangeEnd specifies the end of the range.
-# These can also be set via irodssetup which adjusts the 
-# config/irods.config file (setting SVR_PORT_RANGE_START/END).
-# $svrPortRangeStart=20000;
-# $svrPortRangeEnd=20199;
-
-# reServerOnIes and reServerOnThisServer have been deplicated.
-# The "reHost" parameter in the server/config/server_config.json file is now
-# used to configure the location of irodsReServer.
-
-# reServerOnThisServer - Specifies that the delayed rule exec server 
-# (irodsReServer) to be run on this server. This allows the irodsReServer
-# to run on a non-IES host. reServerOnThisServer is off by default
-# $reServerOnThisServer=1;
-
-# reServerOption - Addition option for irodsReServer. By default, irodsReServer
-# runs with no option. The -v option specifies the verbose mode. The -D option
-# specifies the log directory for this server if the default log directory is 
-# not desirable. 
-# $reServerOption="-cD /a/b/c/myLogDir";
-
-# irodsConnTimeout - Specifies whether the agent accept a client request
-# to timeout and terminate corrent connection and create a reconnect
-# socket/port for reconnection in case the client server connection is
-# broken due to timeout or other reason. The default is on. 
-# $irodsReconnect=1;
-
-# RETESTFLAG - option for logging micro-service calls
-# use 1 to make it log.  Note that, at least for some micro-services,
-# this will cause the micro-service to log the call but not actually
-# perform the micro-service functions.  This should be used only for
-# debugging new micro-services.
-# $RETESTFLAG=1;
-
-# GLOBALALLRULEEXECFLAG - turn this on if you want to
-# every rule invocation to try every alternative of the rule definition
-# use 1 to turn it on and comment it out for single-successful execution
-#
-# $GLOBALALLRULEEXECFLAG=1;
-# PREPOSTPROCFORGENQUERYFLAG - turn this on if you want to allow
-# pre and post rule processing for general query.
-# note that this can lead to slower performance
-# $PREPOSTPROCFORGENQUERYFLAG=1;
-
-# GLOBALREAUDITFLAG - turn this on if you want rule and micro-service auditing
-# enabled across the board.Make sure that the XmsgServer is also running.
-# REMEMBER This may generate lots and lots of messages!!!!
-# Please set the value to 3 only. It prints out rules and micro-services.
-# $GLOBALREAUDITFLAG=3;
-
-# GLOBALREDEBUGFLAG - turn this on if you want debugging to be
-# enabled across the board.Make sure that the XmsgServer is also running.
-# Please set the value to 4 only. You can interact with the debugger through
-# idbug
-# $GLOBALREDEBUGFLAG=4;
-
-# $LOGFILE_INT - specifies the server log interval in number of days.
-# The default is 5 days.
-# $LOGFILE_INT=5;
 					
 $ENV{'irodsHomeDir'}      = $IRODS_HOME;
 $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
@@ -473,6 +387,10 @@ sub doStatus
 #
 sub doTest
 {
+	# TGR - Jan 2015 - move to server_config.json
+        # hard-code default password - only run on new installations
+	$IRODS_ADMIN_PASSWORD = "rods";
+
         # get password first if needed (no server on this host)
 	if ($IRODS_ADMIN_PASSWORD eq "") {
 	    print "Please enter your irods password: ";
@@ -897,24 +815,6 @@ sub doTestIcat
   }
 	printToFile( $specNameTestLog, $output );
 
-
-
-	# If the above all succeeded, check logs to see if all SQL was tested
-	#$output = `checkIcatLog.pl 2>&1`;
-	#if ( $? != 0 ) { $icatFailure=1; }
-	#printToFile( $outputFile, $output );
-	#my @lines = split( "\n", $output );
-	#my $totalLine = undef;
-	#foreach $line (@lines)
-	#{
-	#	if ( $line =~ /Total/ )
-	#	{
-	#		$totalLine = $line;
-	#		last;
-	#	}
-	#}
-
-
 	# Restore the iRODS environment
 	printToFile("$userEnvFile", $originalEnvText);
 
@@ -929,8 +829,6 @@ sub doTestIcat
             # clean up after iCAT tests - they don't clean up the Vault themselves
             system("rm -rf $IRODS_HOME/Vault/home/rods/TestFile*");
 	}
-	#printStatus( "Test report:\n" );
-	#printStatus( "    $totalLine\n" );
 	printStatus( "Check log files for details:\n" );
 	printStatus( "    Logs:     $icatTestLog        $icatTestStatus\n" );
 	printStatus( "              $icatMiscTestLog    $icatMiscTestStatus\n" );
@@ -938,24 +836,7 @@ sub doTestIcat
 	printStatus( "              $icatTicketTestLog  $icatTicketTestStatus\n" );
 	printStatus( "              $quotaTestLog       $quotaTestStatus\n" );
 	printStatus( "              $specNameTestLog    $specNameTestStatus\n" );
-	#printStatus( "    Summary:  $outputFile\n" );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1091,17 +972,6 @@ sub startIrods
 #
 sub stopIrods
 {
-	#
-	# Design Notes:  The current version of this uses a file created
-	# 	by the irods server which records its PID and then finds
-	# 	the children, which should work well in most cases. 
-	# 	The previous version (irods 1.0) would use ps
-	# 	to find processes of the right name.  See the old version
-	#       from CVS for the limitations of that approach.  
-	#       This should work better, in most situations, and will
-	# 	allow us to run multiple systems on a host.
-	#
-
 	# Find and kill the server process IDs
 	my @pids = getOurIrodsServerPids();
 	my $found = 0;
@@ -1130,10 +1000,8 @@ sub stopIrods
 		kill( 9, $pid );
 	}
 
-        # TGR - ZOMBIE REAPER
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
-#        printStatus( "\tKilling any remaining Zombies... Silently.\n" );
         system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
         # remove shared memory mutex and semaphore
         # this will be handled more cleanly when servers can be gracefully shutdown

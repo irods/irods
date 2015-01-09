@@ -25,7 +25,7 @@
 # 		A Makefile include file used during compilation
 # 		of iRODS.
 #
-# 	config/irods.config
+# 	config/server_config.json
 #		A parameter file used by iRODS scripts to start
 #		and stop iRODS, etc.
 #
@@ -264,12 +264,13 @@ $irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = "";	# Database admin passwo
 #
 my $savedIRODS_HOME = $IRODS_HOME;
 copyTemplateIfNeeded( $irodsConfig );
-if ( loadIrodsConfig( ) == 0 )
-{
+# TGR - do not load irods.config
+#if ( loadIrodsConfig( ) == 0 )
+#{
 	# Configuration failed to load or validate.  An error message
 	# has already been output.
-	exit( 1 );
-}
+#	exit( 1 );q
+#}
 $IRODS_HOME = $savedIRODS_HOME;
 
 
@@ -912,24 +913,6 @@ else
 	}
 }
 
-
-# Update irods.config
-printStatus( "Updating irods.config...\n" );
-($status, $output) = replaceVariablesInFile( $irodsConfig, "perl", 0, %irodsConfigVariables );
-if ( $status == 0 )
-{
-	printError( "\nConfiguration problem:\n" );
-	printError( "    Could not update configuration file.\n" );
-	printError( "        File:   $irodsConfig\n" );
-	printError( "        Error:  $output\n" );
-	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
-	exit( 1 );
-}
-# Make sure irods.config is not world/other readable since it contains
-# an administrator's password.
-chmod( 0600, $irodsConfig );
-
-
 # Update irodsctl script
 printStatus( "Updating irodsctl...\n" );
 ($status, $output) = replaceVariablesInFile( $irodsctl, "shell", 0, %irodsConfigVariables );
@@ -955,7 +938,6 @@ if ( ! $noHeader )
 {
 	printNotice( "\nDone.\n" );
 }
-
 
 exit( 0 );
 

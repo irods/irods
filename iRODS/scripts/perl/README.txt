@@ -9,7 +9,7 @@ Contents
 	irodsprompt.pl		prompt for config settings
 	irods_setup.pl		set up iRODS
 
-	utils_config.pl		utility functions for irods.config
+	utils_config.pl		utility functions for server configuration
 	utils_file.pl		utility functions for file I/O
 	utils_paths.pl		utility functions for standard paths
 	utils_platform.pl	utility functions for OS dependencies

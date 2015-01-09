@@ -53,11 +53,11 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_resource_redirect.o \
 		$(svrCoreObjDir)/irods_server_negotiation.o \
 		$(svrCoreObjDir)/irods_collection_object.o \
-        $(svrCoreObjDir)/irods_data_object.o \
+		$(svrCoreObjDir)/irods_data_object.o \
 		$(svrCoreObjDir)/irods_structured_object.o \
 		$(svrCoreObjDir)/irods_physical_object.o \
 		$(svrCoreObjDir)/irods_file_object.o \
-	    $(svrCoreObjDir)/irods_database_factory.o \
+		$(svrCoreObjDir)/irods_database_factory.o \
 		$(svrCoreObjDir)/irods_database_manager.o \
 		$(svrCoreObjDir)/irods_database_object.o  \
 		$(svrCoreObjDir)/irods_postgres_object.o  \
@@ -66,18 +66,18 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_server_api_table.o  \
 		$(svrCoreObjDir)/irods_get_l1desc.o  \
 		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
-        $(svrCoreObjDir)/readServerConfig.o \
-        $(svrCoreObjDir)/irods_server_control_plane.o \
-        $(svrCoreObjDir)/irods_server_state.o
+		$(svrCoreObjDir)/readServerConfig.o \
+		$(svrCoreObjDir)/irods_server_control_plane.o \
+		$(svrCoreObjDir)/irods_server_state.o
 
 DB_IFACE_OBJS = \
-	    $(svrCoreObjDir)/irods_database_factory.o \
+		$(svrCoreObjDir)/irods_database_factory.o \
 		$(svrCoreObjDir)/irods_database_manager.o \
 		$(svrCoreObjDir)/irods_database_object.o  \
 		$(svrCoreObjDir)/irods_postgres_object.o  \
 		$(svrCoreObjDir)/irods_mysql_object.o  \
 		$(svrCoreObjDir)/irods_oracle_object.o  \
-        $(svrCoreObjDir)/readServerConfig.o
+		$(svrCoreObjDir)/readServerConfig.o
 
 DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o 
 DB_PLUGIN_SRC = $(buildDir)/server/core/src/irods_database_plugin.cpp
@@ -94,6 +94,7 @@ CFLAGS +=	-DRODS_SERVER
 SERVER_OBJS =	\
 		$(svrCoreObjDir)/rodsServer.o \
 		$(svrCoreObjDir)/rodsAgent.o
+
 SERVER_BINS =	$(serverBinDir)/irodsServer \
 		$(serverBinDir)/irodsAgent
 
@@ -124,22 +125,16 @@ SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 
 ifdef PSQICAT
-# Support Postgres
-#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 endif
 
 ifdef ORAICAT
-# Support Oracle
 CFLAGS +=	-DORA_ICAT
-#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
 INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 endif
 endif
 
 ifdef MYICAT
-# Support MYSQL
-#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOdbc.o
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
@@ -358,9 +353,9 @@ $(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(DEPEND) $(BOOST
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-# Build server ICAT
+# Build server DBR
 $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(BOOST_LIBS)
-	@echo "Compile icat `basename $@`..."
+	@echo "Compile dbr `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Builder server rule engine

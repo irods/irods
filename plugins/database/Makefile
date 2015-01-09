@@ -1,7 +1,6 @@
 BASEDIRS = postgres \
            mysql    \
            oracle
-           
 
 ######################################################################
 # Configuration should occur above this line
@@ -20,10 +19,6 @@ export IRODSTOPDIR = ../../iRODS
 export SOTOPDIR = .
 
 SUBS = ${BASEDIRS}
-
-ifeq ($(IRODS_BUILD_DEBUG), 0)
-#SUBS += ${HPSSDIRS}
-endif
 
 .PHONY: clean mysql postgres oracle 
 

@@ -63,7 +63,7 @@ def get_hostname():
 
 
 def get_irods_top_level_dir():
-    configdir = "/etc/irods/irods.config"
+    configdir = "/etc/irods/server_config.json"
     topleveldir = "/var/lib/irods"
     if(not os.path.isfile(configdir)):
         topleveldir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -71,7 +71,7 @@ def get_irods_top_level_dir():
 
 
 def get_irods_config_dir():
-    configfile = "/etc/irods/irods.config"
+    configfile = "/etc/irods/server_config.json"
     configdir = os.path.dirname(configfile)
     if(not os.path.isfile(configfile)):
         configdir = get_irods_top_level_dir() + "/iRODS/config"

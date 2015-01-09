@@ -19,7 +19,7 @@
 use File::Spec;
 use File::Basename;
 
-$version{"utils_paths.pl"} = "September 2011";
+$version{"utils_paths.pl"} = "January 2015";
 
 
 
@@ -27,7 +27,7 @@ $version{"utils_paths.pl"} = "September 2011";
 # Detect run-in-place installation
 #
 $RUNINPLACE = 0;
-if ( ! -e "/etc/irods/irods.config" )
+if ( ! -e "/etc/irods/server_config.json" )
 {
         $RUNINPLACE = 1;
 }
@@ -86,11 +86,6 @@ $irodsctl = File::Spec->catfile( $IRODS_HOME, "irodsctl" );
 # iRODS configuration files
 #
 $configMk    = File::Spec->catfile( $configDir, "config.mk" );
-
-# =-=-=-=-=-=-=-
-# search for the irods.config file
-$irodsConfig = File::Spec->catfile( $configDir, "irods.config" );
-
 
 #
 # Overrides for run-in-place installations

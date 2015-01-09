@@ -206,16 +206,6 @@ set_tmpfile
 sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,$defaultport, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
-# setup irods.config location
-IRODS_CONFIG_LOCATION=/etc/irods/irods.config
-if [ "$RUNINPLACE" == "1" ] ; then
-    IRODS_CONFIG_LOCATION=$(cd $(dirname FULLPATHSCRIPTNAME)/../../; pwd -P )/iRODS/config/irods.config
-fi
-set_tmpfile
-sed -e s,TEMPLATE_DEFAULT_IRODSCONFIG,$IRODS_CONFIG_LOCATION, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
-chmod +x $SETUP_FILE
-
-# =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
 cd $SCRIPTPATH
 make ${DB_TYPE}

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # Copyright (c), The Regents of the University of California            ***
 # For more information please refer to files in the COPYRIGHT directory ***
@@ -31,7 +31,9 @@ use File::Basename;
 use File::Spec;
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname(dirname($scriptfullpath)))));
-if( -e "/etc/irods/irods.config" )
+require File::Spec->catfile( $scripttoplevel, "iRODS/scripts/perl", "utils_platform.pl" );
+require File::Spec->catfile( $scripttoplevel, "iRODS/scripts/perl", "utils_config.pl" );
+if( -e "/etc/irods/server_config.json" )
 {
         $configDir = "/etc/irods";
 }
@@ -156,7 +158,11 @@ runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 $ENV{'IRODS_DEBUG'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
 
-do "$configDir/irods.config";
+load_server_config("$configDir/server_config.json");
+# TGR - Jan 2015 - move to server_config.json
+# hard-code default password - only run on new installations
+$IRODS_ADMIN_PASSWORD = "rods";
+
 if ($DATABASE_TYPE eq "oracle") {
 #   oracle does autocommit so don't check the result
     runCmd(1, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
@@ -211,7 +217,6 @@ runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
 #$ENV{'IRODS_USER_NAME'}=$User2; 
-#   $IRODS_ADMIN_PASSWORD is from $configDir/irods.config
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'IRODS_USER_NAME'};
 

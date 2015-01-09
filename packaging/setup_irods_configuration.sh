@@ -3,7 +3,7 @@
 #
 # Detect run-in-place installation
 #
-if [ -f /etc/irods/irods.config ] ; then
+if [ -f /etc/irods/server_config.json ] ; then
     RUNINPLACE=0
 else
     RUNINPLACE=1
@@ -13,24 +13,18 @@ fi
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ $RUNINPLACE -eq 1 ] ; then
-    MYIRODSCONFIG=$DETECTEDDIR/../iRODS/config/irods.config
-    MYSERVERCONFIG=$DETECTEDDIR/../iRODS/server/config/server.config
     MYSERVERCONFIGJSON=$DETECTEDDIR/../iRODS/server/config/server_config.json
     MYICATSYSINSERTS=$DETECTEDDIR/../iRODS/server/icat/src/icatSysInserts.sql
     # clean full paths
-    MYIRODSCONFIG="$(cd "$( dirname $MYIRODSCONFIG )" && pwd)"/"$( basename $MYIRODSCONFIG )"
-    MYSERVERCONFIG="$(cd "$( dirname $MYSERVERCONFIG )" && pwd)"/"$( basename $MYSERVERCONFIG )"
     MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
     if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
-        echo ">>> Copying new server_config.json to /etc/irods"
+        echo ">>> Copying new server_config.json to $MYSERVERCONFIGJSON"
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
 
     MYICATSYSINSERTS="$(cd "$( dirname $MYICATSYSINSERTS )" && pwd)"/"$( basename $MYICATSYSINSERTS )"
     DEFAULTRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
 else
-    MYIRODSCONFIG=/etc/irods/irods.config
-    MYSERVERCONFIG=/etc/irods/server.config
     MYSERVERCONFIGJSON=/etc/irods/server_config.json
     if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
         echo ">>> Copying new server_config.json to /etc/irods"
@@ -57,33 +51,33 @@ fi
     if [ -f $SETUP_IRODS_CONFIGURATION_FLAG ] ; then
         # have run this before, read the existing config files
         if [ $ICAT_SERVER -eq 1 ] ; then
-            MYZONE=`grep "ZONE_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
+            MYZONE=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_name']"`
         fi
-        MYPORT=`grep "IRODS_PORT =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYRANGESTART=`grep "SVR_PORT_RANGE_START =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYRANGEEND=`grep "SVR_PORT_RANGE_END =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYRESOURCEDIR=`grep "RESOURCE_DIR =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
-        MYLOCALZONESID=`grep "zone_id" $MYSERVERCONFIGJSON | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
-        MYAGENTKEY=`grep "negotiation_key" $MYSERVERCONFIGJSON | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
-        MYADMINNAME=`grep "IRODS_ADMIN_NAME =" $MYIRODSCONFIG | awk -F\' '{print $2}'`
+        MYPORT=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_port']"`
+        MYRANGESTART=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_start']"`
+        MYRANGEEND=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_end']"`
+        MYLOCALZONEID=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_id']"`
+        MYRESOURCEDIR=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
+        MYNEGOTIATIONKEY=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
+        MYADMINNAME=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_user']"`
         STATUS="loop"
     else
         # no temp file, this is the first run
         STATUS="firstpass"
     fi
 
-    # strip cruft from sid
-    tmp=${MYLOCALZONESID#\"}
+    # strip cruft from zone_id
+    tmp=${MYLOCALZONEID#\"}
     tmp=${tmp%\,}
-    MYLOCALZONESID=${tmp%\"}
+    MYLOCALZONEID=${tmp%\"}
 
-    # strip cruft from sid
-    tmp=${MYAGENTKEY#\"}
+    # strip cruft from negotiation_key
+    tmp=${MYNEGOTIATIONKEY#\"}
     tmp=${tmp%\,}
-    MYAGENTKEY=${tmp%\"}
+    MYNEGOTIATIONKEY=${tmp%\"}
 
-    PREVIOUSSID=$MYLOCALZONESID
-    PREVIOUSKEY=$MYAGENTKEY
+    PREVIOUSID=$MYLOCALZONEID
+    PREVIOUSKEY=$MYNEGOTIATIONKEY
 
     # ask human for irods environment
     echo "==================================================================="
@@ -106,8 +100,8 @@ fi
         LASTMYRANGEEND=$MYRANGEEND
         LASTMYRESOURCEDIR=$MYRESOURCEDIR
         LASTMYADMINNAME=$MYADMINNAME
-        LASTMYLOCALZONESID=$MYLOCALZONESID
-        LASTMYAGENTKEY=$MYAGENTKEY
+        LASTMYLOCALZONEID=$MYLOCALZONEID
+        LASTMYNEGOTIATIONKEY=$MYNEGOTIATIONKEY
       fi
 
       if [ $ICAT_SERVER -eq 1 ] ; then
@@ -210,53 +204,53 @@ fi
       fi
       echo ""
 
-      # get LocalZoneSID
-      echo -n "iRODS server's LocalZoneSID"
-      if [ "$LASTMYLOCALZONESID" ] ; then
-        echo -n " [$LASTMYLOCALZONESID]"
+      # get zone_id
+      echo -n "iRODS server's zone_id"
+      if [ "$LASTMYLOCALZONEID" ] ; then
+        echo -n " [$LASTMYLOCALZONEID]"
       else
-        echo -n " [TEMP_LOCAL_ZONE_SID]"
+        echo -n " [TEMP_LOCAL_ZONE_ID]"
       fi
       echo -n ": "
-      read MYLOCALZONESID
-      if [ "$MYLOCALZONESID" == "" ] ; then
-        if [ "$LASTMYLOCALZONESID" ] ; then
-          MYLOCALZONESID=$LASTMYLOCALZONESID
+      read MYLOCALZONEID
+      if [ "$MYLOCALZONEID" == "" ] ; then
+        if [ "$LASTMYLOCALZONEID" ] ; then
+          MYLOCALZONEID=$LASTMYLOCALZONEID
         else
-          MYLOCALZONESID="TEMP_LOCAL_ZONE_SID"
+          MYLOCALZONEID="TEMP_LOCAL_ZONE_ID"
         fi
       fi
       # strip all forward slashes
-      MYLOCALZONESID=`echo "${MYLOCALZONESID}" | sed -e "s/\///g"`
+      MYLOCALZONEID=`echo "${MYLOCALZONEID}" | sed -e "s/\///g"`
       echo ""
 
       # get negotiation_key
-      AGENTKEYLENGTH=0
-      while [ $AGENTKEYLENGTH -ne 32 ] ; do
+      NEGOTIATIONKEYLENGTH=0
+      while [ $NEGOTIATIONKEYLENGTH -ne 32 ] ; do
           echo -n "iRODS server's negotiation_key"
-          if [ "$LASTMYAGENTKEY" ] ; then
-            echo -n " [$LASTMYAGENTKEY]"
+          if [ "$LASTMYNEGOTIATIONKEY" ] ; then
+            echo -n " [$LASTMYNEGOTIATIONKEY]"
           else
             echo -n " [temp_32_byte_key_for_agent__conn]"
           fi
           echo -n ": "
-          read MYAGENTKEY
-          if [ "$MYAGENTKEY" == "" ] ; then
-            if [ "$LASTMYAGENTKEY" ] ; then
-              MYAGENTKEY=$LASTMYAGENTKEY
+          read MYNEGOTIATIONKEY
+          if [ "$MYNEGOTIATIONKEY" == "" ] ; then
+            if [ "$LASTMYNEGOTIATIONKEY" ] ; then
+              MYNEGOTIATIONKEY=$LASTMYNEGOTIATIONKEY
             else
-              MYAGENTKEY="temp_32_byte_key_for_agent__conn"
+              MYNEGOTIATIONKEY="temp_32_byte_key_for_agent__conn"
             fi
           fi
           # strip all forward slashes
-          MYAGENTKEY=`echo "${MYAGENTKEY}" | sed -e "s/\///g"`
+          MYNEGOTIATIONKEY=`echo "${MYNEGOTIATIONKEY}" | sed -e "s/\///g"`
           echo ""
           # check length (must equal 32)
-          AGENTKEYLENGTH=${#MYAGENTKEY}
-          if [ $AGENTKEYLENGTH -ne 32 ] ; then
+          NEGOTIATIONKEYLENGTH=${#MYNEGOTIATIONKEY}
+          if [ $NEGOTIATIONKEYLENGTH -ne 32 ] ; then
               echo "   *** negotiation_key must be exactly 32 bytes ***"
               echo ""
-              echo "   $MYAGENTKEY <- $AGENTKEYLENGTH bytes"
+              echo "   $MYNEGOTIATIONKEY <- $NEGOTIATIONKEYLENGTH bytes"
               echo "   ________________________________ <- 32 bytes"
               echo ""
           fi
@@ -299,8 +293,8 @@ fi
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
-      echo "zone_id:                $MYLOCALZONESID"
-      echo "negotiation_key:        $MYAGENTKEY"
+      echo "zone_id:                $MYLOCALZONEID"
+      echo "negotiation_key:        $MYNEGOTIATIONKEY"
       echo "Administrator Username: $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "Administrator Password: Not Shown"
@@ -319,22 +313,13 @@ fi
     done
     touch $SETUP_IRODS_CONFIGURATION_FLAG
 
-
-    # update existing irods.config
-    TMPFILE="/tmp/$USER/setupirodsconfig.txt"
-    echo "Updating $MYIRODSCONFIG..."
+    # update existing server_config.json
+    TMPFILE="/tmp/$USER/setupserverconfig.txt"
+    echo "Updating $MYSERVERCONFIGJSON..."
+    # zone name
     if [ $ICAT_SERVER -eq 1 ] ; then
-      sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$MYZONE';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
+        python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_name $MYZONE
     fi
-    sed -e "/^\$IRODS_PORT/s/^.*$/\$IRODS_PORT = '$MYPORT';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    sed -e "/^\$SVR_PORT_RANGE_START/s/^.*$/\$SVR_PORT_RANGE_START = '$MYRANGESTART';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    sed -e "/^\$SVR_PORT_RANGE_END/s/^.*$/\$SVR_PORT_RANGE_END = '$MYRANGEEND';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    sed -e "s,^\$RESOURCE_DIR =.*$,\$RESOURCE_DIR = '$MYRESOURCEDIR';," $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    sed -e "/^\$IRODS_ADMIN_NAME/s/^.*$/\$IRODS_ADMIN_NAME = '$MYADMINNAME';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    if [ $ICAT_SERVER -eq 1 ] ; then
-      sed -e "/^\$IRODS_ADMIN_PASSWORD/s/^.*$/\$IRODS_ADMIN_PASSWORD = '$MYADMINPASSWORD';/" $MYIRODSCONFIG > $TMPFILE ; mv $TMPFILE $MYIRODSCONFIG
-    fi
-
     if [ $ICAT_SERVER -eq 1 ] ; then
         # updating SQL
         TMPFILE="/tmp/$USER/setupicatsysinserts.txt"
@@ -356,7 +341,7 @@ fi
             echo ""
             echo "Please:"
             echo "1) Drop all of the iCAT tables,"
-            echo "2) Reset $MYIRODSCONFIG with \$IRODS_ADMIN_NAME = 'rods';, and"
+            echo "2) Reset $MYSERVERCONFIGJSON with 'zone_user': 'rods', and"
             echo "3) Run this script again."
             echo "====================================="
             exit 1
@@ -366,9 +351,13 @@ fi
         # substitute
         sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
     fi
-
-    # update existing server_config.json
-    TMPFILE="/tmp/$USER/setupserverconfig.txt"
-    echo "Updating $MYSERVERCONFIGJSON..."
-    sed -e "/\"zone_id\": \"$PREVIOUSSID\",/s/^.*$/    \"zone_id\": \"$MYLOCALZONESID\",/" $MYSERVERCONFIGJSON > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIGJSON
-    sed -e "/\"negotiation_key\": \"$PREVIOUSKEY\",/s/^.*$/    \"negotiation_key\": \"$MYAGENTKEY\",/" $MYSERVERCONFIGJSON > $TMPFILE ; mv $TMPFILE $MYSERVERCONFIGJSON
+    # everything else
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string default_resource_directory $MYRESOURCEDIR
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer zone_port $MYPORT
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_start $MYRANGESTART
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_end $MYRANGEEND
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
+    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD
