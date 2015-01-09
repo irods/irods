@@ -192,78 +192,79 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
     try {
         irods::server_control_plane ctrl_plane(
             irods::CFG_RULE_ENGINE_CONTROL_PLANE_PORT );
-    }
-    catch ( irods::exception& e_ ) {
+
+        irods::server_state& state = irods::server_state::instance();
+        while ( irods::server_state::STOPPED != state() ) {
+            if ( irods::server_state::PAUSED == state() ) {
+                sleep( 1 );
+                continue;
+            }
+
+#ifndef windows_platform
+#ifndef SYSLOG
+            chkLogfileName( logDir, RULE_EXEC_LOGFILE );
+#endif
+#endif
+            chkAndResetRule();
+            rodsLog( LOG_NOTICE,
+                     "reServerMain: checking the queue for jobs" );
+            status = getReInfo( rsComm, &genQueryOut );
+            if ( status < 0 ) {
+                if ( status != CAT_NO_ROWS_FOUND ) {
+                    rodsLog( LOG_ERROR,
+                             "reServerMain: getReInfo error. status = %d", status );
+                }
+                else {   // JMC - backport 4520
+                    repeatedQueryErrorCount++;
+                }
+                reSvrSleep( rsComm );
+                continue;
+            }
+            else {   // JMC - backport 4520
+                repeatedQueryErrorCount = 0;
+            }
+            endTime = time( NULL ) + RE_SERVER_EXEC_TIME;
+            runCnt = runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime, 0 );
+            if ( runCnt > 0 ||
+                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+                /* need to refresh */
+                svrCloseQueryOut( rsComm, genQueryOut );
+                freeGenQueryOut( &genQueryOut );
+                status = getReInfo( rsComm, &genQueryOut );
+                if ( status < 0 ) {
+                    reSvrSleep( rsComm );
+                    continue;
+                }
+            }
+
+            /* run the failed job */
+
+            runCnt =
+                runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime,
+                                   RE_FAILED_STATUS );
+            svrCloseQueryOut( rsComm, genQueryOut );
+            freeGenQueryOut( &genQueryOut );
+            if ( runCnt > 0 ||
+                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+                continue;
+            }
+            else {
+                /* nothing got run */
+                reSvrSleep( rsComm );
+            }
+        }
+
+        rodsLog(
+            LOG_NOTICE,
+            "rule engine is exiting" );
+
+    } catch( irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return;
 
     }
 
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() ) {
-        if ( irods::server_state::PAUSED == state() ) {
-            sleep( 1 );
-            continue;
-        }
-
-#ifndef windows_platform
-#ifndef SYSLOG
-        chkLogfileName( logDir, RULE_EXEC_LOGFILE );
-#endif
-#endif
-        chkAndResetRule();
-        rodsLog( LOG_NOTICE,
-                 "reServerMain: checking the queue for jobs" );
-        status = getReInfo( rsComm, &genQueryOut );
-        if ( status < 0 ) {
-            if ( status != CAT_NO_ROWS_FOUND ) {
-                rodsLog( LOG_ERROR,
-                         "reServerMain: getReInfo error. status = %d", status );
-            }
-            else {   // JMC - backport 4520
-                repeatedQueryErrorCount++;
-            }
-            reSvrSleep( rsComm );
-            continue;
-        }
-        else {   // JMC - backport 4520
-            repeatedQueryErrorCount = 0;
-        }
-        endTime = time( NULL ) + RE_SERVER_EXEC_TIME;
-        runCnt = runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime, 0 );
-        if ( runCnt > 0 ||
-                ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
-            /* need to refresh */
-            svrCloseQueryOut( rsComm, genQueryOut );
-            freeGenQueryOut( &genQueryOut );
-            status = getReInfo( rsComm, &genQueryOut );
-            if ( status < 0 ) {
-                reSvrSleep( rsComm );
-                continue;
-            }
-        }
-
-        /* run the failed job */
-
-        runCnt =
-            runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime,
-                               RE_FAILED_STATUS );
-        svrCloseQueryOut( rsComm, genQueryOut );
-        freeGenQueryOut( &genQueryOut );
-        if ( runCnt > 0 ||
-                ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
-            continue;
-        }
-        else {
-            /* nothing got run */
-            reSvrSleep( rsComm );
-        }
-    }
-
-    rodsLog(
-        LOG_NOTICE,
-        "rule engine is exiting" );
 }
 
 int

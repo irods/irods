@@ -332,126 +332,127 @@ serverMain( char *logDir ) {
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
     try {
-        irods::server_control_plane ctrl_plane( irods::CFG_SERVER_CONTROL_PLANE_PORT );
-    }
-    catch ( irods::exception& e_ ) {
+        irods::server_control_plane ctrl_plane( 
+                                        irods::CFG_SERVER_CONTROL_PLANE_PORT );
+
+        startProcConnReqThreads();
+#if RODS_CAT // JMC - backport 4612
+        PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
+#endif /* RODS_CAT */
+
+
+        fd_set sockMask;
+        FD_ZERO( &sockMask );
+        SvrSock = svrComm.sock;
+
+        irods::server_state& state = irods::server_state::instance();
+        while ( irods::server_state::STOPPED != state() ) {
+            if ( irods::server_state::PAUSED == state() ) {
+                sleep( 0.125 );
+                continue;
+            }
+
+            FD_SET( svrComm.sock, &sockMask );
+
+            int numSock = 0;
+            struct timeval time_out;
+            time_out.tv_sec  = 0;
+            time_out.tv_usec = 100;
+            while ( ( numSock = select(
+                                    svrComm.sock + 1,
+                                    &sockMask,
+                                    ( fd_set * ) NULL,
+                                    ( fd_set * ) NULL,
+                                    &time_out ) ) < 0 ) {
+
+                if ( errno == EINTR ) {
+                    rodsLog( LOG_NOTICE, "serverMain: select() interrupted" );
+                    FD_SET( svrComm.sock, &sockMask );
+                    continue;
+                }
+                else {
+                    rodsLog( LOG_NOTICE, "serverMain: select() error, errno = %d",
+                             errno );
+                    return -1;
+                }
+            }
+
+            procChildren( &ConnectedAgentHead );
+
+            if ( 0 == numSock ) {
+                continue;
+
+            }
+
+            const int newSock = rsAcceptConn( &svrComm );
+            if ( newSock < 0 ) {
+                acceptErrCnt ++;
+                if ( acceptErrCnt > MAX_ACCEPT_ERR_CNT ) {
+                    rodsLog( LOG_ERROR,
+                             "serverMain: Too many socket accept error. Exiting" );
+                    break;
+                }
+                else {
+                    rodsLog( LOG_NOTICE,
+                             "serverMain: acceptConn () error, errno = %d", errno );
+                    continue;
+                }
+            }
+            else {
+                acceptErrCnt = 0;
+            }
+
+            status = chkAgentProcCnt();
+            if ( status < 0 ) {
+                rodsLog( LOG_NOTICE,
+                         "serverMain: chkAgentProcCnt failed status = %d", status );
+                // =-=-=-=-=-=-=-
+                // create network object to communicate to the network
+                // plugin interface.  repave with newSock as that is the
+                // operational socket at this point
+
+                irods::network_object_ptr net_obj;
+                irods::error ret = irods::network_factory( &svrComm, net_obj );
+                if ( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                }
+                else {
+                    ret = sendVersion( net_obj, status, 0, NULL, 0 );
+                    if ( !ret.ok() ) {
+                        irods::log( PASS( ret ) );
+                    }
+                }
+                status = mySockClose( newSock );
+                printf( "close status = %d\n", status );
+                continue;
+            }
+
+            addConnReqToQue( &svrComm, newSock );
+
+#ifndef windows_platform
+            loopCnt++;
+            if ( loopCnt >= LOGFILE_CHK_CNT ) {
+                chkLogfileName( logDir, RODS_LOGFILE );
+                loopCnt = 0;
+            }
+#endif
+        }
+
+        PurgeLockFileThread->join();
+        procChildren( &ConnectedAgentHead );
+        stopProcConnReqThreads();
+
+        rodsLog( LOG_NOTICE, "irods server is exiting" );
+
+    } catch( irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return e_.code();
 
     }
 
-
-    startProcConnReqThreads();
-#if RODS_CAT // JMC - backport 4612
-    PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
-#endif /* RODS_CAT */
-
-
-    fd_set sockMask;
-    FD_ZERO( &sockMask );
-    SvrSock = svrComm.sock;
-
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() ) {
-        if ( irods::server_state::PAUSED == state() ) {
-            sleep( 0.125 );
-            continue;
-        }
-
-        FD_SET( svrComm.sock, &sockMask );
-
-        int numSock = 0;
-        struct timeval time_out;
-        time_out.tv_sec  = 0;
-        time_out.tv_usec = 100;
-        while ( ( numSock = select(
-                                svrComm.sock + 1,
-                                &sockMask,
-                                ( fd_set * ) NULL,
-                                ( fd_set * ) NULL,
-                                &time_out ) ) < 0 ) {
-
-            if ( errno == EINTR ) {
-                rodsLog( LOG_NOTICE, "serverMain: select() interrupted" );
-                FD_SET( svrComm.sock, &sockMask );
-                continue;
-            }
-            else {
-                rodsLog( LOG_NOTICE, "serverMain: select() error, errno = %d",
-                         errno );
-                return -1;
-            }
-        }
-
-        procChildren( &ConnectedAgentHead );
-
-        if ( 0 == numSock ) {
-            continue;
-
-        }
-
-        const int newSock = rsAcceptConn( &svrComm );
-        if ( newSock < 0 ) {
-            acceptErrCnt ++;
-            if ( acceptErrCnt > MAX_ACCEPT_ERR_CNT ) {
-                rodsLog( LOG_ERROR,
-                         "serverMain: Too many socket accept error. Exiting" );
-                break;
-            }
-            else {
-                rodsLog( LOG_NOTICE,
-                         "serverMain: acceptConn () error, errno = %d", errno );
-                continue;
-            }
-        }
-        else {
-            acceptErrCnt = 0;
-        }
-
-        status = chkAgentProcCnt();
-        if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "serverMain: chkAgentProcCnt failed status = %d", status );
-            // =-=-=-=-=-=-=-
-            // create network object to communicate to the network
-            // plugin interface.  repave with newSock as that is the
-            // operational socket at this point
-
-            irods::network_object_ptr net_obj;
-            irods::error ret = irods::network_factory( &svrComm, net_obj );
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
-            }
-            else {
-                ret = sendVersion( net_obj, status, 0, NULL, 0 );
-                if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-                }
-            }
-            status = mySockClose( newSock );
-            printf( "close status = %d\n", status );
-            continue;
-        }
-
-        addConnReqToQue( &svrComm, newSock );
-
-#ifndef windows_platform
-        loopCnt++;
-        if ( loopCnt >= LOGFILE_CHK_CNT ) {
-            chkLogfileName( logDir, RODS_LOGFILE );
-            loopCnt = 0;
-        }
-#endif
-    }
-
-    PurgeLockFileThread->join();
-    procChildren( &ConnectedAgentHead );
-    stopProcConnReqThreads();
-
-    rodsLog( LOG_NOTICE, "irods server is exiting" );
-
     return 0;
+
 }
 
 void

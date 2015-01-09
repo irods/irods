@@ -4,12 +4,15 @@
 #include "avro/Decoder.hh"
 #include "avro/Specific.hh"
 
+#include "stdio.h"
+
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
 #include "irods_log.hpp"
 #include "irods_server_control_plane.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_buffer_encryption.hpp"
+#include "irods_resource_manager.hpp"
 
 #include "irods_server_state.hpp"
 #include "irods_exception.hpp"
@@ -76,6 +79,11 @@ namespace irods {
         const std::string& _host,
         const std::string& _port_keyword,
         std::string&       _output ) {
+        if( EMPTY_RESC_HOST == _host ) {
+            return SUCCESS();
+
+        }
+
         int time_out = 0;
         error ret = get_server_property <
                     int > (
@@ -104,7 +112,6 @@ namespace irods {
         // stringify the port
         std::stringstream port_sstr;
         port_sstr << port;
-
         // standard zmq rep-req communication pattern
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
@@ -117,7 +124,17 @@ namespace irods {
         conn_str += _host;
         conn_str += ":";
         conn_str += port_sstr.str();
-        zmq_skt.connect( conn_str.c_str() );
+
+        try {
+            zmq_skt.connect( conn_str.c_str() );
+        } catch ( zmq::error_t& e_ ) {
+            std::string msg( "failed to connect to [" );
+            msg + conn_str + "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
+        }
+
 
         // build the command to forward
         control_plane_command cmd;
@@ -211,6 +228,7 @@ namespace irods {
 
         server_state& s = server_state::instance();
         s( server_state::STOPPED );
+
         return SUCCESS();
 
     } // server_operation_shutdown
@@ -483,6 +501,7 @@ namespace irods {
 
         server_state& s = server_state::instance();
         while ( server_state::STOPPED != s() ) {
+
             zmq::message_t req;
             zmq_skt.recv( &req );
             if ( 0 == req.size() ) {
