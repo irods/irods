@@ -122,8 +122,6 @@ int
 _rsPhyBundleColl( rsComm_t*                 rsComm,
                   structFileExtAndRegInp_t* phyBundleCollInp,
                   const char *_resc_name ) {
-//    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
-//    char*       myRescName = myRescInfo->rescName;
 
     collInp_t collInp;
     bzero( &collInp, sizeof( collInp ) );

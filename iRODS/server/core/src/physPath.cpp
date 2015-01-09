@@ -101,7 +101,7 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     int chk_path = 0;
     irods::error err = irods::get_resource_property< int >(
-                           dataObjInfo->rescInfo->rescName,
+                           dataObjInfo->rescName,
                            irods::RESOURCE_CHECK_PATH_PERM, chk_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );

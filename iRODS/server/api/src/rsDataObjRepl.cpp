@@ -1452,7 +1452,7 @@ _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead,
                    ( *bunfileObjInfoHead )->dataType );
     }
     status = _rsUnbunAndRegPhyBunfile( rsComm, &dataObjInp,
-                                       ( *bunfileObjInfoHead )->rescInfo );
+                                       ( *bunfileObjInfoHead )->rescName );
 
     return status;
 }

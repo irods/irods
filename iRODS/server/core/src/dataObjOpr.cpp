@@ -783,7 +783,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
 
 int
 requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
-                        char *preferredResc, int writeFlag, int topFlag ) {
+                        const char *preferredResc, int writeFlag, int topFlag ) {
 
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
@@ -1154,10 +1154,10 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
 
 int
 chkOrphanFile(
-    rsComm_t*      rsComm,
-    char*          filePath,
-    char*          rescName,
-    dataObjInfo_t* dataObjInfo ) {
+    rsComm_t*		rsComm,
+    char*			filePath,
+    const char*		rescName,
+    dataObjInfo_t*	dataObjInfo ) {
     // =-=-=-=-=-=-=-
     // disallow the orphaning of a file by an anonymous user as this
     // is a similar issue to the use of strict acls in that an anonymous
@@ -1291,7 +1291,7 @@ chkOrphanFile(
  */
 
 int
-chkOrphanDir( rsComm_t *rsComm, char *dirPath, char *rescName ) {
+chkOrphanDir( rsComm_t *rsComm, char *dirPath, const char *rescName ) {
     char subfilePath[MAX_NAME_LEN];
     int savedStatus = 1;
     int status = 0;

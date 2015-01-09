@@ -24,21 +24,20 @@
 int
 rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
-_rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                          rescInfo_t *rescInfo );
+_rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp, const char *_resc_name );
 int
 remoteUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                              rodsServerHost_t *rodsServerHost );
 int
 unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
-                 rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
+                 const char *_resc_name, char *bunFilePath, char *phyBunDir, char *dataType,
                  int saveLinkedFles, const char* resc_hier ); // JMC _ backport 4657, 4658
 int
-regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
+regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
                      int rmBunCopyFlag );
 int
 regPhySubFile( rsComm_t *rsComm, char *subfilePath,
-               dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo );
+               dataObjInfo_t *bunDataObjInfo, const char *_resc_name );
 int
 rmLinkedFilesInUnixDir( char *phyBunDir );
 #else

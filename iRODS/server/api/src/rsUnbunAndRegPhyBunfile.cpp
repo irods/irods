@@ -26,32 +26,31 @@ using namespace boost::filesystem;
 int
 rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
-    char *rescName;
+    char *resc_name;
 
-    if ( ( rescName = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) )
+    if ( ( resc_name = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) )
             == NULL ) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
-    rescInfo_t* rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_info( rescName, *rescInfo );
-    if ( !err.ok() ) {
-        delete rescInfo;
+    irods::error resc_err = irods::is_resc_live( resc_name );
+    if ( !resc_err.ok() ) {
         std::stringstream msg;
-        msg << "failed for [";
-        msg << rescName;
+        msg << __FUNCTION__;
+        msg << " - Failed for resource [";
+        msg << resc_name;
         msg << "]";
-        irods::log( PASSMSG( msg.str(), err ) );
-        return -1;
+        irods::log( PASSMSG( msg.str(), resc_err ) );
+        return resc_err.code();
     }
-    status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
+
+    status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, resc_name );
 
     return status;
 }
 
 int
-_rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                          rescInfo_t *rescInfo ) {
+_rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp, const char *_resc_name ) {
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -80,8 +79,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
     if ( remoteFlag == REMOTE_HOST ) {
-        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
-                   rescInfo->rescName );
+        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, _resc_name );
         status = remoteUnbunAndRegPhyBunfile( rsComm, dataObjInp,
                                               rodsServerHost );
         return status;
@@ -97,7 +95,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     createPhyBundleDir( rsComm, bunFilePath, phyBunDir, resc_hier );
     dataType = getValByKey( &dataObjInp->condInput, DATA_TYPE_KW ); // JMC - backport 4664
-    status = unbunPhyBunFile( rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir,
+    status = unbunPhyBunFile( rsComm, dataObjInp->objPath, _resc_name, bunFilePath, phyBunDir,
                               dataType, 0, resc_hier ); // JMC - backport 4632, 4657, 4664
 
     if ( status < 0 ) {
@@ -114,7 +112,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rmBunCopyFlag = 1;
     }
 
-    status = regUnbunPhySubfiles( rsComm, rescInfo, phyBunDir, rmBunCopyFlag );
+    status = regUnbunPhySubfiles( rsComm, _resc_name, phyBunDir, rmBunCopyFlag );
 
     if ( status == CAT_NO_ROWS_FOUND ) {
         /* some subfiles have been deleted. harmless */
@@ -130,7 +128,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 
 int
-regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
+regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
                      int rmBunCopyFlag ) {
     char subfilePath[MAX_NAME_LEN];
     dataObjInp_t dataObjInp;
@@ -198,12 +196,11 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
         else {
             bunDataObjInfo = dataObjInfoHead;
         }
-        requeDataObjInfoByResc( &dataObjInfoHead, rescInfo->rescName, 1, 1 );
+        requeDataObjInfoByResc( &dataObjInfoHead, _resc_name, 1, 1 );
         /* The copy in DEST_RESC_NAME_KW should be on top */
-        if ( strcmp( dataObjInfoHead->rescName, rescInfo->rescName ) != 0 ) {
+        if ( strcmp( dataObjInfoHead->rescName, _resc_name ) != 0 ) {
             /* no copy. stage it */
-            status = regPhySubFile( rsComm, subfilePath, bunDataObjInfo,
-                                    rescInfo );
+            status = regPhySubFile( rsComm, subfilePath, bunDataObjInfo, _resc_name );
             unlink( subfilePath );
             if ( status < 0 ) {
                 rodsLog( LOG_DEBUG,
@@ -240,7 +237,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
 
 int
 regPhySubFile( rsComm_t *rsComm, char *subfilePath,
-               dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo ) {
+               dataObjInfo_t *bunDataObjInfo, const char *_resc_name ) {
     dataObjInfo_t stageDataObjInfo;
     dataObjInp_t dataObjInp;
     int status;
@@ -250,16 +247,14 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
     bzero( &stageDataObjInfo, sizeof( stageDataObjInfo ) );
     rstrcpy( dataObjInp.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( stageDataObjInfo.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
-    rstrcpy( stageDataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
-    stageDataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( stageDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    rstrcpy( stageDataObjInfo.rescName, _resc_name, NAME_LEN );
+    stageDataObjInfo.rescInfo = NULL;
 
     status = getFilePathName( rsComm, &stageDataObjInfo, &dataObjInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "regPhySubFile: getFilePathName err for %s. status = %d",
                  dataObjInp.objPath, status );
-        delete stageDataObjInfo.rescInfo;
         return status;
     }
 
@@ -270,7 +265,6 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
             rodsLog( LOG_ERROR,
                      "regPhySubFile: resolveDupFilePath err for %s. status = %d",
                      stageDataObjInfo.filePath, status );
-            delete stageDataObjInfo.rescInfo;
             return status;
         }
     }
@@ -289,7 +283,6 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
         rodsLog( LOG_ERROR,
                  "regPhySubFile: link error %s to %s. errno = %d",
                  subfilePath, stageDataObjInfo.filePath, errno );
-        delete stageDataObjInfo.rescInfo;
         return UNIX_FILE_LINK_ERR - errno;
     }
 
@@ -306,16 +299,14 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
         rodsLog( LOG_ERROR,
                  "regPhySubFile: rsRegReplica error for %s. status = %d",
                  bunDataObjInfo->objPath, status );
-        delete stageDataObjInfo.rescInfo;
         return status;
     }
 
-    delete stageDataObjInfo.rescInfo;
     return status;
 }
 
 int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
-                     rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir,
+                     const char *_resc_name, char *bunFilePath, char *phyBunDir,
                      char *dataType, int oprType, const char* resc_hier ) { // JMC - backport 4632, 4657
     int status;
     structFileOprInp_t structFileOprInp;
@@ -339,7 +330,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     rstrcpy( structFileOprInp.specColl->objPath,
              objPath, MAX_NAME_LEN ); // JMC - backport 4657
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
-    rstrcpy( structFileOprInp.specColl->resource, rescInfo->rescName, NAME_LEN );
+    rstrcpy( structFileOprInp.specColl->resource, _resc_name, NAME_LEN );
     rstrcpy( structFileOprInp.specColl->phyPath, bunFilePath, MAX_NAME_LEN );
     rstrcpy( structFileOprInp.addr.hostAddr, location.c_str(), NAME_LEN );
     rstrcpy( structFileOprInp.specColl->rescHier, resc_hier, MAX_NAME_LEN );
@@ -363,7 +354,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     status = rsStructFileExtract( rsComm, &structFileOprInp );
     if ( status == SYS_DIR_IN_VAULT_NOT_EMPTY ) {
         /* phyBunDir is not empty */
-        if ( chkOrphanDir( rsComm, phyBunDir, rescInfo->rescName ) > 0 ) {
+        if ( chkOrphanDir( rsComm, phyBunDir, _resc_name ) > 0 ) {
             /* it is a orphan dir */
             fileRenameInp_t fileRenameInp;
             bzero( &fileRenameInp, sizeof( fileRenameInp ) );

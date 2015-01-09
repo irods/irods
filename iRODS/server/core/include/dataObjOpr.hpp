@@ -46,7 +46,7 @@ sortObjInfoForOpen( dataObjInfo_t **dataObjInfoHead,
 int
 sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead );
 int
-requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead, char *preferedResc,
+requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead, const char *preferedResc,
                         int writeFlag, int topFlag );
 int
 requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum );
@@ -62,10 +62,10 @@ sortObjInfo( dataObjInfo_t **dataObjInfoHead,
              dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo,
              dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo );
 int
-chkOrphanFile( rsComm_t *rsComm, char *filePath, char *rescName,
+chkOrphanFile( rsComm_t *rsComm, char *filePath, const char *rescName,
                dataObjInfo_t *dataObjInfo );
 int
-chkOrphanDir( rsComm_t *rsComm, char *dirPath, char *rescName );
+chkOrphanDir( rsComm_t *rsComm, char *dirPath, const char *rescName );
 int
 getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead );
 int
