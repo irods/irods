@@ -1497,7 +1497,13 @@ initAgent( int processType, rsComm_t *rsComm ) {
     GlobalQuotaOverrun = 0;
     RescQuotaPolicy = RESC_QUOTA_UNINIT;
 
-    seedRandom();
+    status = seedRandom();
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "initAgent: seedRandom error, status = %d",
+                 status );
+        return status;
+    }
 
 #ifndef windows_platform
     if ( rsComm->reconnFlag == RECONN_TIMEOUT ) {
