@@ -371,7 +371,6 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 dataObjInfo_t *dataObjInfo ) {
     int chkPathPerm;
     char *filePath;
-    rescInfo_t *rescInfo;
     ruleExecInfo_t rei;
 
     if ( rsComm->clientUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH ) {
@@ -382,12 +381,10 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return NO_CHK_PATH_PERM;
     }
 
-    rescInfo = dataObjInfo->rescInfo;
-
     if ( ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
             && strlen( filePath ) > 0 ) {
         /* the user input a path */
-        if ( rescInfo == NULL ) {
+        if ( !strlen(dataObjInfo->rescName) ) {
             chkPathPerm = NO_CHK_PATH_PERM;
         }
         else {
@@ -399,8 +396,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
 
             int chk_path = 0;
-            irods::error err = irods::get_resource_property< int >(
-                                   rescInfo->rescName,
+            irods::error err = irods::get_resource_property< int >( dataObjInfo->rescName,
                                    irods::RESOURCE_CHECK_PATH_PERM, chk_path );
             if ( !err.ok() ) {
                 irods::log( PASS( err ) );

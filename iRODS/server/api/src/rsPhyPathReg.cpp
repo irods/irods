@@ -36,7 +36,7 @@ static pathnamePatterns_t *ExcludePatterns = NULL;
 
 /* function to read pattern file from a data server */
 pathnamePatterns_t *
-readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* ); //rescInfo_t *rescInfo);
+readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* );
 
 
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with
@@ -239,8 +239,6 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     // =-=-=-=-=-=-=-
-    //
-    // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
     irods::hierarchy_parser parser;
     parser.set_string( hier );
     std::string resc_name;
@@ -256,8 +254,6 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                            location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in get_resource_property", ret ) );
-//        delete rescGrpInfo->rescInfo;
-//        delete rescGrpInfo;
         return -1;
     }
 
@@ -275,22 +271,16 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
     else {
         if ( remoteFlag < 0 ) {
-//            delete rescGrpInfo->rescInfo;
-//            delete rescGrpInfo;
             return remoteFlag;
         }
         else {
             rodsLog( LOG_ERROR,
                      "rsPhyPathReg: resolveHost returned unrecognized value %d",
                      remoteFlag );
-//            delete rescGrpInfo->rescInfo;
-//            delete rescGrpInfo;
             return SYS_UNRECOGNIZED_REMOTE_FLAG;
         }
     }
 
-//    delete rescGrpInfo->rescInfo;
-//    delete rescGrpInfo;
     return status;
 }
 
@@ -346,7 +336,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.filePath, filePath, MAX_NAME_LEN );
-    dataObjInfo.rescInfo = new rescInfo_t;
+    dataObjInfo.rescInfo = NULL;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
@@ -458,7 +448,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
-    destDataObjInfo.rescInfo = new rescInfo_t;
+    destDataObjInfo.rescInfo = NULL;
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
     if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
                                         RESC_GROUP_NAME_KW ) ) != NULL ) {
@@ -497,7 +487,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rstrcpy( dataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
     }
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
-    dataObjInfo.rescInfo = new rescInfo_t;
+    dataObjInfo.rescInfo = NULL;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
@@ -841,7 +831,6 @@ int mountFileDir( rsComm_t*     rsComm,
 
     addKeyVal( &collCreateInp.condInput, COLLECTION_INFO1_KW, filePath );
     addKeyVal( &collCreateInp.condInput, COLLECTION_INFO2_KW, resc_hier );
-    //rescInfo->rescName);
 
     /* try to mod the coll first */
     status = rsModColl( rsComm, &collCreateInp );
@@ -1052,7 +1041,7 @@ int structFileReg(
 
 int
 structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
-                   char* resc_hier ) { //rescInfo_t *rescInfo)
+                   char* resc_hier ) {
     rodsStat_t *myStat = NULL;
     int status;
     subFile_t subFile;
@@ -1235,7 +1224,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 }
 
 pathnamePatterns_t *
-readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier ) { //rescInfo_t *rescInfo)
+readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier ) {
     int status;
     rodsStat_t *stbuf;
     fileStatInp_t fileStatInp;
