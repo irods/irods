@@ -730,7 +730,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                  genQueryOut_t *bulkDataObjRegOut ) {
     dataObjInfo_t dataObjInfo;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
-                *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
+                *dataMode, *oprType, *replNum, *chksum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpFilePath,
          *tmpDataMode, *tmpReplNum, *tmpChksum;
     sqlResult_t *objId;
@@ -802,13 +802,6 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescGroupName =
-                getSqlResultByInx( bulkDataObjRegInp, COL_RESC_GROUP_NAME ) ) == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "postProcBulkPut: getSqlResultByInx for COL_RESC_GROUP_NAME failed" );
-        return UNMATCHED_KEY_OR_INDEX;
-    }
-
     if ( ( replNum =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_REPL_NUM ) ) == NULL ) {
         rodsLog( LOG_ERROR,
@@ -828,7 +821,6 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     /* create a template */
     bzero( &dataObjInfo, sizeof( dataObjInfo_t ) );
     rstrcpy( dataObjInfo.rescName, rescName->value, NAME_LEN );
-    rstrcpy( dataObjInfo.rescGroupName, rescGroupName->value, NAME_LEN );
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     /*status = resolveResc (rescName->value, &dataObjInfo.rescInfo);
       if (status < 0) {

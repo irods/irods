@@ -45,10 +45,6 @@ int
 regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
                   char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray );
 int
-_regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
-                   char *collection, char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp,
-                   renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray );
-int
 regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
             char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags );
 int
