@@ -42,8 +42,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
-    rescInfo_t *rescInfo;
-    char *rescGroupName;
+    char *resc_name;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     char phyBunDir[MAX_NAME_LEN];
@@ -118,15 +117,13 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         return l1descInx;
     }
 
-    rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
-    rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
+    resc_name = L1desc[l1descInx].dataObjInfo->rescName;
 
     bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
 
     if ( local == REMOTE_HOST ) {
-        addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW,
-                   rescInfo->rescName );
+        addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW, resc_name );
 
         status = rcStructFileExtAndReg( host->conn, structFileExtAndRegInp );
         rsDataObjClose( rsComm, &dataObjCloseInp );
@@ -146,7 +143,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
 
     createPhyBundleDir( rsComm, dataObjInfo->filePath, phyBunDir, dataObjInfo->rescHier );
 
-    status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo->rescName, // JMC - backport 4657
+    status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name, // JMC - backport 4657
                               dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0,
                               rescHier.c_str() );
 
@@ -155,7 +152,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         char tmp[MAX_NAME_LEN]; // JMC cppcheck - src & dst snprintf
         strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
         snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-d", tmp, ( int ) random() ); // JMC cppcheck - src & dst snprintf
-        status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo->rescName,
+        status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name,
                                   dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0,
                                   rescHier.c_str() );
     }
@@ -175,11 +172,11 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     if ( getValByKey( &structFileExtAndRegInp->condInput, BULK_OPR_KW )
             != NULL ) {
 
-        status = bulkRegUnbunSubfiles( rsComm, rescInfo->rescName, rescHier, rescGroupName,
+        status = bulkRegUnbunSubfiles( rsComm, resc_name, rescHier, NULL,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
     else {
-        status = regUnbunSubfiles( rsComm, rescInfo, dataObjInfo->rescHier, rescGroupName,
+        status = regUnbunSubfiles( rsComm, resc_name, dataObjInfo->rescHier, NULL,
                                    structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
 
@@ -267,7 +264,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
  */
 
 int
-regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
+regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier, char *rescGroupName,
                   char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray ) {
     char subfilePath[MAX_NAME_LEN];
     char subObjPath[MAX_NAME_LEN];
@@ -320,7 +317,7 @@ regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, 
                 savedStatus = status;
                 continue;
             }
-            status = regUnbunSubfiles( rsComm, rescInfo, rescHier, rescGroupName,
+            status = regUnbunSubfiles( rsComm, _resc_name, rescHier, rescGroupName,
                                        subObjPath, subfilePath, flags, attriArray );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -332,7 +329,7 @@ regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, 
         }
         else if ( is_regular_file( p ) ) {
             st_size = file_size( p );
-            status = regSubfile( rsComm, rescInfo, rescHier, rescGroupName,
+            status = regSubfile( rsComm, _resc_name, rescHier, rescGroupName,
                                  subObjPath, subfilePath, st_size, flags );
             unlink( subfilePath );
             if ( status < 0 ) {
@@ -349,7 +346,7 @@ regUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, 
 }
 
 int
-regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
+regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier, char *rescGroupName,
             char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags ) {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
@@ -360,12 +357,12 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
     bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInp.objPath, subObjPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.objPath, subObjPath, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
+    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
     rstrcpy( dataObjInfo.rescHier, rescHier, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
-    dataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
-    rstrcpy( dataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
+
+    dataObjInfo.rescInfo = NULL;
+
     dataObjInfo.dataSize = dataSize;
     dataObjInfo.replStatus = 1;
 
@@ -383,7 +380,7 @@ regSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
             return SYS_PATH_IS_NOT_A_FILE;
         }
 
-        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, rescInfo->rescName,
+        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, _resc_name,
                             &dataObjInfo ) > 0 ) {
             /* an orphan file. just rename it */
             fileRenameInp_t fileRenameInp;
