@@ -188,7 +188,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     std::string resc_class;
     irods::error prop_err = irods::get_resource_property<std::string>(
-                                dataObjInfoHead->rescInfo->rescName, "class", resc_class );
+                                dataObjInfoHead->rescName, "class", resc_class );
     if ( prop_err.ok() ) {
         if ( resc_class == "bundle" ) {
             status = stageBundledData( rsComm, &dataObjInfoHead );
@@ -371,7 +371,7 @@ _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags ) {
     }
 
     memset( &fileOpenInp, 0, sizeof( fileOpenInp ) );
-    rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescName, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.addr.hostAddr,  location.c_str(), NAME_LEN );
@@ -437,7 +437,6 @@ int
 createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  dataObjInfo_t **dataObjInfoHead ) {
     int status;
-    rescInfo_t *rescInfo;
     regReplica_t regReplicaInp;
     keyValPair_t *condInput = &dataObjInp->condInput;
     dataObjInfo_t *myDataObjInfo;
@@ -458,23 +457,17 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     myDataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     *myDataObjInfo = *( *dataObjInfoHead );
 
+    myDataObjInfo->rescInfo = NULL;
 
-    rescInfo = ( *dataObjInfoHead )->rescInfo; // #1472 should probably use resc_name here. revisit
-
-    myDataObjInfo->rescInfo = new rescInfo_t;
-    memcpy( myDataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
-
-    rstrcpy( myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN );
-    rstrcpy( myDataObjInfo->rescGroupName, ( *dataObjInfoHead )->rescGroupName, NAME_LEN );
+    rstrcpy( myDataObjInfo->rescName, (*dataObjInfoHead)->rescName, NAME_LEN );
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
         rstrcpy( myDataObjInfo->rescHier, resc_hier, MAX_NAME_LEN ); // hier sent from upper level code
     }
     else {
-        rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescInfo->rescName for hier" );
-        rstrcpy( myDataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN ); // in kw else
-
+        rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescName for hier" );
+        rstrcpy( myDataObjInfo->rescHier, (*dataObjInfoHead)->rescName, MAX_NAME_LEN ); // in kw else
     }
 
     status = getFilePathName( rsComm, myDataObjInfo, dataObjInp );

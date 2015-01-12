@@ -4,7 +4,6 @@
  */
 
 /* rescInfo_t is for info about a resource
-   rescGrpInfo_t is for info about a resource group
    dataObjInfo_t is for info about a data object.
    intKeyStrVal_t is a generic (integer keyword)/(string value) pair.
    It can be used for many things. For example, for the input "condition",
