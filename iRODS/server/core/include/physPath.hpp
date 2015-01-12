@@ -72,7 +72,7 @@ extern "C" {
                          char **chksumStr );
     int
     chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath,
-                            const char*, int replStatus );
+                            const char *_resc_name, int replStatus );
     int
     renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
                             fileRenameInp_t *fileRenameInp, int renameFlag, char* );

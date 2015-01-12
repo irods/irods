@@ -499,7 +499,7 @@ _rsDataObjClose(
                 }
             }
             l3Unlink( rsComm, srcDataObjInfo );
-            updatequotaOverrun( destDataObjInfo->rescInfo,
+            updatequotaOverrun( destDataObjInfo->rescHier,
                                 destDataObjInfo->dataSize, RESC_QUOTA );
         }
         else {
@@ -597,7 +597,7 @@ _rsDataObjClose(
             }
 
             /* update quota overrun */
-            updatequotaOverrun( destDataObjInfo->rescInfo,
+            updatequotaOverrun( destDataObjInfo->rescHier,
                                 destDataObjInfo->dataSize, ALL_QUOTA );
 
         }
@@ -677,7 +677,7 @@ _rsDataObjClose(
         }
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
             /* update quota overrun */
-            updatequotaOverrun( L1desc[l1descInx].dataObjInfo->rescInfo,
+            updatequotaOverrun( L1desc[l1descInx].dataObjInfo->rescHier,
                                 newSize, ALL_QUOTA );
         }
     }

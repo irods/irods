@@ -84,7 +84,7 @@ fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
                      char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
                      char *tmpQuotaUserId, char *rescGroupName );
 int
-updatequotaOverrun( rescInfo_t *rescInfo, rodsLong_t dataSize, int flags );
+updatequotaOverrun( const char *_resc_hier, rodsLong_t dataSize, int flags );
 int
 chkRescQuotaPolicy( rsComm_t *rsComm );
 #else
