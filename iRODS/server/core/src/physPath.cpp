@@ -98,7 +98,6 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return SYS_INVALID_RESC_INPUT;
     }
 
-    // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     int chk_path = 0;
     irods::error err = irods::get_resource_property< int >(
                            dataObjInfo->rescName,
@@ -168,7 +167,6 @@ getFilePathName_1472( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return SYS_INVALID_RESC_INPUT;
     }
 
-    // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     int chk_path = 0;
     irods::error err = irods::get_resource_property< int >(
                            dataObjInfo->rescName,
@@ -344,7 +342,7 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return SYS_PATH_IS_NOT_A_FILE;
     }
     if ( chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath,
-                                 dataObjInfo->rescInfo, dataObjInfo->replStatus ) >= 0 ) {
+                                 dataObjInfo->rescName, dataObjInfo->replStatus ) >= 0 ) {
         /* this is an orphan file or has been renamed */
         return 0;
     }
@@ -403,7 +401,6 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
 
             if ( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
-// JMC - legacy resource RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM ) ) {
                 chkPathPerm = NO_CHK_PATH_PERM;
             }
             else {
@@ -575,7 +572,7 @@ dataObjChksumAndReg( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
  */
 
 int
-chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *filePath, rescInfo_t *rescInfo,
+chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *filePath, const char *_resc_name,
                         int replStatus ) {
 
     fileRenameInp_t fileRenameInp;
@@ -591,7 +588,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
 
     memset( &myDataObjInfo, 0, sizeof( myDataObjInfo ) );
     memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
-    if ( ( status = chkOrphanFile( rsComm, filePath, rescInfo->rescName, &myDataObjInfo ) ) == 0 ) {
+    if ( ( status = chkOrphanFile( rsComm, filePath, _resc_name, &myDataObjInfo ) ) == 0 ) {
 
         rstrcpy( fileRenameInp.oldFileName, filePath, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.rescHier, rescHier, MAX_NAME_LEN );
@@ -813,24 +810,23 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      dataObjInfo_t *dataObjInfo, char *acLCollection ) {
     int status, status1;
     fileRenameInp_t fileRenameInp;
-    rescInfo_t *rescInfo = 0;
     modDataObjMeta_t modDataObjMetaInp;
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
+    irods::error err;
 
-    if ( strcmp( dataObjInfo->rescInfo->rescName, BUNDLE_RESC ) == 0 ) {
+    if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
         return 0;
     }
 
     int create_path = 0;
-    irods::error err = irods::get_resource_property< int >(
-                           dataObjInfo->rescInfo->rescName,
+    err = irods::get_resource_property< int >(
+                           dataObjInfo->rescName,
                            irods::RESOURCE_CREATE_PATH, create_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
     }
 
-    // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     if ( NO_CREATE_PATH == create_path ) {
         /* no need to sync for path created by resource */
         return 0;
@@ -854,17 +850,19 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
     }
 
-    if ( dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-        return SYS_RESC_IS_DOWN;
+    err = irods::is_resc_live(dataObjInfo->rescName);
+    if (!err.ok()) {
+    	irods::log( PASSMSG( "syncDataObjPhyPathS - failed in is_resc_live", err ) );
+    	return err.code();
     }
 
     // =-=-=-=-=-=-=-
     // get the resource location for the hier string leaf
     std::string location;
-    irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-    if ( !ret.ok() ) {
-        irods::log( PASSMSG( "syncDataObjPhyPathS - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+    err = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if ( !err.ok() ) {
+        irods::log( PASSMSG( "syncDataObjPhyPathS - failed in get_loc_for_hier_string", err ) );
+        return err.code();
     }
 
     /* Save the current objPath */
@@ -885,11 +883,11 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( strcmp( fileRenameInp.oldFileName, dataObjInfo->filePath ) == 0 ) {
         return 0;
     }
-    rescInfo = dataObjInfo->rescInfo;
+
     /* see if the new file exist */
     if ( getSizeInVault( rsComm, dataObjInfo ) >= 0 ) {
         if ( ( status = chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier,
-                                                dataObjInfo->filePath, rescInfo, OLD_COPY ) ) <= 0 ) {
+                                                dataObjInfo->filePath, dataObjInfo->rescName, OLD_COPY ) ) <= 0 ) {
             rodsLog( LOG_ERROR,
                      "%s: newFileName %s already in use. Status = %d",
                      __FUNCTION__, dataObjInfo->filePath, status );
@@ -1038,21 +1036,8 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             dataObjInfo.replNum = atoi( tmpReplNum );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
             rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
-            /*status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
-              if (status < 0) {
-              rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",
-              tmpRescName, status);
-              return status;
-              }*/
 
-            dataObjInfo.rescInfo = new rescInfo_t;
-            irods::error err = irods::get_resc_info( tmpRescName, *dataObjInfo.rescInfo );
-            if ( !err.ok() ) {
-                std::stringstream msg;
-                msg << "getDefaultLocalRescInfo - failed to get resource info";
-                msg << tmpRescName;
-                irods::log( PASS( err ) );
-            }
+            dataObjInfo.rescInfo = NULL;
 
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 
@@ -1089,7 +1074,7 @@ int
 isInVault( dataObjInfo_t *dataObjInfo ) {
     int len;
 
-    if ( dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ) {
+    if ( !dataObjInfo ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
