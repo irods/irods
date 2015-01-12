@@ -30,7 +30,7 @@ using namespace boost::filesystem;
 
 int
 bulkRegUnbunSubfiles( rsComm_t *rsComm, const char*, const std::string& rescHier,
-                      char *rescGroupName, char *collection, char *phyBunDir, int flags,
+                      char *collection, char *phyBunDir, int flags,
                       genQueryOut_t *attriArray );
 
 
@@ -172,11 +172,11 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     if ( getValByKey( &structFileExtAndRegInp->condInput, BULK_OPR_KW )
             != NULL ) {
 
-        status = bulkRegUnbunSubfiles( rsComm, resc_name, rescHier, NULL,
+        status = bulkRegUnbunSubfiles( rsComm, resc_name, rescHier,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
     else {
-        status = regUnbunSubfiles( rsComm, resc_name, dataObjInfo->rescHier, NULL,
+        status = regUnbunSubfiles( rsComm, resc_name, dataObjInfo->rescHier,
                                    structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
 
@@ -264,7 +264,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
  */
 
 int
-regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier, char *rescGroupName,
+regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
                   char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray ) {
     char subfilePath[MAX_NAME_LEN];
     char subObjPath[MAX_NAME_LEN];
@@ -317,7 +317,7 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
                 savedStatus = status;
                 continue;
             }
-            status = regUnbunSubfiles( rsComm, _resc_name, rescHier, rescGroupName,
+            status = regUnbunSubfiles( rsComm, _resc_name, rescHier,
                                        subObjPath, subfilePath, flags, attriArray );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -329,7 +329,7 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
         }
         else if ( is_regular_file( p ) ) {
             st_size = file_size( p );
-            status = regSubfile( rsComm, _resc_name, rescHier, rescGroupName,
+            status = regSubfile( rsComm, _resc_name, rescHier,
                                  subObjPath, subfilePath, st_size, flags );
             unlink( subfilePath );
             if ( status < 0 ) {
@@ -346,7 +346,7 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
 }
 
 int
-regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier, char *rescGroupName,
+regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
             char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags ) {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
