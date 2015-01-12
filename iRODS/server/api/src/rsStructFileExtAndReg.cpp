@@ -29,7 +29,7 @@
 using namespace boost::filesystem;
 
 int
-bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkRegUnbunSubfiles( rsComm_t *rsComm, const char*, const std::string& rescHier,
                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
                       genQueryOut_t *attriArray );
 
@@ -175,7 +175,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     if ( getValByKey( &structFileExtAndRegInp->condInput, BULK_OPR_KW )
             != NULL ) {
 
-        status = bulkRegUnbunSubfiles( rsComm, rescInfo, rescHier, rescGroupName,
+        status = bulkRegUnbunSubfiles( rsComm, rescInfo->rescName, rescHier, rescGroupName,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
     else {

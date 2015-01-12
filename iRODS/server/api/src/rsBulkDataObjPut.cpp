@@ -34,25 +34,25 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                    bytesBuf_t *bulkOprInpBBuf );
 int
 createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir );
+                        const char*, specColl_t *specColl, char *phyBunDir );
 int
 initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp );
 int
-bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkRegUnbunSubfiles( rsComm_t *rsComm, const char*, const std::string& rescHier,
                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
                       genQueryOut_t *attriArray );
 int
-_bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+_bulkRegUnbunSubfiles( rsComm_t *rsComm, const char*, const std::string& rescHier,
                        char *rescGroupName, char *collection, char *phyBunDir, int flags,
                        genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles,
                        genQueryOut_t *attriArray );
 int
-bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkProcAndRegSubfile( rsComm_t *rsComm, const char*, const std::string& rescHier,
                        char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
                        int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
                        renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray );
 int
-bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
+bulkRegSubfile( rsComm_t *rsComm, const char*, const std::string& rescHier, char *rescGroupName,
                 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
                 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
                 renamedPhyFiles_t *renamedPhyFiles );
@@ -202,7 +202,6 @@ int
 _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                    bytesBuf_t *bulkOprInpBBuf ) {
     int status;
-    rescInfo_t *rescInfo;
     char phyBunDir[MAX_NAME_LEN];
     std::string resc_name;
     dataObjInp_t dataObjInp;
@@ -238,24 +237,8 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         }
     }
 
-    /* just take the top one */
-    rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_info( resc_name, *rescInfo );
-    if ( !err.ok() ) {
-        std::stringstream msg;
-        msg << "failed to get resource info for [";
-        msg << resc_name << "]";
-        irods::log( PASSMSG( msg.str(), err ) );
-        return err.code();
-    }
-
-
-
-
-
-    status = createBunDirForBulkPut( rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir );
+    status = createBunDirForBulkPut( rsComm, &dataObjInp, resc_name.c_str(), myRodsObjStat->specColl, phyBunDir );
     if ( status < 0 ) {
-        delete rescInfo;
         freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
@@ -266,7 +249,6 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
     status = rsMkCollR( rsComm, "/", bulkOprInp->objPath );
     if ( status < 0 ) {
-        delete rescInfo;
         freeRodsObjStat( myRodsObjStat );
 
         std::stringstream msg;
@@ -281,7 +263,6 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     status = unbunBulkBuf( rsComm, &dataObjInp, bulkOprInp, bulkOprInpBBuf );
 
     freeRodsObjStat( myRodsObjStat );
-    delete rescInfo;
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -295,24 +276,24 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
 int
 createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir ) {
+                        const char *_resc_name, specColl_t *specColl, char *phyBunDir ) {
     dataObjInfo_t dataObjInfo;
     int status;
 
-    if ( dataObjInp == NULL || rescInfo == NULL || phyBunDir == NULL ) {
+    if (!dataObjInp || !_resc_name || !phyBunDir) {
         return USER__NULL_INPUT_ERR;
     }
 
     bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
+    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
         rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
     }
     else {
-        rstrcpy( dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN ); // in kw else
+        rstrcpy( dataObjInfo.rescHier, _resc_name, NAME_LEN ); // in kw else
     }
 
     if ( specColl != NULL ) {
@@ -324,8 +305,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    dataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    dataObjInfo.rescInfo = NULL;
 
     status = getFilePathName( rsComm, &dataObjInfo, dataObjInp );
     if ( status < 0 ) {
@@ -366,7 +346,7 @@ initDataObjInpFromBulkOpr( dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp ) 
 }
 
 int
-bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::string& rescHier,
                       char *rescGroupName, char *collection, char *phyBunDir, int flags,
                       genQueryOut_t *attriArray ) {
     genQueryOut_t bulkDataObjRegInp;
@@ -380,7 +360,7 @@ bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string&
         attriArray->continueInx = 0;
     }
 
-    status = _bulkRegUnbunSubfiles( rsComm, rescInfo, rescHier, rescGroupName, collection,
+    status = _bulkRegUnbunSubfiles( rsComm, _resc_name, rescHier, rescGroupName, collection,
                                     phyBunDir, flags, &bulkDataObjRegInp, &renamedPhyFiles, attriArray );
 
     if ( bulkDataObjRegInp.rowCnt > 0 ) {
@@ -404,7 +384,7 @@ bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string&
 }
 
 int
-_bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+_bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::string& rescHier,
                        char *rescGroupName, char *collection, char *phyBunDir, int flags,
                        genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles,
                        genQueryOut_t *attriArray ) {
@@ -451,7 +431,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
                 savedStatus = status;
                 continue;
             }
-            status = _bulkRegUnbunSubfiles( rsComm, rescInfo, rescHier, rescGroupName,
+            status = _bulkRegUnbunSubfiles( rsComm, _resc_name, rescHier, rescGroupName,
                                             subObjPath, subfilePath, flags, bulkDataObjRegInp,
                                             renamedPhyFiles, attriArray );
             if ( status < 0 ) {
@@ -465,7 +445,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         else if ( is_regular_file( p ) ) {
             st_mode = getPathStMode( p.c_str() );
             st_size = file_size( p );
-            status = bulkProcAndRegSubfile( rsComm, rescInfo, rescHier, rescGroupName,
+            status = bulkProcAndRegSubfile( rsComm, _resc_name, rescHier, rescGroupName,
                                             subObjPath, subfilePath, st_size,
                                             st_mode & 0777, flags, bulkDataObjRegInp,
                                             renamedPhyFiles, attriArray );
@@ -484,7 +464,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
 }
 
 int
-bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string& rescHier,
+bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::string& rescHier,
                        char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize,
                        int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
                        renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray ) {
@@ -499,12 +479,12 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
     bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInp.objPath, subObjPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.objPath, subObjPath, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo.rescName, rescInfo->rescName, NAME_LEN );
+    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
     rstrcpy( dataObjInfo.rescHier, rescHier.c_str(), MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
-    dataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     dataObjInfo.dataSize = dataSize;
+
+    dataObjInfo.rescInfo = NULL;
 
     status = getFilePathName( rsComm, &dataObjInfo, &dataObjInp );
     if ( status < 0 ) {
@@ -519,7 +499,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         if ( is_directory( p ) ) {
             return SYS_PATH_IS_NOT_A_FILE;
         }
-        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, rescInfo->rescName,
+        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, _resc_name,
                             &dataObjInfo ) <= 0 ) {
             /* not an orphan file */
             if ( ( flags & FORCE_FLAG_FLAG ) != 0 && dataObjInfo.dataId > 0 &&
@@ -608,7 +588,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         }
     }
 
-    status = bulkRegSubfile( rsComm, rescInfo->rescName, rescHier, rescGroupName,
+    status = bulkRegSubfile( rsComm, _resc_name, rescHier, rescGroupName,
                              subObjPath, dataObjInfo.filePath, dataSize, myDataMode, modFlag,
                              dataObjInfo.replNum, myChksum, bulkDataObjRegInp, renamedPhyFiles );
 
@@ -616,7 +596,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
 }
 
 int
-bulkRegSubfile( rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
+bulkRegSubfile( rsComm_t *rsComm, const char *rescName, const std::string& rescHier, char *rescGroupName,
                 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
                 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
                 renamedPhyFiles_t *renamedPhyFiles ) {
@@ -857,15 +837,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
       return status;
       }*/
 
-    dataObjInfo.rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_info( rescName->value, *dataObjInfo.rescInfo );
-    if ( !err.ok() ) {
-        std::stringstream msg;
-        msg << "failed to get resource info [";
-        msg << rescName->value << "]";
-        irods::log( PASSMSG( msg.str(), err ) );
-        return err.code();
-    }
+    dataObjInfo.rescInfo = NULL;
 
     bzero( &dataObjInp, sizeof( dataObjInp_t ) );
     dataObjInp.openFlags = O_WRONLY;

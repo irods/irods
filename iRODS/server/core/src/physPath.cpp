@@ -91,9 +91,9 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     /* Make up a physical path */
-    if ( dataObjInp != NULL && dataObjInfo->rescInfo == NULL ) {
+    if ( dataObjInp != NULL && dataObjInfo->rescName == NULL ) {
         rodsLog( LOG_ERROR,
-                 "getFilePathName: rescInfo for %s not resolved",
+                 "getFilePathName: rescName for %s not resolved",
                  dataObjInp->objPath );
         return SYS_INVALID_RESC_INPUT;
     }
