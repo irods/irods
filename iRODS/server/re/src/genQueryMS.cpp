@@ -709,7 +709,6 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
 **/
 int
 msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei ) {
-    genQueryInp_t *genQueryInp;
     char *sel, *cond, *rawQuery, *query;
 
 
@@ -745,7 +744,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
     strcpy( query, rawQuery );
 
     /* allocate memory for genQueryInp */
-    genQueryInp = ( genQueryInp_t* )malloc( sizeof( genQueryInp_t ) );
+    genQueryInp_t * genQueryInp = ( genQueryInp_t* )malloc( sizeof( genQueryInp_t ) );
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     /* set up GenQueryInp */
@@ -754,6 +753,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
     rei->status = fillGenQueryInpFromStrCond( query, genQueryInp );
     if ( rei->status < 0 ) {
         rodsLog( LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed." );
+        freeGenQueryInp( &genQueryInp );
         free( rawQuery ); // cppcheck - Memory leak: rawQuery
         return rei->status;
     }

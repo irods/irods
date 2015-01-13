@@ -113,6 +113,8 @@ sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
                 rodsLong_t length );
 int
 freeGenQueryOut( genQueryOut_t **genQueryOut );
+int
+freeGenQueryInp( genQueryInp_t **genQueryInp );
 void
 clearGenQueryInp( void * voidInp );
 sqlResult_t *

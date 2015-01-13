@@ -1118,6 +1118,23 @@ clearInxVal( inxValPair_t *inxValPair ) {
     return 0;
 }
 
+int
+freeGenQueryInp( genQueryInp_t **genQueryInp ) {
+    if ( genQueryInp == NULL ) {
+        return 0;
+    }
+
+    if ( *genQueryInp == NULL ) {
+        return 0;
+    }
+
+    clearGenQueryInp( *genQueryInp );
+    free( *genQueryInp );
+    *genQueryInp = NULL;
+
+    return 0;
+}
+
 void
 clearGenQueryInp( void* voidInp ) {
 
