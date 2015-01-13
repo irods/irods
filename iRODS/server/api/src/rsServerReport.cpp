@@ -503,7 +503,7 @@ irods::error convert_service_account(
 
     json_object_set( _svc_acct, "irods_log_level", json_integer( my_env.rodsPort ) );
 
-    json_object_set( _svc_acct, "irods_authentication_file_name", json_string( my_env.rodsAuthFileName ) );
+    json_object_set( _svc_acct, "irods_authentication_filename", json_string( my_env.rodsAuthFileName ) );
 
     json_object_set( _svc_acct, "irods_debug", json_string( my_env.rodsDebug ) );
 
@@ -1191,4 +1191,3 @@ int _rsServerReport(
     return 0;
 
 } // _rsServerReport
-

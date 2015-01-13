@@ -137,7 +137,7 @@ runCmd(0, "iput $F1");
 runCmd(0, "imv $F1 $F1a");
 runCmd(0, "imv $F1a $F1b");
 runCmd(0, "imv $F1b $F1");
-runCmd(2, "imv $F1 $F1"); 
+runCmd(2, "imv $F1 $F1");
 runCmd(0, "irm -f $F1");
 
 # test that upper/lower case are different (can be problem with MySQL)
@@ -194,7 +194,7 @@ runCmd(0, "imkdir $D1");
 runCmd(2, "imkdir $D1");
 runCmd(0, "irm -rf $D1");
 
-# Repeated iput -rf test (was failing as ICAT code needed to 
+# Repeated iput -rf test (was failing as ICAT code needed to
 # rollback after an insert failure since it is now doing a 'begin').
 mkfiles(2, "testIput_RF_repeat");
 runCmd(0, "iput -rf  testIput_RF_repeat");
@@ -543,7 +543,7 @@ runCmd(0, "iadmin moduser $U2 type groupadmin");
 unlink($F2);
 $MYHOME=$ENV{'HOME'};
 $authFile="$MYHOME/.irods/.irodsA";
-runCmd(0, "ienv | grep irods_authentication_file_name | tail -1");
+runCmd(0, "ienv | grep irods_authentication_filename | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"-");
 $envAuth=substr($cmdStdout, $ix+1);
@@ -554,7 +554,7 @@ if ($ix != -1) {
 }
 runCmd(1, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
-$ENV{'IRODS_USER_NAME'}=$U2; 
+$ENV{'IRODS_USER_NAME'}=$U2;
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(0, "igroupadmin mkgroup $G1");
@@ -616,7 +616,7 @@ runCmd(0, "iadmin rfg $G1 $U2");
 runCmd(2, "iadmin rfg $G1 $U2");
 runCmd(0, "iadmin rmgroup $G1");
 
-# basic quota tests 
+# basic quota tests
 runCmd(1, "irm -f $F1");
 runCmd(0, "iput $F1");
 runCmd(0, "iadmin suq $U1 $Resc 10");
@@ -846,7 +846,7 @@ runCmd(0, "irm -f $F1");
 runCmd(0, "iquest \"select USER_NAME, USER_ID where USER_ID = '8005'\"");
 runCmd(0, "iquest --sql lsl badName");
 
-#Tickets 
+#Tickets
 runCmd(0, "iput $F1");
 runCmd(1, "iticket delete $TICKET1");
 runCmd(0, "iticket create read $F1 $TICKET1");

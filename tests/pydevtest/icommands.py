@@ -172,7 +172,7 @@ class RodsSession(object):
         # possible values for icommandsDir
         myenv = os.environ.copy()
         myenv['IRODS_ENVIRONMENT_FILE'] = "%s/irods_environment.json" % (self.sessionDir)
-        myenv['IRODS_AUTHENTICATION_FILE_NAME'] = "%s/.irodsA" % (self.sessionDir)
+        myenv['IRODS_AUTHENTICATION_FILENAME'] = "%s/.irodsA" % (self.sessionDir)
 
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
@@ -232,7 +232,7 @@ class RodsSession(object):
         # possible values for icommandsDir
         myenv = os.environ.copy()
         myenv['IRODS_ENVIRONMENT_FILE'] = "%s/irods_environment.json" % (self.sessionDir)
-        myenv['IRODS_AUTHENTICATION_FILE_NAME'] = "%s/.irodsA" % (self.sessionDir)
+        myenv['IRODS_AUTHENTICATION_FILENAME'] = "%s/.irodsA" % (self.sessionDir)
 
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
@@ -326,7 +326,7 @@ class RodsSession(object):
         # possible values for icommandsDir
         myenv = os.environ.copy()
         myenv['IRODS_ENVIRONMENT_FILE'] = "%s/irods_environment.json" % (self.sessionDir)
-        myenv['IRODS_AUTHENTICATION_FILE_NAME'] = "%s/.irodsA" % (self.sessionDir)
+        myenv['IRODS_AUTHENTICATION_FILENAME'] = "%s/.irodsA" % (self.sessionDir)
 
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
@@ -362,7 +362,7 @@ class RodsSession(object):
         # possible values for icommandsDir
         myenv = os.environ.copy()
         myenv['IRODS_ENVIRONMENT_FILE'] = "%s/irods_environment.json" % (self.sessionDir)
-        myenv['IRODS_AUTHENTICATION_FILE_NAME'] = "%s/.irodsA" % (self.sessionDir)
+        myenv['IRODS_AUTHENTICATION_FILENAME'] = "%s/.irodsA" % (self.sessionDir)
 
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList

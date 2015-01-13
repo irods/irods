@@ -10,8 +10,8 @@
 # users (the initial one and user2) exist and the user2_Password is correct,
 # and that the icommands are in the path.  Also, for strict-mode tests,
 # which are run by default, you need to create the $CORE_RE_STRICT file
-# with the strict rule set and also need to check the defines for your 
-# setup ($CORE_RE_STRICT, $CORE_RE_ORIG, and $CORE_RE) and create those 
+# with the strict rule set and also need to check the defines for your
+# setup ($CORE_RE_STRICT, $CORE_RE_ORIG, and $CORE_RE) and create those
 # files ($CORE_RE_STRICT with strict mode set).
 # Also chck $Future_Date and $This_Host and $Other_Host.
 # The user you run this from initially must be a rodsadmin, for example
@@ -125,7 +125,7 @@ sub runCmd {
 }
 
 # set up iRODS test users
-sub prepare {	
+sub prepare {
 	printf("Creating test users...\n");
 	runCmd(1, "iadmin mkuser anonymous rodsuser");
 	runCmd(1, "iadmin mkuser $user2 rodsuser");
@@ -143,8 +143,8 @@ sub teardown {
 
 # switch to being the user user2.
 sub becomeuser2 {
-    $ENV{'IRODS_USER_NAME'}=$user2; 
-    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpAuthFile;
+    $ENV{'IRODS_USER_NAME'}=$user2;
+    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpAuthFile;
     if ($iinited == 0) {
 	runCmd(0, "iinit $user2_Password");
 	$iinited = 1;
@@ -155,13 +155,13 @@ sub becomeuser2 {
 # switch to being user anonymous.
 sub becomeAnon {
     $ENV{'IRODS_USER_NAME'}='anonymous';
-    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
     printf("Became Anonymous\n");
 }
 
 # Undo becomeuser2 to become the initial user again
 sub becomeSelfAgain {
-    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
     delete $ENV{'IRODS_USER_NAME'};
     printf("Became self again.\n");
 }
@@ -370,7 +370,7 @@ sub doWriteTests() {
     becomeAnon();
     `ls -l >> $F1`;
     runCmd(2,"iput -ft $T1 $F1 $D1/$F1");
-    
+
     #setStrict();
     `ls -l >> $F1`;
     becomeuser2();
@@ -532,7 +532,7 @@ sub doReadTests() {
     becomeAnon();
     unlink($F1);
     runCmd(2,"iget -t $T1 $D1/$F1");
-    
+
     #setStrict();
     unlink($F1);
     becomeuser2();
