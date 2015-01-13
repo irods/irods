@@ -1765,6 +1765,7 @@ iRODS Server is down
 
 :Error Code: USER_SOCK_CONNECT_TIMEDOUT -347000
 :Error Code: CROSS_ZONE_SOCK_CONNECT_ERR -92110
+:Error Code: USER_SOCK_CONNECT_ERR -305000
 
 Common areas to check for this error include:
 
@@ -1774,7 +1775,7 @@ Common areas to check for this error include:
 
 **Networking issues**
 
-- Verify that a firewall is not blocking the connection on the iRODS port in use (default 1247).
+- Verify that a firewall is not blocking the connection on the iRODS port in use (default 1247) (or the higher ports for parallel transfer).
 
 - Check for network connectivity problems by pinging the server in question.
 
@@ -1796,6 +1797,10 @@ This error occurs when one of the iRODS servers fails to recognize itself as loc
 #. a simple typo
 
 Every iRODS server in a Zone needs to be fully routable to and from every other iRODS server in the Zone.
+
+:Error Code: USER_RODS_HOSTNAME_ERR -303000
+
+This error could occur if the gethostname() function is not returning the expected value on every machine in the Zone.  The values in the iCAT must match the values returned by gethostname() on each machine.
 
 No such file or directory
 *************************
