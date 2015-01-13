@@ -4,14 +4,14 @@
 # For more information please refer to files in the COPYRIGHT directory ***
 #
 # This is a test script that runs various test_chl commands and various
-# icommands to test iCat functions.  Most iCAT functions and
+# icommands to test iCat functions.  Most iCAT functions and 
 # sql-statements are exercised via icatTest.pl, moveTest.pl,
 # clients/icommands/test/testiCommands.pl, and this script exercises a
 # few more so that all are tested.  The ones done here are either
 # difficult to set up for testing or are not currently used.
 
 # This needs to run on the same host as the ICAT-enabled iRODS server.
-# The test_chl and test_genq utilities link with the icat library to
+# The test_chl and test_genq utilities link with the icat library to 
 # directly test some of the functions and cases that are difficult to
 # exercise.
 
@@ -210,7 +210,7 @@ runCmd(0, "test_chl rm $HOME/$F1 999999"); # 999999 is taken as -1
 runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
-#$ENV{'IRODS_USER_NAME'}=$User2;
+#$ENV{'IRODS_USER_NAME'}=$User2; 
 #   $IRODS_ADMIN_PASSWORD is from $configDir/irods.config
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'IRODS_USER_NAME'};
@@ -221,16 +221,16 @@ runCmd(0, "iqstat | grep msiVacuum");
 $ix = index($cmdStdout, " ");
 $id = substr($cmdStdout, 0, $ix);
 chomp($id);
-$ENV{'IRODS_USER_NAME'}=$User2;
+$ENV{'IRODS_USER_NAME'}=$User2; 
 runCmd(2, "echo 123 | iqdel $id");
 runCmd(2, "test_chl rmrule $id $User2");
 delete $ENV{'IRODS_USER_NAME'};
 runCmd(0, "iqdel $id");
 
 # Temporary password
-$ENV{'IRODS_USER_NAME'}=$User2;
-$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILENAME'};  # old one, if any
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+$ENV{'IRODS_USER_NAME'}=$User2; 
+$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILE_NAME'};  # old one, if any
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 runCmd(0, "test_chl tpw 123 | grep  'temp pw'");
 $temp1=$cmdStdout;
 chomp($temp1);
@@ -242,16 +242,16 @@ runCmd(0, "echo $pw > $tmpPwFile");
 runCmd(0, "ils ../$User2 < $tmpPwFile");
 delete $ENV{'IRODS_USER_NAME'};
 if ($prevAuthFileName eq "") {
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 }
 else {
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$prevAuthFileName;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$prevAuthFileName;
 }
 unlink($tmpPwFile);
 
 # Temporary password for other
-$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILENAME'};  # old one, if any
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+$prevAuthFileName=$ENV{'IRODS_AUTHENTICATION_FILE_NAME'};  # old one, if any
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 runCmd(0, "test_chl tpwforother $IRODS_ADMIN_PASSWORD $User2 | grep  'temp pw'");
 $temp1=$cmdStdout;
 chomp($temp1);
@@ -259,20 +259,20 @@ $ixPw=index($temp1,"=");
 $pw=substr($temp1, $ixPw+1);
 unlink($tmpPwFile);
 unlink($tmpAuthFile);
-$ENV{'IRODS_USER_NAME'}=$User2;
+$ENV{'IRODS_USER_NAME'}=$User2; 
 runCmd(0, "echo badpw > $tmpPwFile");
 runCmd(2, "ils ../$User2 < $tmpPwFile");  # should fail with a bad pw
 unlink($tmpPwFile);
-runCmd(0, "echo $pw > $tmpPwFile");
+runCmd(0, "echo $pw > $tmpPwFile");  
 runCmd(0, "ils ../$User2 < $tmpPwFile");  # should work with the temp pw
 printf($cmdStdout);
 runCmd(2, "ils ../$User2 < $tmpPwFile");  # but only once
 delete $ENV{'IRODS_USER_NAME'};
 if ($prevAuthFileName eq "") {
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 }
 else {
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$prevAuthFileName;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$prevAuthFileName;
 }
 unlink($tmpPwFile);
 
@@ -305,7 +305,7 @@ runCmd(0, "irm -rf $DIR1");
 #runCmd(0, "test_genu 2 test 100078 name1");
 #
 # Oct 2011, re-added test_genu tests to improve coverage a little.
-# Without defining an extended ICAT (which would be difficult),
+# Without defining an extended ICAT (which would be difficult), 
 # coverage will be slight tho.
 runCmd(2, "test_genu 1 test 100078 name1");
 runCmd(2, "test_genu 2 test 100078 name1");
@@ -342,10 +342,10 @@ $str1=substr($temp2, $ix2+3);
 $ix3=index($str1," ");
 $ipamPw=substr($str1,0,$ix3);
 $ENV{'IRODS_USER_NAME'}=$User2;
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}="/tmp/xfile1";
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}="/tmp/xfile1";
 runCmd(2, "echo $ipamPw | ils");  # should fail and should do SQL to rm pw
 delete $ENV{'IRODS_USER_NAME'};
-delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 runCmd(0, "test_chl getpampw $User2"); # create a normal one
 runCmd(0, "test_chl getpampw $User2"); # do a second one to get an existing pw
 runCmd(0, "iadmin rpp $User2");   # exercise the remove irods-PAM pw SQL

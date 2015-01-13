@@ -133,22 +133,22 @@ sub runUserTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc m100 $TType"); # m100 is -100
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$QU1;
     runCmd(0, "echo 123 | iput $F1 $DIR");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     runCmd(0, "test_chl checkquota $QU1 $Resc m100 $TType");
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc m50 $TType");
 
     if ($QuotaEnforcementEnabled==1) {
-	$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+	$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 	$ENV{'IRODS_USER_NAME'}=$QU1;
 	runCmd(2, "echo 123 | iput $F2 $DIR"); # should fail, would go over quota
 	delete $ENV{'IRODS_USER_NAME'};
-	delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+	delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
     }
 
     runCmd(0, "iadmin suq $QU1 $TOpt 40");
@@ -159,12 +159,12 @@ sub runUserTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc m39999999999950 $TType");
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$QU1;
     runCmd(0, "echo 123 | irm -f $DIR/$F1");
     runCmd(0, "echo 123 | irmtrash");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc m40000000000000 $TType");
@@ -186,24 +186,24 @@ sub runGroupTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType"); #m100 is -100
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$StoreUser;
     $ST_DIR = "/$myZone/home/$StoreUser";
     runCmd(0, "echo 123 | iput $F1 $ST_DIR");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType");
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m50 $TType");
 
     if ($QuotaEnforcementEnabled==1) {
-	$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+	$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 	$ENV{'IRODS_USER_NAME'}=$StoreUser;
 	$ST_DIR = "/$myZone/home/$StoreUser";
 	runCmd(2, "echo 123 | iput $F2 $ST_DIR");  # should fail, over quota
 	delete $ENV{'IRODS_USER_NAME'};
-	delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+	delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
     }
 
     runCmd(0, "iadmin sgq $QG1 $TOpt 40");
@@ -214,13 +214,13 @@ sub runGroupTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999950 $TType");
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$StoreUser;
     $ST_DIR = "/$myZone/home/$StoreUser";
     runCmd(0, "echo 123 | irm -f $ST_DIR/$F1");
     runCmd(0, "echo 123 | irmtrash");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m40000000000000 $TType");
@@ -257,14 +257,14 @@ sub  runGroupTestsWithQU3 {
     runCmd(0, "iadmin sgq $QG1 $TOpt 100");
 #   runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
     calcUsage();
-    runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType");
+    runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType"); 
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$StoreUser;
     $ST_DIR = "/$myZone/home/$StoreUser";
     runCmd(0, "echo 123 | iput $F1 $ST_DIR");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType");
     calcUsage();
@@ -278,13 +278,13 @@ sub  runGroupTestsWithQU3 {
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999775 $TType");
 
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$StoreUser;
     $ST_DIR = "/$myZone/home/$StoreUser";
     runCmd(0, "echo 123 | irm -f $ST_DIR/$F1");
     runCmd(0, "echo 123 | irmtrash");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999825 $TType");
@@ -313,20 +313,20 @@ sub  runGroupTestsWithQU3 {
     runCmd(0, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this user
 }
 
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 $ENV{'IRODS_USER_NAME'}=$QU1;
 runCmd(1, "echo 123 | irm -f $DIR/$F1");
 runCmd(1, "echo 123 | irmtrash");
 delete $ENV{'IRODS_USER_NAME'};
-delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 $ENV{'IRODS_USER_NAME'}=$QU2;
 $ST_DIR = "/$myZone/home/$QU2";
 runCmd(1, "echo 123 | irm -f $ST_DIR/$F1");
 runCmd(1, "echo 123 | irmtrash");
 delete $ENV{'IRODS_USER_NAME'};
-delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
 runCmd(1, "iadmin rmuser $QU1");
 runCmd(0, "iadmin mkuser $QU1 rodsuser");
@@ -357,13 +357,13 @@ runGroupTests("$Resc", "$Resc", "1", "$QU2", "$QU1");
 runGroupTests("$Resc", "total", "2", "$QU2", "$QU1");
 
 # Remove $QU3's file, if any
-$ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+$ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
 $ENV{'IRODS_USER_NAME'}=$QU3;
 $ST_DIR = "/$myZone/home/$QU3";
 runCmd(1, "echo 123 | irm -f $ST_DIR/$F2");
 runCmd(1, "echo 123 | irmtrash");
 delete $ENV{'IRODS_USER_NAME'};
-delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
 # Create user $QU3
 runCmd(1, "iadmin rmuser $QU3");
@@ -372,12 +372,12 @@ runCmd(0, "iadmin moduser $QU3 password 123");
 
 if ($QuotaEnforcementEnabled!=1) {
 # Store a file as $QU3
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$QU3;
     $ST_DIR = "/$myZone/home/$QU3";
     runCmd(0, "echo 123 | iput $F2 $ST_DIR");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 
 # Add QU3 to the group
     runCmd(0, "iadmin atg $QG1 $QU3");
@@ -389,13 +389,13 @@ if ($QuotaEnforcementEnabled!=1) {
     runGroupTestsWithQU3("$Resc", "total", "2", "$QU2", "$QU1");
 
 # Remove $QU3's file
-    $ENV{'IRODS_AUTHENTICATION_FILENAME'}=$tmpPwFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpPwFile;
     $ENV{'IRODS_USER_NAME'}=$QU3;
     $ST_DIR = "/$myZone/home/$QU3";
     runCmd(1, "echo 123 | irm -f $ST_DIR/$F2");
     runCmd(1, "echo 123 | irmtrash");
     delete $ENV{'IRODS_USER_NAME'};
-    delete $ENV{'IRODS_AUTHENTICATION_FILENAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
 }
 
 

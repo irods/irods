@@ -349,7 +349,7 @@ extern "C" {
         status = capture_string_property(
                      msg_lvl,
                      props,
-                     irods::CFG_IRODS_AUTHENTICATION_FILENAME_KW,
+                     irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW,
                      _env->rodsAuthFileName );
         if ( status == 0 ) {
             rstrcpy(
@@ -646,7 +646,7 @@ extern "C" {
         }
 
         memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
-        env_var = irods::CFG_IRODS_AUTHENTICATION_FILENAME_KW;
+        env_var = irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW;
         capture_string_env_var(
             env_var,
             _env->rodsAuthFileName );
@@ -795,3 +795,5 @@ extern "C" {
     }
 
 } // extern "C"
+
+

@@ -1,3 +1,5 @@
+
+
 #ifndef CONFIGURATION_KEYWORODS_HPP
 #define CONFIGURATION_KEYWORODS_HPP
 
@@ -50,8 +52,8 @@ namespace irods {
     const std::string CFG_IRODS_ZONE_KW( "irods_zone" );
     const std::string CFG_IRODS_GSI_SERVER_DN_KW( "irods_gsi_server_dn" );
     const std::string CFG_IRODS_LOG_LEVEL_KW( "irods_log_level" );
-    const std::string CFG_IRODS_AUTHENTICATION_FILENAME_KW(
-        "irods_authentication_filename" );
+    const std::string CFG_IRODS_AUTHENTICATION_FILE_NAME_KW(
+        "irods_authentication_file_name" );
     const std::string CFG_IRODS_DEBUG_KW( "irods_debug" );
     const std::string CFG_IRODS_CLIENT_SERVER_POLICY_KW(
         "irods_client_server_policy" );
@@ -125,3 +127,6 @@ namespace irods {
 }; // namespace irods
 
 #endif // CONFIGURATION_KEYWORODS_HPP
+
+
+

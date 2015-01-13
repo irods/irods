@@ -313,7 +313,7 @@ if ( ! -e $iadmin )
 #			"configuration, it sets up the database and finishes setting iRODS\n",
 #			"settings..  It does not require administrator privileges.\n",
 #			"\n" );
-#		if ($force)
+#		if ($force) 
 #		{
 #		    printNotice(
 #			"Also note that since you are using the --force option this script\n",
@@ -379,7 +379,7 @@ sub irodsLoadIrodsConfig()
 
 	#require $irodsConfig;
 	require "irods\.config";
-
+	
 	return 1;
 }
 
@@ -564,7 +564,7 @@ elsif ( $DATABASE_TYPE eq "" )
 	# 1.  Prepare by starting/stopping servers.
 	prepare( );
 
-	# 2.  Configure
+	# 2.  Configure 
 	configureIrodsServer( );
 
 	# 3.  Configure the iRODS user account.
@@ -601,7 +601,7 @@ else
 	    testDatabase( );
 	}
 
-	# 5.  Configure
+	# 5.  Configure 
 	configureIrodsServer( );
 
 	# 6.  Configure the iRODS user account.
@@ -839,7 +839,7 @@ sub createDatabaseAndTables
 #
 #		# Now add the password line(s)
 #		appendToFile( $tmpSql, "$sql\n" );
-#
+#		
 #		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
 #		unlink( $tmpSql );
 #		if ( $status != 0 )
@@ -905,9 +905,9 @@ sub createDatabaseAndTables
 #		if ( $ZONE_NAME ne $IRODS_DEFAULT) {
 #		    printStatus( "    Converting zone name in icatSysInserts.sql\n" );
 #		    printLog( "    Converting zone name in icatSysInserts.sql\n" );
-#		    my $sqlPath = File::Spec->catfile( $serverSqlDir,
+#		    my $sqlPath = File::Spec->catfile( $serverSqlDir, 
 #						       "icatSysInserts.sql");
-#		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir,
+#		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir, 
 #						       "icatSysInserts.sql.orig");
 #		    if (!-e $sqlPathOrig) {
 #			rename($sqlPath, $sqlPathOrig);
@@ -931,7 +931,7 @@ sub createDatabaseAndTables
 #		    cleanAndExit( 1 );
 #		}
 # =-=-=-=-=-=-=-
-
+    
 		my $alreadyCreated = 0;
 		my $sqlfile;
 		printStatus( "    Inserting iCAT tables...\n" );
@@ -964,7 +964,7 @@ sub createDatabaseAndTables
 			}
 		}
 
-                # Now apply the site-defined iCAT tables, if any
+                # Now apply the site-defined iCAT tables, if any 
 		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtTables.sql" );
 		if (-e $sqlPath) {
 		    printStatus( "    Inserting iCAT Extension tables...\n" );
@@ -998,7 +998,7 @@ sub createDatabaseAndTables
 		    printLog( "        ", $output );
 		}
 
-#
+#		
 
 	}
 	if ( $tablesAlreadyCreated )
@@ -1187,9 +1187,9 @@ sub testDatabase()
 
 	#my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
 
-	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'";
+	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
 	#if ( $DATABASE_TYPE eq "oracle" ) {
-	#    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'";
+	#    $exec_str = "$test_cll $DATABASE_ADMIN_NAME"."@".$DATABASE_HOST.":$DATABASE_PORT '$DATABASE_ADMIN_PASSWORD'"; 
     #    }
 
 	my ($status,$output) = run( "$exec_str" );
@@ -1383,8 +1383,8 @@ sub configureIrodsServer
 	printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
 	my $bootEnv  = File::Spec->catfile( $IRODS_HOME, "config", "irodsEnv.boot" );
 	my $authFile = File::Spec->catfile( $IRODS_HOME, "config", "auth.tmp" );
-	my %envVariables = ( "irods_authentication_filename", $authFile, "irods_zone", $ZONE_NAME) ;
-	printLog( "    irods_authentication_filename = $authFile\n" );
+	my %envVariables = ( "irods_authentication_file_name", $authFile, "irods_zone", $ZONE_NAME) ;
+	printLog( "    irods_authentication_file_name = $authFile\n" );
 
 	#($status,$output) = replaceVariablesInFile( $bootEnv, "config", 1, %envVariables );
 	$status = update_json_configuration_file( $bootEnv, %envVariables );
@@ -1431,7 +1431,7 @@ sub configureIrodsServer
 	printStatus( "Starting iRODS server with boot environment...\n" );
 	printLog( "\nStarting iRODS server with boot environment...\n" );
 	printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
-
+	
 	$ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
 	open( BOOTENV, "<$bootEnv" );
 	my $line;
@@ -2306,7 +2306,7 @@ sub stopIrods
 	#
 	# Design Notes:  The current version of this uses a file created
 	# 	by the irods server which records its PID and then finds
-	# 	the children, which should work well in most cases.
+	# 	the children, which should work well in most cases. 
 	#
 	# Find and kill the server process IDs
 	$parentPid=getIrodsServerPid();
@@ -2624,7 +2624,7 @@ sub imkgroup($)
 # 		0 = failure
 # 		1 = success
 # 		2 = already set
-#
+# 
 sub ichown($$)
 {
 	my ($username,$directory) = @_;
@@ -2825,11 +2825,11 @@ sub Postgres_CreateAlternateDatabaseUser( )
 		# Typical case, using the OS username for the DB user.
 		return;
 	}
-
+    
 	# Create the postgres user.
 	#   If this is an initial build/install of Postgres, no
 	#   password will be needed (yet) but to avoid the possibility
-	#   of getting stuck on a prompt, we include the password in
+	#   of getting stuck on a prompt, we include the password in 
 	#   an input file.
 	printStatus( "    Creating Postgres database user...\n" );
 	printLog( "\n    Creating Postgres database user...\n" );
@@ -3048,7 +3048,7 @@ sub Postgres_CreateDatabase()
 			# previously.  Chances are good that this will not
 			# be sufficient and something else is wrong too.
 			my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
-
+				
 			printToFile( $ini,
 				"[postgres]\n" .
 				"Driver=$libPath\n" .
@@ -3182,7 +3182,7 @@ sub Postgres_CreateDatabase()
 
 			cleanAndExit( 1 );
 		}
-
+		
 		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
@@ -3197,7 +3197,7 @@ sub Postgres_CreateDatabase()
 		close( NEWCONFIGFILE );
 
 		chmod( $userODBC, 0600 );
-	}
+	} 
 	return 1;
 }
 
@@ -3247,7 +3247,7 @@ sub Oracle_CreateDatabase()
 	    }
 	}
     }
-    else
+    else 
     {
 	 printStatus( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
 	 printLog( "CreateDatabase Skipped.  For Oracle, DBA creates the instance.\n" );
@@ -3258,7 +3258,7 @@ sub Oracle_CreateDatabase()
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
-
+    
     # iRODS now supports a script to determine the path & lib name of the odbc driver
     my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
     chomp($oracleOdbcLib);
@@ -3323,7 +3323,7 @@ sub MySQL_CreateDatabase()
             }
         }
     }
-    else
+    else 
     {
         printStatus( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
         printLog( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
@@ -3335,7 +3335,7 @@ sub MySQL_CreateDatabase()
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
-
+    
     # iRODS now supports a script to determine the path & lib name of the odbc driver
     my $mysqlOdbcLib = `$scripttoplevel/packaging/find_odbc_mysql.sh`;
     chomp($mysqlOdbcLib);
@@ -3733,7 +3733,7 @@ sub Postgres_sql($$)
 # This function runs 'sqlplus' and passes it the given SQL.
 #
 # @param	$databaseName
-# 	the name of the database  (Not used); instead
+# 	the name of the database  (Not used); instead 
 #    $DATABASE_ADMIN_NAME and $DATABASE_ADMIN_PASSWORD are spliced together
 # 	  in the form needed by sqlplus (note: should restructure the args in
 #    the call tree for this, perhaps just let this and Postgres_sql set these.)
@@ -3753,8 +3753,8 @@ sub Oracle_sql($$)
 
     $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
     $tnsname = substr($DATABASE_ADMIN_NAME, $i+1 );
-    $connectArg = $dbadmin . "/" .
-              $DATABASE_ADMIN_PASSWORD . "@" .
+    $connectArg = $dbadmin . "/" . 
+              $DATABASE_ADMIN_PASSWORD . "@" . 
               $tnsname;
     $sqlplus = "sqlplus";
     $exec_str = "$sqlplus '$connectArg' < $sqlFilename";

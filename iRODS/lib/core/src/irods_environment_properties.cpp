@@ -62,7 +62,7 @@ namespace irods {
         key_map_[ CFG_IRODS_ZONE_KW ]                       = "irodsZone";
         key_map_[ CFG_IRODS_GSI_SERVER_DN_KW ]              = "irodsServerDn";
         key_map_[ CFG_IRODS_LOG_LEVEL_KW ]                  = "irodsLogLevel";
-        key_map_[ CFG_IRODS_AUTHENTICATION_FILENAME_KW ]        = "irodsAuthFileName";
+        key_map_[ CFG_IRODS_AUTHENTICATION_FILE_NAME_KW ]   = "irodsAuthFileName";
         key_map_[ CFG_IRODS_DEBUG_KW ]                      = "irodsDebug";
         key_map_[ CFG_IRODS_CLIENT_SERVER_POLICY_KW ]       = "irodsClientServerPolicy";
         key_map_[ CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW ]  = "irodsClientServerNegotiation";
@@ -85,7 +85,7 @@ namespace irods {
         key_map_[ "irodsZone" ]                    = CFG_IRODS_ZONE_KW;
         key_map_[ "irodsServerDn" ]                = CFG_IRODS_GSI_SERVER_DN_KW;
         key_map_[ "irodsLogLevel" ]                = CFG_IRODS_LOG_LEVEL_KW;
-        key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILENAME_KW;
+        key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILE_NAME_KW;
         key_map_[ "irodsDebug" ]                   = CFG_IRODS_DEBUG_KW;
         key_map_[ "irodsClientServerPolicy" ]      = CFG_IRODS_CLIENT_SERVER_POLICY_KW;
         key_map_[ "irodsClientServerNegotiation" ] = CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
@@ -399,3 +399,28 @@ namespace irods {
 
 
 } // namespace irods
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
