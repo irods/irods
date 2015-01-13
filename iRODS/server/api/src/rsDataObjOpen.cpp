@@ -459,7 +459,7 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     myDataObjInfo->rescInfo = NULL;
 
-    rstrcpy( myDataObjInfo->rescName, (*dataObjInfoHead)->rescName, NAME_LEN );
+    rstrcpy( myDataObjInfo->rescName, ( *dataObjInfoHead )->rescName, NAME_LEN );
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
@@ -467,7 +467,7 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else {
         rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescName for hier" );
-        rstrcpy( myDataObjInfo->rescHier, (*dataObjInfoHead)->rescName, MAX_NAME_LEN ); // in kw else
+        rstrcpy( myDataObjInfo->rescHier, ( *dataObjInfoHead )->rescName, MAX_NAME_LEN ); // in kw else
     }
 
     status = getFilePathName( rsComm, myDataObjInfo, dataObjInp );

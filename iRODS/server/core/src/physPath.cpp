@@ -382,7 +382,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
             && strlen( filePath ) > 0 ) {
         /* the user input a path */
-        if ( !strlen(dataObjInfo->rescName) ) {
+        if ( !strlen( dataObjInfo->rescName ) ) {
             chkPathPerm = NO_CHK_PATH_PERM;
         }
         else {
@@ -395,7 +395,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
             int chk_path = 0;
             irods::error err = irods::get_resource_property< int >( dataObjInfo->rescName,
-                                   irods::RESOURCE_CHECK_PATH_PERM, chk_path );
+                               irods::RESOURCE_CHECK_PATH_PERM, chk_path );
             if ( !err.ok() ) {
                 irods::log( PASS( err ) );
             }
@@ -821,8 +821,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     int create_path = 0;
     err = irods::get_resource_property< int >(
-                           dataObjInfo->rescName,
-                           irods::RESOURCE_CREATE_PATH, create_path );
+              dataObjInfo->rescName,
+              irods::RESOURCE_CREATE_PATH, create_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
     }
@@ -850,10 +850,10 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
     }
 
-    err = irods::is_resc_live(dataObjInfo->rescName);
-    if (!err.ok()) {
-    	irods::log( PASSMSG( "syncDataObjPhyPathS - failed in is_resc_live", err ) );
-    	return err.code();
+    err = irods::is_resc_live( dataObjInfo->rescName );
+    if ( !err.ok() ) {
+        irods::log( PASSMSG( "syncDataObjPhyPathS - failed in is_resc_live", err ) );
+        return err.code();
     }
 
     // =-=-=-=-=-=-=-

@@ -3818,19 +3818,19 @@ printReleaseInfo( char * cmdName ) {
 unsigned int
 seedRandom() {
     unsigned int seed;
-    const int random_fd = open("/dev/urandom", O_RDONLY);
-    if (random_fd == -1) {
+    const int random_fd = open( "/dev/urandom", O_RDONLY );
+    if ( random_fd == -1 ) {
         rodsLog( LOG_ERROR, "seedRandom: failed to open /dev/urandom" );
         return FILE_OPEN_ERR;
     }
-    char buf[sizeof(seed)];
-    const ssize_t count = read(random_fd, &buf, sizeof(buf));
-    close(random_fd);
-    if (count != sizeof(seed)) {
+    char buf[sizeof( seed )];
+    const ssize_t count = read( random_fd, &buf, sizeof( buf ) );
+    close( random_fd );
+    if ( count != sizeof( seed ) ) {
         rodsLog( LOG_ERROR, "seedRandom: failed to read enough bytes from /dev/urandom" );
         return FILE_READ_ERR;
     }
-    memcpy(&seed, buf, sizeof(seed));
+    memcpy( &seed, buf, sizeof( seed ) );
 
 #ifdef windows_platform
     srand( seed );

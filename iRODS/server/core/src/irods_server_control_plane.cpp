@@ -79,7 +79,7 @@ namespace irods {
         const std::string& _host,
         const std::string& _port_keyword,
         std::string&       _output ) {
-        if( EMPTY_RESC_HOST == _host ) {
+        if ( EMPTY_RESC_HOST == _host ) {
             return SUCCESS();
 
         }
@@ -127,7 +127,8 @@ namespace irods {
 
         try {
             zmq_skt.connect( conn_str.c_str() );
-        } catch ( zmq::error_t& e_ ) {
+        }
+        catch ( zmq::error_t& e_ ) {
             std::string msg( "failed to connect to [" );
             msg + conn_str + "]";
             return ERROR(

@@ -1177,7 +1177,7 @@ extern "C" {
                     int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
                     err_status = UNIX_FILE_WRITE_ERR - errno;
                     if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                    destFileName, status ) ).ok() ) {
+                                                  destFileName, status ) ).ok() ) {
                         bytesCopied += bytesWritten;
                     }
                 }
@@ -1186,7 +1186,7 @@ extern "C" {
 
                 if ( result.ok() ) {
                     result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                            bytesCopied, statbuf.st_size, srcFileName );
+                                           bytesCopied, statbuf.st_size, srcFileName );
                 }
             }
             close( inFd );
@@ -1199,8 +1199,8 @@ extern "C" {
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
     irods::error non_blocking_file_stagetocache_plugin(
-            irods::resource_plugin_context& _ctx,
-            const char*                      _cache_file_name ) {
+        irods::resource_plugin_context& _ctx,
+        const char*                      _cache_file_name ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -1223,8 +1223,8 @@ extern "C" {
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
     irods::error non_blocking_file_synctoarch_plugin(
-            irods::resource_plugin_context& _ctx,
-            char*                            _cache_file_name ) {
+        irods::resource_plugin_context& _ctx,
+        char*                            _cache_file_name ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -1247,9 +1247,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_create - code to determine redirection for create operation
     irods::error non_blocking_file_redirect_create(
-            irods::plugin_property_map&   _prop_map,
-            const std::string&             _curr_host,
-            float&                         _out_vote ) {
+        irods::plugin_property_map&   _prop_map,
+        const std::string&             _curr_host,
+        float&                         _out_vote ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -1289,11 +1289,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_open - code to determine redirection for open operation
     irods::error non_blocking_file_redirect_open(
-            irods::plugin_property_map&   _prop_map,
-            irods::file_object_ptr        _file_obj,
-            const std::string&             _resc_name,
-            const std::string&             _curr_host,
-            float&                         _out_vote ) {
+        irods::plugin_property_map&   _prop_map,
+        irods::file_object_ptr        _file_obj,
+        const std::string&             _resc_name,
+        const std::string&             _curr_host,
+        float&                         _out_vote ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -1402,11 +1402,11 @@ extern "C" {
     // used to allow the resource to determine which host
     // should provide the requested operation
     irods::error non_blocking_file_redirect_plugin(
-            irods::resource_plugin_context& _ctx,
-            const std::string*                  _opr,
-            const std::string*                  _curr_host,
-            irods::hierarchy_parser*           _out_parser,
-            float*                              _out_vote ) {
+        irods::resource_plugin_context& _ctx,
+        const std::string*                  _opr,
+        const std::string*                  _curr_host,
+        irods::hierarchy_parser*           _out_parser,
+        float*                              _out_vote ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -1442,7 +1442,7 @@ extern "C" {
 
                     }
                     else if ( irods::CREATE_OPERATION == ( *_opr ) ||
-                            irods::WRITE_OPERATION  == ( *_opr ) ) {
+                              irods::WRITE_OPERATION  == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = non_blocking_file_redirect_create( _ctx.prop_map(), ( *_curr_host ), ( *_out_vote ) );
@@ -1465,10 +1465,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // non_blocking_file_rebalance - code which would rebalance the subtree
     irods::error non_blocking_file_rebalance(
-            irods::resource_plugin_context& _ctx ) {
+        irods::resource_plugin_context& _ctx ) {
         return update_resource_object_count(
-                _ctx.comm(),
-                _ctx.prop_map() );
+                   _ctx.comm(),
+                   _ctx.prop_map() );
 
     } // non_blocking_file_rebalancec
 
@@ -1478,57 +1478,57 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class non_blocking_resource : public irods::resource {
-        // =-=-=-=-=-=-=-
-        // 3a. create a class to provide maintenance operations, this is only for example
-        //     and will not be called.
-        class maintenance_operation {
-            public:
-                maintenance_operation( const std::string& _n ) : name_( _n ) {
-                }
+            // =-=-=-=-=-=-=-
+            // 3a. create a class to provide maintenance operations, this is only for example
+            //     and will not be called.
+            class maintenance_operation {
+                public:
+                    maintenance_operation( const std::string& _n ) : name_( _n ) {
+                    }
 
-                maintenance_operation( const maintenance_operation& _rhs ) {
-                    name_ = _rhs.name_;
-                }
+                    maintenance_operation( const maintenance_operation& _rhs ) {
+                        name_ = _rhs.name_;
+                    }
 
-                maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                    name_ = _rhs.name_;
-                    return *this;
-                }
+                    maintenance_operation& operator=( const maintenance_operation& _rhs ) {
+                        name_ = _rhs.name_;
+                        return *this;
+                    }
 
-                irods::error operator()( rcComm_t* ) {
-                    rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]",
-                            name_.c_str() );
-                    return SUCCESS();
-                }
+                    irods::error operator()( rcComm_t* ) {
+                        rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]",
+                                 name_.c_str() );
+                        return SUCCESS();
+                    }
 
-            private:
-                std::string name_;
+                private:
+                    std::string name_;
 
-        }; // class maintenance_operation
+            }; // class maintenance_operation
 
         public:
-        non_blocking_resource(
+            non_blocking_resource(
                 const std::string& _inst_name,
                 const std::string& _context ) :
-            irods::resource(
+                irods::resource(
                     _inst_name,
                     _context ) {
             } // ctor
 
 
-        irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
-            _b = false;
-            return SUCCESS();
-        }
+            irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+                _b = false;
+                return SUCCESS();
+            }
 
 
-        // =-=-=-=-=-=-=-
-        // 3b. pass along a functor for maintenance work after
-        //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
-            irods::error result = SUCCESS();
-            return ERROR( -1, "nop" );
-        }
+            // =-=-=-=-=-=-=-
+            // 3b. pass along a functor for maintenance work after
+            //     the client disconnects, uncomment the first two lines for effect.
+            irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+                irods::error result = SUCCESS();
+                return ERROR( -1, "nop" );
+            }
     }; // class non_blocking_resource
 
     // =-=-=-=-=-=-=-

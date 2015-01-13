@@ -258,7 +258,8 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
             LOG_NOTICE,
             "rule engine is exiting" );
 
-    } catch( irods::exception& e_ ) {
+    }
+    catch ( irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return;

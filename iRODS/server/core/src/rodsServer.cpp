@@ -332,8 +332,8 @@ serverMain( char *logDir ) {
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
     try {
-        irods::server_control_plane ctrl_plane( 
-                                        irods::CFG_SERVER_CONTROL_PLANE_PORT );
+        irods::server_control_plane ctrl_plane(
+            irods::CFG_SERVER_CONTROL_PLANE_PORT );
 
         startProcConnReqThreads();
 #if RODS_CAT // JMC - backport 4612
@@ -444,7 +444,8 @@ serverMain( char *logDir ) {
 
         rodsLog( LOG_NOTICE, "irods server is exiting" );
 
-    } catch( irods::exception& e_ ) {
+    }
+    catch ( irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return e_.code();

@@ -280,7 +280,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     dataObjInfo_t dataObjInfo;
     int status;
 
-    if (!dataObjInp || !_resc_name || !phyBunDir) {
+    if ( !dataObjInp || !_resc_name || !phyBunDir ) {
         return USER__NULL_INPUT_ERR;
     }
 
