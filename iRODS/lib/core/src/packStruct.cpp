@@ -598,6 +598,7 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
     status = parsePackInstruct( myPI, &newPackedItem );
 
     if ( status < 0 ) {
+        freePackedItem( newPackedItem );
         rodsLog( LOG_ERROR,
                  "resolveIntDepItem: parsePackFormat error for =%s", myPI );
         return status;
