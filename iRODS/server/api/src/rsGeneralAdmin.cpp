@@ -22,6 +22,7 @@
 #include "irods_resources_home.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_file_object.hpp"
+#include "irods_resource_constants.hpp"
 extern irods::resource_manager resc_mgr;
 
 
@@ -67,28 +68,32 @@ int
 _addChildToResource(
     generalAdminInp_t* _generalAdminInp,
     rsComm_t*          _rsComm ) {
+
     int result = 0;
-    rescInfo_t rescInfo;
-    memset( &rescInfo, 0, sizeof( rescInfo ) );
-    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
+    std::map<std::string, std::string> resc_input;
+
+    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
         return SYS_INVALID_INPUT_PARAM;
     }
-    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
+
+    resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
+
     std::string rescChild( _generalAdminInp->arg3 );
     std::string rescContext( _generalAdminInp->arg4 );
     irods::children_parser parser;
     parser.add_child( rescChild, rescContext );
     std::string rescChildren;
     parser.str( rescChildren );
-    if ( strlen( rescChildren.c_str() ) >= sizeof( rescInfo.rescChildren ) ) {
+    if ( rescChildren.length() >= MAX_PATH_ALLOWED ) {
         return SYS_INVALID_INPUT_PARAM;
     }
-    snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", rescChildren.c_str() );
+
+    resc_input[irods::RESOURCE_CHILDREN] = rescChildren;
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
-             rescInfo.rescName );
+    		resc_input[irods::RESOURCE_NAME].c_str() );
 
-    if ( ( result = chlAddChildResc( _rsComm, &rescInfo ) ) != 0 ) {
+    if ( ( result = chlAddChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
     }
 
@@ -99,22 +104,24 @@ int
 _removeChildFromResource(
     generalAdminInp_t* _generalAdminInp,
     rsComm_t*          _rsComm ) {
+
     int result = 0;
-    rescInfo_t rescInfo;
+    std::map<std::string, std::string> resc_input;
 
-    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
+    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
         return SYS_INVALID_INPUT_PARAM;
     }
-    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
-    if ( strlen( _generalAdminInp->arg3 ) >= sizeof( rescInfo.rescChildren ) ) {
+    resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
+
+    if ( strlen( _generalAdminInp->arg3 ) >= MAX_PATH_ALLOWED ) {
         return SYS_INVALID_INPUT_PARAM;
     }
-    snprintf( rescInfo.rescChildren, sizeof( rescInfo.rescChildren ), "%s", _generalAdminInp->arg3 );
+    resc_input[irods::RESOURCE_CHILDREN] = _generalAdminInp->arg3;
 
-    rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescInfo.rescChildren,
-             rescInfo.rescName );
+    rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", resc_input[irods::RESOURCE_CHILDREN].c_str(),
+    		resc_input[irods::RESOURCE_CHILDREN].c_str() );
 
-    if ( ( result = chlDelChildResc( _rsComm, &rescInfo ) ) != 0 ) {
+    if ( ( result = chlDelChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
     }
 
@@ -127,95 +134,90 @@ _addResource(
     generalAdminInp_t* _generalAdminInp,
     ruleExecInfo_t&    _rei2,
     rsComm_t*          _rsComm ) {
-    int result = 0;
-    rescInfo_t rescInfo;
-    bzero( &rescInfo, sizeof( rescInfo ) );
 
+    int result = 0;
     static const unsigned int argc = 7;
     const char *args[argc];
+    std::map<std::string, std::string> resc_input;
+
+    // =-=-=-=-=-=-=-
+    // Legacy checks
+    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
+    	return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if ( strlen( _generalAdminInp->arg3 ) >= NAME_LEN ) {	// resource type
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if ( strlen( _generalAdminInp->arg5 ) >= MAX_PATH_ALLOWED ) {	// resource context
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if ( strlen( _generalAdminInp->arg6 ) >= NAME_LEN ) {	// resource zone
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
     // =-=-=-=-=-=-=-
     // capture all the parameters
-    std::string resc_name( _generalAdminInp->arg2 );
-    std::string resc_type( _generalAdminInp->arg3 );
-    std::string resc_host_path( _generalAdminInp->arg4 );
-    std::string resc_ctx( _generalAdminInp->arg5 );
+    resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
+    resc_input[irods::RESOURCE_TYPE] = _generalAdminInp->arg3;
+    resc_input[irods::RESOURCE_PATH] = _generalAdminInp->arg4;
+    resc_input[irods::RESOURCE_CONTEXT] = _generalAdminInp->arg5;
+    resc_input[irods::RESOURCE_ZONE] = _generalAdminInp->arg6;
+    resc_input[irods::RESOURCE_CLASS] = irods::RESOURCE_CLASS_CACHE;
+    resc_input[irods::RESOURCE_CHILDREN] = "";
+    resc_input[irods::RESOURCE_PARENT] = "";
 
     // =-=-=-=-=-=-=-
     // if it is not empty, parse out the host:path otherwise
     // fill in with the EMPTY placeholders
-    if ( !resc_host_path.empty() ) {
+    if ( !resc_input[irods::RESOURCE_PATH].empty() ) {
         // =-=-=-=-=-=-=-
         // separate the location:/vault/path pair
         std::vector< std::string > tok;
-        irods::string_tokenize( resc_host_path, ":", tok );
+        irods::string_tokenize( resc_input[irods::RESOURCE_PATH], ":", tok );
 
         // =-=-=-=-=-=-=-
         // if we have exactly 2 tokens, things are going well
         if ( 2 == tok.size() ) {
             // =-=-=-=-=-=-=-
             // location is index 0, path is index 1
-            if ( strlen( tok[0].c_str() ) >= sizeof( rescInfo.rescLoc ) ) {
+            if ( strlen( tok[0].c_str() ) >= NAME_LEN ) {
                 return SYS_INVALID_INPUT_PARAM;
             }
-            snprintf( rescInfo.rescLoc, sizeof( rescInfo.rescLoc ), "%s", tok[0].c_str() );
-            if ( strlen( tok[1].c_str() ) >= sizeof( rescInfo.rescVaultPath ) ) {
+            resc_input[irods::RESOURCE_LOCATION] = tok[0];
+
+            if ( strlen( tok[1].c_str() ) >= MAX_NAME_LEN ) {
                 return SYS_INVALID_INPUT_PARAM;
             }
-            snprintf( rescInfo.rescVaultPath, sizeof( rescInfo.rescVaultPath ), "%s", tok[1].c_str() );
+            resc_input[irods::RESOURCE_PATH] = tok[1];
         }
 
     }
     else {
-        snprintf( rescInfo.rescLoc, sizeof( rescInfo.rescLoc ), "%s", irods::EMPTY_RESC_HOST.c_str() );
-        snprintf( rescInfo.rescVaultPath, sizeof( rescInfo.rescVaultPath ), "%s", irods::EMPTY_RESC_PATH.c_str() );
-
+    	resc_input[irods::RESOURCE_LOCATION] = irods::EMPTY_RESC_HOST;
+    	resc_input[irods::RESOURCE_PATH] = irods::EMPTY_RESC_PATH;
     }
 
     // =-=-=-=-=-=-=-
-    // pull values out of api call args into rescInfo structure
-
-    if ( strlen( _generalAdminInp->arg2 ) >= sizeof( rescInfo.rescName ) ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    snprintf( rescInfo.rescName, sizeof( rescInfo.rescName ), "%s", _generalAdminInp->arg2 );
-    if ( strlen( _generalAdminInp->arg3 ) >= sizeof( rescInfo.rescType ) ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    snprintf( rescInfo.rescType, sizeof( rescInfo.rescType ), "%s", _generalAdminInp->arg3 );
-    if ( strlen( _generalAdminInp->arg5 ) >= sizeof( rescInfo.rescContext ) ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    snprintf( rescInfo.rescContext, sizeof( rescInfo.rescContext ), "%s", _generalAdminInp->arg5 );
-    if ( strlen( "cache" ) >= sizeof( rescInfo.rescClass ) ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    snprintf( rescInfo.rescClass, sizeof( rescInfo.rescClass ), "%s", "cache" );
-    if ( strlen( _generalAdminInp->arg6 ) >= sizeof( rescInfo.zoneName ) ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    snprintf( rescInfo.zoneName, sizeof( rescInfo.zoneName ), "%s", _generalAdminInp->arg6 );
-    rescInfo.rescChildren[0] = '\0';
-    rescInfo.rescParent[0] = '\0';
-
-    // =-=-=-=-=-=-=-
-    args[0] = rescInfo.rescName;
-    args[1] = rescInfo.rescType;
-    args[2] = rescInfo.rescClass;
-    args[3] = rescInfo.rescLoc;
-    args[4] = rescInfo.rescVaultPath;
-    args[5] = rescInfo.rescContext;
-    args[6] = rescInfo.zoneName;
+    args[0] = resc_input[irods::RESOURCE_NAME].c_str();
+    args[1] = resc_input[irods::RESOURCE_TYPE].c_str();
+    args[2] = resc_input[irods::RESOURCE_CLASS].c_str();
+    args[3] = resc_input[irods::RESOURCE_LOCATION].c_str();
+    args[4] = resc_input[irods::RESOURCE_PATH].c_str();
+    args[5] = resc_input[irods::RESOURCE_CONTEXT].c_str();
+    args[6] = resc_input[irods::RESOURCE_ZONE].c_str();
 
     // =-=-=-=-=-=-=-
     // Check that there is a plugin matching the resource type
     irods::plugin_name_generator name_gen;
-    if ( !name_gen.exists( rescInfo.rescType, irods::RESOURCES_HOME ) ) {
+    if ( !name_gen.exists( resc_input[irods::RESOURCE_TYPE], irods::RESOURCES_HOME ) ) {
         rodsLog(
             LOG_DEBUG,
             "No plugin exists to provide resource [%s] of type [%s]",
-            rescInfo.rescName,
-            rescInfo.rescType );
+			resc_input[irods::RESOURCE_NAME].c_str(),
+			resc_input[irods::RESOURCE_TYPE].c_str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -225,12 +227,12 @@ _addResource(
             result = _rei2.status;
         }
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
-                 rescInfo.rescName, result );
+        		resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
     // =-=-=-=-=-=-=-
     // register resource with the metadata catalog, roll back on an error
-    else if ( ( result = chlRegResc( _rsComm, &rescInfo ) ) != 0 ) {
+    else if ( ( result = chlRegResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
     }
 
@@ -241,7 +243,7 @@ _addResource(
             result = _rei2.status;
         }
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
-                 rescInfo.rescName, result );
+        		resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
     return result;
@@ -278,7 +280,6 @@ int
 _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     int status;
     collInfo_t collInfo;
-    rescInfo_t rescInfo;
     ruleExecInfo_t rei;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
@@ -738,18 +739,22 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "resource" ) == 0 ) {
 
+            std::string resc_name = "";
+
             // =-=-=-=-=-=-=-
             // JMC 04.11.2012 :: add a dry run option to idamin rmresc
             //                :: basically run chlDelResc then run a rollback immediately after
             if ( strcmp( generalAdminInp->arg3, "--dryrun" ) == 0 ) {
-                strncpy( rescInfo.rescName,  generalAdminInp->arg2, sizeof rescInfo.rescName );
-                if ( rescInfo.rescName[sizeof( rescInfo.rescName ) - 1] ) {
-                    return SYS_INVALID_INPUT_PARAM;
+
+                if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
+                	return SYS_INVALID_INPUT_PARAM;
                 }
+
+            	resc_name = generalAdminInp->arg2;
 
                 rodsLog( LOG_STATUS, "Executing a dryrun of removal of resource [%s]", generalAdminInp->arg2 );
 
-                status = chlDelResc( rsComm, &rescInfo, 1 );
+                status = chlDelResc( rsComm, resc_name, 1 );
                 if ( 0 == status ) {
                     rodsLog( LOG_STATUS, "DRYRUN REMOVING RESOURCE [%s] :: SUCCESS", generalAdminInp->arg2 );
                 }
@@ -761,13 +766,13 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             } // if dryrun
             // =-=-=-=-=-=-=-
 
-            strncpy( rescInfo.rescName,  generalAdminInp->arg2,
-                     sizeof( rescInfo.rescName ) );
-            if ( rescInfo.rescName[sizeof( rescInfo.rescName ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
+            if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
+            	return SYS_INVALID_INPUT_PARAM;
             }
 
-            args[0] = rescInfo.rescName;
+            resc_name = generalAdminInp->arg2;
+
+            args[0] = resc_name.c_str();
             argc = 1;
             i =  applyRuleArg( "acPreProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
@@ -776,11 +781,11 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
                 rodsLog( LOG_ERROR,
                          "rsGeneralAdmin:acPreProcForDeleteResource error for %s,stat=%d",
-                         rescInfo.rescName, i );
+						 resc_name.c_str(), i );
                 return i;
             }
 
-            status = chlDelResc( rsComm, &rescInfo );
+            status = chlDelResc( rsComm, resc_name );
             if ( status == 0 ) {
                 i =  applyRuleArg( "acPostProcForDeleteResource", args, argc, &rei2, NO_SAVE_REI );
                 if ( i < 0 ) {
@@ -789,7 +794,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     }
                     rodsLog( LOG_ERROR,
                              "rsGeneralAdmin:acPostProcForDeleteResource error for %s,stat=%d",
-                             rescInfo.rescName, i );
+							 resc_name.c_str(), i );
                     return i;
                 }
             }

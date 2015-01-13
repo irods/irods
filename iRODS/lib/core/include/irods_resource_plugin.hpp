@@ -49,7 +49,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             /// @brief get a property from the map if it exists.  catch the exception in the case where
-            // the template types may not match and return sucess/fail
+            // the template types may not match and return success/fail
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
                 error ret = properties_.get< T >( _key, _val );

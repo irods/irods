@@ -41,10 +41,10 @@ int chlRegReplica( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                    dataObjInfo_t *dstDataObjInfo, keyValPair_t *condInput );
 int chlUnregDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                      keyValPair_t *condInput );
-int chlRegResc( rsComm_t *rsComm, rescInfo_t *rescInfo );
-int chlAddChildResc( rsComm_t* rsComm, rescInfo_t* rescInfo );
-int chlDelResc( rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun = 0 ); // JMC
-int chlDelChildResc( rsComm_t* rsComm, rescInfo_t* rescInfo );
+int chlRegResc( rsComm_t *rsComm, std::map<std::string, std::string>& _resc_input );
+int chlAddChildResc( rsComm_t* rsComm, std::map<std::string, std::string>& _resc_input );
+int chlDelResc( rsComm_t *rsComm, const std::string& _resc_name, int _dryrun = 0 ); // JMC
+int chlDelChildResc( rsComm_t* rsComm, std::map<std::string, std::string>& _resc_input );
 int chlRollback( rsComm_t *rsComm );
 int chlCommit( rsComm_t *rsComm );
 int chlDelUserRE( rsComm_t *rsComm, userInfo_t *userInfo );

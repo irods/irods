@@ -381,10 +381,10 @@ updatequotaOverrun( const char *_resc_hier, rodsLong_t dataSize, int flags ) {
 
     // #1472 Revisit when we have ported quotaOverrun
 
-#if 0
-    if ( rescInfo == NULL ) {
-        return USER__NULL_INPUT_ERR;
+    if ( !_resc_hier ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
+#if 0
     if ( ( flags & RESC_QUOTA ) > 0 && rescInfo->quotaLimit > 0 ) {
         rescInfo->quotaOverrun += dataSize;
     }
