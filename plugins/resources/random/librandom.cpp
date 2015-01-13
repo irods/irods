@@ -119,10 +119,10 @@ irods::error get_next_child_for_open_or_write(
 
     } // for itr
 
-    std::string msg( "no hier found for resc [" );
+    std::string msg( "no replica found in resc [" );
     msg += _name + "]";
     return ERROR(
-               CHILD_NOT_FOUND,
+               REPLICA_NOT_IN_RESC,
                msg );
 
 } // get_next_child_for_open_or_write
@@ -785,8 +785,7 @@ extern "C" {
                         // get the next child pointer in the hierarchy, given our name and the hier string
                         irods::resource_ptr resc;
                         err = get_next_child_for_open_or_write( name, file_obj, _ctx.child_map(), resc );
-                        if ( ( result = ASSERT_PASS( err, "Failed to get next child in the hierarchy." ) ).ok() ) {
-
+                        if ( err.ok() ) {
                             // =-=-=-=-=-=-=-
                             // forward the redirect call to the child for assertion of the whole operation,
                             // there may be more than a leaf beneath us
@@ -795,6 +794,12 @@ extern "C" {
                                     _ctx.fco(), _opr, _curr_host, _out_parser,
                                     _out_vote );
                             result = ASSERT_PASS( err, "Failed calling child operation." );
+                        }
+                        else if ( err.code() == REPLICA_NOT_IN_RESC ) {
+                            *_out_vote = 0;
+                        }
+                        else {
+                            result = err;
                         }
                     }
                     else if ( irods::CREATE_OPERATION == ( *_opr ) ) {

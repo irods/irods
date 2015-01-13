@@ -679,6 +679,7 @@
 #define INVALID_ACCESS_TO_IMPOSTOR_RESOURCE  -1818000
 #define INVALID_LEXICAL_CAST                 -1819000
 #define CONTROL_PLANE_MESSAGE_ERROR          -1820000
+#define REPLICA_NOT_IN_RESC                  -1821000
 
 /* NetCDF error code */
 
