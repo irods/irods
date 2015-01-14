@@ -319,16 +319,8 @@ _rsDataObjCreateWithResc(
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
 
-    dataObjInfo->rescInfo = new rescInfo_t;  // leave that on for now #1472
-    irods::error err = irods::get_resc_info( _resc_name, *dataObjInfo->rescInfo );
-    if ( !err.ok() ) {
-        std::stringstream msg;
-        msg << "failed to get resource info [";
-        msg << dataObjInfo->rescName << "]";
-        irods::log( PASSMSG( msg.str(), err ) );
-        freeDataObjInfo( dataObjInfo );
-        return err.code();
-    }
+    dataObjInfo->rescInfo = NULL;
+
 
     rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
 
