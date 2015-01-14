@@ -255,6 +255,7 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
     i =  parseMultiStr( buf, strArray );
     free( buf );
     if ( i < 0 ) {
+        free( strArray );
         return i;
     }
     outStrArrayP->inOutStruct = ( void * ) strArray;
