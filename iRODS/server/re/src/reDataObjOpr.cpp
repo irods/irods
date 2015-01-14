@@ -3234,9 +3234,7 @@ int
 msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                           msParam_t *inpParam3, msParam_t *inpOverwriteParam,
                           msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp, *myDataObjInp;
-    msParamArray_t *myMsParamArray;
+    dataObjInp_t *myDataObjInp;
 
     RE_TEST_MACRO( "    Calling msiDataObjPut" )
 
@@ -3246,9 +3244,9 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
+    rsComm_t * rsComm = rei->rsComm;
 
-    dataObjInp = ( dataObjInp_t* )malloc( sizeof( dataObjInp_t ) );
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( dataObjInp_t ) );
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
                                          &myDataObjInp, 1 );
@@ -3288,7 +3286,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rei->status = parseMspForCondInp( inpAllCopiesParam,
                                           &dataObjInp->condInput, ALL_KW );
 
-    myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
+    msParamArray_t * myMsParamArray = ( msParamArray_t* )malloc( sizeof( msParamArray_t ) );
     memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
 
     rei->status = addMsParam( myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
@@ -3297,6 +3295,10 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: addMsParam error. status = %d", rei->status );
+        clearMsParamArray( myMsParamArray, 0 );
+        free( myMsParamArray );
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
         return rei->status;
     }
 
