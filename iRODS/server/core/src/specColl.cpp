@@ -74,7 +74,6 @@ querySpecColl( rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut ) {
 
 int
 queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath ) { // JMC - backport 4680
-    specCollCache_t *tmpSpecCollCache;
     int status;
     int i;
     sqlResult_t *dataId;
@@ -155,7 +154,7 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
         tmpPtr = objPath + len;
 
         if ( *tmpPtr == '\0' || *tmpPtr == '/' ) {
-            tmpSpecCollCache = ( specCollCache_t* )malloc( sizeof( specCollCache_t ) );
+            specCollCache_t * tmpSpecCollCache = ( specCollCache_t* )malloc( sizeof( specCollCache_t ) );
             memset( tmpSpecCollCache, 0, sizeof( specCollCache_t ) );
 
             tmpDataId = &dataId->value[dataId->len * i];
@@ -170,6 +169,7 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
             specColl = &tmpSpecCollCache->specColl;
             status = resolveSpecCollType( tmpCollType, tmpCollection, tmpCollInfo1, tmpCollInfo2, specColl );
             if ( status < 0 ) {
+                free( tmpSpecCollCache );
                 return status;
             }
 
@@ -182,6 +182,7 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "queueSpecCollCache - getPhyPath failed for [%s] on resource [%s] with cache dir [%s] and collection [%s]",
                              specColl->objPath, specColl->resource, specColl->cacheDir, specColl->collection );
+                    free( tmpSpecCollCache );
                     return status;
                 }
             }
