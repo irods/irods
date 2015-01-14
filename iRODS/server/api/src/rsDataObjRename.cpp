@@ -424,8 +424,9 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
     fileRenameInp_t fileRenameInp;
     int status;
 
-    if ( dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
-        return SYS_RESC_IS_DOWN;
+    irods::error resc_err = irods::is_hier_live( dataObjInfo->rescHier );
+    if ( !resc_err.ok() ) {
+        return resc_err.code();
     }
 
     std::string location;
@@ -494,10 +495,9 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     rstrcpy( destDataObjInfo.objPath, destDataObjInp->objPath, MAX_NAME_LEN );
     rstrcpy( destDataObjInfo.dataType, srcDataObjInfo->dataType, NAME_LEN );
     destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
-    destDataObjInfo.rescInfo = new rescInfo_t;
-    memcpy( destDataObjInfo.rescInfo, srcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+    destDataObjInfo.rescInfo = NULL;
 
-    rstrcpy( destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, NAME_LEN );
+    rstrcpy( destDataObjInfo.rescName, srcDataObjInfo->rescName, NAME_LEN );
     rstrcpy( destDataObjInfo.rescHier, srcDataObjInfo->rescHier, MAX_NAME_LEN );
     status = getFilePathName( rsComm, &destDataObjInfo, destDataObjInp );
     if ( status < 0 ) {
@@ -518,7 +518,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     else if ( status == LOCAL_FILE_T ) {
         dataObjInfo_t myDataObjInfo;
         status = chkOrphanFile( rsComm, destDataObjInfo.filePath,
-                                destDataObjInfo.rescInfo->rescName, &myDataObjInfo );
+                                destDataObjInfo.rescName, &myDataObjInfo );
         if ( status == 1 ) {
             /* orphan */
             char new_fn[ MAX_NAME_LEN ];
