@@ -425,20 +425,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             return status;
         }*/
 
-        myDataObjInfo->rescInfo = new rescInfo_t;
-        irods::error err = irods::get_resc_info( specColl->resource, *myDataObjInfo->rescInfo );
-        if ( !err.ok() ) {
-            std::stringstream msg;
-            msg << "failed to get resource info [";
-            msg << specColl->resource;
-            msg << "]";
-            irods::log( PASSMSG( msg.str(), err ) );
-            freeDataObjInfo( myDataObjInfo );
-            *dataObjInfo = NULL;
-            return err.code();
-        }
-
-
+        myDataObjInfo->rescInfo = NULL;
 
         rstrcpy( myDataObjInfo->objPath, subPath, MAX_NAME_LEN );
         rstrcpy( myDataObjInfo->subPath, subPath, MAX_NAME_LEN );
