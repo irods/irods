@@ -119,7 +119,7 @@ _removeChildFromResource(
     resc_input[irods::RESOURCE_CHILDREN] = _generalAdminInp->arg3;
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", resc_input[irods::RESOURCE_CHILDREN].c_str(),
-    		resc_input[irods::RESOURCE_CHILDREN].c_str() );
+    		resc_input[irods::RESOURCE_NAME].c_str() );
 
     if ( ( result = chlDelChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
