@@ -142,12 +142,8 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
 int
 rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
-    int status;
-    char *fileChksumStr = NULL;
-    char *dataObjChksumStr = NULL;
-    dataObjInfo_t *dataObjInfoHead = NULL;
 
-    fileChksumStr = getValByKey( &dataObjInp->condInput, RSYNC_CHKSUM_KW );
+    char * fileChksumStr = getValByKey( &dataObjInp->condInput, RSYNC_CHKSUM_KW );
 
     if ( fileChksumStr == NULL ) {
         rodsLog( LOG_ERROR,
@@ -177,7 +173,9 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     } // if keyword
 
-    status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
+    char *dataObjChksumStr = NULL;
+    dataObjInfo_t *dataObjInfoHead = NULL;
+    int status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
                                &dataObjInfoHead );
 
     if ( status < 0 && status != CAT_NO_ACCESS_PERMISSION &&
@@ -197,6 +195,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         free( dataObjChksumStr );
         return 0;
     }
+    free( dataObjChksumStr );
     return SYS_SVR_TO_CLI_PUT_ACTION;
 }
 
