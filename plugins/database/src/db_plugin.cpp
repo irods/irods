@@ -3930,6 +3930,12 @@ extern "C" {
 		std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
+        // check the params
+        if (!_comm || !_resc_input) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        }
+
+        // =-=-=-=-=-=-=-
         // for readability
     	std::map<std::string, std::string>& resc_input = *_resc_input;
 
@@ -3938,14 +3944,6 @@ extern "C" {
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm || resc_input.empty() ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null or empty parameter" );
         }
 
         // =-=-=-=-=-=-=-
@@ -4167,6 +4165,12 @@ extern "C" {
 		std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
+        // check the params
+        if (!_comm || !_resc_input) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        }
+
+        // =-=-=-=-=-=-=-
         // for readability
     	std::map<std::string, std::string>& resc_input = *_resc_input;
 
@@ -4175,14 +4179,6 @@ extern "C" {
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm   || resc_input.empty() ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null or empty parameter" );
         }
 
         // =-=-=-=-=-=-=-
@@ -4347,6 +4343,12 @@ extern "C" {
 		std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
+        // check the params
+        if (!_comm || !_resc_input) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        }
+
+        // =-=-=-=-=-=-=-
         // for readability
     	std::map<std::string, std::string>& resc_input = *_resc_input;
 
@@ -4355,14 +4357,6 @@ extern "C" {
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm || resc_input.empty() ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null or empty parameter" );
         }
 
         // =-=-=-=-=-=-=-
