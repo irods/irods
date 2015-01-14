@@ -7,11 +7,9 @@ int
 rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
               dataObjInfo_t **outDataObjInfo ) {
     int            status      = 0;
-    rescInfo_t*    srcRescInfo = 0;
     dataObjInfo_t* srcNext     = 0;
 
-    /* don't sent rescInfo and next */
-    srcRescInfo = dataObjInfo->rescInfo;
+    /* don't send next */
     srcNext     = dataObjInfo->next;
     dataObjInfo->rescInfo = NULL;
     dataObjInfo->next     = NULL;
@@ -19,7 +17,6 @@ rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
                              ( void ** ) outDataObjInfo, NULL );
 
     /* restore */
-    dataObjInfo->rescInfo = srcRescInfo;
     dataObjInfo->next     = srcNext;
     /* cleanup fake pointers */
     if ( status >= 0 && *outDataObjInfo != NULL ) {
