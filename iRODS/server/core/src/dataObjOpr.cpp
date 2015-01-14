@@ -461,16 +461,8 @@ getDataObjInfo(
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
         rstrcpy( dataObjInfo->rescName, tmpRescName, NAME_LEN );
         rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
-        dataObjInfo->rescInfo = new rescInfo_t;
-        irods::error err = irods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
-        if ( !err.ok() ) {
-            std::stringstream msg;
-            msg << "failed to get resource info [";
-            msg << dataObjInfo->rescName << "]";
-            irods::log( PASSMSG( msg.str(), err ) );
-            freeDataObjInfo( dataObjInfo );
-            return err.code();
-        }
+
+        dataObjInfo->rescInfo = NULL;
 
         std::string hier( tmpHierString );
         std::string resc( tmpRescName );
@@ -537,12 +529,11 @@ sortObjInfo(
         tmpDataObjInfo->next = NULL;
 
 
-        if ( tmpDataObjInfo->rescInfo                 == NULL ||
-                tmpDataObjInfo->rescInfo->rodsServerHost == NULL ) {
+        if ( !strlen(tmpDataObjInfo->rescName) ) {
             topFlag = 0;
 
         }
-        else if ( tmpDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN ) {
+        else if ( !irods::is_resc_live(tmpDataObjInfo->rescName).ok() ) {
             /* the resource is down */
             if ( tmpDataObjInfo->replStatus > 0 ) {
                 queDataObjInfo( downCurrentInfo, tmpDataObjInfo, 1, 1 );
@@ -556,7 +547,9 @@ sortObjInfo(
             continue;
         }
         else {
-            rodsServerHost_t *rodsServerHost = ( rodsServerHost_t * ) tmpDataObjInfo->rescInfo->rodsServerHost;
+//            rodsServerHost_t *rodsServerHost = ( rodsServerHost_t * ) tmpDataObjInfo->rescInfo->rodsServerHost;
+            rodsServerHost_t *rodsServerHost = NULL;
+            irods::get_resource_property< rodsServerHost_t* >( tmpDataObjInfo->rescName, irods::RESOURCE_HOST, rodsServerHost );
 
             if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST ) {
                 topFlag = 0;
@@ -569,7 +562,7 @@ sortObjInfo(
 
         std::string class_type;
         irods::error prop_err = irods::get_resource_property<std::string>(
-                                    tmpDataObjInfo->rescInfo->rescName,
+                                    tmpDataObjInfo->rescName,
                                     irods::RESOURCE_CLASS,
                                     class_type );
 
@@ -795,7 +788,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     tmpDataObjInfo = *dataObjInfoHead;
     if ( tmpDataObjInfo->next == NULL ) {
         /* just one */
-        if ( strcmp( preferredResc, tmpDataObjInfo->rescInfo->rescName ) == 0 || // JMC - backport 4543
+        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 || // JMC - backport 4543
                 strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
             return 0;
         }
@@ -805,24 +798,24 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     }
     prevDataObjInfo = NULL;
     while ( tmpDataObjInfo != NULL ) {
-        if ( tmpDataObjInfo->rescInfo != NULL ) {
-            if ( strcmp( preferredResc, tmpDataObjInfo->rescInfo->rescName ) == 0 ||
-                    strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
-                if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
-                    if ( prevDataObjInfo != NULL ) {
-                        prevDataObjInfo->next = tmpDataObjInfo->next;
-                        queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
-                                        topFlag );
-                    }
-                    if ( topFlag > 0 ) {
-                        return 0;
-                    }
-                    else {
-                        status = 0;
-                    }
-                }
-            }
-        }
+
+		if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ||
+				strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
+			if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
+				if ( prevDataObjInfo != NULL ) {
+					prevDataObjInfo->next = tmpDataObjInfo->next;
+					queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
+									topFlag );
+				}
+				if ( topFlag > 0 ) {
+					return 0;
+				}
+				else {
+					status = 0;
+				}
+			}
+		}
+
         prevDataObjInfo = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
@@ -880,7 +873,7 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
     while ( tmpDataObjInfo != NULL ) {
         // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
         // match as well. - hcj
-        if ( strcmp( tmpDataObjInfo->rescInfo->rescName, _resc_name.c_str() ) == 0 &&
+        if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 &&
                 ( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
             if ( prev != NULL ) {
                 prev->next = tmpDataObjInfo->next;
@@ -924,7 +917,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
     while ( tmpDataObjInfo != NULL ) {
         nextDataObjInfo = tmpDataObjInfo->next;
 
-        if ( strcmp( tmpDataObjInfo->rescInfo->rescName, _resc_name.c_str() ) == 0 ) {
+        if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 ) {
 
             if ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) {
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
@@ -1029,7 +1022,7 @@ sortObjInfoForRepl(
                 // we need to check the status of the resource
                 // to determine if it is up or down before
                 // queue-ing it up
-                if ( INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus ) {
+                if ( irods::is_hier_live(dst_resc_hier).ok() /* INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus */ ) {
                     if ( prev_info == NULL ) {
                         *dataObjInfoHead = tmp_info->next;
                     }
