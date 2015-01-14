@@ -876,9 +876,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
     }
     i = readMsrvcStructFromFile( ( char* ) inMsrvcFileNameParam->inOutStruct, coreMsrvcStrct );
     if ( i != 0 ) {
-        if ( strcmp( outCoreMsrvcStruct->type, MsrvcStruct_MS_T ) != 0 ) {
-            free( coreMsrvcStrct );
-        }
+        free( coreMsrvcStrct );
         return i;
     }
 
