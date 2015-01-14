@@ -755,6 +755,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
         rodsLog( LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed." );
         freeGenQueryInp( &genQueryInp );
         free( rawQuery ); // cppcheck - Memory leak: rawQuery
+        free( query );
         return rei->status;
     }
 
