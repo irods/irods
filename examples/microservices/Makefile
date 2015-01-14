@@ -1,5 +1,5 @@
 GCC = g++ 
-INC=-I/usr/include/irods/
+INC=-I/usr/include/irods/ -I/usr/include/irods/boost/
 
 all: msvc_test hello curl_get
 
