@@ -34,7 +34,6 @@ typedef struct structFileDesc {
     int inuseFlag;
     rsComm_t *rsComm;
     specColl_t *specColl;
-    rescInfo_t *rescInfo;
     int openCnt;
     char dataType[NAME_LEN]; // JMC - backport 4634
 } structFileDesc_t;
@@ -155,14 +154,11 @@ extern "C" {
         // prepare a file inp to call a rsFileOpen
         fileOpenInp_t f_inp;
         memset( &f_inp, 0, sizeof( f_inp ) );
-        rstrcpy(
-            f_inp.resc_name_,
-            cb_ctx->desc_->rescInfo->rescName,
-            MAX_NAME_LEN );
-        rstrcpy( f_inp.resc_hier_,    spec_coll->rescHier, MAX_NAME_LEN );
-        rstrcpy( f_inp.objPath,       spec_coll->objPath,  MAX_NAME_LEN );
-        rstrcpy( f_inp.addr.hostAddr, cb_ctx->loc_,        NAME_LEN );
-        rstrcpy( f_inp.fileName,      spec_coll->phyPath,  MAX_NAME_LEN );
+        rstrcpy( f_inp.resc_name_,	spec_coll->resource, MAX_NAME_LEN );
+        rstrcpy( f_inp.resc_hier_,	spec_coll->rescHier, MAX_NAME_LEN );
+        rstrcpy( f_inp.objPath,		spec_coll->objPath,  MAX_NAME_LEN );
+        rstrcpy( f_inp.addr.hostAddr,	cb_ctx->loc_,        NAME_LEN );
+        rstrcpy( f_inp.fileName,	spec_coll->phyPath,  MAX_NAME_LEN );
         f_inp.mode  = getDefFileMode();
         f_inp.flags = mode;
         //rstrcpy( f_inp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN );
