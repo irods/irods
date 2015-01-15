@@ -221,7 +221,7 @@ freeUserInfo( userInfo_t *rs ) {
 }
 
 
-
+#if 0 // #1472
 int
 copyRescInfo( rescInfo_t *from, rescInfo_t *to ) {
     *to = *from;
@@ -234,7 +234,7 @@ freeRescInfo( rescInfo_t *rs ) {
     free( rs );
     return 0;
 }
-
+#endif
 
 
 int
@@ -421,7 +421,7 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 int
 touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
     int status = 0;
-    rescInfo_t *rescInfo = NULL;
+//    rescInfo_t *rescInfo = NULL;
 
     if ( myRei == NULL || rsComm == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -440,24 +440,24 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
             free( myRei->doi->next );
             myRei->doi->next = NULL;
         }
-        rescInfo = new rescInfo_t;
-        irods::resource_ptr resc;
-        std::string rescName = myRei->doi->rescInfo->rescName; // save the resource name
-        free( myRei->doi->rescInfo );
-        irods::error err = irods::get_resc_info( rescName, *rescInfo );
-        if ( !err.ok() ) {
-            delete rescInfo;
-            status = err.code();
-            myRei->doi->rescInfo = NULL;
-            std::stringstream msg;
-            msg << "failed to resolve resource [";
-            msg << rescName;
-            msg << "]";
-            irods::log( PASSMSG( msg.str(), err ) );
-        }
-        else {
-            myRei->doi->rescInfo = rescInfo;
-        }
+//        rescInfo = new rescInfo_t;
+//        irods::resource_ptr resc;
+//        std::string rescName = myRei->doi->rescInfo->rescName; // save the resource name
+//        free( myRei->doi->rescInfo );
+//        irods::error err = irods::get_resc_info( rescName, *rescInfo );
+//        if ( !err.ok() ) {
+//            delete rescInfo;
+//            status = err.code();
+//            myRei->doi->rescInfo = NULL;
+//            std::stringstream msg;
+//            msg << "failed to resolve resource [";
+//            msg << rescName;
+//            msg << "]";
+//            irods::log( PASSMSG( msg.str(), err ) );
+//        }
+//        else {
+//            myRei->doi->rescInfo = rescInfo;
+//        }
 
     }
 

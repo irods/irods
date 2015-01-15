@@ -111,13 +111,11 @@ int copyUserInfo( userInfo_t *from, userInfo_t *to );
 
 int freeUserInfo( userInfo_t *rs );
 
-int copyRescInfo( rescInfo_t *from, rescInfo_t *to );
-
-int freeRescInfo( rescInfo_t *rs );
 
 #if 0	// #1472
+int copyRescInfo( rescInfo_t *from, rescInfo_t *to );
+int freeRescInfo( rescInfo_t *rs );
 int copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to );
-
 int freeRescGrpInfo( rescGrpInfo_t *rs );
 #endif
 
