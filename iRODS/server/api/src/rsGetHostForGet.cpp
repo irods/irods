@@ -75,6 +75,7 @@ int rsGetHostForGet(
 
 }
 
+#if 0 // unused #1472
 int
 getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    rescInfo_t **outRescInfo ) {
@@ -111,6 +112,7 @@ getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     return status;
 }
+
 
 int
 getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
@@ -180,7 +182,7 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     sortObjInfoForOpen( &dataObjInfoHead, &dataObjInp->condInput, 0 );
-    if ( dataObjInfoHead != NULL && dataObjInfoHead->rescInfo != NULL ) {
+    if ( dataObjInfoHead ) {
         if ( hostSearchStat->numHost >= MAX_HOST_TO_SEARCH ||
                 hostSearchStat->totalCount >= MAX_HOST_TO_SEARCH ) {
             freeAllDataObjInfo( dataObjInfoHead );
@@ -204,3 +206,5 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     freeAllDataObjInfo( dataObjInfoHead );
     return 0;
 }
+#endif
+

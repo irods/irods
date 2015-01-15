@@ -31,15 +31,20 @@ typedef struct {
 int
 rsGetHostForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                  char **outHost );
+
+#if 0 // unused #1472
 int
 getBestRescForGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    rescInfo_t **outRescInfo );
+
 int
 getRescForGetInColl( rsComm_t *rsComm, collInp_t *collInp,
                      hostSearchStat_t *hostSearchStat );
 int
 getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                         hostSearchStat_t *hostSearchStat );
+#endif
+
 #else
 #define RS_GET_HOST_FOR_GET NULL
 #endif
