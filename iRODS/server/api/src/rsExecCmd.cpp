@@ -33,6 +33,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     rodsHostAddr_t addr;
+    irods::error err = SUCCESS();
 
     /* some sanity check on the cmd path */
     if ( strchr( execCmdInp->cmd, '/' ) != NULL ) {
@@ -107,18 +108,27 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
         std::string location;
-        irods::error ret = irods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
-        if ( !ret.ok() ) {
-            irods::log( PASSMSG( "rsExecCmd - failed in get_loc_for_hier_string", ret ) );
+        err = irods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
+        if ( !err.ok() ) {
+            irods::log( PASSMSG( "rsExecCmd - failed in get_loc_for_hier_string", err ) );
             return -1;
         }
 
-        rstrcpy( addr.zoneName, dataObjInfoHead->rescInfo->zoneName, NAME_LEN );
+        // =-=-=-=-=-=-=-
+        // extract zone name from resource hierarchy
+        std::string zone_name;
+        err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_ZONE, zone_name );
+        if ( !err.ok() ) {
+            irods::log( PASSMSG( "rsExecCmd - failed in get_resc_hier_property", err ) );
+            return -1;
+        }
+
+        rstrcpy( addr.zoneName, zone_name.c_str(), NAME_LEN );
         rstrcpy( addr.hostAddr, location.c_str(), LONG_NAME_LEN );
 
         /* just in case we have to do it remote */
         *execCmdInp->hintPath = '\0';	/* no need for hint */
-        rstrcpy( execCmdInp->execAddr, dataObjInfoHead->rescInfo->rescLoc,
+        rstrcpy( execCmdInp->execAddr, location.c_str(),
                  LONG_NAME_LEN );
         freeAllDataObjInfo( dataObjInfoHead );
         remoteFlag = resolveHost( &addr, &rodsServerHost );
