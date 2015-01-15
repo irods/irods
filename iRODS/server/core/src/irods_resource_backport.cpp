@@ -6,6 +6,7 @@
 
 namespace irods {
 
+#if 0	// #1472
 // =-=-=-=-=-=-=-
 // helper function to convert properties from a resource plugin
 // the a standard irods rescInfo_t
@@ -227,7 +228,7 @@ namespace irods {
 
     } // resource_to_resc_info
 
-#if 0	// #1472
+
 // =-=-=-=-=-=-=-
 // helper function to extract useful bits from a resource plugin and fill in a
 // resource group info structure.
@@ -516,6 +517,8 @@ namespace irods {
 
     } // get_host_status_by_host_info
 
+
+#if 0	// #1472
 // =-=-=-=-=-=-=-
 // helper function to save on typing - get legacy data struct
 // for resource given a resource name
@@ -550,7 +553,7 @@ namespace irods {
 
     } // get_resc_info
 
-#if 0	// #1472
+
 // =-=-=-=-=-=-=-
 // helper function to save on typing - get legacy data struct
 // for resource group given a resource name
