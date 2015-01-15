@@ -170,14 +170,32 @@ class ResourceSuite(ResourceBase):
         # assertions
         assertiCmdFail(s.adminsession, "iget -z")  # run iget with bad option
 
+    def test_iget_with_dirty_replica(self):
+        # local setup
+        filename = "original.txt"
+        filepath = pydevtest_common.create_local_testfile(filename)
+        updated_filename = "updated_file_with_longer_filename.txt"
+        updated_filepath = pydevtest_common.create_local_testfile(updated_filename)
+        retrievedfile = "retrievedfile.txt"
+        # assertions
+        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
+        assertiCmd(s.adminsession, "iput " + filename)  # put file
+        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)  # replicate file
+        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + updated_filename + " " + filename)  # force new put on second resource
+        assertiCmd(s.adminsession, "ils -L " + filename, "STDOUT", filename)  # debugging
+        assertiCmd(s.adminsession, "iget -f -n 0 " + filename + " " + retrievedfile)  # should get orig file (replica 0)
+        assert 0 == os.system("diff %s %s" % (filename, retrievedfile)) # confirm retrieved is correct
+        assertiCmd(s.adminsession, "iget -f " + filename + " " + retrievedfile)  # should get updated file
+        assert 0 == os.system("diff %s %s" % (updated_filename, retrievedfile)) # confirm retrieved is correct
+        # local cleanup
+        output = commands.getstatusoutput('rm ' + filename)
+        output = commands.getstatusoutput('rm ' + updated_filename)
+        output = commands.getstatusoutput('rm ' + retrievedfile)
+
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
-        filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
-
+        filepath = pydevtest_common.create_local_testfile(filename)
         # assertions
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
         assertiCmd(s.adminsession, "iput " + filename)  # put file
