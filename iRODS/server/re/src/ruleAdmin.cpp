@@ -643,7 +643,6 @@ performAction( inStruct Sentries ) {
     rei.uoic = mallocAndZero( sizeof( userInfo_t ) );
     rei.coi = mallocAndZero( sizeof( collInfo_t ) );
     rei.uoio = mallocAndZero( sizeof( userInfo_t ) );
-    rei.rgi->rescInfo =  mallocAndZero( sizeof( rescInfo_t ) );
     rei.next = NULL;
 
     strcpy( rei.doi->objPath, "" );
