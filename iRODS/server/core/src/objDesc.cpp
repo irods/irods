@@ -637,9 +637,7 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
         rstrcpy( dataObjInfo->dataType, openStat->dataType, NAME_LEN );
         L1desc[l1descInx].l3descInx = openStat->l3descInx;
         L1desc[l1descInx].replStatus = openStat->replStatus;
-        dataObjInfo->rescInfo = new rescInfo_t;
-        bzero( dataObjInfo->rescInfo, sizeof( rescInfo_t ) );
-        dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
+        dataObjInfo->rescInfo = NULL;
     }
 
     return l1descInx;
