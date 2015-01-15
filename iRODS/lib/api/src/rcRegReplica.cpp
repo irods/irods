@@ -6,12 +6,9 @@
 int
 rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     int status;
-//    rescInfo_t *srcRescInfo, *destRescInfo;
     dataObjInfo_t *srcNext, *destNext;
 
-    /* don't sent rescInfo and next */
-//    srcRescInfo = regReplicaInp->srcDataObjInfo->rescInfo;
-//    destRescInfo = regReplicaInp->destDataObjInfo->rescInfo;
+    /* don't send next */
     srcNext = regReplicaInp->srcDataObjInfo->next;
     destNext = regReplicaInp->destDataObjInfo->next;
     regReplicaInp->srcDataObjInfo->rescInfo = NULL;
