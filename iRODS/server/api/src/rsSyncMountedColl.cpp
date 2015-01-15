@@ -74,7 +74,6 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
 
     if ( getStructFileType( specColl ) >= 0 ) { 	/* a struct file */
         structFileOprInp_t structFileOprInp;
-        rescInfo_t         rescInfo;
 
         if ( strlen( specColl->resource ) == 0 ) {
             /* nothing to sync */
@@ -82,21 +81,6 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
         }
 
         memset( &structFileOprInp, 0, sizeof( structFileOprInp ) );
-        /*status = resolveResc (specColl->resource, &rescInfo);
-        if (status < 0) {
-            rodsLog( LOG_NOTICE,"_rsSyncMountedColl: resolveResc error for %s, status = %d",
-                     specColl->resource, status);
-            return status;
-        }*/
-
-        irods::error err = irods::get_resc_info( specColl->resource, rescInfo );
-        if ( !err.ok() ) {
-            std::stringstream msg;
-            msg << "failed to resolve resource [";
-            msg << specColl->resource;
-            msg << "]";
-            irods::log( PASSMSG( msg.str(), err ) );
-        }
 
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
