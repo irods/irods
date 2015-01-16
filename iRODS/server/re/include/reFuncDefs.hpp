@@ -73,8 +73,6 @@ int replaceUserVar( char *start, int size,  userInfo_t *uoic,  userInfo_t *uoip 
 
 int replaceCollVar( char *start, int size,  collInfo_t *coi );
 
-int replaceRescVar( char *start, int size,  rescInfo_t *roi );
-
 int isNumber( char *s );
 
 int isLogical( char *s );

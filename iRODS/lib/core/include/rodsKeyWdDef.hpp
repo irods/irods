@@ -156,7 +156,6 @@
 #define RESC_TYPE_INX_KW 	"rescTypeInx"
 #define RESC_CLASS_INX_KW	"rescClassInx"
 #define RESC_ID_KW	"rescId"
-#define RESC_INFO_KW     "rescInfo"
 #define RESC_COMMENTS_KW     "rescComments"
 #define RESC_CREATE_KW     "rescCreate"
 #define RESC_MODIFY_KW     "rescModify"

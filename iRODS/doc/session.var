@@ -19,9 +19,6 @@ pre-processing Rules before a data object is created.
 
 SdataObj2 contains Session Variables relating to information on a data object.
 
-SrescInfo contains Session Variables relating to information on a data 
-storage resource.
-
 Scollection contains Session Variables relating to information on a 
 Collection.
 
@@ -46,12 +43,6 @@ objPath, dataType, dataSize, chksum, version, filePath, replNum, replStatus,
 writeFlag, dataOwner, dataOwnerZone, dataComments, dataAccess, 
 dataAccessInx, dataId, collId, statusString, destRescName, backupRescName
 
-SrescInfo:
-----------
-rescName, rescGroupName, zoneName, rescLoc, rescType, rescTypeInx, 
-rescClass, rescClassInx, rescVaultPath, rescMaxObjSize, freeSpace, 
-freeSpaceTimeStamp, rescInfo, rescId, rescComments 
-
 Scollection:
 ------------
 collName, collParentName
@@ -71,21 +62,21 @@ The Session Variable sets that are available for each Rule are:
 ----------------------------------------------
 
 1) acSetRescSchemeForCreate - SdataObj1 and SuserAndConn
-2) acPreprocForDataObjOpen - SdataObj2 and SrescInfo and SuserAndConn
+2) acPreprocForDataObjOpen - SdataObj2 and SuserAndConn
 3) acSetMultiReplPerResc - SuserAndConn
-4) acPostProcForPut - SdataObj2 and SrescInfo and SuserAndConn
-5) acPostProcForCopy - SdataObj2 and SrescInfo and SuserAndConn
-6) acPostProcForFilePathReg - SdataObj2 and SrescInfo and SuserAndConn
-7) acPostProcForCreate - SdataObj2 and SrescInfo and SuserAndConn
-8) acPostProcForOpen - SdataObj2 and SrescInfo and SuserAndConn
+4) acPostProcForPut - SdataObj2 and SuserAndConn
+5) acPostProcForCopy - SdataObj2 and SuserAndConn
+6) acPostProcForFilePathReg - SdataObj2 and SuserAndConn
+7) acPostProcForCreate - SdataObj2 and SuserAndConn
+8) acPostProcForOpen - SdataObj2 and SuserAndConn
 9) acSetNumThreads - SuserAndConn
-10) acDataDeletePolicy - SdataObj2 and SrescInfo and SuserAndConn
-11) acPostProcForDelete - SdataObj2 and SrescInfo and SuserAndConn
-12) acNoChkFilePathPerm - SdataObj2 and SrescInfo and SuserAndConn
+10) acDataDeletePolicy - SdataObj2 and SuserAndConn
+11) acPostProcForDelete - SdataObj2 and SuserAndConn
+12) acNoChkFilePathPerm - SdataObj2 and SuserAndConn
 13) acTrashPolicy - SdataObj1 and SuserAndConn
 14) acSetPublicUserPolicy - SuserAndConn
 15) acSetPublicUserPolicy - SuserAndConn
-16) acSetVaultPathPolicy - SdataObj2 and SrescInfo and SuserAndConn
+16) acSetVaultPathPolicy - SdataObj2 and SuserAndConn
 17) acSetReServerNumProc - SuserAndConn
 18) acPreprocForCollCreate - Scollection and SuserAndConn
 19) acPostProcForCollCreate - Scollection and SuserAndConn

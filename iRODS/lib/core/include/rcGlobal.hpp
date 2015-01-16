@@ -78,7 +78,6 @@ char *rescCond[] = {
     RESC_TYPE_INX_KW,
     RESC_CLASS_INX_KW,
     RESC_ID_KW,
-    RESC_INFO_KW,
     RESC_COMMENTS_KW,
     RESC_CREATE_KW,
     RESC_MODIFY_KW,

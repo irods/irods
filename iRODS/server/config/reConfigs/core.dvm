@@ -36,25 +36,6 @@ destRescName||rei->doi->destRescName
 backupRescName||rei->doi->backupRescName
 rescName||rei->doi->rescName
 rescGroupName||rei->doi->rescGroupName
-zoneName||rei->doi->rescInfo->zoneName
-rescLoc||rei->doi->rescInfo->rescLoc
-rescType||rei->doi->rescInfo->rescType
-rescTypeInx||rei->doi->rescInfo->rescTypeInx
-rescClass||rei->doi->rescInfo->rescClass
-rescClassInx||rei->doi->rescInfo->rescClassInx
-rescVaultPath||rei->doi->rescInfo->rescVaultPath
-freeSpace||rei->doi->rescInfo->freeSpace
-freeSpaceTime||rei->doi->rescInfo->freeSpaceTime
-freeSpaceTimeStamp||rei->doi->rescInfo->freeSpaceTimeStamp
-rescInfo||rei->doi->rescInfo->rescInfo
-rescStatus||rei->doi->rescInfo->rescStatus
-# paraOpr||rei->doi->rescInfo->paraOpr
-rescId||rei->doi->rescInfo->rescId
-# gateWayAddr||rei->doi->rescInfo->gateWayAddr
-rescMaxObjSize||rei->doi->rescInfo->rescMaxObjSize
-rescComments||rei->doi->rescInfo->rescComments
-rescCreate||rei->doi->rescInfo-rescCreate
-rescModify||rei->doi->rescInfo-rescModify
 # user info coming directly
 userClient||rei->uoic
 userClient||rei->rsComm->clientUser

@@ -3,8 +3,7 @@
 /* objInfo.h - header file for general Obj Info
  */
 
-/* rescInfo_t is for info about a resource
-   dataObjInfo_t is for info about a data object.
+/* dataObjInfo_t is for info about a data object.
    intKeyStrVal_t is a generic (integer keyword)/(string value) pair.
    It can be used for many things. For example, for the input "condition",
    the condKeywd_t is used for keyword. But it can also be used to
@@ -43,35 +42,6 @@ extern "C" {
 
 #define HAAW_DT_STR             "haaw file"
 #define MAX_LINK_CNT    20      /* max number soft link in a path */
-
-typedef struct RescInfo {
-    char rescName[NAME_LEN];
-    rodsLong_t rescId;
-    char zoneName[NAME_LEN];
-    char rescLoc[NAME_LEN];
-    char rescType[NAME_LEN];
-    int rescTypeInx;
-    int rescClassInx;
-    int rescStatus;
-    int paraOpr;
-    char rescClass[NAME_LEN];
-    char rescVaultPath[MAX_NAME_LEN];
-    char rescInfo[LONG_NAME_LEN];
-    char rescComments[LONG_NAME_LEN];
-    char gateWayAddr[NAME_LEN];
-    rodsLong_t rescMaxObjSize;
-    rodsLong_t freeSpace;
-    char freeSpaceTimeStamp[TIME_LEN];
-    time_t freeSpaceTime;       /* last time freeSpace was checked */
-    char rescCreate[TIME_LEN];
-    char rescModify[TIME_LEN];
-    void *rodsServerHost;
-    rodsLong_t quotaLimit;
-    rodsLong_t quotaOverrun;
-    char rescChildren[MAX_PATH_ALLOWED];
-    char rescContext[MAX_PATH_ALLOWED];
-    char rescParent[MAX_PATH_ALLOWED];
-} rescInfo_t;
 
 
 /* special collection */

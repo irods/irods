@@ -7,13 +7,10 @@
 #include "rcMisc.hpp"
 #include "restructs.hpp"
 
-
+#if 0	// #1472
 #define RescInfo_MS_T "RescInfo_PI"
-int setValFromRescInfo( char *varMap, rescInfo_t **inrei, Res *newVarValue );
-int getValFromRescInfo( char *varMap, rescInfo_t *inrei, Res **varValue, Region *r );
 ExprType *getVarTypeFromRescInfo( char *varMap, Region *r );
 
-#if 0	// #1472
 #define RescGrpInfo_MS_T "RescGrpInfo_PI"
 int setValFromRescGrpInfo( char *varMap, rescGrpInfo_t **inrei, Res *newVarValue );
 int getValFromRescGrpInfo( char *varMap, rescGrpInfo_t *inrei, Res **varValue, Region *r );

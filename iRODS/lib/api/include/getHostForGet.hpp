@@ -22,7 +22,6 @@ typedef struct {
     int numHost;
     int totalCount;
     int count[MAX_HOST_TO_SEARCH];
-    rescInfo_t *rescInfo[MAX_HOST_TO_SEARCH];
 } hostSearchStat_t;
 
 #if defined(RODS_SERVER)

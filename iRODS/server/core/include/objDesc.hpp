@@ -57,7 +57,6 @@ typedef struct l1desc {
     int purgeCacheFlag; // JMC - backport 4537
     int lockFd; // JMC - backport 4604
     boost::any pluginData;
-    rescInfo_t *replRescInfo;   /* if non NULL, repl to this resc on close */
     dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
                                      * on close */
     rodsServerHost_t *remoteZoneHost;
