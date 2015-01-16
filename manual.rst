@@ -38,40 +38,40 @@
 
    PageBreak
 
-.. 
+..
 ..   ----------------
 ..   ReStructuredText
 ..   ----------------
-.. 
+..
 ..   Needs python modules::
-.. 
+..
 ..    $ easy_install docutils==0.7.0
 ..    $ easy_install roman
 ..    $ easy_install reportlab
 ..    $ easy_install rst2pdf
-.. 
+..
 ..   Some links for learning in place:
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/index.html
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/user/rst/cheatsheet.txt
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/user/rst/quickstart.txt
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/user/rst/quickstart.html
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/user/rst/demo.txt
-.. 
+..
 ..    http://docutils.sourceforge.net/docs/user/rst/demo.html
-.. 
+..
 ..    http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
-.. 
+..
 ..   Generate HTML::
-.. 
+..
 ..    $ rst2html -stg manual.rst > manual.html
-.. 
+..
 ..   Generate PDF::
-.. 
+..
 ..    $ rst2pdf manual.rst -o manual.pdf
 
 -------------
@@ -231,7 +231,7 @@ Note: Installing the MySQL database plugin will also require `Installing lib_mys
 
 Note: When running iRODS on pre-8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available::
 
- irods@hostname:~/ $ iadmin rsq DataObjInCollReCur 
+ irods@hostname:~/ $ iadmin rsq DataObjInCollReCur
 
 Resource Server
 ---------------
@@ -383,7 +383,7 @@ The default installation of iRODS comes with a single user account 'rods' that i
  irods@hostname:~/ $ iadmin moduser rods password <newpassword>
 
 To make sure everything succeeded, you will need to re-authenticate and check the new connection::
- 
+
  irods@hostname:~/ $ iinit
  Enter your current iRODS password:
  irods@hostname:~/ $ ils
@@ -404,7 +404,7 @@ The default installation of iRODS comes with a Zone named 'tempZone'.  You proba
  and rename the top-level collection.
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
- 
+
 Once the Zone has been renamed, you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
 
  irods@hostname:~/ $ cat .irods/.irodsEnv
@@ -474,7 +474,7 @@ Add additional resource(s)
 The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path::
 
  irods@hostname:~/ $ iadmin mkresc <newrescname> unixfilesystem <fully.qualified.domain.name>:</full/path/to/new/vault>
- 
+
 Additional information about creating resources can be found with::
 
  irods@hostname:~/ $ iadmin help mkresc
@@ -504,7 +504,7 @@ The default installation of iRODS comes with a single user 'rods' which is a des
  irods@hostname:~/ $ iadmin lu
  rods#tempZone
  <newusername>#tempZone
- 
+
  irods@hostname:~/ $ iadmin help mkuser
   mkuser Name[#Zone] Type (make user)
  Create a new iRODS user in the ICAT database
@@ -625,7 +625,7 @@ When a client connects to a resource server and then authenticates, the resource
 
 This allows the resource servers to verify the identity of the iCAT server beyond just relying on DNS.
 
-Mutual authentication between servers is always on.  Note that this applies to iRODS passwords and PAM, and some other interactions, but not GSI or Kerberos. 
+Mutual authentication between servers is always on.  Note that this applies to iRODS passwords and PAM, and some other interactions, but not GSI or Kerberos.
 
 For GSI, users can set the `irodsServerDn` variable to do mutual authentication.
 
@@ -904,7 +904,7 @@ iRODS is in the process of being modularized whereby existing iRODS 3.x function
 
 .. _examples/microservices: https://github.com/irods/irods/tree/master/examples/microservices
 
-A separate development package, irods-dev, available at http://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_. 
+A separate development package, irods-dev, available at http://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_.
 
 .. _Microservice Developers Tutorial: https://github.com/irods/irods/blob/master/examples/microservices/microservice_tutorial.rst
 
@@ -912,7 +912,7 @@ A separate development package, irods-dev, available at http://irods.org/downloa
 Composable Resources
 --------------------
 
-The second area of modularity to be added to iRODS 4.0+ consists of composable resources.  Composable resources replace the concept of resource groups from iRODS 3.x.  There are no resource groups in iRODS 4.0+. 
+The second area of modularity to be added to iRODS 4.0+ consists of composable resources.  Composable resources replace the concept of resource groups from iRODS 3.x.  There are no resource groups in iRODS 4.0+.
 
 Tree Metaphor
 -------------
@@ -1121,7 +1121,7 @@ There are two new ``iadmin`` subcommands introduced with this feature.
   addchildtoresc Parent Child [ContextString] (add child to resource)
  Add a child resource to a parent resource.  This creates an 'edge'
  between two nodes in a resource tree.
-  
+
  Parent is the name of the parent resource.
  Child is the name of the child resource.
  ContextString is any relevant information that the parent may need in order
@@ -1133,7 +1133,7 @@ There are two new ``iadmin`` subcommands introduced with this feature.
   rmchildfromresc Parent Child (remove child from resource)
  Remove a child resource from a parent resource.  This removes an 'edge'
  between two nodes in a resource tree.
-  
+
  Parent is the name of the parent resource.
  Child is the name of the child resource.
 
@@ -1206,7 +1206,7 @@ The SSL parameters are tunable via the following .irodsEnv variables::
  irodsEncryptionAlgorithm 'AES-256-CBC'
 
 The only valid value for irodsClientServerNegotiation at this time is 'request_server_negotiation'.  Anything else will not begin the negotiation stage and default to using a TCP connection.
- 
+
 The possible values for irodsClientServerPolicy include:
 
 - CS_NEG_REQUIRE: This side of the connection requires an SSL connection
@@ -1339,7 +1339,7 @@ Monitoring the delayed queue is important once your workflows and maintenance sc
 .. - nagios plugins (Jean-Yves)
 .. - other
 .. - Failover checking
-.. 
+..
 
 --------------
 Authentication
@@ -1456,7 +1456,7 @@ On the client side, the user's 'irodsAuthScheme' must be set to 'KRB'.  This can
  irods@hostname:~/ $ export irodsAuthScheme
 
 Or, preferably, in the user's `.irodsEnv` file::
- 
+
  irodsAuthScheme 'KRB'
 
 Then, to initialize the Kerberos session ticket and authenticate::
@@ -1611,7 +1611,7 @@ Error from non-trusted self-signed certificate::
   NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/L=Chapel Hill/O=RENCI/CN=irods.example.org
   NOTICE: sslVerifyCallback:   err 18:self signed certificate
   ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
-  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR 
+  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
 
 Error from untrusted CA that signed the server certificate::
 
@@ -1625,7 +1625,7 @@ Error from untrusted CA that signed the server certificate::
   NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/O=example.org/CN=irods.example.org Certificate Authority
   NOTICE: sslVerifyCallback:   err 19:self signed certificate in certificate chain
   ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
-  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR 
+  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
 
 Server verification can be turned off using the irodsSSLVerifyServer environment variable. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
 
@@ -1757,11 +1757,11 @@ The default setting for 'standard_conforming_strings' in PostgreSQL 9.1+ was cha
 ---------------
 Troubleshooting
 ---------------
- 
+
 Common Errors
 -------------
 
-Some of the commonly encountered iRODS errors along with troubleshooting steps are discussed below.	
+Some of the commonly encountered iRODS errors along with troubleshooting steps are discussed below.
 
 
 iRODS Server is down
@@ -1863,7 +1863,7 @@ Agent
     A type of iRODS server process.  Each time a client connects to a server, an agent is created and a network connection established between it and the client.
 
 API
-    An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon). 
+    An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon).
 
 Authentication Mechanisms
     iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently include the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), Kerberos, and Operating System authentication (OSAuth).
@@ -2072,4 +2072,3 @@ Date         Version      Description
                             This is the first release from RENCI, based on the
                             iRODS 3.0 community codebase.
 ==========   =========    ======================================================
-
