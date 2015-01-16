@@ -361,8 +361,6 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
     rstrcpy( dataObjInfo.rescHier, rescHier, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
 
-    dataObjInfo.rescInfo = NULL;
-
     dataObjInfo.dataSize = dataSize;
     dataObjInfo.replStatus = 1;
 

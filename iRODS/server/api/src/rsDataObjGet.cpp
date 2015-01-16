@@ -323,7 +323,7 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
     dataObjInp = L1desc[l1descInx].dataObjInp;
     rstrcpy( fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     rstrcpy( fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
-    rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescName, MAX_NAME_LEN );
     rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileGetInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
     fileGetInp.mode = getFileMode( dataObjInp );

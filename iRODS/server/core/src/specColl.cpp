@@ -425,8 +425,6 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             return status;
         }*/
 
-        myDataObjInfo->rescInfo = NULL;
-
         rstrcpy( myDataObjInfo->objPath, subPath, MAX_NAME_LEN );
         rstrcpy( myDataObjInfo->subPath, subPath, MAX_NAME_LEN );
         rstrcpy( myDataObjInfo->rescName, specColl->resource, NAME_LEN );

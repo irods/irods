@@ -1037,8 +1037,6 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
             rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
 
-            dataObjInfo.rescInfo = NULL;
-
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 
             status = syncDataObjPhyPathS( rsComm, NULL, &dataObjInfo,

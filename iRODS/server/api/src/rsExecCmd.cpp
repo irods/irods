@@ -111,7 +111,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         err = irods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
         if ( !err.ok() ) {
             irods::log( PASSMSG( "rsExecCmd - failed in get_loc_for_hier_string", err ) );
-            return -1;
+            return err.code();
         }
 
         // =-=-=-=-=-=-=-
@@ -120,7 +120,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_ZONE, zone_name );
         if ( !err.ok() ) {
             irods::log( PASSMSG( "rsExecCmd - failed in get_resc_hier_property", err ) );
-            return -1;
+            return err.code();
         }
 
         rstrcpy( addr.zoneName, zone_name.c_str(), NAME_LEN );

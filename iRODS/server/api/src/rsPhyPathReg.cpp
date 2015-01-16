@@ -336,7 +336,6 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.filePath, filePath, MAX_NAME_LEN );
-    dataObjInfo.rescInfo = NULL;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
@@ -448,7 +447,6 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
-    destDataObjInfo.rescInfo = NULL;
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
     if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
                                         RESC_GROUP_NAME_KW ) ) != NULL ) {
@@ -487,7 +485,6 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rstrcpy( dataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
     }
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
-    dataObjInfo.rescInfo = NULL;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );

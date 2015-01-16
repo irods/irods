@@ -462,8 +462,6 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->rescName, tmpRescName, NAME_LEN );
         rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
 
-        dataObjInfo->rescInfo = NULL;
-
         std::string hier( tmpHierString );
         std::string resc( tmpRescName );
 

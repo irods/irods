@@ -305,8 +305,6 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    dataObjInfo.rescInfo = NULL;
-
     status = getFilePathName( rsComm, &dataObjInfo, dataObjInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -483,8 +481,6 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
     rstrcpy( dataObjInfo.rescHier, rescHier.c_str(), MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
     dataObjInfo.dataSize = dataSize;
-
-    dataObjInfo.rescInfo = NULL;
 
     status = getFilePathName( rsComm, &dataObjInfo, &dataObjInp );
     if ( status < 0 ) {
@@ -828,8 +824,6 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
       rescName->value, status);
       return status;
       }*/
-
-    dataObjInfo.rescInfo = NULL;
 
     bzero( &dataObjInp, sizeof( dataObjInp_t ) );
     dataObjInp.openFlags = O_WRONLY;

@@ -472,8 +472,6 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     myDataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     *myDataObjInfo = *( *dataObjInfoHead );
 
-    myDataObjInfo->rescInfo = NULL;
-
     rstrcpy( myDataObjInfo->rescName, ( *dataObjInfoHead )->rescName, NAME_LEN );
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );

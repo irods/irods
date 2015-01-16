@@ -568,10 +568,6 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
     if ( dataObjInfo->specColl != NULL ) {
         free( dataObjInfo->specColl );
     }
-    if ( dataObjInfo->rescInfo != NULL ) {
-        delete dataObjInfo->rescInfo;
-        dataObjInfo->rescInfo = 0;
-    }
 
     free( dataObjInfo );
     dataObjInfo = 0;

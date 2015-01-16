@@ -248,7 +248,6 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
     rstrcpy( dataObjInp.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( stageDataObjInfo.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( stageDataObjInfo.rescName, _resc_name, NAME_LEN );
-    stageDataObjInfo.rescInfo = NULL;
 
     status = getFilePathName( rsComm, &stageDataObjInfo, &dataObjInp );
     if ( status < 0 ) {

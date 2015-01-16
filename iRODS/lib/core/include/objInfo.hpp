@@ -170,7 +170,6 @@ typedef struct DataObjInfo {
     char chksum[NAME_LEN];
     char version[NAME_LEN];
     char filePath[MAX_NAME_LEN];
-    rescInfo_t *rescInfo;
     char dataOwnerName[NAME_LEN];
     char dataOwnerZone[NAME_LEN];
     int  replNum;

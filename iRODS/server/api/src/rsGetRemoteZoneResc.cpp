@@ -22,6 +22,8 @@ int
 rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      rodsHostAddr_t **rescAddr ) {
 
+	irods::error err = SUCCESS();
+
     // =-=-=-=-=-=-=-
     // acquire the operation requested
     char* remoteOprType = getValByKey(
@@ -54,17 +56,17 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
     std::string hier;
-    irods::error ret = irods::resolve_resource_hierarchy(
+    err = irods::resolve_resource_hierarchy(
                            oper,
                            rsComm,
                            dataObjInp,
                            hier );
-    if ( !ret.ok() ) {
+    if ( !err.ok() ) {
         std::stringstream msg;
         msg << "failed for [";
         msg << dataObjInp->objPath << "]";
-        irods::log( PASSMSG( msg.str(), ret ) );
-        return ret.code();
+        irods::log( PASSMSG( msg.str(), err ) );
+        return err.code();
     }
 
     // =-=-=-=-=-=-=-
@@ -74,10 +76,10 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // we resolved the hier str for subsequent api calls, etc.
     std::string location;
-    ret = irods::get_loc_for_hier_string( hier, location );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    err = irods::get_loc_for_hier_string( hier, location );
+    if ( !err.ok() ) {
+        irods::log( PASS( err ) );
+        return err.code();
     }
 
     // =-=-=-=-=-=-=-
@@ -97,7 +99,13 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return status;
         }
 
-        location = dataObjInfoHead->rescInfo->rescLoc;
+        // =-=-=-=-=-=-=-
+        // extract resource location from hierarchy
+        err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_ZONE, location );
+        if ( !err.ok() ) {
+            irods::log( PASSMSG( "rsGetRemoteZoneResc - failed in get_resc_hier_property", err ) );
+            return err.code();
+        }
     }
 
     // =-=-=-=-=-=-=-

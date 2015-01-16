@@ -698,8 +698,6 @@ dataObjOpenForRepl(
     }
     *srcDataObjInfo = *inpSrcDataObjInfo;
 
-    srcDataObjInfo->rescInfo = NULL;
-
     memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
     replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
 
@@ -721,7 +719,7 @@ dataObjOpenForRepl(
     std::string op_name;
 
     dataObjInfo_t * myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
-    myDestDataObjInfo->rescInfo = NULL;
+
     int replStatus;
     if ( updateFlag > 0 ) {
         // =-=-=-=-=-=-=-
@@ -745,8 +743,6 @@ dataObjOpenForRepl(
         //     :: on the copied outgoing dataObjInfo.  see _rsDataObjReplS()
         memset( &myDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
         replKeyVal( &inpDestDataObjInfo->condInput, &myDestDataObjInfo->condInput );
-
-        myDestDataObjInfo->rescInfo = NULL;	// #1472
 
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
         addKeyVal( &myDataObjInp.condInput, FORCE_FLAG_KW, "" );
@@ -866,8 +862,6 @@ dataObjOpenForRepl(
     if ( inpDestDataObjInfo != NULL && updateFlag == 0 ) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
-
-        inpDestDataObjInfo->rescInfo = NULL;
 
         // =-=-=-=-=-=-=-
         // JMC :: deep copy of condInput - necessary for preventing a double-free

@@ -1000,14 +1000,6 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
     }
 
 
-    if ( strcmp( varName, "rescInfo" ) == 0 ) {
-
-        i = getValFromRescInfo( varMapCPtr, rei->rescInfo, varValue, r );
-
-        return i;
-    }
-
-
     if ( strcmp( varName, "dataOwnerName" ) == 0 ) {
 
         i = getStrLeafValue( varValue, rei->dataOwnerName, r );
@@ -1284,13 +1276,6 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
     if ( strcmp( varName, "filePath" ) == 0 ) {
 
         i = setStrLeafValue( rei->filePath, MAX_NAME_LEN, newVarValue );
-
-        return i;
-    }
-
-    if ( strcmp( varName, "rescInfo" ) == 0 ) {
-
-        i = setValFromRescInfo( varMapCPtr, &( rei->rescInfo ), newVarValue );
 
         return i;
     }

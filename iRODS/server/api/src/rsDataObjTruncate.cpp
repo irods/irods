@@ -95,7 +95,7 @@ int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
     }
 
     /* don't do anything for BUNDLE_RESC for now */
-    if ( strcmp( dataObjInfo->rescInfo->rescName, BUNDLE_RESC ) == 0 ) {
+    if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
         return 0;
     }
 

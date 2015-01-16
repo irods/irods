@@ -531,7 +531,6 @@ initDataObjInfoForRepl(
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
 
     // #1472
-    destDataObjInfo->rescInfo = NULL;
     destDataObjInfo->rescGroupName[0] = '\0';
 
     // Can't remove just now...  #1472
@@ -637,7 +636,6 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
         rstrcpy( dataObjInfo->dataType, openStat->dataType, NAME_LEN );
         L1desc[l1descInx].l3descInx = openStat->l3descInx;
         L1desc[l1descInx].replStatus = openStat->replStatus;
-        dataObjInfo->rescInfo = NULL;
     }
 
     return l1descInx;

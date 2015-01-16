@@ -328,9 +328,6 @@ _rsDataObjCreateWithResc(
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
 
-    dataObjInfo->rescInfo = NULL;
-
-
     rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
 
     rstrcpy( dataObjInfo->rescGroupName, _resc_name.c_str(), NAME_LEN ); // leave that on for now #1472

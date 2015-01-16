@@ -11,14 +11,10 @@ rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     /* don't send next */
     srcNext = regReplicaInp->srcDataObjInfo->next;
     destNext = regReplicaInp->destDataObjInfo->next;
-    regReplicaInp->srcDataObjInfo->rescInfo = NULL;
-    regReplicaInp->destDataObjInfo->rescInfo = NULL;
     regReplicaInp->srcDataObjInfo->next = NULL;
     regReplicaInp->destDataObjInfo->next = NULL;
     status = procApiRequest( conn, REG_REPLICA_AN, regReplicaInp, NULL,
                              ( void ** ) NULL, NULL );
-    regReplicaInp->srcDataObjInfo->rescInfo = NULL; //srcRescInfo;
-    regReplicaInp->destDataObjInfo->rescInfo = NULL; //destRescInfo;
     regReplicaInp->srcDataObjInfo->next = srcNext;
     regReplicaInp->destDataObjInfo->next = destNext;
 
