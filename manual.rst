@@ -1251,10 +1251,14 @@ The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
  sudo make install
  sudo make MYSQL="mysql -p" installdb
 
+The iRODS MySQL database plugin checks for these functions during installation. Therefore, before installing the iRODS MySQL database plugin, you must also grant the iRODS MySQL user account the ``select`` privilege on the ``mysql.func`` system table. The following example assumes that the iRODS MySQL user account is ``irods`` and it is allowed to connect from host ``localhost``::
+
+ $ mysql --user=$MYSQL_ADMIN_ACCOUNT --password=$MYSQL_ADMIN_PASSWORD -e "grant select on mysql.func to 'irods'@'localhost';"
+
 Then, to confirm they are available::
 
- $ mysql -uUSER -p -e "select name from mysql.func"
- Enter password:
+ $ mysql --user=$MYSQL_IRODS_ACCOUNT --password=$MYSQL_IRODS_PASSWORD -e "select name from mysql.func;"
+
  +------------------------+
  | name                   |
  +------------------------+
