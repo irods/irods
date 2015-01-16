@@ -906,6 +906,7 @@ dataObjOpenForRepl(
 
     int srcL1descInx = allocL1desc();
     if ( srcL1descInx < 0 ) {
+        freeDataObjInfo( srcDataObjInfo );
         return srcL1descInx;
     }
     fillL1desc( srcL1descInx, &myDataObjInp, srcDataObjInfo, srcDataObjInfo->replStatus, srcDataObjInfo->dataSize );
