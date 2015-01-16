@@ -1255,7 +1255,7 @@ The iRODS MySQL database plugin checks for these functions during installation. 
 
  $ mysql --user=$MYSQL_ADMIN_ACCOUNT --password=$MYSQL_ADMIN_PASSWORD -e "grant select on mysql.func to 'irods'@'localhost';"
 
-Then, to confirm they are available::
+Once you have granted the ``select`` privilege to the iRODS MySQL user account, you can confirm the installation of the functions with::
 
  $ mysql --user=$MYSQL_IRODS_ACCOUNT --password=$MYSQL_IRODS_PASSWORD -e "select name from mysql.func;"
 
