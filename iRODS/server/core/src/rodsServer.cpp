@@ -348,6 +348,7 @@ serverMain( char *logDir ) {
         irods::server_state& state = irods::server_state::instance();
         while ( irods::server_state::STOPPED != state() ) {
             if ( irods::server_state::PAUSED == state() ) {
+                procChildren( &ConnectedAgentHead );
                 sleep( 0.125 );
                 continue;
             }
