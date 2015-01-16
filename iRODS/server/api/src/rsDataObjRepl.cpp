@@ -946,29 +946,24 @@ dataObjOpenForRepl(
 
 int
 dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
-    int srcL1descInx, destL1descInx;
-    int srcL3descInx, destL3descInx;
-    int status;
-    portalOprOut_t *portalOprOut = NULL;
+
     dataCopyInp_t dataCopyInp;
-    dataOprInp_t *dataOprInp;
-    int srcRemoteFlag, destRemoteFlag;
-
     bzero( &dataCopyInp, sizeof( dataCopyInp ) );
-    dataOprInp = &dataCopyInp.dataOprInp;
-    srcL1descInx = L1desc[l1descInx].srcL1descInx;
-    destL1descInx = l1descInx;
+    dataOprInp_t *dataOprInp = &dataCopyInp.dataOprInp;
+    int srcL1descInx = L1desc[l1descInx].srcL1descInx;
+    int destL1descInx = l1descInx;
 
-    srcL3descInx = L1desc[srcL1descInx].l3descInx;
-    destL3descInx = L1desc[destL1descInx].l3descInx;
+    int srcL3descInx = L1desc[srcL1descInx].l3descInx;
+    int destL3descInx = L1desc[destL1descInx].l3descInx;
 
+    int srcRemoteFlag;
     if ( L1desc[srcL1descInx].remoteZoneHost != NULL ) {
         srcRemoteFlag = REMOTE_ZONE_HOST;
     }
     else {
         srcRemoteFlag = FileDesc[srcL3descInx].rodsServerHost->localFlag;
     }
-
+    int destRemoteFlag;
     if ( L1desc[destL1descInx].remoteZoneHost != NULL ) {
         destRemoteFlag = REMOTE_ZONE_HOST;
     }
@@ -976,13 +971,14 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         destRemoteFlag = FileDesc[destL3descInx].rodsServerHost->localFlag;
     }
 
+    portalOprOut_t * portalOprOut = NULL;
     if ( srcRemoteFlag == REMOTE_ZONE_HOST &&
             destRemoteFlag == REMOTE_ZONE_HOST ) {
         /* remote zone to remote zone copy. Have to do L1 level copy */
         initDataOprInp( &dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR );
         L1desc[l1descInx].dataObjInp->numThreads = 0;
         dataCopyInp.portalOprOut.l1descInx = l1descInx;
-        status = singleL1Copy( rsComm, &dataCopyInp );
+        int status = singleL1Copy( rsComm, &dataCopyInp );
         clearKeyVal( &dataOprInp->condInput );
         return status;
     }
@@ -1007,11 +1003,12 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         if ( L1desc[l1descInx].dataObjInp->numThreads > 0 ) {
             /* copy from local to remote */
             /* preProcParaPut to establish portalOprOut without data transfer */
-            status = preProcParaPut( rsComm, destL1descInx, &portalOprOut );
+            int status = preProcParaPut( rsComm, destL1descInx, &portalOprOut );
             if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - nullptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaPut error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
+                free( portalOprOut );
                 return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
@@ -1030,11 +1027,12 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         /* do it locally if numThreads == 0 */
         if ( L1desc[l1descInx].dataObjInp->numThreads > 0 ) {
             /* preProcParaGet to establish portalOprOut without data transfer */
-            status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
+            int status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
             if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
+                free( portalOprOut );
                 return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
@@ -1052,12 +1050,12 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         /* preProcParaGet only establish &portalOprOut without data transfer */
         /* do it locally if numThreads == 0 */
         if ( L1desc[l1descInx].dataObjInp->numThreads > 0 ) {
-            status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
-
+            int status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
             if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
+                free( portalOprOut );
                 return status;
             }
             dataCopyInp.portalOprOut = *portalOprOut;
@@ -1077,17 +1075,15 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
                     dataCopyInp.portalOprOut.numThreads = 1;
         }
     }
-    status =  rsDataCopy( rsComm, &dataCopyInp );
+    int status =  rsDataCopy( rsComm, &dataCopyInp );
 
     if ( status >= 0 && portalOprOut != NULL &&
             L1desc[l1descInx].dataObjInp != NULL ) {
-        /* update numThreads since it could be chnages by remote server */
+        /* update numThreads since it could be changed by remote server */
         L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
     }
-    if ( portalOprOut != NULL ) {
-        free( portalOprOut );
-    }
     clearKeyVal( &dataOprInp->condInput );
+    free( portalOprOut );
 
     return status;
 }
