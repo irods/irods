@@ -346,7 +346,7 @@ _rsDataObjCreateWithResc(
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
-    status = getFilePathName_1472( rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp );
+    status = getFilePathName( rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp );
 
     if ( status < 0 ) {
         freeL1desc( l1descInx );

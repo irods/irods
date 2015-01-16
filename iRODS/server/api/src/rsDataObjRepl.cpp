@@ -836,7 +836,7 @@ dataObjOpenForRepl(
             status = dataOpen( rsComm, destL1descInx );
         }
         else {
-            status = getFilePathName_1472( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
+            status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status >= 0 ) {
                 status = dataCreate( rsComm, destL1descInx );
             }
@@ -850,7 +850,7 @@ dataObjOpenForRepl(
     }
     else {
         if ( updateFlag == 0 ) {
-            int status = getFilePathName_1472( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
+            int status = getFilePathName( rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp );
             if ( status < 0 ) {
                 freeL1desc( destL1descInx );
                 freeDataObjInfo( srcDataObjInfo );
