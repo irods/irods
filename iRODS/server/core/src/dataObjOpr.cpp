@@ -529,11 +529,11 @@ sortObjInfo(
         tmpDataObjInfo->next = NULL;
 
 
-        if ( !strlen(tmpDataObjInfo->rescName) ) {
+        if ( !strlen( tmpDataObjInfo->rescName ) ) {
             topFlag = 0;
 
         }
-        else if ( !irods::is_resc_live(tmpDataObjInfo->rescName).ok() ) {
+        else if ( !irods::is_resc_live( tmpDataObjInfo->rescName ).ok() ) {
             /* the resource is down */
             if ( tmpDataObjInfo->replStatus > 0 ) {
                 queDataObjInfo( downCurrentInfo, tmpDataObjInfo, 1, 1 );
@@ -799,22 +799,22 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     prevDataObjInfo = NULL;
     while ( tmpDataObjInfo != NULL ) {
 
-		if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ||
-				strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
-			if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
-				if ( prevDataObjInfo != NULL ) {
-					prevDataObjInfo->next = tmpDataObjInfo->next;
-					queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
-									topFlag );
-				}
-				if ( topFlag > 0 ) {
-					return 0;
-				}
-				else {
-					status = 0;
-				}
-			}
-		}
+        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ||
+                strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
+            if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
+                if ( prevDataObjInfo != NULL ) {
+                    prevDataObjInfo->next = tmpDataObjInfo->next;
+                    queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
+                                    topFlag );
+                }
+                if ( topFlag > 0 ) {
+                    return 0;
+                }
+                else {
+                    status = 0;
+                }
+            }
+        }
 
         prevDataObjInfo = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
@@ -1022,7 +1022,7 @@ sortObjInfoForRepl(
                 // we need to check the status of the resource
                 // to determine if it is up or down before
                 // queue-ing it up
-                if ( irods::is_hier_live(dst_resc_hier).ok() /* INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus */ ) {
+                if ( irods::is_hier_live( dst_resc_hier ).ok() /* INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus */ ) {
                     if ( prev_info == NULL ) {
                         *dataObjInfoHead = tmp_info->next;
                     }

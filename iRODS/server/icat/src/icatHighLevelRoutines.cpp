@@ -849,7 +849,7 @@ int chlTest( rsComm_t *rsComm, char *name ) {
 /// @brief Adds the child, with context, to the resource all specified in the resc_input map
 int chlAddChildResc(
     rsComm_t*   _comm,
-	std::map<std::string, std::string>& _resc_input ) {
+    std::map<std::string, std::string>& _resc_input ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
@@ -886,7 +886,7 @@ int chlAddChildResc(
     // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
-		  std::map<std::string, std::string>* > (
+          std::map<std::string, std::string>* > (
               irods::DATABASE_OP_ADD_CHILD_RESC,
               ptr,
               _comm,
@@ -937,7 +937,7 @@ int chlRegResc(
     // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
-		  std::map<std::string, std::string>* > (
+          std::map<std::string, std::string>* > (
               irods::DATABASE_OP_REG_RESC,
               ptr,
               _comm,
@@ -951,7 +951,7 @@ int chlRegResc(
 /// @brief Remove a child from its parent
 int chlDelChildResc(
     rsComm_t*   _comm,
-	std::map<std::string, std::string>& _resc_input ) {
+    std::map<std::string, std::string>& _resc_input ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
@@ -988,7 +988,7 @@ int chlDelChildResc(
     // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
-		  std::map<std::string, std::string>* > (
+          std::map<std::string, std::string>* > (
               irods::DATABASE_OP_DEL_CHILD_RESC,
               ptr,
               _comm,
@@ -1002,7 +1002,7 @@ int chlDelChildResc(
 // delete a Resource
 int chlDelResc(
     rsComm_t*   _comm,
-	const std::string& _resc_name,
+    const std::string& _resc_name,
     int         _dry_run ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1040,7 +1040,7 @@ int chlDelResc(
     // call the operation on the plugin
     ret = db->call <
           rsComm_t*,
-		  const char*,
+          const char*,
           int > (
               irods::DATABASE_OP_DEL_RESC,
               ptr,

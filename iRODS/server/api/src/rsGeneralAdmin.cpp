@@ -91,7 +91,7 @@ _addChildToResource(
     resc_input[irods::RESOURCE_CHILDREN] = rescChildren;
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
-    		resc_input[irods::RESOURCE_NAME].c_str() );
+             resc_input[irods::RESOURCE_NAME].c_str() );
 
     if ( ( result = chlAddChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
@@ -119,7 +119,7 @@ _removeChildFromResource(
     resc_input[irods::RESOURCE_CHILDREN] = _generalAdminInp->arg3;
 
     rodsLog( LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", resc_input[irods::RESOURCE_CHILDREN].c_str(),
-    		resc_input[irods::RESOURCE_NAME].c_str() );
+             resc_input[irods::RESOURCE_NAME].c_str() );
 
     if ( ( result = chlDelChildResc( _rsComm, resc_input ) ) != 0 ) {
         chlRollback( _rsComm );
@@ -143,7 +143,7 @@ _addResource(
     // =-=-=-=-=-=-=-
     // Legacy checks
     if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-    	return SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     if ( strlen( _generalAdminInp->arg3 ) >= NAME_LEN ) {	// resource type
@@ -196,8 +196,8 @@ _addResource(
 
     }
     else {
-    	resc_input[irods::RESOURCE_LOCATION] = irods::EMPTY_RESC_HOST;
-    	resc_input[irods::RESOURCE_PATH] = irods::EMPTY_RESC_PATH;
+        resc_input[irods::RESOURCE_LOCATION] = irods::EMPTY_RESC_HOST;
+        resc_input[irods::RESOURCE_PATH] = irods::EMPTY_RESC_PATH;
     }
 
     // =-=-=-=-=-=-=-
@@ -216,8 +216,8 @@ _addResource(
         rodsLog(
             LOG_DEBUG,
             "No plugin exists to provide resource [%s] of type [%s]",
-			resc_input[irods::RESOURCE_NAME].c_str(),
-			resc_input[irods::RESOURCE_TYPE].c_str() );
+            resc_input[irods::RESOURCE_NAME].c_str(),
+            resc_input[irods::RESOURCE_TYPE].c_str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -227,7 +227,7 @@ _addResource(
             result = _rei2.status;
         }
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
-        		resc_input[irods::RESOURCE_NAME].c_str(), result );
+                 resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
     // =-=-=-=-=-=-=-
@@ -243,7 +243,7 @@ _addResource(
             result = _rei2.status;
         }
         rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
-        		resc_input[irods::RESOURCE_NAME].c_str(), result );
+                 resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
     return result;
@@ -747,10 +747,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( strcmp( generalAdminInp->arg3, "--dryrun" ) == 0 ) {
 
                 if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-                	return SYS_INVALID_INPUT_PARAM;
+                    return SYS_INVALID_INPUT_PARAM;
                 }
 
-            	resc_name = generalAdminInp->arg2;
+                resc_name = generalAdminInp->arg2;
 
                 rodsLog( LOG_STATUS, "Executing a dryrun of removal of resource [%s]", generalAdminInp->arg2 );
 
@@ -767,7 +767,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             // =-=-=-=-=-=-=-
 
             if ( strlen( generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-            	return SYS_INVALID_INPUT_PARAM;
+                return SYS_INVALID_INPUT_PARAM;
             }
 
             resc_name = generalAdminInp->arg2;
@@ -781,7 +781,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 }
                 rodsLog( LOG_ERROR,
                          "rsGeneralAdmin:acPreProcForDeleteResource error for %s,stat=%d",
-						 resc_name.c_str(), i );
+                         resc_name.c_str(), i );
                 return i;
             }
 
@@ -794,7 +794,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     }
                     rodsLog( LOG_ERROR,
                              "rsGeneralAdmin:acPostProcForDeleteResource error for %s,stat=%d",
-							 resc_name.c_str(), i );
+                             resc_name.c_str(), i );
                     return i;
                 }
             }

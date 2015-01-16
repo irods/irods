@@ -3927,17 +3927,17 @@ extern "C" {
     irods::error db_add_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-		std::map<std::string, std::string> *_resc_input ) {
+        std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if (!_comm || !_resc_input) {
-            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        if ( !_comm || !_resc_input ) {
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
         }
 
         // =-=-=-=-=-=-=-
         // for readability
-    	std::map<std::string, std::string>& resc_input = *_resc_input;
+        std::map<std::string, std::string>& resc_input = *_resc_input;
 
         // =-=-=-=-=-=-=-
         // check the context
@@ -3981,7 +3981,7 @@ extern "C" {
 
             }
             else if ( resc_input[irods::RESOURCE_ZONE].length() > 0 &&
-            		resc_input[irods::RESOURCE_ZONE] != zone) {
+                      resc_input[irods::RESOURCE_ZONE] != zone ) {
                 addRErrorMsg( &_comm->rError, 0,
                               "Currently, resources must be in the local zone" );
                 result = CAT_INVALID_ZONE;
@@ -4018,7 +4018,7 @@ extern "C" {
                     else if ( ( ret = _updateChildParent(
                                           _ctx.prop_map(),
                                           new_child_string,
-										  resc_input[irods::RESOURCE_NAME] ) ).code() != 0 ) {
+                                          resc_input[irods::RESOURCE_NAME] ) ).code() != 0 ) {
                         result = ret.code();
                     }
                     else {
@@ -4029,7 +4029,7 @@ extern "C" {
                             // =-=-=-=-=-=-=-
                             // Resolve resource hierarchy
                             status = chlGetHierarchyForResc(
-                            		resc_input[irods::RESOURCE_NAME],
+                                         resc_input[irods::RESOURCE_NAME],
                                          zone,
                                          hierarchy );
                             if ( status < 0 ) {
@@ -4115,7 +4115,7 @@ extern "C" {
                             commentStr,
                             sizeof commentStr,
                             "%s %s",
-							resc_input[irods::RESOURCE_NAME].c_str(),
+                            resc_input[irods::RESOURCE_NAME].c_str(),
                             new_child_string.c_str() );
                         if ( ( status = cmlAudit3(
                                             AU_ADD_CHILD_RESOURCE,
@@ -4162,17 +4162,17 @@ extern "C" {
     irods::error db_reg_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-		std::map<std::string, std::string> *_resc_input ) {
+        std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if (!_comm || !_resc_input) {
-            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        if ( !_comm || !_resc_input ) {
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
         }
 
         // =-=-=-=-=-=-=-
         // for readability
-    	std::map<std::string, std::string>& resc_input = *_resc_input;
+        std::map<std::string, std::string>& resc_input = *_resc_input;
 
         // =-=-=-=-=-=-=-
         // check the context
@@ -4273,7 +4273,7 @@ extern "C" {
         //    }
         // =-=-=-=-=-=-=-
         // if the resource is not the 'empty resource' test it
-        if (resc_input[irods::RESOURCE_LOCATION] != irods::EMPTY_RESC_HOST) {
+        if ( resc_input[irods::RESOURCE_LOCATION] != irods::EMPTY_RESC_HOST ) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4597
             _resolveHostName( _comm, resc_input[irods::RESOURCE_LOCATION].c_str(), myHostEnt );
@@ -4315,7 +4315,7 @@ extern "C" {
         status = cmlAudit3( AU_REGISTER_RESOURCE,  idNum,
                             _comm->clientUser.userName,
                             _comm->clientUser.rodsZone,
-							resc_input[irods::RESOURCE_NAME].c_str(), &icss );
+                            resc_input[irods::RESOURCE_NAME].c_str(), &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlRegResc cmlAudit3 failure %d",
@@ -4340,17 +4340,17 @@ extern "C" {
     irods::error db_del_child_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-		std::map<std::string, std::string> *_resc_input ) {
+        std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if (!_comm || !_resc_input) {
-            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter");
+        if ( !_comm || !_resc_input ) {
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
         }
 
         // =-=-=-=-=-=-=-
         // for readability
-    	std::map<std::string, std::string>& resc_input = *_resc_input;
+        std::map<std::string, std::string>& resc_input = *_resc_input;
 
         // =-=-=-=-=-=-=-
         // check the context
@@ -4427,7 +4427,7 @@ extern "C" {
                         // =-=-=-=-=-=-=-
                         // Resolve resource hierarchy (of parent)
                         status = chlGetHierarchyForResc(
-                        		resc_input[irods::RESOURCE_NAME],
+                                     resc_input[irods::RESOURCE_NAME],
                                      zone.c_str(),
                                      hierarchy );
                         if ( status < 0 ) {
@@ -4525,7 +4525,7 @@ extern "C" {
     irods::error db_del_resc_op(
         irods::plugin_context& _ctx,
         rsComm_t*              _comm,
-		const char *_resc_name,
+        const char *_resc_name,
         int                    _dry_run ) {
 
         // =-=-=-=-=-=-=-
@@ -4591,7 +4591,7 @@ extern "C" {
             char errMsg[105];
             snprintf( errMsg, 100,
                       "resource '%s' contains one or more dataObjects",
-					  _resc_name );
+                      _resc_name );
             addRErrorMsg( &_comm->rError, 0, errMsg );
             return ERROR( CAT_RESOURCE_NOT_EMPTY, "resc not empty" );
         }
@@ -4619,7 +4619,7 @@ extern "C" {
                 char errMsg[105];
                 snprintf( errMsg, 100,
                           "resource '%s' does not exist",
-						  _resc_name );
+                          _resc_name );
                 addRErrorMsg( &_comm->rError, 0, errMsg );
                 return ERROR( status, "resource does not exits" );
             }
@@ -4631,7 +4631,7 @@ extern "C" {
             char errMsg[105];
             snprintf( errMsg, 100,
                       "resource '%s' has a parent or child",
-					  _resc_name );
+                      _resc_name );
             addRErrorMsg( &_comm->rError, 0, errMsg );
             return ERROR( CAT_RESOURCE_NOT_EMPTY, "resource not empty" );
         }
@@ -4648,7 +4648,7 @@ extern "C" {
                 char errMsg[105];
                 snprintf( errMsg, 100,
                           "resource '%s' does not exist",
-						  _resc_name );
+                          _resc_name );
                 addRErrorMsg( &_comm->rError, 0, errMsg );
                 return ERROR( status, "resource does not exist" );
             }
@@ -4683,7 +4683,7 @@ extern "C" {
                             rescId,
                             _comm->clientUser.userName,
                             _comm->clientUser.rodsZone,
-							_resc_name,
+                            _resc_name,
                             &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,

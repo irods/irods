@@ -176,7 +176,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     char *dataObjChksumStr = NULL;
     dataObjInfo_t *dataObjInfoHead = NULL;
     int status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
-                               &dataObjInfoHead );
+                                   &dataObjInfoHead );
 
     if ( status < 0 && status != CAT_NO_ACCESS_PERMISSION &&
             status != CAT_NO_ROWS_FOUND ) {
