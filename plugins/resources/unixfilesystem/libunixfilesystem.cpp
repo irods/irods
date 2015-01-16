@@ -101,13 +101,11 @@ static irods::error unix_file_copy_plugin(
         int status = stat( srcFileName, &statbuf );
         err_status = errno;
         if ( status < 0 ) {
-            close( inFd );
             std::stringstream msg_stream;
             msg_stream << "stat failed on \"" << srcFileName << "\", status: " << err_status;
             result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
         }
-        if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-            close( inFd ); // JMC cppcheck - resource
+        else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
             std::stringstream msg_stream;
             msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
             result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
