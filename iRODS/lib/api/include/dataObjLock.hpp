@@ -27,6 +27,7 @@
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_LOCK rsDataObjLock
+#define RS_DATA_OBJ_UNLOCK rsDataObjUnlock
 /* prototype for the server handler */
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
@@ -35,10 +36,13 @@ _rsDataObjLock( dataObjInp_t *dataObjInp );
 int
 getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type );
 int
-rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd ); // JMC - backport 4604
+rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ); // JMC - backport 4604
+int
+_rsDataObjUnlock( dataObjInp_t *dataObjInp );
 
 #else
 #define RS_DATA_OBJ_LOCK NULL
+#define RS_DATA_OBJ_UNLOCK NULL
 #endif
 
 #ifdef __cplusplus
@@ -57,6 +61,8 @@ extern "C" {
 
 int
 rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp );
+int
+rcDataObjUnlock( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
 }

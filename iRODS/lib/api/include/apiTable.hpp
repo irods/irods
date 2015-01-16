@@ -366,6 +366,10 @@ static irods::apidef_t client_api_table_inp[] = {
         "DataObjInp_PI", 0, NULL, 0, ( funcPtr ) RS_DATA_OBJ_LOCK, clearDataObjInp
     },
     {
+        DATA_OBJ_UNLOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
+        "DataObjInp_PI", 0, NULL, 0, ( funcPtr ) RS_DATA_OBJ_UNLOCK, clearDataObjInp
+    },
+    {
         SUB_STRUCT_FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
         REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
         ( funcPtr ) RS_SUB_STRUCT_FILE_CREATE, irods::clearInStruct_noop

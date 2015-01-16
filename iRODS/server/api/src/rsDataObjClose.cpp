@@ -90,7 +90,10 @@ irsDataObjClose(
         // =-=-=-=-=-=-=-
         // JMC - backport 4640
         if ( L1desc[l1descInx].lockFd > 0 ) {
-            rsDataObjUnlock( rsComm, L1desc[l1descInx].dataObjInp, L1desc[l1descInx].lockFd );
+            char fd_string[NAME_LEN];
+            snprintf( fd_string, sizeof( fd_string ), "%-d", L1desc[l1descInx].lockFd );
+            addKeyVal( &L1desc[l1descInx].dataObjInp->condInput, LOCK_FD_KW, fd_string );
+            rsDataObjUnlock( rsComm, L1desc[l1descInx].dataObjInp );
             L1desc[l1descInx].lockFd = -1;
         }
         // =-=-=-=-=-=-=-

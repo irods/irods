@@ -18,15 +18,13 @@
 
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
-    int status;
-    int remoteFlag;
-    specCollCache_t *specCollCache = NULL;
-    rodsServerHost_t *rodsServerHost = NULL;
 
+    specCollCache_t *specCollCache = NULL;
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
 
-    remoteFlag = getAndConnRcatHost(
+    rodsServerHost_t *rodsServerHost = NULL;
+    int remoteFlag = getAndConnRcatHost(
                      rsComm,
                      MASTER_RCAT,
                      ( const char* )dataObjInp->objPath,
@@ -36,40 +34,35 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         if ( rodsServerHost != NULL ) { // JMC - cppcheck null ref
-            status = rcDataObjLock( rodsServerHost->conn, dataObjInp );
-            return status;
+            return rcDataObjLock( rodsServerHost->conn, dataObjInp );
         }
         else {
-            status = SYS_NO_RCAT_SERVER_ERR;
+            return SYS_NO_RCAT_SERVER_ERR;
         }
     }
-    else {
 #ifdef RODS_CAT
-        status = _rsDataObjLock( dataObjInp );
+    return _rsDataObjLock( dataObjInp );
 #else
-        status = SYS_NO_RCAT_SERVER_ERR;
+    return status = SYS_NO_RCAT_SERVER_ERR;
 #endif
-    }
-    return status;
 }
 
 int
 _rsDataObjLock( dataObjInp_t *dataObjInp ) {
-    int status;
-    int cmd, type, fd;
 
-    fd = getLockCmdAndType( &dataObjInp->condInput, &cmd, &type );
-    if ( fd < 0 ) {
-        return fd;
+    int cmd, type;
+    int status = getLockCmdAndType( &dataObjInp->condInput, &cmd, &type );
+    if ( status < 0 ) {
+        return status;
     }
 
-    status = fsDataObjLock( dataObjInp->objPath, cmd, type, fd );
+    status = fsDataObjLock( dataObjInp->objPath, cmd, type );
     return status;
 }
 
 int
 getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
-    char *lockType, *lockCmd, *lockFd;
+    char *lockType, *lockCmd;
     int status;
 
     if ( condInput == NULL || cmd == NULL || type == NULL ) {
@@ -86,20 +79,6 @@ getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
     }
     else if ( strcmp( lockType, WRITE_LOCK_TYPE ) == 0 ) {
         *type = F_WRLCK;
-    }
-    else if ( strcmp( lockType, UNLOCK_TYPE ) == 0 ) {
-        *type = F_UNLCK;
-        *cmd  = F_SETLK; // JMC - backport 4604
-        lockFd = getValByKey( condInput, LOCK_FD_KW );
-        if ( lockFd  != NULL ) {
-            return atoi( lockFd );
-        }
-        else {
-            status = SYS_LOCK_TYPE_INP_ERR;
-            rodsLogError( LOG_ERROR, status,
-                          "getLockCmdAndType: LOCK_FD_KW not defined for UNLOCK_TYPE" );
-            return status;
-        }
     }
     else {
         status = SYS_LOCK_TYPE_INP_ERR;
@@ -136,16 +115,47 @@ getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
 // =-=-=-=-=-=-=-
 // JMC - backport 4604
 int
-rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int fd ) {
-    char tmpStr[NAME_LEN];
-    int status;
+rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
-    snprintf( tmpStr, NAME_LEN, "%-d", fd );
-    addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, tmpStr );
-    addKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW, UNLOCK_TYPE );
+    specCollCache_t *specCollCache = NULL;
+    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
+                       &dataObjInp->condInput );
 
-    status = rsDataObjLock( rsComm, dataObjInp );
+    rodsServerHost_t *rodsServerHost = NULL;
+    int remoteFlag = getAndConnRcatHost(
+                     rsComm,
+                     MASTER_RCAT,
+                     ( const char* )dataObjInp->objPath,
+                     &rodsServerHost );
+    if ( remoteFlag < 0 ) {
+        return remoteFlag;
+    }
+    else if ( remoteFlag == REMOTE_HOST ) {
+        if ( rodsServerHost != NULL ) { // JMC - cppcheck null ref
+            return rcDataObjUnlock( rodsServerHost->conn, dataObjInp );
+        }
+        else {
+            return SYS_NO_RCAT_SERVER_ERR;
+        }
+    }
+#ifdef RODS_CAT
+    return _rsDataObjUnlock( dataObjInp );
+#else
+    return status = SYS_NO_RCAT_SERVER_ERR;
+#endif
+}
 
-    return status;
+int
+_rsDataObjUnlock( dataObjInp_t *dataObjInp ) {
+
+    char * fd_string = getValByKey( &dataObjInp->condInput, LOCK_FD_KW );
+    if ( fd_string  == NULL ) {
+        int status = SYS_LOCK_TYPE_INP_ERR;
+        rodsLogError( LOG_ERROR, status,
+                "getLockCmdAndType: LOCK_FD_KW not defined for unlock operation" );
+        return status;
+    }
+    return fsDataObjUnlock( F_SETLK, F_UNLCK, atoi( fd_string ) );
+
 }
 // =-=-=-=-=-=-=-

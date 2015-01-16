@@ -127,7 +127,10 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     if ( rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T ) {
         if ( lockFd >= 0 ) {
-            rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
+            char fd_string[NAME_LEN];
+            snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+            addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+            rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
         }
         return USER_INPUT_PATH_ERR;
     }
@@ -137,7 +140,10 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             rodsObjStatOut->specColl->collClass == LINKED_COLL ) {
         /*  should not be here because if has been translated */
         if ( lockFd >= 0 ) {
-            rsDataObjUnlock( rsComm, dataObjInp, lockFd ); // JMC - backport 4604
+            char fd_string[NAME_LEN];
+            snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+            addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+            rsDataObjUnlock( rsComm, dataObjInp ); // JMC - backport 4604
         }
 
         return SYS_COLL_LINK_PATH_ERR;
@@ -209,7 +215,10 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             L1desc[l1descInx].lockFd = lockFd;
         }
         else {
-            rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+            char fd_string[NAME_LEN];
+            snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+            addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+            rsDataObjUnlock( rsComm, dataObjInp );
         }
     }
 

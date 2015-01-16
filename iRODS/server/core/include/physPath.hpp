@@ -103,7 +103,11 @@ extern "C" {
     int
     getDataObjLockPath( char *objPath, char **outLockPath );
     int
-    fsDataObjLock( char *objPath, int cmd, int type, int infd );
+    executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock );
+    int
+    fsDataObjLock( char *objPath, int cmd, int type );
+    int
+    fsDataObjUnlock( int cmd, int type, int fd );
 // =-=-=-=-=-=-=-
 
     rodsLong_t

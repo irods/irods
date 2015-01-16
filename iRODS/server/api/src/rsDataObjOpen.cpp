@@ -140,7 +140,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 L1desc[l1descInx].lockFd = lockFd;
             }
             else {
-                rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+                char fd_string[NAME_LEN];
+                snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+                addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+                rsDataObjUnlock( rsComm, dataObjInp );
             }
         }
         return status;
@@ -150,7 +153,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         status = sortObjInfoForOpen( &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
         if ( status < 0 ) { // JMC - backport 4604
             if ( lockFd > 0 ) {
-                rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+                char fd_string[NAME_LEN];
+                snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+                addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+                rsDataObjUnlock( rsComm, dataObjInp );
             }
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -162,7 +168,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
         if ( status < 0 ) { // JMC - backport 4604
             if ( lockFd > 0 ) {
-                rsDataObjUnlock( rsComm, dataObjInp, lockFd );
+                char fd_string[NAME_LEN];
+                snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+                addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+                rsDataObjUnlock( rsComm, dataObjInp );
             }
             return status;
         }
@@ -180,7 +189,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     if ( status < 0 ) {
         if ( lockFd > 0 ) {
-            rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
+            char fd_string[NAME_LEN];
+            snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+            addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+            rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
         }
         freeAllDataObjInfo( dataObjInfoHead );
         return status;
@@ -198,7 +210,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                          dataObjInfoHead->objPath, status );
                 freeAllDataObjInfo( dataObjInfoHead );
                 if ( lockFd >= 0 ) {
-                    rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4604
+                    char fd_string[NAME_LEN];
+                    snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+                    addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+                    rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
                 }
                 return status;
             }

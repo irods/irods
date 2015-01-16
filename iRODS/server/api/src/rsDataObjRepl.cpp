@@ -170,7 +170,10 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if ( lockFd > 0 ) {
-        rsDataObjUnlock( rsComm, dataObjInp, lockFd );    // JMC - backport 4609
+        char fd_string[NAME_LEN];
+        snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
+        addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
+        rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4609
     }
 
     // =-=-=-=-=-=-=-

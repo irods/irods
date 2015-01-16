@@ -77,4 +77,12 @@ rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     return status;
 }
 
+int
+rcDataObjUnlock( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
+    int status;
+    status = procApiRequest( conn, DATA_OBJ_UNLOCK_AN,  dataObjInp, NULL,
+                             ( void ** ) NULL, NULL );
+
+    return status;
+}
 
