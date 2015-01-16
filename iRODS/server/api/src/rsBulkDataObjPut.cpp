@@ -300,7 +300,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = getMountedSubPhyPath( specColl->collection,
                                        specColl->phyPath, dataObjInp->objPath, phyBunDir );
         if ( status >= 0 ) {
-            mkFileDirR( rsComm, 0, phyBunDir, resc_hier, getDefDirMode() );
+            mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
         }
         return status;
     }
@@ -325,7 +325,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     while ( status == 0 );
 
-    mkFileDirR( rsComm, 0, phyBunDir, resc_hier, getDefDirMode() );
+    mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
 
     return 0;
 }
