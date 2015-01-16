@@ -181,12 +181,14 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
         assertiCmd(s.adminsession, "iput " + filename)  # put file
         assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)  # replicate file
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + updated_filename + " " + filename)  # force new put on second resource
+        # force new put on second resource
+        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + updated_filename + " " + filename)
         assertiCmd(s.adminsession, "ils -L " + filename, "STDOUT", filename)  # debugging
-        assertiCmd(s.adminsession, "iget -f -n 0 " + filename + " " + retrievedfile)  # should get orig file (replica 0)
-        assert 0 == os.system("diff %s %s" % (filename, retrievedfile)) # confirm retrieved is correct
+        # should get orig file (replica 0)
+        assertiCmd(s.adminsession, "iget -f -n 0 " + filename + " " + retrievedfile)
+        assert 0 == os.system("diff %s %s" % (filename, retrievedfile))  # confirm retrieved is correct
         assertiCmd(s.adminsession, "iget -f " + filename + " " + retrievedfile)  # should get updated file
-        assert 0 == os.system("diff %s %s" % (updated_filename, retrievedfile)) # confirm retrieved is correct
+        assert 0 == os.system("diff %s %s" % (updated_filename, retrievedfile))  # confirm retrieved is correct
         # local cleanup
         output = commands.getstatusoutput('rm ' + filename)
         output = commands.getstatusoutput('rm ' + updated_filename)
