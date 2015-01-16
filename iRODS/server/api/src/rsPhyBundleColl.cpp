@@ -202,7 +202,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
     int        status      = -1;
     int        savedStatus =  0;
-    collEnt_t* collEnt     =  0;
+    collEnt_t* collEnt     =  NULL;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->objType == DATA_OBJ_T ) {
             if ( curSubFileCond.collName[0] == '\0' ) {
@@ -238,6 +238,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                             rodsLog( LOG_ERROR,
                                      "_rsPhyBundleColl:createPhyBundleDataObj err for %s,stat=%d",
                                      phyBundleCollInp->collection, l1descInx );
+                            freeCollEnt( collEnt );
                             return l1descInx;
                         }
 
