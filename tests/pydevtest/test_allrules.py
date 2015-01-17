@@ -2,6 +2,7 @@ import os
 import socket
 import shutil
 import sys
+import getpass
 
 if (sys.version_info >= (2, 7)):
     import unittest
@@ -38,12 +39,13 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         # testallrules setup
         global rules30dir
         hostname = socket.gethostname()
+        hostuser = getpass.getuser()
         progname = __file__
         dir_w = rules30dir + ".."
         s.adminsession.runCmd('icd')  # to get into the home directory (for testallrules assumption)
         s.adminsession.runAdminCmd('iadmin', ["mkuser", "devtestuser", "rodsuser"])
         s.adminsession.runAdminCmd(
-            'iadmin', ["mkresc", "testallrulesResc", "unix file system", hostname + ":/tmp/pydevtest_testallrulesResc"])
+            'iadmin', ["mkresc", "testallrulesResc", "unix file system", hostname + ":/tmp/" + hostuser + "/pydevtest_testallrulesResc"])
         s.adminsession.runCmd('imkdir', ["sub1"])
         s.adminsession.runCmd('imkdir', ["sub3"])
         s.adminsession.runCmd('imkdir', ["forphymv"])

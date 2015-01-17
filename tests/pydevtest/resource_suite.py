@@ -14,6 +14,7 @@ import time
 import psutil
 import base64
 import hashlib
+import getpass
 
 
 class ResourceBase(object):
@@ -39,10 +40,11 @@ class ResourceBase(object):
         print "run_resource_setup - creating test resources"
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
+        hostuser = getpass.getuser()
         s.adminsession.runAdminCmd(
-            'iadmin', ["mkresc", self.testresc, "unix file system", hostname + ":/tmp/pydevtest_" + self.testresc])
+            'iadmin', ["mkresc", self.testresc, "unix file system", hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.testresc])
         s.adminsession.runAdminCmd(
-            'iadmin', ["mkresc", self.anotherresc, "unix file system", hostname + ":/tmp/pydevtest_" + self.anotherresc])
+            'iadmin', ["mkresc", self.anotherresc, "unix file system", hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.anotherresc])
         # set up test files
         print "run_resource_setup - generating local testfile"
         f = open(self.testfile, 'wb')
@@ -844,15 +846,16 @@ class ResourceSuite(ResourceBase):
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
+        hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" %
-                   hostname, "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" %
-                   hostname, "LIST", "Creating")  # create fourth resource
+        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), "LIST", "Creating")   # create third resource
+        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
         assertiCmd(s.adminsession, "iput " + filename)                                         # put file
         # replicate to test resource
@@ -928,9 +931,10 @@ class ResourceSuite(ResourceBase):
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
+        hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" %
-                   hostname, "LIST", "Creating")  # create third resource
+        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), "LIST", "Creating")  # create third resource
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
         assertiCmd(s.adminsession, "iput " + filename)                            # put file
         assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
