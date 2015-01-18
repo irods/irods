@@ -43,7 +43,7 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 #ifdef RODS_CAT
     return _rsDataObjLock( dataObjInp );
 #else
-    return status = SYS_NO_RCAT_SERVER_ERR;
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }
 
@@ -141,7 +141,7 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 #ifdef RODS_CAT
     return _rsDataObjUnlock( dataObjInp );
 #else
-    return status = SYS_NO_RCAT_SERVER_ERR;
+    return SYS_NO_RCAT_SERVER_ERR;
 #endif
 }
 
