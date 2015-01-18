@@ -235,8 +235,6 @@ preProcParaPut( rsComm_t *rsComm, int l1descInx,
     initDataOprInp( &dataOprInp, l1descInx, PUT_OPR );
     /* add RESC_HIER_STR_KW for getNumThreads */
     if ( L1desc[l1descInx].dataObjInfo != NULL ) {
-        //addKeyVal (&dataOprInp.condInput, RESC_NAME_KW,
-        //           L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
         addKeyVal( &dataOprInp.condInput, RESC_HIER_STR_KW,
                    L1desc[l1descInx].dataObjInfo->rescHier );
     }
@@ -375,7 +373,6 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 
         memset( &subFile, 0, sizeof( subFile ) );
         rstrcpy( subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
-        //rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode( dataObjInp );
@@ -393,14 +390,12 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 
     std::string prev_resc_hier;
     memset( &filePutInp, 0, sizeof( filePutInp ) );
-//    rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );	//#1472
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( filePutInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
     if ( ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) != 0 ) {
         filePutInp.otherFlags |= FORCE_FLAG;
     }
 
-    //rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
     rstrcpy( filePutInp.addr.hostAddr, location.c_str(), NAME_LEN );
     rstrcpy( filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
     filePutInp.mode = getFileMode( dataObjInp );
