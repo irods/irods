@@ -234,9 +234,9 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     std::string resc_name;
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
+    status = getRescForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 || resc_name.empty() ) {
-        rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
+        rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescForCreate. status = %d", status );
         return status;
     }
 
@@ -532,14 +532,14 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return l3descInx;
 }
 
-/* getRescGrpForCreate - given the resource input in dataObjInp, get the
- * rescGrpInfo_t of the resource after applying the acSetRescSchemeForCreate
+/* getRescForCreate - given the resource input in dataObjInp,
+ * fills out _resc_name after applying the acSetRescSchemeForCreate
  * rule.
  * Return 1 of the "random" sorting scheme is used. Otherwise return 0
  * or an error code.
  */
 
-int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name ) {
+int getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name ) {
     int            status;
     ruleExecInfo_t rei;
 
@@ -560,7 +560,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string
             status = rei.status;
         }
 
-        rodsLog( LOG_NOTICE, "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+        rodsLog( LOG_NOTICE, "getRescForCreate:acSetRescSchemeForCreate error for %s,status=%d",
                  dataObjInp->objPath, status );
 
         return status;

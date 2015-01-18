@@ -98,7 +98,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
+    status = getRescForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 ) {
         return status;
     }

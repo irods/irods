@@ -310,7 +310,7 @@ _rsDataObjRepl(
 
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
+    status = getRescForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__ );
         return status;

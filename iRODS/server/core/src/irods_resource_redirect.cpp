@@ -254,10 +254,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // this is a 'create' operation and no resource is specified,
             // query the server for the default or other resource to use
-            int status = getRescGrpForCreate( _comm, _data_obj_inp, resc_name );
+            int status = getRescForCreate( _comm, _data_obj_inp, resc_name );
             if ( status < 0 || resc_name.empty() ) {
                 // =-=-=-=-=-=-=-
-                return ERROR( status, "failed in getRescGrpForCreate" );
+                return ERROR( status, "failed in getRescForCreate" );
             }
         }
         else {

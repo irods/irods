@@ -464,7 +464,7 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return USER_NO_RESC_INPUT_ERR;
     }
 
-    status = getRescGrpForCreate( rsComm, dataObjInp, resc_name );
+    status = getRescForCreate( rsComm, dataObjInp, resc_name );
     if ( status < 0 || resc_name.empty() ) {
         return status;    // JMC cppcheck
     }

@@ -230,7 +230,7 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         resc_name = myRodsObjStat->specColl->resource;
     }
     else {
-        status = getRescGrpForCreate( rsComm, &dataObjInp, resc_name );
+        status = getRescForCreate( rsComm, &dataObjInp, resc_name );
         if ( status < 0 || resc_name.empty() ) { // JMC cppcheck
             freeRodsObjStat( myRodsObjStat );
             return status;
