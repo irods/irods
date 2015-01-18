@@ -15,6 +15,7 @@ import subprocess
 import stat
 import socket
 import json
+import getpass
 
 # =-=-=-=-=-=-=-
 # build path magic to import server_config.py
@@ -852,7 +853,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                 indent=4,
                 ensure_ascii=False)
 
-        assertiCmd(s.adminsession, "iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/jimboResc", "LIST", "jimbo")
+        hostuser = getpass.getuser()
+        assertiCmd(s.adminsession, "iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
+                   hostuser, "LIST", "jimbo")
         assertiCmd(s.adminsession, "iput -R jimboResc README jimbofile")
         assertiCmd(s.adminsession, "irm -f jimbofile")
         assertiCmd(s.adminsession, "iadmin rmresc jimboResc")
