@@ -77,7 +77,7 @@ getFileFlags( int l1descInx ) {
 
 int
 getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-                      dataObjInp_t *dataObjInp ) {
+                 dataObjInp_t *dataObjInp ) {
     char *filePath;
     vaultPathPolicy_t vaultPathPolicy;
     int status;
@@ -1228,7 +1228,7 @@ fsDataObjLock( char *objPath, int cmd, int type ) {
     char *path = NULL;
     if ( ( status = getDataObjLockPath( objPath, &path ) ) < 0 ) {
         rodsLogError( LOG_ERROR, status,
-                "fsDataObjLock: getDataObjLockPath error for %s", objPath );
+                      "fsDataObjLock: getDataObjLockPath error for %s", objPath );
         free( path );
         return status;
     }
@@ -1237,7 +1237,7 @@ fsDataObjLock( char *objPath, int cmd, int type ) {
     if ( fd < 0 ) {
         status = FILE_OPEN_ERR - errno;
         rodsLogError( LOG_ERROR, status,
-                "fsDataObjLock: open error for %s", objPath );
+                      "fsDataObjLock: open error for %s", objPath );
         return status;
     }
     struct flock lock;

@@ -22,7 +22,7 @@ int
 rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      rodsHostAddr_t **rescAddr ) {
 
-	irods::error err = SUCCESS();
+    irods::error err = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // acquire the operation requested
@@ -57,10 +57,10 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // determine the hier string for the dest data obj inp
     std::string hier;
     err = irods::resolve_resource_hierarchy(
-                           oper,
-                           rsComm,
-                           dataObjInp,
-                           hier );
+              oper,
+              rsComm,
+              dataObjInp,
+              hier );
     if ( !err.ok() ) {
         std::stringstream msg;
         msg << "failed for [";

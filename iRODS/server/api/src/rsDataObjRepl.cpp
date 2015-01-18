@@ -639,7 +639,7 @@ _rsDataObjReplS(
             destDataObjInfo->dataId = myDestDataObjInfo->dataId;
             destDataObjInfo->replNum = myDestDataObjInfo->replNum;
         }
-        else if (myDestDataObjInfo) {
+        else if ( myDestDataObjInfo ) {
             /* the size could change */
             destDataObjInfo->dataSize = myDestDataObjInfo->dataSize;
         }

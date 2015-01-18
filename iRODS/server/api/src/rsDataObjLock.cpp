@@ -25,10 +25,10 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag = getAndConnRcatHost(
-                     rsComm,
-                     MASTER_RCAT,
-                     ( const char* )dataObjInp->objPath,
-                     &rodsServerHost );
+                         rsComm,
+                         MASTER_RCAT,
+                         ( const char* )dataObjInp->objPath,
+                         &rodsServerHost );
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }
@@ -123,10 +123,10 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag = getAndConnRcatHost(
-                     rsComm,
-                     MASTER_RCAT,
-                     ( const char* )dataObjInp->objPath,
-                     &rodsServerHost );
+                         rsComm,
+                         MASTER_RCAT,
+                         ( const char* )dataObjInp->objPath,
+                         &rodsServerHost );
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }
@@ -152,7 +152,7 @@ _rsDataObjUnlock( dataObjInp_t *dataObjInp ) {
     if ( fd_string  == NULL ) {
         int status = SYS_LOCK_TYPE_INP_ERR;
         rodsLogError( LOG_ERROR, status,
-                "getLockCmdAndType: LOCK_FD_KW not defined for unlock operation" );
+                      "getLockCmdAndType: LOCK_FD_KW not defined for unlock operation" );
         return status;
     }
     return fsDataObjUnlock( F_SETLK, F_UNLCK, atoi( fd_string ) );
