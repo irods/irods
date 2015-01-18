@@ -484,7 +484,7 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
         hostname = get_hostname()
-        hostusr = getpass.getuser()
+        hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
                    (hostname, hostuser), "LIST", "Creating")  # create third resource
