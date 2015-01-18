@@ -5,7 +5,6 @@ an iRODS installation.
 
 Contents
 	configure		configure prior to building iRODS
-	irodsprompt		prompt for iRODS configuration
 	runperl			shell wrapper for perl scripts
 
 Most (all) of these shell scripts are wrappers for Perl scripts in the

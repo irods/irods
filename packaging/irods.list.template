@@ -384,7 +384,6 @@ d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/configure.pl ./iRODS/scripts/perl/configure.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_platform.pl ./iRODS/scripts/perl/utils_platform.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/irodsprompt.pl ./iRODS/scripts/perl/irodsprompt.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_paths.pl ./iRODS/scripts/perl/utils_paths.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_prompt.pl ./iRODS/scripts/perl/utils_prompt.pl
@@ -395,7 +394,6 @@ f 644 root root ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/u
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
 f 755 root root ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/README.txt ./iRODS/scripts/perl/README.txt
-f 755 root root ${IRODS_HOME}/scripts/irodsprompt ./iRODS/scripts/irodsprompt
 f 755 root root ${IRODS_HOME}/scripts/configure ./iRODS/scripts/configure
 f 644 root root ${IRODS_HOME}/scripts/README.txt ./iRODS/scripts/README.txt
 d 755 root root ${IRODS_HOME}/server -

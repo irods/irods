@@ -6,7 +6,6 @@ an iRODS installation.
 Contents
 	configure.pl		configure prior to building iRODS
 	irodsctl.pl		start or stop the iRODS servers
-	irodsprompt.pl		prompt for config settings
 	irods_setup.pl		set up iRODS
 
 	utils_config.pl		utility functions for server configuration
