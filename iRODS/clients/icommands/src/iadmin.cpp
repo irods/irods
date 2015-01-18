@@ -1263,11 +1263,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         }
         return 0;
     }
-    if ( strcmp( cmdToken[0], "pv" ) == 0 ) {
-        generalAdmin( 0, "pvacuum", cmdToken[1], cmdToken[2], "", ""
-                      "", "", "", "", "", "" );
-        return 0;
-    }
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
         char myString[TIME_LEN];
         if ( strcmp( cmdToken[1], "str" ) == 0 ) {
@@ -1568,8 +1563,6 @@ void usageMain() {
         " rt tokenNamespace Name [Value1] (remove token) ",
         " spass Password Key (print a scrambled form of a password for DB)",
         " dspass Password Key (descramble a password and print it)",
-        " pv [date-time] [repeat-time(minutes)] ",
-        "           (initiate a periodic rule to vacuum the DB)",
         " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
         " suq User ResourceName-or-'total' Value (set user quota)",
         " sgq Group ResourceName-or-'total' Value (set group quota)",
@@ -2009,23 +2002,6 @@ usage( char *subOpt ) {
         ""
     };
 
-    char *pvMsgs[] = {
-        " pv [date-time] [minutes] (initiate a periodic rule to vacuum the DB)",
-        "The pv command will shutdown your iRODS Servers (if they have been",
-        "inactive a while), perform a db vacuum, and then restart them.",
-        "The date-time value is the time of day to run the first time,",
-        "for example 2008-05-07.23:00:00 .",
-        "The minutes value is the time between each subsequent run.",
-        "For example, you would use 1440 (24*60) to run it daily at the same time.",
-        "'pv 2008-05-07.23:59:00 1440' will run the pv rule/script each night one",
-        "minute before midnight.",
-        "With no arguments, pv will run the rule now and only once.",
-        "Without a minutes argument, pv will run the rule only once.",
-        "Run iqstat to view the queued rule.",
-        "See the vacuumdb.pl script (which is run by the rule) for details.",
-        ""
-    };
-
     char *ctimeMsgs[] = {
         " ctime Time (convert a iRODSTime value (integer) to local time",
         "Time values (modify times, access times) are stored in the database",
@@ -2170,7 +2146,7 @@ usage( char *subOpt ) {
                        mkzoneMsgs, modzoneMsgs, modzonecollaclMsgs, rmzoneMsgs,
                        mkgroupMsgs, rmgroupMsgs, atgMsgs,
                        rfgMsgs, atMsgs, rtMsgs, spassMsgs,
-                       dspassMsgs, pvMsgs, ctimeMsgs,
+                       dspassMsgs, ctimeMsgs,
                        suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
                        rumMsgs, asqMsgs, rsqMsgs,
                        helpMsgs, helpMsgs

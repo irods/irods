@@ -708,15 +708,16 @@ $Resc2A = $Resc2 . "a";
 #runCmd(0, "iadmin lrg $RG1");
 
 # Rules
-runCmd(0, "iadmin pv 2030-12-31");
-runCmd(0, "iqstat | grep msiVacuum");
-$ix = index($cmdStdout, " ");
-$id = substr($cmdStdout, 0, $ix);
-chomp($id);
-$idBad = $id+232324;
-runCmd(2, "iqdel $idBad");
-runCmd(0, "iqmod $id exeAddress test");
-runCmd(0, "iqdel $id");
+# TGR removed vacuum - TODO: find another rule to add
+#runCmd(0, "iadmin pv 2030-12-31");
+#runCmd(0, "iqstat | grep msiVacuum");
+#$ix = index($cmdStdout, " ");
+#$id = substr($cmdStdout, 0, $ix);
+#chomp($id);
+#$idBad = $id+232324;
+#runCmd(2, "iqdel $idBad");
+#runCmd(0, "iqmod $id exeAddress test");
+#runCmd(0, "iqdel $id");
 
 # Simple Query
 runCmd(0, "iadmin lt");

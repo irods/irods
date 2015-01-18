@@ -221,16 +221,17 @@ runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'IRODS_USER_NAME'};
 
 # Check non-admin access for deleting a rule
-runCmd(0, "iadmin pv 2030-12-31");
-runCmd(0, "iqstat | grep msiVacuum");
-$ix = index($cmdStdout, " ");
-$id = substr($cmdStdout, 0, $ix);
-chomp($id);
-$ENV{'IRODS_USER_NAME'}=$User2; 
-runCmd(2, "echo 123 | iqdel $id");
-runCmd(2, "test_chl rmrule $id $User2");
-delete $ENV{'IRODS_USER_NAME'};
-runCmd(0, "iqdel $id");
+# TGR - removed vacuum, TODO: find a substitute for this
+#runCmd(0, "iadmin pv 2030-12-31");
+#runCmd(0, "iqstat | grep msiVacuum");
+#$ix = index($cmdStdout, " ");
+#$id = substr($cmdStdout, 0, $ix);
+#chomp($id);
+#$ENV{'IRODS_USER_NAME'}=$User2; 
+#runCmd(2, "echo 123 | iqdel $id");
+#runCmd(2, "test_chl rmrule $id $User2");
+#delete $ENV{'IRODS_USER_NAME'};
+#runCmd(0, "iqdel $id");
 
 # Temporary password
 $ENV{'IRODS_USER_NAME'}=$User2; 

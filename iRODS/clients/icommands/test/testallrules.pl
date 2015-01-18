@@ -298,11 +298,8 @@ foreach $rulefile (@rules)
     if ($rulefile =~ /rulemsiSysChksumDataObj/) { print "----- skipping input/output -- $rulefile\n"; next; }
     if ($rulefile =~ /rulemsiSysMetaModify/) { print "----- skipping input/output -- $rulefile\n"; next; }
     if ($rulefile =~ /rulemsiSysReplDataObj/) { print "----- skipping input/output -- $rulefile\n"; next; }
-    if ($rulefile =~ /rulemsiVacuum/) { print "----- skipping input/output -- $rulefile\n"; next; }
     if ($rulefile =~ /rulemsiNoChkFilePathPerm/) { print "----- skipping input/output -- $rulefile\n"; next; }
     if ($rulefile =~ /rulemsiNoTrashCan/) { print "----- skipping input/output -- $rulefile\n"; next; }
-    if ($rulefile =~ /rulemsiVacuum/) { print "----- skipping input/output -- $rulefile\n"; next; }
-    if ($rulefile =~ /rulemsiVacuum/) { print "----- skipping input/output -- $rulefile\n"; next; }
 
     # skip rules we are not yet supporting
 

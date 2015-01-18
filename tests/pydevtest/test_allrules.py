@@ -185,10 +185,8 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
                 "rulemsiSysChksumDataObj",
                 "rulemsiSysMetaModify",
                 "rulemsiSysReplDataObj",
-                "rulemsiVacuum",
                 "rulemsiNoChkFilePathPerm",
                 "rulemsiNoTrashCan",
-                "rulemsiVacuum",
             ]
             for n in names_to_skip:
                 if n in rulefile:

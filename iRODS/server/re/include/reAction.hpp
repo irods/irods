@@ -61,7 +61,6 @@ int msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam
 int msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *coperator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei );
 int msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei );
 
-int msiVacuum( ruleExecInfo_t *rei );
 int msiQuota( ruleExecInfo_t *rei );
 int msiDeleteUnusedAVUs( ruleExecInfo_t *rei );
 int msiGoodFailure( ruleExecInfo_t *rei );
@@ -209,7 +208,6 @@ namespace irods {
     lookup_table< irods::ms_table_entry* >::lookup_table() {
         table_[ "print_hello" ] = new irods::ms_table_entry( "print_hello", 0, ( funcPtr ) print_hello );
         table_[ "print_hello_arg" ] = new irods::ms_table_entry( "print_hello_arg", 1, ( funcPtr ) print_hello_arg );
-        table_[ "msiVacuum" ] = new irods::ms_table_entry( "msiVacuum", 0, ( funcPtr ) msiVacuum );
         table_[ "msiQuota" ] = new irods::ms_table_entry( "msiQuota", 0, ( funcPtr ) msiQuota );
         table_[ "msiDeleteUnusedAVUs" ] = new irods::ms_table_entry( "msiDeleteUnusedAVUs", 0, ( funcPtr ) msiDeleteUnusedAVUs );
         table_[ "msiGoodFailure" ] = new irods::ms_table_entry( "msiGoodFailure", 0, ( funcPtr ) msiGoodFailure );

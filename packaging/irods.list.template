@@ -412,7 +412,6 @@ f 755 root root ${IRODS_HOME}/server/bin/cmd/irodsServerMonPerf ./iRODS/server/b
 f 755 root root ${IRODS_HOME}/server/bin/cmd/test_execstream.py ./iRODS/server/bin/cmd/test_execstream.py
 f 755 root root ${IRODS_HOME}/server/bin/cmd/hello ./iRODS/server/bin/cmd/hello
 f 755 root root ${IRODS_HOME}/server/bin/cmd/univMSSInterface.sh ./iRODS/server/bin/cmd/univMSSInterface.sh
-f 755 root root ${IRODS_HOME}/server/bin/vacuumdb.pl ./iRODS/server/bin/vacuumdb.pl
 f 755 root root ${IRODS_HOME}/server/bin/irodsServer ./iRODS/server/bin/irodsServer
 f 755 root root ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
 %if ICAT
@@ -438,7 +437,6 @@ f 755 root root ${IRODS_HOME}/server/test/bin/icatTest.pl ./iRODS/server/test/bi
 f 755 root root ${IRODS_HOME}/server/test/bin/moveTest.pl ./iRODS/server/test/bin/moveTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/quotaTest.pl ./iRODS/server/test/bin/quotaTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/specNameTest.pl ./iRODS/server/test/bin/specNameTest.pl
-f 755 root root ${IRODS_HOME}/server/test/bin/timeTest.pl ./iRODS/server/test/bin/timeTest.pl
 %if ICAT
 f 755 root root ${IRODS_HOME}/server/test/bin/test_chl ./iRODS/server/test/bin/test_chl
 %endif
@@ -700,7 +698,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDeleteUnuse
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSendStdoutAsEmail.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSendStdoutAsEmail.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiXsltApply.r ./iRODS/clients/icommands/test/rules3.0/rulemsiXsltApply.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRecursiveCollCopy.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRecursiveCollCopy.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiVacuum.r ./iRODS/clients/icommands/test/rules3.0/rulemsiVacuum.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateCollByAdmin.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateCollByAdmin.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStrToBytesBuf.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStrToBytesBuf.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreIRB.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmAppendToTopOfCoreIRB.r

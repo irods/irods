@@ -119,7 +119,6 @@ Session Variable sets for Administrative Rules:
 
 acCreateUser - SuserAdmin and SuserAndConn 
 acCreateUserF1 - SuserAdmin1 and SuserAndConn 
-acVacuum - SuserAndConn
 acCreateDefaultCollections - SuserAdmin1 and SuserAndConn 
 acCreateUserZoneCollections - SuserAdmin1 and SuserAndConn 
 acCreateCollByAdmin - SuserAndConn 

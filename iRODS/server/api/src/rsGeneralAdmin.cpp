@@ -297,27 +297,6 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
              "_rsGeneralAdmin arg0=%s",
              generalAdminInp->arg0 );
 
-    if ( strcmp( generalAdminInp->arg0, "pvacuum" ) == 0 ) {
-        const char *args[1];
-        char argStr[128];    /* argument string */
-        memset( ( char* )&rei, 0, sizeof( rei ) );
-        rei.rsComm = rsComm;
-        rei.uoic = &rsComm->clientUser;
-        rei.uoip = &rsComm->proxyUser;
-        rstrcpy( argStr, "", sizeof argStr );
-        if ( atoi( generalAdminInp->arg1 ) > 0 ) {
-            snprintf( argStr, sizeof argStr, "<ET>%s</ET>", generalAdminInp->arg1 );
-        }
-        if ( atoi( generalAdminInp->arg2 ) > 0 ) {
-            strncat( argStr, "<EF>", 5 );
-            strncat( argStr, generalAdminInp->arg2, 100 );
-            strncat( argStr, "</EF>", 6 );
-        }
-        args[0] = argStr;
-        status = applyRuleArg( "acVacuum", args, 1, &rei, SAVE_REI );
-        return status;
-    }
-
     if ( strcmp( generalAdminInp->arg0, "add" ) == 0 ) {
         if ( strcmp( generalAdminInp->arg1, "user" ) == 0 ) {
             /* run the acCreateUser rule */

@@ -107,7 +107,6 @@ This documentation is generated from the iRODS code.
 
  \subsection msiicat iCAT Microservices
  iCAT System Services
-  - #msiVacuum - Postgres vacuum - done periodically
   - #msiQuota - Calculates storage usage and sets quota values
   - #msiCommit  - Commits the database transaction
   - #msiRollback - Rollback the current database transaction
@@ -374,59 +373,6 @@ msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t
     }
     i = fillStrInMsParam( timeOutParam, tStr );
     return i;
-}
-
-/**
- * \fn msiVacuum (ruleExecInfo_t *rei)
- *
- * \brief   Postgres vacuum, done periodically to optimize indices and performance
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \author  Wayne Schroeder
- * \date    December 2006
- *
- * \note The effect of this is that iCAT database gets vacuumed.
- *       This microservice works with PostgreSQL only.
- *
- * \note This is run via an 'iadmin' command (iadmin pv) via a rule
- *    in the core.irb. It is not designed for general use in other
- *    situations (i.e. don't call this from other rules).
- *
- * \usage See clients/icommands/test/rules3.0/
- *
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiVacuum( ruleExecInfo_t* ) {
-    int i;
-    rodsLog( LOG_NOTICE, "msiVacuum called\n" );
-
-    i = doForkExec( "/usr/bin/perl", "./vacuumdb.pl" );
-
-    if ( i ) {
-        rodsLog( LOG_ERROR, "msiVacuum doForkExec failure\n" );
-    }
-
-    rodsLog( LOG_NOTICE, "msiVacuum done\n" );
-
-    return 0;
 }
 
 

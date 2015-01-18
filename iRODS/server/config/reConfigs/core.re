@@ -24,7 +24,6 @@ acCreateUserF1 {
   acCreateDefaultCollections  :::  msiRollback;
   msiAddUserToGroup("public")  :::  msiRollback;
   msiCommit;  }
-acVacuum(*arg1) { delay(*arg1) { msiVacuum;} }
 acCreateDefaultCollections { acCreateUserZoneCollections; }
 acCreateUserZoneCollections {
   acCreateCollByAdmin("/"++$rodsZoneProxy++"/home", $otherUserName);
