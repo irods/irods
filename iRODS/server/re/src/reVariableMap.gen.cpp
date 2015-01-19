@@ -552,14 +552,6 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
     }
 
 
-    if ( strcmp( varName, "rescGroupName" ) == 0 ) {
-
-        i = getStrLeafValue( varValue, rei->rescGroupName, r );
-
-        return i;
-    }
-
-
     if ( strcmp( varName, "dataType" ) == 0 ) {
 
         i = getStrLeafValue( varValue, rei->dataType, r );
@@ -838,13 +830,6 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
         return i;
     }
 
-    if ( strcmp( varName, "rescGroupName" ) == 0 ) {
-
-        i = setStrLeafValue( rei->rescGroupName, NAME_LEN, newVarValue );
-
-        return i;
-    }
-
     if ( strcmp( varName, "dataType" ) == 0 ) {
 
         i = setStrLeafValue( rei->dataType, NAME_LEN, newVarValue );
@@ -1082,13 +1067,6 @@ ExprType *getVarTypeFromDataObjInfo( char *varMap, Region *r ) {
 
 
     if ( strcmp( varName, "rescName" ) == 0 ) {
-
-        return newSimpType( T_STRING, r );
-
-    }
-
-
-    if ( strcmp( varName, "rescGroupName" ) == 0 ) {
 
         return newSimpType( T_STRING, r );
 
