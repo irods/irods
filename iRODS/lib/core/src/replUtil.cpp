@@ -175,11 +175,6 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    rodsArgs->srcRescString );
     }
 
-    if ( rodsArgs->rescGroup == True ) {
-        addKeyVal( &dataObjInp->condInput, RESC_GROUP_NAME_KW,
-                   rodsArgs->rescGroupString );
-    }
-
     if ( rodsArgs->resource == True ) {
         if ( rodsArgs->resourceString == NULL ) {
             rodsLog( LOG_ERROR,

@@ -688,7 +688,7 @@ class ResourceSuite(ResourceBase):
         for l in cmdout[0].splitlines():
             if "demoResc" in l:
                 if "/session-" in l:
-                    physicalpath = l.split()[2]
+                    physicalpath = l.split()[1]
                     # check file is on disk
                     print "[ls -l " + physicalpath + "]:"
                     os.system("ls -l " + physicalpath)

@@ -51,9 +51,6 @@ namespace irods {
             inline std::string type_name()       const {
                 return type_name_;
             }
-            inline std::string resc_group_name() const {
-                return resc_group_name_;
-            }
             inline std::string resc_name()       const {
                 return resc_name_;
             }
@@ -120,9 +117,6 @@ namespace irods {
             inline void type_name( const std::string& _v )       {
                 type_name_       = _v;
             }
-            inline void resc_group_name( const std::string& _v ) {
-                resc_group_name_ = _v;
-            }
             inline void resc_name( const std::string& _v )       {
                 resc_name_       = _v;
             }
@@ -170,7 +164,6 @@ namespace irods {
             std::string name_;
             std::string version_;
             std::string type_name_;
-            std::string resc_group_name_;
             std::string resc_name_;
             std::string path_;
             std::string owner_name_;

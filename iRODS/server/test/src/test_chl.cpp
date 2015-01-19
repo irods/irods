@@ -634,7 +634,6 @@ int testRegReplica( rsComm_t *rsComm, char *srcPath, char *srcDataId,
 
 
     snprintf( dstDataObjInfo.rescName, sizeof( dstDataObjInfo.rescName ), "%s", "resc A" );
-    snprintf( dstDataObjInfo.rescGroupName, sizeof( dstDataObjInfo.rescGroupName ), "%s", "resc A" );
     snprintf( dstDataObjInfo.filePath, sizeof( dstDataObjInfo.filePath ), "%s",  dstPath );
 
     dstDataObjInfo.replStatus = 5;

@@ -424,7 +424,6 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  const char *_resc_name ) {
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
     regReplica_t regReplicaInp;
-    char *rescGroupName = NULL;
     int status;
 
     status = getDataObjInfo( rsComm, phyPathRegInp, &dataObjInfoHead,
@@ -448,10 +447,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
-    if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
-                                        RESC_GROUP_NAME_KW ) ) != NULL ) {
-        rstrcpy( destDataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
-    }
+
     memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
@@ -477,13 +473,9 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
 
     int status;
-    char *rescGroupName = NULL;
     char *chksum = NULL;
     initDataObjInfoWithInp( &dataObjInfo, phyPathRegInp );
-    if ( ( rescGroupName = getValByKey( &phyPathRegInp->condInput,
-                                        RESC_GROUP_NAME_KW ) ) != NULL ) {
-        rstrcpy( dataObjInfo.rescGroupName, rescGroupName, NAME_LEN );
-    }
+
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 

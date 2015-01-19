@@ -155,7 +155,7 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     srcDataObjInfo = srcDataObjInfoHead;
 
-    while ( srcDataObjInfo != NULL ) {
+    while ( srcDataObjInfo ) {
         /* use _rsDataObjReplS for the phymv */
         dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,

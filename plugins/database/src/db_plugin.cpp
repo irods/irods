@@ -2369,19 +2369,18 @@ extern "C" {
             RESC_NAME_KW,       FILE_PATH_KW,       DATA_OWNER_KW,
             DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW,
             DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
-            DATA_MODIFY_KW,     RESC_GROUP_NAME_KW, DATA_MODE_KW,
-            RESC_HIER_STR_KW,   "END"
+            DATA_MODIFY_KW,     DATA_MODE_KW,		RESC_HIER_STR_KW,
+			"END"
         };
 
         /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
          * you add items before "data_expiry_ts" and */
         char *colNames[] = {
-            "data_repl_num",   "data_type_name",  "data_size",
-            "resc_name",       "data_path",       "data_owner_name",
-            "data_owner_zone", "data_is_dirty",   "data_checksum",
-            "data_expiry_ts",  "r_comment",       "create_ts",
-            "modify_ts",       "resc_group_name", "data_mode",
-            "resc_hier"
+            "data_repl_num",   "data_type_name",	"data_size",
+            "resc_name",       "data_path",			"data_owner_name",
+            "data_owner_zone", "data_is_dirty",		"data_checksum",
+            "data_expiry_ts",  "r_comment",			"create_ts",
+            "modify_ts",       "data_mode",			"resc_hier"
         };
         int DATA_EXPIRY_TS_IX = 9; /* must match index in above colNames table */
         int MODIFY_TS_IX = 12;   /* must match index in above colNames table */
@@ -2901,24 +2900,23 @@ extern "C" {
         cllBindVars[4] = _data_obj_info->version;
         cllBindVars[5] = _data_obj_info->dataType;
         cllBindVars[6] = dataSizeNum;
-        cllBindVars[7] = _data_obj_info->rescGroupName;
-        cllBindVars[8] = _data_obj_info->rescName;
-        cllBindVars[9] = _data_obj_info->rescHier;
-        cllBindVars[10] = _data_obj_info->filePath;
-        cllBindVars[11] = _comm->clientUser.userName;
-        cllBindVars[12] = _comm->clientUser.rodsZone;
-        cllBindVars[13] = dataStatusNum;
-        cllBindVars[14] = _data_obj_info->chksum;
-        cllBindVars[15] = _data_obj_info->dataMode;
+        cllBindVars[7] = _data_obj_info->rescName;
+        cllBindVars[8] = _data_obj_info->rescHier;
+        cllBindVars[9] = _data_obj_info->filePath;
+        cllBindVars[10] = _comm->clientUser.userName;
+        cllBindVars[11] = _comm->clientUser.rodsZone;
+        cllBindVars[12] = dataStatusNum;
+        cllBindVars[13] = _data_obj_info->chksum;
+        cllBindVars[14] = _data_obj_info->dataMode;
+        cllBindVars[15] = myTime;
         cllBindVars[16] = myTime;
-        cllBindVars[17] = myTime;
-        cllBindVars[18] = data_expiry_ts;
-        cllBindVarCount = 19;
+        cllBindVars[17] = data_expiry_ts;
+        cllBindVarCount = 18;
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlRegDataObj SQL 6" );
         }
         status =  cmlExecuteNoAnswerSql(
-                      "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                      "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                       &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -3097,7 +3095,7 @@ extern "C" {
         char nextRepl[30];
         char theColls[] = "data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, data_mode, r_comment, create_ts, modify_ts";
         int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
-        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
+//        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
         int IX_RESC_NAME = 8;    /* index into theColls */
         int IX_RESC_HIER = 9;
         int IX_DATA_PATH = 10;    /* index into theColls */
@@ -3197,7 +3195,6 @@ extern "C" {
         cVal[IX_DATA_REPL_NUM]   = nextRepl;
         cVal[IX_RESC_NAME]       = _dst_data_obj_info->rescName;
         cVal[IX_RESC_HIER]       = _dst_data_obj_info->rescHier;
-        cVal[IX_RESC_GROUP_NAME] = _dst_data_obj_info->rescGroupName;
         cVal[IX_DATA_PATH]       = _dst_data_obj_info->filePath;
         cVal[IX_DATA_MODE]       = _dst_data_obj_info->dataMode;
 

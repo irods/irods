@@ -45,7 +45,6 @@
 #define STREAMING_KW	"streaming"
 #define DATA_ID_KW     "dataId"
 #define COLL_ID_KW     "collId"
-#define RESC_GROUP_NAME_KW     "rescGroupName"
 #define DATA_MODE_KW   "dataMode"
 #define STATUS_STRING_KW     "statusString"
 #define DATA_MAP_ID_KW    "dataMapId"

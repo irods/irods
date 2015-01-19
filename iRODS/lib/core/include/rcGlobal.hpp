@@ -48,7 +48,6 @@ char *dataObjCond[] = {
     STREAMING_KW,
     DATA_ID_KW,
     COLL_ID_KW,
-    RESC_GROUP_NAME_KW,
     STATUS_STRING_KW,
     DATA_MAP_ID_KW,
     "ENDOFLIST"

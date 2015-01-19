@@ -174,11 +174,11 @@ getDataObjInfo(
     char condStr[MAX_NAME_LEN];
     char *tmpStr;
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
-                *rescGroupName, *rescName, *hierString, *filePath, *dataOwnerName, *dataOwnerZone,
+                *rescName, *hierString, *filePath, *dataOwnerName, *dataOwnerZone,
                 *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId,
                 *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType,
-         *tmpDataSize, *tmpRescGroupName, *tmpRescName, *tmpHierString, *tmpFilePath,
+         *tmpDataSize, *tmpRescName, *tmpHierString, *tmpFilePath,
          *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString,
          *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments,
          *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
@@ -219,7 +219,6 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_DATA_VERSION, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_SIZE, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_D_RESC_GROUP_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_RESC_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_DATA_PATH, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_OWNER_NAME, 1 );
@@ -330,13 +329,6 @@ getDataObjInfo(
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescGroupName =
-                getSqlResultByInx( genQueryOut, COL_D_RESC_GROUP_NAME ) ) == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "getDataObjInfo:getSqlResultByInx for COL_D_RESC_GROUP_NAME failed" );
-        return UNMATCHED_KEY_OR_INDEX;
-    }
-
     if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
@@ -440,7 +432,6 @@ getDataObjInfo(
         tmpVersion = &version->value[version->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
-        tmpRescGroupName = &rescGroupName->value[rescGroupName->len * i];
         tmpRescName = &rescName->value[rescName->len * i];
         tmpHierString = &hierString->value[hierString->len * i];
         tmpFilePath = &filePath->value[filePath->len * i];
@@ -465,7 +456,6 @@ getDataObjInfo(
         std::string hier( tmpHierString );
         std::string resc( tmpRescName );
 
-        rstrcpy( dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN );
         rstrcpy( dataObjInfo->dataType, tmpDataType, NAME_LEN );
         dataObjInfo->dataSize = strtoll( tmpDataSize, 0, 0 );
         rstrcpy( dataObjInfo->chksum, tmpChksum, NAME_LEN );
@@ -786,8 +776,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     tmpDataObjInfo = *dataObjInfoHead;
     if ( tmpDataObjInfo->next == NULL ) {
         /* just one */
-        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 || // JMC - backport 4543
-                strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
+        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ) {
             return 0;
         }
         else {
@@ -797,8 +786,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     prevDataObjInfo = NULL;
     while ( tmpDataObjInfo != NULL ) {
 
-        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ||
-                strcmp( preferredResc, tmpDataObjInfo->rescGroupName ) == 0 ) {
+        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ) {
             if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
                 if ( prevDataObjInfo != NULL ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
@@ -948,7 +936,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             if ( ( trimjFlag & TRIM_UNMATCHED_OBJ_INFO ) ||
                     ( ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) &&
                       !_resc_name.empty() &&
-                      strcmp( tmpDataObjInfo->rescGroupName, _resc_name.c_str() ) == 0 ) ) {
+					  strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0  ) ) {
                 /* take it out */
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
                     *dataObjInfoHead = tmpDataObjInfo->next;
@@ -1540,8 +1528,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strcmp( rescName, tmpDataObjInfo->rescGroupName ) == 0 ||
-                    strcmp( rescName, tmpDataObjInfo->rescName ) == 0 ) ) {
+                  ( strcmp( rescName, tmpDataObjInfo->rescName ) == 0 ) ) {
             if ( prevDataObjInfo != NULL ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
@@ -1582,8 +1569,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strcmp( rescName, tmpDataObjInfo->rescGroupName ) == 0 ||
-                    strcmp( rescName, tmpDataObjInfo->rescName ) ) == 0 ) {
+                  ( strcmp( rescName, tmpDataObjInfo->rescName ) ) == 0 ) {
             if ( prevDataObjInfo != NULL ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }

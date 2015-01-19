@@ -145,10 +145,7 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
                      "initCondForReg: NULL rescGroupString error" );
             return USER__NULL_INPUT_ERR;
         }
-        else {
-            addKeyVal( &dataObjOprInp->condInput, RESC_GROUP_NAME_KW,
-                       rodsArgs->rescGroupString );
-        }
+
     }
     if ( rodsArgs->regRepl == True ) {
         addKeyVal( &dataObjOprInp->condInput, REG_REPL_KW, "" );

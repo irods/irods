@@ -321,7 +321,6 @@ namespace irods {
             obj.name( info_ptr->objPath );
             obj.version( info_ptr->version );
             obj.type_name( info_ptr->dataType );
-            obj.resc_group_name( info_ptr->rescGroupName );
             obj.resc_name( info_ptr->rescName );
             obj.path( info_ptr->filePath );
             obj.owner_name( info_ptr->dataOwnerName );

@@ -90,7 +90,6 @@ const packInstructArray_t RodsPackTable[] = {
     {"DataObjInfo_PI", DataObjInfo_PI, NULL},
     {"TransStat_PI", TransStat_PI, NULL},
     {"TransferStat_PI", TransferStat_PI, NULL},
-    {"RescGrpInfo_PI", RescGrpInfo_PI, NULL},
     {"AuthInfo_PI", AuthInfo_PI, NULL},
     {"UserOtherInfo_PI", UserOtherInfo_PI, NULL},
     {"UserInfo_PI", UserInfo_PI, NULL},

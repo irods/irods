@@ -26,7 +26,6 @@ namespace irods {
         name_            = _rhs.name_;
         version_         = _rhs.version_;
         type_name_       = _rhs.type_name_;
-        resc_group_name_ = _rhs.resc_group_name_;
         resc_name_       = _rhs.resc_name_;
         path_            = _rhs.path_;
         owner_name_      = _rhs.owner_name_;
@@ -60,7 +59,6 @@ namespace irods {
             name_            = _rhs.name_;
             version_         = _rhs.version_;
             type_name_       = _rhs.type_name_;
-            resc_group_name_ = _rhs.resc_group_name_;
             resc_name_       = _rhs.resc_name_;
             path_            = _rhs.path_;
             owner_name_      = _rhs.owner_name_;

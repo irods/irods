@@ -57,9 +57,9 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
 #ifdef RODS_CAT
     dataObjInfo_t dataObjInfo;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescHier, *filePath,
-                *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
+                *dataMode, *oprType, *replNum, *chksum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpRescHier, *tmpFilePath,
-         *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum, *tmpChksum;
+         *tmpDataMode, *tmpOprType, *tmpReplNum, *tmpChksum;
     sqlResult_t *objId;
     char *tmpObjId;
     int status, i;
@@ -119,13 +119,6 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescGroupName =
-                getSqlResultByInx( bulkDataObjRegInp, COL_RESC_GROUP_NAME ) ) == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "rsBulkDataObjReg: getSqlResultByInx for COL_RESC_GROUP_NAME failed" );
-        return UNMATCHED_KEY_OR_INDEX;
-    }
-
     if ( ( replNum =
                 getSqlResultByInx( bulkDataObjRegInp, COL_DATA_REPL_NUM ) ) == NULL ) {
         rodsLog( LOG_ERROR,
@@ -154,7 +147,6 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpOprType = &oprType->value[oprType->len * i];
-        tmpRescGroupName =  &rescGroupName->value[rescGroupName->len * i];
         tmpReplNum =  &replNum->value[replNum->len * i];
         tmpObjId = &objId->value[objId->len * i];
 
@@ -167,7 +159,6 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
         rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
         rstrcpy( dataObjInfo.dataMode, tmpDataMode, NAME_LEN );
-        rstrcpy( dataObjInfo.rescGroupName, tmpRescGroupName, NAME_LEN );
         dataObjInfo.replNum = atoi( tmpReplNum );
         if ( chksum != NULL ) {
             tmpChksum = &chksum->value[chksum->len * i];

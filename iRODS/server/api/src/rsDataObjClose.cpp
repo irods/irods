@@ -475,8 +475,6 @@ _rsDataObjClose(
         addKeyVal( &regParam, FILE_PATH_KW,     destDataObjInfo->filePath );
         addKeyVal( &regParam, RESC_NAME_KW,     destDataObjInfo->rescName );
         addKeyVal( &regParam, RESC_HIER_STR_KW, destDataObjInfo->rescHier );
-        addKeyVal( &regParam, RESC_GROUP_NAME_KW,
-                   destDataObjInfo->rescGroupName );
         if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
                           ADMIN_KW ) != NULL ) {
             addKeyVal( &regParam, ADMIN_KW, "" );

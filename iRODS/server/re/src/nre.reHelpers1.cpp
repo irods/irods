@@ -697,10 +697,6 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESC:%s", rei->doi->rescName );
                 aNum++;
             }
-            if ( rei->doi != NULL && strlen( rei->doi->rescGroupName ) > 0 ) {
-                snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESCGRP:%s", rei->doi->rescGroupName );
-                aNum++;
-            }
             if ( rei->coi != NULL && strlen( rei->coi->collName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  COLL:%s", rei->coi->collName );
                 aNum++;
