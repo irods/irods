@@ -201,7 +201,6 @@ _rsDataObjRepl(
     ruleExecInfo_t rei;
     int multiCopyFlag;
     char *accessPerm;
-    int backupFlag;
     int allFlag;
     int savedStatus = 0;
     if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
@@ -285,27 +284,11 @@ _rsDataObjRepl(
         return status;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, BACKUP_RESC_NAME_KW ) != NULL ) {
-        /* backup to the DEST_RESC if one does not exist */
-        backupFlag = 1;
-        multiCopyFlag = 0; // JMC - backport 4594
-    }
-    else {
-        backupFlag = 0;
-    }
-
     if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
         allFlag = 1;
     }
     else {
         allFlag = 0;
-    }
-
-    if ( backupFlag == 0 && allFlag == 1                                 &&
-            getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) == NULL &&
-            dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0' ) {
-        /* replicate to all resc in the rescGroup if DEST_RESC is not specified */
-        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, dataObjInfoHead->rescGroupName );
     }
 
     /* query rcat for resource info and sort it */
@@ -547,8 +530,7 @@ _rsDataObjReplNewCopy(
 
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
-        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                  /*destRescGrpInfo->rescGroupName*/ _resc_name.c_str(), outDataObjInfo, 0 );
+        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _resc_name.c_str(), outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }

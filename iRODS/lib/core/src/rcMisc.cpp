@@ -4003,8 +4003,6 @@ fillBulkDataObjRegInp( const char * rescName, const char* rescHier, char * objPa
         rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
                  REGISTER_OPR, NAME_LEN );
     }
-//    rstrcpy( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
-//             rescGroupName, NAME_LEN );
     snprintf( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
               NAME_LEN, "%d", replNum );
     if ( chksum != NULL && strlen( chksum ) > 0 ) {
