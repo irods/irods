@@ -330,8 +330,6 @@ _rsDataObjCreateWithResc(
 
     rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
 
-    rstrcpy( dataObjInfo->rescGroupName, _resc_name.c_str(), NAME_LEN ); // leave that on for now #1472
-
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
         rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
