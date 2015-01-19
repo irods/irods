@@ -60,7 +60,7 @@ _rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
                              getRescQuotaInp->rescName, &genQueryOut );
 
     if ( status >= 0 ) {
-        queRescQuota( rescQuota, genQueryOut, NULL );
+        queRescQuota( rescQuota, genQueryOut );
     }
     freeGenQueryOut( &genQueryOut );
     return status;
@@ -145,8 +145,7 @@ getQuotaByResc( rsComm_t *rsComm, char *userName, char *rescName,
 }
 
 int
-queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut,
-              char *rescGroupName ) {
+queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut ) {
     sqlResult_t *quotaLimit, *quotaOver, *rescName, *quotaRescId, *quotaUserId;
     char *tmpQuotaLimit, *tmpQuotaOver, *tmpRescName, *tmpQuotaRescId,
          *tmpQuotaUserId;
@@ -194,7 +193,7 @@ queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut,
         tmpQuotaUserId =  &quotaUserId->value[quotaUserId->len * i];
         tmpRescQuota = ( rescQuota_t* )malloc( sizeof( rescQuota_t ) );
         fillRescQuotaStruct( tmpRescQuota, tmpQuotaLimit, tmpQuotaOver,
-                             tmpRescName, tmpQuotaRescId, tmpQuotaUserId, rescGroupName );
+                             tmpRescName, tmpQuotaRescId, tmpQuotaUserId );
         tmpRescQuota->next = *rescQuotaHead;
         *rescQuotaHead = tmpRescQuota;
     }
@@ -205,7 +204,7 @@ queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut,
 int
 fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
                      char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
-                     char *tmpQuotaUserId, char *rescGroupName ) {
+                     char *tmpQuotaUserId ) {
     bzero( rescQuota, sizeof( rescQuota_t ) );
 
     rescQuota->quotaLimit = strtoll( tmpQuotaLimit, 0, 0 );
@@ -218,9 +217,6 @@ fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
         rescQuota->flags = GLOBAL_QUOTA;
     }
     rstrcpy( rescQuota->userId, tmpQuotaUserId, NAME_LEN );
-    if ( rescGroupName != NULL ) {
-        rstrcpy( rescQuota->rescGroupName, rescGroupName, NAME_LEN );
-    }
 
     return 0;
 }
