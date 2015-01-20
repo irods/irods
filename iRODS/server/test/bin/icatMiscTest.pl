@@ -31,8 +31,8 @@ use File::Basename;
 use File::Spec;
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname(dirname($scriptfullpath)))));
-require $scripttoplevel/iRODS/scripts/perl/utils_platform.pl
-require $scripttoplevel/iRODS/scripts/perl/utils_config.pl
+require $scripttoplevel/iRODS/scripts/perl/utils_platform.pl;
+require $scripttoplevel/iRODS/scripts/perl/utils_config.pl;
 if( -e "/etc/irods/server_config.json" )
 {
         $configDir = "/etc/irods";
