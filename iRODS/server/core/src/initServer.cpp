@@ -1516,9 +1516,14 @@ initAgent( int processType, rsComm_t *rsComm ) {
         else {
             rsComm->cookie = random();
         }
-        rsComm->thread_ctx->lock      = new boost::mutex;
-        rsComm->thread_ctx->cond      = new boost::condition_variable;
-        rsComm->thread_ctx->reconnThr = new boost::thread( reconnManager, rsComm );
+        try {
+            rsComm->thread_ctx->lock      = new boost::mutex;
+            rsComm->thread_ctx->cond      = new boost::condition_variable;
+            rsComm->thread_ctx->reconnThr = new boost::thread( reconnManager, rsComm );
+        } catch ( boost::thread_resource_error& ) {
+            rodsLog( LOG_ERROR, "boost encountered thread_resource_error." );
+            return SYS_THREAD_RESOURCE_ERR;
+        }
     }
     initExecCmdMutex();
 #endif
