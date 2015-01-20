@@ -2231,7 +2231,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession, "ils -L " + filename)
         print output[0]
-        archive1replicaphypath = output[0].split()[-21]  # split into tokens, get the 21st from the end
+        archive1replicaphypath = output[0].split()[-19]  # split into tokens, get the 19th from the end
         archive2replicaphypath = output[0].split()[-1]  # split into tokens, get the last one
         print archive1replicaphypath
         print archive2replicaphypath
@@ -2262,7 +2262,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
 
         # manually update the replicas in archive vaults
         output = getiCmdOutput(s.adminsession, "ils -L " + filename)
-        archivereplica1phypath = output[0].split()[-21]  # split into tokens, get the 21st from the end
+        archivereplica1phypath = output[0].split()[-19]  # split into tokens, get the 19th from the end
         archivereplica2phypath = output[0].split()[-1]  # split into tokens, get the last one
         print archive1replicaphypath
         print archive2replicaphypath

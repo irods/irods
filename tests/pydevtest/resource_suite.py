@@ -685,9 +685,10 @@ class ResourceSuite(ResourceBase):
         print "[ils -L]:"
         print "[" + cmdout[0] + "]"
         lines = cmdout[0].splitlines()
-        for l in cmdout[0].splitlines():
-            if "demoResc" in l:
-                if "/session-" in l:
+        for i in range(0, len(lines)-1):
+            if "0 demoResc" in lines[i]:
+                if "/session-" in lines[i+1]:
+                    l = lines[i+1]
                     physicalpath = l.split()[1]
                     # check file is on disk
                     print "[ls -l " + physicalpath + "]:"
