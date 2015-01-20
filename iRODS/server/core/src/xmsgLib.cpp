@@ -548,7 +548,7 @@ startXmsgThreads() {
         try {
             ProcReqThread[i] = new boost::thread( procReqRoutine );
         } catch ( const boost::thread_resource_error& ) {
-            return -1;
+            return SYS_THREAD_RESOURCE_ERR;
         }
     }
 

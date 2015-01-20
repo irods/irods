@@ -170,6 +170,7 @@
 #define SYS_INTERNAL_ERR                            -154000
 #define SYS_SOCK_SELECT_ERR                         -155000
 #define SYS_THREAD_ENCOUNTERED_INTERRUPT            -156000
+#define SYS_THREAD_RESOURCE_ERR                     -157000
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR                        -300000
