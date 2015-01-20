@@ -110,13 +110,16 @@ extern "C" {
             fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
-
-        memset( rodsEnvArg, 0, sizeof( rodsEnv ) );
-        getRodsEnvFromFile( rodsEnvArg );
-        getRodsEnvFromEnv( rodsEnvArg );
-        createRodsEnvDefaults( rodsEnvArg );
+        _getRodsEnv( *rodsEnvArg );
 
         return 0;
+    }
+
+    void _getRodsEnv( rodsEnv &rodsEnvArg ) {
+        memset( &rodsEnvArg, 0, sizeof( rodsEnv ) );
+        getRodsEnvFromFile( &rodsEnvArg );
+        getRodsEnvFromEnv( &rodsEnvArg );
+        createRodsEnvDefaults( &rodsEnvArg );
     }
 
     static

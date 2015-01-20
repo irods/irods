@@ -98,7 +98,7 @@ int main(
 
     // fetch client environment for proper port
     rodsEnv env;
-    getRodsEnv( &env );
+    _getRodsEnv( env );
     // build a encryption context
     std::string encryption_key( env.irodsCtrlPlaneKey );
     irods::buffer_crypt crypt(
@@ -161,7 +161,12 @@ int main(
 
     // wait for the server reponse
     zmq::message_t req;
-    zmq_skt.recv( &req );
+    try {
+        zmq_skt.recv( &req );
+    } catch ( const zmq::error_t& e ) {
+        std::cout << "zeromq encountered an error." << std::endl;
+        return -1;
+    }
 
     // decrypt the response
     const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
