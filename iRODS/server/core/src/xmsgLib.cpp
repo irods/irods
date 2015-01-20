@@ -545,7 +545,11 @@ getReqFromQue() {
 int
 startXmsgThreads() {
     for ( int i = 0; i < NUM_XMSG_THR; i++ ) {
-        ProcReqThread[i] = new boost::thread( procReqRoutine );
+        try {
+            ProcReqThread[i] = new boost::thread( procReqRoutine );
+        } catch ( const boost::thread_resource_error& ) {
+            return -1;
+        }
     }
 
     return 0;
