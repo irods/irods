@@ -887,6 +887,7 @@ main( int argc, char **argv ) {
     status = parseCmdLineOpt( argc, argv, "", 0, &myRodsArgs );
     if ( status != 0 ) {
         printf( "Error %d encountered parsing command line output", status );
+        free( Comm );
         return 3;
     }
 
