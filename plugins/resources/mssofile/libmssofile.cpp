@@ -400,12 +400,13 @@ extern "C" {
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
         strncpy( fileCreateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
 
-        fileCreateOut_t* create_out = 0;
+        fileCreateOut_t* create_out = NULL;
         status = rsFileCreate( rsComm, &fileCreateInp, &create_out );
+        free( create_out );
         if ( status < 0 ) {
             i = UNIX_FILE_CREATE_ERR - status;
             if ( i == EEXIST ) {
-                return ( 0 );   /* file already exists */
+                return 0;   /* file already exists */
             }
             rodsLog( LOG_ERROR,
                      "mkMssoMpfRunFile: rsFileCreate for %s error, status = %d",
