@@ -202,12 +202,6 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( rescGrp = getSqlResultByInx( genQueryOut, COL_D_RESC_GROUP_NAME ) )
-                == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "printLsLong: getSqlResultByInx for COL_D_RESC_GROUP_NAME failed" );
-            return UNMATCHED_KEY_OR_INDEX;
-        }
         if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) == NULL ) { // JMC - backport 4636
 
             rodsLog( LOG_ERROR,

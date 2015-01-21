@@ -379,7 +379,6 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
         if ( ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
             addInxIval( &genQueryInp->selectInp, COL_D_DATA_PATH, 1 );
             addInxIval( &genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1 );
-            addInxIval( &genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1 );
             addInxIval( &genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1 ); // JMC - backport 4636
         }
     }
@@ -963,7 +962,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
                 *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_hier, *phyPath,
-                *ownerName, *replNum, *rescGrp, *dataType; // JMC - backport 4636
+                *ownerName, *replNum, *dataType; // JMC - backport 4636
 
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
             dataObjSqlResult == NULL ) {
@@ -1072,14 +1071,6 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
         dataObjSqlResult->resc_hier = *resc_hier;
     }
 
-    if ( ( rescGrp = getSqlResultByInx( myGenQueryOut, COL_D_RESC_GROUP_NAME ) )
-            == NULL ) {
-        setSqlResultValue( &dataObjSqlResult->rescGrp, COL_D_RESC_GROUP_NAME,
-                           "", myGenQueryOut->rowCnt );
-    }
-    else {
-        dataObjSqlResult->rescGrp = *rescGrp;
-    }
     if ( ( dataType = getSqlResultByInx( myGenQueryOut, COL_DATA_TYPE_NAME ) ) // JMC - backport 4636
             == NULL ) {
         setSqlResultValue( &dataObjSqlResult->dataType, COL_DATA_TYPE_NAME,

@@ -167,7 +167,7 @@ primary ordering column.
 #define COL_DATA_VERSION 405
 #define COL_DATA_TYPE_NAME 406
 #define COL_DATA_SIZE 407
-#define COL_D_RESC_GROUP_NAME 408
+//#define COL_D_RESC_GROUP_NAME 408		// gone in 4.1 #1472
 #define COL_D_RESC_NAME 409
 #define COL_D_DATA_PATH 410
 #define COL_D_OWNER_NAME 411
@@ -182,6 +182,7 @@ primary ordering column.
 #define COL_D_MODIFY_TIME 420
 #define COL_DATA_MODE 421
 #define COL_D_RESC_HIER 422
+
 /* R_COLL_MAIN */
 #define COL_COLL_ID 500
 #define COL_COLL_NAME 501

@@ -61,7 +61,6 @@ columnName_t columnNames[] = {
     { COL_DATA_VERSION,     "DATA_VERSION", },
     { COL_DATA_TYPE_NAME,   "DATA_TYPE_NAME", },
     { COL_DATA_SIZE,        "DATA_SIZE", },
-    { COL_D_RESC_GROUP_NAME, "DATA_RESC_GROUP_NAME", },
     { COL_D_RESC_NAME,      "DATA_RESC_NAME", },
     { COL_D_DATA_PATH,      "DATA_PATH", },
     { COL_D_OWNER_NAME,     "DATA_OWNER_NAME", },

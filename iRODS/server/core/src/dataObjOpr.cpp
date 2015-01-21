@@ -758,7 +758,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
 /* requeDataObjInfoByResc - requeue the dataObjInfo in the
  * dataObjInfoHead by putting dataObjInfo stored in preferredResc
  * at the top of the queue.
- * return 0 if dataObjInfo with preferredResc exiists.
+ * return 0 if dataObjInfo with preferredResc exists.
  * Otherwise, return -1.
  */
 
@@ -1633,7 +1633,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
             /* see if we can trim some old copies */
             matchedOldDataObjInfo = oldDataObjInfoHead;
             oldDataObjInfoHead = NULL;
-            /* also trim good copy too since there is no condiftion 12/1/09 */
+            /* also trim good copy too since there is no condition 12/1/09 */
             matchedDataObjInfo = *dataObjInfoHead;
             *dataObjInfoHead = NULL;
         }

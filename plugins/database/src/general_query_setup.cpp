@@ -240,7 +240,6 @@ icatGeneralQuerySetup() {
     sColumn( COL_DATA_VERSION, "R_DATA_MAIN", "data_version" );
     sColumn( COL_DATA_TYPE_NAME, "R_DATA_MAIN", "data_type_name" );
     sColumn( COL_DATA_SIZE, "R_DATA_MAIN", "data_size" );
-    sColumn( COL_D_RESC_GROUP_NAME, "R_DATA_MAIN", "resc_group_name" );
     sColumn( COL_D_RESC_NAME, "R_DATA_MAIN", "resc_name" );
     sColumn( COL_D_DATA_PATH, "R_DATA_MAIN", "data_path" );
     sColumn( COL_D_OWNER_NAME, "R_DATA_MAIN", "data_owner_name" );

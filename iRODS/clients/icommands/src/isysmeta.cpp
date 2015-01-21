@@ -100,7 +100,6 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
         i1a[i++] = COL_DATA_VERSION;
         i1a[i++] = COL_DATA_TYPE_NAME;
         i1a[i++] = COL_DATA_SIZE;
-        i1a[i++] = COL_D_RESC_GROUP_NAME;
         i1a[i++] = COL_D_RESC_NAME;
         i1a[i++] = COL_D_DATA_PATH;
         i1a[i++] = COL_D_OWNER_NAME;
