@@ -26,7 +26,7 @@ irods::error strip_irods_query_terms(
 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
-    // fresh non-irods indicies and values
+    // fresh non-irods indexes and values
     bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
 
     // =-=-=-=-=-=-=-
