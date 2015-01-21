@@ -83,7 +83,7 @@ irods::error get_hash_and_policy(
               MATCH_HASH_POLICY_KW,
               _policy );
     if ( _policy.empty() ) {
-        _policy = "not_strict";
+        _policy = "compatible";
     }
 
     return SUCCESS();
