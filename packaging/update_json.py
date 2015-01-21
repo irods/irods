@@ -25,11 +25,13 @@ json_type_factory = {'integer': int,
 if json_type not in json_type_factory:
     sys.exit('Invalid json_type [{0}]'.format(json_type))
 
+
 def make_nested_dict_from_key_list(keys, value):
     constructed = {keys[-1]: json_type_factory[json_type](value)}
     for k in keys[-2::-1]:
         constructed = {k: constructed}
     return constructed
+
 
 def update_recursive(orig_dict, new_dict):
     for key, val in new_dict.items():
