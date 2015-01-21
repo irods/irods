@@ -9,8 +9,6 @@
 
 #
 # Commands as found by the 'configure' script during iRODS installation
-# These can be overridden here (discouraged) or by setting similar
-# variables in irods.config before running 'configure'.
 #
 CC=
 CC_IS_GCC=0
