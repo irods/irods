@@ -26,7 +26,7 @@ irods::error strip_irods_query_terms(
 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
-    // fresh non-irods indexes and values
+    // fresh non-irods indices and values
     bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
 
     // =-=-=-=-=-=-=-
@@ -206,7 +206,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             that when this is called (as the agent is initializing),
             this user info is not confirmed yet.  For password
             authentication though, the agent will soon exit if this
-            is not valid.  But tor GSI, the user information may not
+            is not valid.  But for GSI, the user information may not
             be present and/or may be changed when the authentication
             completes, so it may not be safe to use this in a GSI
             enabled environment.  This addition of user information
