@@ -936,7 +936,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             if ( ( trimjFlag & TRIM_UNMATCHED_OBJ_INFO ) ||
                     ( ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) &&
                       !_resc_name.empty() &&
-					  strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0  ) ) {
+                      strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 ) ) {
                 /* take it out */
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
                     *dataObjInfoHead = tmpDataObjInfo->next;

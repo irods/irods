@@ -2370,7 +2370,7 @@ extern "C" {
             DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW,
             DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
             DATA_MODIFY_KW,     DATA_MODE_KW,		RESC_HIER_STR_KW,
-			"END"
+            "END"
         };
 
         /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if

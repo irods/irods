@@ -163,7 +163,8 @@ int main(
     zmq::message_t req;
     try {
         zmq_skt.recv( &req );
-    } catch ( const zmq::error_t& e ) {
+    }
+    catch ( const zmq::error_t& e ) {
         std::cout << "zeromq encountered an error." << std::endl;
         return -1;
     }

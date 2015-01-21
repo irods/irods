@@ -218,7 +218,8 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             fillRcPortalTransferInp( conn, &myInput[i], sock, in_fd, i );
             try {
                 tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
-            } catch ( const boost::thread_resource_error& ) {
+            }
+            catch ( const boost::thread_resource_error& ) {
                 rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
                 return SYS_THREAD_RESOURCE_ERR;
             }

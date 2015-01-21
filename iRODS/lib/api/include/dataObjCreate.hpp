@@ -40,7 +40,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo );
 int
 getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                     std::string& _resc_name );
+                  std::string& _resc_name );
 #else
 #define RS_DATA_OBJ_CREATE NULL
 #endif

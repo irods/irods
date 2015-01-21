@@ -305,7 +305,8 @@ namespace irods {
     server_control_plane::~server_control_plane() {
         try {
             control_thread_.join();
-        } catch ( const boost::thread_resource_error& ) {
+        }
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered thread_resource_error on join in server_control_plane destructor." );
         }
 
