@@ -132,11 +132,11 @@ Installation
 
 iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource:
 
-1) An iCAT server manages a data grid (Zone), handles the database connection to the iCAT metadata catalog (which could be either local or remote), and can provide `Storage Resources`_.  An iRODS data grid (Zone) will have exactly one iCAT server.
+1) An iCAT server manages a Zone, handles the database connection to the iCAT metadata catalog (which could be either local or remote), and can provide `Storage Resources`_.  An iRODS Zone will have exactly one iCAT server.
 
-2) A Resource server connects to an existing data grid (Zone) and can provide additional storage resource(s).  An iRODS data grid (Zone) can have zero or more Resource servers.
+2) A Resource server connects to an existing Zone and can provide additional storage resource(s).  An iRODS Zone can have zero or more Resource servers.
 
-An iCAT server is just a Resource server that also provides the central point of coordination for the data grid (Zone) and manages the metadata.
+An iCAT server is just a Resource server that also provides the central point of coordination for the Zone and manages the metadata.
 
 A single computer cannot have both an iCAT server and a Resource server installed.
 
@@ -212,8 +212,8 @@ The `setup_irods.sh` script will ask for the following sixteen pieces of informa
 5) Parallel Port Range (Begin)
 6) Parallel Port Range (End)
 7) Vault Directory
-8) LocalZoneSID
-9) agent_key
+8) zone_id
+9) negotiation_key
 10) iRODS Administrator Username
 11) iRODS Administrator Password
 
@@ -248,7 +248,7 @@ Installation of the Resource RPM::
  $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-64bit-centos6.rpm
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 
-The `setup_irods.sh` script will ask for the following twelve pieces of information about the existing data grid that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+The `setup_irods.sh` script will ask for the following twelve pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1) Service Account Name
 2) Service Account Group
@@ -257,8 +257,8 @@ The `setup_irods.sh` script will ask for the following twelve pieces of informat
 4) Parallel Port Range (Begin)
 5) Parallel Port Range (End)
 6) Vault Directory
-7) LocalZoneSID
-8) agent_key
+7) zone_id
+8) negotiation_key
 9) iRODS Administrator Username
 
 10) iCAT Host
@@ -273,20 +273,39 @@ Once a server is up and running, the default environment can be shown::
 
  irods@hostname:~/ $ ienv
  NOTICE: Release Version = rodsTEMPLATE_IRODSVERSION, API Version = d
- NOTICE: irodsHost=hostname
- NOTICE: irodsPort=1247
- NOTICE: irodsDefResource=demoResc
- NOTICE: irodsHome=/tempZone/home/rods
- NOTICE: irodsCwd=/tempZone/home/rods
- NOTICE: irodsUserName=rods
- NOTICE: irodsZone=tempZone
- NOTICE: irodsClientServerNegotiation=request_server_negotiation
- NOTICE: irodsClientServerPolicy=CS_NEG_REFUSE
- NOTICE: irodsEncryptionKeySize=32
- NOTICE: irodsEncryptionSaltSize=8
- NOTICE: irodsEncryptionNumHashRounds=16
- NOTICE: irodsEncryptionAlgorithm=AES-256-CBC
- NOTICE: irodsDefaultHashScheme=SHA256
+ NOTICE: irods_session_environment_file - /var/lib/irods/.irods/irods_environment.json.24368
+ NOTICE: irods_user_name - rods
+ NOTICE: irods_host - hostname
+ NOTICE: xmsg_host is not defined
+ NOTICE: irods_home - /tempZone/home/rods
+ NOTICE: irods_cwd - /tempZone/home/rods
+ NOTICE: irods_authentication_scheme is not defined
+ NOTICE: irods_port - 1247
+ NOTICE: xmsg_port is not defined
+ NOTICE: irods_default_resource - demoResc
+ NOTICE: irods_zone - tempZone
+ NOTICE: irods_client_server_policy - CS_NEG_REFUSE
+ NOTICE: irods_client_server_negotiation - request_server_negotiation
+ NOTICE: irods_encryption_key_size - 32
+ NOTICE: irods_encryption_salt_size - 8
+ NOTICE: irods_encryption_num_hash_rounds - 16
+ NOTICE: irods_encryption_algorithm - AES-256-CBC
+ NOTICE: irods_default_hash_scheme - SHA256
+ NOTICE: irods_match_hash_policy - compatible
+ NOTICE: irods_gsi_server_dn is not defined
+ NOTICE: irods_debug is not defined
+ NOTICE: irods_log_level is not defined
+ NOTICE: irods_authentication_file_name is not defined
+ NOTICE: irods_ssl_ca_certificate_path is not defined
+ NOTICE: irods_ssl_ca_certificate_file is not defined
+ NOTICE: irods_ssl_verify_server is not defined
+ NOTICE: irods_ssl_certificate_chain_file is not defined
+ NOTICE: irods_ssl_certificate_key_file is not defined
+ NOTICE: irods_ssl_dh_params_file is not defined
+ NOTICE: irods_server_control_plane_key - temp_32_byte_key_for_ctrl__plane
+ NOTICE: irods_server_control_plane_encryption_num_hash_rounds - 16
+ NOTICE: irods_server_control_plane_encryption_algorithm - AES-256-CBC
+ NOTICE: irods_server_control_plane_port - 1248
 
 Run In Place
 ------------
@@ -334,9 +353,9 @@ The script will prompt for iRODS configuration information that would already be
 
  iRODS Vault directory [/full/path/to/Vault]:
 
- iRODS server's LocalZoneSID [TEMP_LOCAL_ZONE_SID]:
+ iRODS server's zone_id [TEMP_LOCAL_ZONE_SID]:
 
- iRODS server's agent_key [temp_32_byte_key_for_agent__conn]:
+ iRODS server's negotiation_key [temp_32_byte_key_for_agent__conn]:
 
  iRODS server's administrator username [rods]:
 
@@ -348,8 +367,8 @@ The script will prompt for iRODS configuration information that would already be
  Range (Begin):          20000
  Range (End):            20199
  Vault Directory:        /full/path/to/Vault
- LocalZoneSID:           TEMP_LOCAL_ZONE_SID
- agent_key:              temp_32_byte_key_for_agent__conn
+ zone_id:                TEMP_LOCAL_ZONE_SID
+ negotiation_key:        temp_32_byte_key_for_agent__conn
  Administrator Name:     rods
  Administrator Password: Not Shown
  -------------------------------------------
@@ -398,46 +417,37 @@ The default installation of iRODS comes with a Zone named 'tempZone'.  You proba
 
  irods@hostname:~/ $ iadmin modzone tempZone name <newzonename>
  If you modify the local zone name, you and other users will need to
- change your .irodsEnv files to use it, you may need to update
- irods.config and, if rules use the zone name, you'll need to update
+ change your irods_environment.json files to use it, you may need to update
+ server_config.json and, if rules use the zone name, you'll need to update
  core.re.  This command will update various tables with the new name
  and rename the top-level collection.
  Do you really want to modify the local zone name? (enter y or yes to do so):y
  OK, performing the local zone rename
 
-Once the Zone has been renamed, you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
+Once the Zone has been renamed, you will need to update your irods_environment.json file to match (note the three places where the updated zone name is located)::
 
- irods@hostname:~/ $ cat .irods/.irodsEnv
- # iRODS server host name:
- irodsHost '<hostname>'
- # iRODS server port number:
- irodsPort 1247
- # Default storage resource name:
- irodsDefResource 'demoResc'
- # Home directory in iRODS:
- irodsHome '/**<newzonename>**/home/rods'
- # Current directory in iRODS:
- irodsCwd '/**<newzonename>**/home/rods'
- # Account name:
- irodsUserName 'rods'
- # Zone:
- irodsZone '**<newzonename>**'
- # Enable Advanced Client-Server negotiation:
- irodsClientServerNegotiation 'request_server_negotiation'
- # Client-Server connection policy:
- irodsClientServerPolicy 'CS_NEG_REFUSE'
- # Client-Server Encryption Key Size In Bytes:
- irodsEncryptionKeySize '32'
- # Client-Server Encryption Salt Size In Bytes:
- irodsEncryptionSaltSize '8'
- # Client-Server Encryption Number of Hash Rounds:
- irodsEncryptionNumHashRounds '16'
- # Client-Server Encryption Algorithm:
- irodsEncryptionAlgorithm 'AES-256-CBC'
- # Client requested hash scheme:
- irodsDefaultHashScheme 'SHA256'
- # Hash Matching Policy:
- #irodsMatchHashPolicy 'strict'
+ irods@hostname:~/ $ cat .irods/irods_environment.json
+ {
+     "irods_host": "<hostname>",
+     "irods_port": 1247,
+     "irods_default_resource": "demoResc",
+     "irods_home": "/**<newzonename>**/home/rods",
+     "irods_cwd": "/**<newzonename>**/home/rods",
+     "irods_user_name": "rods",
+     "irods_zone": "**<newzonename>**",
+     "irods_client_server_negotiation": "request_server_negotiation",
+     "irods_client_server_policy": "CS_NEG_REFUSE",
+     "irods_encryption_key_size": 32,
+     "irods_encryption_salt_size": 8,
+     "irods_encryption_num_hash_rounds": 16,
+     "irods_encryption_algorithm": "AES-256-CBC",
+     "irods_default_hash_scheme": "SHA256",
+     "irods_match_hash_policy": "compatible",
+     "irods_server_control_plane_port": 1248,
+     "irods_server_control_plane_key": "temp_32_byte_key_for_ctrl__plane",
+     "irods_server_control_plane_encryption_num_hash_rounds": 16,
+     "irods_server_control_plane_encryption_algorithm": "AES-256-CBC"
+ }
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
@@ -446,27 +456,23 @@ Now, the connection should be reset and you should be able to list your empty iR
  irods@hostname:~/ $ ils
  /<newzonename>/home/rods:
 
-Changing the LocalZoneSID and agent_key
----------------------------------------
+Changing the zone_id and negotiation_key
+----------------------------------------
 
-iRODS 4.0+ servers use the Server Identifiers (SIDs) to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server.config`::
+iRODS 4.1+ servers use the `zone_id` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`::
 
- # default server id for the local zone
- LocalZoneSID TEMP_LOCAL_ZONE_SID
+ "zone_id": "TEMP_LOCAL_ZONE_SID",
+ "negotiation_key":   "temp_32_byte_key_for_agent__conn",
 
- # default 32 byte key for agent-agent handshake during
- # advanced client-server negotiation
- agent_key temp_32_byte_key_for_agent__conn
+The `zone_id` can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
 
-The 'LocalZoneSID' can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'agent_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
+The following error will be logged if a negotiation_key is missing::
 
-The following error will be logged if an agent_key is missing::
+ ERROR: client_server_negotiation_for_server - sent negotiation_key is empty
 
- ERROR: client_server_negotiation_for_server - sent SID is empty
+The following error will be logged when the negotiation_key values do not align and/or are not exactly 32 bytes long::
 
-The following error will be logged when the agent_key values do not align and/or are not exactly 32 bytes long::
-
- ERROR: client-server negotiation SID mismatch
+ ERROR: client-server negotiation_key mismatch
 
 Add additional resource(s)
 --------------------------
@@ -497,7 +503,7 @@ Creating new resources does not make them default for any existing or new users.
 Add additional user(s)
 ----------------------
 
-The default installation of iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional user accounts (of type 'rodsuser') and set their passwords before allowing connections to your new grid::
+The default installation of iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional user accounts (of type 'rodsuser') and set their passwords before allowing connections to your new Zone::
 
  irods@hostname:~/ $ iadmin mkuser <newusername> rodsuser
 
@@ -516,13 +522,13 @@ The default installation of iRODS comes with a single user 'rods' which is a des
  Tip: Use moduser to set a password or other attributes,
  use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)
 
-It is best to change your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local .irodsEnv files.
+It is best to change your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local irods_environment.json files.
 
 ---------
 Upgrading
 ---------
 
-Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see `Changing the LocalZoneSID and agent_key`_ for information on server-server authentication.
+Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see `Changing the zone_id and negotiation_key`_ for information on server-server authentication.
 
 RPM based systems
 -----------------
@@ -534,19 +540,12 @@ DEB based systems
 
  $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb
 
-From E-iRODS 3.0.1
-------------------
-
-Upgrading from E-iRODS to iRODS 4.0+ is not currently supported with an automatic script.  Since the package names, the default database, the service account, and the home directory were all changed, it was decided that there were too many moving parts (and too many possible combinations) to successfully detect and manipulate into a functional 4.0+ installation.
-
-If you are in need of upgrading from a production E-iRODS 3.0.1 installation, please contact the iRODS team at RENCI for free support.
-
 From iRODS 3.3.x
 ----------------
 
 .. role:: rubric
 
-Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server.config, etc.) based solely on the state of a 3.3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
+Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server_config.json, etc.) based solely on the state of a 3.3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
 
 :rubric:`For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.`
 
@@ -576,17 +575,17 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 Zone Federation
 ---------------
 
-iRODS Zones are independent administrative grids.  When federated, users of one Zone may grant access to authenticated users from the other Zone on some of their dataObjects, Collections, and Metadata.  Each Zone will authenticate its own users before a Federated Zone will allow access.  User passwords are never exchanged between Zones.
+iRODS Zones are independent administrative units.  When federated, users of one Zone may grant access to authenticated users from the other Zone on some of their dataObjects, Collections, and Metadata.  Each Zone will authenticate its own users before a Federated Zone will allow access.  User passwords are never exchanged between Zones.
 
 Primary reasons for using Zone Federation include:
 
 #. Local control. Some iRODS sites want to share resources and collections, yet maintain more local control over those resources, data objects, and collections. Rather than a single iRODS Zone managed by one administrator, they may need two (or more) cooperating iRODS systems managed locally, primarily for security and/or authorization reasons.
-#. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast for a simple query is often 1-2 seconds. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
+#. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast is often 1-2 seconds for a simple query. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
 
 Setup
 -----
 
-To federate Zone A and Zone B, administrators in each zone must 1) share and properly define their RemoteZoneSID values `Between Two Zones`_, 2) define remote zones in their respective iCAT, and 3) define remote users in their respective iCAT before any access permissions can be granted.
+To federate Zone A and Zone B, administrators in each zone must 1) share and properly define their `zone_id` values `Between Two Zones`_, 2) define remote zones in their respective iCAT, and 3) define remote users in their respective iCAT before any access permissions can be granted.
 
 
 In Zone A, add Zone B and define a remote user::
@@ -619,9 +618,9 @@ Server Authentication
 Within A Zone
 -------------
 
-When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure some Server Identifiers (SIDs) to cause the iRODS system to authenticate the servers themselves. These SIDs should be unique and arbitrary strings (maximum alphanumeric length of 50), one for your whole zone::
+When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure the `zone_id` to cause the iRODS system to authenticate the servers themselves. This `zone_id` should be a unique and arbitrary string (maximum alphanumeric length of 50), one for your whole zone::
 
- LocalZoneSID  SomeChosenIDString
+ "zone_id": "SomeChosenIDString",
 
 This allows the resource servers to verify the identity of the iCAT server beyond just relying on DNS.
 
@@ -634,17 +633,25 @@ Between Two Zones
 
 When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password).  Passwords are never sent across federated zones, they always remain in their home zone.
 
-To make this more secure, the iRODS system uses Server Identifiers (SIDs) to authenticate the servers, via a similar method as iRODS passwords. These SIDs should be unique and arbitrary strings, one for each zone.
+To make this more secure, the iRODS system uses a `zone_id` to authenticate the servers in ``server_config.json``, via a similar method as iRODS passwords. This `zone_id` should be a unique and arbitrary string, one for each zone.
 
-To configure this, add items to the `/etc/irods/server.config` file. 'LocalZoneSID' is for servers `Within A Zone`_, for example::
+To configure this, add items to the ``/etc/irods/server_config.json`` file.
 
- LocalZoneSID  qwerty123
+`zone_id` is for the servers `Within A Zone`_, for example::
 
-And one or more 'RemoteZoneSID' items for the remote zones, for example::
+ "zone_id": "asdf1234",
 
- RemoteZoneSID <ZoneName>-<LocalZoneSID> ( e.g. tempZone-qwerty123 )
+Add an object to the "federation" array for each remote zone, for example::
 
-When tempZone users connect, the system will then confirm that tempZone's LocalZoneSID is 'qwerty123'.
+ "federation": [
+     {
+         "zone_name": "anotherZone",
+         "zone_id": "ghjk6789",
+         "negotiation_key": "abcdefghijklmnopqrstuvwxyzabcdef"
+     }
+ ]
+
+When anotherZone users connect, the system will then confirm that anotherZone's `zone_id` is 'ghjk6789'.
 
 Mutual authentication between servers is always on across Federations.
 
@@ -658,12 +665,12 @@ In order to support commands such as ``ils`` and ``ilsresc`` across a 3.x to 4.0
 
 There are currently no known issues with Federation, but this has not yet been comprehensively tested.
 
-.irodsEnv for Service Account
------------------------------
+irods_environment.json for Service Account
+------------------------------------------
 
-irodsClientServerNegotiation needs to be commented out (turned off) as 3.x does not support this feature.
+`irods_client_server_negotiation` needs to be changed (set it to "none") as 3.x does not support this feature.
 
-The effect of turning this negotiation off is a lack of SSL encryption when talking with a 3.x Zone.  All clients that connect to this 4.0+ Zone will also need to disable the Advanced Negotiation in their own '.irodsEnv' files.
+The effect of turning this negotiation off is a lack of SSL encryption when talking with a 3.x Zone.  All clients that connect to this 4.0+ Zone will also need to disable the Advanced Negotiation in their own 'irods_environment.json' files.
 
 ----------
 Backing Up
@@ -675,7 +682,7 @@ Configuration and maintenance of this type of backup system is out of scope for 
 
 1) The data itself can be handled by the iRODS system through replication and should not require any specific backup efforts worth noting here.
 
-2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup` microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
+2) The state of a zone (current policy and configuration settings) can be gathered by a 'rodsadmin' by running ``izonereport``.  The resulting JSON file can be stored into iRODS or saved somewhere else.  When run on a regular schedule, the ``izonereport`` can gather all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
 
 3) The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played".  This would bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
 
@@ -925,7 +932,7 @@ The terms root, leaf, branch, child, and parent represent locations and relation
 
 Any resource node can be a coordinating resource and/or a storage resource.  However, for clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
 
-This powerful tree metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a grid.
+This powerful tree metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a Zone.
 
 .. figure:: ./iRODS/images/treeview.png
    :height: 3.6 in
@@ -1156,8 +1163,8 @@ A replicating coordinating resource with three unix file system storage resource
 
  irods@hostname:~/ $ iadmin mkresc example1 replication
  irods@hostname:~/ $ iadmin mkresc repl_resc1 "unixfilesystem" renci.example.org:/Vault
- irods@hostname:~/ $ iadmin mkresc repl_resc2 "unixfilesystem" maxplanck.example.org:/Vault
- irods@hostname:~/ $ iadmin mkresc repl_resc3 "unixfilesystem" sdsc.example.org:/Vault
+ irods@hostname:~/ $ iadmin mkresc repl_resc2 "unixfilesystem" sanger.example.org:/Vault
+ irods@hostname:~/ $ iadmin mkresc repl_resc3 "unixfilesystem" eudat.example.org:/Vault
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc1
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
  irods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
@@ -1190,22 +1197,16 @@ Pluggable Network
 
 iRODS now ships with both TCP and SSL network plugins enabled.  The SSL mechanism is provided via OpenSSL and wraps the activity from the TCP plugin.
 
-The SSL parameters are tunable via the following .irodsEnv variables::
+The SSL parameters are tunable via the following `irods_environment.json` variables::
 
- # Enable Advanced Client-Server negotiation:
- irodsClientServerNegotiation 'request_server_negotiation'
- # Client-Server connection policy:
- irodsClientServerPolicy 'CS_NEG_REFUSE'
- # Client-Server Encryption Key Size In Bytes:
- irodsEncryptionKeySize '32'
- # Client-Server Encryption Salt Size In Bytes:
- irodsEncryptionSaltSize '8'
- # Client-Server Encryption Number of Hash Rounds:
- irodsEncryptionNumHashRounds '16'
- # Client-Server Encryption Algorithm:
- irodsEncryptionAlgorithm 'AES-256-CBC'
+ "irods_client_server_negotiation": "request_server_negotiation",
+ "irods_client_server_policy": "CS_NEG_REFUSE",
+ "irods_encryption_key_size": 32,
+ "irods_encryption_salt_size": 8,
+ "irods_encryption_num_hash_rounds": 16,
+ "irods_encryption_algorithm": "AES-256-CBC",
 
-The only valid value for irodsClientServerNegotiation at this time is 'request_server_negotiation'.  Anything else will not begin the negotiation stage and default to using a TCP connection.
+The only valid value for 'irods_client_server_negotiation' at this time is 'request_server_negotiation'.  Anything else will not begin the negotiation stage and default to using a TCP connection.
 
 The possible values for irodsClientServerPolicy include:
 
@@ -1223,10 +1224,9 @@ Pluggable Database
 
 The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required set of `lib_mysqludf_preg` functions are not currently available on that OS.
 
-The particular type of database is encoded in `/etc/irods/server.config` with the following directive::
+The particular type of database is encoded in `/etc/irods/database_config.json` with the following directive::
 
- # configuration of icat database plugin - e.g. postgres, mysql, or oracle
- catalog_database_type postgres
+ "catalog_database_type" : "postgres",
 
 This is populated by the `setup_irods_database.sh` script on configuration.
 
@@ -1382,14 +1382,14 @@ Then that user must be configured so its Distiguished Name (DN) matches its cert
 
 Note: The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
 
-On the client side, the user's 'irodsAuthScheme' must be set to 'GSI'.  This can be done via environment variable::
+On the client side, the user's 'irods_auth_scheme' must be set to 'GSI'.  This can be done via environment variable::
 
- irods@hostname:~/ $ irodsAuthScheme=GSI
- irods@hostname:~/ $ export irodsAuthScheme
+ irods@hostname:~/ $ irods_auth_scheme=GSI
+ irods@hostname:~/ $ export irods_auth_scheme
 
-Or, preferably, in the user's `.irodsEnv` file::
+Or, preferably, in the user's `irods_environment.json` file::
 
- irodsAuthScheme 'GSI'
+ "irods_auth_scheme": "GSI",
 
 Then, to have a temporary proxy certificate issued and authenticate::
 
@@ -1397,14 +1397,14 @@ Then, to have a temporary proxy certificate issued and authenticate::
 
 This will prompt for the user's GSI password.  If the user is successfully authenticated, temporary certificates are issued and setup in the user's environment.  The certificates are good, by default, for 24 hours.
 
-In addition, if users want to authenticate the server, they can set 'irodsServerDn' in their user environment. This will cause the system to do mutual authentication instead of just authenticating the client user to the server.
+In addition, if users want to authenticate the server, they can set 'irods_gsi_server_dn' in their user environment. This will cause the system to do mutual authentication instead of just authenticating the client user to the server.
 
 Limitations
 ***********
 
 The iRODS administrator will see two limitations when using GSI authentication:
 
-#. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
+#. The 'client_user_name' environment variable will fail (the admin cannot alias as another user)
 #. The ``iadmin moduser password`` will fail (cannot update the user's password)
 
 The workaround is to use iRODS native password authentication when using these.
@@ -1445,19 +1445,19 @@ Then that user must be configured so its principal matches the KDC::
 
  iadmin aua newuser newuser@EXAMPLE.ORG
 
-The `/etc/irods/server.config` must be updated to include::
+The `/etc/irods/server_config.json` must be updated to include::
 
- KerberosServicePrincipal=irodsserver/serverhost.example.org@EXAMPLE.ORG
- KerberosKeytab=/var/lib/irods/irods.keytab
+ kerberos_service_principal=irodsserver/serverhost.example.org@EXAMPLE.ORG
+ kerberos_keytab=/var/lib/irods/irods.keytab
 
-On the client side, the user's 'irodsAuthScheme' must be set to 'KRB'.  This can be done via environment variable::
+On the client side, the user's 'irods_auth_scheme' must be set to 'KRB'.  This can be done via environment variable::
 
- irods@hostname:~/ $ irodsAuthScheme=KRB
- irods@hostname:~/ $ export irodsAuthScheme
+ irods@hostname:~/ $ irods_auth_scheme=KRB
+ irods@hostname:~/ $ export irods_auth_scheme
 
-Or, preferably, in the user's `.irodsEnv` file::
+Or, preferably, in the user's `irods_environment.json` file::
 
- irodsAuthScheme 'KRB'
+ "irods_auth_scheme": "KRB",
 
 Then, to initialize the Kerberos session ticket and authenticate::
 
@@ -1491,12 +1491,12 @@ PAM can be configured to to support various authentication systems; however the 
 
 If the user's credentials will be exclusively authenticated with PAM, a password need not be assigned.
 
-For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their .irodsEnv file or by setting their environment variable::
+For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their `irods_environment.json` file or by setting their environment variable::
 
-  irods@hostname:~/ $ irodsAuthScheme=PAM
-  irods@hostname:~/ $ export irodsAuthScheme
+  irods@hostname:~/ $ irods_auth_scheme=PAM
+  irods@hostname:~/ $ export irods_auth_scheme
 
-Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
+Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the ``iinit`` session.
 
 
 
@@ -1506,7 +1506,7 @@ In order to use the iRODS PAM support, you also need to have SSL working between
 Server Configuration
 ********************
 
-The following keywords are used to set values for PAM server configuration.  These were previously defined as compile-time options.  They are now configurable via the `/etc/irods/server.config` configuration file.  The default values have been preserved.
+The following keywords are used to set values for PAM server configuration.  These were previously defined as compile-time options.  They are now configurable via the `/etc/irods/server_config.json` configuration file.  The default values have been preserved.
 
 - pam_password_length
 - pam_no_extend
@@ -1528,7 +1528,7 @@ Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -ide
 Acquire a certificate for the server
 ####################################
 
-The certificate can be either from a trusted CA (internal or external), or can be self-signed (common for development and testing). To request a certificate from a CA, create your certificate signing request, and then follow the instructions given by the CA. When running the 'openssl req' command, some questions will be asked about what to put in the certificate. The locality fields do not really matter from the point of view of verification, but you probably want to try to be accurate. What is important, especially since this is a certificate for a server host, is to make sure to use the FQDN of the server as the "common name" for the certificate (should be the same name that clients use as their irodsHost), and do not add an email address. If you are working with a CA, you can also put host aliases that users might use to access the host in the 'subjectAltName' X.509 extension field if the CA offers this capability.
+The certificate can be either from a trusted CA (internal or external), or can be self-signed (common for development and testing). To request a certificate from a CA, create your certificate signing request, and then follow the instructions given by the CA. When running the 'openssl req' command, some questions will be asked about what to put in the certificate. The locality fields do not really matter from the point of view of verification, but you probably want to try to be accurate. What is important, especially since this is a certificate for a server host, is to make sure to use the FQDN of the server as the "common name" for the certificate (should be the same name that clients use as their `irods_host`), and do not add an email address. If you are working with a CA, you can also put host aliases that users might use to access the host in the 'subjectAltName' X.509 extension field if the CA offers this capability.
 
 To generate a Certificate Signing Request that can be sent to a CA, run the 'openssl req' command using the previously generated key::
 
@@ -1571,19 +1571,19 @@ Generate some Diffie-Hellman parameters for OpenSSL::
 Place files within accessible area
 ##################################
 
-Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS server can access them (e.g. in iRODS/server/config).  Make sure that the irods unix user can read the files (although you also want to make sure that the key file is only readable by the irods user).
+Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS server can access them (e.g. in /etc/irods).  Make sure that the irods unix user can read the files (although you also want to make sure that the key file is only readable by the irods user).
 
 Set SSL environment variables
 #############################
 
 The server needs to read these variables on startup::
 
-  irods@hostname:~/ $ irodsSSLCertificateChainFile=/var/lib/irods/iRODS/server/config/chain.pem
-  irods@hostname:~/ $ export irodsSSLCertificateChainFile
-  irods@hostname:~/ $ irodsSSLCertificateKeyFile=/var/lib/irods/iRODS/server/config/server.key
-  irods@hostname:~/ $ export irodsSSLCertificateKeyFile
-  irods@hostname:~/ $ irodsSSLDHParamsFile=/var/lib/irods/iRODS/server/config/dhparams.pem
-  irods@hostname:~/ $ export irodsSSLDHParamsFile
+  irods@hostname:~/ $ irods_ssl_certificate_chain_file=/etc/irods/chain.pem
+  irods@hostname:~/ $ export irods_ssl_certificate_chain_file
+  irods@hostname:~/ $ irods_ssl_certificate_key_file=/etc/irods/server.key
+  irods@hostname:~/ $ export irods_ssl_certificate_key_file
+  irods@hostname:~/ $ irods_ssl_dh_params_file=/etc/irods/dhparams.pem
+  irods@hostname:~/ $ export irods_ssl_dh_params_file
 
 Restart iRODS
 #############
@@ -1601,8 +1601,8 @@ After setting up SSL on the server side, test SSL by using the PAM authenticatio
 
 Error from non-trusted self-signed certificate::
 
-  irods@hostname:~/ $ irodsLogLevel=LOG_NOTICE iinit
-  NOTICE: environment variable set, irodsLogLevel(input)=LOG_NOTICE, value=5
+  irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
+  NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
   NOTICE: created irodsHome=/dn/home/irods
   NOTICE: created irodsCwd=/dn/home/irods
   Enter your current PAM (system) password:
@@ -1615,8 +1615,8 @@ Error from non-trusted self-signed certificate::
 
 Error from untrusted CA that signed the server certificate::
 
-  irods@hostname:~/ $ irodsLogLevel=LOG_NOTICE iinit
-  NOTICE: environment variable set, irodsLogLevel(input)=LOG_NOTICE, value=5
+  irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
+  NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
   NOTICE: created irodsHome=/dn/home/irods
   NOTICE: created irodsCwd=/dn/home/irods
   Enter your current PAM (system) password:
@@ -1629,16 +1629,16 @@ Error from untrusted CA that signed the server certificate::
 
 Server verification can be turned off using the irodsSSLVerifyServer environment variable. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
 
-It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irodsSSLCACertificateFile environment variable to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following in your environment::
+It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irods_ssl_ca_certificate_file environment variable to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following in your environment::
 
-  irods@hostname:~/ $ irodsSSLCACertificateFile=/var/lib/irods/iRODS/server/config/chain.pem
-  irods@hostname:~/ $ export irodsSSLCACertificateFile
+  irods@hostname:~/ $ irods_ssl_ca_certificate_file=/etc/irods/chain.pem
+  irods@hostname:~/ $ export irods_ssl_ca_certificate_file
 
 Or this file could just contain the root CA certificate for a CA-signed server certificate.
 Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irodsHost' variable. If this situation cannot be corrected on the server side, the client can set::
 
-  irods@hostname:~/ $ irodsSSLVerifyServer=cert
-  irods@hostname:~/ $ export irodsSSLVerifyServer
+  irods@hostname:~/ $ irods_ssl_verify_server=cert
+  irods@hostname:~/ $ export irods_ssl_verify_server
 
 Then, the client library will only require certificate validation, but will not check that the hostname of the iRODS server matches the hostname(s) embedded within the certificate.
 
@@ -1647,22 +1647,22 @@ Environment Variables
 
 All the environment variables used by the SSL support (both server and client side) are listed below:
 
-irodsSSLCertificateChainFile (server)
+irods_ssl_certificate_chain_file (server)
     The file containing the server's certificate chain. The certificates must be in PEM format and must be sorted starting with the subject's certificate (actual client or server certificate), followed by intermediate CA certificates if applicable, and ending at the highest level (root) CA.
 
-irodsSSLCertificateKeyFile (server)
+irods_ssl_certificate_key_file (server)
     Private key corresponding to the server's certificate in the certificate chain file.
 
-irodsSSLDHParamsFile (server)
+irods_ssl_dh_params_file (server)
     The Diffie-Hellman parameter file location.
 
-irodsSSLVerifyServer (client)
-    What level of server certificate based authentication to perform. 'none' means not to perform any authentication at all. 'cert' means to verify the certificate validity (i.e. that it was signed by a trusted CA). 'hostname' means to validate the certificate and to verify that the irodsHost's FQDN matches either the common name or one of the subjectAltNames of the certificate. 'hostname' is the default setting.
+irods_ssl_verify_server (client)
+    What level of server certificate based authentication to perform. 'none' means not to perform any authentication at all. 'cert' means to verify the certificate validity (i.e. that it was signed by a trusted CA). 'hostname' means to validate the certificate and to verify that the irods_host's FQDN matches either the common name or one of the subjectAltNames of the certificate. 'hostname' is the default setting.
 
-irodsSSLCACertificateFile (client)
+irods_ssl_ca_certificate_file (client)
     Location of a file of trusted CA certificates in PEM format. Note that the certificates in this file are used in conjunction with the system default trusted certificates.
 
-irodsSSLCACertificatePath (client)
+irods_ssl_ca_certificate_path (client)
     Location of a directory containing CA certificates in PEM format. The files each contain one CA certificate. The files are looked up by the CA subject name hash value, which must be available. If more than one CA certificate with the same name hash value exist, the extension must be different (e.g. 9d66eef0.0, 9d66eef0.1, etc.).  The search is performed based on the ordering of the extension number, regardless of other properties of the certificates.  Use the 'c_rehash' utility to create the necessary links.
 
 
@@ -1697,18 +1697,18 @@ There are a number of configuration files that control how an iRODS server behav
 This document is intended to explain how the various configuration files are connected, what their parameters are, and when to use them.
 
 ~/.odbc.ini
-    This file, in the irods user's home directory, defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database.  This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
+    This file, in the home directory of the unix service account (default 'irods'), defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database.  This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
 
-/etc/irods/irods.config
-    This file defines the main settings for the iRODS installation.  It is created by the installer package and comes preconfigured with approved and tested settings.  Changing this file will take effect after a restart of the iRODS server.  It is recommended not to change this file.
+/etc/irods/database_config.json
+    This file defines the database settings for the iRODS installation.  It is created and populated by the installer package.
 
-/etc/irods/server.config
-    This file defines the behavior of the server Agent that answers individual requests coming into iRODS.  It is recommended not to change this file.
+/etc/irods/server_config.json
+    This file defines the behavior of the server Agent that answers individual requests coming into iRODS.  It is created and populated by the installer package.
 
 ~/.irods/.irodsA
     This is the scrambled password file that is saved after an ``iinit`` is run.  If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server.  If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt.  This file can be deleted manually or can be removed by running ``iexit full``.
 
-~/.irods/.irodsEnv
+~/.irods/irods_environment.json
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
 
 Checksum Configuration
@@ -1718,17 +1718,17 @@ Checksums in iRODS 4.0+ can be calculated using one of multiple hashing schemes.
 
 The following two settings, the default hash scheme and the default hash policy, need to be set on both the client and the server:
 
- +-------------------------+-----------------------------------+
- | Client (.irodsEnv)      | Server (server.config)            |
- +=========================+===================================+
- | irodsDefaultHashScheme  | default_hash_scheme               |
- |  - SHA256 (default)     |  - SHA256 (default)               |
- |  - MD5                  |  - MD5                            |
- +-------------------------+-----------------------------------+
- | irodsMatchHashPolicy    | match_hash_policy                 |
- |  - Compatible (default) |  - Compatible (default)           |
- |  - Strict               |  - Strict                         |
- +-------------------------+-----------------------------------+
+ +---------------------------------+--------------------------------+
+ | Client (irods_environment.json) | Server (server_config.json)    |
+ +=================================+================================+
+ | irods_default_hash_scheme       | default_hash_scheme            |
+ |  - SHA256 (default)             |  - SHA256 (default)            |
+ |  - MD5                          |  - MD5                         |
+ +---------------------------------+--------------------------------+
+ | irods_match_hash_policy         | match_hash_policy              |
+ |  - Compatible (default)         |  - Compatible (default)        |
+ |  - Strict                       |  - Strict                      |
+ +---------------------------------+--------------------------------+
 
 When a request is made, the sender and receiver's hash schemes and the receiver's policy are considered:
 
@@ -1838,7 +1838,7 @@ This error can occur when an iRODS user tries to access an iRODS Data Object or 
 
 With the more restrictive "StrictACL" policy being turned "on" by default in iRODS 4.0+, this may occur more often than expected with iRODS 3.x.  Check the permissions carefully and use ``ils -AL`` to help diagnose what permissions *are* set for the Data Objects and Collections of interest.
 
-Modifying the "StrictACL" setting in the iRODS server's core.re file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of that particular rule.
+Modifying the "StrictACL" setting in the iRODS server's `core.re` file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of that particular rule.
 
 Credentials
 ***********
@@ -1860,10 +1860,10 @@ Action
     This is analogous to head atom in a Prolog rule or trigger-name in a relational database.
 
 Agent
-    A type of iRODS server process.  Each time a client connects to a server, an agent is created and a network connection established between it and the client.
+    A type of iRODS server process.  Each time a client connects to a server, the server spawns an agent and a network connection is established between the new agent and the requesting client.
 
 API
-    An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon).
+    An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon).  Other languages have wrappers around the C API (Python, PHP, etc.).
 
 Authentication Mechanisms
     iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently include the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), Kerberos, and Operating System authentication (OSAuth).
@@ -1872,19 +1872,19 @@ Audit Trail
     List of all operations performed upon a Data Object, a Collection, a Resource, a User, or other iRODS entities.  When Auditing is enabled, significant events in the iRODS system (affecting the iCAT) are recorded.  Full activity reports can be compiled to verify important preservation and/or security policies have been enforced.
 
 Client
-    A Client in the iRODS client-server architecture gives users an interface to manipulate Data Objects and other iRODS entities that may be stored on remote iRODS servers. iRODS clients include: iCommands unix-like command line interface, iDrop (ftp-like client java application), iDropWeb (web interface), etc.
+    A Client in the iRODS client-server architecture gives users an interface to manipulate Data Objects and other iRODS entities that may be stored on remote iRODS servers. iRODS clients include: iCommands Unix-like command line utilities, iDrop (FTP-like client java application), iDropWeb (web interface), etc.
 
 Collection
     All Data Objects stored in an iRODS system are stored in some Collection, which is a logical name for that set of Data Objects. A Collection can have sub-collections, and hence provides a hierarchical structure. An iRODS Collection is like a directory in a Unix file system (or Folder in Windows), but is not limited to a single device or partition. A Collection is logical so that the Data Objects can span separate and heterogeneous storage devices (i.e. is infrastructure and administrative domain independent). Each Data Object in a Collection must have a unique name in that Collection.
 
 Data Grid
-    A grid computing system (a set of distributed, cooperating computers) that deals with the controlled sharing and management of large amounts of distributed data.
+    A grid computing system (a set of distributed, cooperating computers) that deals with the controlled sharing and management of large amounts of distributed data.  One or more iRODS Zones can be considered a data grid.
 
 Data Object
     A Data Object is a single "stream-of-bytes" entity that can be uniquely identified and is stored in iRODS. It is given a Unique Internal Identifier in iRODS (allowing a global name space), and is associated with (situated in) a Collection.
 
-Driver
-    A piece of software that interfaces to a particular type of resource as part of the iRODS server/agent process. The driver provides a common set of functions (open, read, write, close, etc.) which allow iRODS clients (iCommands and other programs using the client API) to access different devices via the common iRODS protocol.
+Resource Plugin
+    A piece of software that interfaces to a particular type of resource as part of the iRODS server/agent process. The plugin provides a common set of functions (open, read, write, close, etc.) which allow iRODS clients (iCommands and other programs using the client API) to access different devices via the common iRODS protocol.
 
 Federation
     Zone Federation occurs when two or more independent iRODS Zones are registered with one another.  Users from one Zone can authenticate through their home iRODS server and have access rights on a remote Zone and its Data Objects, Collections, and Metadata.
@@ -1896,7 +1896,7 @@ iCAT
     The iCAT, or iRODS Metadata Catalog, stores descriptive state metadata about the Data Objects in iRODS Collections in a DBMS database (e.g. PostgreSQL, MySQL, Oracle). The iCAT can keep track of both system-level metadata and user-defined metadata.  There is one iCAT database per iRODS Zone.
 
 iCAT Server (IES, or iCAT-Enabled Server)
-    The iRODS server in a grid that holds the database connection to the (possibly remote) iCAT.
+    The iRODS server in a Zone that holds the database connection to the (possibly remote) iCAT.
 
 iCommands
     iCommands are Unix utilities that give users a command-line interface to operate on data in the iRODS system. There are commands related to the logical hierarchical filesystem, metadata, data object information, administration, rules, and the rule engine. iCommands provide the most comprehensive set of client-side standard iRODS manipulation functions.
@@ -1908,10 +1908,10 @@ Logical Name
     The identifier used by iRODS to uniquely name a Data Object, Collection, Resource, or User. These identifiers enable global namespaces that are capable of spanning distributed storage and multiple administrative domains for shared Collections or a unified virtual Collection.
 
 Management Policies
-    The specification of the controls on procedures applied to Data Objects in a Collection. Management policies may define that certain Metadata be required to be stored.  Those policies could be implemented via a set of iRODS Rules that generate and verify the required Metadata.  Audit Trails could be used to generate reports that show that Management Policies have been followed.
+    The specification of the controls on procedures applied to Data Objects in a Collection. Management policies may define that certain Metadata be required to be stored or that a certain number of replicas be stored in particular physical locations.  Those policies could be implemented via a set of iRODS Rules that generate and verify the required Metadata.  Audit Trails could be used to generate reports that show that Management Policies have been followed.
 
 Metadata
-    Metadata is data about data.  In iRODS, metadata can include system or user-defined attributes associated with a Data-Object, Collection, Resource, etc., stored in the iCAT database.  The metadata stored in the iCAT database are in the form of AVUs (attribute-value-unit tuples).
+    Metadata is data about data.  In iRODS, metadata can include system or user-defined attributes associated with a Data-Object, Collection, Resource, etc., stored in the iCAT database.  The metadata stored in the iCAT database are in the form of AVUs (attribute-value-unit tuples).  Each of these three values is a string of characters in the database.  The flexibility of this system can be used to interface with many different metadata standards and templates across different information domains.
 
 Metadata Harvesting
     The process of extraction of existing Metadata from a remote information resource and subsequent addition to the iRODS iCAT.  The harvested Metadata could be related to certain Data Objects, Collections, or any other iRODS entity.
@@ -1947,7 +1947,7 @@ Transformative Migration
     The process of manipulating a Data Object from one encoding format to another.  Usually the target format will be newer and more compatible with other systems.  Sometimes this process is "lossy" and does not capture all of the information in the original format.
 
 Trust Virtualization
-    The management of Authentication and authorization independently of the storage location.
+    The management of Authentication and authorization independently of the data storage location(s).
 
 Unique Internal Identifier
     See Logical Name.
@@ -1956,7 +1956,7 @@ User Name
     Unique identifier for each person or entity using iRODS; sometimes combined with the name of the home iRODS Zone (as username#Zonename) to provide a globally unique name when using Zone Federation.
 
 Vault
-    An iRODS Vault is a data repository system that iRODS can maintain on any storage system which can be accessed by an iRODS server. For example, there can be an iRODS Vault on a Unix file system, an HPSS (High Performance Storage System), or an IBM DB2 database. A Data Object in an iRODS Vault is stored as an iRODS-written object, with access controlled through the iCAT catalog. This is distinct from legacy data objects that can be accessed by iRODS but are still owned by previous owners of the data. For file systems such as Unix and HPSS, a separate directory is used; for databases such as Oracle or DB2 a system-defined table with LOB-space (Large Object space) is used.
+    An iRODS Vault is a data repository system that iRODS can maintain on any storage system which can be accessed by an iRODS server. For example, there can be an iRODS Vault on a Unix file system, an HPSS (High Performance Storage System), or a Ceph storage cluster. A Data Object in an iRODS Vault is stored as an iRODS-written object, with access controlled through the iCAT catalog. This is distinct from legacy data objects that can be accessed by iRODS but are still owned by previous owners of the data. For file systems such as Unix and HPSS, a separate directory is used.
 
 Zone
     An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Resource Servers (which can reach hundreds, worldwide), and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.
