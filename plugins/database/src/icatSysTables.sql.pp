@@ -597,7 +597,7 @@ create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
 
 /* this is not possible for MySQL reference :: http://stackoverflow.com/a/1827099 */
-create index idx_data_main6 on R_DATA_MAIN (data_path);
+create index idx_data_main6 on R_DATA_MAIN (data_path VARCHAR_MAX_IDX_SIZE);
 
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create index idx_meta_main2 on R_META_MAIN (meta_attr_name VARCHAR_MAX_IDX_SIZE);
@@ -616,7 +616,7 @@ create index idx_tokn_main1 on R_TOKN_MAIN (token_id);
 create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
-create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
+create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr VARCHAR_MAX_IDX_SIZE);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
 
 
