@@ -1566,7 +1566,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             else {
                 *oldDataObjInfoHead = ( *oldDataObjInfoHead )->next;
             }
-            queDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
+            queDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
                   ( strcmp( rescName, tmpDataObjInfo->rescName ) ) == 0 ) {
