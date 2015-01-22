@@ -874,8 +874,6 @@ int
 main( int argc, char **argv ) {
     int status;
     rsComm_t *Comm;
-    /*   rErrMsg_t errMsg;*/
-    rodsArguments_t myRodsArgs;
     char *mySubName;
     char *myName;
     int didOne;
@@ -883,13 +881,6 @@ main( int argc, char **argv ) {
 
     Comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
     memset( Comm, 0, sizeof( rsComm_t ) );
-
-    status = parseCmdLineOpt( argc, argv, "", 0, &myRodsArgs );
-    if ( status != 0 ) {
-        printf( "Error %d encountered parsing command line output", status );
-        free( Comm );
-        return 3;
-    }
 
     rodsLogLevel( LOG_NOTICE );
 
