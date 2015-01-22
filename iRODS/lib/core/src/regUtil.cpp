@@ -46,7 +46,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 rodsLogError(
                     LOG_ERROR,
                     ret,
-                    "rsyncDataToFileUtil: getRodsEnv failed" );
+                    "regUtil: getRodsEnv failed" );
                 return ret;
             }
             status = rcChksumLocFile( srcPath->outPath,
