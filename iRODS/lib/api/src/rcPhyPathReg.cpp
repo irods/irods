@@ -52,8 +52,6 @@
  *         access to this file.
  *    \n DATA_TYPE_KW - the data type of the data object.
  *    \n DEST_RESC_NAME_KW - The resource where the physical file is located.
- *    \n RESC_GROUP_NAME_KW - The resource group of the resource. The resource
- *         given with DEST_RESC_NAME_KW must be a member of this resource group.
  *    \n REG_REPL_KW - The file is registered as a replica of an existing data
  *         object.
  *    \n REG_CHKSUM_KW - register the given checksum value with the iCAT.

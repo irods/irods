@@ -31,8 +31,6 @@ extern "C" {
     int
     isResc( rsComm_t *rsComm, char *objName );
     int
-    isRescGroup( rsComm_t *rsComm, char *objName );
-    int
     isMeta( rsComm_t *rsComm, char *objName );
     int
     isToken( rsComm_t *rsComm, char *objName );

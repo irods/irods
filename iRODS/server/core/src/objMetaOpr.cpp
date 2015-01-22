@@ -270,24 +270,6 @@ isResc( rsComm_t *rsComm, char *objName ) {
 }
 
 int
-isRescGroup( rsComm_t *rsComm, char *objName ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[NAME_LEN];
-    int status;
-
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    snprintf( tmpStr, NAME_LEN, "='%s'", objName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_RESC_GROUP_NAME, tmpStr );
-    addInxIval( &genQueryInp.selectInp, COL_RESC_GROUP_ID, 1 );
-    genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp );
-    return status;
-}
-
-int
 isMeta( rsComm_t*, char* ) {
     /* needs to be filled in later */
     return INVALID_OBJECT_TYPE;
@@ -309,9 +291,6 @@ getObjType( rsComm_t *rsComm, char *objName, char * objType ) {
     }
     else if ( isResc( rsComm, objName ) == 0 ) {
         strcpy( objType, "-r" );
-    }
-    else if ( isRescGroup( rsComm, objName ) == 0 ) {
-        strcpy( objType, "-g" );
     }
     else if ( isUser( rsComm, objName ) == 0 ) {
         strcpy( objType, "-u" );

@@ -3862,7 +3862,7 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
 
     memset( bulkDataObjRegInp, 0, sizeof( genQueryOut_t ) );
 
-    bulkDataObjRegInp->attriCnt = 11;
+    bulkDataObjRegInp->attriCnt = 10;
 
     bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
     bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
@@ -3906,29 +3906,23 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bzero( bulkDataObjRegInp->sqlResult[6].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bulkDataObjRegInp->sqlResult[7].attriInx = COL_RESC_GROUP_NAME;
+    bulkDataObjRegInp->sqlResult[7].attriInx = COL_DATA_REPL_NUM;
     bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[7].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[7].value,
+    bzero( bulkDataObjRegInp->sqlResult[8].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bulkDataObjRegInp->sqlResult[8].attriInx = COL_DATA_REPL_NUM;
+    bulkDataObjRegInp->sqlResult[8].attriInx = COL_D_DATA_CHECKSUM;
     bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[8].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bzero( bulkDataObjRegInp->sqlResult[8].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_DATA_CHECKSUM;
-    bulkDataObjRegInp->sqlResult[9].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_RESC_HIER;
+    bulkDataObjRegInp->sqlResult[9].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
-        ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[9].value,
-           NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bulkDataObjRegInp->sqlResult[10].attriInx = COL_D_RESC_HIER;
-    bulkDataObjRegInp->sqlResult[10].len = MAX_NAME_LEN;
-    bulkDataObjRegInp->sqlResult[10].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[10].value,
+    bzero( bulkDataObjRegInp->sqlResult[9].value,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
 

@@ -354,9 +354,9 @@ icatGeneralQuerySetup() {
     sColumn( COL_META_MET2_CREATE_TIME, "r_met2_meta_main", "create_ts" );
     sColumn( COL_META_MET2_MODIFY_TIME, "r_met2_meta_main", "modify_ts" );
 
-    sColumn( COL_RESC_GROUP_RESC_ID, "R_RESC_GROUP", "resc_id" );
-    sColumn( COL_RESC_GROUP_NAME, "R_RESC_GROUP", "resc_group_name" );
-    sColumn( COL_RESC_GROUP_ID, "R_RESC_GROUP", "resc_group_id" );
+//    sColumn( COL_RESC_GROUP_RESC_ID, "R_RESC_GROUP", "resc_id" );		// gone in 4.1 #1472
+//    sColumn( COL_RESC_GROUP_NAME, "R_RESC_GROUP", "resc_group_name" );
+//    sColumn( COL_RESC_GROUP_ID, "R_RESC_GROUP", "resc_group_id" );
 
     sColumn( COL_USER_GROUP_ID, "R_USER_GROUP",  "group_user_id" );
     sColumn( COL_USER_GROUP_NAME, "r_group_main", "user_name" );

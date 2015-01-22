@@ -451,7 +451,7 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
 
     char *dataColNames[] = {"id", "coll_id", "name", "repl_num",
                             "version", "type_name",
-                            "size", "resc_group_name", "resc_name", "data_path",
+                            "size", "resc_name", "data_path",
                             "owner_name", "owner_zone", "repl_status",
                             "data_status", "checksum", "expiry", "map_id",
                             "comments", "create_time", "modify_time"
@@ -528,24 +528,23 @@ int doLongLs( rcComm_t *Conn, char *inStr, char *inRepl ) {
     i1a[4] = COL_DATA_VERSION;
     i1a[5] = COL_DATA_TYPE_NAME;
     i1a[6] = COL_DATA_SIZE;
-    i1a[7] = COL_D_RESC_GROUP_NAME;
-    i1a[8] = COL_D_RESC_NAME;
-    i1a[9] = COL_D_DATA_PATH;
-    i1a[10] = COL_D_OWNER_NAME;
-    i1a[11] = COL_D_OWNER_ZONE;
-    i1a[12] = COL_D_REPL_STATUS;
-    i1a[13] = COL_D_DATA_STATUS;
-    i1a[14] = COL_D_DATA_CHECKSUM;
-    i1a[15] = COL_D_EXPIRY;
-    i1a[16] = COL_D_MAP_ID;
-    i1a[17] = COL_D_COMMENTS;
-    i1a[18] = COL_D_CREATE_TIME;
-    i1a[19] = COL_D_MODIFY_TIME;
+    i1a[7] = COL_D_RESC_NAME;
+    i1a[8] = COL_D_DATA_PATH;
+    i1a[9] = COL_D_OWNER_NAME;
+    i1a[10] = COL_D_OWNER_ZONE;
+    i1a[11] = COL_D_REPL_STATUS;
+    i1a[12] = COL_D_DATA_STATUS;
+    i1a[13] = COL_D_DATA_CHECKSUM;
+    i1a[14] = COL_D_EXPIRY;
+    i1a[15] = COL_D_MAP_ID;
+    i1a[16] = COL_D_COMMENTS;
+    i1a[17] = COL_D_CREATE_TIME;
+    i1a[18] = COL_D_MODIFY_TIME;
 
     i1b[0] = 0; /* currently unused */
     genQueryInp.selectInp.inx = i1a;
     genQueryInp.selectInp.value = i1b;
-    genQueryInp.selectInp.len = 20;
+    genQueryInp.selectInp.len = 19;
 
     genQueryInp.sqlCondInp.inx = i2a;
     sprintf( v1, "='%s'", cwd );

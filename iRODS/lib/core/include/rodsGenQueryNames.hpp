@@ -164,9 +164,9 @@ columnName_t columnNames[] = {
     { COL_META_MET2_CREATE_TIME,  "META_MET2_CREATE_TIME", },
     { COL_META_MET2_MODIFY_TIME,  "META_MET2_MODIFY_TIME", },
 
-    { COL_RESC_GROUP_RESC_ID,   "RESC_GROUP_RESC_ID", },
-    { COL_RESC_GROUP_NAME,      "RESC_GROUP_NAME", },
-    { COL_RESC_GROUP_ID,        "RESC_GROUP_ID", },
+//    { COL_RESC_GROUP_RESC_ID,   "RESC_GROUP_RESC_ID", },	// gone in 4.1 #1472
+//    { COL_RESC_GROUP_NAME,      "RESC_GROUP_NAME", },
+//    { COL_RESC_GROUP_ID,        "RESC_GROUP_ID", },
 
     { COL_USER_GROUP_ID,        "USER_GROUP_ID", },
     { COL_USER_GROUP_NAME,      "USER_GROUP_NAME", },

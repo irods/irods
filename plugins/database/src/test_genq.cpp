@@ -278,12 +278,11 @@ doTest4() {
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
-    addInxIval( &genQueryInp.selectInp, COL_RESC_GROUP_RESC_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, 1 );
 
     /* compound condition test: */
     snprintf( condStr, MAX_NAME_LEN, "like 'abc'" );
-    addInxVal( &genQueryInp.sqlCondInp,  COL_RESC_GROUP_NAME, condStr );
+    addInxVal( &genQueryInp.sqlCondInp,  COL_R_RESC_NAME, condStr );
 
     genQueryInp.maxRows = 2;
 

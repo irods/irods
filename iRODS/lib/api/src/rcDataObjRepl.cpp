@@ -53,8 +53,6 @@
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n REPL_NUM_KW - The replica number of the copy to be used as source.
  *    \n RESC_NAME_KW - The copy stored in this resource to be used as source.
- *    \n RESC_GROUP_NAME_KW - The copy stored in this resource group to be
- *            used as source.
  *    \n DEST_RESC_NAME_KW - The resource to store the new replica.
  *    \n BACKUP_RESC_NAME_KW - The resource to store the new replica.
  *             In backup mode. If a good copy already exists in this resource

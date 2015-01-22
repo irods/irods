@@ -308,9 +308,9 @@ primary ordering column.
 
 
 /* R_RESC_GROUP */
-#define COL_RESC_GROUP_RESC_ID 800
-#define COL_RESC_GROUP_NAME 801
-#define COL_RESC_GROUP_ID 802
+//#define COL_RESC_GROUP_RESC_ID 800	// gone in 4.1 #1472
+//#define COL_RESC_GROUP_NAME 801
+//#define COL_RESC_GROUP_ID 802
 
 /* R_USER_GROUP / USER */
 #define COL_USER_GROUP_ID 900
