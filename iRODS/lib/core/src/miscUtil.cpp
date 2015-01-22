@@ -947,9 +947,6 @@ clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult->replNum.value != NULL ) {
         free( dataObjSqlResult->replNum.value );
     }
-    if ( dataObjSqlResult->rescGrp.value != NULL ) {
-        free( dataObjSqlResult->rescGrp.value );
-    }
 
     memset( dataObjSqlResult, 0, sizeof( dataObjSqlResult_t ) );
 
@@ -1715,10 +1712,6 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     value = dataObjSqlResult->phyPath.value;
     len = dataObjSqlResult->phyPath.len;
     outCollEnt->phyPath = &value[len * selectedInx];
-
-    value = dataObjSqlResult->rescGrp.value;
-    len = dataObjSqlResult->rescGrp.len;
-    outCollEnt->rescGrp = &value[len * selectedInx];
 
     return 0;
 }

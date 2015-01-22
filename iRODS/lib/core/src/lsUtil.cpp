@@ -177,7 +177,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     int i = 0;
     sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0, *rescHier = 0,
                  *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
-    sqlResult_t *chksumStr = 0, *dataPath = 0, *rescGrp = 0, *dataType = 0; // JMC - backport 4636
+    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0; // JMC - backport 4636
     char *tmpDataId = 0;
     int queryFlags = 0;
 
@@ -284,7 +284,6 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         if ( rodsArgs->veryLongOption == True ) {
             collEnt.chksum = &chksumStr->value[chksumStr->len * i];
             collEnt.phyPath = &dataPath->value[dataPath->len * i];
-            collEnt.rescGrp = &rescGrp->value[rescGrp->len * i]; // JMC - backport 4636
             collEnt.dataType = &dataType->value[dataType->len * i];  // JMC - backport 4636
         }
 
@@ -492,7 +491,7 @@ printDataCollEntLong( collEnt_t *collEnt, int flags ) {
 
 
     if ( ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
-        printf( "    %s    %s    %s    %s\n", collEnt->chksum, collEnt->rescGrp, collEnt->dataType, collEnt->phyPath ); // JMC - backport 4636
+        printf( "    %s    %s    %s\n", collEnt->chksum, collEnt->dataType, collEnt->phyPath ); // JMC - backport 4636
 
     }
     return 0;

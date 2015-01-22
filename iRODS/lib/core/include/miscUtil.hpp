@@ -50,7 +50,6 @@ typedef struct DataObjSqlResult {
     sqlResult_t phyPath;
     sqlResult_t ownerName;
     sqlResult_t replNum;
-    sqlResult_t rescGrp;
     sqlResult_t dataType; // JMC - backport 4636
 } dataObjSqlResult_t;
 
@@ -125,7 +124,6 @@ typedef struct CollEnt {
     char *chksum;
     char *resource;
     char *resc_hier;
-    char *rescGrp;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */
     char *dataType;		 // JMC - backport 4636
