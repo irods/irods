@@ -232,11 +232,6 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                    "pt;replA;replB", "LIST", "pt")
         assertiCmd(s.adminsession, "iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
                    "replB", "LIST", "CAT_NO_ROWS_FOUND")
-        # check resc_group_name on replB files
-        assertiCmd(s.adminsession, "iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "pt;replA;replB", "LIST", "pt")
-        assertiCmd(s.adminsession, "iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", "LIST", "CAT_NO_ROWS_FOUND")
 
         # remove child
         # rm replB from replA
@@ -262,9 +257,6 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                    "replB", "LIST", "replB")
         # check resc_name on replB files
         assertiCmd(s.adminsession, "iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", "LIST", "replB")
-        # check resc_group_name on replB files
-        assertiCmd(s.adminsession, "iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" %
                    "replB", "LIST", "replB")
 
         # delete files
