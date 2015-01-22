@@ -146,8 +146,6 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         return 0;
     }
     else {
-        portalOpr_t *myPortalOpr;
-
         /* setup the portal */
         portalSock = createSrvPortal( rsComm, &myDataObjPutOut->portList,
                                       proto );
@@ -158,13 +156,12 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
             myDataObjPutOut->status = portalSock;
             return portalSock;
         }
-        myPortalOpr = rsComm->portalOpr =
-                          ( portalOpr_t * ) malloc( sizeof( portalOpr_t ) );
-        myPortalOpr->oprType = oprType;
-        myPortalOpr->portList = myDataObjPutOut->portList;
-        myPortalOpr->dataOprInp = *dataOprInp;
+        rsComm->portalOpr = ( portalOpr_t * ) malloc( sizeof( portalOpr_t ) );
+        rsComm->portalOpr->oprType = oprType;
+        rsComm->portalOpr->portList = myDataObjPutOut->portList;
+        rsComm->portalOpr->dataOprInp = *dataOprInp;
         memset( &dataOprInp->condInput, 0, sizeof( dataOprInp->condInput ) );
-        myPortalOpr->dataOprInp.numThreads = myDataObjPutOut->numThreads;
+        rsComm->portalOpr->dataOprInp.numThreads = myDataObjPutOut->numThreads;
     }
 
     return 0;
