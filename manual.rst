@@ -1242,10 +1242,11 @@ Installing the iRODS MySQL database plugin requires the MySQL server to have the
 The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
 
  # Get Dependencies
- sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev
+ sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev automake libtool
 
  # Build and Install
  cd lib_mysqludf_preg
+ autoreconf --force --install
  ./configure
  make
  sudo make install
