@@ -47,7 +47,43 @@ irods::error strip_new_query_terms(
 
     return SUCCESS();
 
-} // strip_irods_query_terms
+} // strip_new_query_terms
+
+
+static
+irods::error strip_deprecated_query_terms(
+    genQueryInp_t* _inp ) {
+
+	const int COL_D_RESC_GROUP_NAME  = 408;
+
+    // =-=-=-=-=-=-=-
+    // cache pointers to the incoming inxIvalPair
+    inxIvalPair_t tmp;
+    tmp.len   = _inp->selectInp.len;
+    tmp.inx   = _inp->selectInp.inx;
+    tmp.value = _inp->selectInp.value;
+
+    // =-=-=-=-=-=-=-
+    // zero out the selectInp to copy
+    // fresh indices and values
+    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+
+    // =-=-=-=-=-=-=-
+    // iterate over tmp and skip deprecated values
+    for ( int i = 0; i < tmp.len; ++i ) {
+        if ( tmp.inx[ i ] == COL_D_RESC_GROUP_NAME ) {
+            continue;
+        }
+        else {
+            addInxIval( &_inp->selectInp, tmp.inx[ i ], tmp.value[ i ] );
+        }
+
+    } // for i
+
+    return SUCCESS();
+
+} // strip_deprecated_query_terms
+
 
 static
 irods::error proc_query_terms_for_community_server(
@@ -123,6 +159,14 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
         }
+    }
+
+    // =-=-=-=-=-=-=-
+    // handle queries from older clients
+    std::string client_rel_version = rsComm->cliVersion.relVersion;
+    std::string local_rel_version = RODS_REL_VERSION;
+    if (client_rel_version != local_rel_version) {	// skip if version strings match
+    	strip_deprecated_query_terms( genQueryInp );
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
