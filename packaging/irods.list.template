@@ -76,6 +76,7 @@ $RESOURCE=true
 
 %if DEB
 %requires libc6
+%requires sudo
 %requires libssl0.9.8
 %requires libfuse2
 %endif
