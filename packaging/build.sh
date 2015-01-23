@@ -988,6 +988,25 @@ else
     echo "Detected krb5 library [$KRB5DEV]"
 fi
 
+PERLJSON=`perl -e "require JSON" 2> /dev/null`
+if [ "$?" != "0" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libjson-perl"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT perl-JSON"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT perl-JSON"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT pm_json"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        : # using --run-in-place, nothing to install
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://search.cpan.org/search?query=json"
+    fi
+else
+    echo "Detected perl module [JSON]"
+fi
+
 
 confirm_preflight_prerequisites
 
