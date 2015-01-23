@@ -15,7 +15,7 @@
 #include <string>
 
 static
-irods::error strip_irods_query_terms(
+irods::error strip_new_query_terms(
     genQueryInp_t* _inp ) {
     // =-=-=-=-=-=-=-
     // cache pointers to the incoming inxIvalPair
@@ -26,11 +26,11 @@ irods::error strip_irods_query_terms(
 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
-    // fresh non-irods indices and values
+    // fresh community indices and values
     bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
 
     // =-=-=-=-=-=-=-
-    // iterate over the tmp and copy non irods values
+    // iterate over the tmp and only copy community values
     for ( int i = 0; i < tmp.len; ++i ) {
         if ( tmp.inx[ i ] == COL_R_RESC_CHILDREN ||
                 tmp.inx[ i ] == COL_R_RESC_CONTEXT  ||
@@ -50,7 +50,7 @@ irods::error strip_irods_query_terms(
 } // strip_irods_query_terms
 
 static
-irods::error proc_query_terms_for_non_irods_server(
+irods::error proc_query_terms_for_community_server(
     const std::string& _zone_hint,
     genQueryInp_t*     _inp ) {
     bool        done     = false;
@@ -80,7 +80,7 @@ irods::error proc_query_terms_for_non_irods_server(
                 tmp_zone->masterServerHost->conn              &&
                 tmp_zone->masterServerHost->conn->svrVersion &&
                 tmp_zone->masterServerHost->conn->svrVersion->cookie < 301 ) {
-            return strip_irods_query_terms( _inp );
+            return strip_new_query_terms( _inp );
 
         }
         else {
@@ -91,7 +91,7 @@ irods::error proc_query_terms_for_non_irods_server(
 
     return SUCCESS();
 
-} // proc_query_terms_for_non_irods_server
+} // proc_query_terms_for_community_server
 
 /* can be used for debug: */
 /* extern int printGenQI( genQueryInp_t *genQueryInp); */
@@ -117,9 +117,9 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
 
     // =-=-=-=-=-=-=-
-    // handle non-irods connections
+    // handle connections with community iRODS
     if ( !zone_hint_str.empty() ) {
-        irods::error ret = proc_query_terms_for_non_irods_server( zone_hint_str, genQueryInp );
+        irods::error ret = proc_query_terms_for_community_server( zone_hint_str, genQueryInp );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
         }
