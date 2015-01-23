@@ -302,7 +302,7 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irods_ssl_certificate_chain_file is not defined
  NOTICE: irods_ssl_certificate_key_file is not defined
  NOTICE: irods_ssl_dh_params_file is not defined
- NOTICE: irods_server_control_plane_key - temp_32_byte_key_for_ctrl__plane
+ NOTICE: irods_server_control_plane_key - TEMPORARY__32byte_ctrl_plane_key
  NOTICE: irods_server_control_plane_encryption_num_hash_rounds - 16
  NOTICE: irods_server_control_plane_encryption_algorithm - AES-256-CBC
  NOTICE: irods_server_control_plane_port - 1248
@@ -353,9 +353,9 @@ The script will prompt for iRODS configuration information that would already be
 
  iRODS Vault directory [/full/path/to/Vault]:
 
- iRODS server's zone_id [TEMP_LOCAL_ZONE_SID]:
+ iRODS server's zone_id [TEMPORARY_zone_id]:
 
- iRODS server's negotiation_key [temp_32_byte_key_for_agent__conn]:
+ iRODS server's negotiation_key [TEMPORARY_32byte_negotiation_key]:
 
  iRODS server's administrator username [rods]:
 
@@ -367,8 +367,8 @@ The script will prompt for iRODS configuration information that would already be
  Range (Begin):          20000
  Range (End):            20199
  Vault Directory:        /full/path/to/Vault
- zone_id:                TEMP_LOCAL_ZONE_SID
- negotiation_key:        temp_32_byte_key_for_agent__conn
+ zone_id:                TEMPORARY_zone_id
+ negotiation_key:        TEMPORARY_32byte_negotiation_key
  Administrator Name:     rods
  Administrator Password: Not Shown
  -------------------------------------------
@@ -444,7 +444,7 @@ Once the Zone has been renamed, you will need to update your irods_environment.j
      "irods_default_hash_scheme": "SHA256",
      "irods_match_hash_policy": "compatible",
      "irods_server_control_plane_port": 1248,
-     "irods_server_control_plane_key": "temp_32_byte_key_for_ctrl__plane",
+     "irods_server_control_plane_key": "TEMPORARY__32byte_ctrl_plane_key",
      "irods_server_control_plane_encryption_num_hash_rounds": 16,
      "irods_server_control_plane_encryption_algorithm": "AES-256-CBC"
  }
@@ -461,8 +461,8 @@ Changing the zone_id and negotiation_key
 
 iRODS 4.1+ servers use the `zone_id` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`::
 
- "zone_id": "TEMP_LOCAL_ZONE_SID",
- "negotiation_key":   "temp_32_byte_key_for_agent__conn",
+ "zone_id": "TEMPORARY_zone_id",
+ "negotiation_key":   "TEMPORARY_32byte_negotiation_key",
 
 The `zone_id` can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see `Server Authentication`_ for more information).
 

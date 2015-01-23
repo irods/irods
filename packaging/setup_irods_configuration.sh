@@ -209,7 +209,7 @@ fi
       if [ "$LASTMYLOCALZONEID" ] ; then
         echo -n " [$LASTMYLOCALZONEID]"
       else
-        echo -n " [TEMP_LOCAL_ZONE_ID]"
+        echo -n " [TEMPORARY_zone_id]"
       fi
       echo -n ": "
       read MYLOCALZONEID
@@ -217,7 +217,7 @@ fi
         if [ "$LASTMYLOCALZONEID" ] ; then
           MYLOCALZONEID=$LASTMYLOCALZONEID
         else
-          MYLOCALZONEID="TEMP_LOCAL_ZONE_ID"
+          MYLOCALZONEID="TEMPORARY_zone_id"
         fi
       fi
       # strip all forward slashes
@@ -231,7 +231,7 @@ fi
           if [ "$LASTMYNEGOTIATIONKEY" ] ; then
             echo -n " [$LASTMYNEGOTIATIONKEY]"
           else
-            echo -n " [temp_32_byte_key_for_agent__conn]"
+            echo -n " [TEMPORARY_32byte_negotiation_key]"
           fi
           echo -n ": "
           read MYNEGOTIATIONKEY
@@ -239,7 +239,7 @@ fi
             if [ "$LASTMYNEGOTIATIONKEY" ] ; then
               MYNEGOTIATIONKEY=$LASTMYNEGOTIATIONKEY
             else
-              MYNEGOTIATIONKEY="temp_32_byte_key_for_agent__conn"
+              MYNEGOTIATIONKEY="TEMPORARY_32byte_negotiation_key"
             fi
           fi
           # strip all forward slashes
