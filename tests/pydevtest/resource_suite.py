@@ -248,6 +248,36 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L second_dir", "STDOUT", "second_dir/first_dir")  # should be listed
         assertiCmd(s.adminsession, "ils -L second_dir/first_dir", "STDOUT", self.testfile)  # should be listed
 
+    def test_local_imv_collection_to_collection_with_modify_access_not_own__ticket_2317(self):
+        publicpath = "/" + s.adminsession.getZoneName() + "/home/public"
+        targetpath = publicpath + "/target"
+        sourcepath = publicpath + "/source"
+        # cleanup
+        assertiCmd(s.adminsession, "imkdir -p "+targetpath)  # target
+        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ targetpath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
+        assertiCmd(s.adminsession, "imkdir -p "+sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf "+sourcepath) # cleanup
+        # setup and test
+        assertiCmd(s.adminsession, "imkdir "+targetpath)  # target
+        assertiCmd(s.adminsession, "ils -rAL "+targetpath,"STDOUT","own") # debugging
+        assertiCmd(s.adminsession, "ichmod -r write "+s.sessions[1].getUserName() +" "+ targetpath)  # ichmod 
+        assertiCmd(s.adminsession, "ils -rAL "+targetpath, "STDOUT", "modify object")  # debugging
+        assertiCmd(s.adminsession, "imkdir "+sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -r own "+s.sessions[1].getUserName() +" "+ sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "ils -AL "+sourcepath, "STDOUT", "own")  # debugging
+        assertiCmd(s.sessions[1], "imv "+sourcepath + " "+targetpath)  # imv
+        assertiCmd(s.adminsession, "ils -AL "+targetpath, "STDOUT", targetpath+"/source")  # debugging
+        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
+        # cleanup
+        assertiCmd(s.adminsession, "imkdir -p "+targetpath)  # target
+        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ targetpath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
+        assertiCmd(s.adminsession, "imkdir -p "+sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf "+sourcepath) # cleanup
+
     ###################
     # iphymv
     ###################
