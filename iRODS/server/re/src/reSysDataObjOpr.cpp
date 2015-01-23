@@ -499,62 +499,55 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
-    dataObjInfo_t *dataObjInfoHead;
     int status;
-    char logicalCollName[MAX_NAME_LEN];
-    char logicalFileName[MAX_NAME_LEN] = "";
-    char logicalFileName1[MAX_NAME_LEN] = "";
-    char logicalFileNameExt[MAX_NAME_LEN] = "";
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char condStr1[MAX_NAME_LEN];
-    char condStr2[MAX_NAME_LEN];
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
-
     RE_TEST_MACRO( "    Calling msiSetDataType" )
 
     rei->status = 0;
 
-    dataObjInfoHead = rei->doi;
-
-    if ( dataObjInfoHead == NULL ) { /* Weirdness */
+    if ( rei->doi == NULL ) {
         return 0;
     }
 
+    dataObjInfo_t *dataObjInfoHead = rei->doi;
+
+    char logicalCollName[MAX_NAME_LEN];
+    char logicalFileName[MAX_NAME_LEN] = "";
     status = splitPathByKey( dataObjInfoHead->objPath,
-                             logicalCollName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+                             logicalCollName, sizeof(logicalCollName), logicalFileName, sizeof(logicalFileName), '/' );
     if ( strlen( logicalFileName ) <= 0 ) {
         return 0;
     }
 
+    char logicalFileNameNoExtension[MAX_NAME_LEN] = "";
+    char logicalFileNameExt[MAX_NAME_LEN] = "";
     status = splitPathByKey( logicalFileName,
-                             logicalFileName1, MAX_NAME_LEN, logicalFileNameExt, MAX_NAME_LEN, '.' );
+                             logicalFileNameNoExtension, sizeof(logicalFileNameNoExtension), logicalFileNameExt, sizeof(logicalFileNameExt), '.' );
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return 0;
     }
 
     /* see if there's an entry in the catalog for this extension */
+    genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-
     addInxIval( &genQueryInp.selectInp, COL_TOKEN_NAME, 1 );
 
-    snprintf( condStr1, MAX_NAME_LEN, "= 'data_type'" );
+    char condStr1[MAX_NAME_LEN];
+    snprintf( condStr1, sizeof(condStr1), "= 'data_type'" );
     addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_NAMESPACE, condStr1 );
 
-    snprintf( condStr2, MAX_NAME_LEN, "like '%s|.%s|%s'", "%",
-              logicalFileNameExt, "%" );
+    char condStr2[MAX_NAME_LEN];
+    snprintf( condStr2, sizeof(condStr2), "like '%s|.%s|%s'", "%", logicalFileNameExt, "%" );
     addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_VALUE2, condStr2 );
 
     genQueryInp.maxRows = 1;
 
-    status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
+    genQueryOut_t *genQueryOut = NULL;
+    status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     if ( status != 0 || genQueryOut == NULL ) {
         return 0;
     }
 
-    rodsLog( LOG_NOTICE,
-             "query status %d rowCnt=%d", status, genQueryOut->rowCnt );
+    rodsLog( LOG_DEBUG, "msiSetDataTypeFromExt: query status %d rowCnt=%d", status, genQueryOut->rowCnt );
 
     if ( genQueryOut->rowCnt != 1 ) {
         return 0;
@@ -563,9 +556,11 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     status = svrCloseQueryOut( rei->rsComm, genQueryOut );
 
     /* register it */
+    keyValPair_t regParam;
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_TYPE_KW,  genQueryOut->sqlResult[0].value );
 
+    modDataObjMeta_t modDataObjMetaInp;
     modDataObjMetaInp.dataObjInfo = dataObjInfoHead;
     modDataObjMetaInp.regParam = &regParam;
 
