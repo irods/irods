@@ -139,19 +139,6 @@ $currentStep = 0;
 #
 setPrintVerbose( 1 );
 
-########################
-# Commenting out this block so that iRODS build.sh
-# can complete when run as sudo.
-########################
-#if ( $thisUserID == 0 )
-#{
-#	printError( "Usage error:\n" );
-#	printError( "    This script should *not* be run as root.\n" );
-#	exit( 1 );
-#}
-
-
-
 
 
 ########################################################################
@@ -179,25 +166,6 @@ foreach $arg ( @ARGV )
 	printNotice( "Verbosity options:\n" );
 	printNotice( "    --quiet                     Suppress all messages\n" );
 	printNotice( "    --verbose                   Output all messages (default)\n" );
-	printNotice( "\n" );
-	printNotice( "iCAT options:\n" );
-	printNotice( "    --enable-icat               Enable iRODS metadata catalog files\n" );
-	printNotice( "    --disable-icat              Disable iRODS metadata catalog files\n" );
-	printNotice( "    --icat-host=<HOST>          Use iRODS+iCAT server on host\n" );
-	printNotice( "    --enable-psgcat             Enable Postgres database catalog\n" );
-	printNotice( "    --disable-psgcat            Disable Postgres database catalog\n" );
-	printNotice( "    --enable-oracat             Enable Oracle database catalog\n" );
-	printNotice( "    --disable-oracat            Disable Oracle database catalog\n" );
-	printNotice( "    --enable-mycat              Enable MySQL database catalog\n" );
-	printNotice( "    --disable-mycat             Disable MySQL database catalog\n" );
-	printNotice( "\n" );
-	printNotice( "    --enable-psghome=<DIR>      Set the Postgres directory\n" );
-	printNotice( "\n" );
-	printNotice( "iRODS options:\n" );
-	printNotice( "    --enable-parallel           Enable parallel computation\n" );
-	printNotice( "    --disable-parallel          Disable parallel computation\n" );
-	printNotice( "    --enable-file64bit          Enable large files\n" );
-	printNotice( "    --disable-file64bit         Disable large files\n" );
 	printNotice( "\n" );
 	exit( 0 );
 }
@@ -264,23 +232,16 @@ $irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = "";	# Database admin passwo
 #
 my $savedIRODS_HOME = $IRODS_HOME;
 copyTemplateIfNeeded( $irodsConfig );
-# TGR - do not load irods.config
-#if ( loadIrodsConfig( ) == 0 )
-#{
-	# Configuration failed to load or validate.  An error message
-	# has already been output.
-#	exit( 1 );q
-#}
 $IRODS_HOME = $savedIRODS_HOME;
 
 
-# Set configuration variables based upon irods.config.
+# Set configuration variables based upon server_config.json.
 #	We intentionally *do not* transfer $IRODS_HOME from the
 #	configuration file.  During an initial install, that value
 #	is probably empty or wrong.  Instead, use the directory
 #	relative to where we are executing.
 #
-#	All other values in irods.config provide defaults.  When
+#	All other values in server_config.json provide defaults.  When
 #	this configure script is done, these values, as modified
 #	by command-line arguments, are written back to irods.config
 #	to provide new defaults for the next time (if ever) that
@@ -344,116 +305,6 @@ else
 $noHeader = 0;
 foreach $arg ( @ARGV )
 {
-	# Postgres iCAT
-	if ( $arg =~ /--disable-psgi?cat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-psgi?cat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "1";
-		$configMkVariables{ "RODS_CAT" } = "1";
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "MYICAT" } = "";
-		next;
-	}
-
-	# Oracle iCAT
-	if ( $arg =~ /--disable-orai?cat/ )
-	{
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-orai?cat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "1";
-		$configMkVariables{ "ORAICAT" } = "1";
-		$configMkVariables{ "MYICAT" } = "";
-		next;
-	}
-
-	# MySQL iCAT
-	if ( $arg =~ /--disable-myi?cat/ )
-	{
-		$configMkVariables{ "MYICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-myi?cat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "1";
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "MYICAT" } = "1";
-		next;
-	}
-
-	# iCAT
-	if ( $arg =~ /--disable-icat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "";
-		$configMkVariables{ "RODS_CAT" } = "";
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "MYICAT" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-icat/ )
-	{
-		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
-		$configMkVariables{ "RODS_CAT" } = "1";
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "MYICAT" } = "";
-		next;
-	}
-	if ( $arg =~ /--icat-host=(.*)/ )
-	{
-		$irodsConfigVariables{ "IRODS_ICAT_HOST" } = $1;
-		next;
-	}
-
-
-	# Postgres install directory
-	if ( $arg =~ /--enable-psghome=(.*)/ )
-	{
-		my $psgdir = $1;
-		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
-		$configMkVariables{ "RODS_CAT" } = "1";
-		$configMkVariables{ "ORAICAT" } = "";
-		$configMkVariables{ "MYICAT" } = "";
-		my $default = $irodsConfigVariables{ "DATABASE_HOME" };
-		my $psgdir_abs  = abs_path( $psgdir );
-		my $default_abs = abs_path( $default );
-		if ( !( $psgdir_abs =~ $default_abs ) )
-		{
-			# Different directory.  Assume not exclusive use.
-			$irodsConfigVariables{ "DATABASE_HOME" } = $psgdir;
-			$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
-		}
-		next;
-	}
-
-	# 64-bit file accesses
-	if ( $arg =~ /--disable-file64bit/ )
-	{
-		$configMkVariables{ "FILE_64BITS" } = "";
-		next;
-	}
-	if ( $arg =~ /--enable-file64bit/ )
-	{
-		$configMkVariables{ "FILE_64BITS" } = "1";
-		next;
-	}
-
-	# iRODS server port
-	if ( $arg =~ /--enable-i?rodsport=(.*)/ )
-	{
-		$irodsConfigVariables{ "IRODS_PORT" } = $1;
-		next;
-	}
 
 	if ( $arg =~ /-?-?q(uiet)/ )
 	{
@@ -464,17 +315,6 @@ foreach $arg ( @ARGV )
 	if ( $arg =~ /-?-?v(erbose)/ )
 	{
 		setPrintVerbose( 1 );
-		next;
-	}
-	if ( $arg =~ /^-?-?indent$/i )		# Indent everything
-	{
-		setMasterIndent( "        " );
-		next;
-	}
-
-	if ( $arg =~ /^-?-?noheader$/i )	# Suppress header message
-	{
-		$noHeader = 1;
 		next;
 	}
 
