@@ -3910,7 +3910,7 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
     bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[7].value =
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bzero( bulkDataObjRegInp->sqlResult[8].value,
+    bzero( bulkDataObjRegInp->sqlResult[7].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bulkDataObjRegInp->sqlResult[8].attriInx = COL_D_DATA_CHECKSUM;
     bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
@@ -3997,16 +3997,16 @@ fillBulkDataObjRegInp( const char * rescName, const char* rescHier, char * objPa
         rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
                  REGISTER_OPR, NAME_LEN );
     }
-    snprintf( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
+    snprintf( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
               NAME_LEN, "%d", replNum );
     if ( chksum != NULL && strlen( chksum ) > 0 ) {
-        rstrcpy( &bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt],
+        rstrcpy( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
                  chksum, NAME_LEN );
     }
     else {
-        bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
+        bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt] = '\0';
     }
-    snprintf( &bulkDataObjRegInp->sqlResult[10].value[MAX_NAME_LEN * rowCnt],
+    snprintf( &bulkDataObjRegInp->sqlResult[9].value[MAX_NAME_LEN * rowCnt],
               MAX_NAME_LEN, "%s", rescHier );
     bulkDataObjRegInp->rowCnt++;
 
