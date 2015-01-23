@@ -108,32 +108,23 @@ cat << EOF | cat
 #
 ###########################################################
 
-# iRODS server host name:
-irodsHost 'FULLY.QUALIFIED.DOMAIN.NAME'
-# iRODS server port number:
-irodsPort 1247
-# Default storage resource name:
-irodsDefResource 'demoResc'
-# Home directory in iRODS:
-irodsHome '/tempZone/home/USERNAME'
-# Current directory in iRODS:
-irodsCwd '/tempZone/home/USERNAME'
-# Account name:
-irodsUserName 'USERNAME'
-# Zone:
-irodsZone 'tempZone'
-# Enable Advanced Client-Server negotiation:
-irodsClientServerNegotiation 'request_server_negotiation'
-# Client-Server connection policy:
-irodsClientServerPolicy 'CS_NEG_REFUSE'
-# Client-Server Encryption Key Size In Bytes:
-irodsEncryptionKeySize '32'
-# Client-Server Encryption Salt Size In Bytes:
-irodsEncryptionSaltSize '8'
-# Client-Server Encryption Number of Hash Rounds:
-irodsEncryptionNumHashRounds '16'
-# Client-Server Encryption Algorithm:
-irodsEncryptionAlgorithm 'AES-256-CBC'
+{
+    "irods_host": "FULLY.QUALIFIED.DOMAIN.NAME",
+    "irods_port": 1247,
+    "irods_default_resource": "demoResc",
+    "irods_home": "/tempZone/home/USERNAME",
+    "irods_cwd": "/tempZone/home/USERNAME",
+    "irods_user_name": "USERNAME",
+    "irods_zone": "tempZone",
+    "irods_client_server_negotiation": "request_server_negotiation",
+    "irods_client_server_policy": "CS_NEG_REFUSE",
+    "irods_encryption_key_size": 32,
+    "irods_encryption_salt_size": 8,
+    "irods_encryption_num_hash_rounds": 16,
+    "irods_encryption_algorithm": "AES-256-CBC",
+    "irods_default_hash_scheme": "SHA256",
+    "irods_match_hash_policy": "compatible"
+}
 
 
 EOF
