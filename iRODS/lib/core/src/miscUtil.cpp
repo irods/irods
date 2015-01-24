@@ -40,7 +40,7 @@ mkColl( rcComm_t *conn, char *collection ) {
     return status;
 }
 
-/* mk the directory resursively */
+/* mk the directory recursively */
 
 int
 mkCollR( rcComm_t *conn, char *startColl, char *destColl ) {
