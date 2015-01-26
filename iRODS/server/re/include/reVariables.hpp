@@ -92,7 +92,6 @@ rulevardef_t RuleVarTable[] = {
   {RESC_CLASS_INX_KW, "", (char *) "rei->roi->rescClassInx"},
   {RESC_VAULT_PATH_KW, "", (char *) "rei->roi->rescVaultPath"},
   {NUM_OPEN_PORTS_KW, "", (char *) "rei->roi->numOpenPorts"},
-  {PARA_OPR_KW, "", (char *) "rei->roi->paraOpr"},
   {RESC_ID_KW, "", (char *) "rei->roi->rescId"},
   {GATEWAY_ADDR_KW, "", (char *) "rei->roi->gateWayAddr"},
   {RESC_MAX_OBJ_SIZE_KW, "", (char *) "rei->roi->rescMaxObjSize"},

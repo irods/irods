@@ -68,7 +68,6 @@ char *rescCond[] = {
     RESC_CLASS_KW,
     RESC_VAULT_PATH_KW,
     RESC_STATUS_KW,
-    PARA_OPR_KW,
     GATEWAY_ADDR_KW,
     RESC_MAX_OBJ_SIZE_KW,
     FREE_SPACE_KW,

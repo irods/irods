@@ -146,7 +146,6 @@
 #define RESC_CLASS_KW	"rescClass"
 #define RESC_VAULT_PATH_KW	"rescVaultPath" /* resc_def_path in DB */
 #define RESC_STATUS_KW	"rescStatus"
-#define PARA_OPR_KW	"paraOpr"
 #define GATEWAY_ADDR_KW	"gateWayAddr"
 #define RESC_MAX_OBJ_SIZE_KW "rescMaxObjSize"
 #define FREE_SPACE_KW	"freeSpace"
