@@ -2132,11 +2132,11 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
 
 int
 getAndConnRemoteZone( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                      rodsServerHost_t **rodsServerHost, char *remotZoneOpr ) {
+                      rodsServerHost_t **rodsServerHost, char *remoteZoneOpr ) {
     int status;
 
     status = getRemoteZoneHost( rsComm, dataObjInp, rodsServerHost,
-                                remotZoneOpr );
+                                remoteZoneOpr );
 
     if ( status == LOCAL_HOST ) {
         return LOCAL_HOST;
@@ -2258,7 +2258,7 @@ isSameZone( char *zoneHint1, char *zoneHint2 ) {
 
 int
 getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                   rodsServerHost_t **rodsServerHost, char *remotZoneOpr ) {
+                   rodsServerHost_t **rodsServerHost, char *remoteZoneOpr ) {
     int status;
     rodsServerHost_t *icatServerHost = NULL;
     rodsHostAddr_t *rescAddr = NULL;
@@ -2284,7 +2284,7 @@ getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    addKeyVal( &dataObjInp->condInput, REMOTE_ZONE_OPR_KW, remotZoneOpr );
+    addKeyVal( &dataObjInp->condInput, REMOTE_ZONE_OPR_KW, remoteZoneOpr );
 
     status = rcGetRemoteZoneResc( icatServerHost->conn, dataObjInp, &rescAddr );
     if ( status < 0 ) {
