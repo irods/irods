@@ -19,7 +19,12 @@ sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_configuration
 
 # if default vault path does not exist, create it with proper permissions
 MYSERVERCONFIGJSON=/etc/irods/server_config.json
-MYRESOURCEDIR=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
+if type -P python2 ; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+MYRESOURCEDIR=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
 
 if [ ! -e $MYRESOURCEDIR ] ; then
     mkdir -p $MYRESOURCEDIR

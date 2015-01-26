@@ -49,17 +49,22 @@ fi
     # get temp file from prior run, if it exists
     mkdir -p /tmp/$USER
     if [ -f $SETUP_IRODS_CONFIGURATION_FLAG ] ; then
+        if type -P python2 ; then
+            PYTHON=`type -P python2`
+        else
+            PYTHON=`type -P python`
+        fi
         # have run this before, read the existing config files
         if [ $ICAT_SERVER -eq 1 ] ; then
-            MYZONE=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_name']"`
+            MYZONE=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_name']"`
         fi
-        MYPORT=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_port']"`
-        MYRANGESTART=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_start']"`
-        MYRANGEEND=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_end']"`
-        MYLOCALZONEID=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_id']"`
-        MYRESOURCEDIR=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
-        MYNEGOTIATIONKEY=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
-        MYADMINNAME=`python -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_user']"`
+        MYPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_port']"`
+        MYRANGESTART=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_start']"`
+        MYRANGEEND=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_end']"`
+        MYLOCALZONEID=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_id']"`
+        MYRESOURCEDIR=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
+        MYNEGOTIATIONKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
+        MYADMINNAME=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_user']"`
         STATUS="loop"
     else
         # no temp file, this is the first run

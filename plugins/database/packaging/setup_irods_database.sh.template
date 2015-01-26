@@ -55,13 +55,18 @@ fi
 # get temp file from prior run, if it exists
 mkdir -p /tmp/$USER
 if [ -f $SETUP_DATABASE_FLAG ] ; then
+    if type -P python2 ; then
+        PYTHON=`type -P python2`
+    else
+        PYTHON=`type -P python`
+    fi
     # have run this before, read the existing config file
-    DATABASEHOSTORIP=`python -c "import json; print json.load(open('$db_config'))['db_host']"`
-    DATABASEPORT=`python -c "import json; print json.load(open('$db_config'))['db_port']"`
-    DATABASENAME=`python -c "import json; print json.load(open('$db_config'))['db_name']"`
-    DATABASEUSER=`python -c "import json; print json.load(open('$db_config'))['db_username']"`
+    DATABASEHOSTORIP=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_host']"`
+    DATABASEPORT=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_port']"`
+    DATABASENAME=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_name']"`
+    DATABASEUSER=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_username']"`
     if [ "$DATABASETYPE" == "oracle" ] ; then
-        ORACLEHOME=`python -c "import json; print json.load(open('$server_config'))['ORACLE_HOME']"`
+        ORACLEHOME=`$PYTHON -c "import json; print json.load(open('$server_config'))['ORACLE_HOME']"`
     fi
     STATUS="loop"
 else
