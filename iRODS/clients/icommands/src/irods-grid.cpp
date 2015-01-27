@@ -160,8 +160,8 @@ int main(
     zmq_skt.send( rep );
 
     // wait for the server reponse
-    zmq::message_t req;
     try {
+        zmq::message_t req;
         zmq_skt.recv( &req );
     }
     catch ( const zmq::error_t& e ) {
