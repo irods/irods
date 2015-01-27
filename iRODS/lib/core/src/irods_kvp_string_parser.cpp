@@ -96,7 +96,12 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // otherwise parse the string into tokens split by the delimiter
         std::list< std::string > token_list;;
-        boost::split( token_list, _string, boost::is_any_of( KVP_DEF_DELIM ), boost::token_compress_on );
+        try {
+            boost::split( token_list, _string, boost::is_any_of( KVP_DEF_DELIM ), boost::token_compress_on );
+        } catch ( const boost::bad_function_call& ) {
+            rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
+            token_list.clear();
+        }
         BOOST_FOREACH( std::string & token, token_list ) {
             // =-=-=-=-=-=-=-
             // now that the string is broken into tokens we need to
