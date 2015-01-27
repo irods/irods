@@ -28,6 +28,13 @@ else
     set -e
 fi
 
+# detect correct python version
+if type -P python2 ; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # find server_config
 if [ "$RUNINPLACE" == "1" ] ;  then
     server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
@@ -55,11 +62,6 @@ fi
 # get temp file from prior run, if it exists
 mkdir -p /tmp/$USER
 if [ -f $SETUP_DATABASE_FLAG ] ; then
-    if type -P python2 ; then
-        PYTHON=`type -P python2`
-    else
-        PYTHON=`type -P python`
-    fi
     # have run this before, read the existing config file
     DATABASEHOSTORIP=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_host']"`
     DATABASEPORT=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_port']"`
@@ -244,14 +246,14 @@ echo "==================================================================="
 
 TMPFILE="/tmp/$USER/database_config.json.tmp"
 echo "Updating $db_config..."
-    python $DETECTEDDIR/update_json.py $db_config string catalog_database_type $DATABASETYPE
-    python $DETECTEDDIR/update_json.py $db_config string db_username $DATABASEUSER
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string catalog_database_type $DATABASETYPE
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_username $DATABASEUSER
 
 if [ "$DATABASETYPE" != "oracle" ] ; then
     # update database_config.json
-    python $DETECTEDDIR/update_json.py $db_config string db_host $DATABASEHOSTORIP
-    python $DETECTEDDIR/update_json.py $db_config integer db_port $DATABASEPORT
-    python $DETECTEDDIR/update_json.py $db_config string db_name $DATABASENAME
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_host $DATABASEHOSTORIP
+    $PYTHON $DETECTEDDIR/update_json.py $db_config integer db_port $DATABASEPORT
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_name $DATABASENAME
 else
     # port can get repaved to empty string which causes positional
     # issues on the irods_setup.pl command line, we need it to have a value
@@ -264,7 +266,7 @@ echo ""
 # update ORACLE_HOME in server_config.json
 if [ "$DATABASETYPE" == "oracle" ] ; then
     echo "Updating $server_config..."
-    python $DETECTEDDIR/update_json.py $server_config string 'environment_variables,ORACLE_HOME' $ORACLEHOME
+    $PYTHON $DETECTEDDIR/update_json.py $server_config string 'environment_variables,ORACLE_HOME' $ORACLEHOME
 fi
 
 # =-=-=-=-=-=-=-
@@ -278,7 +280,7 @@ perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT
 
 # =-=-=-=-=-=-=-
 # sanitize irods admin password
-python $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
+$PYTHON $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
 
 # =-=-=-=-=-=-=-
 # run update_catalog_schema.py
@@ -289,7 +291,7 @@ echo "Running update_catalog_schema.py..."
 if [ "$RUNINPLACE" == "1" ] ;  then
     cp ./plugins/database/packaging/update_catalog_schema.py ./packaging/
 fi
-python ./packaging/update_catalog_schema.py
+$PYTHON ./packaging/update_catalog_schema.py
 
 # =-=-=-=-=-=-=-
 # done

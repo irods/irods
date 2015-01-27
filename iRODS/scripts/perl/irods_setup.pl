@@ -171,7 +171,10 @@ if ( ! -e $iadmin )
 # Load and validate server configuration files.
 #
 load_server_config("/etc/irods/server_config.json");
-load_database_config("/etc/irods/database_config.json");
+if( 1 == $icatInstall )
+{
+    load_database_config("/etc/irods/database_config.json");
+}
 
 # Make sure the home directory is set and valid.  If not, the installation
 # is probably being run out of order or a prior stage failed.

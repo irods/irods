@@ -112,8 +112,10 @@ my $iRODSStartStopDelay = 4;  # Seconds
 # Load configuration files
 #
 load_server_config("/etc/irods/server_config.json");
-load_database_config("/etc/irods/database_config.json");
-
+if ( -e "/etc/irods/database_config.json" )
+{
+    load_database_config("/etc/irods/database_config.json");
+}
 
 ########################################################################
 #

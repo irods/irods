@@ -9,6 +9,13 @@ else
     RUNINPLACE=1
 fi
 
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # find local working directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -49,11 +56,6 @@ fi
     # get temp file from prior run, if it exists
     mkdir -p /tmp/$USER
     if [ -f $SETUP_IRODS_CONFIGURATION_FLAG ] ; then
-        if type -P python2 ; then
-            PYTHON=`type -P python2`
-        else
-            PYTHON=`type -P python`
-        fi
         # have run this before, read the existing config files
         if [ $ICAT_SERVER -eq 1 ] ; then
             MYZONE=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_name']"`
@@ -319,11 +321,10 @@ fi
     touch $SETUP_IRODS_CONFIGURATION_FLAG
 
     # update existing server_config.json
-    TMPFILE="/tmp/$USER/setupserverconfig.txt"
     echo "Updating $MYSERVERCONFIGJSON..."
     # zone name
     if [ $ICAT_SERVER -eq 1 ] ; then
-        python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_name $MYZONE
+        $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_name $MYZONE
     fi
     if [ $ICAT_SERVER -eq 1 ] ; then
         # updating SQL
@@ -357,12 +358,14 @@ fi
         sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
     fi
     # everything else
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string default_resource_directory $MYRESOURCEDIR
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer zone_port $MYPORT
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_start $MYRANGESTART
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_end $MYRANGEEND
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
-    python $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string default_resource_directory $MYRESOURCEDIR
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer zone_port $MYPORT
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_start $MYRANGESTART
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_end $MYRANGEEND
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
+    if [ $ICAT_SERVER -eq 1 ] ; then
+        $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD
+    fi

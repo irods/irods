@@ -154,10 +154,10 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     # re-start server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl start"
 else
+    # copy packaged server_config.json into live config directory
+    cp /var/lib/irods/packaging/server_config.json /etc/irods/
     # =-=-=-=-=-=-=-
     if [ "$SERVER_TYPE" == "icat" ] ; then
-        # copy packaged server_config.json into live config directory
-        cp /var/lib/irods/packaging/server_config.json /etc/irods/
         # give user some guidance regarding database selection and installation
         cat $IRODS_HOME_DIR/packaging/user_icat.txt
     elif [ "$SERVER_TYPE" == "resource" ] ; then

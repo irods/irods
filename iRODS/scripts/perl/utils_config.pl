@@ -61,6 +61,7 @@ sub load_server_config {
     $RESOURCE_NAME = undef;
     $RESOURCE_DIR  = undef;
     $IRODS_ADMIN_PASSWORD = undef;
+    $IRODS_ICAT_HOST = undef;
     # load specific variables
     $data = load_json_file($filename);
     $IRODS_ADMIN_NAME = $data->{'zone_user'};
@@ -72,6 +73,7 @@ sub load_server_config {
     $RESOURCE_NAME = $data->{'default_resource_name'};
     $RESOURCE_DIR = $data->{'default_resource_directory'};
     $IRODS_ADMIN_PASSWORD = $data->{'admin_password'};
+    $IRODS_ICAT_HOST = $data->{'icat_host'};
     # return
     return 1;
 }

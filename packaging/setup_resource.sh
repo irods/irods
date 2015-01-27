@@ -21,12 +21,19 @@ else
     set -e
 fi
 
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # get temp file from prior run, if it exists
 SETUP_RESOURCE_FLAG="/tmp/$USER/setup_resource.flag"
 if [ -f $SETUP_RESOURCE_FLAG ] ; then
     # have run this before, read the existing config file
-    ICATHOST=`grep "icat_host" $SERVER_CONFIG_FILE | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
-    ICATZONE=`grep "zone_name" $SERVER_CONFIG_FILE | head -n1 | awk -F\: '{print $2}' | sed 's/^ *//'`
+    ICATHOST=`$PYTHON -c "import json; print json.load(open('$SERVER_CONFIG_FILE'))['icat_host']"`
+    ICATZONE=`$PYTHON -c "import json; print json.load(open('$SERVER_CONFIG_FILE'))['zone_name']"`
     STATUS="loop"
 else
     # no temp file, this is the first run
@@ -97,10 +104,10 @@ THIRDHALF="Vault"
 LOCAL_VAULT_NAME="$LOCAL_RESOURCE_NAME$THIRDHALF"
 
 echo "Updating server_config.json..."
-TMPFILE=/tmp/$USER/server_config.json.tmp
-sed -e "/\"icat_host\",/s/^.*$/    \"icat_host\": \"$ICATHOST\",/" $SERVER_CONFIG_FILE > $TMPFILE ; mv $TMPFILE $SERVER_CONFIG_FILE
-sed -e "/\"zone_name\",/s/^.*$/    \"zone_name\": \"$ICATZONE\",/" $SERVER_CONFIG_FILE > $TMPFILE ; mv $TMPFILE $SERVER_CONFIG_FILE
-sed -e "/\"default_resource_name\",/s/^.*$/    \"default_resource_name\": \"$LOCAL_RESOURCE_NAME\",/" $SERVER_CONFIG_FILE > $TMPFILE ; mv $TMPFILE $SERVER_CONFIG_FILE
+$PYTHON $DETECTEDDIR/update_json.py $SERVER_CONFIG_FILE string icat_host $ICATHOST
+$PYTHON $DETECTEDDIR/update_json.py $SERVER_CONFIG_FILE string zone_name $ICATZONE
+$PYTHON $DETECTEDDIR/update_json.py $SERVER_CONFIG_FILE string default_resource_name $LOCAL_RESOURCE_NAME
+
 
 echo "Running irods_setup.pl..."
 cd iRODS
