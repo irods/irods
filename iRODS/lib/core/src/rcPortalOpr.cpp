@@ -230,8 +230,13 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
 
         for ( i = 0; i < numThreads; i++ ) {
             if ( tid[i] != 0 ) {
-
-                tid[i]->join();
+                try {
+                    tid[i]->join();
+                }
+                catch ( const boost::thread_resource_error& ) {
+                    rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
+                    return SYS_THREAD_RESOURCE_ERR;
+                }
             }
             totalWritten += myInput[i].bytesWritten;
             if ( myInput[i].status < 0 ) {
