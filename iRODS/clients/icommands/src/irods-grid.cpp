@@ -163,17 +163,17 @@ int main(
     try {
         zmq::message_t req;
         zmq_skt.recv( &req );
+        // decrypt the response
+        const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
+        in_buf.assign(
+            data_ptr,
+            data_ptr + req.size() );
     }
     catch ( const zmq::error_t& e ) {
         std::cout << "zeromq encountered an error." << std::endl;
         return -1;
     }
 
-    // decrypt the response
-    const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
-    in_buf.assign(
-        data_ptr,
-        data_ptr + req.size() );
 
     irods::buffer_crypt::array_t decoded_data;
     ret = crypt.decrypt(
