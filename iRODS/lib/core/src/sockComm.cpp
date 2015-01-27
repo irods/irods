@@ -379,21 +379,8 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     }
 
     if ( addr != NULL ) {
-        struct sockaddr_in sin;
-#if defined(aix_platform)
-        socklen_t  length = sizeof( sin );
-#elif defined(windows_platform)
-        int length;
-#else
-        uint length = sizeof( sin );
-#endif
-        if ( getsockname( sock, ( struct sockaddr * ) &sin, &length ) ) {
-            rodsLog( LOG_NOTICE,
-                     "sockOpenForInConn() -- getsockname() failed: errno=%d", errno );
-            return SYS_SOCK_BIND_ERR - errno;
-        }
-        *portNum = ntohs( sin.sin_port );
-        *addr =  strdup( rods_inet_ntoa( sin.sin_addr ) );
+        *addr = ( char * )malloc( sizeof( char ) * LONG_NAME_LEN );
+        gethostname( *addr, LONG_NAME_LEN );
     }
 
     return sock;
