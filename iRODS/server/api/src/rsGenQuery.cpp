@@ -51,10 +51,14 @@ irods::error strip_new_query_terms(
 
 
 static
-irods::error strip_deprecated_query_terms(
-    genQueryInp_t* _inp ) {
+irods::error strip_resc_grp_name_from_query_inp(genQueryInp_t* _inp, int& _pos) {
 
 	const int COL_D_RESC_GROUP_NAME  = 408;
+
+	// sanity check
+	if (!_inp) {
+		return CODE(SYS_INTERNAL_NULL_INPUT_ERR);
+	}
 
     // =-=-=-=-=-=-=-
     // cache pointers to the incoming inxIvalPair
@@ -66,23 +70,56 @@ irods::error strip_deprecated_query_terms(
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
     // fresh indices and values
-    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+    bzero(&_inp->selectInp, sizeof(_inp->selectInp));
 
     // =-=-=-=-=-=-=-
-    // iterate over tmp and skip deprecated values
-    for ( int i = 0; i < tmp.len; ++i ) {
-        if ( tmp.inx[ i ] == COL_D_RESC_GROUP_NAME ) {
-            continue;
+    // iterate over tmp and replace resource group with resource name
+    for (int i = 0; i<tmp.len; ++i) {
+        if (tmp.inx[i] == COL_D_RESC_GROUP_NAME) {
+        	addInxIval(&_inp->selectInp, COL_D_RESC_NAME, tmp.value[i]);
+        	_pos = i;
         }
         else {
-            addInxIval( &_inp->selectInp, tmp.inx[ i ], tmp.value[ i ] );
+            addInxIval(&_inp->selectInp, tmp.inx[i], tmp.value[i]);
         }
-
     } // for i
+
+    // cleanup
+    if (tmp.inx) free(tmp.inx);
+    if (tmp.value) free(tmp.value);
 
     return SUCCESS();
 
-} // strip_deprecated_query_terms
+} // strip_resc_grp_name_from_query_inp
+
+
+static
+irods::error add_resc_grp_name_to_query_out(genQueryOut_t *_out, int& _pos) {
+
+	const int COL_D_RESC_GROUP_NAME  = 408;
+
+	// =-=-=-=-=-=-=-
+	// Sanity checks
+	if (!_out) {
+		return CODE(SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	if (_pos < 0 || _pos > MAX_SQL_ATTR-1) {
+		return CODE(SYS_INVALID_INPUT_PARAM);
+	}
+
+	sqlResult_t *sqlResult = &_out->sqlResult[_pos];
+	if (!sqlResult || sqlResult->attriInx != COL_D_RESC_NAME) {
+		return CODE(SYS_INTERNAL_ERR);
+	}
+
+	// =-=-=-=-=-=-=-
+	// Swap attribute indices back
+	sqlResult->attriInx = COL_D_RESC_GROUP_NAME;
+
+    return SUCCESS();
+
+} // add_resc_grp_name_to_query_out
 
 
 static
@@ -161,14 +198,6 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
 
-    // =-=-=-=-=-=-=-
-    // handle queries from older clients
-    std::string client_rel_version = rsComm->cliVersion.relVersion;
-    std::string local_rel_version = RODS_REL_VERSION;
-    if (client_rel_version != local_rel_version) {	// skip if version strings match
-    	strip_deprecated_query_terms( genQueryInp );
-    }
-
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 #ifdef RODS_CAT
         status = _rsGenQuery( rsComm, genQueryInp, genQueryOut );
@@ -211,6 +240,7 @@ int
 _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
              genQueryOut_t **genQueryOut ) {
     int status;
+    int resc_grp_attr_pos = -1;
 
     static int ruleExecuted = 0;
     ruleExecInfo_t rei;
@@ -220,6 +250,17 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     int i, argc;
     ruleExecInfo_t rei2;
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+
+    // =-=-=-=-=-=-=-
+    // handle queries from older clients
+    std::string client_rel_version = rsComm->cliVersion.relVersion;
+    std::string local_rel_version = RODS_REL_VERSION;
+    if (client_rel_version != local_rel_version) {	// skip if version strings match
+    	irods::error err = strip_resc_grp_name_from_query_inp(genQueryInp, resc_grp_attr_pos);
+        if (!err.ok()) {
+            irods::log(PASS(err));
+        }
+    }
 
     if ( PrePostProcForGenQueryFlag < 0 ) {
         if ( getenv( "PREPOSTPROCFORGENQUERYFLAG" ) != NULL ) {
@@ -355,6 +396,15 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         }
     }
     /**  June 1 2009 for pre-post processing rule hooks **/
+
+    // =-=-=-=-=-=-=-
+    // handle queries from older clients
+    if (status >= 0 && resc_grp_attr_pos >= 0) {
+    	irods::error err = add_resc_grp_name_to_query_out(*genQueryOut, resc_grp_attr_pos);
+        if (!err.ok()) {
+            irods::log(PASS(err));
+        }
+    }
 
     if ( status < 0 ) {
         clearGenQueryOut( *genQueryOut );
