@@ -473,7 +473,6 @@ extern "C" {
             else {
                 result.code( fd );
             }
-            close( fd );
         }
 
         // =-=-=-=-=-=-=-
