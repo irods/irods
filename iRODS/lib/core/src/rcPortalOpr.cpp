@@ -895,7 +895,13 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                 continue;
             }
             fillRcPortalTransferInp( conn, &myInput[i], out_fd, sock, i );
-            tid[i] = new boost::thread( rcPartialDataGet, &myInput[i] );
+            try {
+                tid[i] = new boost::thread( rcPartialDataGet, &myInput[i] );
+            }
+            catch ( const boost::thread_resource_error& ) {
+                rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
+                return SYS_THREAD_RESOURCE_ERR;
+            }
         }
 
         if ( retVal < 0 ) {
