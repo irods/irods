@@ -1,8 +1,5 @@
 #!/bin/bash -e
 
 # get admin password, without showing on screen
-stty -echo
-read IRODS_ADMIN_PASSWORD
-stty echo
+read -s IRODS_ADMIN_PASSWORD
 echo -n $IRODS_ADMIN_PASSWORD
-
