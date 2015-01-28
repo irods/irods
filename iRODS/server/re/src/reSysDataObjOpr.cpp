@@ -742,7 +742,7 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
  *    is an integer value in MBytes. It also accepts the word "default" which sets
  *    sizePerThrInMb to a default value of 32.
  * \param[in] xmaxNumThrStr - The maximum number of threads to use. It accepts integer
- *    value up to 16. It also accepts the word "default" which sets maxNumThr to a default value of 4.
+ *    value up to 64. It also accepts the word "default" which sets maxNumThr to a default value of 4.
  * \param[in] xwindowSizeStr - The TCP window size in Bytes for the parallel transfer. A value of 0 or "default" means a default size of 1,048,576 Bytes.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
