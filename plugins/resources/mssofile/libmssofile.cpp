@@ -1474,9 +1474,10 @@ extern "C" {
         fileCreateInp.flags      = fco->flags();
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
 
-        fileCreateOut_t* create_out = 0;
+        fileCreateOut_t* create_out = NULL;
         snprintf( fileCreateInp.resc_hier_, MAX_NAME_LEN, "%s", specColl->rescHier );
         status = rsFileCreate( _ctx.comm(), &fileCreateInp, &create_out );
+        free( create_out );
 
         if ( status < 0 ) {
             std::stringstream msg;
@@ -1484,12 +1485,10 @@ extern "C" {
                 << fileCreateInp.fileName << "]";
             return ERROR( status, msg.str() );
         }
-        else {
-            MssoSubFileDesc[subInx].fd = status;
-            MssoStructFileDesc[structFileInx].openCnt++;
-            fco->file_descriptor( subInx );
-            return CODE( subInx );
-        }
+        MssoSubFileDesc[subInx].fd = status;
+        MssoStructFileDesc[structFileInx].openCnt++;
+        fco->file_descriptor( subInx );
+        return CODE( subInx );
 
     } // msso_file_create_plugin
 
