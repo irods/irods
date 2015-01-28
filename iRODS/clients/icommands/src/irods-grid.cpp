@@ -157,10 +157,11 @@ int main(
         rep.data(),
         data_to_send.data(),
         data_to_send.size() );
-    zmq_skt.send( rep );
 
-    // wait for the server reponse
     try {
+        zmq_skt.send( rep );
+
+        // wait for the server reponse
         zmq::message_t req;
         zmq_skt.recv( &req );
         // decrypt the response
