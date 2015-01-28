@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.hpp"
+#include "rules.hpp"
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.hpp"
 #include "physPath.hpp"
@@ -554,21 +555,19 @@ extern "C" {
         }
 
         int status = 0;
-        execCmd_t execCmdInp;
-        char cmdArgv[HUGE_NAME_LEN] = "";
-        execCmdOut_t *execCmdOut = NULL;
-        bzero( &execCmdInp, sizeof( execCmdInp ) );
 
-        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "stageToCache" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "' '" );
-        strcat( cmdArgv, _cache_file_name );
-        strcat( cmdArgv, "'" );
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        std::stringstream cmdArgv;
+        cmdArgv << "stageToCache '" << filename << "' '" << _cache_file_name << "'";
+
+        execCmd_t execCmdInp;
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
+        snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s",  script.c_str() );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "%s", cmdArgv.str().c_str() );
+        snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
+
+        execCmdOut_t *execCmdOut = NULL;
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        freeCmdExecOut( execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_STAGETOCACHE_ERR - errno;
