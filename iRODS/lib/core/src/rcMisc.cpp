@@ -223,7 +223,7 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
             snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
         }
         if ( userZone != NULL ) {
-            snprintf( userZone, NAME_LEN, "%s", matches.str( 6 ).c_str() );
+            snprintf( userZone, NAME_LEN, "%s", matches.str( 4 ).c_str() );
         }
     }
     catch ( const boost::exception& ) {
