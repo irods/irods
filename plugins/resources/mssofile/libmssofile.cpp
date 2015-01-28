@@ -1838,22 +1838,19 @@ extern "C" {
         rodsStat_t* rods_stat = 0;
         status = rsFileStat( _ctx.comm(), &fileStatInp, &rods_stat );
 
-        if ( status >= 0 ) {
-            //if( strstr( &(subFile->subFilePath[strlen(subFile->subFilePath) -5]),
-            //    ".run") != NULL && (*subStructFileStatOut)->st_size == 0 )
-            const std::string& path = fco->sub_file_path();
-            if ( std::string::npos != path.find( ".run", path.size() - 5 ) &&
-                    rods_stat->st_size == 0 ) {
-                rods_stat->st_size = MAX_SZ_FOR_SINGLE_BUF - 20;
-            }
-
-            rodsStatToStat( _statbuf, rods_stat );
-
-            return CODE( status );
-        }
-        else {
+        if ( status < 0 ) {
             return ERROR( status, "rsFileStat failed" );
         }
+        //if( strstr( &(subFile->subFilePath[strlen(subFile->subFilePath) -5]),
+        //    ".run") != NULL && (*subStructFileStatOut)->st_size == 0 )
+        const std::string& path = fco->sub_file_path();
+        if ( std::string::npos != path.find( ".run", path.size() - 5 ) &&
+                rods_stat->st_size == 0 ) {
+            rods_stat->st_size = MAX_SZ_FOR_SINGLE_BUF - 20;
+        }
+
+        rodsStatToStat( _statbuf, rods_stat );
+        free( rods_stat );
 
         return CODE( status );
 
