@@ -1906,8 +1906,8 @@ extern "C" {
         // build a file create structure to pass off to the server api call
         fileOpenInp_t fileTruncateInp;
         memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
-        strncpy( fileTruncateInp.addr.hostAddr,  resc_host.c_str(), NAME_LEN );
-        strncpy( fileTruncateInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileTruncateInp.addr.hostAddr, sizeof( fileTruncateInp.addr.hostAddr ), "%s", resc_host.c_str() );
+        snprintf( fileTruncateInp.objPath, sizeof( fileTruncateInp.objPath ), "%s", struct_obj->logical_path().c_str() );
         fileTruncateInp.dataSize = struct_obj->offset();
 
         // =-=-=-=-=-=-=-
