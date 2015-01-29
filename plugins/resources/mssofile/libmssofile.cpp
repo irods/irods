@@ -2407,7 +2407,7 @@ extern "C" {
                          MssoStructFileDesc[structFileInx].location,
                          NAME_LEN );
                 fileRmdirInp.flags = RMDIR_RECUR;
-                strncpy( fileRmdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+                snprintf( fileRmdirInp.rescHier, sizeof( fileRmdirInp.rescHier ), "%s", specColl->rescHier );
                 status = rsFileRmdir( _ctx.comm(), &fileRmdirInp );
                 if ( status < 0 ) {
                     std::stringstream msg;
