@@ -14986,7 +14986,7 @@ checkLevel:
                 if ( status != 0 ) {
                     return ERROR( status, "failed to get query strings" );
                 }
-                strncpy( combinedSQL, _spec_query_inp->sql, sizeof( combinedSQL ) );
+                snprintf( combinedSQL, sizeof( combinedSQL ), "%s", _spec_query_inp->sql );
             }
 
             i = 0;
