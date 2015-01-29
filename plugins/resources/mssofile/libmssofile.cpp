@@ -1768,7 +1768,7 @@ extern "C" {
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
 
-        strncpy( fileUnlinkInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileUnlinkInp.rescHier, sizeof( fileUnlinkInp.rescHier ), "%s", specColl->rescHier );
         status = rsFileUnlink( _ctx.comm(), &fileUnlinkInp );
         if ( status >= 0 ) {
             specColl_t *specColl;
