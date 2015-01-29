@@ -2022,7 +2022,7 @@ extern "C" {
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
         fileMkdirInp.mode = fco->mode();
-        strncpy( fileMkdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", specColl->rescHier );
         status = rsFileMkdir( _ctx.comm(), &fileMkdirInp );
 
         if ( status >= 0 ) {
