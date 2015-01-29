@@ -2085,7 +2085,7 @@ extern "C" {
         rstrcpy( fileRmdirInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
-        strncpy( fileRmdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileRmdirInp.rescHier, sizeof( fileRmdirInp.rescHier ), "%s", specColl->rescHier );
         status = rsFileRmdir( _ctx.comm(), &fileRmdirInp );
         if ( status >= 0 ) {
             int status1;
