@@ -9536,16 +9536,16 @@ checkLevel:
 
         if ( strlen( _user_info->rodsZone ) > 0 ) {
             zoneForm = 1;
-            strncpy( userZone, _user_info->rodsZone, MAX_NAME_LEN );
+            snprintf( userZone, sizeof( userZone ), "%s", _user_info->rodsZone );
         }
         else {
             zoneForm = 0;
-            strncpy( userZone, zone.c_str(), MAX_NAME_LEN );
+            snprintf( userZone, sizeof( userZone ), "%s", zone.c_str() );
         }
 
         status = parseUserName( _user_info->userName, userName2, zoneName );
         if ( zoneName[0] != '\0' ) {
-            rstrcpy( userZone, zoneName, NAME_LEN );
+            snprintf( userZone, sizeof( userZone ), "%s", zoneName );
             zoneForm = 2;
         }
         if ( status != 0 ) {
