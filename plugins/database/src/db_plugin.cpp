@@ -9258,10 +9258,12 @@ checkLevel:
         snprintf( oldPath2, sizeof( oldPath2 ), "%s%%", _old_path );
 
         if ( _user_name != NULL && *_user_name != '\0' ) {
-            strncpy( zoneToUse, zone.c_str(), NAME_LEN );
             status = parseUserName( _user_name, userName2, userZone );
             if ( userZone[0] != '\0' ) {
-                rstrcpy( zoneToUse, userZone, NAME_LEN );
+                snprintf( zoneToUse, sizeof( zoneToUse ), "%s", userZone );
+            }
+            else {
+                snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
             }
 
             if ( logSQL != 0 ) {
