@@ -2857,7 +2857,10 @@ purgeLockFileDir( int chkLockFlag ) {
                 continue;
             }
             myflock.l_type = F_WRLCK;
-            fcntl( myFd, F_GETLK, &myflock );
+            int error_code = fcntl( myFd, F_GETLK, &myflock );
+            if ( error_code != 0 ) {
+                rodsLog( LOG_ERROR, "fcntl failed in purgeLockFileDir with error code %d", error_code );
+            }
             close( myFd );
             /* some process is locking it */
             if ( myflock.l_type != F_UNLCK ) {
