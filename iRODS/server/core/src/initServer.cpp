@@ -755,7 +755,7 @@ initRcatServerHostByFile() {
     array_t fed_arr;
     ret = props.get_property <
           array_t > (
-              irods::CFG_NEGOTIATION_KEY_KW,
+              irods::CFG_FEDERATION_KW,
               fed_arr );
     if ( ret.ok() ) {
         for ( size_t i = 0; i < fed_arr.size(); ++i ) {
