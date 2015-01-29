@@ -34,6 +34,10 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "readServerConfig.hpp"
 #include "sockCommNetworkInterface.hpp"
 
+int getAgentProcCnt() {
+    return 0;
+}
+
 /* #define SERVER_DEBUG 1   */
 int
 main( int, char ** ) {

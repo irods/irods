@@ -12,23 +12,25 @@
 #include "boost/unordered_map.hpp"
 
 namespace irods {
+    const std::string SERVER_CONTROL_OPTION_KW( "server_control_option" );
+    const std::string SERVER_CONTROL_HOST_KW( "server_control_host" );
+    const std::string SERVER_CONTROL_FORCE_AFTER_KW( "server_control_force_after" );
+    const std::string SERVER_CONTROL_WAIT_FOREVER_KW( "server_control_wait_forever" );
 
     const std::string SERVER_CONTROL_SHUTDOWN( "server_control_shutdown" );
     const std::string SERVER_CONTROL_PAUSE( "server_control_pause" );
     const std::string SERVER_CONTROL_RESUME( "server_control_resume" );
     const std::string SERVER_CONTROL_STATUS( "server_control_status" );
 
-    const std::string SERVER_CONTROL_OPTION_KW( "server_control_option" );
-    const std::string SERVER_CONTROL_HOST_KW( "server_control_host" );
     const std::string SERVER_CONTROL_ALL_OPT( "all" );
     const std::string SERVER_CONTROL_HOSTS_OPT( "hosts" );
     const std::string SERVER_CONTROL_SUCCESS( "server_control_success" );
 
     // this is a hand-chosen polling time for the control plane
-    static const double SERVER_CONTROL_POLLING_TIME = 500; // milliseconds
+    static const size_t SERVER_CONTROL_POLLING_TIME_MILLI_SEC = 500;
 
     // derived from above - used to wait for the server to shut down or resume
-    static const double SERVER_CONTROL_FWD_SLEEP_TIME = ( SERVER_CONTROL_POLLING_TIME / 1000.0 ) / 4.0; // seconds
+    static const size_t SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC = SERVER_CONTROL_POLLING_TIME_MILLI_SEC / 4.0;
 
     class server_control_executor {
         public:
@@ -41,7 +43,7 @@ namespace irods {
 
         private:
             // typedefs
-            typedef boost::function< error( std::string& ) > ctrl_func_t;
+            typedef boost::function< error( const std::string&, const size_t, std::string& ) > ctrl_func_t;
             typedef std::vector< std::string >                host_list_t;
 
             // members
@@ -54,9 +56,13 @@ namespace irods {
                 const irods::control_plane_command&, // incoming command
                 std::string&,                        // command name
                 std::string&,                        // command option
+                std::string&,                        // wait option
+                size_t&,                             // wait time in seconds
                 host_list_t& ); // hostnames
             error process_host_list(
                 const std::string&, // command
+                const std::string&, // wait option
+                const size_t&,      // wait time in seconds
                 const host_list_t&, // hostnames
                 std::string& );     // outgoing text
             error validate_host_list(
@@ -68,17 +74,23 @@ namespace irods {
             error notify_icat_and_local_servers_preop(
                 const std::string&, // command
                 const std::string&, // command option
+                const std::string&, // wait option
+                const size_t&,      // wait seconds
                 const host_list_t&, // irods hostnames
                 std::string& );     // output
             error notify_icat_and_local_servers_postop(
                 const std::string&, // command
                 const std::string&, // command option
+                const std::string&, // wait option
+                const size_t&,      // wait seconds
                 const host_list_t&, // irods hostnames
                 std::string& );     // output
             error forward_command(
                 const std::string&, // command name
                 const std::string&, // host
                 const std::string&, // port keyword
+                const std::string&, // wait option
+                const size_t&,      // wait seconds
                 std::string& );     // output
 
             // attributes

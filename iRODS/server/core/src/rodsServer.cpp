@@ -479,7 +479,7 @@ procChildren( agentProc_t **agentProcHead ) {
 
 
 #ifndef _WIN32
-    while ( ( childPid = waitpid( -1, &status, WNOHANG | WUNTRACED ) ) > 0 ) {
+    while ( ( childPid = waitpid( -1, &status, WNOHANG ) ) > 0 ) {
         tmpAgentProc = getAgentProcByPid( childPid, agentProcHead );
         if ( tmpAgentProc != NULL ) {
             rodsLog( LOG_NOTICE, "Agent process %d exited with status %d",
@@ -1283,8 +1283,8 @@ purgeLockFileWorkerTask() {
 
     irods::server_state& state = irods::server_state::instance();
     while ( irods::server_state::STOPPED != state() ) {
-        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME );
-        wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME;
+        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC );
+        wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
         if ( wait_time_ms >= purge_time_ms ) {
             wait_time_ms = 0;

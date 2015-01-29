@@ -28,6 +28,9 @@
 using namespace boost::filesystem;
 
 
+int getAgentProcCnt() {
+    return 0;
+}
 
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
 

@@ -8,198 +8,298 @@
 #include <sstream>
 #include <iostream>
 #include "boost/unordered_map.hpp"
+#include "boost/program_options.hpp"
+#include "boost/algorithm/string.hpp"
+#include "boost/lexical_cast.hpp"
 
 #include "rodsClient.hpp"
 #include "irods_server_control_plane.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "server_control_plane_command.hpp"
+#include "irods_buffer_encryption.hpp"
 
-int usage() {
-    std::cout << "Usage: irods-grid [status,shutdown,pause,resume] hosts <fqdn1> <fqdn2> ..." << std::endl;
-    std::cout << "       irods-grid [status,shutdown,pause,resume] all" << std::endl;
-    return 0;
+irods::error usage() {
+    std::cout << "usage:  'irods-grid action [ option ] target'" << std::endl;
+    std::cout << "action: ( required ) status, pause, resume, shutdown" << std::endl;
+    std::cout << "option: --force-after=seconds or --wait-forever" << std::endl;
+    std::cout << "target: ( required ) --all, --hosts=\"<fqdn1>, <fqdn2>, ...\"" << std::endl;
+    
+    return ERROR(
+               SYS_INVALID_INPUT_PARAM,
+               "usage" );
 
 } // usage
 
-
-
-int main(
+irods::error parse_program_options(
     int   _argc,
-    char* _argv[] ) {
-    std::vector< std::string > cmd_line;
-    for ( int i = 0;
-            i < _argc;
-            ++i ) {
-        cmd_line.push_back( _argv[ i ] );
+    char* _argv[],
+    irods::control_plane_command& _cmd ) {
 
-    }
+    namespace po = boost::program_options;
+    po::options_description opt_desc( "options" );
+    opt_desc.add_options()
+        ( "action", "either 'status', 'shutdown', 'pause', or 'resume'" )
+        ( "help", "show command usage" )
+        ( "all", "operation applies to all servers in the grid" )
+        ( "hosts", po::value<std::string>(), "operation applies to a list of hosts in the grid" )
+        ( "force-after", po::value<size_t>(), "force shutdown after N seconds" )
+        ( "wait-forever", "wait indefinitely for a graceful shutdown" )
+        ( "shutdown", "gracefully shutdown a server(s)" )
+        ( "pause", "refuse new client connections" )
+        ( "resume", "allow new client connections" );
 
-    if ( 1 == cmd_line.size() ) {
-        return usage();
+    po::positional_options_description pos_desc; 
+    pos_desc.add("action", 1); 
 
-    }
-
-    const size_t sub_idx = 1;
-    const size_t opt_idx = 2;
-
-    boost::unordered_map< std::string, std::string > cmd_map;
-    cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
-    cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
-    cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
-    cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
-
-    if ( cmd_map.end() == cmd_map.find( cmd_line[ sub_idx ] ) ) {
-        std::cout << "invalid subcommand ["
-                  << cmd_line[ sub_idx ]
-                  << "]"
+    po::variables_map vm;
+    try {
+        po::store(
+            po::command_line_parser( 
+                _argc, _argv ).options( 
+                    opt_desc ).positional(
+                        pos_desc ).run(), vm );
+        po::notify(vm);
+    } catch( po::error& _e ) {
+        std::cout << std::endl 
+                  << "Error: "
+                  << _e.what() 
+                  << std::endl
                   << std::endl;
         return usage();
-
+        
     }
 
-    // fair to say we have a valid subcommand at least
+    // capture the 'subcommand' or 'action' to perform on the grid
     irods::control_plane_command cmd;
-    cmd.command = cmd_map[ cmd_line[ sub_idx ] ];
+    if( vm.count( "action" ) ) {
+        const std::string& action = vm["action"].as<std::string>();
+ 
+        boost::unordered_map< std::string, std::string > cmd_map;
+        cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
+        cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
+        cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
+        cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
 
-    // serialize possible option which must be 'all' or 'hosts'
-    if ( cmd_line.size() > 2 ) {
-        if ( irods::SERVER_CONTROL_ALL_OPT   != cmd_line[ opt_idx ] &&
-                irods::SERVER_CONTROL_HOSTS_OPT != cmd_line[ opt_idx ] ) {
-            std::cout << "invalid option ["
-                      << cmd_line[ opt_idx ]
+        if ( cmd_map.end() == cmd_map.find( action ) ) {
+            std::cout << "invalid subcommand ["
+                      << action
                       << "]"
                       << std::endl;
             return usage();
 
-        }
-        else {
-            cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] = cmd_line[ opt_idx ];
+        }       
+    
+        _cmd.command = cmd_map[ action ];
 
-        }
-    }
-    else {
-        std::cout << "invalid number of command line options : "
-                  << cmd_line.size()
-                  << std::endl;
+    } else {
         return usage();
 
     }
 
-    // serialize remaining command line parameters as hosts, using
-    // numbered host keywords as the keys
-    for ( size_t i = 3;
-            i < cmd_line.size();
-            ++i ) {
-        std::stringstream ss;
-        ss << i - 3;
-        cmd.options[ irods::SERVER_CONTROL_HOST_KW + ss.str() ] = cmd_line[ i ];
+    if( vm.count( "force-after" ) ) {
+        size_t secs = vm[ "force-after" ].as<size_t>();
+        std::stringstream ss; ss << secs;
+        _cmd.options[ irods::SERVER_CONTROL_FORCE_AFTER_KW ] =
+            ss.str();
+    } else if( vm.count( "wait-forever" ) ) {
+        _cmd.options[ irods::SERVER_CONTROL_WAIT_FOREVER_KW ] =
+            "keep_waiting";
+
+    }
+
+    // capture either the 'all' servers or the hosts list
+    if( vm.count( "all" ) ) {
+        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] = 
+            irods::SERVER_CONTROL_ALL_OPT;
+
+    } else if( vm.count( "hosts" ) ) {
+        std::vector< std::string > hosts;
+        boost::split(
+            hosts,
+            vm[ "hosts" ].as<std::string>(),
+            boost::is_any_of( "," ),
+            boost::token_compress_on );
+
+        for( size_t i = 0;
+             i < hosts.size();
+             ++i ) {
+            std::stringstream ss; ss << i;
+            _cmd.options[ irods::SERVER_CONTROL_HOST_KW + ss.str() ] = 
+                hosts[ i ];
+
+        } // for i
+
+    } else {
+        return usage();
+
+    }
+
+    return SUCCESS();
+
+} // parse_program_options
+
+irods::error prepare_command_for_transport(
+    const rodsEnv&                      _env,
+    const irods::control_plane_command& _cmd,
+    irods::buffer_crypt::array_t&       _data_to_send ) {
+
+    // build a encryption context
+    std::string encryption_key( _env.irodsCtrlPlaneKey );
+    irods::buffer_crypt crypt(
+        encryption_key.size(), // key size
+        0,                     // salt size ( we dont send a salt )
+        _env.irodsCtrlPlaneEncryptionNumHashRounds,
+        _env.irodsCtrlPlaneEncryptionAlgorithm );
+
+    // serialize using the generated avro class
+    std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
+    avro::EncoderPtr e = avro::binaryEncoder();
+    e->init( *out );
+    avro::encode( *e, _cmd );
+    boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
+
+    // encrypt outgoing request
+    std::vector< unsigned char > enc_data(
+        data->begin(),
+        data->end() );
+
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t in_buf(
+        enc_data.begin(),
+        enc_data.end() );
+    irods::buffer_crypt::array_t shared_secret(
+        encryption_key.begin(),
+        encryption_key.end() );
+    irods::error ret = crypt.encrypt(
+                           shared_secret,
+                           iv,
+                           in_buf,
+                           _data_to_send );
+    if ( !ret.ok() ) {
+        return PASS( ret );
+
+    }
+
+    return SUCCESS();
+
+} // prepare_command_for_transport
+
+irods::error decrypt_response(
+    const rodsEnv& _env,
+    const uint8_t* _data_ptr,
+    const size_t   _data_size,
+    std::string&   _rep_str ) {
+
+    irods::buffer_crypt::array_t in_buf;
+    in_buf.assign(
+        _data_ptr,
+        _data_ptr + _data_size );
+    
+    std::string encryption_key( _env.irodsCtrlPlaneKey );
+    irods::buffer_crypt crypt(
+        encryption_key.size(), // key size
+        0,                     // salt size ( we dont send a salt )
+        _env.irodsCtrlPlaneEncryptionNumHashRounds,
+        _env.irodsCtrlPlaneEncryptionAlgorithm );
+
+
+    irods::buffer_crypt::array_t iv;
+    irods::buffer_crypt::array_t shared_secret(
+        encryption_key.begin(),
+        encryption_key.end() );
+    irods::buffer_crypt::array_t decoded_data;
+    irods::error ret = crypt.decrypt(
+                           shared_secret,
+                           iv,
+                           in_buf,
+                           decoded_data );
+    if( !ret.ok() ) {
+        return PASS( ret );
+
+    }
+
+    _rep_str.assign( 
+        decoded_data.begin(),
+        decoded_data.begin() + decoded_data.size() );
+
+    return SUCCESS();
+
+} // decrypt_response
+
+int main( 
+    int   _argc,
+    char* _argv[] ) {
+
+    irods::control_plane_command cmd;
+    irods::error ret = parse_program_options(
+                           _argc,
+                           _argv,
+                           cmd );
+    if( !ret.ok() ) {
+        return 0;
 
     }
 
     // fetch client environment for proper port
     rodsEnv env;
     _getRodsEnv( env );
-    // build a encryption context
-    std::string encryption_key( env.irodsCtrlPlaneKey );
-    irods::buffer_crypt crypt(
-        encryption_key.size(), // key size
-        0,                     // salt size ( we dont send a salt )
-        env.irodsCtrlPlaneEncryptionNumHashRounds,
-        env.irodsCtrlPlaneEncryptionAlgorithm );
 
-    try {
-        // standard zmq rep-req communication pattern
-        zmq::context_t zmq_ctx( 1 );
-        zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
+    irods::buffer_crypt::array_t data_to_send;
+    ret = prepare_command_for_transport(
+              env,
+              cmd,
+              data_to_send );
+    if( !ret.ok() ) {
+        std::cout << ret.result()
+                  << std::endl;
+        return ret.code();
 
-        // this is the client so we connect rather than bind
-        std::stringstream port_sstr;
-        port_sstr << env.irodsCtrlPlanePort;
-        std::string bind_str( "tcp://localhost:" );
-        bind_str += port_sstr.str();
-        zmq_skt.connect( bind_str.c_str() );
-
-        // serialize using the generated avro class
-        std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
-        avro::EncoderPtr e = avro::binaryEncoder();
-        e->init( *out );
-        avro::encode( *e, cmd );
-        boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
-
-        // encrypt outgoing request
-        std::vector< unsigned char > enc_data(
-                data->begin(),
-                data->end() );
-
-        irods::buffer_crypt::array_t iv;
-        irods::buffer_crypt::array_t data_to_send;
-        irods::buffer_crypt::array_t in_buf(
-                enc_data.begin(),
-                enc_data.end() );
-        irods::buffer_crypt::array_t shared_secret(
-                encryption_key.begin(),
-                encryption_key.end() );
-        irods::error ret = crypt.encrypt(
-                shared_secret,
-                iv,
-                in_buf,
-                data_to_send );
-        if ( !ret.ok() ) {
-            irods::error err = PASS( ret );
-            std::cout << err.result()
-                << std::endl;
-            return -1;
-
-        }
-
-        // copy binary encoding into a zmq message for transport
-        zmq::message_t rep( data_to_send.size() );
-        memcpy(
-                rep.data(),
-                data_to_send.data(),
-                data_to_send.size() );
-
-        zmq_skt.send( rep );
-
-        // wait for the server reponse
-        zmq::message_t req;
-        zmq_skt.recv( &req );
-        // decrypt the response
-        const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
-        in_buf.assign(
-                data_ptr,
-                data_ptr + req.size() );
-
-        irods::buffer_crypt::array_t decoded_data;
-        ret = crypt.decrypt(
-                shared_secret,
-                iv,
-                in_buf,
-                decoded_data );
-        if ( !ret.ok() ) {
-            irods::error err = PASS( ret );
-            std::cout << err.result()
-                << std::endl;
-            return -1;
-
-
-        }
-
-        std::string rep_str(
-                reinterpret_cast< const char* >(
-                    decoded_data.data() ),
-                decoded_data.size() );
-        if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-            std::cout << rep_str.data()
-                << std::endl;
-        }
-
-        return 0;
     }
-    catch ( const zmq::error_t& e ) {
-        std::cout << "zeromq encountered an error." << std::endl;
+
+    // standard zmq rep-req communication pattern
+    zmq::context_t zmq_ctx( 1 );
+    zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
+
+    // this is the client so we connect rather than bind
+    std::stringstream port_sstr;
+    port_sstr << env.irodsCtrlPlanePort;
+    std::string bind_str( "tcp://localhost:" );
+    bind_str += port_sstr.str();
+    zmq_skt.connect( bind_str.c_str() );
+
+    // copy binary encoding into a zmq message for transport
+    zmq::message_t rep( data_to_send.size() );
+    memcpy(
+        rep.data(),
+        data_to_send.data(),
+        data_to_send.size() );
+    zmq_skt.send( rep );
+
+    // wait for the server reponse
+    zmq::message_t req;
+    zmq_skt.recv( &req );
+
+    // decrypt the response
+    std::string rep_str;
+    ret = decrypt_response(
+              env,
+              static_cast< const uint8_t* >( req.data() ),
+              req.size(),
+              rep_str );
+    if ( !ret.ok() ) {
+        irods::error err = PASS( ret );
+        std::cout << err.result()
+                  << std::endl;
         return -1;
+
     }
+
+    if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
+        std::cout << rep_str.data()
+            << std::endl;
+    }
+
+    return 0;
 
 } // main
 

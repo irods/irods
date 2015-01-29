@@ -18,6 +18,10 @@
 int loopCnt = -1; /* make it -1 to run infinitely */
 
 
+int getAgentProcCnt() {
+    return 0;
+}
+
 int
 main( int argc, char **argv ) {
     int c;

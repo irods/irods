@@ -8,6 +8,8 @@
 
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
+#include "sockComm.hpp"
+
 #include "irods_log.hpp"
 #include "irods_server_control_plane.hpp"
 #include "irods_server_properties.hpp"
@@ -18,8 +20,11 @@
 #include "irods_exception.hpp"
 #include "irods_stacktrace.hpp"
 
-namespace irods {
+#include "boost/lexical_cast.hpp"
 
+int getAgentProcCnt();
+
+namespace irods {
 
     static error get_server_properties(
         const std::string&     _port_keyword,
@@ -205,17 +210,39 @@ namespace irods {
     } // forward_server_control_command
 
     static error server_operation_shutdown(
-        std::string& _output ) {
+        const std::string& _wait_option,
+        const size_t       _wait_seconds,
+        std::string&       _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
         _output += "[ shutting down ";
         _output += my_env.rodsHost;
         _output += " ]";
         _output += "\n";
+
+        error ret;
+
+        int sleep_time_out_milli_sec = 0;
+        ret = get_server_property <
+                    int > (
+                        CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                        sleep_time_out_milli_sec );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+        
+        if( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
+            // convert sec to millisec for comparison
+            sleep_time_out_milli_sec = _wait_seconds * 1000;
+        }
+       
+        int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
+
         // rule engine server only runs on IES
-#ifdef RODS_CAT
+        #ifdef RODS_CAT
         std::string output;
-        error ret = forward_server_control_command(
+        ret = forward_server_control_command(
                         SERVER_CONTROL_SHUTDOWN,
                         my_env.rodsHost,
                         CFG_RULE_ENGINE_CONTROL_PLANE_PORT,
@@ -225,9 +252,33 @@ namespace irods {
             log( msg );
             _output = msg.result();
         }
-#endif
+        #endif
 
         server_state& s = server_state::instance();
+        s( server_state::PAUSED );
+
+        size_t sleep_time  = 0; 
+        bool   timeout_flg = false;
+        int    proc_cnt = getAgentProcCnt();
+
+        while( proc_cnt > 0 && !timeout_flg ) {
+            // takes sec, microsec
+            rodsSleep( 
+                0, 
+                wait_milliseconds );
+
+            if( SERVER_CONTROL_WAIT_FOREVER_KW != _wait_option ) {
+                sleep_time += SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+                if( sleep_time > sleep_time_out_milli_sec ) {
+                    timeout_flg = true;
+                }
+            }
+
+            proc_cnt = getAgentProcCnt();
+
+        } // while
+       
+        // actually shut down the server 
         s( server_state::STOPPED );
 
         return SUCCESS();
@@ -235,6 +286,8 @@ namespace irods {
     } // server_operation_shutdown
 
     static error rule_engine_operation_shutdown(
+        const std::string& _wait_option,
+        const size_t       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -250,6 +303,8 @@ namespace irods {
     } // rule_engine_server_operation_shutdown
 
     static error operation_pause(
+        const std::string& _wait_option,
+        const size_t       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -266,6 +321,8 @@ namespace irods {
     } // operation_pause
 
     static error operation_resume(
+        const std::string& _wait_option,
+        const size_t       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -281,6 +338,8 @@ namespace irods {
     } // operation_resume
 
     static error operation_status(
+        const std::string& _wait_option,
+        const size_t       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -363,6 +422,8 @@ namespace irods {
         const std::string& _name,
         const std::string& _host,
         const std::string& _port_keyword,
+        const std::string& _wait_option,
+        const size_t&      _wait_seconds,
         std::string&       _output ) {
         // if this is forwarded to us, just perform the operation
         if ( _host == my_host_name_ ) {
@@ -370,6 +431,8 @@ namespace irods {
             hosts.push_back( _host );
             return process_host_list(
                        _name,
+                       _wait_option,
+                       _wait_seconds,
                        hosts,
                        _output );
 
@@ -490,7 +553,7 @@ namespace irods {
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REP );
 
-        int time_out = SERVER_CONTROL_POLLING_TIME;
+        int time_out = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
         zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
         zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
 
@@ -565,6 +628,8 @@ namespace irods {
     error server_control_executor::notify_icat_and_local_servers_preop(
         const std::string& _cmd_name,
         const std::string& _cmd_option,
+        const std::string& _wait_option,
+        const size_t&      _wait_seconds,
         const host_list_t& _cmd_hosts,
         std::string&       _output ) {
 
@@ -594,8 +659,12 @@ namespace irods {
                       _cmd_name,
                       icat_host_name_,
                       CFG_SERVER_CONTROL_PLANE_PORT,
+                      _wait_option,
+                      _wait_seconds,
                       _output );
-            sleep( SERVER_CONTROL_FWD_SLEEP_TIME );
+            // takes sec, microsec
+            rodsSleep( 
+                0, SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000 );
         }
 
         // pre-op forwards to the local server second
@@ -605,6 +674,8 @@ namespace irods {
                       _cmd_name,
                       my_host_name_,
                       CFG_SERVER_CONTROL_PLANE_PORT,
+                      _wait_option,
+                      _wait_seconds,
                       _output );
         }
 
@@ -615,6 +686,8 @@ namespace irods {
     error server_control_executor::notify_icat_and_local_servers_postop(
         const std::string& _cmd_name,
         const std::string& _cmd_option,
+        const std::string& _wait_option,
+        const size_t&      _wait_seconds,
         const host_list_t& _cmd_hosts,
         std::string&       _output ) {
         error ret = SUCCESS();
@@ -643,6 +716,8 @@ namespace irods {
                       _cmd_name,
                       my_host_name_,
                       CFG_SERVER_CONTROL_PLANE_PORT,
+                      _wait_option,
+                      _wait_seconds,
                       _output );
         }
 
@@ -652,6 +727,8 @@ namespace irods {
                       _cmd_name,
                       icat_host_name_,
                       CFG_SERVER_CONTROL_PLANE_PORT,
+                      _wait_option,
+                      _wait_seconds,
                       _output );
         }
 
@@ -708,6 +785,8 @@ namespace irods {
         const control_plane_command& _cmd,
         std::string&                 _name,
         std::string&                 _option,
+        std::string&                 _wait_option,
+        size_t&                      _wait_seconds,
         host_list_t&                 _hosts ) {
         // capture and validate the command parameter
         _name = _cmd.command;
@@ -752,6 +831,16 @@ namespace irods {
                 continue;
 
             }
+            else if( itr->first == SERVER_CONTROL_FORCE_AFTER_KW ) {
+                _wait_option = SERVER_CONTROL_FORCE_AFTER_KW;
+                _wait_seconds = boost::lexical_cast< size_t >( itr->second );
+
+            }
+            else if( itr->first == SERVER_CONTROL_WAIT_FOREVER_KW ) {
+                _wait_option = SERVER_CONTROL_WAIT_FOREVER_KW;
+                _wait_seconds = 0;
+
+            }
             else if ( itr->first.find(
                           SERVER_CONTROL_HOST_KW )
                       != std::string::npos ) {
@@ -776,6 +865,8 @@ namespace irods {
 
     error server_control_executor::process_host_list(
         const std::string& _cmd_name,
+        const std::string& _wait_option,
+        const size_t&      _wait_seconds,
         const host_list_t& _hosts,
         std::string&       _output ) {
         if ( _hosts.empty() ) {
@@ -795,7 +886,10 @@ namespace irods {
 
             std::string output;
             if ( *itr == my_host_name_ ) {
-                error ret = op_map_[ _cmd_name ]( _output );
+                error ret = op_map_[ _cmd_name ]( 
+                                _wait_option,
+                                _wait_seconds,
+                                _output );
                 if ( !ret.ok() ) {
                     fwd_err = PASS( ret );
 
@@ -808,6 +902,8 @@ namespace irods {
                             _cmd_name,
                             *itr,
                             port_prop_,
+                            _wait_option,
+                            _wait_seconds,
                             _output );
             if ( !ret.ok() ) {
                 log( PASS( ret ) );
@@ -879,12 +975,15 @@ namespace irods {
         control_plane_command cmd;
         avro::decode( *dec, cmd );
 
-        std::string cmd_name, cmd_option;
+        std::string cmd_name, cmd_option, wait_option;
         host_list_t cmd_hosts;
+        size_t wait_seconds = 0;
         ret = extract_command_parameters(
                   cmd,
                   cmd_name,
                   cmd_option,
+                  wait_option,
+                  wait_seconds,
                   cmd_hosts );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -898,6 +997,8 @@ namespace irods {
         ret = notify_icat_and_local_servers_preop(
                   cmd_name,
                   cmd_option,
+                  wait_option,
+                  wait_seconds,
                   cmd_hosts,
                   _output );
         if ( !ret.ok() ) {
@@ -933,6 +1034,8 @@ namespace irods {
 
         ret = process_host_list(
                   cmd_name,
+                  wait_option,
+                  wait_seconds,
                   valid_hosts,
                   _output );
         if ( !ret.ok() ) {
@@ -947,6 +1050,8 @@ namespace irods {
         ret = notify_icat_and_local_servers_postop(
                   cmd_name,
                   cmd_option,
+                  wait_option,
+                  wait_seconds,
                   cmd_hosts, // dont want sanitized
                   _output );
         if ( !ret.ok() ) {
