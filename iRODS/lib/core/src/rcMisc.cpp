@@ -543,7 +543,7 @@ int getZoneNameFromHint(
     if ( sep[0] == hint[0] ) {
         std::string::size_type pos = hint.find( sep, 1 );
         if ( std::string::npos != pos ) {
-            hint = hint.substr( pos, 1 );
+            hint = hint.substr( 1, pos-1 );
 
         }
         else {
