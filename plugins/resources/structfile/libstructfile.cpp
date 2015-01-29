@@ -1204,8 +1204,8 @@ extern "C" {
         // build a file unlink structure to pass off to the server api call
         fileUnlinkInp_t fileUnlinkInp;
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
-        strncpy( fileUnlinkInp.rescHier, fco->resc_hier().c_str(), MAX_NAME_LEN );
-        strncpy( fileUnlinkInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileUnlinkInp.rescHier, sizeof( fileUnlinkInp.rescHier ), "%s", fco->resc_hier().c_str() );
+        snprintf( fileUnlinkInp.objPath, sizeof( fileUnlinkInp.objPath ), "%s", fco->logical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1217,7 +1217,7 @@ extern "C" {
                        "tar_file_unlink_plugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-        strncpy( fileUnlinkInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
+        snprintf( fileUnlinkInp.addr.hostAddr, sizeof( fileUnlinkInp.addr.hostAddr ), "%s", resc_host.c_str() );
 
         // =-=-=-=-=-=-=-
         // make the call to unlink a file
