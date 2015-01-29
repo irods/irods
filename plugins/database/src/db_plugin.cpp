@@ -7052,10 +7052,10 @@ extern "C" {
             if ( !ret.ok() ) {
                 return PASS( ret );
             }
-            strncpy( myUserZone, zone.c_str(), MAX_NAME_LEN );
+            snprintf( myUserZone, sizeof( myUserZone ), "%s", zone.c_str() );
         }
         else {
-            strncpy( myUserZone, userZone, MAX_NAME_LEN );
+            snprintf( myUserZone, sizeof( myUserZone ), "%s", userZone );
         }
 
         if ( _scheme && strlen( _scheme ) > 0 ) {
