@@ -865,7 +865,10 @@ recordServerProcess( rsComm_t *svrComm ) {
         if ( fd != NULL ) {
             fprintf( fd, "%d %s\n", myPid, cwd );
             fclose( fd );
-            chmod( filePath, 0664 );
+            int err_code = chmod( filePath, 0664 );
+            if ( err_code != 0 ) {
+                rodsLog( LOG_ERROR, "chmod failed in recordServerProcess on [%s] with error code %d", filePath, err_code );
+            }
         }
     }
 #endif
