@@ -4862,7 +4862,7 @@ extern "C" {
             return PASS( ret );
         }
 
-        strncpy( zoneToUse, zone.c_str(), MAX_NAME_LEN );
+        snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
         if ( strlen( _user_info->rodsZone ) > 0 ) {
             strncpy( zoneToUse, _user_info->rodsZone, MAX_NAME_LEN );
         }
