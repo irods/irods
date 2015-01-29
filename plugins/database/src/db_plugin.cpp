@@ -7952,7 +7952,7 @@ checkLevel:
             }
             randomPw[j] = '\0';
 
-            strncpy( randomPwEncoded, randomPw, 50 );
+            snprintf( randomPwEncoded, sizeof( randomPwEncoded ), "%s", randomPw );
             icatScramble( randomPwEncoded );
             if ( !strstr( randomPwEncoded, "\'" ) ) {
                 pw_good = true;
