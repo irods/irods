@@ -2298,7 +2298,7 @@ extern "C" {
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
         fileTruncateInp.dataSize = fco->offset();
-        strncpy( fileTruncateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileTruncateInp.resc_hier_, sizeof( fileTruncateInp.resc_hier_ ), "%s", specColl->rescHier );
         status = rsFileTruncate( _ctx.comm(), &fileTruncateInp );
 
         if ( status >= 0 ) {
