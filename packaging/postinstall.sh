@@ -167,5 +167,11 @@ else
 fi
 
 # =-=-=-=-=-=-=-
+# touch the binary_installation.flag file
+BINARY_INSTALL_FLAG_FILE=$IRODS_HOME_DIR/packaging/binary_installation.flag
+touch $BINARY_INSTALL_FLAG_FILE
+chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $BINARY_INSTALL_FLAG_FILE
+
+# =-=-=-=-=-=-=-
 # exit with success
 exit 0
