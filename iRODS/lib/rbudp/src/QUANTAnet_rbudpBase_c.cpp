@@ -21,6 +21,7 @@
  *****************************************************************************/
 
 #include "QUANTAnet_rbudpBase_c.hpp"
+#include "rodsLog.hpp"
 #include <stdarg.h>
 
 // inline void TRACE_DEBUG( char *format, ...)
@@ -429,10 +430,17 @@ long long rb_ntohll( long long nll ) {
 int
 setUdpSockOpt( int udpSockfd ) {
     int sockbufsize = UDPSOCKBUF;
-    setsockopt( udpSockfd, SOL_SOCKET, SO_SNDBUF, &sockbufsize,
+    int error_code;
+    error_code = setsockopt( udpSockfd, SOL_SOCKET, SO_SNDBUF, &sockbufsize,
                 sizeof( sockbufsize ) );
-    setsockopt( udpSockfd, SOL_SOCKET, SO_RCVBUF, &sockbufsize,
+    if ( error_code != 0 ) {
+        rodsLog( LOG_ERROR, "setsockopt failed on the send buffer in setUdpSockOpt with %d", error_code );
+    }
+    error_code = setsockopt( udpSockfd, SOL_SOCKET, SO_RCVBUF, &sockbufsize,
                 sizeof( sockbufsize ) );
+    if ( error_code != 0 ) {
+        rodsLog( LOG_ERROR, "setsockopt failed on the receive buffer in setUdpSockOpt with %d", error_code );
+    }
     return 0;
 }
 
