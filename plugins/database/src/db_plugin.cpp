@@ -11485,8 +11485,7 @@ checkLevel:
                               "You must be the admin to use the -M admin mode" );
                 return ERROR( CAT_NO_ACCESS_PERMISSION, "You must be the admin to use the -M admin mode" );
             }
-            strncpy( myAccessStr, _access_level + strlen( MOD_ADMIN_MODE_PREFIX ),
-                     LONG_NAME_LEN );
+            snprintf( myAccessStr, sizeof( myAccessStr ), "%s", _access_level + strlen( MOD_ADMIN_MODE_PREFIX ) );
             _access_level = myAccessStr;
             adminMode = 1;
         }
