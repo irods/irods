@@ -2461,7 +2461,10 @@ void readToBuffer( Pointer *p ) {
 void seekInFile( Pointer *p, unsigned long x ) {
     if ( p -> isFile ) {
         if ( p->fpos < x * sizeof( char ) || p->fpos + p->len >= x * sizeof( char ) ) {
-            fseek( p->fp, x * sizeof( char ), SEEK_SET );
+            int error_code = fseek( p->fp, x * sizeof( char ), SEEK_SET );
+            if ( error_code != 0 ) {
+                rodsLog( LOG_ERROR, "fseek failed in seekInFile with error code %d", error_code );
+            }
             clearBuffer( p );
             p->fpos = x * sizeof( char );
             readToBuffer( p );
