@@ -9945,8 +9945,8 @@ checkLevel:
 
         status = splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
         if ( strlen( collection ) == 0 ) {
-            strcpy( collection, "/" );
-            strcpy( objectName, _name );
+            snprintf( collection, sizeof( collection ), "%s", "/" );
+            snprintf( objectName, sizeof( objectName ), "%s", _name );
         }
 
         /*
