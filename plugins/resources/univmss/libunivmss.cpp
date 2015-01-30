@@ -478,19 +478,12 @@ extern "C" {
         err = univ_mss_file_mkdir( context );
 
         execCmd_t execCmdInp;
-        char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
-        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "mv" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "' '" );
-        strcat( cmdArgv, _new_file_name );
-        strcat( cmdArgv, "'" );
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mv '%s' '%s'", filename.c_str(), _new_file_name );
+        snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
