@@ -1985,7 +1985,7 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     }
 
     // retrieve remote SID from map
-    std::string _zone_sid = remote_SID_map[zoneName];
+    std::string _zone_sid = remote_SID_key_map[zoneName].first;
 
     if (!_zone_sid.empty()) {
     	snprintf(zoneSID, MAX_PASSWORD_LEN, "%s", _zone_sid.c_str());

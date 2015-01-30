@@ -763,8 +763,10 @@ initRcatServerHostByFile() {
                                             fed_arr[ i ][ irods::CFG_ZONE_ID_KW ] );
             std::string fed_zone_name = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_NAME_KW ] );
-            // store in remote_SID_MAP
-            remote_SID_map[fed_zone_name] = fed_zone_id;
+            std::string fed_zone_key = boost::any_cast< std::string >(
+                                            fed_arr[ i ][ irods::CFG_NEGOTIATION_KEY_KW ] );
+            // store in remote_SID_key_map
+            remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_id, fed_zone_key);
         }
     }
     else {
@@ -781,10 +783,10 @@ initRcatServerHostByFile() {
             	if (pos == std::string::npos) {
             		rodsLog(LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sids[i].c_str());
             	} else {
-            		// store in remote_SID_MAP
+            		// store in remote_SID_key_map
             		std::string fed_zone_name = rem_sids[i].substr(0, pos);
             		std::string fed_zone_id = rem_sids[i].substr(pos+1);
-            		remote_SID_map[fed_zone_name] = fed_zone_id;
+            		remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_id, "");
             	}
             }
         }
