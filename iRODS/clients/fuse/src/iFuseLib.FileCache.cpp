@@ -96,9 +96,9 @@ int _iFuseFileCacheFlush( fileCache_t *fileCache ) {
     }*/
 
     struct stat stbuf;
-    int err_code = stat( fileCache->fileCachePath, &stbuf );
-    if ( err_code != 0 ) {
-        rodsLog( LOG_ERROR, "stat failed in _iFuseFileCacheFlush with status %d", err_code );
+    int error_code = stat( fileCache->fileCachePath, &stbuf );
+    if ( error_code != 0 ) {
+        rodsLog( LOG_ERROR, "stat failed in _iFuseFileCacheFlush with status %d", error_code );
     }
     /* put cache file to server */
     //UNLOCK_STRUCT( *fileCache );
@@ -183,7 +183,10 @@ int ifuseFileCacheSwapOut( fileCache_t *fileCache ) {
     }*/
 
     struct stat stbuf;
-    stat( fileCache->fileCachePath, &stbuf );
+    int error_code = stat( fileCache->fileCachePath, &stbuf );
+    if ( error_code != 0 ) {
+        rodsLog( LOG_ERROR, "stat failed in _iFuseFileCacheFlush with status %d", error_code );
+    }
     /* put cache file to server */
     iFuseConn_t *conn = getAndUseConnByPath( fileCache->localPath, &status );
     RECONNECT_IF_NECESSARY( status, conn, ifusePut( conn->conn, fileCache->objPath, fileCache->fileCachePath, fileCache->mode, stbuf.st_size ) );
