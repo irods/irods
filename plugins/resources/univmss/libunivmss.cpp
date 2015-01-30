@@ -365,13 +365,9 @@ extern "C" {
         execCmdOut_t *execCmdOut = NULL;
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
-        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "mkdir" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, dirname.c_str() );
-        strcat( cmdArgv, "'" );
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mkdir '%s'", dirname.c_str() );
+        snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
         if ( status < 0 ) {
             status = UNIV_MSS_MKDIR_ERR - errno;
