@@ -175,7 +175,6 @@ int main(
         return -1;
     }
 
-
     irods::buffer_crypt::array_t decoded_data;
     ret = crypt.decrypt(
               shared_secret,

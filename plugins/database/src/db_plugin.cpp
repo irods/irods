@@ -1088,7 +1088,7 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
 }
 
 // =-=-=-=-=-=-=-
-// local function to delegate the reponse
+// local function to delegate the response
 // verification to an authentication plugin
 static
 irods::error verify_auth_response(

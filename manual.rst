@@ -122,9 +122,9 @@ Open Source
 
 Repositories, issue trackers, and source code are available on GitHub.
 
-  http://github.com/irods
+  https://github.com/irods
 
-  http://github.com/irods/irods
+  https://github.com/irods/irods
 
 ------------
 Installation

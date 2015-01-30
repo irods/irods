@@ -179,7 +179,7 @@ namespace irods {
             data_to_send.size() );
         zmq_skt.send( rep );
 
-        // wait for the server reponse
+        // wait for the server response
         zmq::message_t req;
         zmq_skt.recv( &req );
 
