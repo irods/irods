@@ -10638,7 +10638,7 @@ checkLevel:
         }
         atype = checkModArgType( _unitsOrArg0 );
         if ( atype == 0 ) {
-            snprintf( myUnits, sizeof( myUnits ), "%s", _unitsOrArg0, MAX_NAME_LEN );
+            snprintf( myUnits, sizeof( myUnits ), "%s", _unitsOrArg0 );
         }
 
         status = chlDeleteAVUMetadata( _comm, 0, _type, _name, _attribute, _value,
