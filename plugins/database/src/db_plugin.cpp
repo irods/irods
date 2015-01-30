@@ -10352,8 +10352,8 @@ checkLevel:
             status = splitPathByKey( _name,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                strcpy( logicalParentDirName, "/" );
-                strcpy( logicalEndName, _name );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
             }
             if ( _admin_mode == 1 ) {
                 if ( logSQL != 0 ) {
