@@ -2618,7 +2618,11 @@ freeAllAllowedUser( struct allowedUser *allowedUserHead ) {
 int
 initAndClearProcLog() {
     initProcLog();
-    mkdir( ProcLogDir, DEFAULT_DIR_MODE );
+    int error_code = mkdir( ProcLogDir, DEFAULT_DIR_MODE );
+    int errsv = errno;
+    if ( error_code != 0 && errsv != EEXIST ) {
+        rodsLog( LOG_ERROR, "mkdir failed in initAndClearProcLog with error code %d", error_code );
+    }
     rmFilesInDir( ProcLogDir );
 
     return 0;
