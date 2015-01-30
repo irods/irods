@@ -1950,10 +1950,8 @@ void
 getZoneServerId( char *zoneName, char *zoneSID ) {
     zoneInfo_t *tmpZoneInfo;
     rodsServerHost_t *tmpRodsServerHost;
-    int i;
     int zoneNameLen = 0;
     char *localZoneName = NULL;
-    char matchStr[MAX_NAME_LEN + 2];
 
     if (!zoneSID) {
     	rodsLog(LOG_ERROR, "getZoneServerId - input zoneSID is NULL");
