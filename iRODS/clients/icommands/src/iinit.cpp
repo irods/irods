@@ -59,7 +59,11 @@ mkrodsdir() {
 #ifdef _WIN32
     iRODSNt_mkdir( dirName, mode );
 #else
-    mkdir( dirName, mode );
+    int error_code = mkdir( dirName, mode );
+    int errsv = errno;
+    if ( error_code != 0 && errsv != EEXIST ) {
+        rodsLog( LOG_NOTICE, "mkdir failed in mkrodsdir with error code %d", error_code );
+    }
 #endif
     return ( 0 ); /* no error messages as it normally fails */
 }
