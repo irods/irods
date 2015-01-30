@@ -22,6 +22,7 @@
 
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "rodsErrorTable.hpp"
+#include "rodsLog.hpp"
 
 #include <stdarg.h>
 #include <string>
@@ -102,8 +103,11 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
         if ( rbudpSender->rbudpBase.verbose > 1 ) {
             fprintf( stderr, "write %d bytes.\n", ( int ) sizeof( rbudpSender->rbudpBase.endOfUdp ) );
         }
-        writen( rbudpSender->rbudpBase.tcpSockfd, ( char * )&rbudpSender->rbudpBase.endOfUdp,
+        int error_code = writen( rbudpSender->rbudpBase.tcpSockfd, ( char * )&rbudpSender->rbudpBase.endOfUdp,
                 sizeof( rbudpSender->rbudpBase.endOfUdp ) );
+        if ( error_code < 0 ) {
+            rodsLog( LOG_ERROR, "writen failed in sendBuf with error code %d", error_code );
+        }
         rbudpSender->rbudpBase.endOfUdp.round ++;
 
         reportTime( &curTime );
