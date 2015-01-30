@@ -1955,6 +1955,11 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     char *localZoneName = NULL;
     char matchStr[MAX_NAME_LEN + 2];
 
+    if (!zoneSID) {
+    	rodsLog(LOG_ERROR, "getZoneServerId - input zoneSID is NULL");
+    	return;
+    }
+
     if ( zoneName != NULL ) {
         zoneNameLen = strlen( zoneName );
     }
@@ -1981,15 +1986,12 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
         }
     }
 
-    /* check the remoteSIDs; form is ZoneName-SID */
-    strncpy( matchStr, zoneName, MAX_NAME_LEN );
-    strncat( matchStr, "-", MAX_NAME_LEN );
-    for ( i = 0; i < MAX_FED_RSIDS; i++ ) {
-        if ( strncmp( matchStr, remoteSID[i], zoneNameLen + 1 ) == 0 ) {
-            strncpy( zoneSID, ( char* )&remoteSID[i][zoneNameLen + 1],
-                     MAX_PASSWORD_LEN );
-            return;
-        }
+    // retrieve remote SID from map
+    std::string _zone_sid = remote_SID_map[zoneName];
+
+    if (!_zone_sid.empty()) {
+    	snprintf(zoneSID, MAX_PASSWORD_LEN, "%s", _zone_sid.c_str());
+    	return;
     }
 
     zoneSID[0] = '\0';

@@ -67,7 +67,7 @@ specCollCache_t *SpecCollCacheHead = NULL;
 /* Server Authentication information */
 
 char localSID[MAX_PASSWORD_LEN]; /* Local Zone Servers ID string */
-char remoteSID[MAX_FED_RSIDS] [MAX_PASSWORD_LEN];  /* Remote Zone SIDs */
+irods::lookup_table<std::string> remote_SID_map;	/* Remote Zone SIDs */
 
 /* quota for all resources for this user in bytes */
 rodsLong_t GlobalQuotaLimit;    /* quota for all resources for this user */

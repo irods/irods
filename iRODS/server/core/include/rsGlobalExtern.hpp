@@ -61,7 +61,7 @@ int clearCoreRule();
 int finalizeRuleEngine();
 
 extern char localSID[MAX_PASSWORD_LEN];
-extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];
+extern irods::lookup_table<std::string> remote_SID_map;
 
 /* quota for all resources for this user in bytes */
 extern rodsLong_t GlobalQuotaLimit; /* quota for all resources for this user */
