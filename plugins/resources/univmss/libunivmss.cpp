@@ -624,8 +624,6 @@ extern "C" {
         execCmdOut_t* execCmdOut = NULL;
         char  cmdArgv[HUGE_NAME_LEN] = "";
 
-        execCmd_t execCmdInp;
-        bzero( &execCmdInp, sizeof( execCmdInp ) );
 
         // =-=-=-=-=-=-=-
         // get the script property
@@ -635,15 +633,10 @@ extern "C" {
             return PASSMSG( __FUNCTION__, err );
         }
 
+        execCmd_t execCmdInp;
+        bzero( &execCmdInp, sizeof( execCmdInp ) );
         rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "syncToArch" );
-        strcat( cmdArgv, " " );
-        strcat( cmdArgv, _cache_file_name );
-        strcat( cmdArgv, " " );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "" );
-
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "syncToArch %s %s", _cache_file_name, filename.c_str() );
         rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
         if ( status == 0 ) {
