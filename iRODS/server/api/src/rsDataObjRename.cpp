@@ -522,7 +522,10 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
             /* orphan */
             char new_fn[ MAX_NAME_LEN ];
             rstrcpy( fileRenameInp.oldFileName, destDataObjInfo.filePath, MAX_NAME_LEN );
-            renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, 1, new_fn );
+            int error_code = renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp, 1, new_fn );
+            if ( error_code < 0 ) {
+                rodsLog( LOG_ERROR, "renameFilePathToNewDir failed in moveMountedCollDataObj with error code %d", error_code );
+            }
             strncpy( destDataObjInfo.filePath, new_fn, MAX_NAME_LEN );
         }
         else if ( status == 0 ) {
