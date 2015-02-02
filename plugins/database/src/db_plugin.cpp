@@ -7966,7 +7966,7 @@ checkLevel:
         } // while
 
         if ( _test_time != NULL && strlen( _test_time ) > 0 ) {
-            strncpy( myTime, _test_time, sizeof( myTime ) );
+            snprintf( myTime, sizeof( myTime ), "%s", _test_time );
         }
 
         if ( logSQL != 0 ) rodsLog( LOG_SQL, "chlUpdateIrodsPamPassword SQL 5" );
