@@ -5270,8 +5270,8 @@ extern "C" {
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
-            strcpy( logicalParentDirName, "/" );
-            strcpy( logicalEndName, _coll_info->collName + 1 );
+            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+            snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _coll_info->collName + 1 );
         }
 
         /* Check that the parent collection exists and user has write permission,
