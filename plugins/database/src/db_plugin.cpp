@@ -15522,15 +15522,14 @@ checkLevel:
             if ( strlen( _arg3 ) > 0 ) {
                 /* for 2 server hops, arg3 is the original client addr */
                 status = chlGenQueryTicketSetup( _ticket_string, _arg3 );
-                strncpy( mySessionTicket, _ticket_string, sizeof( mySessionTicket ) );
-                strncpy( mySessionClientAddr, _arg3, sizeof( mySessionClientAddr ) );
+                snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
+                snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _arg3 );
             }
             else {
                 /* for direct connections, rsComm has the original client addr */
                 status = chlGenQueryTicketSetup( _ticket_string, _comm->clientAddr );
-                strncpy( mySessionTicket, _ticket_string, sizeof( mySessionTicket ) );
-                strncpy( mySessionClientAddr, _comm->clientAddr,
-                         sizeof( mySessionClientAddr ) );
+                snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
+                snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _comm->clientAddr );
             }
             status = cmlAudit3( AU_USE_TICKET, "0",
                                 _comm->clientUser.userName,
@@ -15546,15 +15545,15 @@ checkLevel:
             status = splitPathByKey( _arg4,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                strcpy( logicalParentDirName, "/" );
-                strcpy( logicalEndName, _arg4 + 1 );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _arg4 + 1 );
             }
             status2 = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
                                            _comm->clientUser.userName,
                                            _comm->clientUser.rodsZone,
                                            ACCESS_OWN, &icss );
             if ( status2 > 0 ) {
-                strncpy( objTypeStr, TICKET_TYPE_DATA, sizeof( objTypeStr ) );
+                snprintf( objTypeStr, sizeof( objTypeStr ), "%s", TICKET_TYPE_DATA );
                 objId = status2;
             }
             else {
@@ -15567,7 +15566,7 @@ checkLevel:
                 if ( status3 < 0 ) {
                     return ERROR( status3, "cmlCheckDir failed" );
                 }
-                strncpy( objTypeStr, TICKET_TYPE_COLL, sizeof( objTypeStr ) );
+                snprintf( objTypeStr, sizeof( objTypeStr ), "%s", TICKET_TYPE_COLL );
                 objId = status3;
             }
 
