@@ -24,7 +24,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodsctl.pl"} = "Aug 2014";
+$version{"irodsctl.pl"} = "Jan 2015";
 
 
 $scriptfullpath = abs_path(__FILE__);

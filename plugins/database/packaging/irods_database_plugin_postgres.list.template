@@ -2,7 +2,7 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS Postgres Database Plugin
-%copyright 2014, The University of North Carolina at Chapel Hill
+%copyright 2014-2015, The University of North Carolina at Chapel Hill
 %vendor Renaissance Computing Institute <info@irods-consortium.org>
 %license LICENSE
 %readme README
