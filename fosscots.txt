@@ -62,6 +62,7 @@ VMWare VSphere
 
 DEVELOPMENT FOSS
 ----------------
+ansible
 archlinux
 chromeos
 centos
