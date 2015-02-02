@@ -107,58 +107,58 @@ int main(
         env.irodsCtrlPlaneEncryptionNumHashRounds,
         env.irodsCtrlPlaneEncryptionAlgorithm );
 
-    // standard zmq rep-req communication pattern
-    zmq::context_t zmq_ctx( 1 );
-    zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
-
-    // this is the client so we connect rather than bind
-    std::stringstream port_sstr;
-    port_sstr << env.irodsCtrlPlanePort;
-    std::string bind_str( "tcp://localhost:" );
-    bind_str += port_sstr.str();
-    zmq_skt.connect( bind_str.c_str() );
-
-    // serialize using the generated avro class
-    std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
-    avro::EncoderPtr e = avro::binaryEncoder();
-    e->init( *out );
-    avro::encode( *e, cmd );
-    boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
-
-    // encrypt outgoing request
-    std::vector< unsigned char > enc_data(
-        data->begin(),
-        data->end() );
-
-    irods::buffer_crypt::array_t iv;
-    irods::buffer_crypt::array_t data_to_send;
-    irods::buffer_crypt::array_t in_buf(
-        enc_data.begin(),
-        enc_data.end() );
-    irods::buffer_crypt::array_t shared_secret(
-        encryption_key.begin(),
-        encryption_key.end() );
-    irods::error ret = crypt.encrypt(
-                           shared_secret,
-                           iv,
-                           in_buf,
-                           data_to_send );
-    if ( !ret.ok() ) {
-        irods::error err = PASS( ret );
-        std::cout << err.result()
-                  << std::endl;
-        return -1;
-
-    }
-
-    // copy binary encoding into a zmq message for transport
-    zmq::message_t rep( data_to_send.size() );
-    memcpy(
-        rep.data(),
-        data_to_send.data(),
-        data_to_send.size() );
-
     try {
+        // standard zmq rep-req communication pattern
+        zmq::context_t zmq_ctx( 1 );
+        zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
+
+        // this is the client so we connect rather than bind
+        std::stringstream port_sstr;
+        port_sstr << env.irodsCtrlPlanePort;
+        std::string bind_str( "tcp://localhost:" );
+        bind_str += port_sstr.str();
+        zmq_skt.connect( bind_str.c_str() );
+
+        // serialize using the generated avro class
+        std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
+        avro::EncoderPtr e = avro::binaryEncoder();
+        e->init( *out );
+        avro::encode( *e, cmd );
+        boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
+
+        // encrypt outgoing request
+        std::vector< unsigned char > enc_data(
+                data->begin(),
+                data->end() );
+
+        irods::buffer_crypt::array_t iv;
+        irods::buffer_crypt::array_t data_to_send;
+        irods::buffer_crypt::array_t in_buf(
+                enc_data.begin(),
+                enc_data.end() );
+        irods::buffer_crypt::array_t shared_secret(
+                encryption_key.begin(),
+                encryption_key.end() );
+        irods::error ret = crypt.encrypt(
+                shared_secret,
+                iv,
+                in_buf,
+                data_to_send );
+        if ( !ret.ok() ) {
+            irods::error err = PASS( ret );
+            std::cout << err.result()
+                << std::endl;
+            return -1;
+
+        }
+
+        // copy binary encoding into a zmq message for transport
+        zmq::message_t rep( data_to_send.size() );
+        memcpy(
+                rep.data(),
+                data_to_send.data(),
+                data_to_send.size() );
+
         zmq_skt.send( rep );
 
         // wait for the server reponse
@@ -167,39 +167,39 @@ int main(
         // decrypt the response
         const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
         in_buf.assign(
-            data_ptr,
-            data_ptr + req.size() );
+                data_ptr,
+                data_ptr + req.size() );
+
+        irods::buffer_crypt::array_t decoded_data;
+        ret = crypt.decrypt(
+                shared_secret,
+                iv,
+                in_buf,
+                decoded_data );
+        if ( !ret.ok() ) {
+            irods::error err = PASS( ret );
+            std::cout << err.result()
+                << std::endl;
+            return -1;
+
+
+        }
+
+        std::string rep_str(
+                reinterpret_cast< const char* >(
+                    decoded_data.data() ),
+                decoded_data.size() );
+        if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
+            std::cout << rep_str.data()
+                << std::endl;
+        }
+
+        return 0;
     }
     catch ( const zmq::error_t& e ) {
         std::cout << "zeromq encountered an error." << std::endl;
         return -1;
     }
-
-    irods::buffer_crypt::array_t decoded_data;
-    ret = crypt.decrypt(
-              shared_secret,
-              iv,
-              in_buf,
-              decoded_data );
-    if ( !ret.ok() ) {
-        irods::error err = PASS( ret );
-        std::cout << err.result()
-                  << std::endl;
-        return -1;
-
-
-    }
-
-    std::string rep_str(
-        reinterpret_cast< const char* >(
-            decoded_data.data() ),
-        decoded_data.size() );
-    if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-        std::cout << rep_str.data()
-                  << std::endl;
-    }
-
-    return 0;
 
 } // main
 
