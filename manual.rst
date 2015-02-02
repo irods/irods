@@ -179,7 +179,7 @@ iRODS Setup
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB::
 
- $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.3.deb
+ $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.5.deb
  $ (sudo) apt-get -f install
 
 Once the PostgreSQL database plugin has been installed, the following text will be displayed::
