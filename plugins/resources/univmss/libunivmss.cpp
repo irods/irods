@@ -306,15 +306,9 @@ extern "C" {
         }
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
-        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-        strcat( cmdArgv, "chmod" );
-        strcat( cmdArgv, " '" );
-        strcat( cmdArgv, filename.c_str() );
-        strcat( cmdArgv, "' " );
-        sprintf( strmode, "%o", mode );
-        strcat( cmdArgv, strmode );
-        rstrcpy( execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN );
-        rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
+        snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
+        snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "chmod '%s' %o", filename.c_str(), mode );
+        snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
         if ( status < 0 ) {
