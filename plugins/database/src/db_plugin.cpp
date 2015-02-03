@@ -28,6 +28,7 @@
 #include "irods_auth_constants.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -117,6 +118,10 @@ char mySessionClientAddr[NAME_LEN];
 // property constants
 const std::string ICSS_PROP( "irods_icss_property" );
 const std::string ZONE_PROP( "irods_zone_property" );
+
+// =-=-=-=-=-=-=-
+// virtual path management
+#define PATH_SEPARATOR irods::get_virtual_path_separator().c_str()
 
 // =-=-=-=-=-=-=-
 // helper fcn to handle cast to pg object
@@ -827,7 +832,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
                              logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
-        snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+        snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
         snprintf( logicalEndName, sizeof( logicalEndName ), "%s", collInfo->collName + 1 );
     }
 
@@ -1338,7 +1343,7 @@ rodsLong_t checkAndGetObjectId(
         status = splitPathByKey( name,
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
-            strcpy( logicalParentDirName, "/" );
+            strcpy( logicalParentDirName, PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", name );
         }
         if ( logSQL != 0 ) {
@@ -5076,7 +5081,7 @@ extern "C" {
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
-            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _coll_info->collName + 1 );
         }
 
@@ -5270,7 +5275,7 @@ extern "C" {
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
-            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _coll_info->collName + 1 );
         }
 
@@ -6040,7 +6045,7 @@ extern "C" {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid path name" );
         }
         cp = _path_name + 1;
-        if ( strstr( cp, "/" ) != NULL ) {
+        if ( strstr( cp, PATH_SEPARATOR ) != NULL ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid path name" );
         }
         status =  chlModAccessControl( _comm, 0,
@@ -6753,7 +6758,7 @@ extern "C" {
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
         if ( strlen( logicalParentDirName ) == 0 ) {
-            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _coll_info->collName + 1 );
         }
 
@@ -9945,7 +9950,7 @@ checkLevel:
 
         status = splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
         if ( strlen( collection ) == 0 ) {
-            snprintf( collection, sizeof( collection ), "%s", "/" );
+            snprintf( collection, sizeof( collection ), "%s", PATH_SEPARATOR );
             snprintf( objectName, sizeof( objectName ), "%s", _name );
         }
 
@@ -10352,7 +10357,7 @@ checkLevel:
             status = splitPathByKey( _name,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
                 snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
             }
             if ( _admin_mode == 1 ) {
@@ -10803,7 +10808,7 @@ checkLevel:
             status = splitPathByKey( _name,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
                 snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
             }
             if ( logSQL != 0 ) {
@@ -11571,7 +11576,7 @@ checkLevel:
             status2 = splitPathByKey( _path_name,
                                       logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
                 snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _path_name + 1 );
             }
             if ( adminMode ) {
@@ -12116,7 +12121,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlRenameObject" );
         }
 
-        if ( strstr( _new_name, "/" ) ) {
+        if ( strstr( _new_name, PATH_SEPARATOR ) ) {
             return ERROR( CAT_INVALID_ARGUMENT, "new name invalid" );
         }
 
@@ -12295,7 +12300,7 @@ checkLevel:
                                                                        argument is not really right, but something is really wrong */
 
             if ( pLen == 1 ) {
-                if ( strncmp( parentCollName, "/", 20 ) == 0 ) { /* just to be sure */
+                if ( strncmp( parentCollName, PATH_SEPARATOR, 20 ) == 0 ) { /* just to be sure */
                     isRootDir = 1; /* need to treat a little special below */
                 }
             }
@@ -12725,7 +12730,7 @@ checkLevel:
             /* check that no subcoll exists in the target collection, with
                the name of the object */
             strncpy( newCollName, targetCollName, MAX_NAME_LEN );
-            strncat( newCollName, "/", MAX_NAME_LEN );
+            strncat( newCollName, PATH_SEPARATOR, MAX_NAME_LEN );
             strncat( newCollName, endCollName, MAX_NAME_LEN );
 
             if ( logSQL != 0 ) {
@@ -15545,7 +15550,7 @@ checkLevel:
             status = splitPathByKey( _arg4,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
-                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", "/" );
+                snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
                 snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _arg4 + 1 );
             }
             status2 = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
