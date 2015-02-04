@@ -1,33 +1,33 @@
 import commands
-import re
-import os
-import socket
-import shlex
-import time
-import psutil
 import json
-from signal import signal, SIGPIPE, SIG_DFL
+import os
+import psutil
+import re
+import shlex
+import socket
+import time
 
-# Ignore SIG_PIPE and don't throw exceptions on it...
-# Added due to problems on cen5
-# (http://docs.python.org/library/signal.html)
-signal(SIGPIPE, SIG_DFL)
 
 
-# =-=-=-=-=-=-=-
-# global variable dictating that we are running in a
-# toplogical testing framework.  skip certain tests
-# and define various hostnames to resources
-RUN_IN_TOPOLOGY = False
+class irods_test_constants(object):
+    # =-=-=-=-=-=-=-
+    # global variable dictating that we are running in a
+    # toplogical testing framework.  skip certain tests
+    # and define various hostnames to resources
+    RUN_IN_TOPOLOGY = False
 
-# =-=-=-=-=-=-=-
-# global variable dictating that we are running as a
-# resource server during topological testing
-RUN_AS_RESOURCE_SERVER = False
+    # =-=-=-=-=-=-=-
+    # global variable dictating that we are running as a
+    # resource server during topological testing
+    RUN_AS_RESOURCE_SERVER = False
 
-if os.name != "nt":
-    import fcntl
-    import struct
+
+    if RUN_IN_TOPOLOGY:
+        HOSTNAME_1 = 'resource1.example.org'
+        HOSTNAME_2 = 'resource2.example.org'
+        HOSTNAME_3 = 'resource3.example.org'
+    else:
+        HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
 
 
 def mod_json_file(fn, new_dict):
@@ -38,26 +38,6 @@ def mod_json_file(fn, new_dict):
         json.dump(env, f, indent=4)
 
 
-def get_interface_ip(ifname):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(s.fileno(),
-                                        0x8915,  # SIOCGIFADDR
-                                        struct.pack('256s', ifname[:15]))[20:24])
-
-
-def get_lan_ip():
-    ip = socket.gethostbyname(socket.gethostname())
-    if ip.startswith("127.") and os.name != "nt":
-        interfaces = ["eth0", "eth1", "eth2", "wlan0", "wlan1", "wifi0", "ath0", "ath1", "ppp0"]
-        for ifname in interfaces:
-            try:
-                ip = get_interface_ip(ifname)
-                break
-            except IOError:
-                pass
-    return ip
-
-
 def get_hostname():
     return socket.gethostname()
 
@@ -65,7 +45,7 @@ def get_hostname():
 def get_irods_top_level_dir():
     configdir = "/etc/irods/server_config.json"
     topleveldir = "/var/lib/irods"
-    if(not os.path.isfile(configdir)):
+    if not os.path.isfile(configdir):
         topleveldir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return topleveldir
 

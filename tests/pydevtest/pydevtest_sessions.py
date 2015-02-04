@@ -2,7 +2,7 @@ import os
 import datetime
 import commands
 import socket
-import pydevtest_common as c
+import pydevtest_common
 import icommands
 import time
 import inspect
@@ -30,9 +30,6 @@ icommands_bin = "/usr/bin"
 
 
 def admin_up():
-    # restart server because overkill
-    #    os.system( c.get_irods_top_level_dir() + "/iRODS/irodsctl restart")
-
     # set up admin session
     admin = users[0]
     rightnow = datetime.datetime.now()
@@ -69,7 +66,7 @@ def admin_up():
     # users, passwords, and groups
     global testgroup
     testgroup = "pydevtest_user_group"
-    if not c.RUN_AS_RESOURCE_SERVER:
+    if not pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER:
         adminsession.runAdminCmd('iadmin', ["mkgroup", testgroup])
         for u in users[1:]:
             adminsession.runAdminCmd('iadmin', ["mkuser", u['name'], "rodsuser"])
@@ -89,7 +86,7 @@ def admin_down():
     adminsession.runCmd('irmtrash', ['-M'])  # removes all trash for all users (admin mode)
 
     # users
-    if not c.RUN_AS_RESOURCE_SERVER:
+    if not pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER:
         for u in users[1:]:
             adminsession.runAdminCmd('iadmin', ["rfg", testgroup, u['name']])
             adminsession.runAdminCmd('iadmin', ["rmuser", u['name']])

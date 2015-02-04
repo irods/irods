@@ -1,43 +1,34 @@
+import commands
+import getpass
+import os
+import re
+import shutil
 import sys
-if (sys.version_info >= (2, 7)):
-    import unittest
-else:
+
+if sys.version_info < (2, 7):
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_hostname, RUN_IN_TOPOLOGY, get_irods_config_dir, get_irods_top_level_dir
+else:
+    import unittest
+
+import pydevtest_common
+from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_irods_config_dir, get_irods_top_level_dir
 import pydevtest_sessions as s
 from resource_suite import ResourceSuite, ShortAndSuite
 from test_chunkydevtest import ChunkyDevTest
-import socket
-import os
-import commands
-import shutil
-import subprocess
-import re
-import getpass
-
-if(RUN_IN_TOPOLOGY == True):
-    hostname1 = "resource1.example.org"
-    hostname2 = "resource2.example.org"
-    hostname3 = "resource3.example.org"
-else:
-    hostname = socket.gethostname()
-    hostname1 = hostname
-    hostname2 = hostname
-    hostname3 = hostname
 
 
 class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc rrResc random",
-            "iadmin mkresc unixA 'unix file system' " + hostname1 + ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + hostname2 +
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + hostname3 +
+            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
             ":" + get_irods_top_level_dir() + "/unixB2Vault",
             "iadmin addchildtoresc demoResc rrResc",
             "iadmin addchildtoresc demoResc unixA",
@@ -173,7 +164,7 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -223,7 +214,7 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -338,16 +329,16 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
 
 class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unixA 'unix file system' " + hostname1 + ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + hostname2 +
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + hostname3 +
+            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
             ":" + get_irods_top_level_dir() + "/unixB2Vault",
             "iadmin addchildtoresc demoResc rrResc",
             "iadmin addchildtoresc demoResc unixA",
@@ -483,7 +474,7 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -533,7 +524,7 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -648,7 +639,7 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
 
 class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
@@ -674,12 +665,12 @@ class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTe
 
 class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc passthru",
-            "iadmin mkresc unix1Resc 'unix file system' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
         ],
@@ -708,12 +699,12 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
 class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc deferred",
-            "iadmin mkresc unix1Resc 'unixfilesystem' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unixfilesystem' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
         ],
@@ -742,16 +733,16 @@ class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
 class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc random",
-            "iadmin mkresc unix1Resc 'unix file system' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + hostname2 +
+            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + hostname3 +
+            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
             ":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
@@ -788,11 +779,11 @@ class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
 class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc nonblocking " + hostname1 + ":" + get_irods_top_level_dir() + "/nbVault",
+            "iadmin mkresc demoResc nonblocking " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/nbVault",
         ],
         "teardown": [
             "iadmin rmresc demoResc",
@@ -812,14 +803,14 @@ class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
 
 class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + hostname1 +
+            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc mockarchive " + hostname1 + ":" +
+            "iadmin mkresc archiveResc mockarchive " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" +
             get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
@@ -909,7 +900,7 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -1003,7 +994,7 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -1127,14 +1118,14 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
 
 class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + hostname1 +
+            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc univmss " + hostname1 + ":" +
+            "iadmin mkresc archiveResc univmss " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" +
             get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
@@ -1220,7 +1211,7 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -1314,7 +1305,7 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -1438,14 +1429,14 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
 
 class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + hostname1 +
+            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc 'unix file system' " + hostname1 +
+            "iadmin mkresc archiveResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/archiveRescVault",
             "iadmin addchildtoresc demoResc cacheResc cache",
             "iadmin addchildtoresc demoResc archiveResc archive",
@@ -1599,7 +1590,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -1693,7 +1684,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -1818,15 +1809,15 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
 class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc replResc replication",
-            "iadmin mkresc unixA 'unix file system' " + hostname1 + ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + hostname2 + ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + hostname3 + ":" + get_irods_top_level_dir() + "/unixB2Vault",
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unixB1Vault",
+            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unixB2Vault",
             "iadmin addchildtoresc demoResc replResc",
             "iadmin addchildtoresc demoResc unixA",
             "iadmin addchildtoresc replResc unixB1",
@@ -1986,7 +1977,7 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -2012,7 +2003,7 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -2139,20 +2130,20 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
 
 class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc compResc1 compound",
             "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' " + hostname1 +
+            "iadmin mkresc cacheResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' " + hostname1 +
+            "iadmin mkresc archiveResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' " + hostname2 +
+            "iadmin mkresc cacheResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' " + hostname2 +
+            "iadmin mkresc archiveResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/archiveResc2Vault",
             "iadmin addchildtoresc demoResc compResc1",
             "iadmin addchildtoresc demoResc compResc2",
@@ -2214,7 +2205,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = get_irods_config_dir() + "/core.re"
@@ -2355,7 +2346,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -2461,7 +2452,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -2602,20 +2593,20 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
 
 class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc compResc1 compound",
             "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' " + hostname1 +
+            "iadmin mkresc cacheResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' " + hostname1 +
+            "iadmin mkresc archiveResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' " + hostname2 +
+            "iadmin mkresc cacheResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' " + hostname2 +
+            "iadmin mkresc archiveResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/archiveResc2Vault",
             "iadmin addchildtoresc demoResc compResc1",
             "iadmin addchildtoresc demoResc compResc2",
@@ -2745,7 +2736,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -2851,7 +2842,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -2992,14 +2983,14 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
 
 class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + hostname2 +
+            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unix2RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
@@ -3049,16 +3040,16 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
 class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
-            "iadmin mkresc unix1Resc 'unix file system' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + hostname2 +
+            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + hostname3 +
+            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
             ":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc unix1Resc",
             "iadmin addchildtoresc demoResc unix2Resc",
@@ -3148,7 +3139,7 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local setup
         filename = "updatereplicasfile.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -3248,7 +3239,7 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local setup
         filename = "thirdreplicatest.txt"
         filepath = create_local_testfile(filename)
-        hostname = get_hostname()
+        hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -3344,9 +3335,8 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'wb') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
         assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
@@ -3364,9 +3354,8 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'wb') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
         assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
@@ -3375,7 +3364,7 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # should not be listed (trimmed)
         assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
         assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - 1 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - 3 of 3
+        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - 2 of 3
         assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - 3 of 3
 
         # local cleanup
@@ -3384,18 +3373,18 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
 
 class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
-    hostname = socket.gethostname()
+    hostname = pydevtest_common.get_hostname()
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc passthru",
             "iadmin mkresc pass2Resc passthru",
             "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' " + hostname1 +
+            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
             ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + hostname2 +
+            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + hostname3 +
+            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
             ":" + get_irods_top_level_dir() + "/unix3RescVault",
             "iadmin addchildtoresc demoResc pass2Resc",
             "iadmin addchildtoresc pass2Resc rrResc",

@@ -1,20 +1,23 @@
-import sys
-if (sys.version_info >= (2, 7)):
-    import unittest
-else:
-    import unittest2 as unittest
-import pydevtest_common
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, create_local_largefile, get_hostname, RUN_IN_TOPOLOGY, get_irods_top_level_dir, get_irods_config_dir, mod_json_file
-import pydevtest_sessions as s
-import commands
-import os
-import shlex
-import datetime
-import time
-import psutil
 import base64
-import hashlib
+import commands
+import datetime
 import getpass
+import hashlib
+import os
+import psutil
+import shlex
+import sys
+import time
+
+
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
+
+import pydevtest_common
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, create_local_largefile, get_hostname, get_irods_top_level_dir, get_irods_config_dir, mod_json_file
+import pydevtest_sessions as s
 
 
 class ResourceBase(object):
@@ -262,7 +265,7 @@ class ResourceSuite(ResourceBase):
         # setup and test
         assertiCmd(s.adminsession, "imkdir "+targetpath)  # target
         assertiCmd(s.adminsession, "ils -rAL "+targetpath,"STDOUT","own") # debugging
-        assertiCmd(s.adminsession, "ichmod -r write "+s.sessions[1].getUserName() +" "+ targetpath)  # ichmod 
+        assertiCmd(s.adminsession, "ichmod -r write "+s.sessions[1].getUserName() +" "+ targetpath)  # ichmod
         assertiCmd(s.adminsession, "ils -rAL "+targetpath, "STDOUT", "modify object")  # debugging
         assertiCmd(s.adminsession, "imkdir "+sourcepath)  # source
         assertiCmd(s.adminsession, "ichmod -r own "+s.sessions[1].getUserName() +" "+ sourcepath)  # ichmod
@@ -299,7 +302,7 @@ class ResourceSuite(ResourceBase):
     ###################
     # iput
     ###################
-
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
         # set up client and server side for ssl handshake
 
@@ -347,6 +350,7 @@ class ResourceSuite(ResourceBase):
         os.system("rm server.key server.csr chain.pem dhparams.pem")
         os.remove(filename)
 
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
         # set up client and server side for ssl handshake
 
@@ -694,9 +698,9 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + datafilename)
 
-        assert errorflag == True, "Expected ERRORs did not occur"
+        assert errorflag, "Expected ERRORs did not occur"
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iput_overwrite_others_file__ticket_2086(self):
         # pre state
         assertiCmd(s.adminsession, "ils -L", "LIST", self.testfile)  # should be listed
@@ -774,7 +778,7 @@ class ResourceSuite(ResourceBase):
     # ireg
     ###################
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ireg_as_rodsadmin(self):
         # local setup
         filename = "newfile.txt"
@@ -792,7 +796,7 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ireg_as_rodsuser(self):
         # local setup
         filename = "newfile.txt"
@@ -810,7 +814,7 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ireg_as_rodsuser_in_vault(self):
         # get vault base path
         cmdout = s.sessions[1].runCmd('iquest', ["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
@@ -1097,14 +1101,14 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "irm -r copydir")  # should remove
         assertiCmdFail(s.adminsession, "ils -L ", "LIST", "copydir")  # should not be listed
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irm_with_read_permission(self):
         assertiCmd(s.sessions[1], "icd ../../public")  # switch to shared area
         assertiCmd(s.sessions[1], "ils -AL " + self.testfile, "LIST", self.testfile)  # should be listed
         assertiCmdFail(s.sessions[1], "irm " + self.testfile)  # read perm should not be allowed to remove
         assertiCmd(s.sessions[1], "ils -AL " + self.testfile, "LIST", self.testfile)  # should still be listed
 
-    @unittest.skipIf(RUN_IN_TOPOLOGY == True, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irm_with_write_permission(self):
         assertiCmd(s.sessions[2], "icd ../../public")  # switch to shared area
         assertiCmd(s.sessions[2], "ils -AL " + self.testfile, "LIST", self.testfile)  # should be listed
