@@ -1251,9 +1251,10 @@ Res *execRule( char *ruleNameInp, Res** args, unsigned int argc, int applyAllRul
     }
 }
 void copyFromEnv( Res **args, char **inParams, int inParamsCount, Hashtable *env, Region *r ) {
-    int i;
-    for ( i = 0; i < inParamsCount; i++ ) {
-        args[i] = cpRes( ( Res * )lookupFromHashTable( env, inParams[i] ), r );
+    for ( int i = 0; i < inParamsCount; i++ ) {
+        if ( Res * res = ( Res * )lookupFromHashTable( env, inParams[i] ) ) {
+            args[i] = cpRes( res, r );
+        }
     }
 }
 /*
