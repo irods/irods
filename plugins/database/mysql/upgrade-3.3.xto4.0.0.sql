@@ -8,9 +8,6 @@ alter table R_RESC_MAIN add column resc_objcount bigint DEFAULT 0;
 -- update leaf node object counts
 update R_RESC_MAIN as r SET resc_objcount = ( select count(*) from R_DATA_MAIN as d where d.resc_name=r.resc_name );
 
--- reset resc_group for consistency
-update R_DATA_MAIN SET resc_group_name=resc_name;
-
 -- populate the resc_hier field
 update R_DATA_MAIN SET resc_hier=resc_name;
 
