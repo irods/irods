@@ -399,11 +399,14 @@ extern "C" {
      */
     int
     osauthGetUid( char *username ) {
+        if ( NULL == username ) {
+            rodsLog( LOG_ERROR, "Error: osauthGetUid called with null username argument." );
+            return -1;
+        }
         static char fname[] = "osauthGetUid";
-        struct passwd *pwent;
 
         errno = 0;
-        pwent = getpwnam( username );
+        struct passwd *pwent = getpwnam( username );
         if ( pwent == NULL ) {
             if ( errno ) {
                 rodsLog( LOG_ERROR,
