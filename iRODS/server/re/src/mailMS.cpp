@@ -180,19 +180,23 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
  * \sa writeLine, writeString
 **/
 int msiSendStdoutAsEmail( msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei ) {
-    int i;
     msParam_t *mP;
-    char tmpVarName[MAX_ACTION_SIZE];
-    execCmdOut_t *myExecCmdOut;
     if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
         return NO_VALUES_FOUND;
     }
-    myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
+    execCmdOut_t *myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
+    char tmpVarName[MAX_ACTION_SIZE];
     getNewVarName( tmpVarName, rei->msParamArray );
     addMsParam( rei->msParamArray, tmpVarName,  STR_MS_T, myExecCmdOut->stdoutBuf.buf , NULL );
     mP = getMsParamByLabel( rei->msParamArray, tmpVarName );
-    i = msiSendMail( xtoAddr, xsubjectLine, mP, rei );
+    int status;
+    if ( NULL != mP ) {
+        status = msiSendMail( xtoAddr, xsubjectLine, mP, rei );
+    }
+    else {
+        status = SYS_INTERNAL_NULL_INPUT_ERR;
+    }
     rmMsParamByLabel( rei->msParamArray, tmpVarName, 1 );
-    return i;
+    return status;
 
 }
