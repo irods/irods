@@ -34,6 +34,9 @@ def optparse_callback_topology_test(option, opt_str, value, parser):
     import pydevtest_common
     pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY = True
     pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER = value == 'resource'
+    pydevtest_common.irods_test_constants.HOSTNAME_1 = 'resource1.example.org'
+    pydevtest_common.irods_test_constants.HOSTNAME_2 = 'resource2.example.org'
+    pydevtest_common.irods_test_constants.HOSTNAME_3 = 'resource3.example.org'
 
 def run_tests_from_names(names):
     loader = unittest.TestLoader()

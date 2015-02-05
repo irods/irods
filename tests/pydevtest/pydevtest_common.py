@@ -10,24 +10,9 @@ import time
 
 
 class irods_test_constants(object):
-    # =-=-=-=-=-=-=-
-    # global variable dictating that we are running in a
-    # toplogical testing framework.  skip certain tests
-    # and define various hostnames to resources
     RUN_IN_TOPOLOGY = False
-
-    # =-=-=-=-=-=-=-
-    # global variable dictating that we are running as a
-    # resource server during topological testing
     RUN_AS_RESOURCE_SERVER = False
-
-
-    if RUN_IN_TOPOLOGY:
-        HOSTNAME_1 = 'resource1.example.org'
-        HOSTNAME_2 = 'resource2.example.org'
-        HOSTNAME_3 = 'resource3.example.org'
-    else:
-        HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
+    HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
 
 
 def mod_json_file(fn, new_dict):
