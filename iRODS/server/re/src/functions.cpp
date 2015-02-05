@@ -2857,6 +2857,13 @@ int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
         }
     }
     FILE *f3 = fopen( file3, "w" );
+    if ( NULL == f3 ) {
+        fclose( f1 );
+        if ( NULL != f2 ) {
+            fclose( f2 );
+        }
+        return UNIX_FILE_OPEN_ERR;
+    }
 
     size_t len;
     int error = 0;
