@@ -26,15 +26,18 @@ default: postgres
 
 postgres:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	${MAKE} -C $@
+	@echo "Compile database plugin `basename $@`..."
+	@${MAKE} -C $@
 
 mysql:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	${MAKE} -C $@
+	@echo "Compile database plugin `basename $@`..."
+	@${MAKE} -C $@
 
 oracle:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	${MAKE} -C $@
+	@echo "Compile database plugin `basename $@`..."
+	@${MAKE} -C $@
 
 clean:
 	@-for dir in ${SUBS}; do \

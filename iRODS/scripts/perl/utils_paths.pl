@@ -18,18 +18,21 @@
 
 use File::Spec;
 use File::Basename;
+use Cwd "abs_path";
 
 $version{"utils_paths.pl"} = "January 2015";
 
 
+$scriptfullpath = abs_path(__FILE__);
+$scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
 
 #
 # Detect run-in-place installation
 #
 $RUNINPLACE = 0;
-if ( ! -e "/etc/irods/server_config.json" )
+if ( ! -e "$scripttoplevel/packaging/binary_installation.flag" )
 {
-        $RUNINPLACE = 1;
+    $RUNINPLACE = 1;
 }
 
 

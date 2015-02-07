@@ -8,7 +8,6 @@ import socket
 import time
 
 
-
 class irods_test_constants(object):
     RUN_IN_TOPOLOGY = False
     RUN_AS_RESOURCE_SERVER = False

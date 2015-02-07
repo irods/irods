@@ -120,7 +120,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- RE"
+                    # print "skipping " + rulefile + " ----- RE"
                     return False
 
             # skip rules that fail by design
@@ -131,7 +131,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- failbydesign"
+                    # print "skipping " + rulefile + " ----- failbydesign"
                     return False
 
             # skip rules that are for workflows
@@ -142,7 +142,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- failbydesign"
+                    # print "skipping " + rulefile + " ----- failbydesign"
                     return False
 
             # skip if an action (run in the core.re), not enough input/output for irule
@@ -189,7 +189,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- input/output"
+                    # print "skipping " + rulefile + " ----- input/output"
                     return False
 
             # skip rules we are not yet supporting
@@ -198,7 +198,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- msiobj"
+                    # print "skipping " + rulefile + " ----- msiobj"
                     return False
 
             # ERA
@@ -214,7 +214,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- ERA"
+                    # print "skipping " + rulefile + " ----- ERA"
                     return False
 
             # XMSG
@@ -230,7 +230,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- XMSG"
+                    # print "skipping " + rulefile + " ----- XMSG"
                     return False
 
             # FTP
@@ -240,7 +240,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- FTP"
+                    # print "skipping " + rulefile + " ----- FTP"
                     return False
 
             # webservices
@@ -253,7 +253,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- webservices"
+                    # print "skipping " + rulefile + " ----- webservices"
                     return False
 
             # XML
@@ -264,7 +264,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- XML"
+                    # print "skipping " + rulefile + " ----- XML"
                     return False
 
             # transition to core microservices only
@@ -312,7 +312,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- transition to core"
+                    # print "skipping " + rulefile + " ----- transition to core"
                     return False
 
             # skipping rules requiring additional .re files in community code
@@ -326,44 +326,45 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    #print "skipping " + rulefile + " ----- community"
+                    # print "skipping " + rulefile + " ----- community"
                     return False
 
             # skipping for now, not sure why it's throwing a stacktrace at the moment
             if "rulemsiPropertiesToString" in rulefile:
-                #print "skipping " + rulefile + " ----- b/c of stacktrace"
+                # print "skipping " + rulefile + " ----- b/c of stacktrace"
                 return False
 
             # misc / other
             if "ruleintegrity" in rulefile:
-                #print "skipping " + rulefile + " ----- integrityChecks"
+                # print "skipping " + rulefile + " ----- integrityChecks"
                 return False
             if "z3950" in rulefile:
-                #print "skipping " + rulefile + " ----- z3950"
+                # print "skipping " + rulefile + " ----- z3950"
                 return False
             if "rulemsiImage" in rulefile:
-                #print "skipping " + rulefile + " ----- image"
+                # print "skipping " + rulefile + " ----- image"
                 return False
             if "rulemsiRda" in rulefile:
-                #print "skipping " + rulefile + " ----- RDA"
+                # print "skipping " + rulefile + " ----- RDA"
                 return False
             if "rulemsiCollRepl" in rulefile:
-                #print "skipping " + rulefile + " ----- deprecated"
+                # print "skipping " + rulefile + " ----- deprecated"
                 return False
             if "rulemsiDataObjGetWithOptions" in rulefile:
-                #print "skipping " + rulefile + " ----- deprecated"
+                # print "skipping " + rulefile + " ----- deprecated"
                 return False
             if "rulemsiDataObjReplWithOptions" in rulefile:
-                #print "skipping " + rulefile + " ----- deprecated"
+                # print "skipping " + rulefile + " ----- deprecated"
                 return False
             if "rulemsiExecStrCondQueryWithOptions" in rulefile:
-                #print "skipping " + rulefile + " ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"
+                # print "skipping " + rulefile + " ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"
                 return False
             if "rulemsiTarFileExtract" in rulefile:
-                #print "skipping " + rulefile + " ----- CAT_NO_ROWS_FOUND - failed in call to getDataObjInfoIncSpecColl"
+                # print "skipping " + rulefile + " ----- CAT_NO_ROWS_FOUND - failed in
+                # call to getDataObjInfoIncSpecColl"
                 return False
             if "rulemsiDataObjRsync" in rulefile:
-                #print "skipping " + rulefile + " ----- tested separately"
+                # print "skipping " + rulefile + " ----- tested separately"
                 return False
 
             return True

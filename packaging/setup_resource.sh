@@ -1,11 +1,18 @@
 #!/bin/bash -e
 
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # get into the top level directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
 # detect run-in-place installation
-if [ -e /etc/irods/server_config.json ] ;  then
+if [ -f "$DETECTEDDIR/binary_installation.flag" ] ; then
     RUNINPLACE=0
     # set configuration file paths
     SERVER_CONFIG_FILE="/etc/irods/server_config.json"
@@ -19,13 +26,6 @@ else
     set +e
     source ./packaging/setup_irods_configuration.sh 2> /dev/null
     set -e
-fi
-
-# detect correct python version
-if type -P python2 1> /dev/null; then
-    PYTHON=`type -P python2`
-else
-    PYTHON=`type -P python`
 fi
 
 # get temp file from prior run, if it exists

@@ -346,7 +346,7 @@ $(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(DEPEND) $(BOOST
 # Build server drivers
 $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile drivers `basename $@`..."
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
 $(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
@@ -437,8 +437,8 @@ ruleadmin:: $(serverBinDir)/ruleAdmin
 	@cp $(serverBinDir)/ruleAdmin /misc/www/projects/srb-secure/cgi-bin/ruleAdminRaja.cgi
 
 $(svrCoreObjDir)/ruleAdmin.o: $(svrCoreObjDir)/%.o: %.cpp $(LIBRARY) $(OBJS)
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 $(serverBinDir)/ruleAdmin: $(svrCoreObjDir)/ruleAdmin.o $(LIBRARY) $(OBJS)
-	$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 

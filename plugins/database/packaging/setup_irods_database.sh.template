@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # templated variables
 DATABASETYPE="TEMPLATE_DATABASE_TYPE"
 DEFAULT_DATABASEPORT="TEMPLATE_DEFAULT_DATABASEPORT"
@@ -17,7 +24,7 @@ ORACLEHOME=$ORACLE_HOME
 # get into the top level directory
 # detect run-in-place installation
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ -e /etc/irods/server_config.json ] ;  then
+if [ -f "$DETECTEDDIR/binary_installation.flag" ] ; then
     RUNINPLACE=0
     cd $DETECTEDDIR/../
 else
@@ -26,13 +33,6 @@ else
     set +e
     source ./packaging/setup_irods_configuration.sh 2> /dev/null
     set -e
-fi
-
-# detect correct python version
-if type -P python2 ; then
-    PYTHON=`type -P python2`
-else
-    PYTHON=`type -P python`
 fi
 
 # find server_config
@@ -47,14 +47,14 @@ fi
 if [ "$RUNINPLACE" == "1" ] ;  then
     db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
     if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to $(dirname db_config)"
+        echo ">>> Copying new database_config.json to [$(dirname db_config)]"
         cp $DETECTEDDIR/database_config.json $db_config
     fi
 
 else
     db_config="/etc/irods/database_config.json"
     if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to /etc/irods"
+        echo ">>> Copying new database_config.json to [/etc/irods]"
         cp $DETECTEDDIR/database_config.json $db_config
     fi
 fi

@@ -25,7 +25,8 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc rrResc random",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
+            ":" + get_irods_top_level_dir() + "/unixAVault",
             "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unixB1Vault",
             "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
@@ -335,7 +336,8 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
+            ":" + get_irods_top_level_dir() + "/unixAVault",
             "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
             ":" + get_irods_top_level_dir() + "/unixB1Vault",
             "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
@@ -783,7 +785,8 @@ class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     my_test_resource = {
         "setup": [
             "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc nonblocking " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/nbVault",
+            "iadmin mkresc demoResc nonblocking " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
+            ":" + get_irods_top_level_dir() + "/nbVault",
         ],
         "teardown": [
             "iadmin rmresc demoResc",
@@ -1815,9 +1818,12 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
             "iadmin modresc demoResc name origResc",
             "iadmin mkresc demoResc replication",
             "iadmin mkresc replResc replication",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unixB2Vault",
+            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
+            ":" + get_irods_top_level_dir() + "/unixAVault",
+            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
+            ":" + get_irods_top_level_dir() + "/unixB1Vault",
+            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
+            ":" + get_irods_top_level_dir() + "/unixB2Vault",
             "iadmin addchildtoresc demoResc replResc",
             "iadmin addchildtoresc demoResc unixA",
             "iadmin addchildtoresc replResc unixB1",

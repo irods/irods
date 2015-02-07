@@ -15,7 +15,7 @@ use Config;
 use File::Basename;
 use File::Path;
 
-$version{"irods_setup.pl"} = "Jan 2015";
+$version{"irods_setup.pl"} = "Feb 2015";
 
 # =-=-=-=-=-=-=-
 # detect the running environment (usually the service account user)
@@ -170,11 +170,26 @@ if ( ! -e $iadmin )
 #
 # Load and validate server configuration files.
 #
-load_server_config("/etc/irods/server_config.json");
-if( 1 == $icatInstall )
+
+# binary installation
+if ( -e "$scripttoplevel/packaging/binary_installation.flag" )
 {
-    load_database_config("/etc/irods/database_config.json");
+    load_server_config("/etc/irods/server_config.json");
+    if ( 1 == $icatInstall )
+    {
+        load_database_config("/etc/irods/database_config.json");
+    }
 }
+# run-in-place
+else
+{
+    load_server_config("$scripttoplevel/iRODS/server/config/server_config.json");
+    if ( 1 == $icatInstall )
+    {
+        load_database_config("$scripttoplevel/iRODS/server/config/database_config.json");
+    }
+}
+
 
 # Make sure the home directory is set and valid.  If not, the installation
 # is probably being run out of order or a prior stage failed.
@@ -759,24 +774,33 @@ sub configureIrodsServer
 	#	may already be updated.  It's so small there is
 	#	little point in checking for this first.  Just
 	#	overwrite it with the correct values.
-        my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server_config.json" );
-        my $databaseConfigFile = File::Spec->catfile( $serverConfigDir,"database_config.json" );
-        unless( -e $serverConfigFile ) {
-            $serverConfigFile = File::Spec->catfile( "/etc/irods/","server_config.json" );
-            unless( -e $serverConfigFile ) {
-                print( "server_config.json not found\n" );
-            }
-            if ( $IRODS_ICAT_HOST eq "" )
+
+        my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
+
+
+
+
+
+        # binary installation
+        if ( -e "$scripttoplevel/packaging/binary_installation.flag" )
+        {
+            $serverConfigFile = "/etc/irods/server_config.json";
+            if ( -e "/etc/irods/database_config.json" )
             {
-                $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
-                unless( -e $databaseConfigFile ) {
-                    print( "database_config.json not found\n" );
-                }
+                $databaseConfigFile = "/etc/irods/database_config.json";
             }
         }
-	my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
+        # run-in-place
+        else
+        {
+            $serverConfigFile = "$scripttoplevel/iRODS/server/config/server_config.json";
+            if ( -e "$scripttoplevel/iRODS/server/config/database_config.json" )
+            {
+                $databaseConfigFile = "$scripttoplevel/iRODS/server/config/database_config.json";
+            }
+        }
 
-	my %svr_variables = (
+        my %svr_variables = (
         "icat_host",	    $host,
         "zone_name",        $ZONE_NAME,
         "zone_port",        $IRODS_PORT + 0, # convert to integer
@@ -784,7 +808,7 @@ sub configureIrodsServer
         "zone_auth_scheme", "native" );
         printStatus( "    Updating $serverConfigFile....\n" );
         printLog( "    Updating $serverConfigFile....\n" );
-	printLog( "        icat_host        = $host\n" );
+        printLog( "        icat_host        = $host\n" );
         printLog( "        zone_name        = $ZONE_NAME\n" );
         printLog( "        zone_port        = $IRODS_PORT\n" );
         printLog( "        zone_user        = $IRODS_ADMIN_NAME\n" );
@@ -889,23 +913,7 @@ sub configureIrodsServer
 		cleanAndExit( 1 );
 	}
 
-    # repave the irods_port with 1233 which is expected by the boot user
-    my $serverConfigFile = File::Spec->catfile( $serverConfigDir,"server_config.json" );
-    my $databaseConfigFile = File::Spec->catfile( $serverConfigDir,"database_config.json" );
-    unless( -e $serverConfigFile ) {
-        $serverConfigFile = File::Spec->catfile( "/etc/irods/","server_config.json" );
-        unless( -e $serverConfigFile ) {
-            print( "server_config.json not found\n" );
-        }
-        if ( $IRODS_ICAT_HOST eq "" )
-        {
-            $databaseConfigFile = File::Spec->catfile( "/etc/irods/","database_config.json" );
-            unless( -e $databaseConfigFile ) {
-                print( "database_config.json not found\n" );
-            }
-        }
-    }
-
+        # repave the irods_port with 1233 which is expected by the boot user
         my %svr_variables = (
             "zone_name",        $ZONE_NAME,
             "zone_port",        1233,
@@ -1023,7 +1031,7 @@ sub configureIrodsServer
 	my $somethingFailed = 0;
 
         # need to repave the irods_port in the server_config.json to
-        # the configured port after using 1233 for irodsBoot user
+        # the original configured port after using 1233 for irodsBoot user
         my %svr_variables = (
             "zone_port",  $IRODS_PORT + 0 );
         update_json_configuration_file(
@@ -1310,6 +1318,7 @@ sub configureIrodsServer
 	{
 		cleanAndExit( 1 );
 	}
+
 }
 
 

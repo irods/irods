@@ -1,14 +1,5 @@
 #!/bin/bash -e
 
-#
-# Detect run-in-place installation
-#
-if [ -f /etc/irods/server_config.json ] ; then
-    RUNINPLACE=0
-else
-    RUNINPLACE=1
-fi
-
 # detect correct python version
 if type -P python2 1> /dev/null; then
     PYTHON=`type -P python2`
@@ -19,9 +10,19 @@ fi
 # find local working directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+#
+# Detect run-in-place installation
+#
+if [ -f "$DETECTEDDIR/binary_installation.flag" ] ; then
+    RUNINPLACE=0
+else
+    RUNINPLACE=1
+fi
+
+# set some paths
 if [ $RUNINPLACE -eq 1 ] ; then
     MYSERVERCONFIGJSON=$DETECTEDDIR/../iRODS/server/config/server_config.json
-    MYICATSYSINSERTS=$DETECTEDDIR/../iRODS/server/icat/src/icatSysInserts.sql
+    MYICATSYSINSERTS=$DETECTEDDIR/../plugins/database/src/icatSysInserts.sql
     # clean full paths
     MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
     if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
@@ -42,14 +43,19 @@ else
 fi
 
 # detect server type being installed
-if [ -f $DETECTEDDIR/setup_irods_database.sh ] ; then
+# resource server
+ICAT_SERVER=0
+if [ $RUNINPLACE -eq 0 -a -f $DETECTEDDIR/setup_irods_database.sh ] ; then
     # icat enabled server
     ICAT_SERVER=1
-else
-    # resource server
-    ICAT_SERVER=0
 fi
-
+if [ $RUNINPLACE -eq 1 ] ; then
+    source $DETECTEDDIR/server_type.sh
+    # icat enabled server
+    if [ $SERVER_TYPE == "ICAT" ] ; then
+        ICAT_SERVER=1
+    fi
+fi
 
     SETUP_IRODS_CONFIGURATION_FLAG="/tmp/$USER/setup_irods_configuration.flag"
 

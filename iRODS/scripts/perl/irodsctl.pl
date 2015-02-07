@@ -24,7 +24,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodsctl.pl"} = "Jan 2015";
+$version{"irodsctl.pl"} = "Feb 2015";
 
 
 $scriptfullpath = abs_path(__FILE__);
@@ -111,11 +111,26 @@ my $iRODSStartStopDelay = 4;  # Seconds
 #
 # Load configuration files
 #
-load_server_config("/etc/irods/server_config.json");
-if ( -e "/etc/irods/database_config.json" )
+
+# binary installation
+if ( -e "$scripttoplevel/packaging/binary_installation.flag" )
 {
-    load_database_config("/etc/irods/database_config.json");
+    load_server_config("/etc/irods/server_config.json");
+    if ( -e "/etc/irods/database_config.json" )
+    {
+        load_database_config("/etc/irods/database_config.json");
+    }
 }
+# run-in-place
+else
+{
+    load_server_config("$scripttoplevel/iRODS/server/config/server_config.json");
+    if ( -e "$scripttoplevel/iRODS/server/config/database_config.json" )
+    {
+        load_database_config("$scripttoplevel/iRODS/server/config/database_config.json");
+    }
+}
+
 
 ########################################################################
 #
@@ -161,7 +176,7 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # here and they'll be used the next time the iRODS servers are started
 # using this script.
 #
-					
+
 $ENV{'irodsHomeDir'}      = $IRODS_HOME;
 $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'IRODS_ENVIRNOMENT_FILE'} = $irodsEnvFile; }

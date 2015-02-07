@@ -42,7 +42,8 @@ default: ${SUBS}
 
 ${SUBS}:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	${MAKE} -C $@
+	@echo "Compile resource plugin `basename $@`..."
+	@${MAKE} -C $@
 
 clean:
 	@-for dir in ${SUBS}; do \

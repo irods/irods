@@ -35,7 +35,8 @@ class ServerConfig(object):
         self.combined_config_dict = CompatibilityDict(compatibility_listing=[('DBPassword', 'db_password'),
                                                                              ('DBUsername', 'db_username')])
 
-        if os.path.isfile('/etc/irods/server_config.json'):
+        # Binary installation
+        if os.path.isfile('/var/lib/irods/packaging/binary_installation.flag'):
             self.capture('/etc/irods/server_config.json')
             self.capture('/etc/irods/database_config.json')
         # Run in place
@@ -45,8 +46,10 @@ class ServerConfig(object):
         # Support deprecated pre-json config files through 4.1.x
         else:
             thefile = '/etc/irods/server.config'
+            # binary
             if os.path.isfile(thefile):
                 cfg_file = thefile
+            # run-in-place
             else:
                 cfg_file = get_install_dir() + '/iRODS/server/config/server.config'
             self.capture(cfg_file, ' ')

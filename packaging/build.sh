@@ -1054,6 +1054,8 @@ elif [ $1 == "icommands" ] ; then
     SERVER_TYPE="ICOMMANDS"
     SERVER_TYPE_LOWERCASE="icommands"
 fi
+# write down the server type for later use
+echo "SERVER_TYPE=$SERVER_TYPE" > $BUILDDIR/packaging/server_type.sh
 
 
 if [ "$BUILDIRODS" == "1" ] ; then

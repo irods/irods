@@ -256,30 +256,30 @@ class ResourceSuite(ResourceBase):
         targetpath = publicpath + "/target"
         sourcepath = publicpath + "/source"
         # cleanup
-        assertiCmd(s.adminsession, "imkdir -p "+targetpath)  # target
-        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ targetpath)  # ichmod
-        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
-        assertiCmd(s.adminsession, "imkdir -p "+sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ sourcepath)  # ichmod
-        assertiCmd(s.adminsession, "irm -rf "+sourcepath) # cleanup
+        assertiCmd(s.adminsession, "imkdir -p " + targetpath)  # target
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.getUserName() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
+        assertiCmd(s.adminsession, "imkdir -p " + sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.getUserName() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf " + sourcepath)  # cleanup
         # setup and test
-        assertiCmd(s.adminsession, "imkdir "+targetpath)  # target
-        assertiCmd(s.adminsession, "ils -rAL "+targetpath,"STDOUT","own") # debugging
-        assertiCmd(s.adminsession, "ichmod -r write "+s.sessions[1].getUserName() +" "+ targetpath)  # ichmod
-        assertiCmd(s.adminsession, "ils -rAL "+targetpath, "STDOUT", "modify object")  # debugging
-        assertiCmd(s.adminsession, "imkdir "+sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -r own "+s.sessions[1].getUserName() +" "+ sourcepath)  # ichmod
-        assertiCmd(s.adminsession, "ils -AL "+sourcepath, "STDOUT", "own")  # debugging
-        assertiCmd(s.sessions[1], "imv "+sourcepath + " "+targetpath)  # imv
-        assertiCmd(s.adminsession, "ils -AL "+targetpath, "STDOUT", targetpath+"/source")  # debugging
-        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
+        assertiCmd(s.adminsession, "imkdir " + targetpath)  # target
+        assertiCmd(s.adminsession, "ils -rAL " + targetpath, "STDOUT", "own")  # debugging
+        assertiCmd(s.adminsession, "ichmod -r write " + s.sessions[1].getUserName() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "ils -rAL " + targetpath, "STDOUT", "modify object")  # debugging
+        assertiCmd(s.adminsession, "imkdir " + sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -r own " + s.sessions[1].getUserName() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "ils -AL " + sourcepath, "STDOUT", "own")  # debugging
+        assertiCmd(s.sessions[1], "imv " + sourcepath + " " + targetpath)  # imv
+        assertiCmd(s.adminsession, "ils -AL " + targetpath, "STDOUT", targetpath + "/source")  # debugging
+        assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
         # cleanup
-        assertiCmd(s.adminsession, "imkdir -p "+targetpath)  # target
-        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ targetpath)  # ichmod
-        assertiCmd(s.adminsession, "irm -rf "+targetpath) # cleanup
-        assertiCmd(s.adminsession, "imkdir -p "+sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -M -r own "+s.adminsession.getUserName() +" "+ sourcepath)  # ichmod
-        assertiCmd(s.adminsession, "irm -rf "+sourcepath) # cleanup
+        assertiCmd(s.adminsession, "imkdir -p " + targetpath)  # target
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.getUserName() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
+        assertiCmd(s.adminsession, "imkdir -p " + sourcepath)  # source
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.getUserName() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "irm -rf " + sourcepath)  # cleanup
 
     ###################
     # iphymv

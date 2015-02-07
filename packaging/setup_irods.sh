@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
 # locate current directory
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -16,13 +23,6 @@ source $SERVICE_ACCOUNT_CONFIG_FILE
 
 # configure irods
 sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_configuration.sh"
-
-# detect correct python version
-if type -P python2 1> /dev/null; then
-    PYTHON=`type -P python2`
-else
-    PYTHON=`type -P python`
-fi
 
 # if default vault path does not exist, create it with proper permissions
 MYSERVERCONFIGJSON=/etc/irods/server_config.json

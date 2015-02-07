@@ -206,6 +206,10 @@ set_tmpfile
 sed -e s,TEMPLATE_DEFAULT_DATABASEPORT,$defaultport, $SETUP_FILE > $TMPFILE; mv $TMPFILE $SETUP_FILE
 
 # =-=-=-=-=-=-=-
+# set script as executable
+chmod +x $SETUP_FILE
+
+# =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
 cd $SCRIPTPATH
 make ${DB_TYPE}

@@ -22,7 +22,7 @@ use File::Spec;
 use Cwd "abs_path";
 
 use JSON qw( );
-$version{"utils_config.pl"} = "January 2015";
+$version{"utils_config.pl"} = "Feb 2015";
 
 # Master defaults for iRODS configuration parameters:
 $IRODS_DEFAULT_PORT          = 1247;
