@@ -1,12 +1,10 @@
 {
-    "access_entries" : [
+    "access_entries": [
         {
-            "user" : "all",
-            "group" : "all",
-            "mask" : "255.255.255.255",
-            "address" : "127.0.0.1"
-
+            "address": "127.0.0.1", 
+            "group": "all", 
+            "mask": "255.255.255.255", 
+            "user": "all"
         }
-
     ]
 }
