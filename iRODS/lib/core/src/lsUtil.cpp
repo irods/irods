@@ -817,14 +817,9 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
                      collectionStr, dataNameStr, dataSizeStr );
         }
 
-        if ( genQueryOut != NULL ) {
-            continueInx = genQueryInp.continueInx =
-                              genQueryOut->continueInx;
-            freeGenQueryOut( &genQueryOut );
-        }
-        else {
-            continueInx = 0;
-        }
+        continueInx = genQueryInp.continueInx =
+                            genQueryOut->continueInx;
+        freeGenQueryOut( &genQueryOut );
     }
     clearGenQueryInp( &genQueryInp );
     return status;
