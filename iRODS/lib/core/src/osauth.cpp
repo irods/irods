@@ -411,7 +411,7 @@ extern "C" {
             if ( errno ) {
                 rodsLog( LOG_ERROR,
                          "%s: error calling getpwnam for %s. errno = %d",
-                         fname, username ? username : "", errno );
+                         fname, username, errno );
                 return -1;
             }
             else {
