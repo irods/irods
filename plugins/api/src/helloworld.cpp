@@ -88,36 +88,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
