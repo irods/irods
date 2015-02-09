@@ -114,9 +114,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                         conn->fileRestart.info.objPath );
                 unlink( conn->fileRestart.infoFile );
             }
-            if ( info != NULL ) {
-                free( info );
-            }
+            free( info );
         }
     }
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
