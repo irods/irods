@@ -198,6 +198,11 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         zoneStruct = getSqlResultByInx( genQueryOut2, COL_R_ZONE_NAME );
         dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
         collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
+        if ( dataPathStruct == NULL || locStruct == NULL || zoneStruct == NULL ||
+                dataNameStruct == NULL || collNameStruct == NULL ) {
+            printf( "getSqlResultByInx returned null in statPhysFile." );
+            return -1;
+        }
         dataPath = &dataPathStruct->value[dataPathStruct->len * i];
         loc = &locStruct->value[locStruct->len * i];
         zone = &zoneStruct->value[zoneStruct->len * i];
