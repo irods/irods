@@ -35,6 +35,7 @@ packaging/irods-docs.list
 packaging/irods-dev.list
 packaging/irods-runtime.list
 packaging/irods-icommands.list
+packaging/server_type.sh
 plugins/api/*/.objs
 plugins/auth/*/.deps
 plugins/auth/*/.objs
