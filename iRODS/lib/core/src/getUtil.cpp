@@ -104,9 +104,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                         conn->fileRestart.info.objPath );
                 unlink( conn->fileRestart.infoFile );
             }
-            if ( info != NULL ) {
-                free( info );
-            }
+            free( info );
         }
     }
 
