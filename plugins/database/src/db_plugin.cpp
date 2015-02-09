@@ -1343,7 +1343,7 @@ rodsLong_t checkAndGetObjectId(
         status = splitPathByKey( name,
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
-            strcpy( logicalParentDirName, PATH_SEPARATOR );
+            snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", name );
         }
         if ( logSQL != 0 ) {
