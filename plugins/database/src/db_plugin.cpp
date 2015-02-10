@@ -2990,7 +2990,9 @@ extern "C" {
 
         /* we can track the filesystem metadata from the file which
            this data object was put or registered from */
-        if ( getValByKey( &_data_obj_info->condInput, FILE_UID_KW ) ) {
+        bool meta_value;
+        irods::server_properties::getInstance().get_property<bool>( irods::CFG_ENABLE_FILESYSTEM_META_KW, meta_value );
+        if ( getValByKey( &_data_obj_info->condInput, FILE_UID_KW ) && meta_value ) {
             cllBindVars[0] = dataIdNum;
             cllBindVars[1] = getValByKey( &_data_obj_info->condInput, FILE_UID_KW );
             cllBindVars[2] = getValByKey( &_data_obj_info->condInput, FILE_GID_KW );
@@ -5428,7 +5430,9 @@ extern "C" {
 
         /* we can track the filesystem metadata from the directory
            from which this collection was put or registered from */
-        if ( getValByKey( &_coll_info->condInput, FILE_UID_KW ) != NULL ) {
+        bool meta_value;
+        irods::server_properties::getInstance().get_property<bool>( irods::CFG_ENABLE_FILESYSTEM_META_KW, meta_value );
+        if ( getValByKey( &_coll_info->condInput, FILE_UID_KW ) != NULL && meta_value ) {
             cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_UID_KW );
             cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_GID_KW );
             cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_OWNER_KW );
