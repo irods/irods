@@ -2527,9 +2527,17 @@ sub Oracle_CreateDatabase()
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
-	# iRODS now supports a script to determine the path & lib name of the odbc driver
-	my $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
-	chomp($oracleOdbcLib);
+        # iRODS now supports a script to determine the path & lib name of the odbc driver
+        my $oracleOdbcLib;
+        if ( $RUNINPLACE == 1 )
+        {
+                $oracleOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_oracle.sh`;
+        }
+        else
+        {
+                $oracleOdbcLib = `$scripttoplevel/packaging/find_odbc_oracle.sh`;
+        }
+        chomp($oracleOdbcLib);
 
 	open( NEWCONFIGFILE, ">$userODBC" );
 	print( NEWCONFIGFILE "[oracle]\n" .
@@ -2571,7 +2579,15 @@ sub MySQL_CreateDatabase()
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
     
     # iRODS now supports a script to determine the path & lib name of the odbc driver
-    my $mysqlOdbcLib = `$scripttoplevel/packaging/find_odbc_mysql.sh`;
+    my $mysqlOdbcLib;
+    if ( $RUNINPLACE == 1 )
+    {
+            $mysqlOdbcLib = `$scripttoplevel/plugins/database/packaging/find_odbc_mysql.sh`;
+    }
+    else
+    {
+            $mysqlOdbcLib = `$scripttoplevel/packaging/find_odbc_mysql.sh`;
+    }
     chomp($mysqlOdbcLib);
 
     open( NEWCONFIGFILE, ">$userODBC" );

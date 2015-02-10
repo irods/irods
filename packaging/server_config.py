@@ -144,6 +144,8 @@ class ServerConfig(object):
 
     def exec_mysql_file(self, sql_filename):
         fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_mysql.sh'
+        if not os.path.isfile(fbp):
+            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_mysql.sh'
         p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
@@ -177,6 +179,8 @@ class ServerConfig(object):
 
     def exec_oracle_file(self, sql_filename):
         fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_oracle.sh'
+        if not os.path.isfile(fbp):
+            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_oracle.sh'
         p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:

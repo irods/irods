@@ -25,7 +25,7 @@ if [ $RUNINPLACE -eq 1 ] ; then
     MYICATSYSINSERTS=$DETECTEDDIR/../plugins/database/src/icatSysInserts.sql
     # clean full paths
     MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
-    if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
+    if [ ! -f $MYSERVERCONFIGJSON ]; then
         echo ">>> Copying new server_config.json to $MYSERVERCONFIGJSON"
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
@@ -34,7 +34,7 @@ if [ $RUNINPLACE -eq 1 ] ; then
     DEFAULTRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
 else
     MYSERVERCONFIGJSON=/etc/irods/server_config.json
-    if [ ! -f $MYSERVERCONFIG ] && [ ! -f $MYSERVERCONFIGJSON ]; then
+    if [ ! -f $MYSERVERCONFIGJSON ]; then
         echo ">>> Copying new server_config.json to /etc/irods"
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
