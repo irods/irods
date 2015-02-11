@@ -1,3 +1,5 @@
+include ../VERSION
+
 include ../iRODS/config/config.mk
 
 include ../iRODS/config/external_versions.txt
@@ -12,7 +14,7 @@ RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
 OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then echo "_CentOS6" ; fi)
-IRODSEXTERNALARCHIVE=irods_external_$(OS).tar.gz
+IRODSEXTERNALARCHIVE=irods_external_$(IRODSVERSION)_$(OS).tar.gz
 IRODSEXTERNALLOCAL=irods_external.tar.gz
 
 CMAKEVERSIONARCHIVE=$(CMAKEVERSION).tar.gz
