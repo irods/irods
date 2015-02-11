@@ -179,10 +179,6 @@ icatGeneralQuerySetup() {
     sTable( "r_ticket_user_main", "R_USER_MAIN r_ticket_user_main", 1 );
     sTable( "r_ticket_data_coll_main", "R_COLL_MAIN r_ticket_data_coll_main", 1 );
 
-    sTable( "r_data_filesystem_meta", "R_OBJT_FILESYSTEM_META r_data_filesystem_meta", 0 );
-    sTable( "r_coll_filesystem_meta", "R_OBJT_FILESYSTEM_META r_coll_filesystem_meta", 0 );
-
-
     /* Map the #define values to tables and columns */
 
     sColumn( COL_ZONE_ID, "R_ZONE_MAIN", "zone_id" );
@@ -579,30 +575,6 @@ icatGeneralQuerySetup() {
 
     sColumn( COL_TICKET_DATA_COLL_NAME, "r_ticket_data_coll_main", "coll_name" );
 
-    sColumn( COL_COLL_FILEMETA_OBJ_ID, "r_coll_filesystem_meta", "object_id" );
-    sColumn( COL_COLL_FILEMETA_UID, "r_coll_filesystem_meta", "file_uid" );
-    sColumn( COL_COLL_FILEMETA_GID, "r_coll_filesystem_meta", "file_gid" );
-    sColumn( COL_COLL_FILEMETA_OWNER, "r_coll_filesystem_meta", "file_owner" );
-    sColumn( COL_COLL_FILEMETA_GROUP, "r_coll_filesystem_meta", "file_group" );
-    sColumn( COL_COLL_FILEMETA_MODE, "r_coll_filesystem_meta", "file_mode" );
-    sColumn( COL_COLL_FILEMETA_CTIME, "r_coll_filesystem_meta", "file_ctime" );
-    sColumn( COL_COLL_FILEMETA_MTIME, "r_coll_filesystem_meta", "file_mtime" );
-    sColumn( COL_COLL_FILEMETA_SOURCE_PATH, "r_coll_filesystem_meta", "file_source_path" );
-    sColumn( COL_COLL_FILEMETA_CREATE_TIME, "r_coll_filesystem_meta", "create_ts" );
-    sColumn( COL_COLL_FILEMETA_MODIFY_TIME, "r_coll_filesystem_meta", "modify_ts" );
-
-    sColumn( COL_DATA_FILEMETA_OBJ_ID, "r_data_filesystem_meta", "object_id" );
-    sColumn( COL_DATA_FILEMETA_UID, "r_data_filesystem_meta", "file_uid" );
-    sColumn( COL_DATA_FILEMETA_GID, "r_data_filesystem_meta", "file_gid" );
-    sColumn( COL_DATA_FILEMETA_OWNER, "r_data_filesystem_meta", "file_owner" );
-    sColumn( COL_DATA_FILEMETA_GROUP, "r_data_filesystem_meta", "file_group" );
-    sColumn( COL_DATA_FILEMETA_MODE, "r_data_filesystem_meta", "file_mode" );
-    sColumn( COL_DATA_FILEMETA_CTIME, "r_data_filesystem_meta", "file_ctime" );
-    sColumn( COL_DATA_FILEMETA_MTIME, "r_data_filesystem_meta", "file_mtime" );
-    sColumn( COL_DATA_FILEMETA_SOURCE_PATH, "r_data_filesystem_meta", "file_source_path" );
-    sColumn( COL_DATA_FILEMETA_CREATE_TIME, "r_data_filesystem_meta", "create_ts" );
-    sColumn( COL_DATA_FILEMETA_MODIFY_TIME, "r_data_filesystem_meta", "modify_ts" );
-
     /* Define the Foreign Key links between tables */
 
     sFklink( "R_COLL_MAIN", "R_DATA_MAIN", "R_COLL_MAIN.coll_id = R_DATA_MAIN.coll_id" );
@@ -725,8 +697,5 @@ icatGeneralQuerySetup() {
     sFklink( "R_TICKET_MAIN", "r_ticket_coll_main", "R_TICKET_MAIN.object_id = r_ticket_coll_main.coll_id" );
     sFklink( "R_TICKET_MAIN", "r_ticket_data_coll_main", "R_TICKET_MAIN.object_id = R_DATA_MAIN.data_id AND R_DATA_MAIN.coll_id = r_ticket_data_coll_main.coll_id" );
     sFklink( "R_TICKET_MAIN", "r_ticket_user_main", "R_TICKET_MAIN.user_id = r_ticket_user_main.user_id" );
-
-    sFklink( "R_COLL_MAIN", "r_coll_filesystem_meta", "R_COLL_MAIN.coll_id = r_coll_filesystem_meta.object_id" );
-    sFklink( "R_DATA_MAIN", "r_data_filesystem_meta", "R_DATA_MAIN.data_id = r_data_filesystem_meta.object_id" );
 
 }

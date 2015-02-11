@@ -232,22 +232,13 @@ int mkFileDirR(
 
         directories_to_create.pop_back();
 
-        // query for FS metadata
-        keyValPair_t condInput;
-        memset( &condInput, 0, sizeof( condInput ) );
-        rsQueryDirectoryMeta( rsComm, irods_directory.c_str(), &condInput );
-
         irods::collection_object_ptr tmp_coll_obj(
             new irods::collection_object(
                 physical_directory,
                 hier,
                 mode, 0 ) );
 
-        // add FS metadata to collection object
-        tmp_coll_obj->cond_input( condInput );
-
         irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
-        clearKeyVal( &condInput );
         if ( !mkdir_err.ok() && ( getErrno( mkdir_err.code() ) != EEXIST ) ) { // JMC - backport 4834
             std::stringstream msg;
             msg << "fileMkdir for [";

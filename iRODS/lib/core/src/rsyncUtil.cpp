@@ -80,8 +80,6 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 continue;
             }
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
-            getFileMetaFromPath( rodsPathInp->srcPath[i].outPath,
-                                 &dataObjOprInp.condInput );
             status = rsyncFileToDataUtil( conn, srcPath, targPath,
                                           myRodsArgs, &dataObjOprInp );
         }
@@ -747,7 +745,6 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     file_size( p ) ) ) {
             continue;
         }
-        getFileMetaFromPath( mySrcPath.outPath, &dataObjOprInp->condInput );
 
         bzero( &myTargPath, sizeof( myTargPath ) );
         path childPath = p.filename();
@@ -779,8 +776,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         else if ( is_directory( p ) ) {
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
-                status = mkCollRWithDirMeta( conn, targColl,
-                                             myTargPath.outPath, mySrcPath.outPath );
+                status = mkColl( conn, targColl );
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -937,7 +933,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                       targColl, childPath );
 
             if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
-                mkCollWithSrcCollMeta( conn, targChildPath, collEnt.collName );
+                mkColl( conn, targChildPath );
             }
 
             /* the child is a spec coll. need to drill down */

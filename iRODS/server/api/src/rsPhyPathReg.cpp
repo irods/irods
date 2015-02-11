@@ -412,7 +412,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
         }
         else {
-            status = filePathReg( rsComm, phyPathRegInp, filePath, _resc_name );
+            status = filePathReg( rsComm, phyPathRegInp, _resc_name );
         }
     }
 
@@ -467,8 +467,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 }
 
 int
-filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-             const char *_resc_name ) {
+filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_name ) {
     dataObjInfo_t dataObjInfo;
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
 
@@ -496,7 +495,6 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  dataObjInfo.objPath, status );
         return status;
     }
-    addKeyVal( &dataObjInfo.condInput, FILE_SOURCE_PATH_KW, filePath );
 
     if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
                                  REG_CHKSUM_KW ) ) != NULL ) {
@@ -536,7 +534,6 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 int
 dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             const char *_resc_name ) {
-    rodsStat_t *myStat = NULL;
     fileStatInp_t fileStatInp;
     collInp_t collCreateInp;
     fileOpendirInp_t fileOpendirInp;
@@ -593,17 +590,6 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
         rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
         rstrcpy( fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN );
-
-        status = rsFileStat( rsComm, &fileStatInp, &myStat );
-        if ( status != 0 ) {
-            rodsLog( LOG_ERROR,
-                     "dirPathReg: rsFileStat failed for %s, status = %d",
-                     filePath, status );
-            return status;
-        }
-        getFileMetaFromStat( myStat, &collCreateInp.condInput );
-        addKeyVal( &collCreateInp.condInput, FILE_SOURCE_PATH_KW, filePath );
-        free( myStat );
 
         /* create the coll just in case it does not exist */
         status = rsCollCreate( rsComm, &collCreateInp );
@@ -703,8 +689,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             else {
                 addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW,
                            fileStatInp.fileName );
-                status = filePathReg( rsComm, &subPhyPathRegInp,
-                                      fileStatInp.fileName, _resc_name );
+                status = filePathReg( rsComm, &subPhyPathRegInp, _resc_name );
             }
         }
         else if ( ( myStat->st_mode & S_IFDIR ) != 0 ) {    /* a directory */

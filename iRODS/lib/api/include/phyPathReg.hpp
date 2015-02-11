@@ -31,8 +31,7 @@ int
 _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                const char *_resc_name, rodsServerHost_t *rodsServerHost );
 int
-filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-             const char *_resc_name );
+filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_name );
 int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  const char *_resc_name );

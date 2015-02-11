@@ -104,9 +104,6 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         /* dataSingleBuf */
         addKeyVal( &destDataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
     }
-    /* copy file metadata if the source object has it */
-    copyFilesystemMetadata( &( L1desc[srcL1descInx].dataObjInfo->condInput ),
-                            &destDataObjInp->condInput );
 
     destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
     if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {

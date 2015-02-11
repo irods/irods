@@ -494,8 +494,6 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // JMC - backport 4774
     chkType = getchkPathPerm( rsComm, dataObjInp, dataObjInfo );
-    copyFilesystemMetadata( &dataObjInfo->condInput,
-                            &fileCreateInp.condInput );
     if ( chkType == DISALLOW_PATH_REG ) {
         clearKeyVal( &fileCreateInp.condInput );
         return PATH_REG_NOT_ALLOWED;

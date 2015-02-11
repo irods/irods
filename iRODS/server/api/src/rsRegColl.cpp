@@ -73,18 +73,6 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         }
     }
 
-    /* if the "collection" keyword has been set, it provides the
-       name of another collection to retrieve directory metadata
-       from (usually during a icp or irsync operation */
-    tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_KW );
-    if ( tmpStr != NULL ) {
-        rsQueryDirectoryMeta( rsComm, tmpStr, &collInfo.condInput );
-    }
-    else {
-        /* otherwise copy over the source directory metadata if provided */
-        copyFilesystemMetadata( &collCreateInp->condInput, &collInfo.condInput );
-    }
-
     status = chlRegColl( rsComm, &collInfo );
     clearKeyVal( &collInfo.condInput );
     return status;

@@ -15,7 +15,6 @@ drop table R_OBJT_METAMAP;
 drop table R_OBJT_ACCESS;
 drop table R_OBJT_DENY_ACCESS;
 drop table R_OBJT_AUDIT;
-drop table R_OBJT_FILESYSTEM_META;
 drop table R_SERVER_LOAD;
 drop table R_SERVER_LOAD_DIGEST;
 drop table R_USER_AUTH;

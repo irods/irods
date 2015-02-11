@@ -508,21 +508,6 @@ create table R_TICKET_ALLOWED_GROUPS
    group_name           varchar(250) not null
 );
 
-create table R_OBJT_FILESYSTEM_META
-(
-   object_id INT64TYPE not null,
-   file_uid varchar(32),
-   file_gid varchar(32),
-   file_owner varchar(250),
-   file_group varchar(250),
-   file_mode varchar(32),
-   file_ctime varchar(32),
-   file_mtime varchar(32),
-   file_source_path varchar(2700),
-   create_ts varchar(32),
-   modify_ts varchar(32)
-);
-
 create table R_GRID_CONFIGURATION
 (
    namespace varchar(2700),
@@ -626,8 +611,6 @@ create unique index idx_ticket on R_TICKET_MAIN (ticket_string);
 create unique index idx_ticket_host on R_TICKET_ALLOWED_HOSTS (ticket_id, host);
 create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_name);
 create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
-
-create unique index idx_obj_filesystem_meta1 on R_OBJT_FILESYSTEM_META (object_id);
 
 create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace VARCHAR_MAX_IDX_SIZE, option_name VARCHAR_MAX_IDX_SIZE);
 

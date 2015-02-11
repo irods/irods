@@ -399,8 +399,6 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     rstrcpy( filePutInp.addr.hostAddr, location.c_str(), NAME_LEN );
     rstrcpy( filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
     filePutInp.mode = getFileMode( dataObjInp );
-    copyFilesystemMetadata( &dataObjInfo->condInput,
-                            &filePutInp.condInput );
 
     filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
     rstrcpy( filePutInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN );

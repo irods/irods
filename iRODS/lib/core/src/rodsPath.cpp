@@ -541,10 +541,10 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                             if ( oprType != MOVE_OPR ) {
                                 /* rename does not need to mkColl */
                                 if ( srcPath->objType <= COLL_OBJ_T ) {
-                                    status = mkCollWithSrcCollMeta( conn, destPath->outPath, srcPath->outPath );
+                                    status = mkColl( conn, destPath->outPath );
                                 }
                                 else {
-                                    status = mkCollWithDirMeta( conn, targPath->outPath, srcPath->inPath );
+                                    status = mkColl( conn, targPath->outPath );
                                 }
                             }
                             else {
@@ -580,10 +580,10 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                     if ( oprType != MOVE_OPR ) {
                         /* rename does not need to mkColl */
                         if ( srcPath->objType <= COLL_OBJ_T ) {
-                            status = mkCollWithSrcCollMeta( conn, destPath->outPath, srcPath->outPath );
+                            status = mkColl( conn, destPath->outPath );
                         }
                         else {
-                            status = mkCollWithDirMeta( conn, destPath->outPath, srcPath->inPath );
+                            status = mkColl( conn, destPath->outPath );
                         }
                     }
                     else {

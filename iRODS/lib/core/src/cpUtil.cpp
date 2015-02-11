@@ -350,7 +350,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, childPath );
-            mkCollRWithSrcCollMeta( conn, targColl, targChildPath, collEnt.collName );
+            mkCollR( conn, targColl, targChildPath );
 
             if ( rodsArgs->verbose == True ) {
                 fprintf( stdout, "C- %s:\n", targChildPath );

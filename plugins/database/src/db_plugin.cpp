@@ -928,22 +928,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-    /* remove any filesystem metadata entries */
-    cllBindVars[cllBindVarCount++] = collIdNum;
-    if ( logSQL ) {
-        rodsLog( LOG_SQL, "_delColl xSQL14" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_OBJT_FILESYSTEM_META where object_id=?",
-                  &icss );
-    if ( status && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        /* error might indicate that this wasn't set
-          which isn't a problem. Fall through. */
-        rodsLog( LOG_NOTICE,
-                 "_delColl delete filesystem meta failure %d",
-                 status );
-    }
-
     /* Audit */
     status = cmlAudit3( AU_DELETE_COLL,
                         collIdNum,
@@ -2988,39 +2972,6 @@ extern "C" {
             }
         }
 
-        /* we can track the filesystem metadata from the file which
-           this data object was put or registered from */
-        bool meta_value;
-        irods::server_properties::getInstance().get_property<bool>( irods::CFG_ENABLE_FILESYSTEM_META_KW, meta_value );
-        if ( getValByKey( &_data_obj_info->condInput, FILE_UID_KW ) && meta_value ) {
-            cllBindVars[0] = dataIdNum;
-            cllBindVars[1] = getValByKey( &_data_obj_info->condInput, FILE_UID_KW );
-            cllBindVars[2] = getValByKey( &_data_obj_info->condInput, FILE_GID_KW );
-            cllBindVars[3] = getValByKey( &_data_obj_info->condInput, FILE_OWNER_KW );
-            cllBindVars[4] = getValByKey( &_data_obj_info->condInput, FILE_GROUP_KW );
-            cllBindVars[5] = getValByKey( &_data_obj_info->condInput, FILE_MODE_KW );
-            cllBindVars[6] = getValByKey( &_data_obj_info->condInput, FILE_CTIME_KW );
-            cllBindVars[7] = getValByKey( &_data_obj_info->condInput, FILE_MTIME_KW );
-            cllBindVars[8] = getValByKey( &_data_obj_info->condInput, FILE_SOURCE_PATH_KW );
-            cllBindVars[9] = myTime;
-            cllBindVars[10] = myTime;
-            cllBindVarCount = 11;
-            if ( logSQL ) {
-                rodsLog( LOG_SQL, "chlRegDataObj xSQL 1" );
-            }
-            status = cmlExecuteNoAnswerSql(
-                         "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                         &icss );
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlRegDataObj cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
-                         status );
-                _rollback( "chlRegDataObj" );
-                return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
-            }
-        }
-
-
         status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
                             _comm->clientUser.userName,
                             _comm->clientUser.rodsZone, "", &icss );
@@ -3523,17 +3474,6 @@ extern "C" {
                          "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss );
             if ( status == 0 ) {
                 removeMetaMapAndAVU( dataObjNumber ); /* remove AVU metadata, if any */
-                /* and remove source file OS metadata */
-                cllBindVars[0] = dataObjNumber;
-                cllBindVarCount = 1;
-                if ( logSQL ) {
-                    rodsLog( LOG_SQL, "chlUnregDataObj xSQL 1" );
-                }
-                status = cmlExecuteNoAnswerSql(
-                             "delete from R_OBJT_FILESYSTEM_META where object_id=?", &icss );
-                if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                    rodsLog( LOG_ERROR, "cmlExecuteNoAnswerSql failed in db_unreg_replica_op with status %d", status );
-                }
             }
         }
 
@@ -5428,37 +5368,6 @@ extern "C" {
             return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
         }
 
-        /* we can track the filesystem metadata from the directory
-           from which this collection was put or registered from */
-        bool meta_value;
-        irods::server_properties::getInstance().get_property<bool>( irods::CFG_ENABLE_FILESYSTEM_META_KW, meta_value );
-        if ( getValByKey( &_coll_info->condInput, FILE_UID_KW ) != NULL && meta_value ) {
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_UID_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_GID_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_OWNER_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_GROUP_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_MODE_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_CTIME_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_MTIME_KW );
-            cllBindVars[cllBindVarCount++] = getValByKey( &_coll_info->condInput, FILE_SOURCE_PATH_KW );
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = myTime;
-            snprintf( tSQL, MAX_SQL_SIZE,
-                      "insert into R_OBJT_FILESYSTEM_META (object_id, file_uid, file_gid, file_owner, file_group, file_mode, file_ctime, file_mtime, file_source_path, create_ts, modify_ts) values (%s, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                      currStr2 );
-            if ( logSQL ) {
-                rodsLog( LOG_SQL, "chlRegColl xSQL 1" );
-            }
-            status = cmlExecuteNoAnswerSql( tSQL, &icss );
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlRegColl cmlExecuteNoAnswerSql insert filesystem_meta failure %d",
-                         status );
-                _rollback( "chlRegColl" );
-                return ERROR( status, "cmlExecuteNoAnswerSql insert filesystem_meta failure" );
-            }
-        }
-
         /* Audit */
         status = cmlAudit4( AU_REGISTER_COLL,
                             currStr2,
@@ -6832,22 +6741,6 @@ extern "C" {
 
         snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
         removeMetaMapAndAVU( collIdNum );
-
-        /* remove any filesystem metadata entries */
-        cllBindVars[cllBindVarCount++] = collIdNum;
-        if ( logSQL ) {
-            rodsLog( LOG_SQL, "chlDelCollByAdmin xSQL 1" );
-        }
-        status =  cmlExecuteNoAnswerSql(
-                      "delete from R_OBJT_FILESYSTEM_META where object_id=?",
-                      &icss );
-        if ( status && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            /* error might indicate that this wasn't set
-              which isn't a problem. Fall through. */
-            rodsLog( LOG_NOTICE,
-                     "chlDelCollByAdmin delete filesystem meta failure %d",
-                     status );
-        }
 
         /* Audit (before it's deleted) */
         status = cmlAudit4( AU_DELETE_COLL_BY_ADMIN,

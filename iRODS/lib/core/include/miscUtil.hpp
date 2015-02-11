@@ -258,19 +258,9 @@ rmFilesInDir( char *mydir );
 int
 mkdirForFilePath( char* filePath );
 int
-mkCollWithDirMeta( rcComm_t *conn, char *collection, char *dirname );
-int
-mkCollRWithDirMeta( rcComm_t *conn, char *startColl, char *destColl, char *srcDir );
-int
-mkCollWithSrcCollMeta( rcComm_t *conn, char *collection, char *srcColl );
-int
-mkCollRWithSrcCollMeta( rcComm_t *conn, char *startColl, char *destColl, char *srcColl );
-int
 getFileMetaFromPath( char *srcPath, keyValPair_t *condInput );
 int
 getFileMetaFromStat( rodsStat_t *statbuf, keyValPair_t *condInput );
-int
-copyFilesystemMetadata( keyValPair_t *src, keyValPair_t *dest );
 pathnamePatterns_t *
 readPathnamePatterns( char *buf, int buflen );
 void

@@ -104,6 +104,4 @@ regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
 int
 getDataObjByClass( dataObjInfo_t *dataObjInfoHead, int rescClass,
                    dataObjInfo_t **outDataObjInfo );
-int
-getDataObjFileMeta( rsComm_t *rsComm, char *data_id, keyValPair_t *condInput );
 #endif  /* DATA_OBJ_OPR_H */
