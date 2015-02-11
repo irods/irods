@@ -446,7 +446,7 @@ serverMain( char *logDir ) {
         rodsLog( LOG_NOTICE, "irods server is exiting" );
 
     }
-    catch ( irods::exception& e_ ) {
+    catch ( const irods::exception& e_ ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return e_.code();
@@ -1037,9 +1037,19 @@ int
 startProcConnReqThreads() {
     initConnThreadEnv();
     for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
-        ReadWorkerThread[i] = new boost::thread( readWorkerTask );
+        try {
+            ReadWorkerThread[i] = new boost::thread( readWorkerTask );
+        } catch ( const boost_thread_resource_error& ) {
+            rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
+            return SYS_THREAD_RESOURCE_ERR;
+        }
     }
-    SpawnManagerThread = new boost::thread( spawnManagerTask );
+    try {
+        SpawnManagerThread = new boost::thread( spawnManagerTask );
+    } catch ( const boost_thread_resource_error& ) {
+        rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
+        return SYS_THREAD_RESOURCE_ERR;
+    }
 
     return 0;
 }
