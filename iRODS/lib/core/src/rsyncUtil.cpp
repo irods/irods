@@ -206,7 +206,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
-            if ( strcmp( chksum, srcPath->chksum ) != 0 ) {
+            if ( chksum == NULL || strcmp( chksum, srcPath->chksum ) != 0 ) {
                 getFlag = 1;
             }
         }
