@@ -1039,14 +1039,14 @@ startProcConnReqThreads() {
     for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
         try {
             ReadWorkerThread[i] = new boost::thread( readWorkerTask );
-        } catch ( const boost_thread_resource_error& ) {
+        } catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
             return SYS_THREAD_RESOURCE_ERR;
         }
     }
     try {
         SpawnManagerThread = new boost::thread( spawnManagerTask );
-    } catch ( const boost_thread_resource_error& ) {
+    } catch ( const boost::thread_resource_error& ) {
         rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
         return SYS_THREAD_RESOURCE_ERR;
     }
