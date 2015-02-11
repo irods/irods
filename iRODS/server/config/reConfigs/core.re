@@ -549,18 +549,6 @@ acPreProcForModifyResource(*ResourceName,*Option,*NewValue) { }
 #
 acPostProcForModifyResource(*ResourceName,*Option,*NewValue) { }
 #
-# 40) acPreProcForModifyResourceGroup - This rule set the pre-processing policy for
-# modifying membership of a resource group.
-# Option specifies the modifying-action being performed by the administraor
-#
-acPreProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName) { }
-#
-# 41) acPostProcForModifyResourceGroup - This rule set the post-processing policy for
-# modifying membership of a resource group.
-# Option specifies the modifying-action being performed by the administraor
-#
-acPostProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName) { }
-#
 # 42) acPreProcForModifyCollMeta - This rule set the pre-processing policy for
 # modifying system metadata of a collection.
 #
