@@ -642,7 +642,7 @@ acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr) { }
 #      Quota should be enforced. Valid values for the flag are:
 #      "on"  - enable Resource Quota enforcement,
 #      "off" - disable Resource Quota enforcement (default).
-# acRescQuotaPolicy {msiSetRescQuotaPolicy("off"); }
+# acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }
 acRescQuotaPolicy {msiSetRescQuotaPolicy("off"); }
 #
 #
