@@ -381,7 +381,7 @@ acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
 #
 # 17) acSetReServerNumProc - This rule set the policy for the number of processes
 # to use when running jobs in the irodsReServer. The irodsReServer can now
-# muli-task such that one or two long running jobs cannot block the execution
+# multi-task such that one or two long running jobs cannot block the execution
 # of other jobs. One function can be called:
 #    msiSetReServerNumProc(numProc) - numProc can be "default" or a number
 #    in the range 1-4. numProc will be set to 1 if "default" is the input.
