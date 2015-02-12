@@ -2204,6 +2204,10 @@ Res *smsi_msiAdmShowCoreRE( Node**, int, Node*, ruleExecInfo_t* rei, int, Env* e
     }
 
     FILE *f2 = fopen( full_path.c_str(), "r" );
+    if ( f2 == NULL ) {
+        rodsLog( LOG_ERROR, "Could not open the core.re file in msiAdmShowCoreRE" );
+        return newIntRes( r, ret.code() );
+    }
 
     while ( !feof( f2 ) && ferror( f2 ) == 0 ) {
         if ( fgets( buf, 1024, f2 ) != NULL ) {
