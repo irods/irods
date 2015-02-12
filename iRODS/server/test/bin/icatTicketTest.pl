@@ -16,7 +16,7 @@
 # This is run by hand (i.e. is not part of 'irodsctl devtest').
 
 
-use Net::Domain qw (hostname hostfqdn hostdomain);
+use Net::Domain qw (hostfqdn);
 use Cwd 'abs_path';
 use File::Basename;
 
@@ -63,13 +63,7 @@ $F3="TicketTestFile3";
 $Future_Date="2040-12-12";      # Valid ticket
 $Past_Date="1970-01-01";        # Expired ticket
 
-my $hostname = hostname();
-my $domain = hostdomain();
-chomp(my $hostname_d = `hostname -d`);
-if (index($hostname_d, $domain) >= 0 and index($hostname . "." . $domain, $hostname_d) < 0) {
-        $domain = $hostname_d;
-}
-$This_Host = $hostname . "." . $domain;
+$This_Host = hostfqdn();
 
 $Other_Host="jargontest.irods.renci.org";
 
