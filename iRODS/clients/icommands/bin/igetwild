@@ -1,5 +1,4 @@
 #!/bin/sh
-#
 
 # Simple script that does some wildcard processing to iget irods files
 # with names with entered patterns in the names (at the beginning,
@@ -12,19 +11,13 @@
 #igetwild /newZone/home/rods .txt e
 #   foo.txt                         0.000 MB | 0.164 sec | 0 thr |  0.000 MB/s
 #   foo2.txt                        0.000 MB | 0.101 sec | 0 thr |  0.000 MB/s
-
-# Include the collection name, the pattern of the dataObject
-# names and b,e,or m on the command line, to avoid prompts for them.
-
-# This is just a interim partial solution while we develop a more
-# comprehensive approach to handling wildcards.
-
 #
-#set -x
+# Include the collection name, the pattern of the dataObject
+# names and b, e, or m on the command line, to avoid prompts for them.
 
-tmpFile1="/tmp/tmpIgetScriptFile1.$$"
-tmpFile2="/tmp/tmpIgetScriptFile2.$$"
-tmpFile3="/tmp/tmpIgetScriptFile3.$$"
+tmpFile1=`mktemp`
+tmpFile2=`mktemp`
+tmpFile3=`mktemp`
 
 if [ $1 ]; then
   collName=$1
