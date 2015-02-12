@@ -41,7 +41,6 @@ main( int, char ** ) {
     int status;
     rsComm_t rsComm;
     char *tmpStr;
-    bool run_server_as_root = false;
 
     ProcessType = AGENT_PT;
 
@@ -50,18 +49,6 @@ main( int, char ** ) {
     if ( !result.ok() ) {
         irods::log( PASSMSG( "failed to read server configuration", result ) );
     }
-
-    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-
-
-#ifndef windows_platform
-    if ( run_server_as_root ) {
-        if ( initServiceUser() < 0 ) {
-            return 1;
-        }
-    }
-#endif
-
 
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );

@@ -249,16 +249,6 @@ irods::error convert_server_config(
     }
 
     bool b_val = false;
-    ret = props.get_property< bool >( "run_server_as_root", b_val );
-    if ( ret.ok() ) {
-        if ( b_val ) {
-            json_object_set( _svr_cfg, "run_server_as_root", json_string( "true" ) );
-        }
-        else {
-            json_object_set( _svr_cfg, "run_server_as_root", json_string( "false" ) );
-        }
-    }
-
     ret = props.get_property< bool >( "pam_no_extend", b_val );
     if ( ret.ok() ) {
         if ( b_val ) {

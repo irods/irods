@@ -26,7 +26,6 @@ main( int argc, char **argv ) {
     char *logDir = NULL;
     char *tmpStr;
     int logFd;
-    bool run_server_as_root = false;
 
     ProcessType = XMSG_SERVER_PT;
 
@@ -36,25 +35,12 @@ main( int argc, char **argv ) {
         irods::log( PASSMSG( "failed to read server configuration", result ) );
     }
 
-
-    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-
-#ifndef windows_platform
-    if ( run_server_as_root ) {
-        if ( initServiceUser() < 0 ) {
-            exit( 1 );
-        }
-    }
-#endif
-
-
 #ifndef _WIN32
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
     signal( SIGUSR1, signalExit );
     signal( SIGPIPE, rsPipSigalHandler );
-
 #endif
 
     /* Handle option to log sql commands */

@@ -54,7 +54,6 @@ namespace irods {
         key_map_[ PAM_NO_EXTEND_KW ]     = CFG_PAM_NO_EXTEND_KW;
         key_map_[ PAM_PW_MIN_TIME_KW ]   = CFG_PAM_PASSWORD_MIN_TIME_KW;
         key_map_[ PAM_PW_MAX_TIME_KW ]   = CFG_PAM_PASSWORD_MAX_TIME_KW;
-        key_map_[ RUN_SERVER_AS_ROOT_KW ] = CFG_RUN_SERVER_AS_ROOT_KW;
         key_map_[ DEF_DIR_MODE_KW ]       = CFG_DEFAULT_DIR_MODE_KW;
         key_map_[ DEF_FILE_MODE_KW ]      = CFG_DEFAULT_FILE_MODE_KW;
         key_map_[ CATALOG_DATABASE_TYPE_KW ] = CFG_CATALOG_DATABASE_TYPE_KW;
@@ -328,26 +327,6 @@ namespace irods {
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_MAX_TIME_KW
-
-            key = strstr( buf, RUN_SERVER_AS_ROOT_KW );
-            if ( key != NULL ) {
-                len = strlen( RUN_SERVER_AS_ROOT_KW );
-
-                // Set property name and setting
-                prop_name.assign( RUN_SERVER_AS_ROOT_KW );
-                prop_setting.assign( findNextTokenAndTerm( key + len ) );
-
-                std::transform( prop_setting.begin(), prop_setting.end(), prop_setting.begin(), ::tolower );
-                if ( prop_setting == "true" ) {
-                    result = config_props_.set<bool>( RUN_SERVER_AS_ROOT_KW, true );
-                }
-                else {
-                    result = config_props_.set<bool>( RUN_SERVER_AS_ROOT_KW, false );
-                }
-
-                rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
-            } // RUN_SERVER_AS_ROOT_KW
-
 
             key = strstr( buf, DEF_DIR_MODE_KW );
             if ( key != NULL ) {

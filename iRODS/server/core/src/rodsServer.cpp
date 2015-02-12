@@ -127,8 +127,6 @@ int irodsWinMain( int argc, char **argv )
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
     char *tmpStr;
-    bool run_server_as_root = false;
-
 
     ProcessType = SERVER_PT;	/* I am a server */
 
@@ -137,17 +135,6 @@ int irodsWinMain( int argc, char **argv )
     if ( !result.ok() ) {
         irods::log( PASSMSG( "failed to read server configuration", result ) );
     }
-
-    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-
-#ifndef windows_platform
-    if ( run_server_as_root ) {
-        if ( initServiceUser() < 0 ) {
-            exit( 1 );
-        }
-    }
-#endif
-
 
     tmpStr = getenv( SP_LOG_LEVEL );
     if ( tmpStr != NULL ) {

@@ -27,7 +27,6 @@ namespace irods {
         "re_function_name_mapping_set" );
     const std::string CFG_RE_DATA_VARIABLE_MAPPING_SET_KW(
         "re_data_variable_mapping_set" );
-    const std::string CFG_RUN_SERVER_AS_ROOT_KW( "run_server_as_root" );
     const std::string CFG_DEFAULT_DIR_MODE_KW( "default_dir_mode" );
     const std::string CFG_DEFAULT_FILE_MODE_KW( "default_file_mode" );
     const std::string CFG_DEFAULT_HASH_SCHEME_KW( "default_hash_scheme" );

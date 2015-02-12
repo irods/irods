@@ -689,7 +689,6 @@ extern "C" {
         irods::resource_plugin_context& _ctx,
         struct stat*                        _statbuf ) {
         irods::error result = SUCCESS();
-        bool run_server_as_root = false;
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is
         //        correct and should not have the vault path
@@ -705,19 +704,6 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // make the call to stat
             int status = stat( fco->physical_path().c_str(), _statbuf );
-
-            // =-=-=-=-=-=-=-
-            // if the file can't be accessed due to permission denied
-            // try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-            if ( run_server_as_root ) {
-                if ( status < 0 && errno == EACCES && isServiceUserSet() ) {
-                    if ( changeToRootUser() == 0 ) {
-                        status = stat( fco->physical_path().c_str() , _statbuf );
-                        changeToServiceUser();
-                    }
-                }
-            }
 
             // =-=-=-=-=-=-=-
             // return an error if necessary
@@ -840,7 +826,6 @@ extern "C" {
     irods::error example_file_opendir_plugin(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
-        bool run_server_as_root = false;
 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -854,19 +839,6 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // make the call to opendir
             DIR* dir_ptr = opendir( fco->physical_path().c_str() );
-
-            // =-=-=-=-=-=-=-
-            // if the directory can't be accessed due to permission
-            // denied try again using root credentials.
-            irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-            if ( run_server_as_root ) {
-                if ( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-                    if ( changeToRootUser() == 0 ) {
-                        dir_ptr = opendir( fco->physical_path().c_str() );
-                        changeToServiceUser();
-                    } // if
-                }
-            }
 
             // =-=-=-=-=-=-=-
             // cache status in out variable

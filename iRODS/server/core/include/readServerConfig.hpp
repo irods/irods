@@ -32,8 +32,6 @@
 #define PAM_PW_MIN_TIME_KW	"pam_password_min_time"
 #define PAM_PW_MAX_TIME_KW	"pam_password_max_time"
 
-#define RUN_SERVER_AS_ROOT_KW	"run_server_as_root"
-
 #define CATALOG_DATABASE_TYPE_KW	"catalog_database_type"
 
 #define DEFAULT_HASH_SCHEME_KW	"default_hash_scheme"
@@ -44,7 +42,6 @@
 extern "C" {
 
     typedef struct rodsServerConfig {
-        bool run_server_as_root;
 
         char DBUsername[NAME_LEN];
         char DBPassword[MAX_PASSWORD_LEN];

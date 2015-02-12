@@ -118,7 +118,6 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                    pamAuthRequestOut_t **pamAuthRequestOut ) {
     int status = 0;
     pamAuthRequestOut_t *result;
-    bool run_server_as_root = false;
 
     *pamAuthRequestOut = ( pamAuthRequestOut_t * )
                          malloc( sizeof( pamAuthRequestOut_t ) );
@@ -126,21 +125,9 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
 
     result = *pamAuthRequestOut;
 
-    irods::server_properties::getInstance().get_property<bool>( RUN_SERVER_AS_ROOT_KW, run_server_as_root );
-
-    if ( run_server_as_root ) {
-        /* uid == euid is needed for some plugins e.g. libpam-sss */
-        status = changeToRootUser();
-        if ( status < 0 ) {
-            return status;
-        }
-    }
     /* Normal mode, fork/exec setuid program to do the Pam check */
     status = runPamAuthCheck( pamAuthRequestInp->pamUser,
                               pamAuthRequestInp->pamPassword );
-    if ( run_server_as_root ) {
-        changeToServiceUser();
-    }
     if ( status == 256 ) {
         status = PAM_AUTH_PASSWORD_FAILED;
     }

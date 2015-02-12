@@ -264,12 +264,6 @@ UNZIP_EXEC_PATH=/usr/bin/unzip
 # server/log/ log files.
 #IRODS_SYSLOG = 1
 
-# RUN_SERVER_AS_ROOT - Defines whether the iRODS server contains code
-# that will allow the iRODS servers to switch between root and service
-# user permissions for specific operations. This is now a runtime option
-# that is turned on by setting run_server_as_root to true in
-# server_config.json followed by a server restart.
-
 # =-=-=-=-=-=-=-
 # compile in the sha256 support for the hasher class
 # NOTE:: this should be a build.sh template value
