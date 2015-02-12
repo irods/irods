@@ -3460,12 +3460,14 @@ char* typeName_NodeType( NodeType s ) {
 
 void generateErrMsgFromFile( char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN] ) {
     FILE *fp = fopen( ruleBasePath, "r" );
-    Pointer *e = newPointer( fp, ruleBaseName );
-    Label l;
-    l.base = NULL;
-    l.exprloc = errloc;
-    generateErrMsgFromPointer( msg, &l, e, errbuf );
-    deletePointer( e );
+    if ( fp != NULL ) {
+        Pointer *e = newPointer( fp, ruleBaseName );
+        Label l;
+        l.base = NULL;
+        l.exprloc = errloc;
+        generateErrMsgFromPointer( msg, &l, e, errbuf );
+        deletePointer( e );
+    }
 }
 
 void generateErrMsgFromSource( char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN] ) {
