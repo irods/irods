@@ -348,8 +348,8 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
-            if ( strcmp( chksum, targPath->chksum ) != 0 ) {
-                if ( myRodsArgs->verifyChecksum == True ) {
+            if ( chksum == NULL || strcmp( chksum, targPath->chksum ) != 0 ) {
+                if ( chksum != NULL && myRodsArgs->verifyChecksum == True ) {
                     addKeyVal( &dataObjOprInp->condInput, VERIFY_CHKSUM_KW,
                                chksum );
                 }
@@ -371,7 +371,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
-            if ( myRodsArgs->verifyChecksum == True ) {
+            if ( chksum != NULL && myRodsArgs->verifyChecksum == True ) {
                 addKeyVal( &dataObjOprInp->condInput, VERIFY_CHKSUM_KW, chksum );
             }
             syncFlag = 1;
