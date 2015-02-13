@@ -65,7 +65,8 @@ findPerl( )
         # in the file, we use it.  Otherwise the file is sorted
         # numerically and we use the entry with the highest
         # version number.
-        RESULTSFILE=`mktemp`
+        RESULTSFILE=`mktemp -t irods_tmp.XXXXXX`
+
 
         # While "perl -v" reports version information for the program,
         # this is hard to parse.  Instead, we use the following
@@ -200,7 +201,7 @@ findPerl( )
         # Were any found?
         if [ "$foundany" -ne "0" ]; then
                 # Sort the results numerically.
-                SORTEDRESULTSFILE=`mktemp`
+                SORTEDRESULTSFILE=`mktemp -t irods_tmp.XXXXXX`
                 sort -rn $RESULTSFILE > $SORTEDRESULTSFILE
                 rm -f $RESULTSFILE
 
