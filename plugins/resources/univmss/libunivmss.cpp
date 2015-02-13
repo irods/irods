@@ -139,6 +139,7 @@ extern "C" {
 
         execCmdOut_t *execCmdOut = NULL;
         int status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        freeCmdExecOut( execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_UNLINK_ERR - errno;
