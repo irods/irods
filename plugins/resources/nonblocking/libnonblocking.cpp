@@ -469,6 +469,7 @@ extern "C" {
             if ( !( result = ASSERT_ERROR( fd >= 0, status, "Open error for \"%s\", errno = \"%s\", status = %d, flags = %d.",
                                            fco->physical_path().c_str(), strerror( errno ), status, flags ) ).ok() ) {
                 result.code( status );
+                close( fd );
             }
             else {
                 result.code( fd );
