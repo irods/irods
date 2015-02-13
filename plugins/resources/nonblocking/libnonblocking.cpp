@@ -881,7 +881,7 @@ extern "C" {
             irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
             // =-=-=-=-=-=-=-
-            // make the callt to opendir
+            // make the call to opendir
             DIR* dir_ptr = opendir( fco->physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
@@ -890,11 +890,21 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // return an error if necessary
-            if ( ( result = ASSERT_ERROR( NULL != dir_ptr, err_status, "Opendir error for \"%s\", errno = \"%s\", status = %d.",
-                                          fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
+            if ( NULL != dir_ptr ) {
                 // =-=-=-=-=-=-=-
-                // cache dir_ptr & status in out variables
+                // cache dir_ptr in out variables
                 fco->directory_pointer( dir_ptr );
+            }
+            else {
+                std::stringstream msg;
+                msg << "Opendir error for \"";
+                msg << fco->physical_path();
+                msg << "\", errno = \"";
+                msg << strerror( errno );
+                msg << "\", status = ";
+                msg << err_status;
+                msg << ".";
+                result = ERROR( err_status, msg.str() );
             }
         }
 
