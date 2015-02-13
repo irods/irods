@@ -30,6 +30,10 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
+    if ( dataObjOutBBuf == NULL ) {
+        rodsLog( LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet." );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
@@ -74,8 +78,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if ( status < 0 ) {
             return status;
         }
-        if ( status == 0 ||
-                ( dataObjOutBBuf != NULL && dataObjOutBBuf->len > 0 ) ) {
+        if ( status == 0 || dataObjOutBBuf->len > 0 ) {
             /* data included in buf */
             return status;
         }
