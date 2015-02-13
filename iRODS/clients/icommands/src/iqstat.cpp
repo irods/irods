@@ -262,6 +262,9 @@ showRuleExecBrief( char *name, int allFlag ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status, nArgs;
     rErrMsg_t errMsg;
 

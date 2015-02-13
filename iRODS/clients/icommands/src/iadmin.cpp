@@ -1343,6 +1343,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status, i, j;
     rErrMsg_t errMsg;
 

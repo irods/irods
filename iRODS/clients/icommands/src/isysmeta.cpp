@@ -301,6 +301,9 @@ doModComment( rcComm_t *Conn, char *objPath, int numRepl, char *theComment ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status;
     rodsArguments_t myRodsArgs;
     rodsEnv myEnv;

@@ -16,6 +16,9 @@ void usage( char *prog );
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int i, ix, status;
     int echoFlag = 0;
     char *password;

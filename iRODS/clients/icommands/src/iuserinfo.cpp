@@ -194,6 +194,9 @@ showUser( char *name ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status, nArgs;
     rErrMsg_t errMsg;
 

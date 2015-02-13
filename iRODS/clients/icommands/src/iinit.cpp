@@ -75,6 +75,9 @@ printUpdateMsg() {
 }
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int i = 0, ix = 0, status = 0;
     int echoFlag = 0;
     char *password = 0;

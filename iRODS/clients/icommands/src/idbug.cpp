@@ -387,6 +387,9 @@ signalIdbugExit()
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status;
     int continueAllFlag = 0;
     int sleepSec = 1;

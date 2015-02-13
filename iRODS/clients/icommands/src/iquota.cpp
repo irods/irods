@@ -497,6 +497,9 @@ showUserGroupMembership( char *userNameIn, char *usersZone ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status, nArgs;
     rErrMsg_t errMsg;
     char userName[NAME_LEN];

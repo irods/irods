@@ -71,6 +71,9 @@ sendIxmsg( rcComm_t **inconn, sendXmsgInp_t *sendXmsgInp ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     rcComm_t *conn = NULL;
     int status;
     int mNum = 0;

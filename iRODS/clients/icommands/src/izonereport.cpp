@@ -15,6 +15,9 @@
 int
 main( int, char** ) {
 
+    signal( SIGPIPE, SIG_IGN );
+
+
     rodsEnv myEnv;
     int status = getRodsEnv( &myEnv );
     if ( status < 0 ) {

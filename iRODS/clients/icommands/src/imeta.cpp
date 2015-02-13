@@ -1349,6 +1349,9 @@ doCommand( char *cmdToken[] ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status, i, j;
     rErrMsg_t errMsg;
 

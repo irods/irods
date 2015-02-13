@@ -8,6 +8,9 @@ void usage( char *prog );
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     char *myErrName;
     int errorCode;
     char *mySubErrName;

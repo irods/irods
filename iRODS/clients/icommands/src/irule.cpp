@@ -149,6 +149,9 @@ printMsParamNew( msParamArray_t *outParamArray, int output ) {
 
 int
 main( int argc, char **argv ) {
+
+    signal( SIGPIPE, SIG_IGN );
+
     int status;
     rodsEnv myEnv;
     rErrMsg_t errMsg;

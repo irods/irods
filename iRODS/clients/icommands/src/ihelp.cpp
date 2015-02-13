@@ -98,6 +98,9 @@ printMainHelp() {
 int
 main( int argc, char **argv ) {
 
+    signal( SIGPIPE, SIG_IGN );
+
+
     const char * optStr = "ah";
     rodsArguments_t myRodsArgs;
     int status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
