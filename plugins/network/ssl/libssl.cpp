@@ -435,7 +435,7 @@ extern "C" {
 
                 // =-=-=-=-=-=-=-
                 // do a time out managed select of the socket fd
-                if ( SSL_pending( _ssl ) && 0 != _time_value ) {
+                if ( SSL_pending( _ssl ) == 0 && NULL != _time_value ) {
                     int status = select( _socket + 1, &set, NULL, NULL, &timeout );
                     if ( status == 0 ) {
                         // =-=-=-=-=-=-=-
