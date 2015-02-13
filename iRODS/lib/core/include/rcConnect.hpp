@@ -196,8 +196,6 @@ typedef struct {
 
 } rsComm_t;
 
-void rcPipSigHandler();
-
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
            int reconnFlag, rErrMsg_t *errMsg );

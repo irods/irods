@@ -66,12 +66,6 @@ _rcConnect( const char *rodsHost, int rodsPort,
     int status;
     char *tmpStr;
 
-#ifndef windows_platform
-    if ( ProcessType == CLIENT_PT ) {
-        signal( SIGPIPE, ( void ( * )( int ) ) rcPipSigHandler );
-    }
-#endif
-
     conn = ( rcComm_t* )malloc( sizeof( rcComm_t ) );
     memset( conn, 0, sizeof( rcComm_t ) );
 
@@ -342,10 +336,6 @@ cleanRcComm( rcComm_t *conn ) {
     conn->thread_ctx = NULL;
 
     return 0;
-}
-void rcPipSigHandler() {
-    fprintf( stderr,
-             "Client Caught broken pipe signal. Connection to server may be down\n" );
 }
 
 rcComm_t *
