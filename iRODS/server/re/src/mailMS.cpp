@@ -47,26 +47,16 @@
  * \sa none
 **/
 int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
-    char *mailStr  = 0;
-    char fName[100];
-    char *t1 = 0, *t2  = 0;
-    FILE *fd = 0;
-    char *toAddr = 0;
-    char *subjectLine = 0;
-    char *body = 0;
-    int status = 0;
 
-    toAddr = ( char * ) xtoAddr->inOutStruct;
-    subjectLine = ( char * ) xsubjectLine->inOutStruct;
-    body = ( char * ) xbody->inOutStruct;
+    const char * toAddr = ( char * ) xtoAddr->inOutStruct;
+    const char * subjectLine = xsubjectLine->inOutStruct ? ( char * ) xsubjectLine->inOutStruct : "";
+    const char * body = xbody->inOutStruct ? ( char * ) xbody->inOutStruct : "";
 
-    status = checkStringForEmailAddress( toAddr );
-    if ( status ) {
+    if ( int status = checkStringForEmailAddress( toAddr ) ) {
         rodsLog( LOG_NOTICE, "checkStringForEmailAddress failed for [%s]", toAddr );
         return status;
     }
-    status = checkStringForSystem( subjectLine );
-    if ( status ) {
+    if ( int status = checkStringForSystem( subjectLine ) ) {
         rodsLog( LOG_NOTICE, "checkStringForSystem failed for [%s]", subjectLine );
         return status;
     }
@@ -90,32 +80,26 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
             return 0;
         }
     }
+    char fName[100];
     sprintf( fName, "mailFile%d.ml", getpid() );
-    fd = fopen( fName, "w" );
+    FILE* fd = fopen( fName, "w" );
     if ( fd == NULL ) {
         return FILE_CREATE_ERROR;
     }
-    t1 = body;
 #ifdef solaris_platform
-    if ( subjectLine != NULL && strlen( subjectLine ) > 0 ) {
+    if ( strlen( subjectLine ) > 0 ) {
         fprintf( fd, "Subject:%s\n\n", subjectLine );
     }
 #endif
-    while ( t1 != NULL ) {
-        if ( ( t2 = strstr( t1, "\\n" ) ) != NULL ) {
-            *t2 = '\0';
-        }
-        fprintf( fd, "%s\n", t1 );
-        if ( t2 != NULL ) {
-            *t2 = '\\';
-            t1 = t2 + 2;
-        }
-        else {
-            t1 = NULL;
-        }
+    const char * t1 = body;
+    while ( const char * t2 = strstr( t1, "\\n" ) ) {
+        fwrite( t1, sizeof( *t1 ), t2 - t1, fd );
+        fprintf( fd, "\n" );
+        t1 = t2 + 2;
     }
+    fprintf( fd, "%s\n", t1 );
     fclose( fd );
-    mailStr = ( char* )malloc( strlen( toAddr ) + strlen( subjectLine ) + 100 );
+    char * mailStr = ( char* )malloc( strlen( toAddr ) + strlen( subjectLine ) + 100 );
     if ( mailStr == NULL ) {
         return SYS_MALLOC_ERR;
     }
@@ -123,7 +107,7 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
 #ifdef solaris_platform
     sprintf( mailStr, "cat %s| mail  '%s'", fName, toAddr );
 #else /* tested for linux - not sure how other platforms operate for subject */
-    if ( subjectLine != NULL && strlen( subjectLine ) > 0 ) {
+    if ( strlen( subjectLine ) > 0 ) {
         sprintf( mailStr, "cat %s| mail -s '%s'  '%s'", fName, subjectLine, toAddr );
     }
     else {
