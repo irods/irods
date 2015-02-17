@@ -172,6 +172,10 @@ getMultiCopyPerResc( rsComm_t *rsComm ) { // JMC - backport 4556
 int
 _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
 #ifdef RODS_CAT
+    if ( rsComm == NULL ) {
+        rodsLog( LOG_ERROR, "_rsDataObjRename was passed a null rsComm" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
     int status;
     char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
     char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
@@ -187,10 +191,8 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
 
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
-        rei2.uoic = &rsComm->clientUser;
-        rei2.uoip = &rsComm->proxyUser;
-    }
+    rei2.uoic = &rsComm->clientUser;
+    rei2.uoip = &rsComm->proxyUser;
     rei2.doinp = &dataObjRenameInp->srcDataObjInp;
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
