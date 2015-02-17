@@ -579,12 +579,7 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 if ( destPath->objType <= COLL_OBJ_T ) {
                     if ( oprType != MOVE_OPR ) {
                         /* rename does not need to mkColl */
-                        if ( srcPath->objType <= COLL_OBJ_T ) {
-                            status = mkColl( conn, destPath->outPath );
-                        }
-                        else {
-                            status = mkColl( conn, destPath->outPath );
-                        }
+                        status = mkColl( conn, destPath->outPath );
                     }
                     else {
                         status = 0;
