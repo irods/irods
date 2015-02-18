@@ -15,6 +15,8 @@
 #include "filesystem.hpp"
 #include "rcMisc.h"
 #include "irods_log.hpp"
+#include "irods_re_plugin.hpp"
+#include "irods_error.hpp"
 
 
 #define RE_ERROR(cond) if(cond) { goto error; }
@@ -163,7 +165,9 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
 
     orig = rei->msParamArray;
     rei->msParamArray = NULL;
-
+    
+    rei->msParamArray = msParamArray;
+    
     rescode = parseAndComputeRule( rule, env, rei, reiSaveFlag, &errmsgBuf, r );
 
     if ( orig == NULL ) {

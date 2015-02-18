@@ -18,6 +18,8 @@
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_re_plugin.hpp"
+
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
@@ -29,6 +31,51 @@ int processReturnRes( Res *res );
 
 int
 applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+              ruleExecInfo_t *rei, int reiSaveFlag ) {
+    (void) reiSaveFlag;
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::global_re_mgr, rei);
+    std::list<boost::any> args2;
+    for(int i = 0; i<argc;i++) {
+        args2.push_back(boost::any(std::string(args[i])));
+    }
+    irods::error err = re_ctx_mgr.exec_rule(action, irods::unpack(args2));
+    if(!err.ok()) {
+        rodsLog(
+            LOG_ERROR,
+            "applyRuleArg: %d, %s", 
+            err.code(),
+            err.result().c_str()
+        );
+    }
+    return err.code();
+}
+
+int
+applyRule331( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag );
+int
+applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
+    // special case for libmso to work
+    if(strchr(inAction, '(') != NULL) {
+        return applyRule331(inAction, inMsParamArray, rei, reiSaveFlag);
+    }
+    (void) reiSaveFlag;
+    (void) inMsParamArray;
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::global_re_mgr, rei);
+    irods::error err = re_ctx_mgr.exec_rule(inAction);
+    if(!err.ok()) {
+        rodsLog(
+            LOG_ERROR,
+            "applyRule: %d, %s",
+            err.code(),
+            err.result().c_str()
+        );
+    }
+    return err.code();
+}
+
+
+int
+applyRuleArg331( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
               ruleExecInfo_t *rei, int reiSaveFlag ) {
 #ifdef DEBUG
     writeToTmp( "entry.log", "applyRuleArg: " );
@@ -131,7 +178,7 @@ int computeExpression( char *inAction, msParamArray_t *inMsParamArray, ruleExecI
 /* This function computes the expression in inAction using inMsParamArray as the env.
  * It doesn't update inMsParamArray with the new env. */
 int
-applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
+applyRule331( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
     return applyRuleBase( inAction, inMsParamArray, 0, rei, reiSaveFlag );
 }
 

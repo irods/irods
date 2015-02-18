@@ -17,6 +17,7 @@ LDR=clang++
 LDRFLAGS=
 AR=ar
 
+CCFLAGS += -std=c++11
 
 # added by Jason C (updated by Wayne for solaris)
 ifneq ($(findstring solaris, $(OS_platform)),)
