@@ -331,6 +331,8 @@ d 755 root root ${IRODS_HOME_DIR}/plugins/api -
 f 755 root root ${IRODS_HOME_DIR}/plugins/api/ ./plugins/api/*.so
 d 755 root root ${IRODS_HOME_DIR}/plugins/microservices -
 f 755 root root ${IRODS_HOME_DIR}/plugins/microservices/ ./plugins/microservices/*.so
+d 755 root root ${IRODS_HOME_DIR}/plugins/re -
+f 755 root root ${IRODS_HOME_DIR}/plugins/re/ ./plugins/re/*.so
 
 f 644 root root /usr/share/man/man1 ./man/*.gz
 

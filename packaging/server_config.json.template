@@ -33,7 +33,24 @@
             "filename": "core"
         }
     ], 
+    "re_plugins": [
     "schema_validation_base_uri": "https://schemas.irods.org/configuration", 
+        {
+            "instance_name": "re",
+            "plugin_name":"re-irods",
+            "namespaces": [
+                {
+                    "namespace": ""
+                }, 
+                {
+                    "namespace":"audit_"
+                }, 
+                {
+                    "namespace":"indexing_"
+                }
+            ]
+        }
+    ],
     "server_control_plane_encryption_algorithm": "AES-256-CBC", 
     "server_control_plane_encryption_num_hash_rounds": 16, 
     "server_control_plane_key": "TEMPORARY__32byte_ctrl_plane_key", 

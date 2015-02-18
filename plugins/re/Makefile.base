@@ -1,0 +1,59 @@
+#From caller
+IRODSDIR = ../${IRODSTOPDIR}
+SODIR = ../${SOTOPDIR}
+
+FULLTARGET = ${SODIR}/${TARGET}
+
+OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
+
+include ${IRODSDIR}/config/config.mk
+include ${IRODSDIR}/config/platform.mk
+
+GCC = g++ -DRODS_SERVER 
+
+INC = -I${IRODSDIR}/lib/core/include/ \
+      -I${IRODSDIR}/lib/api/include/ \
+      -I${IRODSDIR}/lib/md5/include \
+      -I${IRODSDIR}/server/core/include/ \
+      -I${IRODSDIR}/server/icat/include/ \
+      -I${IRODSDIR}/server/re/include/ \
+      -I${IRODSDIR}/server/drivers/include/ \
+      -I${IRODSDIR}/lib/sha1/include/ \
+      -I${IRODSDIR}/lib/rbudp/include \
+      -I${IRODSDIR}/../plugins/api/include \
+      -I$(LIBARCHIVE_DIR)/libarchive/ \
+      -I../../../external/jansson-2.7/src/ \
+      -I$(BOOST_DIR) 
+
+MY_CFLAG += ${INC}
+
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
+LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
+
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
+GCC += -fprofile-arcs -ftest-coverage -lgcov
+OBJS = $(patsubst %.cpp, %.o, ${SRCS})
+%.o: %.cpp
+	${GCC} ${CFLAGS} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+endif
+
+.PHONY: clean
+
+default: ${FULLTARGET}
+
+clean:
+	@-rm -f ${FULLTARGET} > /dev/null 2>&1
+	@-rm -f ${OBJS} > /dev/null 2>&1
+	@-rm -f *.o > /dev/null 2>&1
+
+${FULLTARGET}: ${OBJS}
+	@-mkdir -p ${SODIR} > /dev/null 2>&1
+	${GCC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
+
+${OBJDIR}/%.o: %.cpp
+	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 

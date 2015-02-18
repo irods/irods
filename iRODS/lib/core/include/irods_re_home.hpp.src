@@ -1,0 +1,13 @@
+
+#ifndef __IRODS_MS_HOME_HPP__
+#define __IRODS_MS_HOME_HPP__
+
+#include <string>
+
+namespace irods {
+
+	const std::string IRODS_RE_HOME( "IRODSREPATH" );
+
+}; // namespace irods
+
+#endif // __IRODS_MS_HOME_HPP__
