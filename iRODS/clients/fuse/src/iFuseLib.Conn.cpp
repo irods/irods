@@ -113,9 +113,7 @@ void _waitForConn() {
     initConnReqWaitMutex( &myConnReqWait );
     addToConcurrentList( ConnReqWaitQue, &myConnReqWait );
 
-    while ( myConnReqWait.state == 0 ) {
-        timeoutWait( &myConnReqWait.mutex, &myConnReqWait.cond, CONN_REQ_SLEEP_TIME );
-    }
+    untimedWait( &myConnReqWait.mutex, &myConnReqWait.cond );
 
     deleteConnReqWaitMutex( &myConnReqWait );
 }
@@ -299,7 +297,7 @@ void ifuseDisconnect( iFuseConn_t *tmpIFuseConn ) {
 int
 signalConnManager() {
     if ( listSize( ConnectedConn ) > HIGH_NUM_CONN ) {
-        notifyTimeoutWait( &ConnManagerLock, &ConnManagerCond );
+        notifyWait( &ConnManagerLock, &ConnManagerCond );
     }
     return 0;
 }
@@ -387,8 +385,7 @@ connManager() {
             if ( myConnReqWait == NULL ) {
                 break;
             }
-            myConnReqWait->state = 1;
-            notifyTimeoutWait( &myConnReqWait->mutex, &myConnReqWait->cond );
+            notifyWait( &myConnReqWait->mutex, &myConnReqWait->cond );
         }
 #if 0
         rodsSleep( CONN_MANAGER_SLEEP_TIME, 0 );

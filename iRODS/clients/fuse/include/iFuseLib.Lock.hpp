@@ -70,7 +70,8 @@ void releaseFuseConnLock( iFuseConn_t *tmpIFuseConn );
 void initConnReqWaitMutex( connReqWait_t *myConnReqWait );
 void deleteConnReqWaitMutex( connReqWait_t *myConnReqWait );
 void timeoutWait( boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond, int sleepTime );
-void notifyTimeoutWait( boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond );
+void untimedWait( boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond );
+void notifyWait( boost::mutex **ConnManagerLock, boost::condition_variable *ConnManagerCond );
 #else
 #ifdef FUSE_DEBUG
 #define UNLOCK(Lock) \
@@ -97,7 +98,8 @@ void releaseFuseConnLock( iFuseConn_t *tmpIFuseConn );
 void initConnReqWaitMutex( connReqWait_t *myConnReqWait );
 void deleteConnReqWaitMutex( connReqWait_t *myConnReqWait );
 void timeoutWait( pthread_mutex_t *ConnManagerLock, pthread_cond_t *ConnManagerCond, int sleepTime );
-void notifyTimeoutWait( pthread_mutex_t *mutex, pthread_cond_t *cond );
+void untimedWait( pthread_mutex_t *ConnManagerLock, pthread_cond_t *ConnManagerCond );
+void notifyWait( pthread_mutex_t *mutex, pthread_cond_t *cond );
 #endif
 
 #define FREE(s, t) _free##t(s);
