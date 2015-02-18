@@ -200,8 +200,6 @@ isSpecialPath( char *inPath );
 int
 rmPathFromCache( char *inPath, Hashtable *pathQueArray );
 int
-_rmPathFromCache( char *inPath, Hashtable *pathQueArray );
-int
 addNewlyCreatedToCache( char *path, char *localPath, int descInx, int mode,
                         pathCache_t **tmpPathCache );
 int
@@ -244,9 +242,8 @@ ifuseConnect( iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv );
 int
 getNewlyCreatedDescByPath( char *path );
 int
-renmeLocalPath( PathCacheTable *pctable, char *from, char *to, char *toIrodsPath );
+renameLocalPath( PathCacheTable *pctable, char *from, char *to, char *toIrodsPath );
 int	_chkCacheExpire( pathCacheQue_t *pathCacheQue );
-int _matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCacheQue_t *pathQueArray, pathCache_t **outPathCache );
 int _iFuseConnInuse( iFuseConn_t *iFuseConn );
 #ifdef  __cplusplus
 }

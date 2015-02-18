@@ -33,9 +33,8 @@ irodsGetattr( const char *path, struct stat *stbuf ) {
         if ( tmpPathCache->fileCache != NULL ) {
             LOCK_STRUCT( *( tmpPathCache->fileCache ) );
             if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
-                status = _updatePathCacheStatFromFileCache( tmpPathCache );
+                status = updatePathCacheStatFromFileCache( tmpPathCache );
                 UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                UNLOCK_STRUCT( *tmpPathCache );
                 if ( status < 0 ) {
                     clearPathFromCache( pctable, ( char * ) path );
                 }
@@ -603,7 +602,7 @@ irodsRename( const char *from, const char *to ) {
         dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
     getAndUseIFuseConn( &iFuseConn );
-    /*    rodsLog (LOG_ERROR, "irodsRenme: %s -> %s conn: %p", from, to, iFuseConn);*/
+    /*    rodsLog (LOG_ERROR, "irodsrename: %s -> %s conn: %p", from, to, iFuseConn);*/
 
     status = rcDataObjRename( iFuseConn->conn, &dataObjRenameInp );
 
@@ -615,7 +614,7 @@ irodsRename( const char *from, const char *to ) {
 
     if ( status >= 0 ) {
 #ifdef CACHE_FUSE_PATH
-        status = renmeLocalPath( pctable, ( char * ) from, ( char * ) to, ( char * ) toIrodsPath );
+        status = renameLocalPath( pctable, ( char * ) from, ( char * ) to, ( char * ) toIrodsPath );
 #endif
     }
     else {
@@ -742,9 +741,8 @@ irodsTruncate( const char *path, off_t size ) {
             if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
                 status = truncate( tmpPathCache->fileCache->fileCachePath, size );
                 if ( status >= 0 ) {
-                    _updatePathCacheStatFromFileCache( tmpPathCache );
+                    updatePathCacheStatFromFileCache( tmpPathCache );
                     UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                    UNLOCK_STRUCT( *tmpPathCache );
                     return 0;
                 }
             }
@@ -875,7 +873,7 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
             pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
         }
         else {
-            _addFileCacheForPath( tmpPathCache, fileCache );
+            addFileCacheForPath( tmpPathCache, fileCache );
             UNLOCK_STRUCT( *tmpPathCache );
         }
         desc = newIFuseDesc( objPath, ( char * ) path, fileCache, &status );
@@ -909,7 +907,7 @@ irodsOpen( const char *path, struct fuse_file_info *fi ) {
             pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
         }
         else {
-            _addFileCacheForPath( tmpPathCache, fileCache );
+            addFileCacheForPath( tmpPathCache, fileCache );
             UNLOCK_STRUCT( *tmpPathCache );
         }
         desc = newIFuseDesc( objPath, ( char * ) path, fileCache, &status );

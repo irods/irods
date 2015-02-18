@@ -23,16 +23,9 @@ PathCacheTable *initPathCache() {
 
 int
 matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCache_t **outPathCache ) {
-    int status;
     LOCK( *pctable->PathCacheLock );
-    status = _matchAndLockPathCache( pctable, inPath, outPathCache );
-    UNLOCK( *pctable->PathCacheLock );
-    return status;
-}
-
-int
-_matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCache_t **outPathCache ) {
     *outPathCache = ( pathCache_t * )lookupFromHashTable( pctable->PathArrayTable, inPath );
+    UNLOCK( *pctable->PathCacheLock );
 
     if ( *outPathCache != NULL ) {
         LOCK_STRUCT( **outPathCache );
@@ -53,17 +46,10 @@ addPathToCache( char *inPath, fileCache_t *fileCache, Hashtable *pathQueArray, s
 }
 
 int
-rmPathFromCache( pthread_mutex_t *PathCacheLock, char *inPath, Hashtable *pathQueArray ) {
-    int status;
-    LOCK( *PathCacheLock );
-    status = _rmPathFromCache( inPath, pathQueArray );
-    UNLOCK( *PathCacheLock );
-    return status;
-}
-
-int
-_rmPathFromCache( char *inPath, Hashtable *pathQueArray ) {
+rmPathFromCache( char *inPath, Hashtable *pathQueArray, pthread_mutex_t *lock ) {
+    LOCK( *lock );
     pathCache_t *tmpPathCache = ( pathCache_t * ) deleteFromHashTable( pathQueArray, inPath );
+    UNLOCK( *lock );
 
     if ( tmpPathCache != NULL ) {
         _freePathCache( tmpPathCache );
@@ -75,116 +61,83 @@ _rmPathFromCache( char *inPath, Hashtable *pathQueArray ) {
 }
 
 int updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache ) {
-    int status;
+
     LOCK_STRUCT( *tmpPathCache );
-    status = _updatePathCacheStatFromFileCache( tmpPathCache );
-    UNLOCK_STRUCT( *tmpPathCache );
-    return status;
-
-}
-int _updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache ) {
-    int status;
-
     tmpPathCache->stbuf.st_size = tmpPathCache->fileCache->fileSize;
     if ( tmpPathCache->fileCache->state != NO_FILE_CACHE ) {
         struct stat stbuf;
-        status = stat( tmpPathCache->fileCache->fileCachePath, &stbuf );
-        if ( status < 0 ) {
+        if ( stat( tmpPathCache->fileCache->fileCachePath, &stbuf ) < 0 ) {
+            int errsav = errno;
             UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-            return errno ? ( -1 * errno ) : -1;
+            UNLOCK_STRUCT( *tmpPathCache );
+            return errsav ? ( -1 * errsav ) : -1;
         }
-        else {
-            /* update the size */
-            tmpPathCache->stbuf.st_uid = stbuf.st_uid;
-            tmpPathCache->stbuf.st_gid = stbuf.st_gid;
-            /* tmpPathCache->stbuf.st_atim = stbuf.st_atime;
-            tmpPathCache->stbuf.st_ctim = stbuf.st_ctime; */
-            tmpPathCache->stbuf.st_mtime = stbuf.st_mtime;
-            tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
-            UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-            return 0;
-        }
+        /* update the size */
+        tmpPathCache->stbuf.st_uid = stbuf.st_uid;
+        tmpPathCache->stbuf.st_gid = stbuf.st_gid;
+        /* tmpPathCache->stbuf.st_atim = stbuf.st_atime;
+        tmpPathCache->stbuf.st_ctim = stbuf.st_ctime; */
+        tmpPathCache->stbuf.st_mtime = stbuf.st_mtime;
+        tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
+        UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
     }
-    else {
-        return 0;
-    }
+    UNLOCK_STRUCT( *tmpPathCache );
+    return 0;
 }
 
-int _pathNotExist( PathCacheTable *pctable, char *path ) {
-    _rmPathFromCache( ( char * ) path, pctable->PathArrayTable );
-    _rmPathFromCache( ( char * ) path, pctable->NonExistPathTable );
+int pathNotExist( PathCacheTable *pctable, char *path ) {
+    rmPathFromCache( ( char * ) path, pctable->PathArrayTable, pctable->PathCacheLock );
+    rmPathFromCache( ( char * ) path, pctable->NonExistPathTable, pctable->PathCacheLock );
 
+    LOCK( *pctable->PathCacheLock );
     insertIntoHashTable( pctable->NonExistPathTable, ( char * ) path, NULL );
+    UNLOCK( *pctable->PathCacheLock );
     return 0;
 }
 
-int _pathExist( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
-    _rmPathFromCache( ( char * ) inPath, pctable->PathArrayTable );
-    _rmPathFromCache( ( char * ) inPath, pctable->NonExistPathTable );
+int pathExist( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
+    rmPathFromCache( ( char * ) inPath, pctable->PathArrayTable, pctable->PathCacheLock );
+    rmPathFromCache( ( char * ) inPath, pctable->NonExistPathTable, pctable->PathCacheLock );
     addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
     return 0;
 }
 
-int _pathReplace( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
-    _rmPathFromCache( inPath, pctable->PathArrayTable );
+int pathReplace( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
+    rmPathFromCache( inPath, pctable->PathArrayTable, pctable->PathCacheLock );
     addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
+
+    LOCK( *pctable->PathCacheLock );
     deleteFromHashTable( pctable->NonExistPathTable, ( char * ) inPath );
-    return 0;
-}
+    UNLOCK( *pctable->PathCacheLock );
 
-int _lookupPathExist( PathCacheTable *pctable, char *inPath, pathCache_t **paca ) {
-    return ( *paca = ( pathCache_t * ) lookupFromHashTable( pctable->NonExistPathTable, inPath ) ) == NULL ? 0 : 1;
+    return 0;
 }
 
 int lookupPathExist( PathCacheTable *pctable, char *inPath, pathCache_t **paca ) {
-    int status;
     LOCK( *pctable->PathCacheLock );
-    status = _lookupPathExist( pctable, inPath, paca );
+    *paca = ( pathCache_t * ) lookupFromHashTable( pctable->NonExistPathTable, inPath );
     UNLOCK( *pctable->PathCacheLock );
-    return status;
-}
-int _lookupPathNotExist( PathCacheTable *pctable, char *inPath ) {
-    return lookupFromHashTable( pctable->NonExistPathTable, inPath ) == NULL ? 0 : 1;
+    return *paca == NULL ? 0 : 1;
 }
 
 int lookupPathNotExist( PathCacheTable *pctable, char *inPath ) {
-    int status;
     LOCK( *pctable->PathCacheLock );
-    status = _lookupPathNotExist( pctable, inPath );
+    pathCache_t* paca = ( pathCache_t * ) lookupFromHashTable( pctable->NonExistPathTable, inPath );
     UNLOCK( *pctable->PathCacheLock );
-    return status;
-}
-int pathNotExist( PathCacheTable *pctable, char *inPath ) {
-    int status = 0;
-    LOCK( *pctable->PathCacheLock );
-    status = _pathNotExist( pctable, inPath );
-    UNLOCK( *pctable->PathCacheLock );
-    return status;
-}
-int pathExist( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
-    int status = 0;
-    LOCK( *pctable->PathCacheLock );
-    status = _pathExist( pctable, inPath, fileCache, stbuf, outPathCache );
-    UNLOCK( *pctable->PathCacheLock );
-    return status;
-}
-
-int _clearPathFromCache( PathCacheTable *pctable, char *inPath ) {
-    _rmPathFromCache( inPath, pctable->PathArrayTable );
-    deleteFromHashTable( pctable->NonExistPathTable, inPath );
-    return 0;
+    return paca == NULL ? 0 : 1;
 }
 
 int clearPathFromCache( PathCacheTable *pctable, char *inPath ) {
-    int status = 0;
+    rmPathFromCache( inPath, pctable->PathArrayTable, pctable->PathCacheLock );
+
     LOCK( *pctable->PathCacheLock );
-    status = _clearPathFromCache( pctable, inPath );
+    deleteFromHashTable( pctable->NonExistPathTable, inPath );
     UNLOCK( *pctable->PathCacheLock );
-    return status;
+
+    return 0;
 }
 
-
-int _addFileCacheForPath( pathCache_t *pathCache, fileCache_t *fileCache ) {
+int addFileCacheForPath( pathCache_t *pathCache, fileCache_t *fileCache ) {
     if ( pathCache->fileCache != NULL ) {
         /* todo close fileCache if necessary */
         UNREF( pathCache->fileCache, FileCache );
