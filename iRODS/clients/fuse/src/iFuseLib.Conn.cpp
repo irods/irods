@@ -205,9 +205,8 @@ _useIFuseConn( iFuseConn_t *iFuseConn ) {
     UNLOCK_STRUCT( *iFuseConn );
 
     /* wait for iFuseConn to be unlocked */
-    LOCK( iFuseConn->inuseLock );
-
     LOCK_STRUCT( *iFuseConn );
+    LOCK( iFuseConn->inuseLock );
     iFuseConn->inuseCnt++;
     iFuseConn->pendingCnt--;
 
