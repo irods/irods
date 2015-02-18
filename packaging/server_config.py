@@ -169,7 +169,7 @@ port={db_port}
             f.write(cnf_file_contents)
             f.flush()
 
-            run_str = '{sqlclient} --defaults-file={defaults_file} < {sql_filename}'.format(defaults_file=f.name, **vars())
+            run_str = '{sqlclient} --defaults-file={defaults_file} {db_name} < {sql_filename}'.format(defaults_file=f.name, **vars())
             p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             myout, myerr = p.communicate()
         return (p.returncode, myout, myerr)
