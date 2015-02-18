@@ -160,10 +160,7 @@ int ifuseFileCacheSwapOut( fileCache_t *fileCache ) {
     if ( fileCache == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
-    LOCK_STRUCT( *fileCache );
-
     /* flush local cache file to remote server */
-    int objFd;
 
     LOCK_STRUCT( *fileCache );
     /* simply return if no file cache or the file cache hasn't been updated */
@@ -201,7 +198,7 @@ int ifuseFileCacheSwapOut( fileCache_t *fileCache ) {
         return status;
     }
 
-    objFd = status;
+    int objFd = status;
 
     /* close cache file */
     status = close( fileCache->iFd );
