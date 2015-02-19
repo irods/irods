@@ -550,9 +550,6 @@ extern "C" {
                 msg << "\", flags = \"";
                 msg << flags;
                 msg << "\".";
-                // =-=-=-=-=-=-=-
-                // WARNING :: Major Assumptions are made upstream and use the FD also as a
-                //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
                 result = ERROR( status, msg.str() );
             }
             else {
@@ -865,29 +862,43 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         irods::error ret = unix_check_params_and_path< irods::collection_object >( _ctx );
-        if ( ( result = ASSERT_PASS( ret, "Invalid parameters or physical path." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // cast down the chain to our understood object type
-            irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // make the call to opendir
-            DIR* dir_ptr = opendir( fco->physical_path().c_str() );
-
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            int err_status = UNIX_FILE_OPENDIR_ERR - errno;
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            if ( ( result = ASSERT_ERROR( NULL != dir_ptr, err_status, "Opendir error for \"%s\", errno = \"%s\", status = %d.",
-                                          fco->physical_path().c_str(), strerror( errno ), err_status ) ).ok() ) {
-                // =-=-=-=-=-=-=-
-                // cache dir_ptr & status in out variables
-                fco->directory_pointer( dir_ptr );
-            }
+        if ( !ret.ok() ) {
+            return PASSMSG( "Invalid parameters or physical path.", ret );
         }
+
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // make the call to opendir
+        DIR* dir_ptr = opendir( fco->physical_path().c_str() );
+        int errsav = errno;
+
+        // =-=-=-=-=-=-=-
+        // cache status in out variable
+        int err_status = UNIX_FILE_OPENDIR_ERR - errno;
+
+        // =-=-=-=-=-=-=-
+        // trap error case with bad fd
+        if ( NULL == dir_ptr ) {
+            int status = UNIX_FILE_CREATE_ERR - errsav;
+            std::stringstream msg;
+            msg << "Open error for \"";
+            msg << fco->physical_path();
+            msg << "\", errno = \"";
+            msg << strerror( errsav );
+            msg << "\", status = \"";
+            msg << status;
+            msg << "\".";
+            result = ERROR( status, msg.str() );
+        }
+        else {
+            // =-=-=-=-=-=-=-
+            // cache dir_ptr in the out-variable
+            fco->directory_pointer( dir_ptr );
+        }
+
 
         return result;
 
