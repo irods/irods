@@ -654,6 +654,7 @@ extern "C" {
             msg << execCmdOut->stderrBuf.buf;
             msg << "]  status [";
             msg << execCmdOut->status << "]";
+            freeCmdExecOut( execCmdOut );
             return ERROR( status, msg.str() );
         }
 
