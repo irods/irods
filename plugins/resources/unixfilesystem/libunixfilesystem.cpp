@@ -521,6 +521,7 @@ extern "C" {
             // make call to open
             errno = 0;
             int fd = open( fco->physical_path().c_str(), flags, fco->mode() );
+            int errsav = errno;
 
             // =-=-=-=-=-=-=-
             // if we got a 0 descriptor, try again
@@ -528,6 +529,7 @@ extern "C" {
                 close( fd );
                 int null_fd = open( "/dev/null", O_RDWR, 0 );
                 fd = open( fco->physical_path().c_str(), flags, fco->mode() );
+                errsav = errno;
                 if ( null_fd >= 0 ) {
                     close( null_fd );
                 }
@@ -535,17 +537,28 @@ extern "C" {
             }
 
             // =-=-=-=-=-=-=-
-            // cache status in the file object
-            fco->file_descriptor( fd );
-
-            // =-=-=-=-=-=-=-
-            // did we still get an error?
-            int status = UNIX_FILE_OPEN_ERR - errno;
-            if ( !( result = ASSERT_ERROR( fd >= 0, status, "Open error for \"%s\", errno = \"%s\", status = %d, flags = %d.",
-                                           fco->physical_path().c_str(), strerror( errno ), status, flags ) ).ok() ) {
-                result.code( status );
+            // trap error case with bad fd
+            if ( fd < 0 ) {
+                int status = UNIX_FILE_CREATE_ERR - errsav;
+                std::stringstream msg;
+                msg << "Open error for \"";
+                msg << fco->physical_path();
+                msg << "\", errno = \"";
+                msg << strerror( errsav );
+                msg << "\", status = \"";
+                msg << status;
+                msg << "\", flags = \"";
+                msg << flags;
+                msg << "\".";
+                // =-=-=-=-=-=-=-
+                // WARNING :: Major Assumptions are made upstream and use the FD also as a
+                //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+                result = ERROR( status, msg.str() );
             }
             else {
+                // =-=-=-=-=-=-=-
+                // cache status in the file object
+                fco->file_descriptor( fd );
                 result.code( fd );
             }
         }
