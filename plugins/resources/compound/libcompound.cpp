@@ -482,6 +482,7 @@ extern "C" {
                                 std::stringstream msg;
                                 msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
                                 msg << "for operation [" << _stage_sync_kw << "]";
+                                free( trans_stat );
                                 return ERROR( status, msg.str() );
                             }
 
