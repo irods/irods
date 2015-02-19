@@ -38,6 +38,13 @@ int getAgentProcCnt() {
     return 0;
 }
 
+int getAgentProcPIDs(
+    std::vector<int>& _pids ) {
+    _pids.clear();
+    return 0;
+}
+
+
 /* #define SERVER_DEBUG 1   */
 int
 main( int, char ** ) {

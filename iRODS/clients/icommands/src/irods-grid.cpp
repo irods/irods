@@ -7,10 +7,13 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+
 #include "boost/unordered_map.hpp"
 #include "boost/program_options.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/lexical_cast.hpp"
+
+#include "jansson.h"
 
 #include "rodsClient.hpp"
 #include "irods_server_control_plane.hpp"
@@ -119,6 +122,9 @@ irods::error parse_program_options(
             irods::SERVER_CONTROL_ALL_OPT;
 
     } else if( vm.count( "hosts" ) ) {
+        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] = 
+            irods::SERVER_CONTROL_HOSTS_OPT;
+
         std::vector< std::string > hosts;
         try {
         boost::split(
@@ -238,6 +244,37 @@ irods::error decrypt_response(
 
 } // decrypt_response
 
+std::string format_grid_status( 
+    const std::string& _status ) {
+std::cout << "format_grid_status :: " << _status << std::endl;
+
+    std::string status = "{\n    \"hosts\": [\n";
+    status += _status;
+    status += "]    \n}";
+
+    std::string::size_type pos = status.find_last_of( "," );
+    status.erase( pos, 1 );
+
+    json_error_t j_err;
+    json_t* obj = json_loads(
+                         (char*)status.data(),
+                         status.size(),
+                         &j_err );
+    if ( !obj ) {
+        std::string msg( "json_loads failed [" );
+        msg += j_err.text;
+        msg += "]";
+        std::cout << msg << std::endl;
+        return "";
+    }
+
+    char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
+    json_decref( obj );
+
+    return tmp_buf;
+
+} // format_grid_status
+
 int main( 
     int   _argc,
     char* _argv[] ) {
@@ -330,7 +367,9 @@ int main(
         printf( "ZeroMQ encountered an error." );
         printf( "ZeroMQ encountered an error sending a message." );
         return -1;
+
     }
+
 
     return 0;
 

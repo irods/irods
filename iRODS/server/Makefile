@@ -305,6 +305,14 @@ LDFLAGS += $(buildDir)/../external/$(ZEROMQVERSION)/src/.libs/libzmq.a
 INCLUDES +=	-I$(buildDir)/../external/$(AVROVERSION)
 LDFLAGS += $(buildDir)/../external/$(AVROVERSION)/build/libavrocpp_s.a -lz
 
+INCLUDES += -I/usr/include/proc
+
+#ifneq ("$(wildcard "/usr/lib/libproc.a"))","")
+#LDFLAGS += /usr/lib/libproc.a
+#else
+LDFLAGS += /usr/lib/x86_64-linux-gnu/libprocps.a
+#endif
+
 
 # Clean
 clean:
@@ -321,7 +329,7 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
              $(BOOST_DIR)/stage/lib/libboost_thread.a \
-             $(BOOST_DIR)/stage/lib/libboost_chrono.a
+             $(BOOST_DIR)/stage/lib/libboost_chrono.a 
 
 db_plugin_with_re: $(DB_PLUGIN_SRC)
 	@echo "Compile With RE `basename $@`..."
@@ -385,8 +393,8 @@ $(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.
 
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
-	@echo "Compile rods server `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	echo "Compile rods server `basename $@`..."
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
@@ -395,9 +403,9 @@ $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(L
 # xmsg server
 $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile xmsg server `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $< 
 
-$(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
+$(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) 
 	@echo "Link xmsg server `basename $@`..."
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 

@@ -22,6 +22,12 @@ int getAgentProcCnt() {
     return 0;
 }
 
+int getAgentProcPIDs(
+    std::vector<int>& _pids ) {
+    _pids.clear();
+    return 0;
+}
+
 int
 main( int argc, char **argv ) {
     int c;

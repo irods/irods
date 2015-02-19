@@ -704,6 +704,25 @@ getAgentProcCnt() {
     return count;
 }
 
+int getAgentProcPIDs(
+    std::vector<int>& _pids ) {
+    agentProc_t *tmp_proc = 0;
+    int count = 0;
+
+    boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+
+    tmp_proc = ConnectedAgentHead;
+    while ( tmp_proc != NULL ) {
+        count++;
+        _pids.push_back( tmp_proc->pid );
+        tmp_proc = tmp_proc->next;
+    }
+    con_agent_lock.unlock();
+
+    return count;
+
+} // getAgentProcPIDs
+
 int
 chkAgentProcCnt() {
     int count;
@@ -935,7 +954,8 @@ initServerMain( rsComm_t *svrComm ) {
     rodsServerHost_t *reServerHost = NULL;
     getReHost( &reServerHost );
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
-        if ( RODS_FORK() == 0 ) { /* child */
+        int re_pid = RODS_FORK();
+        if ( re_pid == 0 ) {//RODS_FORK() == 0 ) { /* child */
             char *reServerOption = NULL;
 
             close( svrComm->sock );
@@ -950,6 +970,10 @@ initServerMain( rsComm_t *svrComm ) {
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
             execv( av[0], &av[0] );
             exit( 1 );
+        } else {
+            irods::server_properties &props = 
+                irods::server_properties::getInstance();
+            props.set_property<int>( irods::RE_PID_KW, re_pid ); 
         }
     }
     else if ( unsigned char *shared = prepareServerSharedMemory() ) {

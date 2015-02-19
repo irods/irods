@@ -6,6 +6,9 @@
 
 #include "stdio.h"
 
+#include <readproc.h>
+#include <sysinfo.h>
+
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
 #include "sockComm.hpp"
@@ -15,14 +18,19 @@
 #include "irods_server_properties.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_resource_manager.hpp"
-
 #include "irods_server_state.hpp"
 #include "irods_exception.hpp"
 #include "irods_stacktrace.hpp"
 
 #include "boost/lexical_cast.hpp"
 
+#include "jansson.h"
+
+#include <ctime>
+
 int getAgentProcCnt();
+int getAgentProcPIDs(
+    std::vector<int>& _pids );
 
 namespace irods {
 
@@ -337,6 +345,25 @@ namespace irods {
 
     } // operation_resume
 
+    static time_t get_pid_age( 
+        pid_t _pid ) {
+        proc_t proc_info;
+        if( !get_proc_stats( _pid, &proc_info ) ) {
+            rodsLog(
+                LOG_ERROR,
+                "get_pid_age - failed to get proc stats for %ld",
+                _pid );
+            return 0;
+        }
+
+        // readproc.h comment lies about what proc_t.start_time is. It's
+        // actually expressed in Hertz ticks since boot
+        time_t seconds_since_boot = uptime(0,0);
+        time_t start_time = proc_info.start_time / Hertz;
+        return seconds_since_boot - start_time;
+
+    } // get_pid_age
+
     static error operation_status(
         const std::string& _wait_option,
         const size_t       _wait_seconds,
@@ -344,10 +371,71 @@ namespace irods {
         rodsEnv my_env;
         _getRodsEnv( my_env );
 
-        _output += "[ status for ";
-        _output += my_env.rodsHost;
-        _output += " ]";
-        _output += "\n";
+        int re_pid = 0;
+        error ret = get_server_property< int > (
+                        irods::RE_PID_KW,
+                        re_pid );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        int my_pid = getpid();
+        int xmsg_pid = 0;
+
+        json_t* obj = json_object();
+        if ( !obj ) {
+            return ERROR(
+                       SYS_MALLOC_ERR,
+                       "allocation of json object failed" );
+        }
+
+        json_object_set( obj, "hostname", json_string( my_env.rodsHost ) );
+        json_object_set( obj, "irods_server_pid", json_integer( my_pid ) );
+        json_object_set( obj, "re_server_pid", json_integer( re_pid ) );
+        json_object_set( obj, "xmsg_server_pid", json_integer( xmsg_pid ) );
+
+        server_state& s = server_state::instance();
+        json_object_set( obj, "status", json_string( s().c_str() ) );
+
+        json_t* arr = json_array();
+        if ( !arr ) {
+            return ERROR(
+                       SYS_MALLOC_ERR,
+                       "allocation of json array failed" );
+        }
+               
+        std::vector<int> pids;
+        int cnt = getAgentProcPIDs( pids );
+        for( size_t i = 0;
+             i < pids.size();
+             ++i ) {
+            int    pid = pids[i];
+            time_t age = get_pid_age( pids[i] );
+
+            json_t* agent_obj = json_object();
+            if ( !arr ) {
+                return ERROR(
+                           SYS_MALLOC_ERR,
+                           "allocation of json object failed" );
+            }
+        
+            json_object_set( agent_obj, "agent_pid", json_integer( pid ) );
+            json_object_set( agent_obj, "age", json_integer( age ) );
+            json_array_append( arr, agent_obj );
+
+            json_decref( agent_obj );
+
+        }
+
+        json_object_set( obj, "agents", arr );
+    
+        char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
+
+        json_decref( obj );
+
+        _output = tmp_buf;
+        _output += ",";
 
         return SUCCESS();
 
