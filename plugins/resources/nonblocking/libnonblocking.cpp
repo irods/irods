@@ -368,6 +368,7 @@ extern "C" {
                     // make call to umask & open for create
                     mode_t myMask = umask( ( mode_t ) 0000 );
                     int    fd     = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+                    int errsav = errno;
 
                     // =-=-=-=-=-=-=-
                     // reset the old mask
@@ -380,6 +381,7 @@ extern "C" {
                         close( fd );
                         int null_fd = open( "/dev/null", O_RDWR, 0 );
                         fd = open( fco->physical_path().c_str(), O_RDWR | O_CREAT | O_EXCL, fco->mode() );
+                        errsav = errno;
                         if ( null_fd >= 0 ) {
                             close( null_fd );
                         }
@@ -387,25 +389,26 @@ extern "C" {
                     }
 
                     // =-=-=-=-=-=-=-
-                    // cache file descriptor in out-variable
-                    fco->file_descriptor( fd );
-
-                    // =-=-=-=-=-=-=-
                     // trap error case with bad fd
                     if ( fd < 0 ) {
-                        int status = UNIX_FILE_CREATE_ERR - errno;
-                        if ( !( result = ASSERT_ERROR( fd >= 0, UNIX_FILE_CREATE_ERR - errno, "create error for \"%s\", errno = \"%s\", status = %d",
-                                                       fco->physical_path().c_str(), strerror( errno ), status ) ).ok() ) {
-
-                            // =-=-=-=-=-=-=-
-                            // WARNING :: Major Assumptions are made upstream and use the FD also as a
-                            //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-                            fco->file_descriptor( status );
-                            result.code( status );
-                        }
-                        else {
-                            result.code( fd );
-                        }
+                        int status = UNIX_FILE_CREATE_ERR - errsav;
+                        std::stringstream msg;
+                        msg << "create error for \"";
+                        msg << fco->physical_path();
+                        msg << "\", errno = \"";
+                        msg << strerror( errsav );
+                        msg << "\".";
+                        // =-=-=-=-=-=-=-
+                        // WARNING :: Major Assumptions are made upstream and use the FD also as a
+                        //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+                        fco->file_descriptor( status );
+                        result = ERROR( status, msg.str() );
+                    }
+                    else {
+                        // =-=-=-=-=-=-=-
+                        // cache file descriptor in out-variable
+                        fco->file_descriptor( fd );
+                        result.code( fd );
                     }
                 }
             }
