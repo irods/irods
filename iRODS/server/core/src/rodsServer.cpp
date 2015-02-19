@@ -258,6 +258,7 @@ serverize( char *logDir ) {
     if ( LogFd < 0 ) {
         rodsLog( LOG_NOTICE, "logFileOpen: Unable to open %s. errno = %d",
                  logFile, errno );
+        free( logFile );
         return -1;
     }
 
