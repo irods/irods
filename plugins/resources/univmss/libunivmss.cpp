@@ -360,13 +360,14 @@ extern "C" {
         int status = 0;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
-        execCmdOut_t *execCmdOut = NULL;
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
         snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
         snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mkdir '%s'", dirname.c_str() );
         snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
+        execCmdOut_t *execCmdOut = NULL;
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        freeCmdExecOut( execCmdOut );
         if ( status < 0 ) {
             status = UNIV_MSS_MKDIR_ERR - errno;
             std::stringstream msg;
