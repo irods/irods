@@ -551,6 +551,7 @@ extern "C" {
                 if ( convertListToMultiString( buf, 1 ) != 0 ) {
                     rodsLog( LOG_ERROR,
                              "Input parameter list format error for %s\n", buf );
+                    fclose( fptr );
                     return INPUT_ARG_NOT_WELL_FORMED_ERR;
                 }
                 parseMsParamFromIRFile( msParamArray, buf );
