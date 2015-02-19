@@ -469,13 +469,14 @@ extern "C" {
         err = univ_mss_file_mkdir( context );
 
         execCmd_t execCmdInp;
-        execCmdOut_t *execCmdOut = NULL;
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
         snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
         snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mv '%s' '%s'", filename.c_str(), _new_file_name );
         snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
+        execCmdOut_t *execCmdOut = NULL;
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        freeCmdExecOut( execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_RENAME_ERR - errno;
