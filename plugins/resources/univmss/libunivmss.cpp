@@ -300,7 +300,6 @@ extern "C" {
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         char strmode[4];
-        execCmdOut_t *execCmdOut = NULL;
 
         if ( mode != getDefDirMode() ) {
             mode = getDefFileMode();
@@ -310,7 +309,9 @@ extern "C" {
         snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
         snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "chmod '%s' %o", filename.c_str(), mode );
         snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
+        execCmdOut_t *execCmdOut = NULL;
         status = _rsExecCmd( &execCmdInp, &execCmdOut );
+        freeCmdExecOut( execCmdOut );
 
         if ( status < 0 ) {
             status = UNIV_MSS_CHMOD_ERR - errno;
