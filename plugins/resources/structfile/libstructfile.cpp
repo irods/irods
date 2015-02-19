@@ -1317,6 +1317,7 @@ extern "C" {
         else {
             return ERROR( status, "tar_file_stat_plugin - rsFileStat failed." );
         }
+        free( rods_stat );
 
         return CODE( status );
 
