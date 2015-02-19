@@ -153,7 +153,7 @@ main( int argc, char **argv ) {
             return 0;
             break;
         default:
-            fprintf( stderr, "Error: Unknown Option\n" );
+            fprintf( stderr, "ixmsg: Error: Unknown Option [%d]\n", opt );
             return 1;
             break;
         }
