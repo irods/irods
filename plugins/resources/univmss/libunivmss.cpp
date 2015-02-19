@@ -249,10 +249,12 @@ extern "C" {
             msg << "univ_mss_file_stat - failed for [";
             msg << filename;
             msg << "]";
+            freeCmdExecOut( execCmdOut );
             return ERROR( status, msg.str() );
 
         }
 
+        freeCmdExecOut( execCmdOut );
         return CODE( status );
 
     } // univ_mss_file_stat
