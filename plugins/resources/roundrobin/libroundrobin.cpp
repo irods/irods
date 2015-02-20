@@ -904,8 +904,8 @@ extern "C" {
         _ctx.prop_map().get< std::string >( NEXT_CHILD_PROP, next_child );
 
         setRoundRobinContextInp_t inp;
-        strncpy( inp.resc_name_, name.c_str(),       NAME_LEN );
-        strncpy( inp.context_,   next_child.c_str(), MAX_NAME_LEN );
+        snprintf( inp.resc_name_, sizeof( inp.resc_name_ ), "%s", name.c_str() );
+        snprintf( inp.context_, sizeof( inp.context_ ), "%s", next_child.c_str() );
         int status = irods::server_api_call(
                          SET_RR_CTX_AN,
                          _ctx.comm(),
