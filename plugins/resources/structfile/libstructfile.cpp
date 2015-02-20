@@ -359,7 +359,7 @@ extern "C" {
         cb_ctx_t cb_ctx;
         memset( &cb_ctx, 0, sizeof( cb_ctx_t ) );
         cb_ctx.desc_ = &PluginStructFileDesc[ _index ];
-        strncpy( cb_ctx.loc_, location.c_str(), NAME_LEN );
+        snprintf( cb_ctx.loc_, sizeof( cb_ctx.loc_ ), "%s", location.c_str() );
 
         // =-=-=-=-=-=-=-
         // open the archive and and prepare to read
@@ -446,8 +446,8 @@ extern "C" {
         fileMkdirInp_t fileMkdirInp;
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
         fileMkdirInp.mode     = DEFAULT_DIR_MODE;
-        strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN );
-        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
+        snprintf( fileMkdirInp.addr.hostAddr, sizeof( fileMkdirInp.addr.hostAddr ), "%s", _host.c_str() );
+        snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", spec_coll->rescHier );
 
         // =-=-=-=-=-=-=-
         // loop over a series of indicies for the directory suffix and
@@ -483,7 +483,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // copy successful cache dir out of mkdir struct
-        strncpy( spec_coll->cacheDir, fileMkdirInp.dirName, MAX_NAME_LEN );
+        snprintf( spec_coll->cacheDir, sizeof( spec_coll->cacheDir ), "%s", fileMkdirInp.dirName );
 
         // =-=-=-=-=-=-=-
         // Win!
@@ -867,9 +867,9 @@ extern "C" {
         fileCreateInp.mode       = fco->mode();
         fileCreateInp.flags      = fco->flags();
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
-        strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileCreateInp.resc_hier_, fco->resc_hier().c_str(), MAX_NAME_LEN );
-        strncpy( fileCreateInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileCreateInp.addr.hostAddr, sizeof( fileCreateInp.addr.hostAddr ), "%s", resc_host.c_str() );
+        snprintf( fileCreateInp.resc_hier_, sizeof( fileCreateInp.resc_hier_ ), "%s", fco->resc_hier().c_str() );
+        snprintf( fileCreateInp.objPath, sizeof( fileCreateInp.objPath ), "%s", fco->logical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -966,9 +966,9 @@ extern "C" {
         fileOpenInp.mode       = fco->mode();
         fileOpenInp.flags      = fco->flags();
         fileOpenInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
-        strncpy( fileOpenInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileOpenInp.resc_hier_, fco->resc_hier().c_str(), MAX_NAME_LEN );
-        strncpy( fileOpenInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
+        snprintf( fileOpenInp.addr.hostAddr, sizeof( fileOpenInp.addr.hostAddr ), "%s", resc_host.c_str() );
+        snprintf( fileOpenInp.resc_hier_, sizeof( fileOpenInp.resc_hier_ ), "%s", fco->resc_hier().c_str() );
+        snprintf( fileOpenInp.objPath, sizeof( fileOpenInp.objPath ), "%s", fco->logical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -1431,8 +1431,8 @@ extern "C" {
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
-        strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
+        snprintf( fileMkdirInp.addr.hostAddr, sizeof( fileMkdirInp.addr.hostAddr ), "%s", resc_host.c_str() );
+        snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", spec_coll->rescHier );
         fileMkdirInp.mode = fco->mode();
 
         // =-=-=-=-=-=-=-
@@ -1617,9 +1617,9 @@ extern "C" {
         // build a file open structure to pass off to the server api call
         fileOpendirInp_t fileOpendirInp;
         memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
-        strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(),                 NAME_LEN );
-        strncpy( fileOpendirInp.objPath,       fco->logical_path().c_str(), MAX_NAME_LEN );
-        strncpy( fileOpendirInp.resc_hier_,    fco->resc_hier().c_str(),    MAX_NAME_LEN );
+        snprintf( fileOpendirInp.addr.hostAddr, sizeof( fileOpendirInp.addr.hostAddr ), "%s", resc_host.c_str() );
+        snprintf( fileOpendirInp.objPath, sizeof( fileOpendirInp.objPath ), "%s",       fco->logical_path().c_str() );
+        snprintf( fileOpendirInp.resc_hier_, sizeof( fileOpendirInp.resc_hier_ ), "%s",    fco->resc_hier().c_str() );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1984,8 +1984,9 @@ extern "C" {
         PluginStructFileDesc[ struct_file_index ].inuseFlag = 1;
         PluginStructFileDesc[ struct_file_index ].specColl  = spec_coll;
         PluginStructFileDesc[ struct_file_index ].rsComm    = comm;
-        strncpy( PluginStructFileDesc[ struct_file_index ].dataType,
-                 fco->data_type().c_str(), NAME_LEN );
+        snprintf( PluginStructFileDesc[ struct_file_index ].dataType,
+                sizeof( PluginStructFileDesc[ struct_file_index ].dataType ),
+                "%s", fco->data_type().c_str() );
 
         // =-=-=-=-=-=-=-
         // extract the file
@@ -2324,7 +2325,7 @@ extern "C" {
         cb_ctx_t cb_ctx;
         memset( &cb_ctx, 0, sizeof( cb_ctx_t ) );
         cb_ctx.desc_ = &PluginStructFileDesc[ _index ];
-        strncpy( cb_ctx.loc_, location.c_str(), NAME_LEN );
+        snprintf( cb_ctx.loc_, sizeof( cb_ctx.loc_ ), "%s", location.c_str() );
 
         // =-=-=-=-=-=-=-
         // open the spec coll physical path for archival
