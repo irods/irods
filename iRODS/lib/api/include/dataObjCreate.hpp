@@ -15,20 +15,28 @@
 #include "initServer.hpp"
 #include "dataObjInpOut.hpp"
 #include "fileCreate.hpp"
+
+#ifdef __cplusplus
 #include <string>
+
+int
+_rsDataObjCreateWithResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                          const std::string& _resc_name );
+int
+getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                  std::string& _resc_name );
+#endif
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_CREATE rsDataObjCreate
 /* prototype for the server handler */
+
 int
 rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
 _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int
 specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int
-_rsDataObjCreateWithResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                          const std::string& _resc_name );
 int
 dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx );
 int
@@ -38,9 +46,7 @@ l3Create( rsComm_t *rsComm, int l1descInx );
 int
 l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    dataObjInfo_t *dataObjInfo );
-int
-getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                  std::string& _resc_name );
+
 #else
 #define RS_DATA_OBJ_CREATE NULL
 #endif

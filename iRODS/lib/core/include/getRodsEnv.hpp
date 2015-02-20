@@ -61,12 +61,14 @@ typedef struct {
 } rodsEnv;
 
 int getRodsEnv( rodsEnv *myRodsEnv );
-void _getRodsEnv( rodsEnv &myRodsEnv );
 
 char *getRodsEnvFileName();
 char *getRodsEnvAuthFileName();
 
 #ifdef __cplusplus
+
+void _getRodsEnv( rodsEnv &myRodsEnv );
+
 }
 #endif
 #endif	/* GET_RODS_ENV */
