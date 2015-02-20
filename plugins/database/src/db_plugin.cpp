@@ -1148,7 +1148,7 @@ icatDescramble( char *pw ) {
             return 0;                /* not scrambled, leave as is */
         }
     }
-    strncpy( pw2, cp1, MAX_PASSWORD_LEN );
+    snprintf( pw2, sizeof( pw2 ), "%s", cp1 );
     cp3 = getenv( PASSWORD_KEY_ENV_VAR );
     if ( cp3 == NULL ) {
         cp3 = PASSWORD_DEFAULT_KEY;
@@ -1174,8 +1174,7 @@ icatScramble( char *pw ) {
         cp1 = PASSWORD_DEFAULT_KEY;
     }
     obfEncodeByKey( pw, cp1, scrambled );
-    strncpy( newPw, PASSWORD_SCRAMBLE_PREFIX, MAX_PASSWORD_LEN );
-    strncat( newPw, scrambled, MAX_PASSWORD_LEN );
+    snprintf( newPw, sizeof( newPw ), "%s%s", PASSWORD_SCRAMBLE_PREFIX, scrambled );
     strncpy( pw, newPw, MAX_PASSWORD_LEN );
     return 0;
 }
@@ -1844,7 +1843,7 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char
         return ret.code();
     }
 
-    strncpy( zoneToUse, zone.c_str(), NAME_LEN );
+    snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
     status = parseUserName( userName, userName2, userZone );
     if ( userZone[0] != '\0' ) {
         rstrcpy( zoneToUse, userZone, NAME_LEN );
@@ -1886,7 +1885,7 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
         return ret.code();
     }
 
-    strncpy( zoneToUse, zone.c_str(), NAME_LEN );
+    snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
     status = parseUserName( groupName, groupName2, groupZone );
     if ( groupZone[0] != '\0' ) {
         rstrcpy( zoneToUse, groupZone, NAME_LEN );
@@ -2109,10 +2108,9 @@ extern "C" {
         }
 
         if ( irods_pam_auth_no_extend ) {
-            strncpy(
-                irods_pam_password_default_time,
-                "28800",
-                NAME_LEN );
+            snprintf( irods_pam_password_default_time,
+                    sizeof( irods_pam_password_default_time ),
+                    "%s", "28800" );
         }
 
         return CODE( status );
@@ -2427,7 +2425,7 @@ extern "C" {
                 }
                 if ( i == DATA_SIZE_IX ) {
                     doingDataSize = 1; /* flag to check size */
-                    strncpy( dataSizeString, theVal, sizeof( dataSizeString ) );
+                    snprintf( dataSizeString, sizeof( dataSizeString ), "%s", theVal );
                 }
 
                 j++;
@@ -4811,7 +4809,7 @@ extern "C" {
 
         snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
         if ( strlen( _user_info->rodsZone ) > 0 ) {
-            strncpy( zoneToUse, _user_info->rodsZone, MAX_NAME_LEN );
+            snprintf( zoneToUse, sizeof( zoneToUse ), "%s", _user_info->rodsZone );
         }
 
         status = parseUserName( _user_info->userName, userName2, zoneName );
@@ -8011,7 +8009,7 @@ checkLevel:
         getNowStr( myTime );
 
         auditComment[0] = '\0';
-        strncpy( auditUserName, _user_name, 100 );
+        snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
 
         status = parseUserName( _user_name, userName2, zoneName );
         if ( zoneName[0] == '\0' ) {
@@ -8036,7 +8034,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 2" );
             }
             auditId = AU_MOD_USER_TYPE;
-            strncpy( auditComment, _new_value, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
         }
         if ( strcmp( _option, "zone" ) == 0 ||
                 strcmp( _option, "zone_name" ) == 0 ) {
@@ -8049,8 +8047,8 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 3" );
             }
             auditId = AU_MOD_USER_ZONE;
-            strncpy( auditComment, _new_value, 100 );
-            strncpy( auditUserName, _user_name, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
+            snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
         }
         if ( strcmp( _option, "addAuth" ) == 0 ) {
             opType = 4;
@@ -8063,7 +8061,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 4" );
             }
             auditId = AU_ADD_USER_AUTH_NAME;
-            strncpy( auditComment, _new_value, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
         }
         if ( strcmp( _option, "rmAuth" ) == 0 ) {
             rstrcpy( tSQL, form6, MAX_SQL_SIZE );
@@ -8074,7 +8072,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 5" );
             }
             auditId = AU_DELETE_USER_AUTH_NAME;
-            strncpy( auditComment, _new_value, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
 
         }
 
@@ -8088,7 +8086,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 6" );
             }
             auditId = AU_MOD_USER_PASSWORD;
-            strncpy( auditComment, "Deleted user iRODS-PAM password (if any)", 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", "Deleted user iRODS-PAM password (if any)" );
         }
 
         if ( strcmp( _option, "info" ) == 0 ||
@@ -8103,7 +8101,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 6" );
             }
             auditId = AU_MOD_USER_INFO;
-            strncpy( auditComment, _new_value, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
         }
         if ( strcmp( _option, "comment" ) == 0 ||
                 strcmp( _option, "r_comment" ) == 0 ) {
@@ -8117,7 +8115,7 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModUser SQL 7" );
             }
             auditId = AU_MOD_USER_COMMENT;
-            strncpy( auditComment, _new_value, 100 );
+            snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
         }
         if ( strcmp( _option, "password" ) == 0 ) {
             int i;
@@ -9422,7 +9420,7 @@ checkLevel:
                              userTypeTokenName, MAX_NAME_LEN, bindVars, &icss );
             }
             if ( status == 0 ) {
-                strncpy( lastValidUserType, _user_info->userType, MAX_NAME_LEN );
+                snprintf( lastValidUserType, sizeof( lastValidUserType ), "%s", _user_info->userType );
             }
             else {
                 snprintf( errMsg, 100, "user_type '%s' is not valid",
@@ -11168,8 +11166,7 @@ checkLevel:
         char myTime[50];
         rodsLong_t iVal;
 
-        strncpy( myAccessStr, _access_level + strlen( MOD_RESC_PREFIX ), LONG_NAME_LEN );
-        myAccessStr[ LONG_NAME_LEN - 1 ] = '\0'; // JMC cppcheck - dangerous use of strncpy
+        snprintf( myAccessStr, sizeof( myAccessStr ), "%s", _access_level + strlen( MOD_RESC_PREFIX ) );
 
         if ( strcmp( myAccessStr, AP_NULL ) == 0 ) {
             myAccessLev = ACCESS_NULL;
@@ -12587,7 +12584,7 @@ checkLevel:
             for ( i = ocLen; i > 0; i-- ) {
                 if ( oldCollName[i] == '/' ) {
                     OK = 1;
-                    strncpy( endCollName, ( char* )&oldCollName[i + 1], MAX_NAME_LEN );
+                    snprintf( endCollName, sizeof( endCollName ), "%s", ( char* )&oldCollName[i + 1] );
                     break;
                 }
             }
@@ -12626,7 +12623,7 @@ checkLevel:
 
             /* check that no subcoll exists in the target collection, with
                the name of the object */
-            strncpy( newCollName, targetCollName, MAX_NAME_LEN );
+            snprintf( newCollName, sizeof( newCollName ), "%s", targetCollName );
             strncat( newCollName, PATH_SEPARATOR, MAX_NAME_LEN );
             strncat( newCollName, endCollName, MAX_NAME_LEN );
 
@@ -13555,7 +13552,7 @@ checkLevel:
 
         status = parseUserName( _name, userName, userZone );
         if ( userZone[0] == '\0' ) {
-            strncpy( userZone, zone.c_str(), NAME_LEN );
+            snprintf( userZone, sizeof( userZone ), "%s", zone.c_str() );
         }
 
         if ( itype == 1 ) {
@@ -15497,10 +15494,10 @@ checkLevel:
             snprintf( objIdStr, NAME_LEN, "%lld", objId );
             snprintf( userIdStr, NAME_LEN, "%lld", userId );
             if ( strncmp( _arg3, "write", 5 ) == 0 ) {
-                strncpy( ticketType, "write", sizeof( ticketType ) );
+                snprintf( ticketType, sizeof( ticketType ), "%s", "write" );
             }
             else {
-                strncpy( ticketType, "read", sizeof( ticketType ) );
+                snprintf( ticketType, sizeof( ticketType ), "%s", "read" );
             }
             getNowStr( myTime );
             i = 0;
