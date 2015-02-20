@@ -200,8 +200,8 @@ extern "C" {
         MssoSubFileStack[k].noVersions = noVersions;
         MssoSubFileStack[k].oldRunDirTime = oldRunDirTime;
 
-        strncpy( MssoSubFileStack[k].newRunDirName, newRunDirName, MAX_NAME_LEN );
-        strncpy( MssoSubFileStack[k].stageArea, stageArea, MAX_NAME_LEN );
+        snprintf( MssoSubFileStack[k].newRunDirName, sizeof( MssoSubFileStack[k].newRunDirName ), "%s", newRunDirName );
+        snprintf( MssoSubFileStack[k].stageArea, sizeof( MssoSubFileStack[k].stageArea ), "%s", stageArea );
         for ( i = 0; i < stinCnt; i++ ) {
             MssoSubFileStack[k].stageIn[i] = stageIn[i];
         }
@@ -238,8 +238,8 @@ extern "C" {
         noVersions = MssoSubFileStack[k].noVersions ;
         oldRunDirTime = MssoSubFileStack[k].oldRunDirTime ;
 
-        strncpy( newRunDirName, MssoSubFileStack[k].newRunDirName, MAX_NAME_LEN );
-        strncpy( stageArea, MssoSubFileStack[k].stageArea, MAX_NAME_LEN );
+        snprintf( newRunDirName, sizeof( newRunDirName ), "%s", MssoSubFileStack[k].newRunDirName );
+        snprintf( stageArea, sizeof( stageArea ), "%s", MssoSubFileStack[k].stageArea );
         for ( i = 0; i < stinCnt; i++ ) {
             stageIn[i] =   MssoSubFileStack[k].stageIn[i] ;
         }
@@ -315,7 +315,7 @@ extern "C" {
         while ( 1 ) {
             snprintf( fileMkdirInp.dirName, MAX_NAME_LEN, "%s.%s%d",
                       specColl->phyPath, CACHE_DIR_STR, i );
-            strncpy( fileMkdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+            snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", specColl->rescHier );
             status = rsFileMkdir( rsComm, &fileMkdirInp );
             if ( status >= 0 ) {
                 break;
@@ -398,7 +398,7 @@ extern "C" {
         snprintf( fileCreateInp.fileName, MAX_NAME_LEN, "%s/%s.%s",
                   specColl->cacheDir, mpfFileName, MSSO_RUN_FILE_STR );
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG;
-        strncpy( fileCreateInp.resc_hier_, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileCreateInp.resc_hier_, sizeof( fileCreateInp.resc_hier_ ), "%s", specColl->rescHier );
 
         fileCreateOut_t* create_out = NULL;
         status = rsFileCreate( rsComm, &fileCreateInp, &create_out );
@@ -456,10 +456,10 @@ extern "C" {
 
         snprintf( runDir, MAX_NAME_LEN, "%s/%s.%s",
                   specColl->cacheDir, mpfFileName, MSSO_RUN_DIR_STR );
-        strncpy( fileMkdirInp.dirName, runDir, MAX_NAME_LEN );
+        snprintf( fileMkdirInp.dirName, sizeof( fileMkdirInp.dirName ), "%s", runDir );
         oldRunDirTime = -1;
         newRunDirName[0] = '\0';
-        strncpy( fileMkdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", specColl->rescHier );
         status = rsFileMkdir( rsComm, &fileMkdirInp );
         if ( status >= 0 ) {
             return 0;
@@ -480,7 +480,7 @@ extern "C" {
             while ( 1 ) {
                 snprintf( fileMkdirInp.dirName, MAX_NAME_LEN, "%s/%s.%s%d",
                           specColl->cacheDir, mpfFileName, MSSO_RUN_DIR_STR , i );
-                strncpy( fileMkdirInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+                snprintf( fileMkdirInp.rescHier, sizeof( fileMkdirInp.rescHier ), "%s", specColl->rescHier );
                 status = rsFileMkdir( rsComm, &fileMkdirInp );
                 if ( status >= 0 ) {
                     break;
@@ -646,7 +646,7 @@ extern "C" {
             }
             else if ( startsWith( buf, "STAGEAREA" ) || startsWith( buf, "stagearea" ) ) {
                 trimSpaces( trimPrefix( buf ) );
-                strncpy( stageArea, buf, MAX_NAME_LEN );
+                snprintf( stageArea, sizeof( stageArea ), "%s", buf );
             }
             else if ( startsWith( buf, "NOVERSIONS" ) || startsWith( buf, "noversions" ) ) {
                 noVersions = 1;
@@ -882,7 +882,7 @@ extern "C" {
                 if ( *t == '/' ) {
                     t++;    /*skip the slash if it exists */
                 }
-                strncpy( stagefilename, t, MAX_NAME_LEN );
+                snprintf( stagefilename, sizeof( stagefilename ), "%s", t );
             }
             else {
                 *t = '\0';
@@ -890,7 +890,7 @@ extern "C" {
                 while ( *t == ' ' ) {
                     t++;    /* skip leading blanks */
                 }
-                strncpy( stagefilename, t, MAX_NAME_LEN );
+                snprintf( stagefilename, sizeof( stagefilename ), "%s", t );
             }
             if ( stageIn[stinCnt][0] == '/' ) { /* it is an irods collection ###### */
                 memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -1833,7 +1833,7 @@ extern "C" {
         rstrcpy( fileStatInp.addr.hostAddr,
                  MssoStructFileDesc[structFileInx].location,
                  NAME_LEN );
-        strncpy( fileStatInp.rescHier, specColl->rescHier, MAX_NAME_LEN );
+        snprintf( fileStatInp.rescHier, sizeof( fileStatInp.rescHier ), "%s", specColl->rescHier );
 
         rodsStat_t* rods_stat = 0;
         status = rsFileStat( _ctx.comm(), &fileStatInp, &rods_stat );
