@@ -165,12 +165,13 @@ cllConnect( icatSessionStruct *icss ) {
     // =-=-=-=-=-=-=-
     // ODBC Entry is defined by the DB type or an env variable
     char odbcEntryName[ DB_TYPENAME_LEN ];
-    strncpy( odbcEntryName, icss->database_plugin_type, DB_TYPENAME_LEN );
     char* odbc_env = getenv( "irodsOdbcDSN" );
     if ( odbc_env ) {
-        rodsLog( LOG_DEBUG, "Setting ODBC entry to ENV [%s]", icss->database_plugin_type );
-        strncpy( odbcEntryName, odbc_env, DB_TYPENAME_LEN );
-
+        rodsLog( LOG_DEBUG, "Setting ODBC entry to ENV [%s]", odbc_env );
+        snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", odbc_env );
+    }
+    else {
+        snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", icss->database_plugin_type );
     }
 
     // =-=-=-=-=-=-=-
