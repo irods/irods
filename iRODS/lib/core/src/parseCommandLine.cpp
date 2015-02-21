@@ -320,7 +320,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
         opts = fullOpts;
     }
 
-    while ( ( opt = getopt( argc, argv, opts ) ) != ( char )EOF ) {
+    while ( ( opt = getopt( argc, argv, opts ) ) != EOF ) {
         switch ( opt ) {
         case 'a':
             rodsArgs->all = True;
@@ -511,4 +511,3 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
     rodsArgs->optind = optind;
     return 0;
 }
-

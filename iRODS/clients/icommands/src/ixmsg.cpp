@@ -83,7 +83,6 @@ main( int argc, char **argv ) {
     int sleepSec = 1;
     int rNum = 1;
     char  msgBuf[4000];
-    char  msgHdr[HEADER_TYPE_LEN];
     char  condStr[NAME_LEN];
     char myHostName[MAX_NAME_LEN];
     char cmd[10];
@@ -96,7 +95,7 @@ main( int argc, char **argv ) {
     rcvXmsgOut_t *rcvXmsgOut = NULL;
 
     msgBuf[0] = '\0';
-    strcpy( msgHdr, "ixmsg" );
+    char  msgHdr[HEADER_TYPE_LEN] = "ixmsg";
     myHostName[0] = '\0';
     condStr[0] = '\0';
 
@@ -121,11 +120,11 @@ main( int argc, char **argv ) {
         ::toupper );
 
     char env_var[NAME_LEN];// = { "IRODS_CLIENT_SERVER_NEGOTIATION='NO_NEG'" };
-    sprintf( env_var, "%s='NO_NEG'", neg_env.c_str() );
+    snprintf( env_var, sizeof(env_var), "%s='NO_NEG'", neg_env.c_str() );
     putenv( env_var );
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
 
-    while ( ( opt = getopt( argc, argv, "ht:n:r:H:M:c:s:" ) ) != ( char )EOF ) {
+    while ( ( opt = getopt( argc, argv, "ht:n:r:H:M:c:s:" ) ) != EOF ) {
         switch ( opt ) {
         case 't':
             tNum = atoi( optarg );
