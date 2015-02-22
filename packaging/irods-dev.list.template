@@ -10,8 +10,7 @@
 %version TEMPLATE_IRODSVERSION TEMPLATE_IRODSVERSIONINT
 
 
-%requires irods-runtime
-
+$LIBDIR=/usr/lib
 
 # =-=-=-=-=-=-=-
 # Required Packages for specific systems
@@ -19,18 +18,6 @@
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
-%if OSXICAT
-$OSX=true
-$ICAT=true
-
-%elseif OSXRESOURCE
-$OSX=true
-$RESOURCE=true
-%endif
-
-%if DEB
-%requires libc6
-%endif
 
 %format all
 
@@ -40,7 +27,6 @@ $RESOURCE=true
 # preinstall
 # =-=-=-=-=-=-=-
 #%preinstall
-
 
 
 
@@ -71,10 +57,14 @@ $RESOURCE=true
 # Full File Listing
 # =-=-=-=-=-=-=-
 
-f 644 root root /usr/lib/irods/libRodsAPIs.a ./iRODS/lib/core/obj/libRodsAPIs.a
-f 644 root root /usr/lib/irods/libirods_client.a ./libirods_client.a
-f 644 root root /usr/lib/irods/libirods_client_api.a ./libirods_client_api.a
-f 644 root root /usr/lib/irods/libirods_server.a ./libirods_server.a
+d 755 root root ${LIBDIR}/irods -
+d 755 root root ${LIBDIR}/irods/externals -
+
+
+f 644 root root ${LIBDIR}/libRodsAPIs.a ./iRODS/lib/core/obj/libRodsAPIs.a
+f 644 root root ${LIBDIR}/libirods_client.a ./libirods_client.a
+f 644 root root ${LIBDIR}/libirods_client_api.a ./libirods_client_api.a
+f 644 root root ${LIBDIR}/libirods_server.a ./libirods_server.a
 
 d 755 root root /usr/include/irods/ -
 f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*.hpp
@@ -234,31 +224,31 @@ f 644 root root /usr/include/irods/netcdf/libsrc/  ./external/netcdf-4.3.2/libsr
 
 
 
-f 644 root root /usr/lib/irods/  ./external/boost_1_57_0/stage/lib/*.a
-f 644 root root /usr/lib/irods/  ./external/check-0.9.13/src/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/check-0.9.13/lib/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/hdf5-1.8.14/src/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/hdf5-1.8.14/test/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/hdf5-1.8.14/tools/h5repack/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/hdf5-1.8.14/tools/lib/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/hdf5-1.8.14/hl/src/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/jansson-2.7/src/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/libarchive-3.1.2/libarchive/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/libdispatch/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/oc2/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/liblib/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/libdap2/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/libsrc4/.libs/*.a
-f 644 root root /usr/lib/irods/  ./external/netcdf-4.3.2/libsrc/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/boost_1_57_0/stage/lib/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/check-0.9.13/src/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/check-0.9.13/lib/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/hdf5-1.8.14/src/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/hdf5-1.8.14/test/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/hdf5-1.8.14/tools/h5repack/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/hdf5-1.8.14/tools/lib/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/hdf5-1.8.14/hl/src/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/jansson-2.7/src/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/libarchive-3.1.2/libarchive/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/libdispatch/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/oc2/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/liblib/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/libdap2/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/libsrc4/.libs/*.a
+f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/libsrc/.libs/*.a
 
 
 
 
 f 644 root root /usr/include/irods/libs3.h ./external/libs3-2.0/inc/libs3.h
-f 644 root root /usr/lib/irods/libs3.a ./external/libs3-2.0/build/lib/libs3.a
+f 644 root root ${LIBDIR}/irods/externals/libs3.a ./external/libs3-2.0/build/lib/libs3.a
 
 
-f 644 root root /usr/lib/irods/libepm.a ./external/epm/libepm.a
+f 644 root root ${LIBDIR}/irods/externals/libepm.a ./external/epm/libepm.a
 f 755 root root /usr/bin/epm ./external/epm/epm
 
 d 755 root root /usr/include/irods/boost/libs/foreach/test -

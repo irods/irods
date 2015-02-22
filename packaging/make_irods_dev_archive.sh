@@ -25,8 +25,14 @@ ranlib $ar_file
 
 # =-=-=-=-=-=-=-
 # build shared object of all client objects
-so_file="libirods_client.so"
-g++ -fPIC -shared -rdynamic "-Wl,-E" -o $so_file $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
+CLIENT_VERSION_MAJOR=1
+CLIENT_VERSION_MINOR=0
+CLIENT_VERSION_RELEASE=0
+
+CLIENT_SONAME="libirods_client.so.${CLIENT_VERSION_MAJOR}"
+CLIENT_REAL_NAME="${CLIENT_SONAME}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_RELEASE}"
+
+g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${CLIENT_SONAME}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
 
 
 
@@ -57,9 +63,16 @@ ar qS $ar_file $(find iRODS/lib -name irods_*_plugin.o)
 ranlib $ar_file
 
 # =-=-=-=-=-=-=-
-# build shared object of all client objects
-so_file="libirods_client_api.so"
-g++ -fPIC -shared -rdynamic "-Wl,-E" -o $so_file  $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o)
+# build shared object of all client api objects
+
+CLIENT_API_VERSION_MAJOR=1
+CLIENT_API_VERSION_MINOR=0
+CLIENT_API_VERSION_RELEASE=0
+
+CLIENT_API_SONAME="libirods_client_api.so.${CLIENT_API_VERSION_MAJOR}"
+CLIENT_API_REAL_NAME="${CLIENT_API_SONAME}.${CLIENT_API_VERSION_MINOR}.${CLIENT_API_VERSION_RELEASE}"
+
+g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${CLIENT_API_SONAME}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o)
 
 
 
@@ -88,6 +101,11 @@ ranlib $ar_file
 
 # =-=-=-=-=-=-=-
 # build shared object of all server objects
-so_file="libirods_server.so"
-g++ -fPIC -shared -rdynamic "-Wl,-E" -o $so_file $(find iRODS/server -name \*.o ! -name \*Server.o ! -name \*_with_no_re.o ! -name \*Agent.o ! -name test_\*.o ! -name PamAuthCheck.o ! -name \*_manager.o )
+SERVER_VERSION_MAJOR=1
+SERVER_VERSION_MINOR=0
+SERVER_VERSION_RELEASE=0
 
+SERVER_SONAME="libirods_server.so.${SERVER_VERSION_MAJOR}"
+SERVER_REAL_NAME="${SERVER_SONAME}.${SERVER_VERSION_MINOR}.${SERVER_VERSION_RELEASE}"
+
+g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${SERVER_SONAME}" -o ${SERVER_REAL_NAME} $(find iRODS/server -name \*.o ! -name \*Server.o ! -name \*_with_no_re.o ! -name \*Agent.o ! -name test_\*.o ! -name PamAuthCheck.o ! -name \*_manager.o )

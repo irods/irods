@@ -4,6 +4,7 @@ irods_external.tar.gz
 VERSION.json
 *.pyc
 *.so
+*.so.?.?.?
 build/
 changelog.gz
 examples/microservices/microservice_tutorial.pdf
