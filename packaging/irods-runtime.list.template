@@ -40,7 +40,6 @@ $LIBDIR=/usr/lib
 # post install
 # =-=-=-=-=-=-=-
 %postinstall ldconfig
-#%postinstall ldconfig -n ${LIBDIR}/irods/externals
 
 
 # =-=-=-=-=-=-=-
