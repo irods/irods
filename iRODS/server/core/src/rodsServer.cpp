@@ -325,7 +325,11 @@ serverMain( char *logDir ) {
 
         startProcConnReqThreads();
 #if RODS_CAT // JMC - backport 4612
-        PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
+        try {
+            PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
+        } catch( const boost::thread_resource_error& ) {
+            rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in serverMain." );
+        }
 #endif /* RODS_CAT */
 
 
