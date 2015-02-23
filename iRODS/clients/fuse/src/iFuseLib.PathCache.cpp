@@ -21,18 +21,12 @@ PathCacheTable *initPathCache() {
     return pctable;
 }
 
-int
-matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCache_t **outPathCache ) {
+pathCache_t *
+matchPathCache( PathCacheTable *pctable, const char *inPath ) {
     LOCK( *pctable->PathCacheLock );
-    *outPathCache = ( pathCache_t * )lookupFromHashTable( pctable->PathArrayTable, inPath );
+    pathCache_t * pathCache = ( pathCache_t * )lookupFromHashTable( pctable->PathArrayTable, inPath );
     UNLOCK( *pctable->PathCacheLock );
-
-    if ( *outPathCache != NULL ) {
-        LOCK_STRUCT( **outPathCache );
-        return 1;
-    }
-
-    return 0;
+    return pathCache;
 }
 
 int

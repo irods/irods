@@ -171,7 +171,7 @@ int listSize( concurrentList_t *l );
 iFuseConn_t *getAndUseConnByPath( char *localPath, int *status );
 int lookupPathNotExist( PathCacheTable *pctable, char *inPath );
 int lookupPathExist( PathCacheTable *pctable, char *inPath, pathCache_t **paca );
-int matchAndLockPathCache( PathCacheTable *pctable, char *inPath, pathCache_t **outPathCache );
+pathCache_t *matchPathCache( PathCacheTable *pctable, const char *inPath );
 int updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache );
 int clearPathFromCache( PathCacheTable *pctable, char *inPath );
 int pathNotExist( PathCacheTable *pctable, char *inPath );

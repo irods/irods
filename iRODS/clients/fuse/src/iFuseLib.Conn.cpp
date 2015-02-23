@@ -35,10 +35,9 @@ void initConn() {
 iFuseConn_t *getAndUseConnByPath( char *localPath, int *status ) {
     iFuseConn_t *iFuseConn;
     /* make sure iFuseConn is not released after getAndLockIFuseDescByPath finishes */
-    pathCache_t *tmpPathCache;
-    matchAndLockPathCache( pctable, localPath, &tmpPathCache );
-
-    if ( tmpPathCache != NULL ) {
+    pathCache_t *tmpPathCache = matchPathCache( pctable, localPath );
+    if ( tmpPathCache ) {
+        LOCK_STRUCT( *tmpPathCache );
         *status = _getAndUseConnForPathCache( &iFuseConn, tmpPathCache );
         UNLOCK_STRUCT( *tmpPathCache );
     }
