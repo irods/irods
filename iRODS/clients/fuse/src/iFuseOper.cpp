@@ -741,6 +741,7 @@ irodsTruncate( const char *path, off_t size ) {
                 if ( status >= 0 ) {
                     updatePathCacheStatFromFileCache( tmpPathCache );
                     UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
+                    UNLOCK_STRUCT( *tmpPathCache );
                     return 0;
                 }
             }
