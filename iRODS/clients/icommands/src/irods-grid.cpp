@@ -23,7 +23,7 @@ irods::error usage() {
     std::cout << "action: ( required ) status, pause, resume, shutdown" << std::endl;
     std::cout << "option: --force-after=seconds or --wait-forever" << std::endl;
     std::cout << "target: ( required ) --all, --hosts=\"<fqdn1>, <fqdn2>, ...\"" << std::endl;
-    
+
     return ERROR(
                SYS_INVALID_INPUT_PARAM,
                "usage" );
@@ -72,25 +72,27 @@ irods::error parse_program_options(
     // capture the 'subcommand' or 'action' to perform on the grid
     irods::control_plane_command cmd;
     if( vm.count( "action" ) ) {
-        const std::string& action = vm["action"].as<std::string>();
- 
-        boost::unordered_map< std::string, std::string > cmd_map;
-        cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
-        cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
-        cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
-        cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
+        try {
+            const std::string& action = vm["action"].as<std::string>();
+            boost::unordered_map< std::string, std::string > cmd_map;
+            cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
+            cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
+            cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
+            cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
 
-        if ( cmd_map.end() == cmd_map.find( action ) ) {
-            std::cout << "invalid subcommand ["
-                      << action
-                      << "]"
-                      << std::endl;
-            return usage();
+            if ( cmd_map.end() == cmd_map.find( action ) ) {
+                std::cout << "invalid subcommand ["
+                    << action
+                    << "]"
+                    << std::endl;
+                return usage();
 
-        }       
-    
-        _cmd.command = cmd_map[ action ];
+            }
 
+            _cmd.command = cmd_map[ action ];
+        } catch ( const boost::bad_any_cast& _e ) {
+            return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"action\"] to std::string failed." );
+        }
     } else {
         return usage();
 

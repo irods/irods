@@ -681,6 +681,7 @@
 #define INVALID_LEXICAL_CAST                 -1819000
 #define CONTROL_PLANE_MESSAGE_ERROR          -1820000
 #define REPLICA_NOT_IN_RESC                  -1821000
+#define INVALID_ANY_CAST                     -1822000
 
 /* NetCDF error code */
 
