@@ -99,10 +99,14 @@ irods::error parse_program_options(
     }
 
     if( vm.count( "force-after" ) ) {
-        size_t secs = vm[ "force-after" ].as<size_t>();
-        std::stringstream ss; ss << secs;
-        _cmd.options[ irods::SERVER_CONTROL_FORCE_AFTER_KW ] =
-            ss.str();
+        try {
+            size_t secs = vm[ "force-after" ].as<size_t>();
+            std::stringstream ss; ss << secs;
+            _cmd.options[ irods::SERVER_CONTROL_FORCE_AFTER_KW ] =
+                ss.str();
+        } catch ( const boost::bad_any_cast& ) {
+            return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"force-after\"] to std::string failed." );
+        }
     } else if( vm.count( "wait-forever" ) ) {
         _cmd.options[ irods::SERVER_CONTROL_WAIT_FOREVER_KW ] =
             "keep_waiting";
@@ -122,9 +126,10 @@ irods::error parse_program_options(
             vm[ "hosts" ].as<std::string>(),
             boost::is_any_of( "," ),
             boost::token_compress_on );
-        }
-        catch ( const boost::bad_function_call& ) {
+        } catch ( const boost::bad_function_call& ) {
             return ERROR( BAD_FUNCTION_CALL, "Boost threw bad_function_call." );
+        } catch ( const boost::bad_any_cast& ) {
+            return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"force-after\"] to std::string failed." );
         }
 
         for( size_t i = 0;
