@@ -492,15 +492,15 @@ extern "C" {
         struct timeval* _time_val ) {
         // =-=-=-=-=-=-=-
         // trap input buffer ptr
-        if ( !_buffer ) {
+        if ( !_buffer || !_buffer->buf ) {
             return ERROR( SYS_READ_MSG_BODY_INPUT_ERR,
                           "null buffer ptr" );
         }
 
-        // =-=-=-=-=-=-=-
-        // allocate and read buffer
         int bytes_read = 0;
-        _buffer->buf = malloc( _length + 1 );
+        
+        // =-=-=-=-=-=-=-
+        // read buffer
         irods::error ret = tcp_socket_read(
                                _socket_handle,
                                _buffer->buf,
@@ -547,6 +547,15 @@ extern "C" {
         bytesBuf_t*             _error_buf,
         irodsProt_t             _protocol,
         struct timeval*         _time_val ) {
+       
+        // =-=-=-=-=-=-=-
+        // client make the assumption that we clear the error 
+        // buffer for them
+        if( _error_buf ) { 
+            memset( _error_buf, 0, sizeof( bytesBuf_t ) );
+
+        }
+
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid< irods::tcp_object >();
@@ -571,13 +580,14 @@ extern "C" {
         // NOTE :: do not reset bs buf as it can be reused
         //         on the client side
         if ( _error_buf ) {
-            memset( _error_buf, 0, sizeof( bytesBuf_t ) );
         }
 
         // =-=-=-=-=-=-=-
         // read input buffer
         if ( 0 != _input_struct_buf ) {
             if ( _header->msgLen > 0 ) {
+                _input_struct_buf->buf = malloc( _header->msgLen + 1 );
+
                 ret = read_bytes_buf(
                           socket_handle,
                           _header->msgLen,
@@ -603,6 +613,7 @@ extern "C" {
         // read error buffer
         if ( 0 != _error_buf ) {
             if ( _header->errorLen > 0 ) {
+                _error_buf->buf = malloc( _header->errorLen + 1 );
                 ret = read_bytes_buf(
                           socket_handle,
                           _header->errorLen,
@@ -624,6 +635,18 @@ extern "C" {
         // read bs buffer
         if ( 0 != _bs_buf ) {
             if ( _header->bsLen > 0 ) {
+                // do not repave bs buf as it can be
+                // reused by the client
+                if( _bs_buf->buf == NULL ) {
+                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+
+                } 
+                else if ( _header->bsLen > _bs_buf->len ) {
+                    free ( _bs_buf->buf );
+                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+
+                }
+
                 ret = read_bytes_buf(
                           socket_handle,
                           _header->bsLen,

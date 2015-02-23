@@ -1150,9 +1150,8 @@ extern "C" {
         if ( ( result = ASSERT_ERROR( _buffer, SYS_READ_MSG_BODY_INPUT_ERR, "Null buffer pointer." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
-            // allocate and read buffer
+            // read buffer
             int bytes_read = 0;
-            _buffer->buf = malloc( _length );
             irods::error ret = ssl_socket_read( _socket_handle, _buffer->buf, _length, bytes_read, _time_val, _ssl );
             _buffer->len = bytes_read;
 
@@ -1203,7 +1202,7 @@ extern "C" {
             if ( ( result = ASSERT_ERROR( _header, SYS_READ_MSG_BODY_INPUT_ERR, "Null header pointer." ) ).ok() ) {
 
                 // =-=-=-=-=-=-=-
-                // reset error buf
+                // reset error buf - assumed by the client code
                 // NOTE :: do not reset bs buf as it can be reused
                 //         on the client side
                 if ( _error_buf ) {
@@ -1214,8 +1213,10 @@ extern "C" {
                 // read input buffer
                 if ( 0 != _input_struct_buf ) {
                     if ( _header->msgLen > 0 ) {
+                        _input_struct_buf->buf = malloc( _header->msgLen + 1 );
                         ret = read_bytes_buf( socket_handle, _header->msgLen, _input_struct_buf, _protocol, _time_val, ssl_obj->ssl() );
                         result = ASSERT_PASS( ret, "Failed reading from SSL buffer." );
+
                     }
                     else {
                         // =-=-=-=-=-=-=-
@@ -1233,8 +1234,10 @@ extern "C" {
                     // read error buffer
                     if ( 0 != _error_buf ) {
                         if ( _header->errorLen > 0 ) {
+                            _error_buf->buf = malloc( _header->errorLen + 1 );
                             ret = read_bytes_buf( socket_handle, _header->errorLen, _error_buf, _protocol, _time_val, ssl_obj->ssl() );
                             result = ASSERT_PASS( ret, "Failed reading from SSL buffer." );
+
                         }
                         else {
                             _error_buf->len = 0;
@@ -1249,6 +1252,18 @@ extern "C" {
                         // read bs buffer
                         if ( 0 != _bs_buf ) {
                             if ( _header->bsLen > 0 ) {
+                                // do not repave bs buf as it can be
+                                // reused by the client
+                                if( _bs_buf->buf == NULL ) {
+                                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+
+                                } 
+                                else if ( _header->bsLen > _bs_buf->len ) {
+                                    free ( _bs_buf->buf );
+                                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+
+                                }
+
                                 ret = read_bytes_buf( socket_handle, _header->bsLen, _bs_buf, _protocol, _time_val, ssl_obj->ssl() );
                                 result = ASSERT_PASS( ret, "Failed reading from SSL buffer." );
                             }

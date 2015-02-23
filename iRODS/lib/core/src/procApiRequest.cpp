@@ -232,7 +232,7 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
     cliChkReconnAtReadStart( conn );
 
     memset( &outStructBBuf, 0, sizeof( bytesBuf_t ) );
-    memset( &outStructBBuf, 0, sizeof( bytesBuf_t ) );
+    memset( &errorBBuf, 0, sizeof( bytesBuf_t ) );
     /* memset (&myOutBsBBuf, 0, sizeof (bytesBuf_t)); */
 
     /* some sanity check */
