@@ -288,33 +288,33 @@ int main(
     }
 
 
-    // wait for the server reponse
-    zmq::message_t req;
     try {
+        zmq::message_t req;
+        // wait for the server reponse
         zmq_skt.recv( &req );
+
+        // decrypt the response
+        std::string rep_str;
+        ret = decrypt_response(
+                env,
+                static_cast< const uint8_t* >( req.data() ),
+                req.size(),
+                rep_str );
+        if ( !ret.ok() ) {
+            irods::error err = PASS( ret );
+            std::cout << err.result()
+                << std::endl;
+            return -1;
+
+        }
+
+        if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
+            std::cout << rep_str.data()
+                << std::endl;
+        }
     } catch( const zmq::error_t& ) {
-        printf( "ZeroMQ encountered an error receiving a message." );
+        printf( "ZeroMQ encountered an error." );
         return -1;
-    }
-
-    // decrypt the response
-    std::string rep_str;
-    ret = decrypt_response(
-              env,
-              static_cast< const uint8_t* >( req.data() ),
-              req.size(),
-              rep_str );
-    if ( !ret.ok() ) {
-        irods::error err = PASS( ret );
-        std::cout << err.result()
-                  << std::endl;
-        return -1;
-
-    }
-
-    if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-        std::cout << rep_str.data()
-            << std::endl;
     }
 
     return 0;
