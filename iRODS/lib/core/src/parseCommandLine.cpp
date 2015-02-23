@@ -503,8 +503,8 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             break;
         default:
             rodsLogError( LOG_ERROR, USER_INPUT_OPTION_ERR,
-                          "parseCmdLineOpt: Option -%c not supported",
-                          optopt );
+                          "parseCmdLineOpt: Option not supported. opt [%d], optopt [%d], optind [%d], opterr [%d]",
+                          opt, optopt, optind, opterr );
             return USER_INPUT_OPTION_ERR;
         }
     }
