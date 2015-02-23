@@ -90,7 +90,7 @@ irods::error parse_program_options(
             }
 
             _cmd.command = cmd_map[ action ];
-        } catch ( const boost::bad_any_cast& _e ) {
+        } catch ( const boost::bad_any_cast& ) {
             return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"action\"] to std::string failed." );
         }
     } else {
@@ -116,11 +116,16 @@ irods::error parse_program_options(
 
     } else if( vm.count( "hosts" ) ) {
         std::vector< std::string > hosts;
+        try {
         boost::split(
             hosts,
             vm[ "hosts" ].as<std::string>(),
             boost::is_any_of( "," ),
             boost::token_compress_on );
+        }
+        catch ( const boost::bad_function_call& ) {
+            return ERROR( BAD_FUNCTION_CALL, "Boost threw bad_function_call." );
+        }
 
         for( size_t i = 0;
              i < hosts.size();

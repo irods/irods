@@ -682,6 +682,7 @@
 #define CONTROL_PLANE_MESSAGE_ERROR          -1820000
 #define REPLICA_NOT_IN_RESC                  -1821000
 #define INVALID_ANY_CAST                     -1822000
+#define BAD_FUNCTION_CALL                    -1823000
 
 /* NetCDF error code */
 
