@@ -202,10 +202,7 @@ _useIFuseConn( iFuseConn_t *iFuseConn ) {
 
     iFuseConn->actTime = time( NULL );
     iFuseConn->pendingCnt++;
-    UNLOCK_STRUCT( *iFuseConn );
 
-    /* wait for iFuseConn to be unlocked */
-    LOCK_STRUCT( *iFuseConn );
     LOCK( iFuseConn->inuseLock );
     iFuseConn->inuseCnt++;
     iFuseConn->pendingCnt--;
