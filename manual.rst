@@ -1214,7 +1214,7 @@ The possible values for irodsClientServerPolicy include:
 - CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
 - CS_NEG_REFUSE: (default) This side of the connection refuses to connect via SSL
 
-In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, iRODS shows an affinity for security by connecting via SSL.
+In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, iRODS shows an affinity for security by connecting via SSL.  Additionally, it is important to note that all servers in an iRODS Zone are required to share the same SSL credentials (certificates, keys, etc.).  Maintaining per-route certificates is not supported at this time.
 
 The remaining parameters are standard SSL parameters and made available through the EVP library included with OpenSSL.  You can read more about these remaining parameters at https://www.openssl.org/docs/crypto/evp.html.
 
@@ -1502,7 +1502,11 @@ Then, the user runs 'iinit' and enters their system password.  To protect the sy
 
 
 
+Since PAM requires the user's password in plaintext, iRODS relies on SSL encryption to protect these credentials.  PAM authentication makes use of SSL regardless of the iRODS Zone SSL configuration (meaning even if iRODS explicitly does *not* encrypt data traffic, PAM will use SSL during authentication).
+
 In order to use the iRODS PAM support, you also need to have SSL working between the iRODS client and server. The SSL communication between client and iRODS server needs some basic setup in order to function properly. Much of the setup concerns getting a proper X.509 certificate setup on the server side, and setting up the trust for the server certificate on the client side. You can use either a self-signed certificate (best for testing) or a certificate from a trusted CA.
+
+
 
 Server Configuration
 ********************
