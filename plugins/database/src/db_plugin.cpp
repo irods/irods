@@ -16325,6 +16325,7 @@ checkLevel:
                << "].";
             return ERROR( PLUGIN_ERROR, ss.str().c_str());
         }
+        rodsLog( LOG_DEBUG, "db_start_operation :: Call to PREG_REPLACE() succeeded" );
 #endif
 
         return SUCCESS();
