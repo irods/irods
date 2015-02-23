@@ -1237,9 +1237,9 @@ To implement a new database plugin, a developer will need to provide the existin
 Installing lib_mysqludf_preg
 ----------------------------
 
-Installing the iRODS MySQL database plugin requires the MySQL server to have the `lib_mysqludf_preg functions`__ installed and available to iRODS.
+To use the iRODS MySQL database plugin, the MySQL server must have the `lib_mysqludf_preg functions`__ installed and available to iRODS. iRODS installation (`setup_irods.sh`) will fail if these functions are not installed on the database.
 
-The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
+The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 are::
 
  # Get Dependencies
  sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev automake libtool
@@ -1252,24 +1252,17 @@ The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 include::
  sudo make install
  sudo make MYSQL="mysql -p" installdb
 
-The iRODS MySQL database plugin checks for these functions during installation. Therefore, before installing the iRODS MySQL database plugin, you must also grant the iRODS MySQL user account the ``select`` privilege on the ``mysql.func`` system table. The following example assumes that the iRODS MySQL user account is ``irods`` and it is allowed to connect from host ``localhost``::
+To test the installation, execute the following command::
 
- $ mysql --user=$MYSQL_ADMIN_ACCOUNT --password=$MYSQL_ADMIN_PASSWORD -e "grant select on mysql.func to 'irods'@'localhost';"
+ $ mysql --user=$MYSQL_IRODS_ACCOUNT --password=$MYSQL_IRODS_PASSWORD -e "select PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.')"
 
-Once you have granted the ``select`` privilege to the iRODS MySQL user account, you can confirm the installation of the functions with::
+which should display the following output::
 
- $ mysql --user=$MYSQL_IRODS_ACCOUNT --password=$MYSQL_IRODS_PASSWORD -e "select name from mysql.func;"
-
- +------------------------+
- | name                   |
- +------------------------+
- | lib_mysqludf_preg_info |
- | preg_capture           |
- | preg_check             |
- | preg_position          |
- | preg_replace           |
- | preg_rlike             |
- +------------------------+
+ +--------------------------------------------------------------------------+
+ | PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.') |
+ +--------------------------------------------------------------------------+
+ | Call to PREG_REPLACE() succeeded.                                        |
+ +--------------------------------------------------------------------------+
 
 .. __: https://github.com/mysqludf/lib_mysqludf_preg
 
