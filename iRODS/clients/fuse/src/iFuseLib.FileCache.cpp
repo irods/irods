@@ -241,7 +241,10 @@ fileCache_t *addFileCache( int iFd, char *objPath, char *localPath, char *cacheP
             ListNode *node = FileCacheList->list->head;
             swapCache = ( fileCache_t * ) node->value;
             listRemoveNoRegion( FileCacheList->list, node );
+
+            UNLOCK_STRUCT( *FileCacheList );
             ifuseFileCacheSwapOut( swapCache );
+            LOCK_STRUCT( *FileCacheList );
 
             listAppendNoRegion( FileCacheList->list, fileCache );
 
