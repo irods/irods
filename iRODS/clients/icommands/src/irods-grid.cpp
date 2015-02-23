@@ -280,11 +280,22 @@ int main(
         rep.data(),
         data_to_send.data(),
         data_to_send.size() );
-    zmq_skt.send( rep );
+    try {
+        zmq_skt.send( rep );
+    } catch( const zmq::error_t& ) {
+        printf( "ZeroMQ encountered an error sending a message." );
+        return -1;
+    }
+
 
     // wait for the server reponse
     zmq::message_t req;
-    zmq_skt.recv( &req );
+    try {
+        zmq_skt.recv( &req );
+    } catch( const zmq::error_t& ) {
+        printf( "ZeroMQ encountered an error receiving a message." );
+        return -1;
+    }
 
     // decrypt the response
     std::string rep_str;
