@@ -16311,7 +16311,7 @@ checkLevel:
     irods::error db_start_operation( irods::plugin_property_map& _props ) {
 #ifdef MY_ICAT
         char cml_res[ 100 ];
-        const char sql[] = "select PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.'";
+        const char sql[] = "select PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.')";
         std::vector<std::string> bindVars;
         int status = cmlGetStringValueFromSql( sql, cml_res, sizeof( cml_res ), bindVars, &icss );
         if ( status < 0 ) {
