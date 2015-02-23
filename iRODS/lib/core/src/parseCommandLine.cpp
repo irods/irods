@@ -36,12 +36,9 @@ CommandLineOptions document so we can keep it all consistent.
 int
 parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                  rodsArguments_t *rodsArgs ) {
-    char opt;
-
     int i;
 
     char fullOpts[] = "aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
-    const char *opts;
     int VCount = 0;
 
     /* Set all flags and pointers to false/null */
@@ -313,6 +310,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
     }
 
     /* handle the short options */
+    const char *opts;
     if ( optString != NULL && *optString != '\0' ) {
         opts = optString;
     }
@@ -320,6 +318,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
         opts = fullOpts;
     }
 
+    int opt;
     while ( ( opt = getopt( argc, argv, opts ) ) != EOF ) {
         switch ( opt ) {
         case 'a':
@@ -503,8 +502,8 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             break;
         default:
             rodsLogError( LOG_ERROR, USER_INPUT_OPTION_ERR,
-                          "parseCmdLineOpt: Option not supported. opt [%d], optopt [%d], optind [%d], opterr [%d]",
-                          opt, optopt, optind, opterr );
+                          "parseCmdLineOpt: Option not supported. opt [%d], optopt [%d], optind [%d], opterr [%d], opts [%s]",
+                          opt, optopt, optind, opterr, opts );
             return USER_INPUT_OPTION_ERR;
         }
     }
