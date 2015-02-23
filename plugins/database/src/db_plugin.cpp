@@ -16310,21 +16310,20 @@ checkLevel:
     //
     irods::error db_start_operation( irods::plugin_property_map& _props ) {
 #ifdef MY_ICAT
-        char cml_res[ MAX_NAME_LEN ];
-        char sql[] = { "select name from mysql.func" };
+        char cml_res[ 100 ];
+        const char sql[] = "select PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.'");
         std::vector<std::string> bindVars;
         int status = cmlGetStringValueFromSql( sql, cml_res, sizeof( cml_res ), bindVars, &icss );
-        if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-            return ERROR( status, "failed to call sql to determine UDF" );
+        if ( status < 0 ) {
+            return ERROR( status, "Failed to call PREG_REPLACE(). See section \"Installing lib_mysqludf_preg\" of iRODS Manual." );
         }
 
-        rodsLog( LOG_DEBUG, "db_start_operation :: results [%s]", cml_res );
-        std::string results( cml_res );
-        if ( std::string::npos == results.find( "preg_" ) ) {
-            std::string msg;
-            msg += "PREG User Defined Function not found for mysql database";
-            rodsLog( LOG_ERROR, msg.c_str() );
-            return ERROR( PLUGIN_ERROR, msg );
+        if ( strcmp("Call to PREG_REPLACE() succeeded.", cml_res) ) {
+            std::stringstream ss;
+            ss << "Call to PREG_REPLACE() returned incorrect result: ["
+               << cml_res
+               << "].";
+            return ERROR( PLUGIN_ERROR, ss.str().c_str());
         }
 #endif
 
