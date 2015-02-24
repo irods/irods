@@ -47,41 +47,22 @@ char *rmemcpy( void *dest, const void *src, int strLen, int maxLen ) {
 }
 
 char *rstrcpy( char *dest, const char *src, int maxLen ) {
-    /*
-    The purpose of this function is to make sure there is enough space in
-    the destination char array so that memory (the stack or whatever)
-    will not be corrupted.  This is called from throughout the irods code
-    as a safer way to copy strings.  Generally, the caller has an
-    destination array that is believed to be plenty large enough, but
-    this is used to make sure memory is not corrupted.  A memory
-    corruption will often cause very odd, un-safe, and difficult to
-    resolve errors.  If there is not enough space, the caller's function
-    will probably fail, but by protecting memory it should fail in a more
-    controlled and safer manner.
-     */
-    int len;
+    // snprintf with logging on fail
 
     if ( dest == NULL || src == NULL ) {
         return NULL;
     }
+    int status = snprintf( dest, maxLen, "%s", src );
 
-    len = strlen( src );
-
-    if ( len < 0 || len >= maxLen ) {
-        rodsLog( LOG_ERROR,
-                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
-                 len, maxLen );
-        return NULL;
-    }
-
-    if ( strncpy( dest, src, len ) != NULL ) {
-        dest[len] = '\0';
+    if ( status >= 0 && status < maxLen ) {
         return dest;
-    }
-    else {
+    } else if ( status >= 0 ) {
         rodsLog( LOG_ERROR,
                  "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
-                 len, maxLen );
+                 status, maxLen );
+        return NULL;
+    } else {
+        rodsLog( LOG_ERROR, "rstrcpy encountered an encoding error." );
         return NULL;
     }
 }
