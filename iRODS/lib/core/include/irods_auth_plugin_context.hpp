@@ -44,11 +44,9 @@ namespace irods {
 
                 // =-=-=-=-=-=-=
                 // trap case of incorrect type for first class object
-                try {
-                    boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
-                }
-                catch ( const std::bad_cast& ) {
-                    ret = PASSMSG( "invalid type for fco cast", ret );
+                boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
+                if ( ref == NULL ) {
+                    ret = ERROR( INVALID_DYNAMIC_CAST, "invalid type for fco cast" );
                 }
 
                 return ret;
