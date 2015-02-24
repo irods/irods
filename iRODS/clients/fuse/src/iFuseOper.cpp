@@ -663,14 +663,13 @@ irodsChmod( const char *path, mode_t mode ) {
             UNLOCK_STRUCT( *tmpPathCache->fileCache );
         }
         UNLOCK_STRUCT( *tmpPathCache );
+        if ( tmpPathCache->stbuf.st_nlink != 1 ) {
+            rodsLog( LOG_NOTICE,
+                    "irodsChmod: modification of the mode of non file object is currently not supported", path );
+            return 0;
+        }
     }
 
-    if ( tmpPathCache->stbuf.st_nlink != 1 ) {
-        rodsLog( LOG_NOTICE,
-                 "irodsChmod: modification of the mode of non file object is currently not supported", path );
-
-        return 0;
-    }
 
     memset( &regParam, 0, sizeof( regParam ) );
     snprintf( dataMode, SHORT_STR_LEN, "%d", mode );
