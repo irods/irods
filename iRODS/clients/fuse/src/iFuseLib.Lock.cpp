@@ -21,6 +21,7 @@ boost::mutex* PathCacheLock = new boost::mutex();
 /* boost::mutex FileCacheLock; */
 boost::thread*            ConnManagerThr;
 boost::mutex*             ConnManagerLock = new boost::mutex();
+boost::mutex*             WaitForConnLock = new boost::mutex();
 boost::condition_variable ConnManagerCond;
 #else
 /*pthread_mutex_t DescLock;*/
@@ -29,6 +30,7 @@ boost::condition_variable ConnManagerCond;
 /* pthread_mutex_t FileCacheLock; */
 pthread_t ConnManagerThr;
 pthread_mutex_t ConnManagerLock;
+pthread_mutex_t WaitForConnLock;
 pthread_cond_t ConnManagerCond;
 #endif
 
