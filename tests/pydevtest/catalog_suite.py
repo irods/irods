@@ -187,9 +187,11 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "ils -L", "STDOUT", "pydevtest_testfile.txt")  # basic listing
         assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
                    "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
-        assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt 1", "EMPTY")  # set to 1 sec after epoch
+        offset_seconds = 1
+        expected_time_string = time.strftime('%Y-%m-%d.%H:%M:%S', time.localtime(offset_seconds))
+        assertiCmd(s.adminsession, 'isysmeta mod pydevtest_testfile.txt {0}'.format(offset_seconds), "EMPTY")  # set to 1 sec after epoch
         assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
-                   "data_expiry_ts (expire time): 00000000001: 1969-12-31.19:00:01")  # confirm
+                   "data_expiry_ts (expire time): 00000000001: {0}".format(expected_time_string))  # confirm
         assertiCmd(s.adminsession, "isysmeta mod pydevtest_testfile.txt 0", "EMPTY")  # reset to zeros
         assertiCmd(s.adminsession, "isysmeta ls pydevtest_testfile.txt", "STDOUT",
                    "data_expiry_ts (expire time): 00000000000: None")  # confirm
