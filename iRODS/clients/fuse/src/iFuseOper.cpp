@@ -105,9 +105,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
     }
     else if ( rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
 
-        if ( rodsObjStatOut != NULL ) {
-            freeRodsObjStat( rodsObjStatOut );
-        }
+        freeRodsObjStat( rodsObjStatOut );
         return -ENOENT;
     }
     else {
@@ -116,9 +114,7 @@ _irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
                       atoi( rodsObjStatOut->modifyTime ) );
     }
 
-    if ( rodsObjStatOut != NULL ) {
-        freeRodsObjStat( rodsObjStatOut );
-    }
+    freeRodsObjStat( rodsObjStatOut );
 
     return 0;
 }
