@@ -43,9 +43,9 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // file* functions will fail with an empty physical_path_
         physical_path_ = _sub.subFilePath;
-        logical_path( spec_coll_->objPath );
         if ( spec_coll_ ) {
-            resc_hier_ = spec_coll_->rescHier;
+            logical_path( spec_coll_->objPath );
+            resc_hier( spec_coll_->rescHier );
         }
 
     } // structured_object
