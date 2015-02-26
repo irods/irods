@@ -66,10 +66,12 @@ Cache ruleEngineConfig = {
 void removeRuleFromExtIndex( char *ruleName, int i ) {
     if ( isComponentInitialized( ruleEngineConfig.extFuncDescIndexStatus ) ) {
         FunctionDesc *fd = ( FunctionDesc * )lookupFromHashTable( ruleEngineConfig.extFuncDescIndex->current, ruleName );
-        RuleIndexList *rd = FD_RULE_INDEX_LIST( fd );
-        removeNodeFromRuleIndexList2( rd, i );
-        if ( rd->head == NULL ) {
-            deleteFromHashTable( ruleEngineConfig.extFuncDescIndex->current, ruleName );
+        if ( fd != NULL ) {
+            RuleIndexList *rd = FD_RULE_INDEX_LIST( fd );
+            removeNodeFromRuleIndexList2( rd, i );
+            if ( rd->head == NULL ) {
+                deleteFromHashTable( ruleEngineConfig.extFuncDescIndex->current, ruleName );
+            }
         }
     }
 
