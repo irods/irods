@@ -631,7 +631,7 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
         userAdminInp.arg6 = arg6;
         userAdminInp.arg7 = arg7;
         userAdminInp.arg8 = arg8;
-        userAdminInp.arg9 = arg8;
+        userAdminInp.arg9 = arg9;
         status = rcUserAdmin( Conn, &userAdminInp );
         funcName = "rcGeneralAdmin and rcUserAdmin";
     }
