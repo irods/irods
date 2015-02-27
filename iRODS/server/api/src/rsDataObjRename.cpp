@@ -96,14 +96,14 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     }
 
     if ( srcType >= 0 ) { /* specColl of some sort */
-        if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+        if ( srcDataObjInfo && destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
             status = specCollObjRename( rsComm, srcDataObjInfo,
                                         destDataObjInfo );
         }
         else {
-            /* dest is regular obj. Allow apecial case where the src
+            /* dest is regular obj. Allow special case where the src
              * is in a MOUNTED_COLL */
-            if ( srcDataObjInfo->specColl->collClass == MOUNTED_COLL ) {
+            if ( srcDataObjInfo && srcDataObjInfo->specColl->collClass == MOUNTED_COLL ) {
                 /* a special case for moving obj from mounted collection to
                  * regular collection */
                 status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType,
