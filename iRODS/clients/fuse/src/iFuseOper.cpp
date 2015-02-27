@@ -293,7 +293,6 @@ irodsMknod( const char *path, mode_t mode, dev_t ) {
     iFuseConn_t *iFuseConn = NULL;
     fileCache_t *fileCache = NULL;
     /* iFuseDesc_t *desc = NULL; */
-    int localFd;
 
     rodsLog( LOG_DEBUG, "irodsMknod: %s", path );
 
@@ -301,8 +300,7 @@ irodsMknod( const char *path, mode_t mode, dev_t ) {
         return -EEXIST;
     }
 
-    status = irodsMknodWithCache( ( char * )path, mode, cachePath );
-    localFd = status;
+    int localFd = irodsMknodWithCache( ( char * )path, mode, cachePath );
     status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv, objPath );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
@@ -326,6 +324,9 @@ irodsMknod( const char *path, mode_t mode, dev_t ) {
                 rodsLogError( LOG_ERROR, status,
                               "irodsMknod: rcDataObjCreate of %s error", path );
                 unuseIFuseConn( iFuseConn );
+                if ( localFd >= 0 ) {
+                    close( localFd );
+                }
                 return -ENOENT;
             }
         }
