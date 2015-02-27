@@ -169,10 +169,8 @@ int _call_file_modified_for_modification(
 
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
-        rei2.uoic = &rsComm->clientUser;
-        rei2.uoip = &rsComm->proxyUser;
-    }
+    rei2.uoic = &rsComm->clientUser;
+    rei2.uoip = &rsComm->proxyUser;
     rei2.doi = modDataObjMetaInp->dataObjInfo;
     rei2.condInputData = modDataObjMetaInp->regParam;
     regParam = modDataObjMetaInp->regParam;
