@@ -1964,10 +1964,10 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
         insertIntoHashTable( global->current, "ruleExecOut", execOutRes );
     }
 
-    if ( !strcmp( writeId, "stdout" ) ) {
+    if ( writeId && !strcmp( writeId, "stdout" ) ) {
         appendToByteBufNew( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
     }
-    else if ( !strcmp( writeId, "stderr" ) ) {
+    else if ( writeId && !strcmp( writeId, "stderr" ) ) {
         appendToByteBufNew( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
     }
     return 0;
