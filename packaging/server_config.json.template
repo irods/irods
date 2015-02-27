@@ -37,7 +37,7 @@
     "schema_validation_base_uri": "https://schemas.irods.org/configuration", 
         {
             "instance_name": "re",
-            "plugin_name":"re-irods",
+            "plugin_name":"re",
             "namespaces": [
                 {
                     "namespace": ""
@@ -49,6 +49,10 @@
                     "namespace":"indexing_"
                 }
             ]
+        },
+        {
+            "instance_name":"re-irods",
+            "plugin_name": "re-irods"
         }
     ],
     "server_control_plane_encryption_algorithm": "AES-256-CBC", 
