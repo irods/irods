@@ -1054,11 +1054,19 @@ void
 stopProcConnReqThreads() {
 
     SpawnReqCond.notify_all();
-    SpawnManagerThread->join();
+    try {
+        SpawnManagerThread->join();
+    } catch ( const boost::thread_resource_error& ) {
+        rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
+    }
 
     for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
         ReadReqCond.notify_all();
-        ReadWorkerThread[i]->join();
+        try {
+            ReadWorkerThread[i]->join();
+        } catch ( const boost::thread_resource_error& ) {
+            rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
+        }
     }
 
 
