@@ -2410,11 +2410,13 @@ Pointer *newPointer2( char* buf ) {
     return e;
 }
 void deletePointer( Pointer* buf ) {
-    if ( buf->isFile ) {
-        fclose( buf->fp );
+    if ( buf ) {
+        if ( buf->isFile ) {
+            fclose( buf->fp );
+        }
+        free( buf->base );
+        free( buf );
     }
-    free( buf->base );
-    free( buf );
 
 }
 
