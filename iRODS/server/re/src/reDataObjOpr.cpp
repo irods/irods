@@ -3738,8 +3738,10 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiTarFileCreate: input rei or rsComm is NULL" );
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return rei->status;
+        if ( rei ) {
+            rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
