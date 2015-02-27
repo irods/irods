@@ -419,12 +419,24 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
 
     if ( rodsPathInp == NULL ) {
         rodsLog( LOG_ERROR,
-                 "resolveRodsTarget: NULL rodsPathInp or targPath input" );
+                 "resolveRodsTarget: NULL rodsPathInp input" );
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( rodsPathInp->srcPath == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "resolveRodsTarget: NULL rodsPathInp->srcPath input" );
+        return USER__NULL_INPUT_ERR;
+    }
+
+    if ( rodsPathInp->destPath == NULL ) {
+        rodsLog( LOG_ERROR,
+                 "resolveRodsTarget: NULL rodsPathInp->destPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     destPath = rodsPathInp->destPath;
-    if ( destPath != NULL && destPath->objState == UNKNOWN_ST ) {
+    if ( destPath->objState == UNKNOWN_ST ) {
         getRodsObjType( conn, destPath );
     }
 
