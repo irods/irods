@@ -182,8 +182,6 @@ namespace irods {
             return (reinterpret_cast<error(*)(T&, std::string, std::list<boost::any> &, callback)>( operations_["exec_rule"]))(_re_ctx, _rn, l, _callback);
         }
   
-        
-        virtual ~pluggable_rule_engine(){}
     protected:
         error load_operation(void *handle, std::string _fcn, std::string _key);
         std::map<std::string, re_plugin_operation<T> > operations_;
@@ -216,7 +214,8 @@ namespace irods {
             // general pep rule
             // pep(<inst name>, <op name>, <go op>, <go with different params op>, <params>, <callback>)
             // rule must call op explicitly if it is defined
-            // for out param use something like boost::ref
+            // inputs are passed as some lists of some non-pointers
+            // outputs are passed as some lists of some pointers
             bool execOnce = false;
             std::function<error()> op = [&execOnce, &_ps..., &_operation] () {
                 if(execOnce) {
@@ -417,7 +416,7 @@ namespace irods {
         
         template <typename ...As>
         error exec_rule(std::string _rn, As &&... _ps) {
-            auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps) &&... _ps) {
+            auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps)... _ps) {
                 return _itr.re_->template exec_rule<As...>( _rn, _itr.re_ctx_, std::forward<As>(_ps)..., callback(*this));
             };
             auto em = [this](std::string _rn, decltype(_ps)... _ps) {
@@ -432,7 +431,6 @@ namespace irods {
         
     template<typename T>
     error pluggable_rule_engine<T>::load_operation(void *_handle, std::string _fcn, std::string _key) {
-        // check key and fcn
         dlerror();
         re_plugin_operation<T> plugin_op_ptr = reinterpret_cast< re_plugin_operation<T> > (dlsym(_handle, _fcn.c_str()));
         if (!plugin_op_ptr) {

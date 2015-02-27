@@ -36,7 +36,7 @@
     "re_plugins": [
     "schema_validation_base_uri": "https://schemas.irods.org/configuration", 
         {
-            "instance_name": "re",
+            "instance_name": "re-instance",
             "plugin_name":"re",
             "namespaces": [
                 {
@@ -51,7 +51,7 @@
             ]
         },
         {
-            "instance_name":"re-irods",
+            "instance_name":"re-irods-instance",
             "plugin_name": "re-irods"
         }
     ],
