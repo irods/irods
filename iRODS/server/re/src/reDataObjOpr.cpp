@@ -3864,8 +3864,10 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     if ( rei == NULL || rei->rsComm == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiPhyBundleColl: input rei or rsComm is NULL" );
-        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return rei->status;
+        if ( rei ) {
+            rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     delim[0] = '\0';
