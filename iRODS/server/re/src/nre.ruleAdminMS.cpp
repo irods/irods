@@ -584,7 +584,8 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
     }
     i = readFuncMapStructFromFile( ( char* ) inFnmFileNameParam->inOutStruct, coreFNMapStrct );
     if ( i != 0 ) {
-        if ( strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
+        if ( outCoreFNMapStruct->type == NULL ||
+                strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
             free( coreFNMapStrct );
         }
         return i;
