@@ -279,13 +279,13 @@ int main(
     bind_str += port_sstr.str();
     zmq_skt.connect( bind_str.c_str() );
 
-    // copy binary encoding into a zmq message for transport
-    zmq::message_t rep( data_to_send.size() );
-    memcpy(
-        rep.data(),
-        data_to_send.data(),
-        data_to_send.size() );
     try {
+    // copy binary encoding into a zmq message for transport
+        zmq::message_t rep( data_to_send.size() );
+        memcpy(
+                rep.data(),
+                data_to_send.data(),
+                data_to_send.size() );
         zmq_skt.send( rep );
     } catch( const zmq::error_t& ) {
         printf( "ZeroMQ encountered an error sending a message." );
