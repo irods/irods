@@ -3014,7 +3014,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
     }
 
     if ( ( tmpPtr = parseMspForStr( inpParam3 ) ) != NULL ) {
-        rstrcpy( myExecCmdInp->execAddr, tmpPtr, MAX_NAME_LEN );
+        rstrcpy( myExecCmdInp->execAddr, tmpPtr, LONG_NAME_LEN );
     }
 
     if ( ( tmpPtr = parseMspForStr( inpParam4 ) ) != NULL ) {
