@@ -235,9 +235,8 @@ namespace irods{
         
         
 
-    }// re specific code
-
-
+    }
+    
 }
         
    

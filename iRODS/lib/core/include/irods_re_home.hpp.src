@@ -1,6 +1,6 @@
 
-#ifndef __IRODS_MS_HOME_HPP__
-#define __IRODS_MS_HOME_HPP__
+#ifndef __IRODS_RE_HOME_HPP__
+#define __IRODS_RE_HOME_HPP__
 
 #include <string>
 
@@ -10,4 +10,4 @@ namespace irods {
 
 }; // namespace irods
 
-#endif // __IRODS_MS_HOME_HPP__
+#endif // __IRODS_RE_HOME_HPP__
