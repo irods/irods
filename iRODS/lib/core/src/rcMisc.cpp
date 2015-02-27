@@ -817,12 +817,12 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
             free( condInput->keyWord[i] );
             free( condInput->value[i] );
             condInput->keyWord[i] = strdup( keyWord );
-            condInput->value[i] = strdup( value );
+            condInput->value[i] = value ? strdup( value ) : NULL;
             return 0;
         }
         else if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
-            condInput->value[i] = strdup( value );
+            condInput->value[i] = value ? strdup( value ) : NULL;
             return 0;
         }
     }
@@ -837,7 +837,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     }
 
     condInput->keyWord[condInput->len] = strdup( keyWord );
-    condInput->value[condInput->len] = strdup( value );
+    condInput->value[condInput->len] = value ? strdup( value ) : NULL;
     condInput->len++;
 
     return 0;
