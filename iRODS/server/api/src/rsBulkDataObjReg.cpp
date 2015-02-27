@@ -158,7 +158,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
         rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
         rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
-        rstrcpy( dataObjInfo.dataMode, tmpDataMode, NAME_LEN );
+        rstrcpy( dataObjInfo.dataMode, tmpDataMode, SHORT_STR_LEN );
         dataObjInfo.replNum = atoi( tmpReplNum );
         if ( chksum != NULL ) {
             tmpChksum = &chksum->value[chksum->len * i];
