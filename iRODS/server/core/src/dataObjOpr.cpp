@@ -857,7 +857,7 @@ sortObjInfoForRepl(
     const char*     dst_resc_hier ) {
     // =-=-=-=-=-=-=-
     // trap bad pointers
-    if ( !*dataObjInfoHead ) {
+    if ( !dataObjInfoHead || !*dataObjInfoHead ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -1499,7 +1499,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
     condFlag = status;  /* cond exist if condFlag > 0 */
 
     if ( matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL ) {
-        if ( dataObjInfoHead != NULL && condFlag == 0 ) {
+        if ( condFlag == 0 ) {
             /* at least have some good copies */
             /* see if we can trim some old copies */
             matchedOldDataObjInfo = oldDataObjInfoHead;
@@ -1510,10 +1510,8 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
         }
         else {
             /* don't trim anything */
-            if ( dataObjInfoHead != NULL ) {
-                freeAllDataObjInfo( *dataObjInfoHead );
-                *dataObjInfoHead = NULL; // JMC cppcheck - nullptr
-            }
+            freeAllDataObjInfo( *dataObjInfoHead );
+            *dataObjInfoHead = NULL; // JMC cppcheck - nullptr
             freeAllDataObjInfo( oldDataObjInfoHead );
             return 0;
         }
