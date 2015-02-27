@@ -125,6 +125,8 @@ int rsApiHandler(
 
     myHandler = RsApiTable[apiInx]->svrHandler;
     if ( !myHandler ) {
+        rodsLog( LOG_ERROR, "Null handler encountered for api number %d in rsApiHandler.", apiNumber );
+        return SYS_API_INPUT_ERR;
     }
 
     if ( RsApiTable[apiInx]->inPackInstruct != NULL ) {
