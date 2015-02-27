@@ -451,26 +451,9 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
 
     rstrcpy( msgHeader.type, msgType, HEADER_TYPE_LEN );
 
-    if ( msgBBuf == NULL ) {
-        msgHeader.msgLen = 0;
-    }
-    else {
-        msgHeader.msgLen = msgBBuf->len;
-    }
-
-    if ( byteStreamBBuf == NULL ) {
-        msgHeader.bsLen = 0;
-    }
-    else {
-        msgHeader.bsLen = byteStreamBBuf->len;
-    }
-
-    if ( errorBBuf == NULL ) {
-        msgHeader.errorLen = 0;
-    }
-    else {
-        msgHeader.errorLen = errorBBuf->len;
-    }
+    msgHeader.msgLen = msgBBuf ? msgBBuf->len : 0;
+    msgHeader.bsLen = byteStreamBBuf ? byteStreamBBuf->len : 0;
+    msgHeader.errorLen = errorBBuf ? errorBBuf->len : 0;
 
     msgHeader.intInfo = intInfo;
 
@@ -482,7 +465,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
 
     /* send the rest */
 
-    if ( msgHeader.msgLen > 0 ) {
+    if ( msgBBuf && msgBBuf->len > 0 ) {
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "sending msg: \n%s\n", ( char * ) msgBBuf->buf );
         }
@@ -492,7 +475,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
         }
     }
 
-    if ( msgHeader.errorLen > 0 ) {
+    if ( errorBBuf && errorBBuf->len > 0 ) {
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
             printf( "sending error msg: \n%s\n", ( char * ) errorBBuf->buf );
         }
@@ -502,7 +485,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
             return status;
         }
     }
-    if ( msgHeader.bsLen > 0 ) {
+    if ( byteStreamBBuf && byteStreamBBuf->len > 0 ) {
         status = sslWrite( byteStreamBBuf->buf, byteStreamBBuf->len,
                            &bytesWritten, ssl );
         if ( status < 0 ) {
