@@ -53,9 +53,9 @@ extern "C" {
         for(auto itr = begin(re_plugin_configs); itr != end(re_plugin_configs); ++itr) {
             boost::any pn = (*itr)["plugin_name"];
             if(pn.type() == typeid(std::string)) {
-                if(boost::any_cast< std::string> (pn) == std::string("cre")) {
+                if(boost::any_cast< std::string> (pn) == std::string("re")) {
                     if(found) {
-                        return ERROR(-1, "duplicate instances of cre");
+                        return ERROR(-1, "duplicate instances of re");
                     }
                     found = true;
                     boost::any nss = (*itr)["namespaces"];
