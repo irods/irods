@@ -220,7 +220,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
 
     rescName = getValByKey( condInput, RESC_NAME_KW );
     if ( rescName != NULL ) {
-        rstrcpy( dataObjInfo->rescName, rescName, LONG_NAME_LEN );
+        rstrcpy( dataObjInfo->rescName, rescName, NAME_LEN );
     }
 
     char* rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
