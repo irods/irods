@@ -99,7 +99,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         }
 
         if ( execCmdInp->addPathToArgv > 0 ) {
-            char tmpArgv[LONG_NAME_LEN];
+            char tmpArgv[HUGE_NAME_LEN];
             rstrcpy( tmpArgv, execCmdInp->cmdArgv, HUGE_NAME_LEN );
             snprintf( execCmdInp->cmdArgv, HUGE_NAME_LEN, "%s %s",
                       dataObjInfoHead->filePath, tmpArgv );
