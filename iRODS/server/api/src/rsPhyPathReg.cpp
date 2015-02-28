@@ -960,7 +960,7 @@ int structFileReg(
     }
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    rstrcpy( dataObjInp.objPath, structFilePath, sizeof( dataObjInp ) );
+    rstrcpy( dataObjInp.objPath, structFilePath, sizeof( dataObjInp.objPath ) );
     /* user need to have write permission */
     dataObjInp.openFlags = O_WRONLY;
     status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfo );
