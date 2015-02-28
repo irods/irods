@@ -339,7 +339,7 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->dataOwnerZone, tmpDataOwnerZone, NAME_LEN );
         dataObjInfo->replNum = atoi( tmpReplNum );
         dataObjInfo->replStatus = atoi( tmpReplStatus );
-        rstrcpy( dataObjInfo->statusString, tmpStatusString, LONG_NAME_LEN );
+        rstrcpy( dataObjInfo->statusString, tmpStatusString, NAME_LEN );
         dataObjInfo->dataId = strtoll( tmpDataId, 0, 0 );
         dataObjInfo->collId = strtoll( tmpCollId, 0, 0 );
         dataObjInfo->dataMapId = atoi( tmpDataMapId );
@@ -347,7 +347,7 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN );
         rstrcpy( dataObjInfo->dataCreate, tmpDataCreate, TIME_LEN );
         rstrcpy( dataObjInfo->dataModify, tmpDataModify, TIME_LEN );
-        rstrcpy( dataObjInfo->dataMode, tmpDataMode, NAME_LEN );
+        rstrcpy( dataObjInfo->dataMode, tmpDataMode, SHORT_STR_LEN );
         dataObjInfo->writeFlag = writeFlag;
 
         dataObjInfo->next = 0;
