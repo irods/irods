@@ -974,7 +974,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
         }
     }
 
-    rstrcpy( ruleExecSubmitInp->exeTime, exeTime, NAME_LEN );
+    rstrcpy( ruleExecSubmitInp->exeTime, exeTime, TIME_LEN );
     rstrcpy( ruleExecSubmitInp->exeStatus, exeStatus, NAME_LEN );
     rstrcpy( ruleExecSubmitInp->ruleExecId, ruleExecId, NAME_LEN );
 
