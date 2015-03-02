@@ -1394,56 +1394,44 @@ int queZone(
     }
 }
 
-int
-setExecArg( char *commandArgv, char *av[] ) {
-    char *inpPtr, *outPtr;
-    int inx = 1;
-    int c;
-    int len = 0;
-    int openQuote = 0;
+std::vector<std::string>
+setExecArg( const char *commandArgv ) {
 
+    std::vector<std::string> arguments;
     if ( commandArgv != NULL ) {
-        inpPtr = strdup( commandArgv );
-        outPtr = inpPtr;
-        while ( ( c = *inpPtr ) != '\0' ) {
-            if ( ( c == ' ' && openQuote == 0 ) || openQuote == 2 ) {
-                openQuote = 0;
+        int len = 0;
+        bool openQuote = false;
+        const char* cur = commandArgv;
+        for ( int i = 0; commandArgv[i] != '\0'; i++ ) {
+            if ( commandArgv[i] == ' ' && !openQuote ) {
                 if ( len > 0 ) {    /* end of a argv */
-                    *inpPtr = '\0'; /* mark the end */
-                    av[inx] = outPtr;
+                    std::string( cur, len );
+                    arguments.push_back( std::string( cur, len ) );
                     /* reset inx and pointer */
-                    inpPtr++;
-                    outPtr = inpPtr;
-                    inx ++;
+                    cur = &commandArgv[i + 1];
                     len = 0;
                 }
                 else {      /* skip over blanks */
-                    inpPtr++;
-                    outPtr = inpPtr;
+                    cur = &commandArgv[i + 1];
                 }
             }
-            else if ( c == '\'' || c == '\"' ) {
-                openQuote ++;
-                if ( openQuote == 1 ) {
+            else if ( commandArgv[i] == '\'' || commandArgv[i] == '\"' ) {
+                openQuote ^= true;
+                if ( openQuote ) {
                     /* skip the quote */
-                    inpPtr++;
-                    outPtr = inpPtr;
+                    cur = &commandArgv[i + 1];
                 }
             }
             else {
                 len ++;
-                inpPtr++;
             }
         }
         if ( len > 0 ) {    /* handle the last argv */
-            av[inx] = outPtr;
-            inx++;
+            arguments.push_back( std::string( cur, len ) );
         }
     }
 
-    av[inx] = NULL;     /* terminate with a NULL */
-
-    return 0;
+    return arguments;
 }
 int
 initAgent( int processType, rsComm_t *rsComm ) {

@@ -12,6 +12,8 @@
 #include "rods.hpp"
 //#include "sockComm.hpp"
 #include "rsLog.hpp"
+#include <vector>
+#include <string>
 
 /* server host configuration */
 
@@ -175,8 +177,8 @@ getAndConnRcatHostNoLogin( rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
 int
 getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
                        rodsServerHost_t **rodsServerHost );
-int
-setExecArg( char *commandArgv, char *av[] );
+std::vector<std::string>
+setExecArg( const char *commandArgv );
 int
 initAgent( int processType, rsComm_t *rsComm );
 void cleanup();

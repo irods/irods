@@ -937,15 +937,18 @@ initServerMain( rsComm_t *svrComm ) {
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
         if ( RODS_FORK() == 0 ) { /* child */
             char *reServerOption = NULL;
-            char *av[NAME_LEN];
 
             close( svrComm->sock );
-            memset( av, 0, sizeof( av ) );
             reServerOption = getenv( "reServerOption" );
-            setExecArg( reServerOption, av );
+            std::vector<std::string> args = setExecArg( reServerOption );
+            std::vector<char *> av;
+            av.push_back( "irodsReServer" );
+            for ( std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++ ) {
+                av.push_back( strdup( it->c_str() ) );
+            }
+            av.push_back( NULL );
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
-            av[0] = "irodsReServer";
-            execv( av[0], av );
+            execv( av[0], &av[0] );
             exit( 1 );
         }
     }
