@@ -164,6 +164,7 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     status = fillGenQueryInpFromStrCond( query, &genQueryInp );
+    free( query );
     if ( status < 0 ) {
         return status;
     }
@@ -258,8 +259,8 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
     ***/
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     i = fillGenQueryInpFromStrCond( query, &genQueryInp );
+    free( query );
     if ( i < 0 ) {
-        free( query );
         return i;
     }
     genQueryInp.maxRows = MAX_SQL_ROWS;
@@ -272,17 +273,14 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
             genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
             memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
             genQueryOutParam->inOutStruct = genQueryOut;
-            free( query );
             return 0;
         }
         else {
-            free( query );
             return i;
         }
     }
     genQueryOutParam->type = strdup( GenQueryOut_MS_T );
     genQueryOutParam->inOutStruct = genQueryOut;
-    free( query );
     return 0;
 }
 
