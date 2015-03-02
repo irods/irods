@@ -1199,7 +1199,7 @@ int
 msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp, *myDataObjInp;
+    dataObjInp_t *dataObjInp, *myDataObjInp = NULL;
     msParamArray_t *myMsParamArray;
     char *outBadKeyWd;
     int validKwFlags;
@@ -1225,6 +1225,10 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam1 error. status = %d", rei->status );
         return rei->status;
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
     }
 
     rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
@@ -1233,6 +1237,10 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam2 error. status = %d", rei->status );
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
         return rei->status;
     }
 
@@ -1254,6 +1262,10 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                                 "msiDataObjPut: input msKeyValStr error. status = %d",
                                 rei->status );
         }
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
         return rei->status;
     }
 
@@ -1266,6 +1278,8 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: addMsParam error. status = %d", rei->status );
+        clearMsParamArray( myMsParamArray, 1 );
+        free( myMsParamArray );
         return rei->status;
     }
 
@@ -1469,7 +1483,7 @@ int
 msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                           msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp, *myDataObjInp;
+    dataObjInp_t *dataObjInp, *myDataObjInp = NULL;
     msParamArray_t *myMsParamArray;
 
     RE_TEST_MACRO( "    Calling msiDataObjGetWithOptions" )
