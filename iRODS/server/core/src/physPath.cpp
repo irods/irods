@@ -391,6 +391,7 @@ getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
     else {
         if ( myStat->st_mode & S_IFDIR ) {
+            free( myStat );
             return ( rodsLong_t ) SYS_PATH_IS_NOT_A_FILE;
         }
         mysize = myStat->st_size;
