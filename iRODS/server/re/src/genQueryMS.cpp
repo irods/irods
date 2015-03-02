@@ -71,6 +71,7 @@ int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     i = fillGenQueryInpFromStrCond( query, &genQueryInp );
+    free( query );
     if ( i < 0 ) {
         return i;
     }
