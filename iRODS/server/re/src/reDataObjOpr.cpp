@@ -1224,11 +1224,12 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam1 error. status = %d", rei->status );
-        return rei->status;
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
+        return rei->status;
     }
 
     rei->status = parseMspForCondInp( inpParam2, &dataObjInp->condInput,
@@ -1239,8 +1240,9 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                             "msiDataObjPut: input inpParam2 error. status = %d", rei->status );
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
@@ -1264,8 +1266,9 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
         }
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
@@ -1280,6 +1283,9 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                             "msiDataObjPut: addMsParam error. status = %d", rei->status );
         clearMsParamArray( myMsParamArray, 1 );
         free( myMsParamArray );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
@@ -1517,8 +1523,9 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
@@ -1531,8 +1538,9 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
@@ -1548,8 +1556,9 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                             rei->status );
         clearMsParamArray( myMsParamArray, 1 );
         free( myMsParamArray );
-        clearDataObjInp( myDataObjInp );
-        free( myDataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
