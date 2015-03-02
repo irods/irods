@@ -1309,6 +1309,7 @@ Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
         memcpy( tmp, buf->buf, len );
         tmp[len] = '\0';
         res = newStringRes( r, tmp );
+        free( tmp );
     }
     else if ( TYPE( val ) == T_IRODS && strcmp( val->exprType->text, KeyValPair_MS_T ) == 0 ) {
         int size = 1024;
