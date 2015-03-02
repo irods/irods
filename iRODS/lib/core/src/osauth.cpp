@@ -156,6 +156,7 @@ extern "C" {
         MD5Final( ( unsigned char* )md5digest, &ctx );
         memcpy( authenticator, md5digest, 16 );
 
+        free( buffer );
         return 0;
 
 #else /* defined OS_AUTH */
