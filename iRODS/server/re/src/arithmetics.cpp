@@ -1530,6 +1530,7 @@ Res *setVariableValue( char *varName, Res *val, Node *node, ruleExecInfo_t *rei,
         if ( i < 0 ) {
             snprintf( errbuf, ERR_MSG_LEN, "error: unsupported session variable \"%s\".", varName );
             addRErrorMsg( errmsg, RE_UNSUPPORTED_SESSION_VAR, errbuf );
+            free( varMap );
             return newErrorRes( r, RE_UNSUPPORTED_SESSION_VAR );
         }
         FunctionDesc *fd = ( FunctionDesc * ) lookupFromEnv( ruleEngineConfig.extFuncDescIndex, varMap );
