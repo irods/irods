@@ -1795,6 +1795,7 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
 
         status = parsePackInstruct( ( const char* )packInstruct, &packItemHead );
         if ( status < 0 ) {
+            freePackedItem( packItemHead );
             return status;
         }
         /* link it */
