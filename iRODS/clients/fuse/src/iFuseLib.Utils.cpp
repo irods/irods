@@ -62,7 +62,6 @@ iFuseConn_t *newIFuseConn( int *status ) {
     bzero( tmpIFuseConn, sizeof( iFuseConn_t ) );
 
     INIT_STRUCT_LOCK( *tmpIFuseConn );
-    INIT_LOCK( tmpIFuseConn->inuseLock );
 
     *status = ifuseConnect( tmpIFuseConn, &MyRodsEnv );
     /*rodsLog(LOG_ERROR, "[ NEW IFUSE CONN] %s:%d %p", __FILE__, __LINE__, tmpIFuseConn);*/
@@ -153,7 +152,6 @@ int _freeIFuseDesc( iFuseDesc_t *desc ) {
 int _freeIFuseConn( iFuseConn_t *tmpIFuseConn ) {
     _ifuseDisconnect( tmpIFuseConn );
     FREE_STRUCT_LOCK( *tmpIFuseConn );
-    FREE_LOCK( tmpIFuseConn->inuseLock );
     free( tmpIFuseConn );
     return 0;
 

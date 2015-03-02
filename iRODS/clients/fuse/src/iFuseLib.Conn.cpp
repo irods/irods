@@ -14,9 +14,6 @@
 
 #undef USE_BOOST
 
-/*
- * An ifuseconn->inuseLock is locked when before it goes from free to inuse and during the whole time it is in use, it is only unlocked when it is unused.
- */
 concurrentList_t *ConnectedConn;
 concurrentList_t *FreeConn;
 connReqWait_t connReqWait;
@@ -177,7 +174,6 @@ _useIFuseConn( iFuseConn_t *iFuseConn ) {
     iFuseConn->actTime = time( NULL );
     iFuseConn->pendingCnt++;
 
-    LOCK( iFuseConn->inuseLock );
     iFuseConn->inuseCnt++;
     iFuseConn->pendingCnt--;
 
@@ -193,7 +189,6 @@ _useFreeIFuseConn( iFuseConn_t *iFuseConn ) {
     }
     iFuseConn->actTime = time( NULL );
     iFuseConn->inuseCnt++;
-    LOCK( iFuseConn->inuseLock );
     return 0;
 }
 
@@ -209,7 +204,6 @@ unuseIFuseConn( iFuseConn_t *iFuseConn ) {
         addToConcurrentList( FreeConn, iFuseConn );
     }
     UNLOCK_STRUCT( *iFuseConn );
-    UNLOCK( iFuseConn->inuseLock );
     signalConnManager();
     return 0;
 }

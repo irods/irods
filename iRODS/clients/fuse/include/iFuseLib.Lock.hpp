@@ -10,7 +10,6 @@
  * DescLock
  * iFuseDesc
  * FileCache
- * iFuseConn.inuseLock
  * iFuseConn struct
  * lock for concurrent queue in iFuseLib.Conn.c
  *

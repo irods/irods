@@ -39,11 +39,6 @@ typedef struct IFuseConn {
 #else
     pthread_mutex_t lock;
 #endif
-#ifdef USE_BOOST
-    boost::mutex* inuseLock;
-#else
-    pthread_mutex_t inuseLock;
-#endif
     time_t actTime;	/* the last time the connection is active */
     int inuseCnt;
     int pendingCnt;
