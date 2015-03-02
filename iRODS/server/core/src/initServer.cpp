@@ -2469,6 +2469,7 @@ initConnectControl() {
                 else {
                     rodsLog( LOG_ERROR,
                              "initConnectControl: both allowUserList and disallowUserList are set" );
+                    fclose( file );
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             }
@@ -2480,6 +2481,7 @@ initConnectControl() {
                 else {
                     rodsLog( LOG_ERROR,
                              "initConnectControl: both allowUserList and disallowUserList are set" );
+                    fclose( file );
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             }
