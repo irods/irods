@@ -458,6 +458,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
         rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
         fileRenameOut_t* ren_out = 0;
         status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
+        free( ren_out );
     }
     return status;
 }
