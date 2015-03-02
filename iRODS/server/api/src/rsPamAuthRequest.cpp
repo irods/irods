@@ -100,7 +100,7 @@ runPamAuthCheck( char *username, char *password ) {
     else {
         /* This is the child */
         close( 0 );        /* close current stdin */
-        if ( dup( p2cp[0] ) == -1 ) { /* Make stdin come from read end of the pipe */
+        if ( dup2( p2cp[0], 0 ) == -1 ) { /* Make stdin come from read end of the pipe */
             int errsv = errno;
             irods::log( ERROR( errsv, "Error duplicating the file descriptor." ) );
         }
