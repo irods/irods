@@ -468,19 +468,16 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     rei->status = rsDataObjLseek( rsComm, myDataObjLseekInp, &dataObjLseekOut );
-    if ( rei->status >= 0 ) {
-        if ( outParam != NULL ) {
-            fillMsParam( outParam, NULL, DataObjLseekOut_MS_T,
-                         dataObjLseekOut, NULL );
-        }
-        else {
-            free( dataObjLseekOut );
-        }
+    if ( rei->status >= 0 && outParam != NULL ) {
+        fillMsParam( outParam, NULL, DataObjLseekOut_MS_T, dataObjLseekOut, NULL );
     }
     else {
-        rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjLseek: rsDataObjLseek failed, status = %d",
-                            rei->status );
+        free( dataObjLseekOut );
+        if ( rei->status >= 0 ) {
+            rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
+                    "msiDataObjLseek: rsDataObjLseek failed, status = %d",
+                    rei->status );
+        }
     }
 
     return rei->status;
