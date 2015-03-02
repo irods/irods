@@ -539,6 +539,7 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     else if ( i == 0 ) {
         i  = checkDateFormat( kwp );
         if ( i != 0 ) {
+            free( delayCondition );
             return i;
         }
         getOffsetTimeStr( ruleSubmitInfo->exeTime, kwp );
