@@ -1501,6 +1501,10 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: input inpParam2 error. status = %d",
                             rei->status );
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
         return rei->status;
     }
 
@@ -1511,6 +1515,10 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: input srcrescParam error. status = %d",
                             rei->status );
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
         return rei->status;
     }
 
@@ -1524,6 +1532,10 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjGetWithOptions: addMsParam error. status = %d",
                             rei->status );
+        clearMsParamArray( myMsParamArray, 1 );
+        free( myMsParamArray );
+        clearDataObjInp( myDataObjInp );
+        free( myDataObjInp );
         return rei->status;
     }
 
