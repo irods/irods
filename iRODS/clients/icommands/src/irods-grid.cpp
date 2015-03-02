@@ -268,35 +268,44 @@ int main(
 
     }
 
-    // standard zmq rep-req communication pattern
-    zmq::context_t zmq_ctx( 1 );
-    zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
-
     // this is the client so we connect rather than bind
     std::stringstream port_sstr;
     port_sstr << env.irodsCtrlPlanePort;
     std::string bind_str( "tcp://localhost:" );
     bind_str += port_sstr.str();
-    zmq_skt.connect( bind_str.c_str() );
-
     try {
-    // copy binary encoding into a zmq message for transport
+        // standard zmq rep-req communication pattern
+        zmq::context_t zmq_ctx( 1 );
+        zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
+        try {
+            zmq_skt.connect( bind_str.c_str() );
+        } catch( const zmq::error_t& ) {
+            printf( "ZeroMQ encountered an error connecting to a socket." );
+            return -1;
+        }
+
+        // copy binary encoding into a zmq message for transport
         zmq::message_t rep( data_to_send.size() );
         memcpy(
                 rep.data(),
                 data_to_send.data(),
                 data_to_send.size() );
-        zmq_skt.send( rep );
-    } catch( const zmq::error_t& ) {
-        printf( "ZeroMQ encountered an error sending a message." );
-        return -1;
-    }
+        try {
+            zmq_skt.send( rep );
+        } catch( const zmq::error_t& ) {
+            printf( "ZeroMQ encountered an error receiving a message." );
+            return -1;
+        }
 
 
-    try {
         zmq::message_t req;
         // wait for the server reponse
-        zmq_skt.recv( &req );
+        try {
+            zmq_skt.recv( &req );
+        } catch( const zmq::error_t& ) {
+            printf( "ZeroMQ encountered an error receiving a message." );
+            return -1;
+        }
 
         // decrypt the response
         std::string rep_str;
@@ -319,6 +328,7 @@ int main(
         }
     } catch( const zmq::error_t& ) {
         printf( "ZeroMQ encountered an error." );
+        printf( "ZeroMQ encountered an error sending a message." );
         return -1;
     }
 
