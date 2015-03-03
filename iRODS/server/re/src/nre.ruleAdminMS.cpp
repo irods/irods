@@ -268,7 +268,7 @@ int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx )
 int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei ) {
 
     int i;
-    dvmStruct_t *coreDVMapStrct;
+    dvmStruct_t *coreDVMapStruct;
 
     if ( ( i = isUserPrivileged( rei->rsComm ) ) != 0 ) {
         return i;
@@ -286,22 +286,19 @@ int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t
     if ( outCoreDVMapStruct->type != NULL &&
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) == 0 &&
             outCoreDVMapStruct->inOutStruct != NULL ) {
-        coreDVMapStrct = ( dvmStruct_t * ) outCoreDVMapStruct->inOutStruct;
+        coreDVMapStruct = ( dvmStruct_t * ) outCoreDVMapStruct->inOutStruct;
     }
     else {
-        coreDVMapStrct = ( dvmStruct_t * ) malloc( sizeof( dvmStruct_t ) );
-        coreDVMapStrct->MaxNumOfDVars = 0;
+        coreDVMapStruct = ( dvmStruct_t * ) malloc( sizeof( dvmStruct_t ) );
+        coreDVMapStruct->MaxNumOfDVars = 0;
     }
-    i = readDVarStructFromFile( ( char* ) inDvmFileNameParam->inOutStruct, coreDVMapStrct );
+    i = readDVarStructFromFile( ( char* ) inDvmFileNameParam->inOutStruct, coreDVMapStruct );
     if ( i != 0 ) {
-        if ( outCoreDVMapStruct->type == NULL ||
-                strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
-            free( coreDVMapStrct );
-        }
+        free( coreDVMapStruct );
         return i;
     }
 
-    outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStrct;
+    outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStruct;
     if ( outCoreDVMapStruct->type == NULL ||
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
         outCoreDVMapStruct->type = ( char * ) strdup( DVMapStruct_MS_T );
@@ -414,7 +411,7 @@ int
 msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei ) {
 
     int i;
-    dvmStruct_t *coreDVMapStrct;
+    dvmStruct_t *coreDVMapStruct;
 
     RE_TEST_MACRO( "Loopback on msiGetDVMapsFromDBIntoStruct" );
 
@@ -433,21 +430,21 @@ msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersio
     if ( outCoreDVMapStruct->type != NULL &&
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) == 0 &&
             outCoreDVMapStruct->inOutStruct != NULL ) {
-        coreDVMapStrct = ( dvmStruct_t * ) outCoreDVMapStruct->inOutStruct;
+        coreDVMapStruct = ( dvmStruct_t * ) outCoreDVMapStruct->inOutStruct;
     }
     else {
-        coreDVMapStrct = ( dvmStruct_t * ) malloc( sizeof( dvmStruct_t ) );
-        coreDVMapStrct->MaxNumOfDVars = 0;
+        coreDVMapStruct = ( dvmStruct_t * ) malloc( sizeof( dvmStruct_t ) );
+        coreDVMapStruct->MaxNumOfDVars = 0;
     }
-    i = readDVMapStructFromDB( ( char* ) inDvmBaseNameParam->inOutStruct, ( char* ) inVersionParam->inOutStruct,  coreDVMapStrct, rei );
+    i = readDVMapStructFromDB( ( char* ) inDvmBaseNameParam->inOutStruct, ( char* ) inVersionParam->inOutStruct,  coreDVMapStruct, rei );
     if ( i != 0 ) {
         if ( strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
-            free( coreDVMapStrct );
+            free( coreDVMapStruct );
         }
         return i;
     }
 
-    outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStrct;
+    outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStruct;
     if ( outCoreDVMapStruct->type == NULL ||
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
         outCoreDVMapStruct->type = ( char * ) strdup( DVMapStruct_MS_T );
