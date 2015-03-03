@@ -307,12 +307,26 @@ LDFLAGS += $(buildDir)/../external/$(AVROVERSION)/build/libavrocpp_s.a -lz
 
 INCLUDES += -I/usr/include/proc
 
-FILE_TO_CHECK=/usr/lib/x86_64-linux-gnu/libprocps.a
+FILE_TO_CHECK=/usr/lib/x86_64-linux-gnu/libprocps.so
 ifneq ("$(wildcard $(FILE_TO_CHECK))","")
-LDFLAGS += /usr/lib/x86_64-linux-gnu/libprocps.a
-else
-LDFLAGS += /usr/lib/libproc.a
+LDFLAGS += -lprocps
 endif
+
+FILE_TO_CHECK=/usr/lib/libproc.so
+ifneq ("$(wildcard $(FILE_TO_CHECK))","")
+LDFLAGS += -lproc
+endif
+
+FILE_TO_CHECK=/lib64/libprocps.so
+ifneq ("$(wildcard $(FILE_TO_CHECK))","")
+LDFLAGS += -lprocps
+endif
+
+FILE_TO_CHECK=/lib64/libproc.so
+ifneq ("$(wildcard $(FILE_TO_CHECK))","")
+LDFLAGS += -lproc
+endif
+
 
 # Clean
 clean:
@@ -407,6 +421,7 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp
 
 $(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
+	@echo "LDFLAGS $(LDFLAGS) $@"
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 

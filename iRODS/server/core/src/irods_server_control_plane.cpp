@@ -1,12 +1,10 @@
-
-
 #include "avro/Encoder.hh"
 #include "avro/Decoder.hh"
 #include "avro/Specific.hh"
 
 #include "stdio.h"
 
-#include <readproc.h>
+//#include <readproc.h>
 #include <sysinfo.h>
 
 #include "genQuery.hpp"
@@ -239,12 +237,12 @@ namespace irods {
             return PASS( ret );
 
         }
-        
+
         if( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
             // convert sec to millisec for comparison
             sleep_time_out_milli_sec = _wait_seconds * 1000;
         }
-       
+
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
 
         // rule engine server only runs on IES
@@ -265,14 +263,14 @@ namespace irods {
         server_state& s = server_state::instance();
         s( server_state::PAUSED );
 
-        size_t sleep_time  = 0; 
+        size_t sleep_time  = 0;
         bool   timeout_flg = false;
         int    proc_cnt = getAgentProcCnt();
 
         while( proc_cnt > 0 && !timeout_flg ) {
             // takes sec, microsec
-            rodsSleep( 
-                0, 
+            rodsSleep(
+                0,
                 wait_milliseconds );
 
             if( SERVER_CONTROL_WAIT_FOREVER_KW != _wait_option ) {
@@ -285,8 +283,8 @@ namespace irods {
             proc_cnt = getAgentProcCnt();
 
         } // while
-       
-        // actually shut down the server 
+
+        // actually shut down the server
         s( server_state::STOPPED );
 
         return SUCCESS();
@@ -345,8 +343,9 @@ namespace irods {
 
     } // operation_resume
 
-    static time_t get_pid_age( 
+    static time_t get_pid_age(
         pid_t _pid ) {
+#if 0
         proc_t proc_info;
         if( !get_proc_stats( _pid, &proc_info ) ) {
             rodsLog(
@@ -361,6 +360,8 @@ namespace irods {
         time_t seconds_since_boot = uptime(0,0);
         time_t start_time = proc_info.start_time / Hertz;
         return seconds_since_boot - start_time;
+#endif
+        return 0;
 
     } // get_pid_age
 
@@ -404,7 +405,7 @@ namespace irods {
                        SYS_MALLOC_ERR,
                        "allocation of json array failed" );
         }
-               
+
         std::vector<int> pids;
         int cnt = getAgentProcPIDs( pids );
         for( size_t i = 0;
@@ -419,7 +420,7 @@ namespace irods {
                            SYS_MALLOC_ERR,
                            "allocation of json object failed" );
             }
-        
+
             json_object_set( agent_obj, "agent_pid", json_integer( pid ) );
             json_object_set( agent_obj, "age", json_integer( age ) );
             json_array_append( arr, agent_obj );
@@ -429,7 +430,7 @@ namespace irods {
         }
 
         json_object_set( obj, "agents", arr );
-    
+
         char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
 
         json_decref( obj );
@@ -751,7 +752,7 @@ namespace irods {
                       _wait_seconds,
                       _output );
             // takes sec, microsec
-            rodsSleep( 
+            rodsSleep(
                 0, SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000 );
         }
 
@@ -974,7 +975,7 @@ namespace irods {
 
             std::string output;
             if ( *itr == my_host_name_ ) {
-                error ret = op_map_[ _cmd_name ]( 
+                error ret = op_map_[ _cmd_name ](
                                 _wait_option,
                                 _wait_seconds,
                                 _output );
@@ -1153,35 +1154,3 @@ namespace irods {
     } // process_operation
 
 }; // namespace irods
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
