@@ -228,6 +228,7 @@ extern "C" {
             return SYS_MALLOC_ERR;
         }
         nb = read( key_fd, keybuf, buflen );
+        close( key_fd );
         if ( nb < 0 ) {
             rodsLog( LOG_ERROR,
                      "%s: couldn't read key from %s. errno = %d",
@@ -235,7 +236,6 @@ extern "C" {
             free( keybuf );
             return FILE_READ_ERR;
         }
-        close( key_fd );
 
         *key_len = buflen;
         *key = keybuf;
