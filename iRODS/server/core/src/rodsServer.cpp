@@ -341,7 +341,7 @@ serverMain( char *logDir ) {
         while ( irods::server_state::STOPPED != state() ) {
             if ( irods::server_state::PAUSED == state() ) {
                 procChildren( &ConnectedAgentHead );
-                sleep( 0.125 );
+                rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // microseconds
                 continue;
             }
 
@@ -350,7 +350,7 @@ serverMain( char *logDir ) {
             int numSock = 0;
             struct timeval time_out;
             time_out.tv_sec  = 0;
-            time_out.tv_usec = 100;
+            time_out.tv_usec = irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
             while ( ( numSock = select(
                                     svrComm.sock + 1,
                                     &sockMask,
@@ -1303,7 +1303,7 @@ purgeLockFileWorkerTask() {
 
     irods::server_state& state = irods::server_state::instance();
     while ( irods::server_state::STOPPED != state() ) {
-        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC );
+        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // microseconds
         wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
         if ( wait_time_ms >= purge_time_ms ) {
