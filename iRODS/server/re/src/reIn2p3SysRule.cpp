@@ -32,7 +32,6 @@ static pthread_mutex_t my_mutex;
 short threadIsAlive[MAX_NSERVERS];
 
 int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *rei ) {
-
     char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE],
          monStatus[MAX_NAME_LEN], suffix[MAX_VALUE];
     const char *delim1 = "#";
@@ -53,17 +52,25 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     else {
         strncpy( monStatus, RESC_AUTO_UP, MAX_NAME_LEN );
     }
-
     std::vector<std::string> output_tokens;
     boost::algorithm::split( output_tokens, output, boost::is_any_of( delim1 ) );
+    output_tokens.erase(output_tokens.begin()); // output has leading delimiter
+    if (output_tokens.size() != 9) {
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: output_tokens is of incorrect size: size [%ju], output [%s]", (uintmax_t)output_tokens.size(), output );
+        return -1;
+    }
     std::vector<std::string> resc_tokens;
     boost::algorithm::split( resc_tokens, resc, boost::is_any_of( delim2 ) );
     std::vector<std::string> disk_tokens;
     boost::algorithm::split( disk_tokens, output_tokens[4], boost::is_any_of( delim2 ) );
     std::vector<std::string> value_tokens;
     boost::algorithm::split( value_tokens, output_tokens[7], boost::is_any_of( delim2 ) );
-    int index = 0;
-    while ( !resc_tokens[index].empty() ) {
+    if (resc_tokens.size() != disk_tokens.size() || resc_tokens.size() != value_tokens.size()) {
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: resc_tokens [%ju], disk_tokens [%ju], value_tokens [%ju]. output [%s]", (uintmax_t)resc_tokens.size(), (uintmax_t)disk_tokens.size(), (uintmax_t)value_tokens.size(), output );
+        return -1;
+    }
+
+    for (std::vector<std::string>::size_type index=0; index<resc_tokens.size(); ++index) {
         if ( strcmp( monStatus, RESC_AUTO_DOWN ) == 0 ) {
             disk_tokens[index] = "-1";
             value_tokens[index] = "-1";
