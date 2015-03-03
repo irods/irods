@@ -207,6 +207,7 @@ sub testGetAndUses() {   # CHECK PB WITH 1 USE
     runCmd(2,"iget $D1/$F1");
     runCmd(0,"iget -t $T1 $D1/$F1");
     unlink($F1);
+    runCmd(0,"sleep 1");
     runCmd(2,"iget -t $T1 $D1/$F1");
     becomeSelfAgain();
     runCmd(0, "iticket mod $T1 uses 100");
@@ -453,6 +454,7 @@ sub doReadTests() {
 
 
 # Group test
+    printf("doReadTests Group test\n");
     runCmd(1, "iadmin mkgroup $G1");
     runCmd(1, "iadmin rfg $G1 $user2");
     runCmd(0, "iadmin atg $G1 $user2");
@@ -474,6 +476,7 @@ sub doReadTests() {
     runCmd(0, "iticket mod $T1 remove group $G1");
 
 # User test
+    printf("doReadTests User test\n");
     runCmd(0, "iticket mod $T1 add user $user2");
     unlink($F1);
     becomeuser2();
@@ -492,6 +495,7 @@ sub doReadTests() {
     runCmd(0, "iticket mod $T1 remove user $user2");
 
 # Host test
+    printf("doReadTests Host test\n");
     runCmd(0, "iticket mod $T1 add host $Other_Host");
     testGetShouldFail();
     runCmd(0, "iticket mod $T1 add host $This_Host");
@@ -507,6 +511,7 @@ sub doReadTests() {
     runCmd(0, "iticket mod $T1 expire 0");
 
 # Expire test
+    printf("doReadTests Expire test\n");
     runCmd(0, "iticket mod $T1 expire $Past_Date");
     testGetShouldFail();
     runCmd(0, "iticket mod $T1 expire $Future_Date");
@@ -519,7 +524,7 @@ sub doReadTests() {
     runCmd(0, "iticket mod $T1 expire 0");
 
 # use count tests
-    printf("starting count tests\n");
+    printf("doReadTests Count test\n");
     testGetAndUses();
     runCmd(0, "iticket ls $T1");
     printf("stdout:$cmdStdout");
