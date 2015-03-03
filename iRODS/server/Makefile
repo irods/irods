@@ -307,11 +307,11 @@ LDFLAGS += $(buildDir)/../external/$(AVROVERSION)/build/libavrocpp_s.a -lz
 
 INCLUDES += -I/usr/include/proc
 
-#ifneq ("$(wildcard "/usr/lib/libproc.a"))","")
-#LDFLAGS += /usr/lib/libproc.a
-#else
+ifneq ("$(wildcard "/usr/lib/libproc.a"))","")
+LDFLAGS += /usr/lib/libproc.a
+else
 LDFLAGS += /usr/lib/x86_64-linux-gnu/libprocps.a
-#endif
+endif
 
 
 # Clean
