@@ -782,6 +782,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
             if ( column_inx < 0 ) {
                 snprintf( errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subQueNode->subtrees[0]->text );
                 generateAndAddErrMsg( errmsgBuf, subQueNode->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg );
+                deleteHashTable( queCondHashTable, nop );
                 return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
             }
 
@@ -807,6 +808,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
             if ( att_inx < 0 ) {
                 snprintf( errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subQueNode->subtrees[0]->text );
                 generateAndAddErrMsg( errmsgBuf, subQueNode->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg );
+                deleteHashTable( queCondHashTable, nop );
                 return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
             }
 
@@ -820,11 +822,13 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
                 /* Make the condition */
                 res0 = evaluateExpression3( node->subtrees[0], 0, 0, rei, reiSaveFlag, env, errmsg, r );
                 if ( getNodeType( res0 ) == N_ERROR ) {
+                    deleteHashTable( queCondHashTable, nop );
                     return res0;
                 }
                 nodeType0 = ( NodeType ) TYPE( res0 );
                 if ( nodeType0 != T_DOUBLE && nodeType0 != T_INT && nodeType0 != T_STRING ) {
                     generateAndAddErrMsg( "dynamic type error", node->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg );
+                    deleteHashTable( queCondHashTable, nop );
                     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
                 }
                 value0 = convertResToString( res0 );
@@ -840,11 +844,13 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
                 if ( strcmp( node->text, "between" ) == 0 ) {
                     res1 = evaluateExpression3( node->subtrees[1], 0, 0, rei, reiSaveFlag, env, errmsg, r );
                     if ( getNodeType( res1 ) == N_ERROR ) {
+                        deleteHashTable( queCondHashTable, nop );
                         return res1;
                     }
                     nodeType1 = ( NodeType ) TYPE( res1 );
                     if ( ( ( nodeType0 == T_DOUBLE || nodeType0 == T_INT ) && nodeType1 != T_DOUBLE && nodeType1 != T_INT ) || ( nodeType0 == T_STRING && nodeType1 != T_STRING ) ) {
                         generateAndAddErrMsg( "dynamic type error", node->subtrees[1], RE_DYNAMIC_TYPE_ERROR, errmsg );
+                        deleteHashTable( queCondHashTable, nop );
                         return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
                     }
                     value1 = convertResToString( res1 );
@@ -866,6 +872,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
             break;
         default:
             generateAndAddErrMsg( "unsupported node type", subQueNode, RE_DYNAMIC_TYPE_ERROR, errmsg );
+            deleteHashTable( queCondHashTable, nop );
             return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
         }
     }
