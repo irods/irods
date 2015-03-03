@@ -338,11 +338,31 @@ serverMain( char *logDir ) {
         SvrSock = svrComm.sock;
 
         irods::server_state& state = irods::server_state::instance();
-        while ( irods::server_state::STOPPED != state() ) {
-            if ( irods::server_state::PAUSED == state() ) {
+        while ( true ) {
+            std::string the_server_state = state();
+            if( irods::server_state::STOPPED == the_server_state ) {
                 procChildren( &ConnectedAgentHead );
-                rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // microseconds
+                rodsLog(
+                    LOG_NOTICE,
+                    "iRODS Server is exiting with state [%s].",
+                    the_server_state.c_str() );
+                break;
+
+            } else if ( irods::server_state::PAUSED == the_server_state ) {
+                procChildren( &ConnectedAgentHead );
+                rodsSleep(
+                    0,
+                    irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 );
                 continue;
+
+            } else {
+                if( irods::server_state::RUNNING != the_server_state ) {
+                    rodsLog(
+                        LOG_NOTICE,
+                        "invalid iRODS server state [%s]",
+                        the_server_state.c_str() );
+                }
+
             }
 
             FD_SET( svrComm.sock, &sockMask );
@@ -439,8 +459,6 @@ serverMain( char *logDir ) {
         procChildren( &ConnectedAgentHead );
         stopProcConnReqThreads();
 
-        rodsLog( LOG_NOTICE, "irods server is exiting" );
-
     }
     catch ( const irods::exception& e_ ) {
         const char* what = e_.what();
@@ -448,6 +466,8 @@ serverMain( char *logDir ) {
         return e_.code();
 
     }
+
+    rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
     return 0;
 

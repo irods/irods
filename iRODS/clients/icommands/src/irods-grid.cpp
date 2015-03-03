@@ -246,7 +246,6 @@ irods::error decrypt_response(
 
 std::string format_grid_status( 
     const std::string& _status ) {
-std::cout << "format_grid_status :: " << _status << std::endl;
 
     std::string status = "{\n    \"hosts\": [\n";
     status += _status;
@@ -360,16 +359,20 @@ int main(
         }
 
         if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-            std::cout << rep_str.data()
-                << std::endl;
+            if( irods::SERVER_CONTROL_STATUS == cmd.command ) {
+                rep_str = format_grid_status( rep_str );
+
+            }
+
+            std::cout << rep_str << std::endl;
+
         }
+
     } catch( const zmq::error_t& ) {
         printf( "ZeroMQ encountered an error." );
-        printf( "ZeroMQ encountered an error sending a message." );
         return -1;
 
     }
-
 
     return 0;
 
