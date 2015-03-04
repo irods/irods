@@ -1061,10 +1061,11 @@ logFileOpen( int runMode, char *logDir, char *logFileName ) {
     if ( logFd < 0 ) {
         fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
                  logFile, errno );
+        free( logFile );
         return -1 * errno;
     }
 
-
+    free( logFile );
     return logFd;
 }
 
