@@ -145,6 +145,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                              &get_hier_out );
                 if ( status < 0 ) {
                     irods::log( ERROR( status, "failed to get resc hier" ) );
+                    free( get_hier_out );
                     return status;
                 }
 
@@ -165,6 +166,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                     &phyPathRegInp->condInput,
                     DEST_RESC_NAME_KW,
                     root_resc.c_str() );
+                free( get_hier_out );
 
             }
             // =-=-=-=-=-=-=-
