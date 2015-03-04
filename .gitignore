@@ -16,6 +16,7 @@ iRODS/.client_cflags
 iRODS/.client_ldflags
 iRODS/.server_cflags
 iRODS/.server_ldflags
+iRODS/clients/c_api_test/mytest
 iRODS/config/config.mk
 iRODS/config/irods.config
 iRODS/config/platform.mk

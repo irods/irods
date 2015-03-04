@@ -28,7 +28,7 @@ endif
 #
 # Principal Targets
 #
-.PHONY: default all lib libs server clients icommands fuse
+.PHONY: default all lib libs server clients c_api_test icommands fuse
 .PHONY: clean distclean mostlyclean maintainer-clean
 .PHONY: cleanlib cleanclients cleanserver
 .PHONY: config
@@ -63,10 +63,16 @@ server:	libs
 	@echo " "
 
 # Build the clients
-clients: icommands fuse
+clients: c_api_test icommands fuse
+
+c_api_test:
+	@echo "c_api_test"
+	@echo "------------------------------------------------------------------------"
+	@$(MAKE) -C clients/c_api_test
+	@echo " "
 
 icommands: libs
-	@echo "I-Commands"
+	@echo "iCommands"
 	@echo "------------------------------------------------------------------------"
 	@$(MAKE) -C clients/icommands all
 	@echo " "
@@ -124,6 +130,7 @@ cleanserver:
 	@$(MAKE) -C server clean
 
 cleanclients:
+	@$(MAKE) -C clients/c_api_test clean
 	@$(MAKE) -C clients/icommands clean
 	@$(MAKE) -C clients/fuse clean
 
