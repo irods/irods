@@ -118,6 +118,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             else if ( gotTypeCast > 0 && gotItemName == 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: No varName for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             /* queue it */
@@ -140,12 +141,14 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast > 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: % position error for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->typeInx = ( packTypeInx_t )packTypeLookup( buf );
             if ( myPackItem->typeInx < 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s", buf );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
@@ -154,6 +157,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? No variable following ? for %s",
                          packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->name = strdup( buf );
@@ -165,12 +169,14 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast > 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? position error for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->typeInx = ( packTypeInx_t )packTypeLookup( buf );
             if ( myPackItem->typeInx < 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s", buf );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
@@ -179,6 +185,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? No variable following ? for %s",
                          packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             rstrcpy( myPackItem->strValue, buf, NAME_LEN );
@@ -189,6 +196,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: * position error for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -198,6 +206,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: * position error for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -207,6 +216,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: * position error for %s", packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -217,6 +227,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s in %s",
                          buf, packInstruct );
+                free( myPackItem );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
@@ -231,6 +242,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             rodsLog( LOG_ERROR,
                      "parsePackInstruct: too many string around %s in %s",
                      buf, packInstruct );
+            free( myPackItem );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
     }
@@ -238,6 +250,7 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
         rodsLog( LOG_ERROR,
                  "parsePackInstruct: Pack Instruction %s not properly terminated",
                  packInstruct );
+        free( myPackItem );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
     return 0;
