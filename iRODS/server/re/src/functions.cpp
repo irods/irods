@@ -2123,6 +2123,7 @@ Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_
         coll->subtrees[j++] = newStringRes( r, bufStart );
     }
 
+    free( buf );
     return coll;
 
 }
