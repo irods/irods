@@ -3347,6 +3347,10 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
         free( myMsParamArray );
         clearDataObjInp( dataObjInp );
         free( dataObjInp );
+        if ( myDataObjInp != dataObjInp ) {
+            clearDataObjInp( myDataObjInp );
+            free( myDataObjInp );
+        }
         return rei->status;
     }
 
