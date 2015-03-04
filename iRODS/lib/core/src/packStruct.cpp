@@ -1392,6 +1392,9 @@ packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
     }
 
     if ( maxStrLen >= 0 && myStrlen >= maxStrLen ) {
+        if ( xmlStr != myInPtr ) {
+            free( xmlStr );
+        }
         return USER_PACKSTRUCT_INPUT_ERR;
     }
     packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
@@ -1413,7 +1416,7 @@ packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
 
     packedOutput->bBuf->len += ( xmlLen );
     packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
-    if ( xmlStr != NULL && xmlStr != myInPtr ) {
+    if ( xmlStr != myInPtr ) {
         free( xmlStr );
     }
     return 0;
