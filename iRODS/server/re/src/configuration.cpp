@@ -341,14 +341,13 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
 
 #ifdef CACHE_ENABLE
 
-    Cache *cache;
     int update = 0;
     unsigned char *buf = NULL;
     /* try to find shared memory cache */
     if ( processType == RULE_ENGINE_TRY_CACHE && inRuleStruct == &coreRuleStrct ) {
         buf = prepareNonServerSharedMemory();
         if ( buf != NULL ) {
-            cache = restoreCache( buf );
+            Cache * cache = restoreCache( buf );
             detachSharedMemory();
 
             if ( cache == NULL ) {
@@ -379,9 +378,12 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
                     /* ruleEngineConfig.extRuleSetStatus = LOCAL;
                     ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
                     /* createRuleIndex(inRuleStruct); */
-                    RETURN;
+                    ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                    free( cache );
+                    return res;
                 }
             }
+            free( cache );
         }
         else {
             rodsLog( LOG_DEBUG, "Cannot open shared memory." );
@@ -413,7 +415,8 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
 #endif
         if ( i != 0 ) {
             res = i;
-            RETURN;
+            ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+            return res;
         }
         snprintf( r2, sizeof( r2 ), "%s", r3 );
     }
@@ -440,7 +443,6 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
     }
 #endif
 
-ret:
     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
 
     return res;
