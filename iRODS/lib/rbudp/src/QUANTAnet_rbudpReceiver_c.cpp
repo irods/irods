@@ -430,6 +430,7 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
             close( fd );
         }
     }
+    fclose( fp );
 
     // send all zero block to end the sender.
     bzero( str, SIZEOFFILENAME );
@@ -439,7 +440,6 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
         return FAILED;
     }
 
-    fclose( fp );
     return RB_SUCCESS;
 }
 
