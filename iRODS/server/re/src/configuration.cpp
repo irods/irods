@@ -379,7 +379,7 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
                     ruleEngineConfig.extFuncDescIndexStatus = LOCAL; */
                     /* createRuleIndex(inRuleStruct); */
                     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
-                    free( cache );
+                    //free( cache );
                     return res;
                 }
             }
