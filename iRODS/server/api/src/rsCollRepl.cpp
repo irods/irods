@@ -30,7 +30,6 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
             collOprStat_t **collOprStat ) {
     int status;
     dataObjInp_t dataObjInp;
-    collEnt_t *collEnt;
     int handleInx;
     transferStat_t myTransStat;
     int totalFileCnt = 0;
@@ -85,6 +84,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         return 0;
     }
 
+    collEnt_t *collEnt = NULL;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->objType == DATA_OBJ_T ) {
             if ( totalFileCnt == 0 ) totalFileCnt =
@@ -138,6 +138,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         free( collEnt );	   /* just free collEnt but not content */
     }
     rsCloseCollection( rsComm, &handleInx );
+    freeCollEnt( collEnt );
 
     return savedStatus;
 }
