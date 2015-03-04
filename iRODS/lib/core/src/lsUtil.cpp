@@ -647,6 +647,7 @@ printCollAcl( rcComm_t *conn, char *collName ) {
 
         }
         printf( "\n" );
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
@@ -654,23 +655,27 @@ printCollAcl( rcComm_t *conn, char *collName ) {
 
     if ( status < 0 ) {
         printf( "\n" );
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
     if ( ( userName = getSqlResultByInx( genQueryOut, COL_COLL_USER_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_USER_NAME failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( userZone = getSqlResultByInx( genQueryOut, COL_COLL_USER_ZONE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_USER_ZONE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataAccess = getSqlResultByInx( genQueryOut, COL_COLL_ACCESS_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_ACCESS_NAME failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
