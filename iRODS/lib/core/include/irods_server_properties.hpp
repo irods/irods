@@ -15,16 +15,35 @@
 
 namespace irods {
 
-    const std::string STRICT_ACL_KW( "strict_acls" );
+/// @brief kw for server property map storing strict acl configuration
+    static const std::string STRICT_ACL_KW( "strict_acls" );
 
 /// @brief kw for server property map stating this is an agent-agent conn
-    const std::string AGENT_CONN_KW( "agent_conn" );
+    static const std::string AGENT_CONN_KW( "agent_conn" );
 
 /// @brief kw for server property map for encryption key
-    const std::string AGENT_KEY_KW( "agent_key" );
+    static const std::string AGENT_KEY_KW( "agent_key" );
 
 /// @brief kw for storing the process id of the rule engine server
-    const std::string RE_PID_KW( "rule_engine_process_id" );
+    static const std::string RE_PID_KW( "rule_engine_process_id" );
+
+/// @brief kw for storing client user name
+    static const std::string CLIENT_USER_NAME_KW( "client_user_name" );
+
+/// @brief kw for storing client user  zone
+    static const std::string CLIENT_USER_ZONE_KW( "client_user_zone" );
+
+/// @brief kw for storing client user priv
+    static const std::string CLIENT_USER_PRIV_KW( "client_user_priv" );
+
+/// @brief kw for storing proxy user name
+    static const std::string PROXY_USER_NAME_KW( "proxy_user_name" );
+
+/// @brief kw for storing proxy user  zone
+    static const std::string PROXY_USER_ZONE_KW( "proxy_user_zone" );
+
+/// @brief kw for storing proxy user priv
+    static const std::string PROXY_USER_PRIV_KW( "proxy_user_priv" );
 
     class server_properties {
 

@@ -3272,7 +3272,10 @@ irods::error get_script_output_single_line(
     const char* fgets_ret = fgets( &buf[0], buf.size(), fp );
     if ( fgets_ret == NULL ) {
         std::stringstream msg;
-        msg << "fgets() failed. feof[" << std::feof( fp ) << "] ferror[" << std::ferror( fp ) << "]";
+        msg << "fgets() failed. feof[" 
+            << std::feof( fp ) 
+            << "] ferror[" 
+            << std::ferror( fp ) << "]";
         const int pclose_ret = pclose( fp );
         msg << " pclose[" << pclose_ret << "]";
         return ERROR( FILE_READ_ERR, msg.str() );
@@ -3294,6 +3297,103 @@ irods::error get_script_output_single_line(
     return SUCCESS();
 
 }  // get_script_output_single_line
+
+irods::error add_global_re_params_to_kvp_for_dynpep( 
+        keyValPair_t& _kvp ) {
+
+    irods::error ret = SUCCESS();
+
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error result = props.capture_if_needed();
+    if ( !result.ok() ) {
+        irods::log( PASSMSG( "failed to read server configuration", result ) );
+    }
+
+    std::string client_name;
+    props.get_property< std::string >( 
+            irods::CLIENT_USER_NAME_KW,
+            client_name );
+    addKeyVal( 
+        &_kvp,
+        irods::CLIENT_USER_NAME_KW.c_str(),
+        client_name.c_str() );
+    
+    std::string client_zone;
+    props.get_property< std::string >( 
+            irods::CLIENT_USER_ZONE_KW,
+            client_zone);
+    addKeyVal( 
+        &_kvp,
+        irods::CLIENT_USER_ZONE_KW.c_str(),
+        client_zone.c_str() );
+    
+    int client_priv = 0;
+    props.get_property< int >(
+            irods::CLIENT_USER_PRIV_KW,
+            client_priv );
+    std::string client_priv_str( "0" );
+    try {
+        client_priv_str = boost::lexical_cast< std::string >( client_priv );
+    } catch ( boost::bad_lexical_cast& _e ) {
+        std::stringstream msg;
+        msg << "failed to cast "
+            << client_priv
+            << " to a string";
+        ret = ERROR(
+                  SYS_INVALID_INPUT_PARAM,
+                  msg.str() );
+    }
+
+    addKeyVal( 
+        &_kvp,
+        irods::CLIENT_USER_PRIV_KW.c_str(),
+        client_priv_str.c_str() );
+        
+
+    std::string proxy_name;
+    props.get_property< std::string >( 
+            irods::PROXY_USER_NAME_KW,
+            proxy_name );
+    addKeyVal( 
+        &_kvp,
+        irods::PROXY_USER_NAME_KW.c_str(),
+        proxy_name.c_str() );
+    
+    std::string proxy_zone;
+    props.get_property< std::string >( 
+            irods::PROXY_USER_ZONE_KW,
+            proxy_zone );
+    addKeyVal( 
+        &_kvp,
+        irods::PROXY_USER_ZONE_KW.c_str(),
+        proxy_zone.c_str() );
+    
+    int proxy_priv = 0;
+    props.get_property< int >(
+            irods::PROXY_USER_PRIV_KW,
+            proxy_priv );
+    std::string proxy_priv_str( "0" );
+    try {
+        proxy_priv_str = boost::lexical_cast< std::string >( proxy_priv );
+    } catch ( boost::bad_lexical_cast& _e ) {
+        std::stringstream msg;
+        msg << "failed to cast "
+            << proxy_priv
+            << " to a string";
+        ret = ERROR(
+                  SYS_INVALID_INPUT_PARAM,
+                  msg.str() );
+    }
+    addKeyVal( 
+        &_kvp,
+        irods::PROXY_USER_PRIV_KW.c_str(),
+        proxy_priv_str.c_str() );
+
+    return ret;
+
+} // add_global_re_params_to_kvp
+
+
 
 
 

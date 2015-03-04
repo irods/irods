@@ -2,6 +2,7 @@
 // irods includes
 #include "index.hpp"
 #include "reFuncDefs.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_operation_rule_execution_manager.hpp"
@@ -71,6 +72,13 @@ namespace irods {
             LOG_DEBUG,
             "operation_rule_execution_manager exec_op [%s]",
             _name.c_str() );
+        
+        // =-=-=-=-=-=-=-
+        // add additional global re params
+        error err = add_global_re_params_to_kvp_for_dynpep( _kvp );
+        if( !err.ok() ) {
+            return PASS( err );
+        }
 
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule

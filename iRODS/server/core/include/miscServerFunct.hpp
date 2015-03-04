@@ -160,6 +160,8 @@ irods::error get_script_output_single_line(
     const std::vector<std::string>& args, 
     std::string&                    output );
 
+irods::error add_global_re_params_to_kvp_for_dynpep( 
+        keyValPair_t& _kvp );
 
 
 #endif	/* MISC_SERVER_FUNCT_H */
