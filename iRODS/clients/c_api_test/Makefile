@@ -17,7 +17,7 @@ CFLAGS = -I../../lib/core/include/ \
 	-I../../lib/sha1/include/ \
 	-I../../server/icat/include/ \
 	-I../../server/re/include/ \
-	-I../../server/core/include/ 
+	-I../../server/core/include/
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
 	$(BOOST_DIR)/stage/lib/libboost_filesystem.a \
@@ -40,9 +40,9 @@ CFLAGS += -I../../../external/$(AVROVERSION)
 LDFLAGS += ../../../external/$(AVROVERSION)/build/libavrocpp_s.a
 
 # include miscellaneous
-LDFLAGS += -lz -lssl -lcrypt
+LDFLAGS += -lz -lssl -lcrypto -ldl -lpthread -lm
 
-# include realtime library for macosx
+# include realtime library except for macosx (already included)
 ifneq (${OS_platform}, osx_platform)
 LDFLAGS += -lrt
 endif
@@ -60,6 +60,3 @@ clean:
 	rm -f mytest
 	rm -f *.o
 	rm -f *~
-
-
-
