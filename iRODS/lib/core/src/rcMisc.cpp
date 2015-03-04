@@ -3188,6 +3188,7 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
         *u = '\0';
         trimWS( t );
         if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+            free( s );
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
         *p = '\0';
@@ -3201,6 +3202,7 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
     }
     trimWS( t );
     if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+        free( s );
         return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
     *p = '\0';
