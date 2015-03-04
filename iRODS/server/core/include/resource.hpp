@@ -11,7 +11,6 @@
 
 
 #include "rods.hpp"
-#include "initServer.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
 #include "ruleExecSubmit.hpp"

@@ -10,6 +10,7 @@
 #include "rsApiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "rsGlobal.hpp"   /* server global */
 #ifdef windows_platform
 #include "rsLog.hpp"
 static void NtAgentSetEnvsFromArgs( int ac, char **av );
@@ -30,6 +31,8 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_threads.hpp"
+#include "procLog.h"
+#include "initServer.hpp"
 
 #include "readServerConfig.hpp"
 #include "sockCommNetworkInterface.hpp"

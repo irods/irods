@@ -10,7 +10,6 @@
 #define RE_SERVER_HPP
 
 #include "rods.hpp"
-#include "rsGlobal.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"     /* client global */
 #include "rsLog.hpp"
 #include "rodsLog.hpp"
@@ -18,7 +17,6 @@
 #include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 
 #define RE_SERVER_SLEEP_TIME    30
 #define RE_SERVER_EXEC_TIME     120

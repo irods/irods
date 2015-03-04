@@ -8,10 +8,9 @@
 
 /* This is a Object File I/O API call */
 
-#include "rods.hpp"
+#include "rodsConnect.h"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 /* fake attri index for procStatOut */
 #define PID_INX                 1000001

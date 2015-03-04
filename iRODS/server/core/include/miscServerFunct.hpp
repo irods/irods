@@ -19,7 +19,6 @@
 
 #include "rods.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 #include "fileOpen.hpp"
 #include "dataObjInpOut.hpp"
 #include "dataCopy.hpp"

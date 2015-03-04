@@ -3,7 +3,7 @@
 #define USE_SSL 1
 #include "sslSockComm.hpp"
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"

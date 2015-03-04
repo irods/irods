@@ -2,7 +2,7 @@
 #define IRODS_SERVER_API_CALL_HPP__
 #include "irods_server_api_table.hpp"
 #include "rodsErrorTable.hpp"
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 
 namespace irods {

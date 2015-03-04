@@ -18,7 +18,6 @@
 #include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 #include "rodsXmsg.hpp"
 
 #define REQ_MSG_TIMEOUT_TIME	5	/* 5 sec timeout for req msg */

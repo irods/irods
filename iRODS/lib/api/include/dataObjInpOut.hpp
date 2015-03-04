@@ -14,7 +14,7 @@
 #define DATA_OBJ_INP_OUT_HPP
 
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #if defined(aix_platform)
 #ifndef _AIX_PTHREADS_D7

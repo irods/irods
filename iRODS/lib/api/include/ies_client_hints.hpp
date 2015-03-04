@@ -7,7 +7,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 #define IES_CLIENT_HINTS_AN 10216
 

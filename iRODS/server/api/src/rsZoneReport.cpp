@@ -1,7 +1,6 @@
 
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
-#include "initServer.hpp"
 #include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"

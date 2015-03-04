@@ -6,6 +6,7 @@
 #include "reNaraMetaData.hpp"
 #include "apiHeaderAll.hpp"
 #include "irods_stacktrace.hpp"
+#include "rodsConnect.h"
 
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)

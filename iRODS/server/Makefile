@@ -36,6 +36,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/dataObjOpr.o \
 		$(svrCoreObjDir)/fileOpr.o \
 		$(svrCoreObjDir)/initServer.o \
+		$(svrCoreObjDir)/rodsConnect.o \
+		$(svrCoreObjDir)/procLog.o \
 		$(svrCoreObjDir)/miscServerFunct.o \
 		$(svrCoreObjDir)/objMetaOpr.o \
 		$(svrCoreObjDir)/rsApiHandler.o \

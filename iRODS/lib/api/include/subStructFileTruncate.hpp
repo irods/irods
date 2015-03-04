@@ -12,7 +12,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "fileTruncate.hpp"
 
 #if defined(RODS_SERVER)

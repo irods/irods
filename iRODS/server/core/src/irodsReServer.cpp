@@ -9,10 +9,12 @@
 #include "irodsReServer.hpp"
 #include "reServerLib.hpp"
 #include "rsApiHandler.hpp"
+#include "rsGlobal.hpp"
 #include "rsIcatOpr.hpp"
 #include <syslog.h>
 #include "miscServerFunct.hpp"
 #include "reconstants.hpp"
+#include "initServer.hpp"
 #include "irods_server_state.hpp"
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
@@ -62,7 +64,7 @@ main( int argc, char **argv ) {
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
     signal( SIGUSR1, signalExit );
-    signal( SIGPIPE, rsPipSigalHandler );
+    signal( SIGPIPE, rsPipeSignalHandler );
     /* XXXXX switched to SIG_DFL for embedded python. child process
      * went away. But probably have to call waitpid.
      * signal(SIGCHLD, SIG_IGN); */

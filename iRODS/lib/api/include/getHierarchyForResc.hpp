@@ -7,7 +7,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 typedef struct GetHierarchyForRescInp {
     char resc_name_[ MAX_NAME_LEN ];

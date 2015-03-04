@@ -9,7 +9,7 @@
 #ifndef RC_CONNECT_HPP
 #define RC_CONNECT_HPP
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rodsVersion.hpp"
 #include "rodsError.hpp"
 #include "rodsLog.hpp"

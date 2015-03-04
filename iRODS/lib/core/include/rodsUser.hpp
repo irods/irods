@@ -9,7 +9,7 @@
 #ifndef RODS_USER_HPP
 #define RODS_USER_HPP
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 
 

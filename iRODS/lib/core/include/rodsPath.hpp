@@ -3,7 +3,7 @@
 #ifndef RODS_PATH_HPP
 #define RODS_PATH_HPP
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rods.hpp"
 #include "getRodsEnv.hpp"
 #include "rodsType.hpp"

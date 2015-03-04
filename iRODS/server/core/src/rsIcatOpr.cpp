@@ -7,7 +7,7 @@
 
 
 #include "rsIcatOpr.hpp"
-#include "initServer.hpp"
+#include "rodsConnect.h"
 #include "rsGlobalExtern.hpp"
 #include "readServerConfig.hpp"
 #include "icatHighLevelRoutines.hpp"

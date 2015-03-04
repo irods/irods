@@ -10,7 +10,6 @@
 #define OBJ_DESC_HPP
 
 #include "rods.hpp"
-#include "initServer.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
 #include "fileRename.hpp"

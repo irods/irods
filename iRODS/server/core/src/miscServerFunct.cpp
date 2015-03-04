@@ -22,7 +22,7 @@
 #include "dataObjRead.hpp"
 #include "rcPortalOpr.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
+#include "rodsConnect.h"
 #include "reFuncDefs.hpp"
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>

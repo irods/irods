@@ -11,7 +11,6 @@
 #include "rods.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "fileWrite.hpp"
 
 #if defined(RODS_SERVER)

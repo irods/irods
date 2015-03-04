@@ -9,7 +9,6 @@
 
 #include "rods.hpp"
 #include "apiHandler.hpp"
-#include "initServer.hpp"
 #include "fileOpr.hpp"
 #include "objDesc.hpp"
 #include "querySpecColl.hpp"

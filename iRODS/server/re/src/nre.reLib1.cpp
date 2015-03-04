@@ -2,9 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* #define RE_LOG_RULES_TMP */
 #define HAS_MICROSDEF_T
+#include "rodsConnect.h"
 #include "reGlobals.hpp"
 #include "reFuncDefs.hpp"
-#include "initServer.hpp"
 #include "reHelpers1.hpp"
 #include "reAction.hpp"
 #include "apiHeaderAll.hpp"

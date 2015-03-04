@@ -13,7 +13,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "structFileExtAndReg.hpp"
 
 #if defined(RODS_SERVER)

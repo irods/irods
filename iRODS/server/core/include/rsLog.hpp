@@ -34,6 +34,9 @@
 #include <fcntl.h>
 
 
+char *
+getLogDir();
+
 void
 getLogfileName( char **logFile, char *logDir, char *logFileName );
 

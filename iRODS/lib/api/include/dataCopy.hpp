@@ -11,7 +11,6 @@
 #include "rods.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "fileOpen.hpp"
 #include "dataObjInpOut.hpp"
 

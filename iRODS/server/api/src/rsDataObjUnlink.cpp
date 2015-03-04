@@ -5,6 +5,7 @@
 
 #include "dataObjUnlink.hpp"
 #include "rodsLog.hpp"
+#include "rodsConnect.h"
 #include "icatDefines.hpp"
 #include "fileUnlink.hpp"
 #include "reFuncDefs.hpp"

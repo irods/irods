@@ -4,7 +4,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "fileCreate.hpp"
-#include "initServer.hpp"
+#include "rodsConnect.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_data_object.hpp"

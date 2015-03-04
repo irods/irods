@@ -1,7 +1,6 @@
 
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
-#include "initServer.hpp"
 
 #include "irods_ms_home.hpp"
 #include "irods_network_home.hpp"

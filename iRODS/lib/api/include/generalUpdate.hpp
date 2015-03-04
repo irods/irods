@@ -19,7 +19,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "icatDefines.hpp"
 
 #include "rodsGeneralUpdate.hpp"  /* for input/output structs, etc */

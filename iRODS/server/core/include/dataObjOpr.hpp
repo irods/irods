@@ -10,7 +10,6 @@
 #define DATA_OBJ_OPR_HPP
 
 #include "rods.hpp"
-#include "initServer.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
 #include "ruleExecSubmit.hpp"

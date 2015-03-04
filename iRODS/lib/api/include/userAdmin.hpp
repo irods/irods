@@ -16,7 +16,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "icatDefines.hpp"
 
 typedef struct {

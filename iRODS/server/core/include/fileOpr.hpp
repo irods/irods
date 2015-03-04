@@ -9,8 +9,7 @@
 #ifndef FILE_OPR_HPP
 #define FILE_OPR_HPP
 
-#include "rods.hpp"
-#include "initServer.hpp"
+#include "rodsConnect.h"
 #include "fileDriver.hpp"
 #include "chkNVPathPerm.hpp"
 

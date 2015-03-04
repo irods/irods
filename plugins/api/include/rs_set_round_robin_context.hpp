@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 /// =-=-=-=-=-=-=-
 /// @brief input structure for rsSetRoundRobinContext API plugin

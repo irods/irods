@@ -17,7 +17,6 @@
 #include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 #include "generalRowInsert.hpp"
 #include "generalRowPurge.hpp"
 #include "generalAdmin.hpp"

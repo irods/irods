@@ -18,7 +18,6 @@
 #include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 
 #define v_FLAG  0x1
 

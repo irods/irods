@@ -12,7 +12,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "dataObjWrite.hpp"
 #include "dataObjClose.hpp"
 #include "dataCopy.hpp"

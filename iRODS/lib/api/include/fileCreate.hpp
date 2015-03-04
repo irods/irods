@@ -8,11 +8,10 @@
 
 /* This is a low level file type API call */
 
-#include "rods.hpp"
+#include "rodsConnect.h"
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 #include "fileOpen.hpp"
 

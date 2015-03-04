@@ -12,7 +12,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 typedef struct FileChksumInp {
     rodsHostAddr_t addr;

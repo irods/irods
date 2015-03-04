@@ -12,7 +12,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_RMDIR rsSubStructFileRmdir

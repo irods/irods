@@ -3,7 +3,7 @@
 #include "rodsLog.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 namespace irods {
 

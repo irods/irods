@@ -13,7 +13,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 typedef struct StructFileExtAndRegInp {
     char objPath[MAX_NAME_LEN];		/* the obj path of the struct file */

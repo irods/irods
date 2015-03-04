@@ -13,7 +13,7 @@
 #if defined(solaris_platform) || defined(aix_platform)
 #include <strings.h>
 #endif
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #if defined(osx_platform)
 typedef int64_t rodsLong_t;

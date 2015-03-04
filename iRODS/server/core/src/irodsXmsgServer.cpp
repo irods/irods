@@ -7,6 +7,7 @@
 #include "irodsXmsgServer.hpp"
 #include "xmsgLib.hpp"
 #include "rsGlobal.hpp"
+#include "initServer.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
@@ -50,7 +51,7 @@ main( int argc, char **argv ) {
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
     signal( SIGUSR1, signalExit );
-    signal( SIGPIPE, rsPipSigalHandler );
+    signal( SIGPIPE, rsPipeSignalHandler );
 #endif
 
     /* Handle option to log sql commands */

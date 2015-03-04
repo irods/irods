@@ -17,7 +17,7 @@
 #ifndef DEBUG
 
 #include "msParam.hpp"
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #endif
 

@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"

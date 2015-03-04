@@ -5,7 +5,6 @@
 #include "filesystem.hpp"
 #include "utils.hpp"
 #include "irods_log.hpp"
-#include "initServer.hpp"
 #include "irods_server_properties.hpp"
 
 int lockMutex( mutex_type **mutex ) {

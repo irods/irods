@@ -11,7 +11,6 @@
 #include "irods_lookup_table.hpp"
 #include "irods_home_directory.hpp"
 #include "readServerConfig.hpp"
-#include "initServer.hpp"
 
 #include <string>
 #include <algorithm>

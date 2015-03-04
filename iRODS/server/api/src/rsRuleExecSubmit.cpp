@@ -1,3 +1,4 @@
+#include "rodsConnect.h"
 #include "ruleExecSubmit.hpp"
 #include "icatHighLevelRoutines.hpp"
 

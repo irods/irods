@@ -9,7 +9,7 @@
 #ifndef BASE64_HPP
 #define BASE64_HPP
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #ifdef __cplusplus
 extern "C" {

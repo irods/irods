@@ -12,6 +12,7 @@
 #include "rodsLog.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
+#include "procLog.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

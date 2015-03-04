@@ -12,7 +12,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 #include "icatDefines.hpp"
 
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */

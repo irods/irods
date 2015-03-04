@@ -10,7 +10,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rcConnect.hpp"
 #include "rodsPackInstruct.hpp"
 

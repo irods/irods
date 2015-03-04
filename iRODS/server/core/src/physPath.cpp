@@ -6,10 +6,11 @@
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
-#include "rodsDef.hpp"
+#include "rodsDef.h"
+#include "rodsConnect.h"
 #include "physPath.hpp"
 #include "dataObjOpr.hpp"
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rsGlobalExtern.hpp"
 #include "fileChksum.hpp"
 #include "modDataObjMeta.hpp"

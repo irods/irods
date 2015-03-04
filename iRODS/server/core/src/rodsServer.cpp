@@ -5,6 +5,7 @@
 #include "sharedmemory.hpp"
 #include "cache.hpp"
 #include "resource.hpp"
+#include "initServer.hpp"
 #include "miscServerFunct.hpp"
 
 #include <syslog.h>
@@ -30,6 +31,10 @@
 #include "irods_server_properties.hpp"
 #include "irods_server_control_plane.hpp"
 #include "readServerConfig.hpp"
+#include "initServer.hpp"
+#include "procLog.h"
+#include "rsGlobalExtern.hpp"
+#include "rsGlobal.hpp"	/* server global */
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -61,6 +66,8 @@ boost::mutex		  ReadReqCondMutex;
 boost::mutex		  SpawnReqCondMutex;
 boost::condition_variable ReadReqCond;
 boost::condition_variable SpawnReqCond;
+
+std::vector<std::string> setExecArg( const char *commandArgv );
 
 namespace {
 // We incorporate the cache salt into the rule engine's named_mutex and shared memory object.
@@ -1366,4 +1373,43 @@ purgeLockFileWorkerTask() {
 
 } // purgeLockFileWorkerTask
 
+std::vector<std::string>
+setExecArg( const char *commandArgv ) {
+
+    std::vector<std::string> arguments;
+    if ( commandArgv != NULL ) {
+        int len = 0;
+        bool openQuote = false;
+        const char* cur = commandArgv;
+        for ( int i = 0; commandArgv[i] != '\0'; i++ ) {
+            if ( commandArgv[i] == ' ' && !openQuote ) {
+                if ( len > 0 ) {    /* end of a argv */
+                    std::string( cur, len );
+                    arguments.push_back( std::string( cur, len ) );
+                    /* reset inx and pointer */
+                    cur = &commandArgv[i + 1];
+                    len = 0;
+                }
+                else {      /* skip over blanks */
+                    cur = &commandArgv[i + 1];
+                }
+            }
+            else if ( commandArgv[i] == '\'' || commandArgv[i] == '\"' ) {
+                openQuote ^= true;
+                if ( openQuote ) {
+                    /* skip the quote */
+                    cur = &commandArgv[i + 1];
+                }
+            }
+            else {
+                len ++;
+            }
+        }
+        if ( len > 0 ) {    /* handle the last argv */
+            arguments.push_back( std::string( cur, len ) );
+        }
+    }
+
+    return arguments;
+}
 // =-=-=-=-=-=-=-

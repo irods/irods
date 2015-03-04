@@ -9,7 +9,7 @@
 #ifndef STRING_OPR_HPP
 #define STRING_OPR_HPP
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #ifdef __cplusplus
 extern "C" {

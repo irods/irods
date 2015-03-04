@@ -4,10 +4,10 @@
 /* objDesc.c - L1 type operation. Will call low level l1desc drivers
  */
 
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "objDesc.hpp"
 #include "dataObjOpr.hpp"
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rsGlobalExtern.hpp"
 #include "fileChksum.hpp"
 #include "modDataObjMeta.hpp"

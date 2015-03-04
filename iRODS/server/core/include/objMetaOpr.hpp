@@ -10,7 +10,6 @@
 #define OBJ_META_OPR_HPP
 
 #include "rods.hpp"
-#include "initServer.hpp"
 #include "objInfo.hpp"
 #include "dataObjInpOut.hpp"
 #include "rcGlobalExtern.hpp"

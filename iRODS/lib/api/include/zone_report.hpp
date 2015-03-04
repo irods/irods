@@ -7,7 +7,6 @@
 #include "rcMisc.hpp"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 #define ZONE_REPORT_AN 10205
 

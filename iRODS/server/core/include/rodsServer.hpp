@@ -20,7 +20,6 @@
 #endif
 
 #include "rods.hpp"
-#include "rsGlobal.hpp"	/* server global */
 #include "rcGlobalExtern.hpp"	/* client global */
 #include "rsLog.hpp"
 #include "rodsLog.hpp"
@@ -29,7 +28,6 @@
 #include "rsIcatOpr.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 
 
 extern char *optarg;
@@ -52,6 +50,7 @@ extern int optind, opterr, optopt;
 
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
 * for consistence */
+
 int serverize( char *logDir );
 int serverMain( char *logDir );
 int
@@ -59,8 +58,8 @@ procChildren( agentProc_t **agentProcHead );
 agentProc_t *
 getAgentProcByPid( int childPid, agentProc_t **agentProcHead );
 
-void
 #if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
+void
 serverExit( int sig );
 #else
 void

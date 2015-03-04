@@ -1,6 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.hpp"

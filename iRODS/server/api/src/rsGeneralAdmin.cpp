@@ -6,6 +6,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "generalAdmin.hpp"
+#include "rodsConnect.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "reFuncDefs.hpp"

@@ -4,6 +4,7 @@
 /* See simpleQuery.h for a description of this API call.*/
 
 #include "simpleQuery.hpp"
+#include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 
 int

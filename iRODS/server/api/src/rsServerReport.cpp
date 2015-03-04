@@ -1,6 +1,5 @@
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
-#include "initServer.hpp"
 
 #include "reIn2p3SysRule.hpp"
 #include "irods_ms_home.hpp"

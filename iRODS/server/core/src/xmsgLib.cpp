@@ -18,6 +18,7 @@
 #include "xmsgLib.hpp"
 #include "reFuncDefs.hpp"
 #include "irods_network_factory.hpp"
+#include "initServer.hpp"
 
 #include "sockCommNetworkInterface.hpp"
 

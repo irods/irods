@@ -8,7 +8,7 @@
 
 // =-=-=-=-=-=-=
 // irods includes
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 #include "rcConnect.hpp"
 #include "rodsPackInstruct.hpp"
 

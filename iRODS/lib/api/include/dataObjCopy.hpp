@@ -13,10 +13,9 @@
 
 /* This is a high level type API call */
 
-#include "rods.hpp"
+#include "rodsConnect.h"
 #include "procApiRequest.hpp"
 #include "apiNumber.hpp"
-#include "initServer.hpp"
 
 /**
  * \var dataObjCopyInp_t

@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
+#include "rodsConnect.h"
 #include "reGlobalsExtern.hpp"
 #include "apiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"

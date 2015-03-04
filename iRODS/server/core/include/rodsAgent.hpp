@@ -10,7 +10,6 @@
 #define RODS_AGENT_HPP
 
 #include "rods.hpp"
-#include "rsGlobal.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"     /* client global */
 #include "rsLog.hpp"
 #include "rodsLog.hpp"
@@ -18,7 +17,6 @@
 #include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
-#include "initServer.hpp"
 
 #define MAX_MSG_READ_RETRY	1
 #define READ_RETRY_SLEEP_TIME	1

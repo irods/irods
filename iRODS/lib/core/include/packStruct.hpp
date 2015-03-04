@@ -8,7 +8,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include "rodsDef.hpp"
+#include "rodsDef.h"
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
 #define SEMI_COL_FLAG	0x2	/* got semi colon at end */

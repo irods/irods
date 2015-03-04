@@ -8,6 +8,20 @@
 
 static time_t LogfileLastChkTime = 0;
 
+char *
+getLogDir() {
+#ifndef windows_platform
+    char *myDir;
+
+    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
+        return myDir;
+    }
+    return DEF_LOG_DIR;
+#else
+    return iRODSNtServerGetLogDir;
+#endif
+}
+
 void
 getLogfileName( char **logFile, char *logDir, char *logFileName ) {
 #ifndef _WIN32
