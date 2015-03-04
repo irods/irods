@@ -1,6 +1,7 @@
 BASEDIRS = \
            re \
            re-irods \
+           re-audit \
 
 ######################################################################
 # Configuration should occur above this line
