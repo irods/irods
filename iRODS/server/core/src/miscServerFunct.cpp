@@ -41,6 +41,7 @@ char *__loc1;
 #include "irods_client_server_negotiation.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_threads.hpp"
+#include "irods_home_directory.hpp"
 #include "sockCommNetworkInterface.hpp"
 
 #include <iomanip>
@@ -3243,4 +3244,56 @@ irods::error setRECacheSaltFromEnv() {
     }
 
     return SUCCESS();
-}
+
+} // setRECacheSaltFromEnv
+
+irods::error get_script_output_single_line( 
+    const std::string&              script_language, 
+    const std::string&              script_name, 
+    const std::vector<std::string>& args, 
+    std::string&                    output ) {
+    output.clear();
+    std::stringstream exec;
+    exec << script_language 
+         << " " << irods::IRODS_HOME_DIRECTORY 
+         << "/iRODS/scripts/" 
+         << script_language 
+         << "/" << script_name;
+    for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
+        exec << " " << args[i];
+    }
+
+    FILE *fp = popen( exec.str().c_str(), "r" );
+    if ( fp == NULL ) {
+        return ERROR( SYS_FORK_ERROR, "popen() failed" );
+    }
+
+    std::vector<char> buf( 1000 );
+    const char* fgets_ret = fgets( &buf[0], buf.size(), fp );
+    if ( fgets_ret == NULL ) {
+        std::stringstream msg;
+        msg << "fgets() failed. feof[" << std::feof( fp ) << "] ferror[" << std::ferror( fp ) << "]";
+        const int pclose_ret = pclose( fp );
+        msg << " pclose[" << pclose_ret << "]";
+        return ERROR( FILE_READ_ERR, msg.str() );
+    }
+
+    const int pclose_ret = pclose( fp );
+    if ( pclose_ret == -1 ) {
+        return ERROR( SYS_FORK_ERROR,
+                      "pclose() failed." );
+    }
+
+    output = &buf[0];
+    // Remove trailing newline
+    const std::string::size_type size = output.size();
+    if ( size > 0 && output[size - 1] == '\n' ) {
+        output.resize( size - 1 );
+    }
+
+    return SUCCESS();
+
+}  // get_script_output_single_line
+
+
+

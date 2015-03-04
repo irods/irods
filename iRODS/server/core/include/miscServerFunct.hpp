@@ -154,4 +154,12 @@ irods::error update_resource_object_count(
 
 irods::error setRECacheSaltFromEnv();
 
+irods::error get_script_output_single_line( 
+    const std::string&              script_language, 
+    const std::string&              script_name, 
+    const std::vector<std::string>& args, 
+    std::string&                    output );
+
+
+
 #endif	/* MISC_SERVER_FUNCT_H */

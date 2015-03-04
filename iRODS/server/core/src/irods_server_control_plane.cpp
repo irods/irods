@@ -10,6 +10,7 @@
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
 #include "sockComm.hpp"
+#include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"
 #include "irods_server_control_plane.hpp"
@@ -343,25 +344,35 @@ namespace irods {
 
     } // operation_resume
 
-    static time_t get_pid_age(
+    static int get_pid_age(
         pid_t _pid ) {
-#if 0
-        proc_t proc_info;
-        if( !get_proc_stats( _pid, &proc_info ) ) {
-            rodsLog(
-                LOG_ERROR,
-                "get_pid_age - failed to get proc stats for %ld",
-                _pid );
+        std::stringstream pid_str; pid_str << _pid;
+        std::vector<std::string> args;
+        args.push_back( pid_str.str() );
+       
+        std::string pid_age;
+        irods::error ret = get_script_output_single_line( 
+                               "python", 
+                               "pid_age.py", 
+                               args, 
+                               pid_age );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
             return 0;
         }
 
-        // readproc.h comment lies about what proc_t.start_time is. It's
-        // actually expressed in Hertz ticks since boot
-        time_t seconds_since_boot = uptime(0,0);
-        time_t start_time = proc_info.start_time / Hertz;
-        return seconds_since_boot - start_time;
-#endif
-        return 0;
+        double age = 0.0;
+        try {
+        age = boost::lexical_cast<double>( pid_age );
+        } catch ( const boost::bad_lexical_cast& ) {
+            rodsLog(
+                LOG_ERROR,
+                "get_pid_age bad lexical cast for [%s]",
+                pid_age.c_str() );
+
+        }
+
+        return static_cast<int>( age );
 
     } // get_pid_age
 
@@ -411,8 +422,8 @@ namespace irods {
         for( size_t i = 0;
              i < pids.size();
              ++i ) {
-            int    pid = pids[i];
-            time_t age = get_pid_age( pids[i] );
+            int  pid = pids[i];
+            int  age = get_pid_age( pids[i] );
 
             json_t* agent_obj = json_object();
             if ( !arr ) {
@@ -1078,6 +1089,15 @@ namespace irods {
             irods::log( PASS( ret ) );
             return PASS( ret );
 
+        }
+
+        // add safeguards - if server is paused only allow a resume call
+        server_state& s = server_state::instance();
+        std::string the_server_state = s();
+        if( server_state::PAUSED == the_server_state &&
+            SERVER_CONTROL_RESUME != cmd_name ) {
+            _output = "The server is Paused, resume before issuing any other commands";
+            return SUCCESS();
         }
 
         // the icat needs to be notified first in certain
