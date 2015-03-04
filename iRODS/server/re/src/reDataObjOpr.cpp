@@ -2955,6 +2955,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 rodsLogError( LOG_ERROR, status,
                               "_rsCollRsync:: splitPathByKey for %s error, status = %d",
                               collEnt->collName, status );
+                freeCollEnt( collEnt );
                 return status;
             }
             snprintf( destChildPath, MAX_NAME_LEN, "%s/%s",
