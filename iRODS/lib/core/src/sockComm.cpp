@@ -921,11 +921,11 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
 
     sock = socket( AF_INET, SOCK_STREAM, 0 );
 
-    if ( sock <= 0 ) {  /* try again */
+    if ( sock < 0 ) {  /* the ol' one-two */
         sock = socket( AF_INET, SOCK_STREAM, 0 );
     }
 
-    if ( sock <= 0 ) {
+    if ( sock < 0 ) {
         rodsLog( LOG_NOTICE,
                  "connectToRhostWithRaddr() - socket() failed: errno=%d",
                  errno );
