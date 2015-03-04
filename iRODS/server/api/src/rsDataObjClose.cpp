@@ -465,6 +465,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
+            free( chksumStr );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
@@ -518,6 +519,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
+            free( chksumStr );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
@@ -584,6 +586,7 @@ _rsDataObjClose(
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize srcDataObjInfo failed, status = [%d]", status );
+                    free( chksumStr );
                     return status;
                 }
             }
@@ -593,6 +596,7 @@ _rsDataObjClose(
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize destDataObjInfo failed, status = [%d]", status );
+                    free( chksumStr );
                     return status;
                 }
             }
@@ -601,10 +605,6 @@ _rsDataObjClose(
             updatequotaOverrun( destDataObjInfo->rescHier,
                                 destDataObjInfo->dataSize, ALL_QUOTA );
 
-        }
-        if ( chksumStr != NULL ) {
-            free( chksumStr );
-            chksumStr = NULL;
         }
 
         clearKeyVal( &regParam );
@@ -621,6 +621,7 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
                      destDataObjInfo->objPath, status );
+            free( chksumStr );
             return status;
         }
     }
@@ -666,14 +667,11 @@ _rsDataObjClose(
 
         status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
 
-        if ( chksumStr != NULL ) {
-            free( chksumStr );
-            chksumStr = NULL;
-        }
 
         clearKeyVal( &regParam );
 
         if ( status < 0 ) {
+            free( chksumStr );
             return status;
         }
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
@@ -683,10 +681,7 @@ _rsDataObjClose(
         }
     }
 
-    if ( chksumStr != NULL ) {
-        free( chksumStr );
-        chksumStr = NULL;
-    }
+    free( chksumStr );
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4537
