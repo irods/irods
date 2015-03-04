@@ -111,6 +111,7 @@ msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
         strPtr = "";
     }
     fillStrInMsParam( outStr, strPtr );
+    free( strPtr );
 
     return rei->status;
 }
