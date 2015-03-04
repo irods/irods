@@ -3162,6 +3162,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
         token = nextTokenRuleGen( e, pc, 1, 0 );
         switch ( token->type ) {
         case N_ERROR:
+            deleteParserContext( pc );
             return -1;
         case TK_EOS:
             ret = 0;
@@ -3197,6 +3198,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 else if ( strcmp( token->text, "include" ) == 0 ) {
                     token = nextTokenRuleGen( e, pc, 1, 0 );
                     if ( token->type == TK_TEXT || token->type == TK_STRING ) {
+                        deleteParserContext( pc );
                         CASCASE_NON_ZERO( readRuleSetFromFile( token->text, ruleSet, funcDescIndex, errloc, errmsg, r ) );
                     }
                     else {
@@ -3217,6 +3219,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
         Node *node = parseRuleRuleGen( e, backwardCompatible, pc );
         if ( node == NULL ) {
             addRErrorMsg( errmsg, RE_OUT_OF_MEMORY, "parseRuleSet: out of memory." );
+            deleteParserContext( pc );
             return RE_OUT_OF_MEMORY;
         }
         else if ( getNodeType( node ) == N_ERROR ) {
@@ -3225,6 +3228,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
             addRErrorMsg( errmsg, RE_PARSER_ERROR, errbuf );
             /* skip the current line and try to parse the rule from the next line */
             skipComments( e );
+            deleteParserContext( pc );
             return RE_PARSER_ERROR;
         }
         else {
@@ -3240,6 +3244,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                     if ( lookupFromEnv( funcDescIndex, nodes[k]->subtrees[0]->text ) != NULL ) {
                         generateErrMsg( "parseRuleSet: redefinition of constructor.", NODE_EXPR_POS( nodes[k]->subtrees[0] ), nodes[k]->subtrees[0]->base, errbuf );
                         addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
+                        deleteParserContext( pc );
                         return RE_TYPE_ERROR;
                     }
                     insertIntoHashTable( funcDescIndex->current, nodes[k]->subtrees[0]->text, newConstructorFD2( nodes[k]->subtrees[1], r ) );
@@ -3250,6 +3255,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 if ( lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) != NULL ) {
                     generateErrMsg( "parseRuleSet: redefinition of constructor.", NODE_EXPR_POS( nodes[0]->subtrees[0] ), nodes[0]->subtrees[0]->base, errbuf );
                     addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
+                    deleteParserContext( pc );
                     return RE_TYPE_ERROR;
                 }
                 insertIntoHashTable( funcDescIndex->current, nodes[0]->subtrees[0]->text, newConstructorFD2( nodes[0]->subtrees[1], r ) );
@@ -3260,6 +3266,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 if ( ( fd = ( FunctionDesc * ) lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) ) != NULL ) {
                     generateErrMsg( "parseRuleSet: redefinition of function.", NODE_EXPR_POS( nodes[0]->subtrees[0] ), nodes[0]->subtrees[0]->base, errbuf );
                     addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
+                    deleteParserContext( pc );
                     return RE_TYPE_ERROR;
                 }
                 insertIntoHashTable( funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFD( nodes[0]->subtrees[1], r ) );
