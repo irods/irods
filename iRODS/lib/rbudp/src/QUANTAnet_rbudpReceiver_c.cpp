@@ -416,6 +416,7 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
             buf = ( char * )mmap( NULL, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
             if ( buf == MAP_FAILED ) {
                 fprintf( stderr, "mmap failed.\n" );
+                close( fd );
                 return FAILED;
             }
 
