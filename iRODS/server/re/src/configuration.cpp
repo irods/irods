@@ -383,7 +383,7 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
                     return res;
                 }
             }
-            free( cache );
+            //free( cache );
         }
         else {
             rodsLog( LOG_DEBUG, "Cannot open shared memory." );
