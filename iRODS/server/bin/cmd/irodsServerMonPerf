@@ -5,8 +5,8 @@
 ## Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation
 
 use strict;
+use warnings;
 use File::Basename;
-use strict;
 use IO::Handle;
 
 use Getopt::Long;
@@ -69,6 +69,7 @@ $Getopt::Long::autoabbrev=1;
 	my $cpt = 0;
 	my $i = 0;
 	my @result;
+	my @result2;
 	my @temp;
 	my @temp2;
 	my @line_iname; # lines for the network interfaces (netstat output: eth, ce...)
@@ -119,7 +120,7 @@ foreach my $pth(@sysPathList) {
 	if ($pth ne 'none') {
 		my $rc = system("LANG=C;export LANG;df -kP $pth > /dev/null 2>&1"); # JMC - backport 4830
 		if( $rc != 0 ) {
-			Log("The file $pth system doesn't exit. $!");
+			Log("The file $pth system doesn't exist. $!");
 			$fsExists = 0;
 		}
 	}
@@ -496,28 +497,28 @@ else {
 @result = `netstat -i`; # first call of netstat command
 # instead of using 'sleep' command, it is better to call
 # the vmstat command with the same time of the sleep command.
-# vsmtat command is in a function at the end of the script.
+# vmstat command is in a function at the end of the script.
 getCpuUse();
 @temp = `netstat -i`;
 $i=0; # counter used for the 'while'
 while($i <= $#line_iname)
 {
-	$cpt = $line_iname[$i]; # 
-	chomp($result[$cpt]); # last line of the array
-	@temp = split('\s+', $temp[$cpt]);
-	$ipackets = $temp[$col_ipack]; # last value given by the command
-	$opackets = $temp[$col_opack];
-	chomp($result[$cpt]); # first line of the array
-	@result = split('\s+', $result[$cpt]);
-	$ipackets -= $result[$col_ipack]; # first value given by the command
-	$opackets -= $result[$col_opack];
+	$cpt = $line_iname[$i];
+	chomp($temp[$cpt]);
+	@temp2 = split('\s+', $temp[$cpt]);
+	$ipackets = $temp2[$col_ipack]; # last value given by the command
+	$opackets = $temp2[$col_opack];
+	chomp($result[$cpt]);
+	@result2 = split('\s+', $result[$cpt]);
+	$ipackets -= $result2[$col_ipack]; # first value given by the command
+	$opackets -= $result2[$col_opack];
 	
 	$ipackets /= $paramTime;
 	$opackets /= $paramTime;
 
 	# nb packets * mtu / 1e6 => Mbit/s
-	$iNetAct += (($ipackets * $result[$col_mtu]) * 8) / 1e6;
-	$oNetAct += (($opackets * $result[$col_mtu]) * 8) / 1e6;
+	$iNetAct += (($ipackets * $result2[$col_mtu]) * 8) / 1e6;
+	$oNetAct += (($opackets * $result2[$col_mtu]) * 8) / 1e6;
 
 	$i++;
 }
@@ -595,7 +596,7 @@ sub getSwapFractionUsed
 	my $swapUsed;
 	my $swapFree;
 
-	@result = `top -b n 1`;
+	@result = `top -b -n 1`;
 	if( $systype eq 'SunOS' )
 	{
 		foreach my $c(@result)

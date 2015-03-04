@@ -643,8 +643,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     /* read the config file or the iCAT to know the servers list to monitor */
     nresc = 0;
 
-    nservers = -1;  /* nservers = -1, no config file available, consider all ressources for the monitoring */
-    /* nservers >= 0, config file available, consider all resources hosted on the list of servers */
+    nservers = -1;  /* nservers = -1, no config file available, consider all resources for the monitoring */
     if ( ( filein = fopen( MON_CFG_FILE, "r" ) ) != NULL ) {
         i = 0;
         while ( fgets( line, sizeof line, filein ) != NULL ) { /* for each line of the file */
