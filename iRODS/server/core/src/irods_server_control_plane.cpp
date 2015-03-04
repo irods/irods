@@ -5,7 +5,7 @@
 #include "stdio.h"
 
 //#include <readproc.h>
-#include <sysinfo.h>
+//#include <sysinfo.h>
 
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
