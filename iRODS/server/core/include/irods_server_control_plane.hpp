@@ -26,6 +26,10 @@ namespace irods {
     const std::string SERVER_CONTROL_HOSTS_OPT( "hosts" );
     const std::string SERVER_CONTROL_SUCCESS( "server_control_success" );
 
+
+    const std::string SERVER_PAUSED_ERROR( "The server is Paused, resume before issuing any other commands" );
+
+
     // this is a hand-chosen polling time for the control plane
     static const size_t SERVER_CONTROL_POLLING_TIME_MILLI_SEC = 500;
 

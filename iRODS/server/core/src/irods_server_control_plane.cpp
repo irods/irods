@@ -1096,7 +1096,7 @@ namespace irods {
         std::string the_server_state = s();
         if( server_state::PAUSED == the_server_state &&
             SERVER_CONTROL_RESUME != cmd_name ) {
-            _output = "The server is Paused, resume before issuing any other commands";
+            _output = SERVER_PAUSED_ERROR;
             return SUCCESS();
         }
 

@@ -247,6 +247,7 @@ irods::error decrypt_response(
 std::string format_grid_status( 
     const std::string& _status ) {
 
+
     std::string status = "{\n    \"hosts\": [\n";
     status += _status;
     status += "]    \n}";
@@ -260,6 +261,10 @@ std::string format_grid_status(
                          status.size(),
                          &j_err );
     if ( !obj ) {
+        if( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
+            return _status;
+        }
+
         std::string msg( "json_loads failed [" );
         msg += j_err.text;
         msg += "]";
