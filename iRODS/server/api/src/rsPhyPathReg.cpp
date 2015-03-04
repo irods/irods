@@ -1016,7 +1016,6 @@ int structFileReg(
 int
 structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
                    char* resc_hier ) {
-    rodsStat_t *myStat = NULL;
     int status;
     subFile_t subFile;
     specColl_t specColl;
@@ -1066,14 +1065,10 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     rstrcpy( subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile", MAX_NAME_LEN );
     rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
 
+    rodsStat_t *myStat = NULL;
     status = rsSubStructFileStat( rsComm, &subFile, &myStat );
-
-    if ( status == SYS_NOT_SUPPORTED ) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    free( myStat );
+    return status != SYS_NOT_SUPPORTED;
 }
 
 int
