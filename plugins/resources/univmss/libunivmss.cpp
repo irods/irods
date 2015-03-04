@@ -300,8 +300,6 @@ extern "C" {
         int mode = fco->mode();
         int status = 0;
         execCmd_t execCmdInp;
-        char cmdArgv[HUGE_NAME_LEN] = "";
-        char strmode[4];
 
         if ( mode != getDefDirMode() ) {
             mode = getDefFileMode();
@@ -359,7 +357,6 @@ extern "C" {
 
         int status = 0;
         execCmd_t execCmdInp;
-        char cmdArgv[HUGE_NAME_LEN] = "";
 
         bzero( &execCmdInp, sizeof( execCmdInp ) );
         snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
@@ -622,8 +619,6 @@ extern "C" {
         err = univ_mss_file_mkdir( context );
 
         execCmdOut_t* execCmdOut = NULL;
-        char  cmdArgv[HUGE_NAME_LEN] = "";
-
 
         // =-=-=-=-=-=-=-
         // get the script property

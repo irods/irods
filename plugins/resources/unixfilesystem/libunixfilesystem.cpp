@@ -876,10 +876,6 @@ extern "C" {
         int errsav = errno;
 
         // =-=-=-=-=-=-=-
-        // cache status in out variable
-        int err_status = UNIX_FILE_OPENDIR_ERR - errno;
-
-        // =-=-=-=-=-=-=-
         // trap error case with bad fd
         if ( NULL == dir_ptr ) {
             int status = UNIX_FILE_CREATE_ERR - errsav;
