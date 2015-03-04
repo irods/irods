@@ -80,7 +80,7 @@ extern "C" {
     getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo );
     int
     getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
-                   keyValPair_t *condInput, char *destRescName, char *srcRescName );
+                   keyValPair_t *condInput, char *destRescName, char *srcRescName, int oprType );
     int
     initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
     int

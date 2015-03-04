@@ -268,7 +268,7 @@ getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo ) {
 
 int
 getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
-               keyValPair_t *condInput, char *destRescHier, char *srcRescHier ) {
+               keyValPair_t *condInput, char *destRescHier, char *srcRescHier, int oprType ) {
     ruleExecInfo_t rei;
     dataObjInp_t doinp;
     int status;
@@ -302,6 +302,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     doinp.numThreads = inpNumThr;
 
     doinp.dataSize = dataSize;
+    doinp.oprType = oprType;
 
     initReiWithDataObjInp( &rei, rsComm, &doinp );
 

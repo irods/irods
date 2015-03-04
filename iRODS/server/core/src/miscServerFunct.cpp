@@ -140,7 +140,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                                       dataOprInp->dataSize, dataOprInp->numThreads,
                                       &dataOprInp->condInput,
                                       //getValByKey (&dataOprInp->condInput, RESC_NAME_KW), NULL);
-                                      getValByKey( &dataOprInp->condInput,  RESC_HIER_STR_KW ), NULL );
+                                      getValByKey( &dataOprInp->condInput,  RESC_HIER_STR_KW ), NULL, oprType );
     }
 
     if ( myDataObjPutOut->numThreads == 0 ) {

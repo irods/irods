@@ -803,8 +803,7 @@ dataObjOpenForRepl(
 
     l1DataObjInp->numThreads = dataObjInp->numThreads =
                                    getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads,
-                                           &dataObjInp->condInput, dst_hier_str, srcDataObjInfo->rescHier );
-
+                                           &dataObjInp->condInput, dst_hier_str, srcDataObjInfo->rescHier, dataObjInp->oprType );
     if ( ( l1DataObjInp->numThreads > 0 ||
             l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
