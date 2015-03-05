@@ -545,10 +545,13 @@ main( int argc, char **argv ) {
         }
     }
 
-    strncpy( userName, myEnv.rodsUserName, NAME_LEN );
     if ( myRodsArgs.user ) {
-        strncpy( userName, myRodsArgs.userString, NAME_LEN );
+        snprintf( userName, sizeof( userName ), "%s", myRodsArgs.userString );
     }
+    else {
+        snprintf( userName, sizeof( userName ), "%s", myEnv.rodsUserName );
+    }
+
     if ( myRodsArgs.all ) {
         userName[0] = '\0';
     }
