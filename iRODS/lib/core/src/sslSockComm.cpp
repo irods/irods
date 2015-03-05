@@ -86,10 +86,8 @@ sslStart( rcComm_t *rcComm ) {
         return SSL_CERT_ERROR;
     }
 
-    strncpy(
-        rcComm->negotiation_results,
-        irods::CS_NEG_USE_SSL.c_str(),
-        MAX_NAME_LEN );
+    snprintf( rcComm->negotiation_results, sizeof( rcComm->negotiation_results ),
+            "%s", irods::CS_NEG_USE_SSL.c_str() );
     return 0;
 }
 
