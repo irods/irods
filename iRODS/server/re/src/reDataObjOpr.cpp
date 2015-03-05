@@ -3321,6 +3321,13 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjPut: input inpParam3 error. status = %d", rei->status );
+        clearDataObjInp( dataObjInp );
+        free( dataObjInp );
+        if ( dataObjInp != myDataObjInp ) {
+            clearDataObjInp( myDataObjInp );
+            free( myDataObjInp );
+        }
+
         return rei->status;
     }
 
