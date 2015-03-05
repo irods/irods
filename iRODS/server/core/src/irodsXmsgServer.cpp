@@ -121,7 +121,7 @@ xmsgServerMain() {
     int status = 0;
     rsComm_t rsComm;
     rsComm_t svrComm;	/* rsComm is connection to icat, svrComm is the
-			 * server's listening socket */
+                         * server's listening socket */
     fd_set sockMask;
     int numSock;
 
@@ -188,7 +188,8 @@ xmsgServerMain() {
     else {
         // =-=-=-=-=-=-=-
         // copy negotiation results to comm for action by network objects
-        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+        snprintf( rsComm.negotiation_results, sizeof( rsComm.negotiation_results ),
+                "%s", neg_results.c_str() );
         //rsComm.ssl_do_accept = 1;
 
     }
