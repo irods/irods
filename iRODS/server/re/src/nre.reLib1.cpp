@@ -1476,7 +1476,7 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
             irods::log( PASS( ret ) );
             return ret.code();
         }
-        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
+        snprintf( fileName, sizeof( fileName ), "%s", cfg_file.c_str() );
     }
 
     file = fopen( fileName, "w" );
