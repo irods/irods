@@ -225,6 +225,7 @@ extern "C" {
             rodsLog( LOG_ERROR,
                      "%s: could not allocate memory for key buffer. errno = %d",
                      fname, errno );
+            close( key_fd );
             return SYS_MALLOC_ERR;
         }
         nb = read( key_fd, keybuf, buflen );
