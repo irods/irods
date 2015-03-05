@@ -135,10 +135,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                 // to this given leaf resource - this our hier
                 getHierarchyForRescOut_t* get_hier_out = 0;
                 getHierarchyForRescInp_t  get_hier_inp;
-                strncpy(
-                    get_hier_inp.resc_name_,
-                    dst_resc,
-                    MAX_NAME_LEN );
+                snprintf( get_hier_inp.resc_name_, sizeof( get_hier_inp.resc_name_ ), "%s", dst_resc );
                 status = rsGetHierarchyForResc(
                              rsComm,
                              &get_hier_inp,
