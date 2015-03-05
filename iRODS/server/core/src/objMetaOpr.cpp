@@ -96,7 +96,7 @@ getPhyPath(
     if ( 0 == strlen( _resc_hier ) ) {
         dataObjInp_t data_inp;
         memset( &data_inp, 0, sizeof( data_inp ) );
-        strncpy( data_inp.objPath, _obj_name, MAX_NAME_LEN );
+        snprintf( data_inp.objPath, sizeof( data_inp.objPath ), "%s", _obj_name );
         irods::error ret = irods::resolve_resource_hierarchy(
                                irods::OPEN_OPERATION,
                                _comm,
