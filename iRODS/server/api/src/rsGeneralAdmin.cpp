@@ -305,26 +305,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.rsComm = rsComm;
             userInfo_t userInfo;
             memset( &userInfo, 0, sizeof( userInfo ) );
-            strncpy( userInfo.userName, generalAdminInp->arg2,
-                     sizeof( userInfo.userName ) );
-            if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
-            strncpy( userInfo.userType, generalAdminInp->arg3,
-                     sizeof( userInfo.userType ) );
-            if ( userInfo.userType[sizeof( userInfo.userType ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
-            strncpy( userInfo.rodsZone, generalAdminInp->arg4,
-                     sizeof( userInfo.rodsZone ) );
-            if ( userInfo.rodsZone[sizeof( userInfo.rodsZone ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
-            strncpy( userInfo.authInfo.authStr, generalAdminInp->arg5,
-                     sizeof( userInfo.authInfo.authStr ) );
-            if ( userInfo.authInfo.authStr[sizeof( userInfo.authInfo.authStr ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
+            snprintf( userInfo.userName, sizeof( userInfo.userName ), "%s", generalAdminInp->arg2 );
+            snprintf( userInfo.userType, sizeof( userInfo.userType ), "%s", generalAdminInp->arg3 );
+            snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ), "%s", generalAdminInp->arg4 );
+            snprintf( userInfo.authInfo.authStr, sizeof( userInfo.authInfo.authStr ), "%s", generalAdminInp->arg5 );
             rei.uoio = &userInfo;
             rei.uoic = &rsComm->clientUser;
             rei.uoip = &rsComm->proxyUser;
@@ -336,17 +320,9 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
-            strncpy( collInfo.collName, generalAdminInp->arg2,
-                     sizeof( collInfo.collName ) );
-            if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
+            snprintf( collInfo.collName, sizeof( collInfo.collName ), "%s", generalAdminInp->arg2 );
             if ( strlen( generalAdminInp->arg3 ) > 0 ) {
-                strncpy( collInfo.collOwnerName, generalAdminInp->arg3,
-                         sizeof( collInfo.collOwnerName ) );
-                if ( collInfo.collOwnerName[sizeof( collInfo.collOwnerName ) - 1] ) {
-                    return SYS_INVALID_INPUT_PARAM;
-                }
+                snprintf( collInfo.collOwnerName, sizeof( collInfo.collOwnerName ), "%s", generalAdminInp->arg3 );
                 status = chlRegCollByAdmin( rsComm, &collInfo );
                 if ( status == 0 ) {
                     if ( !chlCommit( rsComm ) ) {
@@ -370,17 +346,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             if ( status == 0 ) {
                 if ( strcmp( generalAdminInp->arg3, "remote" ) == 0 ) {
                     memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
-                    strncpy( collInfo.collName, "/", sizeof( collInfo.collName ) );
-                    strncat( collInfo.collName, generalAdminInp->arg2,
-                             sizeof( collInfo.collName ) - strlen( collInfo.collName ) );
-                    if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
-                        return SYS_INVALID_INPUT_PARAM;
-                    }
-                    strncpy( collInfo.collOwnerName, rsComm->proxyUser.userName,
-                             sizeof( collInfo.collOwnerName ) );
-                    if ( collInfo.collOwnerName[sizeof( collInfo.collOwnerName ) - 1] ) {
-                        return SYS_INVALID_INPUT_PARAM;
-                    }
+                    snprintf( collInfo.collName, sizeof( collInfo.collName ), "/%s", generalAdminInp->arg2 );
+                    snprintf( collInfo.collOwnerName, sizeof( collInfo.collOwnerName ), "%s", rsComm->proxyUser.userName );
                     status = chlRegCollByAdmin( rsComm, &collInfo );
                     if ( status == 0 ) {
                         chlCommit( rsComm );
@@ -546,15 +513,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     strcmp( generalAdminInp->arg3, "name" ) == 0 ) {
                 char oldName[MAX_NAME_LEN];
                 char newName[MAX_NAME_LEN];
-                strncpy( oldName, "/", sizeof( oldName ) );
-                strncat( oldName, generalAdminInp->arg2, sizeof( oldName ) - strlen( oldName ) );
-                if ( oldName[sizeof( oldName ) - 1] ) {
-                    return SYS_INVALID_INPUT_PARAM;
-                }
-                strncpy( newName, generalAdminInp->arg4, sizeof( newName ) );
-                if ( newName[sizeof( newName ) - 1] ) {
-                    return SYS_INVALID_INPUT_PARAM;
-                }
+                snprintf( oldName, sizeof( oldName ), "/%s", generalAdminInp->arg2 );
+                snprintf( newName, sizeof( newName ), "%s", generalAdminInp->arg4 );
                 status = chlRenameColl( rsComm, oldName, newName );
                 if ( status == 0 ) {
                     chlCommit( rsComm );
@@ -668,16 +628,8 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             rei.rsComm = rsComm;
             userInfo_t userInfo;
             memset( &userInfo, 0, sizeof( userInfo ) );
-            strncpy( userInfo.userName, generalAdminInp->arg2,
-                     sizeof( userInfo.userName ) );
-            if ( userInfo.userName[sizeof( userInfo.userName ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
-            strncpy( userInfo.rodsZone, generalAdminInp->arg3,
-                     sizeof( userInfo.rodsZone ) );
-            if ( userInfo.rodsZone[sizeof( userInfo.rodsZone ) - 1] ) {
-                return SYS_INVALID_INPUT_PARAM;
-            }
+            snprintf( userInfo.userName, sizeof( userInfo.userName ), "%s", generalAdminInp->arg2 );
+            snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ), "%s", generalAdminInp->arg3 );
             userInfo_t userInfoRei = userInfo;
             char userName[NAME_LEN];
             char zoneName[NAME_LEN];
@@ -687,7 +639,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 return status;
             }
             if ( strcmp( zoneName, "" ) != 0 ) {
-                strncpy( userInfoRei.rodsZone, zoneName, NAME_LEN );
+                snprintf( userInfoRei.rodsZone, sizeof( userInfoRei.rodsZone ), "%s", zoneName );
                 // =-=-=-=-=-=-=-
                 // JMC :: while correct, much of the code assumes that the user name
                 //        has the zone name appended.  this will need to be part of
@@ -706,8 +658,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
         }
         if ( strcmp( generalAdminInp->arg1, "dir" ) == 0 ) {
             memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
-            strncpy( collInfo.collName, generalAdminInp->arg2,
-                     sizeof( collInfo.collName ) );
+            snprintf( collInfo.collName, sizeof( collInfo.collName ), "%s", generalAdminInp->arg2 );
             if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
                 return SYS_INVALID_INPUT_PARAM;
             }
@@ -794,12 +745,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             status = chlDelZone( rsComm, generalAdminInp->arg2 );
             if ( status == 0 ) {
                 memset( ( char* )&collInfo, 0, sizeof( collInfo ) );
-                strncpy( collInfo.collName, "/", sizeof collInfo.collName );
-                strncat( collInfo.collName, generalAdminInp->arg2,
-                         sizeof( collInfo.collName ) - strlen( collInfo.collName ) );
-                if ( collInfo.collName[sizeof( collInfo.collName ) - 1] ) {
-                    return SYS_INVALID_INPUT_PARAM;
-                }
+                snprintf( collInfo.collName, sizeof( collInfo.collName ), "/%s", generalAdminInp->arg2 );
                 status = chlDelCollByAdmin( rsComm, &collInfo );
             }
             if ( status == 0 ) {
