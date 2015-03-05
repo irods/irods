@@ -178,10 +178,8 @@ sslAccept( rsComm_t *rsComm ) {
     }
 
     rsComm->ssl_on = 1;
-    strncpy(
-        rsComm->negotiation_results,
-        irods::CS_NEG_USE_SSL.c_str(),
-        MAX_NAME_LEN );
+    snprintf( rsComm->negotiation_results, sizeof( rsComm->negotiation_results ),
+            "%s", irods::CS_NEG_USE_SSL.c_str() );
 
     rodsLog( LOG_DEBUG, "sslAccept: accepted SSL connection" );
 
