@@ -419,6 +419,7 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
         rodsLog( LOG_ERROR,
                  "sslWriteMsgHeader: wrote %d bytes for myLen , expect %d, status = %d",
                  nbytes, sizeof( myLen ), SYS_HEADER_WRITE_LEN_ERR - errno );
+        freeBBuf( headerBBuf );
         return SYS_HEADER_WRITE_LEN_ERR - errno;
     }
 
