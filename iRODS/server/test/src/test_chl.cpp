@@ -351,7 +351,7 @@ int testDelFileTrash( rsComm_t *rsComm, char *name, char *dataId ) {
         }
     }
     dataObjInfo.replNum = -1;
-    strncpy( dataObjInfo.objPath, name, sizeof dataObjInfo.objPath );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
 
     return chlUnregDataObj( rsComm, &dataObjInfo, &condInput );
 }
@@ -360,7 +360,7 @@ int testRegColl( rsComm_t *rsComm, char *name ) {
 
     collInfo_t collInp;
 
-    strncpy( collInp.collName, name, sizeof collInp.collName );
+    snprintf( collInp.collName, sizeof( collInp.collName ), "%s", name );
 
     return chlRegColl( rsComm, &collInp );
 }
@@ -369,7 +369,7 @@ int testDelColl( rsComm_t *rsComm, char *name ) {
 
     collInfo_t collInp;
 
-    strncpy( collInp.collName, name, sizeof collInp.collName );
+    snprintf( collInp.collName, sizeof( collInp.collName ), "%s", name );
 
     return chlDelColl( rsComm, &collInp );
 }
@@ -378,8 +378,8 @@ int testDelRule( rsComm_t *rsComm, char *ruleName, char *userName ) {
     if ( userName != NULL && strlen( userName ) > 0 ) {
         rsComm->clientUser.authInfo.authFlag = LOCAL_USER_AUTH;
         rsComm->proxyUser.authInfo.authFlag = LOCAL_USER_AUTH;
-        strncpy( rsComm->clientUser.userName, userName,
-                 sizeof rsComm->clientUser.userName );
+        snprintf( rsComm->clientUser.userName, sizeof( rsComm->clientUser.userName ),
+                "%s", userName );
     }
     else {
         rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
