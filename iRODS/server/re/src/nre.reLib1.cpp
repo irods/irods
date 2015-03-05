@@ -881,7 +881,7 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
             irods::log( PASS( ret ) );
             return ret.code();
         }
-        strncpy( fmapsFileName, cfg_file.c_str(), MAX_NAME_LEN );
+        snprintf( fmapsFileName, sizeof( fmapsFileName ), "%s", cfg_file.c_str() );
     }
     file = fopen( fmapsFileName, "r" );
     if ( file == NULL ) {
