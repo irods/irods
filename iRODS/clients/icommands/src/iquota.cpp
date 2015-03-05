@@ -304,7 +304,6 @@ showUserUsage( char *userName, char *usersZone ) {
     char v1[BIG_STR];
     int i, j, k, status;
     int printCount;
-    char *tResult;
     char header[] =
         "Resource      User            Data-stored (bytes)";
     char *pad[14] = {"             ",
@@ -322,7 +321,6 @@ showUserUsage( char *userName, char *usersZone ) {
                      " ",
                      ""
                     };
-    int  localiTime = 0;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     printCount = 0;
@@ -399,10 +397,12 @@ showUserUsage( char *userName, char *usersZone ) {
         }
         printf( "\n" );
     }
+
+    const sqlResult_t *quota_usage_modify_time_result = getSqlResultByInx( genQueryOut, COL_QUOTA_USAGE_MODIFY_TIME);
+    long long localiTime = 0;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-        long itime;
-        tResult = genQueryOut->sqlResult[i].value;
-        itime = atoll( tResult );
+        const char *tResult = quota_usage_modify_time_result->value + i*quota_usage_modify_time_result->len;
+        const long long itime = atoll( tResult );
         if ( itime > localiTime ) {
             localiTime = itime;
             getLocalTimeFromRodsTime( tResult, quotaTime );
