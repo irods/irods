@@ -329,7 +329,7 @@ int testDelFilePriv( rsComm_t *rsComm, char *name, char *dataId,
             dataObjInfo.replNum = ireplica;
         }
     }
-    strncpy( dataObjInfo.objPath, name, sizeof dataObjInfo.objPath );
+    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
 
     return chlUnregDataObj( rsComm, &dataObjInfo, &condInput );
 }
