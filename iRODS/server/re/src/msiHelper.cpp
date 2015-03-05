@@ -102,16 +102,19 @@ msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
             return rei->status;
         }
         else {
-            strPtr = "";
+            free( strPtr );
+            strPtr = NULL;
             rei->status = 0;
         }
     }
 
-    if ( strPtr == NULL ) {
-        strPtr = "";
+    if ( strPtr != NULL ) {
+        fillStrInMsParam( outStr, strPtr );
+        free( strPtr );
     }
-    fillStrInMsParam( outStr, strPtr );
-    free( strPtr );
+    else {
+        fillStrInMsParam( outStr, "" );
+    }
 
     return rei->status;
 }
