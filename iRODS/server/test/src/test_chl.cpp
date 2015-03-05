@@ -34,18 +34,16 @@ int testRegRule( rsComm_t *rsComm, char *name ) {
 
     memset( &ruleInfo, 0, sizeof( ruleInfo ) );
 
-    strncpy( ruleInfo.ruleName, name, sizeof ruleInfo.ruleName );
+    snprintf( ruleInfo.ruleName, sizeof( ruleInfo.ruleName ), "%s", name );
 
-    strncpy( ruleInfo.reiFilePath, "../config/packedRei/rei.file1",
-             sizeof ruleInfo.reiFilePath );
-    strncpy( ruleInfo.userName, "Wayne", sizeof ruleInfo.userName );
-    strncpy( ruleInfo.exeAddress, "Bermuda", sizeof ruleInfo.exeAddress );
-    strncpy( ruleInfo.exeTime, "whenEver", sizeof ruleInfo.exeTime );
-    strncpy( ruleInfo.exeFrequency, "every 2 days", sizeof ruleInfo.exeFrequency );
-    strncpy( ruleInfo.priority, "high", sizeof ruleInfo.priority );
-    strncpy( ruleInfo.estimateExeTime, "2 hours", sizeof ruleInfo.estimateExeTime );
-    strncpy( ruleInfo.notificationAddr, "noone@nowhere.com",
-             sizeof ruleInfo.notificationAddr );
+    snprintf( ruleInfo.reiFilePath, sizeof( ruleInfo.reiFilePath ), "%s", "../config/packedRei/rei.file1" );
+    snprintf( ruleInfo.userName, sizeof( ruleInfo.userName ), "%s", "Wayne" );
+    snprintf( ruleInfo.exeAddress, sizeof( ruleInfo.exeAddress ), "%s", "Bermuda" );
+    snprintf( ruleInfo.exeTime, sizeof( ruleInfo.exeTime ), "%s", "whenEver" );
+    snprintf( ruleInfo.exeFrequency, sizeof( ruleInfo.exeFrequency ), "%s", "every 2 days" );
+    snprintf( ruleInfo.priority, sizeof( ruleInfo.priority ), "%s", "high" );
+    snprintf( ruleInfo.estimateExeTime, sizeof( ruleInfo.estimateExeTime ), "%s", "2 hours" );
+    snprintf( ruleInfo.notificationAddr, sizeof( ruleInfo.notificationAddr ), "%s", "noone@nowhere.com" );
     return chlRegRuleExec( rsComm, &ruleInfo );
 }
 
@@ -241,10 +239,8 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
     int status, i;
     char userNameAndZone[NAME_LEN * 2];
 
-    strncpy( rsComm->clientUser.userName, testUser,
-             sizeof rsComm->clientUser.userName );
-    strncpy( rsComm->clientUser.rodsZone, testUserZone,
-             sizeof rsComm->clientUser.rodsZone );
+    snprintf( rsComm->clientUser.userName, sizeof( rsComm->clientUser.userName ), "%s", testUser );
+    snprintf( rsComm->clientUser.rodsZone, sizeof( rsComm->clientUser.rodsZone ), "%s", testUserZone );
 
     for ( i = 0; i < CHALLENGE_LEN + 2; i++ ) {
         challenge[i] = ' ';
