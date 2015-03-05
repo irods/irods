@@ -127,8 +127,10 @@ int _getAndUseIFuseConn( iFuseConn_t **iFuseConn ) {
             addToConcurrentList( ConnectedConn, tmpIFuseConn );
             *iFuseConn = tmpIFuseConn;
         }
-        rodsLog( LOG_ERROR, "failure to acquire fuse connection; maximum fuse connections exceeded." );
-        return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+        else {
+            rodsLog( LOG_ERROR, "failure to acquire fuse connection; maximum fuse connections exceeded." );
+            return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+        }
     }
     else {
         useIFuseConn( tmpIFuseConn );
