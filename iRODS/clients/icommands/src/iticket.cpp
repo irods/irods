@@ -429,42 +429,45 @@ showTickets( char *inName ) {
 }
 
 
-void
-makeFullPath( char *inName, char **outName ) {
-    static char fullName[LONG_NAME_LEN];
-    strcpy( fullName, "" );
-    if ( strlen( inName ) > 0 ) {
-        strncpy( fullName, cwd, LONG_NAME_LEN );
-        if ( *inName == '/' ) {
-            strncpy( fullName, inName, LONG_NAME_LEN );
-        }
-        else {
-            rstrcat( fullName, "/", LONG_NAME_LEN );
-            rstrcat( fullName, inName, LONG_NAME_LEN );
-        }
+std::string
+makeFullPath( const char *inName ) {
+    std::stringstream fullPathStream;
+    if ( strlen( inName ) == 0 ) {
+        return std::string();
     }
-    *outName = fullName;
+    if ( *inName != '/' ) {
+        fullPathStream << cwd << "/";
+    }
+    fullPathStream << inName;
+    return fullPathStream.str();
 }
 
 /*
  Create, modify, or delete a ticket
  */
 int
-doTicketOp( char *arg1, char *arg2, char *arg3, char *arg4, char *arg5 ) {
+doTicketOp( const char *arg1, const char *arg2, const char *arg3,
+        const char *arg4, const char *arg5 ) {
     ticketAdminInp_t ticketAdminInp;
     int status;
     char *mySubName;
     char *myName;
 
-    ticketAdminInp.arg1 = arg1;
-    ticketAdminInp.arg2 = arg2;
-    ticketAdminInp.arg3 = arg3;
-    ticketAdminInp.arg4 = arg4;
-    ticketAdminInp.arg5 = arg5;
+    ticketAdminInp.arg1 = strdup( arg1 );
+    ticketAdminInp.arg2 = strdup( arg2 );
+    ticketAdminInp.arg3 = strdup( arg3 );
+    ticketAdminInp.arg4 = strdup( arg4 );
+    ticketAdminInp.arg5 = strdup( arg5 );
     ticketAdminInp.arg6 = "";
 
     status = rcTicketAdmin( Conn, &ticketAdminInp );
     lastCommandStatus = status;
+
+    free( ticketAdminInp.arg1 );
+    free( ticketAdminInp.arg2 );
+    free( ticketAdminInp.arg3 );
+    free( ticketAdminInp.arg4 );
+    free( ticketAdminInp.arg5 );
 
     if ( status < 0 ) {
         if ( Conn->rError ) {
@@ -619,15 +622,14 @@ doCommand( char *cmdToken[] ) {
             || strcmp( cmdToken[0], "mk" ) == 0
        ) {
         static char myTicket[30];
-        char *fullPath = 0;
         if ( strlen( cmdToken[3] ) > 0 ) {
             strncpy( myTicket, cmdToken[3], 30 );
         }
         else {
             makeTicket( myTicket );
         }
-        makeFullPath( cmdToken[2], &fullPath );
-        doTicketOp( "create", myTicket, cmdToken[1], fullPath,
+        std::string fullPath = makeFullPath( cmdToken[2] );
+        doTicketOp( "create", myTicket, cmdToken[1], fullPath.c_str(),
                     cmdToken[3] );
         return 0;
     }
