@@ -16,7 +16,11 @@
 
 int main () {
     rodsEnv myEnv;
-    getRodsEnv( &myEnv );
+    int status = getRodsEnv( &myEnv );
+    if ( status != 0 ) {
+        printf( "getRodsEnv failed.\n" );
+        return -1;
+    }
     rErrMsg_t errMsg;
 
     rcComm_t* conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName, myEnv.rodsZone, 1, &errMsg );
