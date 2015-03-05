@@ -529,7 +529,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
             if ( error_code < 0 ) {
                 rodsLog( LOG_ERROR, "renameFilePathToNewDir failed in moveMountedCollDataObj with error code %d", error_code );
             }
-            strncpy( destDataObjInfo.filePath, new_fn, MAX_NAME_LEN );
+            snprintf( destDataObjInfo.filePath, sizeof( destDataObjInfo.filePath ), "%s", new_fn );
         }
         else if ( status == 0 ) {
             /* obj exist */
