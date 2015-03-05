@@ -2476,7 +2476,7 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node** paramsr, int, Node* node, r
             irods::log( PASS( ret ) );
             return newIntRes( r, ret.code() );
         }
-        strncpy( fileName, cfg_file.c_str(), MAX_NAME_LEN );
+        snprintf( fileName, sizeof( fileName ), "%s", cfg_file.c_str() );
     }
 
 
