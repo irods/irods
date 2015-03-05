@@ -3198,8 +3198,11 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 else if ( strcmp( token->text, "include" ) == 0 ) {
                     token = nextTokenRuleGen( e, pc, 1, 0 );
                     if ( token->type == TK_TEXT || token->type == TK_STRING ) {
-                        deleteParserContext( pc );
-                        CASCASE_NON_ZERO( readRuleSetFromFile( token->text, ruleSet, funcDescIndex, errloc, errmsg, r ) );
+                        int ret = readRuleSetFromFile( token->text, ruleSet, funcDescIndex, errloc, errmsg, r );
+                        if ( ret != 0 ) {
+                            deleteParserContext( pc );
+                            return ret;
+                        }
                     }
                     else {
                         /* todo error handling */
