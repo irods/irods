@@ -130,10 +130,8 @@ sslEnd( rcComm_t *rcComm ) {
     rcComm->ssl_ctx = NULL;
     rcComm->ssl_on = 0;
 
-    strncpy(
-        rcComm->negotiation_results,
-        irods::CS_NEG_USE_TCP.c_str(),
-        MAX_NAME_LEN );
+    snprintf( rcComm->negotiation_results, sizeof( rcComm->negotiation_results ),
+            "%s", irods::CS_NEG_USE_TCP.c_str() );
     rodsLog( LOG_DEBUG, "sslShutdown: shut down SSL connection" );
 
 
