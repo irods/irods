@@ -898,11 +898,11 @@ main( int argc, char **argv ) {
     }
 
 
-    strncpy( Comm->clientUser.userName, myEnv.rodsUserName,
-             sizeof Comm->clientUser.userName );
+    snprintf( Comm->clientUser.userName, sizeof( Comm->clientUser.userName ),
+            "%s", myEnv.rodsUserName );
 
-    strncpy( Comm->clientUser.rodsZone, myEnv.rodsZone,
-             sizeof Comm->clientUser.rodsZone );
+    snprintf( Comm->clientUser.rodsZone, sizeof( Comm->clientUser.rodsZone ),
+            "%s", myEnv.rodsZone );
 
     /*
       char rodsUserName[NAME_LEN];
