@@ -136,6 +136,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
             }
         }
         free( collEnt );	   /* just free collEnt but not content */
+        collEnt = NULL;
     }
     rsCloseCollection( rsComm, &handleInx );
     freeCollEnt( collEnt );
