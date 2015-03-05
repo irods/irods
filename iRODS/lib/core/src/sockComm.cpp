@@ -319,6 +319,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         const int svrPortRangeStart = atoi( tmpPtr );
         if ( svrPortRangeStart < 1 || svrPortRangeStart > 65535 ) {
             rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svrPortRangeStart );
+            close( sock );
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -375,6 +376,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         rodsLog( LOG_NOTICE,
                  "sockOpenForInConn: bind socket error. portNum = %d, errno = %d",
                  *portNum, errno );
+        close( sock );
         return status;
     }
 
