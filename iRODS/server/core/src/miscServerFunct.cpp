@@ -3184,8 +3184,8 @@ irods::error update_resource_object_count(
         // copy to stack, avoid const cast
         char rn[MAX_NAME_LEN];
         char oc[MAX_NAME_LEN];
-        strncpy( rn, resc_name.c_str(),           MAX_NAME_LEN );
-        strncpy( oc, new_count_str.str().c_str(), MAX_NAME_LEN );
+        snprintf( rn, sizeof( rn ), "%s", resc_name.c_str() );
+        snprintf( oc, sizeof( oc ), "%s", new_count_str.str().c_str() );
 
         // =-=-=-=-=-=-=-
         // call update via rsGeneralAdmin
