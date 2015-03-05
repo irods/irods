@@ -540,16 +540,16 @@ int testModColl( rsComm_t *rsComm, char *name, char *type,
     memset( &collInp, 0, sizeof( collInp ) );
 
     if ( name != NULL && strlen( name ) > 0 ) {
-        strncpy( collInp.collName, name, sizeof collInp.collName );
+        snprintf( collInp.collName, sizeof( collInp.collName ), "%s", name );
     }
     if ( type != NULL && strlen( type ) > 0 ) {
-        strncpy( collInp.collType, type, sizeof collInp.collType );
+        snprintf( collInp.collType, sizeof( collInp.collType ), "%s", type );
     }
     if ( info1 != NULL && strlen( info1 ) > 0 ) {
-        strncpy( collInp.collInfo1, info1, sizeof collInp.collInfo1 );
+        snprintf( collInp.collInfo1, sizeof( collInp.collInfo1 ), "%s", info1 );
     }
     if ( info2 != NULL && strlen( info2 ) > 0 ) {
-        strncpy( collInp.collInfo2, info2, sizeof collInp.collInfo2 );
+        snprintf( collInp.collInfo2, sizeof( collInp.collInfo2 ), "%s", info2 );
     }
 
     status = chlModColl( rsComm, &collInp );
