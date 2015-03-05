@@ -3821,8 +3821,8 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy( ( char* )myStructFileExtAndRegInp->objPath, ( char* )inpParam1->inOutStruct,
-                 MAX_NAME_LEN );
+        snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
+                "%s", ( char* )inpParam1->inOutStruct );
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
         myStructFileExtAndRegInp =
@@ -3835,8 +3835,8 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
 
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
         if ( strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
-            strncpy( ( char* )myStructFileExtAndRegInp->collection,
-                     ( char* )inpParam2->inOutStruct, MAX_NAME_LEN );
+            snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
+                    "%s", ( char* )inpParam2->inOutStruct );
         }
     }
     else {
