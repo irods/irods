@@ -120,8 +120,7 @@ int testTempPwConvert( char *s1, char *s2 ) {
     */
 
     memset( md5Buf, 0, sizeof( md5Buf ) );
-    strncpy( md5Buf, s2, sizeof md5Buf );
-    strncat( md5Buf, s1, sizeof md5Buf - strlen( md5Buf ) );
+    snprintf( md5Buf, sizeof( md5Buf ), "%s%s", s2, s1 );
 
     obfMakeOneWayHash( HASH_TYPE_DEFAULT, ( unsigned char* )md5Buf, sizeof md5Buf,
                        digest );
