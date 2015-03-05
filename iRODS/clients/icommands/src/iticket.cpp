@@ -621,9 +621,9 @@ doCommand( char *cmdToken[] ) {
             || strcmp( cmdToken[0], "make" ) == 0
             || strcmp( cmdToken[0], "mk" ) == 0
        ) {
-        static char myTicket[30];
+        char myTicket[30];
         if ( strlen( cmdToken[3] ) > 0 ) {
-            strncpy( myTicket, cmdToken[3], 30 );
+            snprintf( myTicket, sizeof( myTicket ), "%s", cmdToken[3] );
         }
         else {
             makeTicket( myTicket );
