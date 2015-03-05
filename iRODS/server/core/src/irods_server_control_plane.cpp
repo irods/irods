@@ -426,7 +426,7 @@ namespace irods {
             int  age = get_pid_age( pids[i] );
 
             json_t* agent_obj = json_object();
-            if ( !arr ) {
+            if ( !agent_obj ) {
                 return ERROR(
                            SYS_MALLOC_ERR,
                            "allocation of json object failed" );
