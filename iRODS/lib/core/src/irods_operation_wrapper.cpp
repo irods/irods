@@ -37,11 +37,7 @@ namespace irods {
         operation_name_ = _rhs.operation_name_;
     } // cctor
 
-// =-=-=-=-=-=-=-
-// public - dtor
-    operation_wrapper::~operation_wrapper( ) {
-    } // dtor
-
+// don't need dtor any more because of final because of template member function
 // =-=-=-=-=-=-=-
 // public - assignment for stl container
     operation_wrapper& operation_wrapper::operator=(
