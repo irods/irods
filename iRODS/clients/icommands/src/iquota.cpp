@@ -399,6 +399,10 @@ showUserUsage( char *userName, char *usersZone ) {
     }
 
     const sqlResult_t *quota_usage_modify_time_result = getSqlResultByInx( genQueryOut, COL_QUOTA_USAGE_MODIFY_TIME);
+    if ( quota_usage_modify_time_result == NULL ) {
+        printf( "Error getting quota usage modify times.\n" );
+        return SYS_NULL_INPUT;
+    }
     long long localiTime = 0;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         const char *tResult = quota_usage_modify_time_result->value + i*quota_usage_modify_time_result->len;
