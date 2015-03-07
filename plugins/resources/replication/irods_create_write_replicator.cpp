@@ -1,6 +1,7 @@
 #include "irods_create_write_replicator.hpp"
 
 #include "dataObjRepl.hpp"
+#include "irods_stacktrace.hpp"
 
 namespace irods {
 
@@ -21,7 +22,9 @@ namespace irods {
         resource_plugin_context& _ctx,
         const child_list_t& _siblings,
         const object_oper& _object_oper ) {
+
         error result = SUCCESS();
+        error last_error = SUCCESS();
         if ( ( result = ASSERT_ERROR( _object_oper.operation() == create_oper || _object_oper.operation() == write_oper,
                                       INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
                                       _object_oper.operation().c_str() ) ).ok() ) {
@@ -34,7 +37,7 @@ namespace irods {
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
             int sibling_count = 0;
-            for ( it = _siblings.begin(); result.ok() && it != _siblings.end(); ++it ) {
+            for ( it = _siblings.begin(); it != _siblings.end(); ++it ) {
                 ++sibling_count;
                 hierarchy_parser sibling = *it;
                 std::string hierarchy_string;
@@ -44,6 +47,7 @@ namespace irods {
                     bzero( &dataObjInp, sizeof( dataObjInp ) );
                     rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
                     dataObjInp.createMode = object.mode();
+
                     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
                     addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str() );
                     addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str() );
@@ -61,10 +65,31 @@ namespace irods {
                     if ( trans_stat != NULL ) {
                         free( trans_stat );
                     }
-                }
-            }
+
+                    // cache last error to return, log it and add it to the
+                    // client side error stack
+                    if( !result.ok() ) {
+                        last_error = result;
+                        irods::log( result );
+                        addRErrorMsg(
+                            &_ctx.comm()->rError,
+                            result.code(),
+                            result.result().c_str() );
+                        result = SUCCESS();
+
+                    }
+
+                } // if hier str
+
+            } // for it
+
+        } // if ok
+
+        if( !last_error.ok() ) {
+            return last_error;
         }
-        return result;
+
+        return SUCCESS();
     }
 
 }; // namespace irods

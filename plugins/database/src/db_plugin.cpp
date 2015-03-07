@@ -2388,12 +2388,18 @@ extern "C" {
             adminMode = 1;
         }
 
+        bool update_resc_hier = false;
         /* Set up the updateCols and updateVals arrays */
         for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
             theVal = getValByKey( _reg_param, regParamNames[i] );
             if ( theVal != NULL ) {
                 updateCols.push_back( colNames[i] );
                 updateVals.push_back( theVal );
+
+                if( std::string( "resc_hier" ) == colNames[i] ) {
+                    update_resc_hier = true;
+                }
+
                 if ( i == DATA_EXPIRY_TS_IX ) {
                     /* if data_expiry, make sure it's
                                                    in the standard time-stamp
@@ -2467,6 +2473,7 @@ extern "C" {
         }
 
         if ( _data_obj_info->dataId <= 0 ) {
+
             status = splitPathByKey( _data_obj_info->objPath,
                                      logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
@@ -2595,11 +2602,23 @@ extern "C" {
          * only one).
          */
         if ( getValByKey( _reg_param, ALL_KW ) == NULL ) {
-            j = numConditions;
-            whereColsAndConds[j] = "data_repl_num=";
-            snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
-            whereValues[j] = replNum1;
-            numConditions++;
+            // use resc_hier instead of replNum as it is
+            // always set, unless resc_hier is to be
+            // updated.  replNum is sometimes 0 in various
+            // error cases
+            if( update_resc_hier ) {
+                j = numConditions;
+                whereColsAndConds[j] = "data_repl_num=";
+                snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
+                whereValues[j] = replNum1;
+                numConditions++;
+
+            } else {
+                j = numConditions;
+                whereColsAndConds[j] = "resc_hier=";
+                whereValues[j] = _data_obj_info->rescHier;
+                numConditions++;
+            }
         }
 
         mode = 0;
