@@ -2606,7 +2606,7 @@ extern "C" {
             // always set, unless resc_hier is to be
             // updated.  replNum is sometimes 0 in various
             // error cases
-            if( update_resc_hier ) {
+            if( update_resc_hier || strlen( _data_obj_info->rescHier ) <= 0 ) {
                 j = numConditions;
                 whereColsAndConds[j] = "data_repl_num=";
                 snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
