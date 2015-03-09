@@ -260,7 +260,9 @@ parseMspForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInpCache,
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
         if ( dataObjInpCache == NULL ) {
-            dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+            rodsLog( LOG_ERROR,
+                    "parseMspForDataObjInp: input dataObjInpCache is NULL" );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );
         *outDataObjInp = dataObjInpCache;
@@ -275,7 +277,9 @@ parseMspForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInpCache,
             dataObjInp_t *tmpDataObjInp;
             tmpDataObjInp = ( dataObjInp_t * )inpParam->inOutStruct;
             if ( dataObjInpCache == NULL ) {
-                dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+                rodsLog( LOG_ERROR,
+                        "parseMspForDataObjInp: input dataObjInpCache is NULL" );
+                return SYS_INTERNAL_NULL_INPUT_ERR;
             }
             *dataObjInpCache = *tmpDataObjInp;
             /* zero out the condition of the original because it has been
@@ -301,7 +305,9 @@ parseMspForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInpCache,
         }
 
         if ( dataObjInpCache == NULL ) {
-            dataObjInpCache = ( dataObjInp_t * )malloc( sizeof( dataObjInp_t ) );
+            rodsLog( LOG_ERROR,
+                    "parseMspForDataObjInp: input dataObjInpCache is NULL" );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
         memset( dataObjInpCache, 0, sizeof( dataObjInp_t ) );

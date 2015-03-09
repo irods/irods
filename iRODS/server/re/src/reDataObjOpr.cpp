@@ -1196,7 +1196,7 @@ int
 msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp = NULL, *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = NULL;
     msParamArray_t *myMsParamArray;
     char *outBadKeyWd;
     int validKwFlags;
@@ -1212,6 +1212,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm = rei->rsComm;
 
     /* parse inpParam1 */
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
     rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
                                          &myDataObjInp, 1 );
 
@@ -1349,9 +1350,9 @@ int
 msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
                msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp = NULL, *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = NULL;
     msParamArray_t *myMsParamArray;
-    char *outBadKeyWd;
+    char *outBadKeyWd = NULL;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjGet" )
@@ -1365,6 +1366,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
     rsComm = rei->rsComm;
 
     /* parse inpParam1 */
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
     rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
                                          &myDataObjInp, 1 );
 
@@ -1480,7 +1482,7 @@ int
 msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
                           msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *dataObjInp = NULL, *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = NULL;
     msParamArray_t *myMsParamArray;
 
     RE_TEST_MACRO( "    Calling msiDataObjGetWithOptions" )
@@ -1494,6 +1496,7 @@ msiDataObjGetWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm = rei->rsComm;
 
     /* parse inpParam1 */
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
     rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
                                          &myDataObjInp, 1 );
 
@@ -3265,7 +3268,7 @@ msiDataObjPutWithOptions( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rsComm_t * rsComm = rei->rsComm;
 
-    dataObjInp_t *dataObjInp = NULL;
+    dataObjInp_t *dataObjInp = ( dataObjInp_t* )malloc( sizeof( *dataObjInp ) );
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp( inpParam1, dataObjInp,
                                          &myDataObjInp, 1 );
