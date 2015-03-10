@@ -28,6 +28,7 @@ static pthread_mutex_t my_mutex;
 
 #include <vector>
 #include <string>
+#include <sstream>
 
 short threadIsAlive[MAX_NSERVERS];
 
@@ -602,7 +603,6 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     char probtime[LEN_SECONDS], measTime[LEN_SECONDS];
     FILE *filein; /* file pointers */
     const char *delim = " \n";
-    char valinit[MAX_NAME_LEN] = "";
     char val[MAX_NAME_LEN] = ""; /* val => arguments for the script */
     int check, i, indx, j, looptime, maxtime, nresc, nservers, thrCount, threadsNotfinished;
     const char *probtimeDef = "10"; /* default value used by the monitoring script for the amount
@@ -619,23 +619,24 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
 
     rsComm = rei->rsComm;
 
+    std::stringstream valinit_stream;
     if ( verb->inOutStruct != NULL ) {
         verbosity = ( char * ) verb->inOutStruct;
         if ( strcmp( verbosity, "verbose" ) == 0 ) {
-            strcat( valinit, "-v " );
+            valinit_stream << "-v ";
         }
     }
 
-    strcat( valinit, " -t " );
+    valinit_stream << " -t ";
 
-    strncpy( probtime, ( char * ) ptime->inOutStruct,  LEN_SECONDS );
+    snprintf( probtime, sizeof( probtime ), "%s", ( char * ) ptime->inOutStruct );
     if ( atoi( probtime ) > 0 ) {
-        strcat( valinit, probtime );
-        strncpy( measTime, probtime, LEN_SECONDS );
+        valinit_stream << probtime;
+        snprintf( measTime, sizeof( measTime ), "%s", probtime );
     }
     else {
-        strcat( valinit, probtimeDef );
-        strncpy( measTime, probtimeDef, LEN_SECONDS );
+        valinit_stream << probtimeDef;
+        snprintf( measTime, sizeof( measTime ), "%s", probtimeDef );
     }
 
     rstrcpy( val, "", MAX_NAME_LEN );
@@ -683,14 +684,10 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
             }
         }
         if ( check == 0 ) {
-            strcpy( thrInput[thrCount].cmdArgv, valinit );
-            strcat( thrInput[thrCount].cmdArgv, " -fs " );
-            if ( strcmp( rescList[thrCount].rescType, "unixfilesystem" ) == 0 ) {
-                strcat( thrInput[thrCount].cmdArgv, rescList[i].vaultPath );
-            }
-            else {
-                strcat( thrInput[thrCount].cmdArgv, "none" );
-            }
+            const char * path = strcmp( rescList[thrCount].rescType, "unixfilesystem" ) == 0 ?
+                rescList[i].vaultPath : "none";
+            snprintf( thrInput[thrCount].cmdArgv, sizeof( thrInput[thrCount].cmdArgv ),
+                    "%s -fs %s", valinit_stream.str().c_str(), path );
             rstrcpy( thrInput[thrCount].cmd, cmd, LONG_NAME_LEN );
             rstrcpy( thrInput[thrCount].execAddr, rescList[i].serverName, LONG_NAME_LEN );
             rstrcpy( thrInput[thrCount].hintPath, hintPath, MAX_NAME_LEN );
@@ -704,11 +701,11 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
             rstrcat( thrInput[indx].rescName, ",", MAX_NAME_LEN );
             rstrcat( thrInput[indx].rescName, rescList[i].rescName, MAX_NAME_LEN );
             if ( strcmp( rescList[i].rescType, "unixfilesystem" ) == 0 ) {
-                strcat( thrInput[indx].cmdArgv, "," );
-                strcat( thrInput[indx].cmdArgv, rescList[i].vaultPath );
+                rstrcat( thrInput[indx].cmdArgv, ",", sizeof( thrInput[indx].cmdArgv )  );
+                rstrcat( thrInput[indx].cmdArgv, rescList[i].vaultPath, sizeof( thrInput[indx].cmdArgv ) );
             }
             else {
-                strcat( thrInput[indx].cmdArgv, ",none" );
+                rstrcat( thrInput[indx].cmdArgv, ",none", sizeof( thrInput[indx].cmdArgv ) );
             }
         }
         rstrcpy( val, "", MAX_NAME_LEN );
