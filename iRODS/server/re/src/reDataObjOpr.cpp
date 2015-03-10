@@ -3650,8 +3650,8 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy( ( char* )myStructFileExtAndRegInp->objPath, ( char* )inpParam1->inOutStruct,
-                 MAX_NAME_LEN );
+        snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
+                "%s", ( char* )inpParam1->inOutStruct );
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
         myStructFileExtAndRegInp =
@@ -3664,8 +3664,8 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
         if ( strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
-            strncpy( ( char* )myStructFileExtAndRegInp->collection,
-                     ( char* )inpParam2->inOutStruct, MAX_NAME_LEN );
+            snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
+                    "%s", ( char* )inpParam2->inOutStruct );
         }
     }
     else {
@@ -3688,7 +3688,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     if ( rei->doi != NULL ) { /* rei->doi may not exist */
         /* retrieve the input object data_type in order to rollback in case
         * of a tar extraction problem */
-        strncpy( origDataType, rei->doi->dataType, NAME_LEN );
+        snprintf( origDataType, sizeof( origDataType ), "%s", rei->doi->dataType );
         /* modify the input object data_type to "tar file" */
         memset( &regParam, 0, sizeof( regParam ) );
         addKeyVal( &regParam, DATA_TYPE_KW, "tar file" );
