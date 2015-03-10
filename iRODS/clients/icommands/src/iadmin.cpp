@@ -536,7 +536,7 @@ showGlobalQuotas( char *inputUserOrGroup ) {
         }
         status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( zoneName[0] == '\0' ) {
-            strncpy( zoneName, localZone, sizeof zoneName );
+            snprintf( zoneName, sizeof( zoneName ), "%s", localZone );
         }
         simpleQueryInp.form = 2;
         simpleQueryInp.sql =
