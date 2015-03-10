@@ -336,7 +336,7 @@ main( int argc, char **argv ) {
                  status );
         exit( 1 );
     }
-    strncpy( objPath, myEnv.rodsCwd, MAX_NAME_LEN );
+    snprintf( objPath, sizeof( objPath ), "%s", myEnv.rodsCwd );
 
     for ( i = 0; i < maxCmdTokens; i++ ) {
         cmdToken[i] = "";
