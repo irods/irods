@@ -208,10 +208,8 @@ int _rsFilePut(
     // =-=-=-=-=-=-=-
     // percolate possible change in phy path up
     ( *_put_out ) = ( filePutOut_t* ) malloc( sizeof( filePutOut_t ) );
-    strncpy(
-        ( *_put_out )->file_name,
-        file_obj->physical_path().c_str(),
-        MAX_NAME_LEN );
+    snprintf( ( *_put_out )->file_name, sizeof( ( *_put_out )->file_name ),
+            "%s", file_obj->physical_path().c_str() );
 
     // =-=-=-=-=-=-=-
     // return 'write_err code' as this includes this implementation
