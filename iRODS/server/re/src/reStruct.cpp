@@ -488,7 +488,7 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     char *delayCondition;
 
     delayCondition = strdup( inDelayCondition );
-    strncpy( ruleSubmitInfo->ruleName, action, META_STR_LEN );
+    snprintf( ruleSubmitInfo->ruleName, sizeof( ruleSubmitInfo->ruleName ), "%s", action );
     /*
       i= copyTaggedValue(delayCondition,"UN", ruleSubmitInfo->userName,NAME_LEN);
       if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
@@ -569,10 +569,12 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
     if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
         if ( strlen( rei->uoic->userName ) != 0 ) {
-            strncpy( ruleSubmitInfo->userName, rei->uoic->userName, NAME_LEN );
+            snprintf( ruleSubmitInfo->userName, sizeof( ruleSubmitInfo->userName ),
+                    "%s", rei->uoic->userName );
         }
         else if ( strlen( rei->rsComm->clientUser.userName ) != 0 ) {
-            strncpy( rei->rsComm->clientUser.userName, rei->uoic->userName, NAME_LEN );
+            snprintf( rei->rsComm->clientUser.userName, sizeof( rei->rsComm->clientUser.userName ),
+                    "%s", rei->uoic->userName );
         }
     }
     free( delayCondition );
