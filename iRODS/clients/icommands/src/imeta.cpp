@@ -899,36 +899,36 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
     char fullName1[MAX_NAME_LEN];
     char fullName2[MAX_NAME_LEN];
 
-    strncpy( fullName1, cwd, MAX_NAME_LEN );
     if ( strcmp( arg1, "-R" ) == 0 || strcmp( arg1, "-r" ) == 0 ||
             strcmp( arg1, "-u" ) == 0 ) {
-        strncpy( fullName1, arg3, MAX_NAME_LEN );
+        snprintf( fullName1, sizeof( fullName1 ), "%s", arg3 );
     }
-    else {
-        if ( strlen( arg3 ) > 0 ) {
-            if ( *arg3 == '/' ) {
-                strncpy( fullName1, arg3, MAX_NAME_LEN );
-            }
-            else {
-                rstrcat( fullName1, "/", MAX_NAME_LEN );
-                rstrcat( fullName1, arg3, MAX_NAME_LEN );
-            }
+    else if ( strlen( arg3 ) > 0 ) {
+        if ( *arg3 == '/' ) {
+            snprintf( fullName1, sizeof( fullName1 ), "%s", arg3 );
+        }
+        else {
+            snprintf( fullName1, sizeof( fullName1 ), "%s/%s", cwd, arg3 );
         }
     }
+    else {
+        snprintf( fullName1, sizeof( fullName1 ), "%s", cwd );
+    }
 
-    strncpy( fullName2, cwd, MAX_NAME_LEN );
     if ( strcmp( arg2, "-R" ) == 0 || strcmp( arg2, "-r" ) == 0 ||
             strcmp( arg2, "-u" ) == 0 ) {
-        strncpy( fullName2, arg4, MAX_NAME_LEN );
+        snprintf( fullName2, sizeof( fullName2 ), "%s", arg4 );
     }
     else if ( strlen( arg4 ) > 0 ) {
         if ( *arg4 == '/' ) {
-            strncpy( fullName2, arg4, MAX_NAME_LEN );
+            snprintf( fullName2, sizeof( fullName2 ), "%s", arg4 );
         }
         else {
-            rstrcat( fullName2, "/", MAX_NAME_LEN );
-            rstrcat( fullName2, arg4, MAX_NAME_LEN );
+            snprintf( fullName2, sizeof( fullName2 ), "%s/%s", cwd, arg4 );
         }
+    }
+    else {
+        snprintf( fullName2, sizeof( fullName2 ), "%s", cwd );
     }
 
     modAVUMetadataInp.arg0 = arg0;
