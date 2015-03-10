@@ -199,7 +199,8 @@ namespace irods {
         _comm->key_size        = key_size_;
         _comm->salt_size       = salt_size_;
         _comm->num_hash_rounds = num_hash_rounds_;
-        strncpy( _comm->encryption_algorithm, encryption_algorithm_.c_str(), NAME_LEN );
+        snprintf( _comm->encryption_algorithm, sizeof( _comm->encryption_algorithm ),
+                "%s", encryption_algorithm_.c_str() );
 
         return SUCCESS();
 
