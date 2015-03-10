@@ -11,6 +11,11 @@
 #include "rsApiHandler.hpp"
 #include "collection.hpp"
 
+#include <string>
+#include <vector>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string/regex.hpp>
+
 /**
  * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr,
  *        msParam_t *outParam, ruleExecInfo_t *rei)
@@ -3886,9 +3891,6 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp,
                              *myStructFileExtAndRegInp;
-    int len1, len2, len3;
-    char *inpStr, rescName[NAME_LEN], *pstr1, *pstr2, *pstr3, *attr1, attr2[NAME_LEN];
-    char delim[1];
 
     RE_TEST_MACRO( " Calling msiPhyBundleColl" )
 
@@ -3901,7 +3903,6 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    delim[0] = '\0';
     rsComm = rei->rsComm;
 
     /* start building the structFileExtAndRegInp instance.
@@ -3928,8 +3929,8 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
-        strncpy( ( char* )myStructFileExtAndRegInp->collection, ( char* )inpParam1->inOutStruct,
-                 MAX_NAME_LEN );
+        snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
+                "%s", ( char* )inpParam1->inOutStruct );
 
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
@@ -3944,55 +3945,37 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     }
 
     if ( inpParam2 != NULL && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
-            // =-=-=-=-=-=-=-
             strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
-        inpStr = ( char * ) inpParam2->inOutStruct;
         /* parse the input parameter which is: <string> or <string>++++N=<int>.... */
-        pstr1 = strstr( inpStr, "++++" );
-        if ( pstr1 != NULL ) {
-            len1 = strlen( inpStr ) - strlen( pstr1 );
-            if ( len1 > 0 ) {
-                strncpy( rescName, inpStr, len1 );
-                strcpy( rescName + len1, delim );
-                addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, rescName );
+        std::vector<std::string> tokens;
+        boost::algorithm::split_regex( tokens, ( char * ) inpParam2->inOutStruct, boost::regex( "\\+\\+\\+\\+" ) );
+        if ( !tokens[0].empty() ) {
+            addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, tokens[0].c_str() );
+        }
+        for ( size_t i = 1; i < tokens.size(); i++ ) {
+            if ( tokens[i].empty() ) {
+                continue;
             }
-
-            do {
-                pstr2 = strstr( pstr1 + 4, "=" );
-                if ( pstr2 == NULL ) {
+            std::vector<std::string> current_arg;
+            boost::algorithm::split_regex( current_arg, tokens[i], boost::regex( "=" ) );
+            if ( current_arg.size() != 2 || current_arg[0].size() != 1 ) {
+                rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
+                continue;
+            }
+            switch( current_arg[0].c_str()[0] ) {
+                case 'N':
+                    addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, current_arg[1].c_str() );
                     break;
-                }
-                pstr3 = strstr( pstr2, "++++" );
-                if ( pstr3 == NULL ) {
-                    len3 = 0;
-                }
-                else {
-                    len3 = strlen( pstr3 );
-                }
-
-                len2 = strlen( pstr1 + 4 ) - strlen( pstr2 );
-                if ( len2 > 0 && len3 < ( int )strlen( pstr2 ) ) {
-                    attr1 = pstr2 - 1;
-                    strncpy( attr2, pstr2 + 1, strlen( pstr2 + 1 ) - len3 );
-                    strcpy( attr2 + strlen( pstr2 + 1 ) - len3, delim );
-                    if ( strncmp( attr1, "N", 1 ) == 0 ) {
-                        addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, attr2 );
-                    }
-                    if ( strncmp( attr1, "S", 1 ) == 0 ) {
-                        addKeyVal( &myStructFileExtAndRegInp->condInput, RESC_NAME_KW, attr2 );
-                    }
-                    if ( strncmp( attr1, "s", 1 ) == 0 ) {
-                        addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, attr2 );
-                    }
-                }
+                case 'S':
+                    addKeyVal( &myStructFileExtAndRegInp->condInput, RESC_NAME_KW, current_arg[1].c_str() );
+                    break;
+                case 's':
+                    addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, current_arg[1].c_str() );
+                    break;
+                default:
+                    rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
             }
-            while ( ( pstr1 = strstr( pstr2, "++++" ) ) != NULL );
         }
-        else {
-            addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, inpStr );
-        }
-        /* end of the parsing */
-        // =-=-=-=-=-=-=-
     }
 
     /* tar file extraction */
