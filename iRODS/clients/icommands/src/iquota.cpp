@@ -436,7 +436,7 @@ showUserGroupMembership( char *userNameIn, char *usersZone ) {
 
     status = parseUserName( userNameIn, userName, zoneName );
     if ( zoneName[0] == '\0' ) {
-        strncpy( zoneName, usersZone, sizeof zoneName );
+        snprintf( zoneName, sizeof( zoneName ), "%s", usersZone );
         showUserZone = 0;
     }
 
