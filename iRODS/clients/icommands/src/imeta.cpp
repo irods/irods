@@ -458,7 +458,7 @@ showUser( char *name, char *attrName, int wild ) {
         return 0;
     }
     if ( userZone[0] == '\0' ) {
-        strncpy( userZone, myEnv.rodsZone, NAME_LEN );
+        snprintf( userZone, sizeof( userZone ), "%s", myEnv.rodsZone );
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
