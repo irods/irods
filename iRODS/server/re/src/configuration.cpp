@@ -474,7 +474,7 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
             irods::log( PASS( ret ) );
             return ret.code();
         }
-        strncpy( rulesFileName, cfg_file.c_str(), MAX_NAME_LEN );
+        snprintf( rulesFileName, sizeof( rulesFileName ), "%s", cfg_file.c_str() );
     }
     /*file = fopen(rulesFileName, "r");
     if (file == NULL) {
