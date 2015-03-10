@@ -996,20 +996,22 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
     char *myName;
     char fullName[MAX_NAME_LEN];
 
-    strncpy( fullName, cwd, MAX_NAME_LEN );
     if ( strcmp( arg1, "-R" ) == 0 || strcmp( arg1, "-r" ) == 0 ||
             strcmp( arg1, "-u" ) == 0 ) {
-        strncpy( fullName, arg2, MAX_NAME_LEN );
+        snprintf( fullName, sizeof( fullName ), "%s", arg2 );
     }
     else if ( strlen( arg2 ) > 0 ) {
         if ( *arg2 == '/' ) {
-            strncpy( fullName, arg2, MAX_NAME_LEN );
+            snprintf( fullName, sizeof( fullName ), "%s", arg2 );
         }
         else {
-            rstrcat( fullName, "/", MAX_NAME_LEN );
-            rstrcat( fullName, arg2, MAX_NAME_LEN );
+            snprintf( fullName, sizeof( fullName ), "%s/%s", cwd, arg2 );
         }
     }
+    else {
+        snprintf( fullName, sizeof( fullName ), "%s", cwd );
+    }
+
 
     modAVUMetadataInp.arg0 = arg0;
     modAVUMetadataInp.arg1 = arg1;
