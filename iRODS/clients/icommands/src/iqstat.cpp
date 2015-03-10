@@ -277,23 +277,25 @@ main( int argc, char **argv ) {
     status = parseCmdLineOpt( argc, argv, "alu:vVh", 0, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
-        exit( 1 );
+        return 1;
     }
 
-    strncpy( userName, myEnv.rodsUserName, NAME_LEN );
     if ( myRodsArgs.user ) {
-        strncpy( userName, myRodsArgs.userString, NAME_LEN );
+        snprintf( userName, sizeof( userName ), "%s", myRodsArgs.userString );
+    }
+    else {
+        snprintf( userName, sizeof( userName ), "%s", myEnv.rodsUserName );
     }
 
     // =-=-=-=-=-=-=-
@@ -306,13 +308,13 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        exit( 2 );
+        return 2;
     }
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
         if ( !debug ) {
-            exit( 3 );
+            return 3;
         }
     }
 
@@ -334,7 +336,7 @@ main( int argc, char **argv ) {
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
-    exit( status );
+    return status;
 }
 
 /*
