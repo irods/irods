@@ -142,14 +142,15 @@ showDataObj( char *name, char *attrName, int wild ) {
     snprintf( v2, sizeof( v1 ), "='%s'", name );
     condVal[1] = v2;
 
-    strncpy( fullName, cwd, MAX_NAME_LEN );
-    rstrcat( fullName, "/", MAX_NAME_LEN );
-    rstrcat( fullName, name, MAX_NAME_LEN );
+    if ( *name == '/' ) {
+        snprintf( fullName, sizeof( fullName ), "%s", name );
+    }
+    else {
+        snprintf( fullName, sizeof( fullName ), "%s/%s", cwd, name );
+    }
+
     if ( strstr( name, "/" ) != NULL ) {
         /* reset v1 and v2 for when full path or relative path entered */
-        if ( *name == '/' ) {
-            strncpy( fullName, name, MAX_NAME_LEN );
-        }
         if ( int status = splitPathByKey( fullName, myDirName,
                                           MAX_NAME_LEN, myFileName, MAX_NAME_LEN, '/' ) ) {
             rodsLog( LOG_ERROR, "splitPathByKey failed in showDataObj with status %d", status );
