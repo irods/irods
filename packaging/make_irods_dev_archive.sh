@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+SCRIPT_DIR=${BASH_SOURCE%/*}
+OS=`${SCRIPT_DIR}/find_os.sh`
+
+if [ "${OS}" = "MacOSX" ]; then
+    LD_ADD = ",-undefined,dynamic_lookup"
+fi
+
+
 # =-=-=-=-=-=-=-
 # Build Client Library
 ar_file="libirods_client.a"
@@ -32,7 +40,7 @@ CLIENT_VERSION_RELEASE=0
 CLIENT_SONAME="libirods_client.so.${CLIENT_VERSION_MAJOR}"
 CLIENT_REAL_NAME="${CLIENT_SONAME}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${CLIENT_SONAME}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_SONAME}${LD_ADD}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
 
 
 
@@ -72,7 +80,7 @@ CLIENT_API_VERSION_RELEASE=0
 CLIENT_API_SONAME="libirods_client_api.so.${CLIENT_API_VERSION_MAJOR}"
 CLIENT_API_REAL_NAME="${CLIENT_API_SONAME}.${CLIENT_API_VERSION_MINOR}.${CLIENT_API_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${CLIENT_API_SONAME}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o)
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o)
 
 
 
@@ -108,4 +116,4 @@ SERVER_VERSION_RELEASE=0
 SERVER_SONAME="libirods_server.so.${SERVER_VERSION_MAJOR}"
 SERVER_REAL_NAME="${SERVER_SONAME}.${SERVER_VERSION_MINOR}.${SERVER_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-E,-soname,${SERVER_SONAME}" -o ${SERVER_REAL_NAME} $(find iRODS/server -name \*.o ! -name \*Server.o ! -name \*_with_no_re.o ! -name \*Agent.o ! -name test_\*.o ! -name PamAuthCheck.o ! -name \*_manager.o )
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${SERVER_SONAME}${LD_ADD}" -o ${SERVER_REAL_NAME} $(find iRODS/server -name \*.o ! -name \*Server.o ! -name \*_with_no_re.o ! -name \*Agent.o ! -name test_\*.o ! -name PamAuthCheck.o ! -name \*_manager.o )
