@@ -987,8 +987,8 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         pointerArray[0] = myPackedItem->pointer;
         if ( myTypeNum == PACK_PI_STR_TYPE ) {
             /* save the str */
-            strncpy( myPackedItem->strValue, ( char* )myPackedItem->pointer,
-                     NAME_LEN );
+            snprintf( myPackedItem->strValue, sizeof( myPackedItem->strValue ),
+                    "%s", ( char* )myPackedItem->pointer );
         }
     }
     else {
