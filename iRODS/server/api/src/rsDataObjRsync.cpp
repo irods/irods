@@ -131,13 +131,12 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     freeAllDataObjInfo( dataObjInfoHead );
 
-    if ( dataObjChksumStr != NULL &&
-            strcmp( dataObjChksumStr, fileChksumStr ) == 0 ) {
-        free( dataObjChksumStr );
-        return 0;
-    }
+    status = dataObjChksumStr && strcmp( dataObjChksumStr, fileChksumStr ) == 0 ?
+        0 : SYS_SVR_TO_CLI_GET_ACTION;
 
-    return SYS_SVR_TO_CLI_GET_ACTION;
+    free( dataObjChksumStr );
+
+    return status;
 }
 
 int
