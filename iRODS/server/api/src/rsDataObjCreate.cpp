@@ -132,6 +132,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
             rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
         }
+        freeRodsObjStat( rodsObjStatOut );
         return USER_INPUT_PATH_ERR;
     }
 
@@ -146,6 +147,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             rsDataObjUnlock( rsComm, dataObjInp ); // JMC - backport 4604
         }
 
+        freeRodsObjStat( rodsObjStatOut );
         return SYS_COLL_LINK_PATH_ERR;
     }
 
@@ -184,6 +186,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 msg << " :: failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
                 irods::log( PASSMSG( msg.str(), ret ) );
+                freeRodsObjStat( rodsObjStatOut );
                 return ret.code();
             }
 
@@ -204,9 +207,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
     }
 
-    if ( rodsObjStatOut != NULL ) {
-        freeRodsObjStat( rodsObjStatOut );
-    }
+    freeRodsObjStat( rodsObjStatOut );
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
