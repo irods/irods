@@ -3480,8 +3480,10 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
     std::string first_resc;
     parse.first_resc( first_resc );
 
-    strncpy( specColl->resource, first_resc.c_str(), NAME_LEN );
-    strncpy( specColl->rescHier, tmpPtr1, len );
+    snprintf( specColl->resource, sizeof( specColl->resource ),
+            "%s", first_resc.c_str() );
+    snprintf( specColl->rescHier, sizeof( specColl->rescHier ),
+            "%s", tmpPtr1 );
     tmpPtr2 += 3;
 
     specColl->cacheDirty = atoi( tmpPtr2 );
