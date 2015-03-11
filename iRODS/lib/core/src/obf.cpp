@@ -1010,7 +1010,7 @@ obfEncodeByKey( const char *in, const char *key, char *out ) {
     int pc;    /* previous character */
 
     unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
-    char keyBuf[100];
+    unsigned char keyBuf[101];
     char *cpOut;
     const char *cpIn;
     unsigned char *cpKey;
@@ -1033,8 +1033,8 @@ obfEncodeByKey( const char *in, const char *key, char *out ) {
         wheel[j++] = ( int )'!' + i;
     }
 
-    memset( keyBuf, 0, 100 );
-    strncpy( keyBuf, key, 100 );
+    memset( keyBuf, 0, sizeof( keyBuf ) );
+    snprintf( ( char* )keyBuf, sizeof( keyBuf ), "%s", key );
     memset( buffer, 0, 17 );
 
     /*
@@ -1042,7 +1042,7 @@ obfEncodeByKey( const char *in, const char *key, char *out ) {
       different values.
     */
 
-    obfMakeOneWayHash( HASH_TYPE_DEFAULT, ( unsigned char * )keyBuf, 100, buffer );
+    obfMakeOneWayHash( HASH_TYPE_DEFAULT, keyBuf, sizeof( keyBuf ) - 1, buffer );
 
     /* Hash of the hash */
     obfMakeOneWayHash( HASH_TYPE_DEFAULT, buffer, 16, buffer + 16 );
@@ -1156,7 +1156,7 @@ obfDecodeByKey( const char *in, const char *key, char *out ) {
     int i, j;
     int pc;
     unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
-    char keyBuf[100];
+    unsigned char keyBuf[101];
     char *cpOut;
     const char *cpIn;
     unsigned char *cpKey;
@@ -1195,8 +1195,8 @@ obfDecodeByKey( const char *in, const char *key, char *out ) {
         wheel[j++] = ( int )'!' + i;
     }
 
-    memset( keyBuf, 0, 100 );
-    strncpy( keyBuf, key, 100 );
+    memset( keyBuf, 0, sizeof( keyBuf ) );
+    snprintf( ( char* )keyBuf, sizeof( keyBuf ), "%s", key );
 
     memset( buffer, 0, 65 );
 
@@ -1204,7 +1204,7 @@ obfDecodeByKey( const char *in, const char *key, char *out ) {
       Get the MD5/SHA1 digest of the key to get some bytes with many
       different values.
     */
-    obfMakeOneWayHash( myHashType, ( unsigned char * )keyBuf, 100, buffer );
+    obfMakeOneWayHash( myHashType, keyBuf, sizeof( keyBuf ) - 1, buffer );
 
     /* Hash of the hash */
     obfMakeOneWayHash( myHashType, buffer, 16, buffer + 16 );
@@ -1305,14 +1305,14 @@ obfGetMD5Hash( const char *stringToHash ) {
 
     static char outBuf[50];
 
-    memset( keyBuf, 0, 101 );
+    memset( keyBuf, 0, sizeof( keyBuf ) );
     snprintf( ( char* )keyBuf, sizeof( keyBuf ), "%s", stringToHash );
 
     memset( buffer, 0, sizeof( buffer ) );
     /*
       Get the MD5 (or SHA1) digest of the key
     */
-    obfMakeOneWayHash( HASH_TYPE_DEFAULT, keyBuf, 100, buffer );
+    obfMakeOneWayHash( HASH_TYPE_DEFAULT, keyBuf, sizeof( keyBuf ) - 1, buffer );
 
     sprintf( outBuf, "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
              buffer[0], buffer[1], buffer[2], buffer[3],
