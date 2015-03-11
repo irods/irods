@@ -816,7 +816,7 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
             irods::log( PASS( ret ) );
             return ret.code();
         }
-        strncpy( dvarsFileName, cfg_file.c_str(), MAX_NAME_LEN );
+        snprintf( dvarsFileName, sizeof( dvarsFileName ), "%s", cfg_file.c_str() );
 
     }
     file = fopen( dvarsFileName, "r" );
