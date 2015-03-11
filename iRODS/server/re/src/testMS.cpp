@@ -78,7 +78,7 @@ int msiAW1( msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t* ) {
     In  = ( char * ) mPIn->inOutStruct;
 
     rodsLog( LOG_NOTICE, "ALPHA: ------>  In:%s\n", In );
-    mPOut2->type = strdup( STR_MS_T );
+    mPOut2->type = STR_MS_T;
     mPOut2->inOutStruct = strdup( "Microservice_1" );
     return 0;
 
@@ -170,7 +170,7 @@ msiDoSomething( msParam_t*, msParam_t *outParam, ruleExecInfo_t *rei ) {
     /***************************/
 
     /* Return myKeyVal through outParam */
-    outParam->type = strdup( KeyValPair_MS_T );
+    outParam->type = KeyValPair_MS_T;
     outParam->inOutStruct = ( void* ) myKeyVal;
 
     return 0;

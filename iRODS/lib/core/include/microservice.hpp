@@ -262,12 +262,12 @@ class ParamType <STR> {
   )\
 
 #define _MSI_OUTPUT_PARAM(_type, name, pname, irodsType, dealloc) \
-        if ( pname->type == NULL ) pname->type = strdup(irodsType); \
+        if ( pname->type == NULL ) pname->type = irodsType; \
         if ( dealloc && pname->inOutStruct != NULL && pname->inOutStruct != (void *) BUF_NAME(name) ) free(pname->inOutStruct); \
         pname->inOutStruct = BUF_NAME(name); \
 
 #define _MSI_OUTPUT_PARAM_CLASS(_type, name, pname, irodsType, dealloc) \
-        if ( pname->type == NULL ) pname->type = strdup(irodsType); \
+        if ( pname->type == NULL ) pname->type = irodsType; \
         if ( dealloc && pname->inOutStruct != NULL && pname->inOutStruct != (void *) BUF_NAME(name) ) delete ((ParamType<_type>::type) pname->inOutStruct;) \
         pname->inOutStruct = BUF_NAME(name); \
 

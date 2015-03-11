@@ -890,7 +890,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         else {
             myArgv[i]->inOutStruct = NULL;
             myArgv[i]->inpOutBuf = NULL;
-            myArgv[i]->type = strdup( STR_MS_T );
+            myArgv[i]->type = STR_MS_T;
         }
         /* sprintf(buf,"**%d",i); */
         /* myArgv[i]->label = strdup(buf); */

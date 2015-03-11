@@ -184,7 +184,7 @@ Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t 
 msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r ) {
     msParam_t *param = ( msParam_t * ) region_alloc( r, sizeof( msParam_t ) );
     memset( param, 0, sizeof( msParam_t ) );
-    param->type = cpStringExt( typeName, r );
+    param->type = typeName;
     param->inOutStruct = ioStruct;
     param->inpOutBuf = ioBuf;
     return param;

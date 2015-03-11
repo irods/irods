@@ -161,7 +161,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     }
 
     tagParam->inOutStruct = ( void * ) tagValues;
-    tagParam->type = ( char * ) strdup( TagStruct_MS_T );
+    tagParam->type = TagStruct_MS_T;
 
     return 0;
 
@@ -385,7 +385,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     free( t );
 
     metadataParam->inOutStruct = ( void * ) metaDataPairs;
-    metadataParam->type = ( char * ) strdup( KeyValPair_MS_T );
+    metadataParam->type = KeyValPair_MS_T;
 
     return 0;
 }
@@ -591,7 +591,7 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
         return i;
     }
     typeParam->inOutStruct = ( char * ) strdup( objType );
-    typeParam->type = ( char * ) strdup( STR_MS_T );
+    typeParam->type = STR_MS_T;
     return 0;
 }
 

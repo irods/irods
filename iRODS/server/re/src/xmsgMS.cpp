@@ -79,7 +79,7 @@ int msiXmsgServerConnect( msParam_t* outConnParam, ruleExecInfo_t *rei ) {
     }
 
     outConnParam->inOutStruct = ( void * ) conn;
-    outConnParam->type = ( char * ) strdup( "RcComm_MS_T" );
+    outConnParam->type = "RcComm_MS_T";
 
     return 0;
 
@@ -155,7 +155,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
     }
 
     outXmsgTicketInfoParam->inOutStruct = ( void * ) outXmsgTicketInfo;
-    outXmsgTicketInfoParam->type = ( char * ) strdup( XmsgTicketInfo_MS_T );
+    outXmsgTicketInfoParam->type = XmsgTicketInfo_MS_T;
     if ( allocFlag == 1 ) {
         free( getXmsgTicketInp );
     }
@@ -265,7 +265,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
     sendXmsgInp->sendXmsgInfo.miscInfo = strdup( ( char * ) inMiscInfo->inOutStruct );
 
     outSendXmsgInpParam->inOutStruct = ( void * ) sendXmsgInp;
-    outSendXmsgInpParam->type = ( char * ) strdup( SendXmsgInp_MS_T );
+    outSendXmsgInpParam->type = SendXmsgInp_MS_T;
     return 0;
 
 
@@ -428,11 +428,11 @@ int msiRcvXmsg( msParam_t* inConnParam,
     }
 
     outMsgType->inOutStruct = ( void * ) strdup( rcvXmsgOut->msgType );
-    outMsgType->type = strdup( STR_MS_T );
+    outMsgType->type = STR_MS_T;
     outMsg->inOutStruct = ( void * ) rcvXmsgOut->msg;
-    outMsg->type = strdup( STR_MS_T );
+    outMsg->type = STR_MS_T;
     outSendUser->inOutStruct = ( void * ) strdup( rcvXmsgOut->sendUserName );
-    outSendUser->type = strdup( STR_MS_T );
+    outSendUser->type = STR_MS_T;
     return status;
 }
 

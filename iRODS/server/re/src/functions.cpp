@@ -759,7 +759,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
 
     msParam_t genQInpParam;
     genQInpParam.inOutStruct = ( void* )genQueryInp;
-    genQInpParam.type = strdup( GenQueryInp_MS_T );
+    genQInpParam.type = GenQueryInp_MS_T;
 
     Node *queNode = subtrees[0];
     Node *subQueNode;

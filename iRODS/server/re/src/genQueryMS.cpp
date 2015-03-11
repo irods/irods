@@ -95,7 +95,7 @@ int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
     i = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     if ( i == CAT_NO_ROWS_FOUND && zeroResultsIsOK != NULL &&
             strcmp( ( const char* )zeroResultsIsOK->inOutStruct, "zeroOK" ) == 0 ) {
-        genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+        genQueryOutParam->type = GenQueryOut_MS_T;
         genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
         memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
         genQueryOutParam->inOutStruct = genQueryOut;
@@ -105,7 +105,7 @@ int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
     else if ( i < 0 ) {
         return i;
     }
-    genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+    genQueryOutParam->type = GenQueryOut_MS_T;
     genQueryOutParam->inOutStruct = genQueryOut;
     return 0;
 }
@@ -190,7 +190,7 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
     if ( status == CAT_NO_ROWS_FOUND &&
             zeroResultsIsOK != NULL &&
             strcmp( ( const char* )zeroResultsIsOK->inOutStruct, "zeroOK" ) == 0 ) {
-        genQueryOutParam->type = strdup( STR_MS_T );
+        genQueryOutParam->type = STR_MS_T;
         fillStrInMsParam( genQueryOutParam, "emptySet" );
         return 0;
     }
@@ -198,7 +198,7 @@ int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
         return status;
     }
 
-    genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+    genQueryOutParam->type = GenQueryOut_MS_T;
     genQueryOutParam->inOutStruct = genQueryOut;
     return 0;
 }
@@ -270,7 +270,7 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
     i = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     if ( i < 0 ) {
         if ( i == CAT_NO_ROWS_FOUND ) {
-            genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+            genQueryOutParam->type = GenQueryOut_MS_T;
             genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
             memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
             genQueryOutParam->inOutStruct = genQueryOut;
@@ -280,7 +280,7 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
             return i;
         }
     }
-    genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+    genQueryOutParam->type = GenQueryOut_MS_T;
     genQueryOutParam->inOutStruct = genQueryOut;
     return 0;
 }
@@ -330,7 +330,7 @@ int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ru
     i = rsGenQuery( rei->rsComm, genQueryInp, &genQueryOut );
     if ( i < 0 ) {
         if ( i == CAT_NO_ROWS_FOUND ) {
-            genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+            genQueryOutParam->type = GenQueryOut_MS_T;
             genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
             memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
             genQueryOutParam->inOutStruct = genQueryOut;
@@ -340,7 +340,7 @@ int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ru
             return i;
         }
     }
-    genQueryOutParam->type = strdup( GenQueryOut_MS_T );
+    genQueryOutParam->type = GenQueryOut_MS_T;
     genQueryOutParam->inOutStruct = genQueryOut;
     return 0;
 }
@@ -458,7 +458,7 @@ msiMakeQuery( msParam_t* selectListParam, msParam_t* conditionsParam,
     sel = ( char * ) selectListParam->inOutStruct;
     cond = ( char * ) conditionsParam->inOutStruct;
     i = _makeQuery( sel, cond, &sql );
-    queryOutParam->type = strdup( STR_MS_T );
+    queryOutParam->type = STR_MS_T;
     queryOutParam->inOutStruct = sql;
     return i;
 }
@@ -764,7 +764,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
 
 
     /* return genQueryInp through GenQueryInpParam */
-    genQueryInpParam->type = strdup( GenQueryInp_MS_T );
+    genQueryInpParam->type = GenQueryInp_MS_T;
     genQueryInpParam->inOutStruct = genQueryInp;
 
 
@@ -960,7 +960,7 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
 
         /* Set type */
         if ( !queryInput->type ) {
-            queryInput->type = strdup( GenQueryInp_MS_T );
+            queryInput->type = GenQueryInp_MS_T;
         }
     }
     else {

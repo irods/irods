@@ -166,7 +166,7 @@ msitest1( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
     mPC = ( msParam_t * ) C;
 
     mPC->inOutStruct = ( void * ) strdup( "msitest1 ValC" );
-    mPC->type = ( char * ) strdup( "STR_PI" );
+    mPC->type = STR_MS_T;
     snprintf( tmpStr, 199, "msitest1: In A=%s, In B=%s, Out C=%s",
               ( char * ) mPA->inOutStruct, ( char * ) mPB->inOutStruct, ( char * ) mPC->inOutStruct );
     printf( "%s\n", tmpStr );
@@ -186,8 +186,8 @@ msitest2( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
 
     mPB->inOutStruct = ( void * ) strdup( "msitest2 ValB" );
     mPC->inOutStruct = ( void * ) strdup( "msitest2 ValC" );
-    mPB->type = ( char * ) strdup( "STR_PI" );
-    mPC->type = ( char * ) strdup( "STR_PI" );
+    mPB->type = STR_MS_T;
+    mPC->type = STR_MS_T;
     snprintf( tmpStr, 199, "msitest2: In A=%s, Out B=%s, Out C=%s",
               ( char * ) mPA->inOutStruct, ( char * ) mPB->inOutStruct, ( char * ) mPC->inOutStruct );
     printf( "%s\n", tmpStr );

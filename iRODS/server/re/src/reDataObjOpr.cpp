@@ -706,7 +706,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
                     inpParam2->inOutStruct = strdup( "" );
                 }
             }
-            inpParam2->type = strdup( STR_MS_T );
+            inpParam2->type = STR_MS_T;
         }
         if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
             tmpBBuf.len = myDataObjWriteInp->len =
