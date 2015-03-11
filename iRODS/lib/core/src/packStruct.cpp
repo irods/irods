@@ -872,7 +872,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 
         /* save the str */
         if ( numStr == 1 && myTypeNum == PACK_PI_STR_TYPE ) {
-            strncpy( myPackedItem->strValue, ( char* )*inPtr, NAME_LEN );
+            snprintf( myPackedItem->strValue, sizeof( myPackedItem->strValue ), "%s", ( char* )*inPtr );
         }
 
         for ( i = 0; i < numStr; i++ ) {
