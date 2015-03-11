@@ -281,6 +281,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                              collEnt->phyPath, tmpPath, errno );
                     rmLinkedFilesInUnixDir( phyBunDir );
                     rmdir( phyBunDir );
+                    freeCollEnt( collEnt );
                     return UNIX_FILE_LINK_ERR - errno;
                 }
                 else {
