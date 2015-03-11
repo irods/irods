@@ -1417,16 +1417,11 @@ writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
 
     status =  packStruct( ( void * ) info, &packedBBuf,
                           "FileRestartInfo_PI", RodsPackTable, 0, XML_PROT );
-    if ( status < 0 ) {
+    if ( status < 0 || packedBBuf == NULL ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: packStruct error for %s, status = %d",
                  info->fileName, status );
-        return status;
-    }
-    if ( packedBBuf == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "writeLfRestartFile: packStruct error for %s, status = %d",
-                 info->fileName, status );
+        freeBBuf( packedBBuf );
         return status;
     }
 
@@ -1437,16 +1432,14 @@ writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: open failed for %s, status = %d",
                  infoFile, status );
+        freeBBuf( packedBBuf );
         return status;
     }
 
     status = write( fd, packedBBuf->buf, packedBBuf->len );
     close( fd );
 
-    //if (packedBBuf != NULL) { // JMC cppcheck - redundant nullptr test
-    clearBBuf( packedBBuf );
-    free( packedBBuf );
-    //}
+    freeBBuf( packedBBuf );
     if ( status < 0 ) {
         status = UNIX_FILE_WRITE_ERR - errno;
         rodsLog( LOG_ERROR,
