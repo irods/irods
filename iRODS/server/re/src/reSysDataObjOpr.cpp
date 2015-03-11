@@ -1569,7 +1569,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
 
     /* parse inpParam2: data object path */
     if ( parseMspForStr( inpParam2 ) ) {
-        strncpy( dataObjInfo.objPath, parseMspForStr( inpParam2 ), MAX_NAME_LEN );
+        snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", parseMspForStr( inpParam2 ) );
     }
     /* make sure to have at least data ID or path */
     if ( !( dataIdStr || strlen( dataObjInfo.objPath ) > 0 ) ) {
