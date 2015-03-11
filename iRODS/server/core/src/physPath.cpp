@@ -1300,6 +1300,7 @@ getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
     if ( status ) {
         rodsLog( LOG_ERROR, "%s: could not retrieve username for uid %d",
                  fname, myStat->st_uid );
+        free( myStat );
         return status;
     }
     addKeyVal( &dataObjInfo->condInput, FILE_OWNER_KW, name_buf );
@@ -1308,6 +1309,7 @@ getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
     if ( status ) {
         rodsLog( LOG_ERROR, "%s: could not retrieve groupname for gid %d",
                  fname, myStat->st_gid );
+        free( myStat );
         return status;
     }
     addKeyVal( &dataObjInfo->condInput, FILE_GROUP_KW, name_buf );
