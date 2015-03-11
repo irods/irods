@@ -278,13 +278,13 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         addKeyVal( &dataObjInp.condInput, EMPTY_BUNDLE_ONLY_KW, "" );
     }
     // =-=-=-=-=-=-=-
-    collEnt_t *collEnt;
+    collEnt_t *collEnt = NULL;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( entCnt == 0 ) {
             entCnt ++;
             /* cannot rm non-empty home collection */
             if ( isHomeColl( rmCollInp->collName ) ) {
-                freeCollEnt( collEnt );
+                free( collEnt );
                 return CANT_RM_NON_EMPTY_HOME_COLL;
             }
         }
@@ -312,7 +312,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                                       rmCollInp->collName, status );
                         *collOprStat = NULL;
                         savedStatus = status;
-                        freeCollEnt( collEnt );
+                        free( collEnt );
                         break;
                     }
                     *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
@@ -322,12 +322,16 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         }
         else if ( collEnt->objType == COLL_OBJ_T ) {
             if ( strcmp( collEnt->collName, rmCollInp->collName ) == 0 ) {
+                free( collEnt );
+                collEnt = NULL;
                 continue;    /* duplicate */
             }
             rstrcpy( tmpCollInp.collName, collEnt->collName, MAX_NAME_LEN );
             if ( collEnt->specColl.collClass != NO_SPEC_COLL ) {
                 if ( strcmp( collEnt->collName, collEnt->specColl.collection )
                         == 0 ) {
+                    free( collEnt );
+                    collEnt = NULL;
                     continue;    /* no mount point */
                 }
             }
@@ -340,6 +344,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                 rodsLog( LOG_ERROR,
                          "_rsPhyRmColl:acPreprocForRmColl error for %s,stat=%d",
                          tmpCollInp.collName, status );
+                free( collEnt );
                 return status;
             }
             status = _rsRmCollRecur( rsComm, &tmpCollInp, collOprStat );
@@ -355,7 +360,8 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         if ( status < 0 ) {
             savedStatus = status;
         }
-        freeCollEnt( collEnt );
+        free( collEnt );
+        collEnt = NULL;
     }
     rsCloseCollection( rsComm, &handleInx );
 
