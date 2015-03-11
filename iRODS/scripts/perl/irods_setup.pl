@@ -341,7 +341,7 @@ elsif ( $DATABASE_TYPE eq "" )
 	# 1.  Prepare by starting/stopping servers.
 	prepare( );
 
-	# 2.  Configure 
+	# 2.  Configure
 	configureIrodsServer( );
 
 	# 3.  Configure the iRODS user account.
@@ -373,7 +373,7 @@ else
 	    testDatabase( );
 	}
 
-	# 4.  Configure 
+	# 4.  Configure
 	configureIrodsServer( );
 
 	# 5.  Configure the iRODS user account.
@@ -647,7 +647,7 @@ sub createDatabaseAndTables
 			}
 		}
 
-                # Now apply the site-defined iCAT tables, if any 
+                # Now apply the site-defined iCAT tables, if any
 		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtTables.sql" );
 		if (-e $sqlPath) {
 		    printStatus( "    Inserting iCAT Extension tables...\n" );
@@ -710,7 +710,7 @@ sub testDatabase()
 
 	my $test_cll = File::Spec->catfile( $serverTestCLLBinDir, "test_cll" );
 
-	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'"; 
+	$exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'";
 	my ($status,$output) = run( "$exec_str" );
 
 	# scrub the password before logging and displaying
@@ -930,7 +930,7 @@ sub configureIrodsServer
 	printStatus( "Starting iRODS server with boot environment...\n" );
 	printLog( "\nStarting iRODS server with boot environment...\n" );
 	printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
-	
+
 	$ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
 
 	if ( startIrods( ) == 0 )
@@ -1508,8 +1508,8 @@ sub configureIrodsUser
 	# Test the new vault with an iput and iget
 	printStatus( "Testing resource...\n" );
 	printLog( "\nTesting resource...\n" );
-	my $tmpPutFile = "irods_put_$$.tmp";
-	my $tmpGetFile = "irods_get.$$.tmp";
+	my $tmpPutFile = "irods_put_$thisHost.tmp";
+	my $tmpGetFile = "irods_get.$thisHost.tmp";
 	printToFile( $tmpPutFile, "This is a test file." );
 
 	my ($status,$output) = run( "$iput $tmpPutFile" );
@@ -2009,7 +2009,7 @@ sub imkgroup($)
 # 		0 = failure
 # 		1 = success
 # 		2 = already set
-# 
+#
 sub ichown($$)
 {
 	my ($username,$directory) = @_;
@@ -2350,7 +2350,7 @@ sub Postgres_CreateDatabase()
 			# previously.  Chances are good that this will not
 			# be sufficient and something else is wrong too.
 			my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
-				
+
 			printToFile( $ini,
 				"[postgres]\n" .
 				"Driver=$libPath\n" .
@@ -2484,7 +2484,7 @@ sub Postgres_CreateDatabase()
 
 			cleanAndExit( 1 );
 		}
-		
+
 		open( NEWCONFIGFILE, ">$userODBC" );
 		print( NEWCONFIGFILE "[postgres]\n" .
 				"Driver=$psqlOdbcLib\n" .
@@ -2499,7 +2499,7 @@ sub Postgres_CreateDatabase()
 		close( NEWCONFIGFILE );
 
 		chmod( 0600, $userODBC );
-	} 
+	}
 	return 1;
 }
 
@@ -2526,7 +2526,7 @@ sub Oracle_CreateDatabase()
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
-    
+
         # iRODS now supports a script to determine the path & lib name of the odbc driver
         my $oracleOdbcLib;
         if ( $RUNINPLACE == 1 )
@@ -2577,7 +2577,7 @@ sub MySQL_CreateDatabase()
 	printStatus( "Updating the .odbc.ini...\n" );
 	printLog( "Updating the .odbc.ini...\n" );
 	my $userODBC = File::Spec->catfile( $ENV{"HOME"}, ".odbc.ini" );
-    
+
     # iRODS now supports a script to determine the path & lib name of the odbc driver
     my $mysqlOdbcLib;
     if ( $RUNINPLACE == 1 )
@@ -2879,7 +2879,7 @@ sub Postgres_sql($$)
 # This function runs 'sqlplus' and passes it the given SQL.
 #
 # @param	$databaseName
-# 	the name of the database  (Not used); instead 
+# 	the name of the database  (Not used); instead
 #    $DATABASE_ADMIN_NAME and $DATABASE_ADMIN_PASSWORD are spliced together
 # 	  in the form needed by sqlplus (note: should restructure the args in
 #    the call tree for this, perhaps just let this and Postgres_sql set these.)
@@ -2899,8 +2899,8 @@ sub Oracle_sql($$)
 
     $dbadmin = substr($DATABASE_ADMIN_NAME, 0, $i);
     $tnsname = substr($DATABASE_ADMIN_NAME, $i+1 );
-    $connectArg = $dbadmin . "/" . 
-              $DATABASE_ADMIN_PASSWORD . "@" . 
+    $connectArg = $dbadmin . "/" .
+              $DATABASE_ADMIN_PASSWORD . "@" .
               $tnsname;
     $sqlplus = "sqlplus";
     $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
@@ -2940,5 +2940,3 @@ sub MySQL_sql($$)
 	my ($databaseName,$sqlFilename) = @_;
 	return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --host=$DATABASE_HOST --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
-
-
