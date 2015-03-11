@@ -337,45 +337,22 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     t1 = t;
     for ( i = 0; i  < tagValues->len ; i++ ) {
         t1 = t;
-#ifdef BABABA
-        /*
-        preg[0] = regcmp(tagValues->preTag[i], (char *)0);
-        if (preg[0] == NULL)
-          return INVALID_REGEXP;
-        preg[1] =  regcmp(tagValues->postTag[i], (char *)0);
-        if (preg[1] == NULL)
-          return INVALID_REGEXP;
-        while ((t2 = regex(preg[0], t1)) != NULL) { / * t2 starts value * /
-          if ((t3 = regex(preg[1], t2)) == NULL) {
-        free(preg[0]);
-        free(preg[1]);
-        break;
-          }
-          t4 = __loc1;                              / * t4 ends value * /
-          c = *t4;
-          *t4 = '\0';
-          j = addKeyVal(metaDataPairs, tagValues->keyWord[i], t2);
-          *t4 = c;
-          if (j != 0)
-        return j;
-          t1 = t3;
-          if (*t1 == '\0')
-        break;
-        }
-        free(preg[0]);
-        free(preg[1]);
-        */
-#endif /*  BABABA */
         j = regcomp( &preg[0], tagValues->preTag[i], REG_EXTENDED );
         if ( j != 0 ) {
             regerror( j, &preg[0], errbuff, sizeof( errbuff ) );
             rodsLog( LOG_NOTICE, "msiExtractTemplateMDFromBuf: Error in regcomp: %s\n", errbuff );
+            clearKeyVal( metaDataPairs );
+            free( metaDataPairs );
+            free( t );
             return INVALID_REGEXP;
         }
         j = regcomp( &preg[1], tagValues->postTag[i], REG_EXTENDED );
         if ( j != 0 ) {
             regerror( j, &preg[1], errbuff, sizeof( errbuff ) );
             rodsLog( LOG_NOTICE, "msiExtractTemplateMDFromBuf: Error in regcomp: %s\n", errbuff );
+            clearKeyVal( metaDataPairs );
+            free( metaDataPairs );
+            free( t );
             return INVALID_REGEXP;
         }
         while ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
@@ -391,6 +368,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
             j = addKeyVal( metaDataPairs, tagValues->keyWord[i], t2 );
             *t4 = c;
             if ( j != 0 ) {
+                free( t );
                 return j;
             }
             t1 = t3;
@@ -404,6 +382,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
         continue;
     }
 
+    free( t );
 
     metadataParam->inOutStruct = ( void * ) metaDataPairs;
     metadataParam->type = ( char * ) strdup( KeyValPair_MS_T );
