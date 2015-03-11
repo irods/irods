@@ -178,7 +178,7 @@ namespace irods {
         // pass the PEP result to the client, send CS_NEG_SVR_1_MSG
         irods::cs_neg_t cs_neg;
         cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
-        strncpy( cs_neg.result_, rule_result.c_str(), MAX_NAME_LEN );
+        snprintf( cs_neg.result_, sizeof( cs_neg.result_ ), "%s", rule_result.c_str() );
         error err = send_client_server_negotiation_message( _ptr, cs_neg );
         if ( !err.ok() ) {
             std::stringstream msg;
