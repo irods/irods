@@ -161,9 +161,9 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
             if ( chksumStr != NULL ) {
                 rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
-                free( chksumStr );
             }
         }
+        free( chksumStr );
         return status;
     }
 
@@ -174,17 +174,15 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose( rsComm, &dataObjCloseInp );
-        if ( chksumStr != NULL ) {
-            free( chksumStr );
-        }
+        free( chksumStr );
         return status;
     }
 
     status = l1descInx;         /* means file not included */
     if ( chksumStr != NULL ) {
         rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
-        free( chksumStr );
     }
+    free( chksumStr );
 
     /* return portalOprOut to the client and wait for the rcOprComplete
      * call. That is when the parallel I/O is done */
