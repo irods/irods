@@ -344,6 +344,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
 
     i = obfiSetTimeFromFile( fd );
     if ( i < 0 ) {
+        close( fd );
         return i;
     }
 
@@ -353,6 +354,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     }
 
     i = obfiWritePw( fd, myPw );
+    close( fd );
     if ( i < 0 ) {
         return i;
     }
@@ -495,7 +497,6 @@ obfiWritePw( int fd, const char *pw ) {
     if ( wval != len + 1 ) {
         return FILE_WRITE_ERR;
     }
-    close( fd );
     return 0;
 }
 
