@@ -161,7 +161,7 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( dataObjInfo->rescHier[0] == '\0' && resc_hier ) {
-        strncpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+        snprintf( dataObjInfo->rescHier, sizeof( dataObjInfo->rescHier ), "%s", resc_hier );
     }
 
 
