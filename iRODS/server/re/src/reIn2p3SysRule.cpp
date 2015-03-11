@@ -148,6 +148,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
             rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", resc_tokens[index].c_str() );
         }
         index += 1;
+        fclose( foutput );
     }
 
     clearGenQueryInp( &genQueryInp );
