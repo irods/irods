@@ -69,12 +69,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     tagStruct_t *tagValues;
 
     char *t, *t1, *t2, *t3, *t4, *t5, *t6, *t7, *t8;
-    /*
-    int len;
-    int l1, l2;
-    */
     int i, j;
-    /*  char *preg[4];*/
     regex_t preg[4];
     regmatch_t pm[4];
     char errbuff[100];
@@ -86,20 +81,6 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
         return USER_PARAM_TYPE_ERR;
     }
     tmplObjBuf = ( bytesBuf_t * ) bufParam->inpOutBuf;
-    /*
-    preg[0] =  regcmp("<PRETAG>", (char *)0);
-    if (preg[0] == NULL)
-      return INVALID_REGEXP;
-    preg[1] =  regcmp("</PRETAG>", (char *)0);
-    if (preg[1] == NULL)
-      return INVALID_REGEXP;
-    preg[2] =  regcmp("<POSTTAG>", (char *)0);
-    if (preg[0] == NULL)
-      return INVALID_REGEXP;
-    preg[3] =  regcmp("</POSTTAG>", (char *)0);
-    if (preg[1] == NULL)
-      return INVALID_REGEXP;
-    */
     j = regcomp( &preg[0], "<PRETAG>", REG_EXTENDED );
     if ( j != 0 ) {
         regerror( j, &preg[0], errbuff, sizeof( errbuff ) );
@@ -131,31 +112,6 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     tagValues = ( tagStruct_t* )mallocAndZero( sizeof( tagStruct_t ) );
     tagValues->len = 0;
     t1 = t;
-#ifdef BABABA
-    /*
-    while ((t2 = regex(preg[0], t1)) != NULL) { / * t2 starts preTag * /
-      if ((t3 = regex(preg[1], t2)) == NULL)    / * t3 starts keyValue * /
-        break;
-      t6 = __loc1;                              / * t6 ends preTag * /
-      *t6 = '\0';
-      if ((t5 = regex(preg[2], t3)) == NULL)    / *  t5 starts postTag * /
-        break;
-      t4 = __loc1;                              / * t4 ends keyValue * /
-      *t4 = '\0';
-      if ((t7 = regex(preg[3], t5)) == NULL)    / * t7 ends the line * /
-        break;
-      t8 = __loc1;                              / * t8 ends postTag * /
-      *t8 = '\0';
-
-      i = addTagStruct (tagValues, t2, t5, t3);
-      if (i != 0)
-        return i;
-      t1 = t7;
-      if (*t1 == '\0')
-        break;
-    }
-    */
-#endif /*  BABABA */
     while ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
         t2 = t1 + pm[0].rm_eo ;                        /* t2 starts preTag */
         if ( regexec( &preg[1], t2, 1, &pm[1], 0 ) != 0 ) {
@@ -200,6 +156,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     free( t );
 
     if ( tagValues->len == 0 ) {
+        free( tagValues );
         return NO_VALUES_FOUND;
     }
 
