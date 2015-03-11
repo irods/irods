@@ -194,7 +194,6 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     char *tmpValue;
     int status;
     collInp_t openCollInp;
-    collEnt_t *collEnt;
     int handleInx;
     dataObjInp_t dataObjInp;
     collInp_t tmpCollInp;
@@ -279,11 +278,13 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         addKeyVal( &dataObjInp.condInput, EMPTY_BUNDLE_ONLY_KW, "" );
     }
     // =-=-=-=-=-=-=-
+    collEnt_t *collEnt;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( entCnt == 0 ) {
             entCnt ++;
             /* cannot rm non-empty home collection */
             if ( isHomeColl( rmCollInp->collName ) ) {
+                freeCollEnt( collEnt );
                 return CANT_RM_NON_EMPTY_HOME_COLL;
             }
         }
@@ -311,6 +312,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                                       rmCollInp->collName, status );
                         *collOprStat = NULL;
                         savedStatus = status;
+                        freeCollEnt( collEnt );
                         break;
                     }
                     *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
@@ -353,7 +355,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         if ( status < 0 ) {
             savedStatus = status;
         }
-        free( collEnt );    /* just free collEnt but not content */
+        freeCollEnt( collEnt );
     }
     rsCloseCollection( rsComm, &handleInx );
 
