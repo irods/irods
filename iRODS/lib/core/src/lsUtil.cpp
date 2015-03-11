@@ -703,12 +703,14 @@ printCollInheritance( rcComm_t *conn, char *collName ) {
     status = queryCollInheritance( conn, collName, &genQueryOut );
 
     if ( status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
     if ( ( inheritResult = getSqlResultByInx( genQueryOut, COL_COLL_INHERITANCE ) ) == NULL ) {
         rodsLog( LOG_ERROR,
                  "printCollInheritance: getSqlResultByInx for COL_COLL_INHERITANCE failed" );
+        freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
