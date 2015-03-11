@@ -150,6 +150,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
     status = rcGetXmsgTicket( conn, getXmsgTicketInp, &outXmsgTicketInfo );
     if ( status != 0 ) {
         rodsLog( LOG_ERROR, "msiXmsgCreateStream: rcGetXmsgTicket failed:%i", status );
+        free( getXmsgTicketInp );
         return status;
     }
 
