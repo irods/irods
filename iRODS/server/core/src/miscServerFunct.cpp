@@ -551,10 +551,8 @@ int fillPortalTransferInp(
     myInput->key_size        = rsComm->key_size;
     myInput->salt_size       = rsComm->salt_size;
     myInput->num_hash_rounds = rsComm->num_hash_rounds;
-    strncpy(
-        myInput->encryption_algorithm,
-        rsComm->encryption_algorithm,
-        NAME_LEN );
+    snprintf( myInput->encryption_algorithm, sizeof( myInput->encryption_algorithm ),
+            "%s", rsComm->encryption_algorithm );
     return 0;
 }
 
