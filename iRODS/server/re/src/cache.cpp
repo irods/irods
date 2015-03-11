@@ -29,7 +29,6 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
     unsigned char *pointers0 = buf + size;
 
     /* shared objects */
-    Hashtable *objectMap = newHashTable( 100 );
     unsigned char **pointers = &pointers0;
     int generatePtrDesc = 1;
 
@@ -37,6 +36,7 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
 
     MK_POINTER( &( ecopy->address ) );
     MK_POINTER( &( ecopy->pointers ) );
+    Hashtable *objectMap = newHashTable( 100 );
 
     MK_PTR( RuleSet, coreRuleSet );
     ecopy->coreRuleSetStatus = COMPRESSED;
