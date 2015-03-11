@@ -136,9 +136,11 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
 #ifndef windows_platform
         pthread_mutex_unlock( &my_mutex );
 #endif
-        if ( foutput != NULL && rc1 != 0 ) {
-            fprintf( foutput, "time=%ji : unable to insert the entries for server %s into the iCAT\n",
-                     (intmax_t)timestamp, serverName );
+        if ( foutput != NULL ) {
+            if ( rc1 != 0 ) {
+                fprintf( foutput, "time=%ji : unable to insert the entries for server %s into the iCAT\n",
+                        (intmax_t)timestamp, serverName );
+            }
             fclose( foutput );
         }
         if ( rc2 != 0 ) {
@@ -148,7 +150,6 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
             rodsLog( LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", resc_tokens[index].c_str() );
         }
         index += 1;
-        fclose( foutput );
     }
 
     clearGenQueryInp( &genQueryInp );
