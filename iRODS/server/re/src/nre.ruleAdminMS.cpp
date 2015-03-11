@@ -557,6 +557,7 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
 
     int i;
     fnmapStruct_t *coreFNMapStrct;
+    fnmapStruct_t *coreFNMapStrctBuf = NULL;
 
     if ( ( i = isUserPrivileged( rei->rsComm ) ) != 0 ) {
         return i;
@@ -577,22 +578,22 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
         coreFNMapStrct = ( fnmapStruct_t * ) outCoreFNMapStruct->inOutStruct;
     }
     else {
-        coreFNMapStrct = ( fnmapStruct_t * ) malloc( sizeof( fnmapStruct_t ) );
+        coreFNMapStrct = coreFNMapStrctBuf = ( fnmapStruct_t * ) malloc( sizeof( fnmapStruct_t ) );
         coreFNMapStrct->MaxNumOfFMaps = 0;
     }
     i = readFuncMapStructFromFile( ( char* ) inFnmFileNameParam->inOutStruct, coreFNMapStrct );
     if ( i != 0 ) {
-        if ( outCoreFNMapStruct->type == NULL ||
-                strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
-            free( coreFNMapStrct );
-        }
+        free( coreFNMapStrctBuf );
         return i;
     }
 
-    outCoreFNMapStruct->inOutStruct = ( void * ) coreFNMapStrct;
+    if ( coreFNMapStrctBuf ) {
+        free( outCoreFNMapStruct->inOutStruct );
+    }
+    outCoreFNMapStruct->inOutStruct = ( void * ) coreFNMapStrctBuf;
     if ( outCoreFNMapStruct->type == NULL ||
             strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
-        outCoreFNMapStruct->type = ( char * ) strdup( FNMapStruct_MS_T );
+        outCoreFNMapStruct->type = FNMapStruct_MS_T;
     }
     return 0;
 }
