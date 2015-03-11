@@ -2720,6 +2720,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
 
         status = parsePackInstruct( static_cast<const char*>( packInstruct ), &unpackItemHead );
         if ( status < 0 ) {
+            freePackedItem( unpackItemHead );
             return status;
         }
         /* link it */
