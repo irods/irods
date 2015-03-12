@@ -254,7 +254,8 @@ namespace irods {
             // send CS_NEG_CLI_1_MSG, failure message to the server
             cs_neg_t send_cs_neg;
             send_cs_neg.status_ = CS_NEG_STATUS_FAILURE;
-            strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), MAX_NAME_LEN );
+            snprintf( send_cs_neg.result_, sizeof( send_cs_neg.result_ ),
+                    "%s", CS_NEG_FAILURE.c_str() );
             error send_err = send_client_server_negotiation_message(
                                  _ptr,
                                  send_cs_neg );
