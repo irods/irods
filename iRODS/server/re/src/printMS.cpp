@@ -217,7 +217,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
             myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
             memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
             mP->inOutStruct = myExecCmdOut;
-            mP->type = ExecCmdOut_MS_T;
+            mP->type = strdup( ExecCmdOut_MS_T );
         }
         else {
             myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
@@ -231,7 +231,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         }
         else {
             mP->inOutStruct = myExecCmdOut;
-            mP->type = ExecCmdOut_MS_T;
+            mP->type = strdup( ExecCmdOut_MS_T );
         }
     }
 
@@ -628,15 +628,15 @@ readXMsg( msParam_t* inStreamId, msParam_t *inCondRead,
     i = _readXMsg( streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr );
     if ( i >= 0 ) {
         outHdr->inOutStruct = ( void * ) hdr;
-        outHdr->type = STR_MS_T;
+        outHdr->type = strdup( STR_MS_T );
         outMsg->inOutStruct = ( void * ) msg;
-        outMsg->type = STR_MS_T;
+        outMsg->type = strdup( STR_MS_T );
         fillIntInMsParam( outMsgNum, mNum );
         fillIntInMsParam( outSeqNum, sNum );
         outUser->inOutStruct = ( void * ) user;
-        outUser->type = STR_MS_T;
+        outUser->type = strdup( STR_MS_T );
         outAddr->inOutStruct = ( void * ) addr;
-        outAddr->type = STR_MS_T;
+        outAddr->type = strdup( STR_MS_T );
 
     }
     return i;

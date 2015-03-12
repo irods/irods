@@ -200,7 +200,7 @@ int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
             res->param = newMsParam( mP->type, mP->inOutStruct, mP->inpOutBuf, r );
         }
         else {
-            res->param->type = mP->type;
+            res->param->type = mP->type ? strdup( mP->type ) : NULL;
             RES_UNINTER_STRUCT( res ) = mP->inOutStruct;
             RES_UNINTER_BUFFER( res ) = mP->inpOutBuf;
         }
@@ -288,7 +288,7 @@ int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r )
             res->param = newMsParam( mP->type, mP->inOutStruct, mP->inpOutBuf, r );
         }
         else {
-            res->param->type = mP->type;
+            res->param->type = mP->type ? strdup( mP->type ) : NULL;
             RES_UNINTER_STRUCT( res ) = mP->inOutStruct;
             RES_UNINTER_BUFFER( res ) = mP->inpOutBuf;
         }
@@ -357,30 +357,30 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
     case T_ERROR: /* error message */
         var->inOutStruct = ( int * )malloc( sizeof( int ) );
         *( ( int * )var->inOutStruct ) = RES_ERR_CODE( res );
-        var->type = INT_MS_T;
+        var->type = strdup( INT_MS_T );
         break;
     case T_DOUBLE: /* number */
         var->inOutStruct = ( double * )malloc( sizeof( double ) );
         *( ( double * )var->inOutStruct ) = RES_DOUBLE_VAL( res );
-        var->type = DOUBLE_MS_T;
+        var->type = strdup( DOUBLE_MS_T );
         break;
     case T_INT: /* number */
         var->inOutStruct = ( int * )malloc( sizeof( int ) );
         *( ( int * )var->inOutStruct ) = RES_INT_VAL( res );
-        var->type = INT_MS_T;
+        var->type = strdup( INT_MS_T );
         break;
     case T_STRING: /* string */
         var->inOutStruct = res->text == NULL ? NULL : strdup( res->text );
-        var->type = STR_MS_T;
+        var->type = strdup( STR_MS_T );
         break;
     case T_PATH: /* path */
         var->inOutStruct = res->text == NULL ? NULL : strdup( res->text );
-        var->type = STR_MS_T;
+        var->type = strdup( STR_MS_T );
         break;
     case T_DATETIME: /* date time */
         var->inOutStruct = ( int* )malloc( sizeof( int ) );
         *( ( int* )var->inOutStruct ) = ( int )RES_TIME_VAL( res );
-        var->type = INT_MS_T;
+        var->type = strdup( INT_MS_T );
         break;
     case T_CONS:
         if ( strcmp( T_CONS_TYPE_NAME( res->exprType ), LIST ) == 0 ) {
@@ -399,7 +399,7 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
                     strcpy( arr->value + maxlen * i, res->subtrees[i]->text );
                 }
                 var->inOutStruct = arr;
-                var->type = StrArray_MS_T;
+                var->type = strdup( StrArray_MS_T );
                 break;
             case T_INT:
                 arr2 = ( intArray_t * )malloc( sizeof( intArray_t ) );
@@ -409,7 +409,7 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
                     arr2->value[i] = RES_INT_VAL( res );
                 }
                 var->inOutStruct = arr2;
-                var->type = IntArray_MS_T;
+                var->type = strdup( IntArray_MS_T );
                 break;
             default:
                 /* current there is no existing packing instructions for arbitrary collection */
@@ -426,7 +426,7 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
     case T_IRODS:
         var->inOutStruct = RES_UNINTER_STRUCT( res );
         var->inpOutBuf = RES_UNINTER_BUFFER( res );
-        var->type = res->exprType->text;
+        var->type = res->exprType->text ? strdup( res->exprType->text ) : NULL;
         break;
     case T_UNSPECED:
         var->inOutStruct = NULL;

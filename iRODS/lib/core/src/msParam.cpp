@@ -111,7 +111,7 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
     else {
         msParam_t inMsParam;
         inMsParam.label = label;
-        inMsParam.type = type;
+        inMsParam.type = type ? strdup( type ) : 0;
         inMsParam.inOutStruct = inOutStruct;
         inMsParam.inpOutBuf = inpOutBuf;
         replMsParam( &inMsParam, msParamArray->msParam[len] );
@@ -162,7 +162,7 @@ replMsParam( msParam_t *msParam, msParam_t *outMsParam ) {
         outMsParam->label = strdup( label );
     }
 
-    outMsParam->type = type;
+    outMsParam->type = type ? strdup( type ) : NULL;
 
     status = replInOutStruct( inOutStruct, &outMsParam->inOutStruct, type );
 
@@ -226,7 +226,7 @@ fillMsParam( msParam_t *msParam, char *label,
         msParam->label = strdup( label );
     }
 
-    msParam->type = type;
+    msParam->type = type ? strdup( type ) : NULL;
     if ( inOutStruct != NULL && msParam->type != NULL &&
             strcmp( msParam->type, STR_MS_T ) == 0 ) {
         msParam->inOutStruct = ( void * ) strdup( ( char * )inOutStruct );
@@ -293,7 +293,7 @@ fillStrInMsParam( msParam_t *msParam, const char *myStr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    msParam->type = STR_MS_T;
+    msParam->type = strdup( STR_MS_T );
 
     if ( myStr ) {
         msParam->inOutStruct = ( void * ) strdup( myStr );
@@ -494,6 +494,9 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 
     if ( msParam->label != NULL ) {
         free( msParam->label );
+    }
+    if ( msParam->label != NULL ) {
+        free( msParam->type );
     }
     if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
                                            ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {

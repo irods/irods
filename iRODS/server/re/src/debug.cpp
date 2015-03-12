@@ -69,7 +69,7 @@ int msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* ge
 
 
     /* return genQueryInp through GenQueryInpParam */
-    genQueryInpParam->type = GenQueryInp_MS_T;
+    genQueryInpParam->type = strdup( GenQueryInp_MS_T );
     genQueryInpParam->inOutStruct = genQueryInp;
 
 

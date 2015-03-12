@@ -47,7 +47,7 @@ carryOverMsParam( msParamArray_t *sourceMsParamArray, msParamArray_t *targetMsPa
     int i;
     msParam_t *mP, *mPt;
     char *a;
-    const char *b;
+    char *b;
     if ( sourceMsParamArray == NULL ) {
         return 0;
     }

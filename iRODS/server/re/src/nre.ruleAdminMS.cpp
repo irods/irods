@@ -301,7 +301,8 @@ int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t
     outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStruct;
     if ( outCoreDVMapStruct->type == NULL ||
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
-        outCoreDVMapStruct->type = DVMapStruct_MS_T;
+        free( outCoreDVMapStruct->type );
+        outCoreDVMapStruct->type = strdup( DVMapStruct_MS_T );
     }
     return 0;
 }
@@ -447,7 +448,8 @@ msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersio
     outCoreDVMapStruct->inOutStruct = ( void * ) coreDVMapStruct;
     if ( outCoreDVMapStruct->type == NULL ||
             strcmp( outCoreDVMapStruct->type, DVMapStruct_MS_T ) != 0 ) {
-        outCoreDVMapStruct->type = DVMapStruct_MS_T;
+        free( outCoreDVMapStruct->type );
+        outCoreDVMapStruct->type = strdup( DVMapStruct_MS_T );
     }
     return 0;
 }
@@ -593,7 +595,8 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
     outCoreFNMapStruct->inOutStruct = ( void * ) coreFNMapStrctBuf;
     if ( outCoreFNMapStruct->type == NULL ||
             strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
-        outCoreFNMapStruct->type = FNMapStruct_MS_T;
+        free( outCoreFNMapStruct->type );
+        outCoreFNMapStruct->type = strdup( FNMapStruct_MS_T );
     }
     return 0;
 }
@@ -740,7 +743,8 @@ msiGetFNMapsFromDBIntoStruct( msParam_t *inFnmBaseNameParam, msParam_t *inVersio
     outCoreFNMapStruct->inOutStruct = ( void * ) coreFNMapStrct;
     if ( outCoreFNMapStruct->type == NULL ||
             strcmp( outCoreFNMapStruct->type, FNMapStruct_MS_T ) != 0 ) {
-        outCoreFNMapStruct->type = FNMapStruct_MS_T;
+        free( outCoreFNMapStruct->type );
+        outCoreFNMapStruct->type = strdup( FNMapStruct_MS_T );
     }
     return 0;
 }
@@ -883,7 +887,8 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
     outCoreMsrvcStruct->inOutStruct = ( void * ) coreMsrvcStrct;
     if ( outCoreMsrvcStruct->type == NULL ||
             strcmp( outCoreMsrvcStruct->type, MsrvcStruct_MS_T ) != 0 ) {
-        outCoreMsrvcStruct->type = MsrvcStruct_MS_T;
+        free( outCoreMsrvcStruct->type );
+        outCoreMsrvcStruct->type = strdup( MsrvcStruct_MS_T );
     }
     return 0;
 }
@@ -1032,7 +1037,8 @@ msiGetMSrvcsFromDBIntoStruct( msParam_t *inStatus, msParam_t *outCoreMsrvcStruct
     outCoreMsrvcStruct->inOutStruct = ( void * ) coreMsrvcStrct;
     if ( outCoreMsrvcStruct->type == NULL ||
             strcmp( outCoreMsrvcStruct->type, MsrvcStruct_MS_T ) != 0 ) {
-        outCoreMsrvcStruct->type = MsrvcStruct_MS_T;
+        free( outCoreMsrvcStruct->type );
+        outCoreMsrvcStruct->type = strdup( MsrvcStruct_MS_T );
     }
     return 0;
 }

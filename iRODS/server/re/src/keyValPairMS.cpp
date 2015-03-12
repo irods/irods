@@ -201,7 +201,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
         }
     }
     outKeyValPairP->inOutStruct = ( void * ) kvp;
-    outKeyValPairP->type = KeyValPair_MS_T;
+    outKeyValPairP->type = strdup( KeyValPair_MS_T );
 
     return 0;
 }
@@ -259,7 +259,7 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
         return i;
     }
     outStrArrayP->inOutStruct = ( void * ) strArray;
-    outStrArrayP->type = StrArray_MS_T;
+    outStrArrayP->type = strdup( StrArray_MS_T );
 
     return 0;
 }
@@ -316,7 +316,7 @@ int msiStrArray2String( msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t 
         strcat( s, &val[i * strArr->size] );
     }
     outStr->inOutStruct = ( void * ) strdup( s );
-    outStr->type = STR_MS_T;
+    outStr->type = strdup( STR_MS_T );
     free( s );
     return 0;
 }
@@ -398,7 +398,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
 
         /* Set type */
         if ( !inKeyValPair->type ) {
-            inKeyValPair->type = KeyValPair_MS_T;
+            inKeyValPair->type = strdup( KeyValPair_MS_T );
         }
     }
 

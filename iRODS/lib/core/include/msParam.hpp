@@ -82,7 +82,7 @@ extern "C" {
 /* micro service input/output parameter */
 typedef struct MsParam {
     char *label;
-    const char *type;         /* this is the name of the packing instruction in
+    char *type;         /* this is the name of the packing instruction in
                          * rodsPackTable.h */
     void *inOutStruct;
     bytesBuf_t *inpOutBuf;
