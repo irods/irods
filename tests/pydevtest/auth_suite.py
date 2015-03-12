@@ -5,6 +5,7 @@ else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
+import pydevtest_common
 import pydevtest_sessions as s
 import commands
 import os

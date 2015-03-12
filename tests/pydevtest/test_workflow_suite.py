@@ -8,6 +8,7 @@ else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
+import pydevtest_common
 import pydevtest_sessions as s
 import commands
 import os

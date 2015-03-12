@@ -8,6 +8,7 @@ import shutil
 import psutil
 import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, make_file, runCmd_ils_to_entries, get_vault_path, get_vault_session_path, make_large_local_tmp_dir
+import pydevtest_common
 from resource_suite import ResourceBase
 import time
 
