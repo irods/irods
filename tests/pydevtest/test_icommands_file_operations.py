@@ -11,7 +11,7 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdO
 from resource_suite import ResourceBase
 import time
 
-
+@unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
 class Test_ICommands_File_Operations(unittest.TestCase, ResourceBase):
 
     my_test_resource = {"setup": [], "teardown": []}

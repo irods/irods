@@ -408,7 +408,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     # =-=-=-=-=-=-=-
     # REBALANCE
-
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_rebalance_for_object_count(self):
         # =-=-=-=-=-=-=-
         # read server_config.json and .odbc.ini

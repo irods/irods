@@ -118,7 +118,7 @@ class RodsSession(object):
         try:
             if 'irods_environment.json' in os.listdir(self.sessionDir):
                 return True
-        except:
+        except OSError:
             return False
         else:
             return False

@@ -15,7 +15,6 @@ import shlex
 import datetime
 import time
 
-RODSHOME = "/home/irodstest/irodsfromsvn/iRODS"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 FILESDIR = ABSPATHTESTDIR + '/workflow_testfiles'
@@ -55,13 +54,14 @@ class Test_WorkflowSuite(unittest.TestCase, ResourceBase):
         except OSError:
             pass
 
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_workflow_set_one_up(self):
 
         # setup
 
         # ingest workflow file
-        assertiCmd(s.adminsession, "iput -D \"msso file\" " + FILESDIR +
-                   "/myWf.mss /tempZone/home/rods/workflow/myWf.mss")
+        assertiCmd(s.adminsession, 'iput -D "msso file" ' + FILESDIR +
+                   '/myWf.mss /tempZone/home/rods/workflow/myWf.mss')
         assertiCmd(s.adminsession, "ils -L /tempZone/home/rods/workflow", "LIST", "myWf.mss")
 
         # create WSO collection and associate with MSO

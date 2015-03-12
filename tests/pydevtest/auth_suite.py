@@ -25,7 +25,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_OSAuth(self):
         # add auth test user
         authTestUser = "irods"
@@ -80,7 +80,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_PAM_without_negotiation(self):
         # add auth test user
         authTestUser = "irodsauthuser"
@@ -137,7 +137,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # clean up
         os.system("rm server.key chain.pem dhparams.pem")
 
-    #@unittest.skip("TODO: Seeing inconsistent behavior in CI")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_PAM_with_server_params(self):
         # add auth test user
         authTestUser = "irodsauthuser"

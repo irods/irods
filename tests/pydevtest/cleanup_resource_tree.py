@@ -11,21 +11,19 @@ def main(filename):
         tree = json.load(f)
 
     # REMOVE PARENT-CHILD RELATIONSHIPS
-    for name in tree.keys():
-        children = tree[name][2]
-        if len(children):
-            for child in children:
-                # test
-                print "iadmin rmchildfromresc {0} {1}".format(name, child)
+    for name, (_, _, children) in tree.items():
+        for child in children:
+            # test
+            print "iadmin rmchildfromresc {0} {1}".format(name, child)
 
-                args = ['/usr/bin/iadmin', 'rmchildfromresc', name, child]
-                # print args
+            args = ['/usr/bin/iadmin', 'rmchildfromresc', name, child]
+            # print args
 
-                # run command
-                subprocess.Popen(args).communicate()
+            # run command
+            subprocess.Popen(args).communicate()
 
     # REMOVE RESOURCES
-    for name in tree.keys():
+    for name in tree:
         # test
         print "iadmin rmresc {0}".format(name)
 
