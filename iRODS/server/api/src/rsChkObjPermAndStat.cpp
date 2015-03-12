@@ -113,6 +113,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                          collEnt->specColl.resource, resource );
                 rsCloseCollection( rsComm, &handleInx );
                 freeCollEntForChkColl( collEnt );
+                freeCollEntForChkColl( curCollEnt );
                 return SYS_COPY_NOT_EXIST_IN_RESC;
             }
             /* check permission */
@@ -125,6 +126,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                          collEnt->specColl.collection, status );
                 rsCloseCollection( rsComm, &handleInx );
                 freeCollEntForChkColl( collEnt );
+                freeCollEntForChkColl( curCollEnt );
                 return status;
             }
             free( collEnt );
