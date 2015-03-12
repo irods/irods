@@ -825,7 +825,7 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
         }
 
         continueInx = genQueryInp.continueInx =
-                            genQueryOut->continueInx;
+                          genQueryOut->continueInx;
         freeGenQueryOut( &genQueryOut );
     }
     clearGenQueryInp( &genQueryInp );

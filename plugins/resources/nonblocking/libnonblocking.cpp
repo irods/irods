@@ -476,7 +476,7 @@ extern "C" {
                 msg << "Open error for \"";
                 msg << fco->physical_path();
                 msg << "\", errno = \"";
-                msg << strerror(errsav);
+                msg << strerror( errsav );
                 msg << "\", status = ";
                 msg << status;
                 msg << ", flags = ";

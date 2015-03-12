@@ -513,7 +513,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN] = "";
     status = splitPathByKey( dataObjInfoHead->objPath,
-                             logicalCollName, sizeof(logicalCollName), logicalFileName, sizeof(logicalFileName), '/' );
+                             logicalCollName, sizeof( logicalCollName ), logicalFileName, sizeof( logicalFileName ), '/' );
     if ( strlen( logicalFileName ) <= 0 ) {
         return 0;
     }
@@ -521,7 +521,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     char logicalFileNameNoExtension[MAX_NAME_LEN] = "";
     char logicalFileNameExt[MAX_NAME_LEN] = "";
     status = splitPathByKey( logicalFileName,
-                             logicalFileNameNoExtension, sizeof(logicalFileNameNoExtension), logicalFileNameExt, sizeof(logicalFileNameExt), '.' );
+                             logicalFileNameNoExtension, sizeof( logicalFileNameNoExtension ), logicalFileNameExt, sizeof( logicalFileNameExt ), '.' );
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return 0;
     }
@@ -532,11 +532,11 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     addInxIval( &genQueryInp.selectInp, COL_TOKEN_NAME, 1 );
 
     char condStr1[MAX_NAME_LEN];
-    snprintf( condStr1, sizeof(condStr1), "= 'data_type'" );
+    snprintf( condStr1, sizeof( condStr1 ), "= 'data_type'" );
     addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_NAMESPACE, condStr1 );
 
     char condStr2[MAX_NAME_LEN];
-    snprintf( condStr2, sizeof(condStr2), "like '%s|.%s|%s'", "%", logicalFileNameExt, "%" );
+    snprintf( condStr2, sizeof( condStr2 ), "like '%s|.%s|%s'", "%", logicalFileNameExt, "%" );
     addInxVal( &genQueryInp.sqlCondInp,  COL_TOKEN_VALUE2, condStr2 );
 
     genQueryInp.maxRows = 1;

@@ -334,7 +334,8 @@ serverMain( char *logDir ) {
 #if RODS_CAT // JMC - backport 4612
         try {
             PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
-        } catch( const boost::thread_resource_error& ) {
+        }
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in serverMain." );
         }
 #endif /* RODS_CAT */
@@ -347,7 +348,7 @@ serverMain( char *logDir ) {
         irods::server_state& state = irods::server_state::instance();
         while ( true ) {
             std::string the_server_state = state();
-            if( irods::server_state::STOPPED == the_server_state ) {
+            if ( irods::server_state::STOPPED == the_server_state ) {
                 procChildren( &ConnectedAgentHead );
                 rodsLog(
                     LOG_NOTICE,
@@ -355,15 +356,17 @@ serverMain( char *logDir ) {
                     the_server_state.c_str() );
                 break;
 
-            } else if ( irods::server_state::PAUSED == the_server_state ) {
+            }
+            else if ( irods::server_state::PAUSED == the_server_state ) {
                 procChildren( &ConnectedAgentHead );
                 rodsSleep(
                     0,
                     irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 );
                 continue;
 
-            } else {
-                if( irods::server_state::RUNNING != the_server_state ) {
+            }
+            else {
+                if ( irods::server_state::RUNNING != the_server_state ) {
                     rodsLog(
                         LOG_NOTICE,
                         "invalid iRODS server state [%s]",
@@ -460,7 +463,8 @@ serverMain( char *logDir ) {
 
         try {
             PurgeLockFileThread->join();
-        } catch( const boost::thread_resource_error& ) {
+        }
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in serverMain." );
         }
         procChildren( &ConnectedAgentHead );
@@ -997,10 +1001,11 @@ initServerMain( rsComm_t *svrComm ) {
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
             execv( av[0], &av[0] );
             exit( 1 );
-        } else {
-            irods::server_properties &props = 
+        }
+        else {
+            irods::server_properties &props =
                 irods::server_properties::getInstance();
-            props.set_property<int>( irods::RE_PID_KW, re_pid ); 
+            props.set_property<int>( irods::RE_PID_KW, re_pid );
         }
     }
     else if ( unsigned char *shared = prepareServerSharedMemory() ) {
@@ -1089,14 +1094,16 @@ startProcConnReqThreads() {
     for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
         try {
             ReadWorkerThread[i] = new boost::thread( readWorkerTask );
-        } catch ( const boost::thread_resource_error& ) {
+        }
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
             return SYS_THREAD_RESOURCE_ERR;
         }
     }
     try {
         SpawnManagerThread = new boost::thread( spawnManagerTask );
-    } catch ( const boost::thread_resource_error& ) {
+    }
+    catch ( const boost::thread_resource_error& ) {
         rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
         return SYS_THREAD_RESOURCE_ERR;
     }
@@ -1110,7 +1117,8 @@ stopProcConnReqThreads() {
     SpawnReqCond.notify_all();
     try {
         SpawnManagerThread->join();
-    } catch ( const boost::thread_resource_error& ) {
+    }
+    catch ( const boost::thread_resource_error& ) {
         rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
     }
 
@@ -1118,7 +1126,8 @@ stopProcConnReqThreads() {
         ReadReqCond.notify_all();
         try {
             ReadWorkerThread[i]->join();
-        } catch ( const boost::thread_resource_error& ) {
+        }
+        catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
         }
     }

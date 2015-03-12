@@ -120,7 +120,7 @@ main( int argc, char **argv ) {
         ::toupper );
 
     char env_var[NAME_LEN];// = { "IRODS_CLIENT_SERVER_NEGOTIATION='NO_NEG'" };
-    snprintf( env_var, sizeof(env_var), "%s='NO_NEG'", neg_env.c_str() );
+    snprintf( env_var, sizeof( env_var ), "%s='NO_NEG'", neg_env.c_str() );
     putenv( env_var );
     // DISABLE ADVANCED CLIENT-SERVER NEGOTIATION FOR XMSG CLIENT
 

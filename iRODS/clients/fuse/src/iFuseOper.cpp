@@ -662,7 +662,7 @@ irodsChmod( const char *path, mode_t mode ) {
         UNLOCK_STRUCT( *tmpPathCache );
         if ( tmpPathCache->stbuf.st_nlink != 1 ) {
             rodsLog( LOG_NOTICE,
-                    "irodsChmod: modification of the mode of non file object is currently not supported", path );
+                     "irodsChmod: modification of the mode of non file object is currently not supported", path );
             return 0;
         }
     }

@@ -132,7 +132,7 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     freeAllDataObjInfo( dataObjInfoHead );
 
     status = dataObjChksumStr && strcmp( dataObjChksumStr, fileChksumStr ) == 0 ?
-        0 : SYS_SVR_TO_CLI_GET_ACTION;
+             0 : SYS_SVR_TO_CLI_GET_ACTION;
 
     free( dataObjChksumStr );
 

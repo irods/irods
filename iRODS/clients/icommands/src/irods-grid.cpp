@@ -41,40 +41,41 @@ irods::error parse_program_options(
     namespace po = boost::program_options;
     po::options_description opt_desc( "options" );
     opt_desc.add_options()
-        ( "action", "either 'status', 'shutdown', 'pause', or 'resume'" )
-        ( "help", "show command usage" )
-        ( "all", "operation applies to all servers in the grid" )
-        ( "hosts", po::value<std::string>(), "operation applies to a list of hosts in the grid" )
-        ( "force-after", po::value<size_t>(), "force shutdown after N seconds" )
-        ( "wait-forever", "wait indefinitely for a graceful shutdown" )
-        ( "shutdown", "gracefully shutdown a server(s)" )
-        ( "pause", "refuse new client connections" )
-        ( "resume", "allow new client connections" );
+    ( "action", "either 'status', 'shutdown', 'pause', or 'resume'" )
+    ( "help", "show command usage" )
+    ( "all", "operation applies to all servers in the grid" )
+    ( "hosts", po::value<std::string>(), "operation applies to a list of hosts in the grid" )
+    ( "force-after", po::value<size_t>(), "force shutdown after N seconds" )
+    ( "wait-forever", "wait indefinitely for a graceful shutdown" )
+    ( "shutdown", "gracefully shutdown a server(s)" )
+    ( "pause", "refuse new client connections" )
+    ( "resume", "allow new client connections" );
 
-    po::positional_options_description pos_desc; 
-    pos_desc.add("action", 1); 
+    po::positional_options_description pos_desc;
+    pos_desc.add( "action", 1 );
 
     po::variables_map vm;
     try {
         po::store(
-            po::command_line_parser( 
-                _argc, _argv ).options( 
-                    opt_desc ).positional(
-                        pos_desc ).run(), vm );
-        po::notify(vm);
-    } catch( po::error& _e ) {
-        std::cout << std::endl 
+            po::command_line_parser(
+                _argc, _argv ).options(
+                opt_desc ).positional(
+                pos_desc ).run(), vm );
+        po::notify( vm );
+    }
+    catch ( po::error& _e ) {
+        std::cout << std::endl
                   << "Error: "
-                  << _e.what() 
+                  << _e.what()
                   << std::endl
                   << std::endl;
         return usage();
-        
+
     }
 
     // capture the 'subcommand' or 'action' to perform on the grid
     irods::control_plane_command cmd;
-    if( vm.count( "action" ) ) {
+    if ( vm.count( "action" ) ) {
         try {
             const std::string& action = vm["action"].as<std::string>();
             boost::unordered_map< std::string, std::string > cmd_map;
@@ -85,69 +86,77 @@ irods::error parse_program_options(
 
             if ( cmd_map.end() == cmd_map.find( action ) ) {
                 std::cout << "invalid subcommand ["
-                    << action
-                    << "]"
-                    << std::endl;
+                          << action
+                          << "]"
+                          << std::endl;
                 return usage();
 
             }
 
             _cmd.command = cmd_map[ action ];
-        } catch ( const boost::bad_any_cast& ) {
+        }
+        catch ( const boost::bad_any_cast& ) {
             return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"action\"] to std::string failed." );
         }
-    } else {
+    }
+    else {
         return usage();
 
     }
 
-    if( vm.count( "force-after" ) ) {
+    if ( vm.count( "force-after" ) ) {
         try {
             size_t secs = vm[ "force-after" ].as<size_t>();
             std::stringstream ss; ss << secs;
             _cmd.options[ irods::SERVER_CONTROL_FORCE_AFTER_KW ] =
                 ss.str();
-        } catch ( const boost::bad_any_cast& ) {
+        }
+        catch ( const boost::bad_any_cast& ) {
             return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"force-after\"] to std::string failed." );
         }
-    } else if( vm.count( "wait-forever" ) ) {
+    }
+    else if ( vm.count( "wait-forever" ) ) {
         _cmd.options[ irods::SERVER_CONTROL_WAIT_FOREVER_KW ] =
             "keep_waiting";
 
     }
 
     // capture either the 'all' servers or the hosts list
-    if( vm.count( "all" ) ) {
-        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] = 
+    if ( vm.count( "all" ) ) {
+        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] =
             irods::SERVER_CONTROL_ALL_OPT;
 
-    } else if( vm.count( "hosts" ) ) {
-        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] = 
+    }
+    else if ( vm.count( "hosts" ) ) {
+        _cmd.options[ irods::SERVER_CONTROL_OPTION_KW ] =
             irods::SERVER_CONTROL_HOSTS_OPT;
 
         std::vector< std::string > hosts;
         try {
-        boost::split(
-            hosts,
-            vm[ "hosts" ].as<std::string>(),
-            boost::is_any_of( "," ),
-            boost::token_compress_on );
-        } catch ( const boost::bad_function_call& ) {
+            boost::split(
+                hosts,
+                vm[ "hosts" ].as<std::string>(),
+                boost::is_any_of( "," ),
+                boost::token_compress_on );
+        }
+        catch ( const boost::bad_function_call& ) {
             return ERROR( BAD_FUNCTION_CALL, "Boost threw bad_function_call." );
-        } catch ( const boost::bad_any_cast& ) {
+        }
+        catch ( const boost::bad_any_cast& ) {
             return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"force-after\"] to std::string failed." );
         }
 
-        for( size_t i = 0;
-             i < hosts.size();
-             ++i ) {
+        for ( size_t i = 0;
+                i < hosts.size();
+                ++i ) {
             std::stringstream ss; ss << i;
-            _cmd.options[ irods::SERVER_CONTROL_HOST_KW + ss.str() ] = 
+            _cmd.options[ irods::SERVER_CONTROL_HOST_KW + ss.str() ] =
                 hosts[ i ];
 
         } // for i
 
-    } else {
+    }
+    else {
         return usage();
 
     }
@@ -212,7 +221,7 @@ irods::error decrypt_response(
     in_buf.assign(
         _data_ptr,
         _data_ptr + _data_size );
-    
+
     std::string encryption_key( _env.irodsCtrlPlaneKey );
     irods::buffer_crypt crypt(
         encryption_key.size(), // key size
@@ -231,12 +240,12 @@ irods::error decrypt_response(
                            iv,
                            in_buf,
                            decoded_data );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
 
     }
 
-    _rep_str.assign( 
+    _rep_str.assign(
         decoded_data.begin(),
         decoded_data.begin() + decoded_data.size() );
 
@@ -244,7 +253,7 @@ irods::error decrypt_response(
 
 } // decrypt_response
 
-std::string format_grid_status( 
+std::string format_grid_status(
     const std::string& _status ) {
 
 
@@ -257,11 +266,11 @@ std::string format_grid_status(
 
     json_error_t j_err;
     json_t* obj = json_loads(
-                         (char*)status.data(),
-                         status.size(),
-                         &j_err );
+                      ( char* )status.data(),
+                      status.size(),
+                      &j_err );
     if ( !obj ) {
-        if( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
+        if ( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
             return _status;
         }
 
@@ -279,7 +288,7 @@ std::string format_grid_status(
 
 } // format_grid_status
 
-int main( 
+int main(
     int   _argc,
     char* _argv[] ) {
 
@@ -288,7 +297,7 @@ int main(
                            _argc,
                            _argv,
                            cmd );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return 0;
 
     }
@@ -302,7 +311,7 @@ int main(
               env,
               cmd,
               data_to_send );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         std::cout << ret.result()
                   << std::endl;
         return ret.code();
@@ -320,7 +329,8 @@ int main(
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
         try {
             zmq_skt.connect( bind_str.c_str() );
-        } catch( const zmq::error_t& ) {
+        }
+        catch ( const zmq::error_t& ) {
             printf( "ZeroMQ encountered an error connecting to a socket." );
             return -1;
         }
@@ -328,12 +338,13 @@ int main(
         // copy binary encoding into a zmq message for transport
         zmq::message_t rep( data_to_send.size() );
         memcpy(
-                rep.data(),
-                data_to_send.data(),
-                data_to_send.size() );
+            rep.data(),
+            data_to_send.data(),
+            data_to_send.size() );
         try {
             zmq_skt.send( rep );
-        } catch( const zmq::error_t& ) {
+        }
+        catch ( const zmq::error_t& ) {
             printf( "ZeroMQ encountered an error receiving a message." );
             return -1;
         }
@@ -343,7 +354,8 @@ int main(
         // wait for the server reponse
         try {
             zmq_skt.recv( &req );
-        } catch( const zmq::error_t& ) {
+        }
+        catch ( const zmq::error_t& ) {
             printf( "ZeroMQ encountered an error receiving a message." );
             return -1;
         }
@@ -351,20 +363,20 @@ int main(
         // decrypt the response
         std::string rep_str;
         ret = decrypt_response(
-                env,
-                static_cast< const uint8_t* >( req.data() ),
-                req.size(),
-                rep_str );
+                  env,
+                  static_cast< const uint8_t* >( req.data() ),
+                  req.size(),
+                  rep_str );
         if ( !ret.ok() ) {
             irods::error err = PASS( ret );
             std::cout << err.result()
-                << std::endl;
+                      << std::endl;
             return -1;
 
         }
 
         if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-            if( irods::SERVER_CONTROL_STATUS == cmd.command ) {
+            if ( irods::SERVER_CONTROL_STATUS == cmd.command ) {
                 rep_str = format_grid_status( rep_str );
 
             }
@@ -373,7 +385,8 @@ int main(
 
         }
 
-    } catch( const zmq::error_t& ) {
+    }
+    catch ( const zmq::error_t& ) {
         printf( "ZeroMQ encountered an error." );
         return -1;
 

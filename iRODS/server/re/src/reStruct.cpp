@@ -570,11 +570,11 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
         if ( strlen( rei->uoic->userName ) != 0 ) {
             snprintf( ruleSubmitInfo->userName, sizeof( ruleSubmitInfo->userName ),
-                    "%s", rei->uoic->userName );
+                      "%s", rei->uoic->userName );
         }
         else if ( strlen( rei->rsComm->clientUser.userName ) != 0 ) {
             snprintf( rei->rsComm->clientUser.userName, sizeof( rei->rsComm->clientUser.userName ),
-                    "%s", rei->uoic->userName );
+                      "%s", rei->uoic->userName );
         }
     }
     free( delayCondition );

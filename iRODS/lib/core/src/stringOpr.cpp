@@ -56,12 +56,14 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
 
     if ( status >= 0 && status < maxLen ) {
         return dest;
-    } else if ( status >= 0 ) {
+    }
+    else if ( status >= 0 ) {
         rodsLog( LOG_ERROR,
                  "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
                  status, maxLen );
         return NULL;
-    } else {
+    }
+    else {
         rodsLog( LOG_ERROR, "rstrcpy encountered an encoding error." );
         return NULL;
     }

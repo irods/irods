@@ -450,9 +450,9 @@ initRcatServerHostByFile() {
             std::string fed_zone_name = boost::any_cast< std::string >(
                                             fed_arr[ i ][ irods::CFG_ZONE_NAME_KW ] );
             std::string fed_zone_key = boost::any_cast< std::string >(
-                                            fed_arr[ i ][ irods::CFG_NEGOTIATION_KEY_KW ] );
+                                           fed_arr[ i ][ irods::CFG_NEGOTIATION_KEY_KW ] );
             // store in remote_SID_key_map
-            remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_id, fed_zone_key);
+            remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, fed_zone_key );
         }
     }
     else {
@@ -464,16 +464,17 @@ initRcatServerHostByFile() {
                   rem_sids );
         if ( ret.ok() ) {
             for ( size_t i = 0; i < rem_sids.size(); ++i ) {
-            	// legacy format should be zone_name-SID
-            	size_t pos = rem_sids[i].find("-");
-            	if (pos == std::string::npos) {
-            		rodsLog(LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sids[i].c_str());
-            	} else {
-            		// store in remote_SID_key_map
-            		std::string fed_zone_name = rem_sids[i].substr(0, pos);
-            		std::string fed_zone_id = rem_sids[i].substr(pos+1);
-            		remote_SID_key_map[fed_zone_name] = std::make_pair(fed_zone_id, "");
-            	}
+                // legacy format should be zone_name-SID
+                size_t pos = rem_sids[i].find( "-" );
+                if ( pos == std::string::npos ) {
+                    rodsLog( LOG_ERROR, "initRcatServerHostByFile - Unable to parse remote SID %s", rem_sids[i].c_str() );
+                }
+                else {
+                    // store in remote_SID_key_map
+                    std::string fed_zone_name = rem_sids[i].substr( 0, pos );
+                    std::string fed_zone_id = rem_sids[i].substr( pos + 1 );
+                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, "" );
+                }
             }
         }
     } // else

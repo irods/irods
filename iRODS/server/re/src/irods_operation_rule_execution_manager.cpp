@@ -72,11 +72,11 @@ namespace irods {
             LOG_DEBUG,
             "operation_rule_execution_manager exec_op [%s]",
             _name.c_str() );
-        
+
         // =-=-=-=-=-=-=-
         // add additional global re params
         error err = add_global_re_params_to_kvp_for_dynpep( _kvp );
-        if( !err.ok() ) {
+        if ( !err.ok() ) {
             return PASS( err );
         }
 

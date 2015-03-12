@@ -145,9 +145,9 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         memset( ( char* )&userInfo, 0, sizeof( userInfo ) );
         rei.rsComm = rsComm;
         snprintf( userInfo.userName, sizeof( userInfo.userName ),
-                "%s", userAdminInp->arg1 );
+                  "%s", userAdminInp->arg1 );
         snprintf( userInfo.userType, sizeof( userInfo.userType ),
-                "%s", "rodsuser" );
+                  "%s", "rodsuser" );
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
@@ -173,13 +173,13 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         memset( ( char* )&rei, 0, sizeof( rei ) );
         rei.rsComm = rsComm;
         snprintf( userInfo.userName, sizeof( userInfo.userName ),
-                "%s", userAdminInp->arg1 );
+                  "%s", userAdminInp->arg1 );
         snprintf( userInfo.userType, sizeof( userInfo.userType ),
-                "%s", userAdminInp->arg2 );
+                  "%s", userAdminInp->arg2 );
         snprintf( userInfo.rodsZone, sizeof( userInfo.rodsZone ),
-                "%s", userAdminInp->arg3 );
+                  "%s", userAdminInp->arg3 );
         snprintf( userInfo.authInfo.authStr, sizeof( userInfo.authInfo.authStr ),
-                "%s", userAdminInp->arg4 );
+                  "%s", userAdminInp->arg4 );
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;

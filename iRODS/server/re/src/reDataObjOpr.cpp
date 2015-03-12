@@ -480,8 +480,8 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         free( dataObjLseekOut );
         if ( rei->status >= 0 ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                    "msiDataObjLseek: rsDataObjLseek failed, status = %d",
-                    rei->status );
+                                "msiDataObjLseek: rsDataObjLseek failed, status = %d",
+                                rei->status );
         }
     }
 
@@ -3656,7 +3656,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
-                "%s", ( char* )inpParam1->inOutStruct );
+                  "%s", ( char* )inpParam1->inOutStruct );
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
         myStructFileExtAndRegInp =
@@ -3670,7 +3670,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
         if ( strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
             snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
-                    "%s", ( char* )inpParam2->inOutStruct );
+                      "%s", ( char* )inpParam2->inOutStruct );
         }
     }
     else {
@@ -3797,7 +3797,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->objPath, sizeof( myStructFileExtAndRegInp->objPath ),
-                "%s", ( char* )inpParam1->inOutStruct );
+                  "%s", ( char* )inpParam1->inOutStruct );
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
         myStructFileExtAndRegInp =
@@ -3811,7 +3811,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     if ( strcmp( inpParam2->type, STR_MS_T ) == 0 ) {
         if ( strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
             snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
-                    "%s", ( char* )inpParam2->inOutStruct );
+                      "%s", ( char* )inpParam2->inOutStruct );
         }
     }
     else {
@@ -3930,7 +3930,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
-                "%s", ( char* )inpParam1->inOutStruct );
+                  "%s", ( char* )inpParam1->inOutStruct );
 
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
@@ -3962,18 +3962,18 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
                 rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
                 continue;
             }
-            switch( current_arg[0].c_str()[0] ) {
-                case 'N':
-                    addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, current_arg[1].c_str() );
-                    break;
-                case 'S':
-                    addKeyVal( &myStructFileExtAndRegInp->condInput, RESC_NAME_KW, current_arg[1].c_str() );
-                    break;
-                case 's':
-                    addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, current_arg[1].c_str() );
-                    break;
-                default:
-                    rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
+            switch ( current_arg[0].c_str()[0] ) {
+            case 'N':
+                addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, current_arg[1].c_str() );
+                break;
+            case 'S':
+                addKeyVal( &myStructFileExtAndRegInp->condInput, RESC_NAME_KW, current_arg[1].c_str() );
+                break;
+            case 's':
+                addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, current_arg[1].c_str() );
+                break;
+            default:
+                rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
             }
         }
     }

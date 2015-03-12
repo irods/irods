@@ -87,7 +87,7 @@ sslStart( rcComm_t *rcComm ) {
     }
 
     snprintf( rcComm->negotiation_results, sizeof( rcComm->negotiation_results ),
-            "%s", irods::CS_NEG_USE_SSL.c_str() );
+              "%s", irods::CS_NEG_USE_SSL.c_str() );
     return 0;
 }
 
@@ -131,7 +131,7 @@ sslEnd( rcComm_t *rcComm ) {
     rcComm->ssl_on = 0;
 
     snprintf( rcComm->negotiation_results, sizeof( rcComm->negotiation_results ),
-            "%s", irods::CS_NEG_USE_TCP.c_str() );
+              "%s", irods::CS_NEG_USE_TCP.c_str() );
     rodsLog( LOG_DEBUG, "sslShutdown: shut down SSL connection" );
 
 
@@ -175,7 +175,7 @@ sslAccept( rsComm_t *rsComm ) {
 
     rsComm->ssl_on = 1;
     snprintf( rsComm->negotiation_results, sizeof( rsComm->negotiation_results ),
-            "%s", irods::CS_NEG_USE_SSL.c_str() );
+              "%s", irods::CS_NEG_USE_SSL.c_str() );
 
     rodsLog( LOG_DEBUG, "sslAccept: accepted SSL connection" );
 
@@ -207,7 +207,7 @@ sslShutdown( rsComm_t *rsComm ) {
     rsComm->ssl_on = 0;
 
     snprintf( rsComm->negotiation_results, sizeof( rsComm->negotiation_results ),
-            "%s", irods::CS_NEG_USE_TCP.c_str() );
+              "%s", irods::CS_NEG_USE_TCP.c_str() );
     rodsLog( LOG_DEBUG, "sslShutdown: shut down SSL connection" );
 
     return 0;

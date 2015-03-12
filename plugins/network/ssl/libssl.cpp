@@ -1254,13 +1254,13 @@ extern "C" {
                             if ( _header->bsLen > 0 ) {
                                 // do not repave bs buf as it can be
                                 // reused by the client
-                                if( _bs_buf->buf == NULL ) {
-                                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+                                if ( _bs_buf->buf == NULL ) {
+                                    _bs_buf->buf = malloc( _header->bsLen + 1 );
 
-                                } 
+                                }
                                 else if ( _header->bsLen > _bs_buf->len ) {
-                                    free ( _bs_buf->buf );
-                                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+                                    free( _bs_buf->buf );
+                                    _bs_buf->buf = malloc( _header->bsLen + 1 );
 
                                 }
 

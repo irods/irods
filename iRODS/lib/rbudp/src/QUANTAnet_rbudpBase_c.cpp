@@ -432,12 +432,12 @@ setUdpSockOpt( int udpSockfd ) {
     int sockbufsize = UDPSOCKBUF;
     int error_code;
     error_code = setsockopt( udpSockfd, SOL_SOCKET, SO_SNDBUF, &sockbufsize,
-                sizeof( sockbufsize ) );
+                             sizeof( sockbufsize ) );
     if ( error_code != 0 ) {
         rodsLog( LOG_ERROR, "setsockopt failed on the send buffer in setUdpSockOpt with %d", error_code );
     }
     error_code = setsockopt( udpSockfd, SOL_SOCKET, SO_RCVBUF, &sockbufsize,
-                sizeof( sockbufsize ) );
+                             sizeof( sockbufsize ) );
     if ( error_code != 0 ) {
         rodsLog( LOG_ERROR, "setsockopt failed on the receive buffer in setUdpSockOpt with %d", error_code );
     }

@@ -98,7 +98,8 @@ namespace irods {
         std::list< std::string > token_list;;
         try {
             boost::split( token_list, _string, boost::is_any_of( KVP_DEF_DELIM ), boost::token_compress_on );
-        } catch ( const boost::bad_function_call& ) {
+        }
+        catch ( const boost::bad_function_call& ) {
             rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
             token_list.clear();
         }

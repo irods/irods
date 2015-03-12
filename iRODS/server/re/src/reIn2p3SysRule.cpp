@@ -55,9 +55,9 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     }
     std::vector<std::string> output_tokens;
     boost::algorithm::split( output_tokens, output, boost::is_any_of( delim1 ) );
-    output_tokens.erase(output_tokens.begin()); // output has leading delimiter
-    if (output_tokens.size() != 9) {
-        rodsLog( LOG_ERROR, "rodsMonPerfLog: output_tokens is of incorrect size: size [%ju], output [%s]", (uintmax_t)output_tokens.size(), output );
+    output_tokens.erase( output_tokens.begin() ); // output has leading delimiter
+    if ( output_tokens.size() != 9 ) {
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: output_tokens is of incorrect size: size [%ju], output [%s]", ( uintmax_t )output_tokens.size(), output );
         return -1;
     }
     std::vector<std::string> resc_tokens;
@@ -66,21 +66,21 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     boost::algorithm::split( disk_tokens, output_tokens[4], boost::is_any_of( delim2 ) );
     std::vector<std::string> value_tokens;
     boost::algorithm::split( value_tokens, output_tokens[7], boost::is_any_of( delim2 ) );
-    if (resc_tokens.size() != disk_tokens.size() || resc_tokens.size() != value_tokens.size()) {
-        rodsLog( LOG_ERROR, "rodsMonPerfLog: resc_tokens [%ju], disk_tokens [%ju], value_tokens [%ju]. output [%s]", (uintmax_t)resc_tokens.size(), (uintmax_t)disk_tokens.size(), (uintmax_t)value_tokens.size(), output );
+    if ( resc_tokens.size() != disk_tokens.size() || resc_tokens.size() != value_tokens.size() ) {
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: resc_tokens [%ju], disk_tokens [%ju], value_tokens [%ju]. output [%s]", ( uintmax_t )resc_tokens.size(), ( uintmax_t )disk_tokens.size(), ( uintmax_t )value_tokens.size(), output );
         return -1;
     }
 
-    for (std::vector<std::string>::size_type index=0; index<resc_tokens.size(); ++index) {
+    for ( std::vector<std::string>::size_type index = 0; index < resc_tokens.size(); ++index ) {
         if ( strcmp( monStatus, RESC_AUTO_DOWN ) == 0 ) {
             disk_tokens[index] = "-1";
             value_tokens[index] = "-1";
         }
-        snprintf( msg, sizeof(msg), "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
-                 serverName, resc_tokens[index].c_str(), output_tokens[0].c_str(), output_tokens[1].c_str(), output_tokens[2].c_str(),
-                 output_tokens[3].c_str(), disk_tokens[index].c_str(), output_tokens[5].c_str(), output_tokens[6].c_str(), value_tokens[index].c_str() );
-        snprintf( suffix, sizeof(suffix), "%d.%d.%d", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday );
-        snprintf( fname, sizeof(fname), "%s.%s", OUTPUT_MON_PERF, suffix );
+        snprintf( msg, sizeof( msg ), "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
+                  serverName, resc_tokens[index].c_str(), output_tokens[0].c_str(), output_tokens[1].c_str(), output_tokens[2].c_str(),
+                  output_tokens[3].c_str(), disk_tokens[index].c_str(), output_tokens[5].c_str(), output_tokens[6].c_str(), value_tokens[index].c_str() );
+        snprintf( suffix, sizeof( suffix ), "%d.%d.%d", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday );
+        snprintf( fname, sizeof( fname ), "%s.%s", OUTPUT_MON_PERF, suffix );
         /* retrieve the system time */
         const time_t timestamp = time( &tps );
 
@@ -117,7 +117,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
         /* append to the output log file */
         FILE *foutput = fopen( fname, "a" );
         if ( foutput != NULL ) {
-            fprintf( foutput, "time=%ji %s", (intmax_t)timestamp, msg );
+            fprintf( foutput, "time=%ji %s", ( intmax_t )timestamp, msg );
             // fclose(foutput); // JMC cppcheck - nullptr // cannot close it here. it is used later - hcj
         }
 
@@ -139,7 +139,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
         if ( foutput != NULL ) {
             if ( rc1 != 0 ) {
                 fprintf( foutput, "time=%ji : unable to insert the entries for server %s into the iCAT\n",
-                        (intmax_t)timestamp, serverName );
+                         ( intmax_t )timestamp, serverName );
             }
             fclose( foutput );
         }
@@ -687,9 +687,9 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
         }
         if ( check == 0 ) {
             const char * path = strcmp( rescList[thrCount].rescType, "unixfilesystem" ) == 0 ?
-                rescList[i].vaultPath : "none";
+                                rescList[i].vaultPath : "none";
             snprintf( thrInput[thrCount].cmdArgv, sizeof( thrInput[thrCount].cmdArgv ),
-                    "%s -fs %s", valinit_stream.str().c_str(), path );
+                      "%s -fs %s", valinit_stream.str().c_str(), path );
             rstrcpy( thrInput[thrCount].cmd, cmd, LONG_NAME_LEN );
             rstrcpy( thrInput[thrCount].execAddr, rescList[i].serverName, LONG_NAME_LEN );
             rstrcpy( thrInput[thrCount].hintPath, hintPath, MAX_NAME_LEN );
@@ -703,7 +703,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
             rstrcat( thrInput[indx].rescName, ",", MAX_NAME_LEN );
             rstrcat( thrInput[indx].rescName, rescList[i].rescName, MAX_NAME_LEN );
             if ( strcmp( rescList[i].rescType, "unixfilesystem" ) == 0 ) {
-                rstrcat( thrInput[indx].cmdArgv, ",", sizeof( thrInput[indx].cmdArgv )  );
+                rstrcat( thrInput[indx].cmdArgv, ",", sizeof( thrInput[indx].cmdArgv ) );
                 rstrcat( thrInput[indx].cmdArgv, rescList[i].vaultPath, sizeof( thrInput[indx].cmdArgv ) );
             }
             else {

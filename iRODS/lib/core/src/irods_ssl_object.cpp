@@ -200,7 +200,7 @@ namespace irods {
         _comm->salt_size       = salt_size_;
         _comm->num_hash_rounds = num_hash_rounds_;
         snprintf( _comm->encryption_algorithm, sizeof( _comm->encryption_algorithm ),
-                "%s", encryption_algorithm_.c_str() );
+                  "%s", encryption_algorithm_.c_str() );
 
         return SUCCESS();
 
@@ -225,7 +225,7 @@ namespace irods {
         _comm->salt_size       = salt_size_;
         _comm->num_hash_rounds = num_hash_rounds_;
         snprintf( _comm->encryption_algorithm, sizeof( _comm->encryption_algorithm ),
-                "%s", encryption_algorithm_.c_str() );
+                  "%s", encryption_algorithm_.c_str() );
 
 
         return SUCCESS();

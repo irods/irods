@@ -1985,8 +1985,8 @@ extern "C" {
         PluginStructFileDesc[ struct_file_index ].specColl  = spec_coll;
         PluginStructFileDesc[ struct_file_index ].rsComm    = comm;
         snprintf( PluginStructFileDesc[ struct_file_index ].dataType,
-                sizeof( PluginStructFileDesc[ struct_file_index ].dataType ),
-                "%s", fco->data_type().c_str() );
+                  sizeof( PluginStructFileDesc[ struct_file_index ].dataType ),
+                  "%s", fco->data_type().c_str() );
 
         // =-=-=-=-=-=-=-
         // extract the file

@@ -2109,8 +2109,8 @@ extern "C" {
 
         if ( irods_pam_auth_no_extend ) {
             snprintf( irods_pam_password_default_time,
-                    sizeof( irods_pam_password_default_time ),
-                    "%s", "28800" );
+                      sizeof( irods_pam_password_default_time ),
+                      "%s", "28800" );
         }
 
         return CODE( status );
@@ -2396,7 +2396,7 @@ extern "C" {
                 updateCols.push_back( colNames[i] );
                 updateVals.push_back( theVal );
 
-                if( std::string( "resc_hier" ) == colNames[i] ) {
+                if ( std::string( "resc_hier" ) == colNames[i] ) {
                     update_resc_hier = true;
                 }
 
@@ -2606,14 +2606,15 @@ extern "C" {
             // always set, unless resc_hier is to be
             // updated.  replNum is sometimes 0 in various
             // error cases
-            if( update_resc_hier || strlen( _data_obj_info->rescHier ) <= 0 ) {
+            if ( update_resc_hier || strlen( _data_obj_info->rescHier ) <= 0 ) {
                 j = numConditions;
                 whereColsAndConds[j] = "data_repl_num=";
                 snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
                 whereValues[j] = replNum1;
                 numConditions++;
 
-            } else {
+            }
+            else {
                 j = numConditions;
                 whereColsAndConds[j] = "resc_hier=";
                 whereValues[j] = _data_obj_info->rescHier;
@@ -16337,12 +16338,12 @@ checkLevel:
             return ERROR( status, "Failed to call PREG_REPLACE(). See section \"Installing lib_mysqludf_preg\" of iRODS Manual." );
         }
 
-        if ( strcmp("Call to PREG_REPLACE() succeeded.", cml_res) ) {
+        if ( strcmp( "Call to PREG_REPLACE() succeeded.", cml_res ) ) {
             std::stringstream ss;
             ss << "Call to PREG_REPLACE() returned incorrect result: ["
                << cml_res
                << "].";
-            return ERROR( PLUGIN_ERROR, ss.str().c_str());
+            return ERROR( PLUGIN_ERROR, ss.str().c_str() );
         }
         rodsLog( LOG_DEBUG, "db_start_operation :: Call to PREG_REPLACE() succeeded" );
 #endif

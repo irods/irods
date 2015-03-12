@@ -104,7 +104,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
             fprintf( stderr, "write %d bytes.\n", ( int ) sizeof( rbudpSender->rbudpBase.endOfUdp ) );
         }
         int error_code = writen( rbudpSender->rbudpBase.tcpSockfd, ( char * )&rbudpSender->rbudpBase.endOfUdp,
-                sizeof( rbudpSender->rbudpBase.endOfUdp ) );
+                                 sizeof( rbudpSender->rbudpBase.endOfUdp ) );
         if ( error_code < 0 ) {
             rodsLog( LOG_ERROR, "writen failed in sendBuf with error code %d", error_code );
         }

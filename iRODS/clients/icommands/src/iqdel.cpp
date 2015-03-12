@@ -30,7 +30,7 @@ rmDelayedRule( char *ruleId ) {
     ruleExecDelInp_t ruleExecDelInp;
 
     snprintf( ruleExecDelInp.ruleExecId, sizeof( ruleExecDelInp.ruleExecId ),
-            "%s", ruleId );
+              "%s", ruleId );
     status = rcRuleExecDel( Conn, &ruleExecDelInp );
 
     if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {

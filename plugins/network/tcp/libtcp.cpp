@@ -498,7 +498,7 @@ extern "C" {
         }
 
         int bytes_read = 0;
-        
+
         // =-=-=-=-=-=-=-
         // read buffer
         irods::error ret = tcp_socket_read(
@@ -547,11 +547,11 @@ extern "C" {
         bytesBuf_t*             _error_buf,
         irodsProt_t             _protocol,
         struct timeval*         _time_val ) {
-       
+
         // =-=-=-=-=-=-=-
-        // client make the assumption that we clear the error 
+        // client make the assumption that we clear the error
         // buffer for them
-        if( _error_buf ) { 
+        if ( _error_buf ) {
             memset( _error_buf, 0, sizeof( bytesBuf_t ) );
 
         }
@@ -637,13 +637,13 @@ extern "C" {
             if ( _header->bsLen > 0 ) {
                 // do not repave bs buf as it can be
                 // reused by the client
-                if( _bs_buf->buf == NULL ) {
-                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+                if ( _bs_buf->buf == NULL ) {
+                    _bs_buf->buf = malloc( _header->bsLen + 1 );
 
-                } 
+                }
                 else if ( _header->bsLen > _bs_buf->len ) {
-                    free ( _bs_buf->buf );
-                     _bs_buf->buf = malloc ( _header->bsLen+1 );
+                    free( _bs_buf->buf );
+                    _bs_buf->buf = malloc( _header->bsLen + 1 );
 
                 }
 

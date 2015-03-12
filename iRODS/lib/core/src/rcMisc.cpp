@@ -543,7 +543,7 @@ int getZoneNameFromHint(
     if ( sep[0] == hint[0] ) {
         std::string::size_type pos = hint.find( sep, 1 );
         if ( std::string::npos != pos ) {
-            hint = hint.substr( 1, pos-1 );
+            hint = hint.substr( 1, pos - 1 );
 
         }
         else {
@@ -3481,9 +3481,9 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
     parse.first_resc( first_resc );
 
     snprintf( specColl->resource, sizeof( specColl->resource ),
-            "%s", first_resc.c_str() );
+              "%s", first_resc.c_str() );
     snprintf( specColl->rescHier, sizeof( specColl->rescHier ),
-            "%s", tmpPtr1 );
+              "%s", tmpPtr1 );
     tmpPtr2 += 3;
 
     specColl->cacheDirty = atoi( tmpPtr2 );

@@ -377,7 +377,7 @@ int testDelRule( rsComm_t *rsComm, char *ruleName, char *userName ) {
         rsComm->clientUser.authInfo.authFlag = LOCAL_USER_AUTH;
         rsComm->proxyUser.authInfo.authFlag = LOCAL_USER_AUTH;
         snprintf( rsComm->clientUser.userName, sizeof( rsComm->clientUser.userName ),
-                "%s", userName );
+                  "%s", userName );
     }
     else {
         rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -898,10 +898,10 @@ main( int argc, char **argv ) {
 
 
     snprintf( Comm->clientUser.userName, sizeof( Comm->clientUser.userName ),
-            "%s", myEnv.rodsUserName );
+              "%s", myEnv.rodsUserName );
 
     snprintf( Comm->clientUser.rodsZone, sizeof( Comm->clientUser.rodsZone ),
-            "%s", myEnv.rodsZone );
+              "%s", myEnv.rodsZone );
 
     /*
       char rodsUserName[NAME_LEN];

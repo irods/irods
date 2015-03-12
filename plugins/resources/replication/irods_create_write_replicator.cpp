@@ -68,7 +68,7 @@ namespace irods {
 
                     // cache last error to return, log it and add it to the
                     // client side error stack
-                    if( !result.ok() ) {
+                    if ( !result.ok() ) {
                         last_error = result;
                         irods::log( result );
                         addRErrorMsg(
@@ -85,7 +85,7 @@ namespace irods {
 
         } // if ok
 
-        if( !last_error.ok() ) {
+        if ( !last_error.ok() ) {
             return last_error;
         }
 

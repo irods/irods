@@ -988,7 +988,7 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         if ( myTypeNum == PACK_PI_STR_TYPE ) {
             /* save the str */
             snprintf( myPackedItem->strValue, sizeof( myPackedItem->strValue ),
-                    "%s", ( char* )myPackedItem->pointer );
+                      "%s", ( char* )myPackedItem->pointer );
         }
     }
     else {

@@ -189,7 +189,7 @@ xmsgServerMain() {
         // =-=-=-=-=-=-=-
         // copy negotiation results to comm for action by network objects
         snprintf( rsComm.negotiation_results, sizeof( rsComm.negotiation_results ),
-                "%s", neg_results.c_str() );
+                  "%s", neg_results.c_str() );
         //rsComm.ssl_do_accept = 1;
 
     }

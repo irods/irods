@@ -231,15 +231,15 @@ namespace irods {
 
         int sleep_time_out_milli_sec = 0;
         ret = get_server_property <
-                    int > (
-                        CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                        sleep_time_out_milli_sec );
+              int > (
+                  CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                  sleep_time_out_milli_sec );
         if ( !ret.ok() ) {
             return PASS( ret );
 
         }
 
-        if( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
+        if ( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
             // convert sec to millisec for comparison
             sleep_time_out_milli_sec = _wait_seconds * 1000;
         }
@@ -247,19 +247,19 @@ namespace irods {
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
 
         // rule engine server only runs on IES
-        #ifdef RODS_CAT
+#ifdef RODS_CAT
         std::string output;
         ret = forward_server_control_command(
-                        SERVER_CONTROL_SHUTDOWN,
-                        my_env.rodsHost,
-                        CFG_RULE_ENGINE_CONTROL_PLANE_PORT,
-                        output );
+                  SERVER_CONTROL_SHUTDOWN,
+                  my_env.rodsHost,
+                  CFG_RULE_ENGINE_CONTROL_PLANE_PORT,
+                  output );
         if ( !ret.ok() ) {
             error msg = PASS( ret );
             log( msg );
             _output = msg.result();
         }
-        #endif
+#endif
 
         server_state& s = server_state::instance();
         s( server_state::PAUSED );
@@ -268,15 +268,15 @@ namespace irods {
         bool   timeout_flg = false;
         int    proc_cnt = getAgentProcCnt();
 
-        while( proc_cnt > 0 && !timeout_flg ) {
+        while ( proc_cnt > 0 && !timeout_flg ) {
             // takes sec, microsec
             rodsSleep(
                 0,
                 wait_milliseconds );
 
-            if( SERVER_CONTROL_WAIT_FOREVER_KW != _wait_option ) {
+            if ( SERVER_CONTROL_WAIT_FOREVER_KW != _wait_option ) {
                 sleep_time += SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
-                if( sleep_time > sleep_time_out_milli_sec ) {
+                if ( sleep_time > sleep_time_out_milli_sec ) {
                     timeout_flg = true;
                 }
             }
@@ -349,12 +349,12 @@ namespace irods {
         std::stringstream pid_str; pid_str << _pid;
         std::vector<std::string> args;
         args.push_back( pid_str.str() );
-       
+
         std::string pid_age;
-        irods::error ret = get_script_output_single_line( 
-                               "python", 
-                               "pid_age.py", 
-                               args, 
+        irods::error ret = get_script_output_single_line(
+                               "python",
+                               "pid_age.py",
+                               args,
                                pid_age );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
@@ -363,8 +363,9 @@ namespace irods {
 
         double age = 0.0;
         try {
-        age = boost::lexical_cast<double>( pid_age );
-        } catch ( const boost::bad_lexical_cast& ) {
+            age = boost::lexical_cast<double>( pid_age );
+        }
+        catch ( const boost::bad_lexical_cast& ) {
             rodsLog(
                 LOG_ERROR,
                 "get_pid_age bad lexical cast for [%s]",
@@ -419,9 +420,9 @@ namespace irods {
 
         std::vector<int> pids;
         int cnt = getAgentProcPIDs( pids );
-        for( size_t i = 0;
-             i < pids.size();
-             ++i ) {
+        for ( size_t i = 0;
+                i < pids.size();
+                ++i ) {
             int  pid = pids[i];
             int  age = get_pid_age( pids[i] );
 
@@ -931,12 +932,12 @@ namespace irods {
                 continue;
 
             }
-            else if( itr->first == SERVER_CONTROL_FORCE_AFTER_KW ) {
+            else if ( itr->first == SERVER_CONTROL_FORCE_AFTER_KW ) {
                 _wait_option = SERVER_CONTROL_FORCE_AFTER_KW;
                 _wait_seconds = boost::lexical_cast< size_t >( itr->second );
 
             }
-            else if( itr->first == SERVER_CONTROL_WAIT_FOREVER_KW ) {
+            else if ( itr->first == SERVER_CONTROL_WAIT_FOREVER_KW ) {
                 _wait_option = SERVER_CONTROL_WAIT_FOREVER_KW;
                 _wait_seconds = 0;
 
@@ -1094,8 +1095,8 @@ namespace irods {
         // add safeguards - if server is paused only allow a resume call
         server_state& s = server_state::instance();
         std::string the_server_state = s();
-        if( server_state::PAUSED == the_server_state &&
-            SERVER_CONTROL_RESUME != cmd_name ) {
+        if ( server_state::PAUSED == the_server_state &&
+                SERVER_CONTROL_RESUME != cmd_name ) {
             _output = SERVER_PAUSED_ERROR;
             return SUCCESS();
         }
