@@ -3112,17 +3112,17 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     def test_reliable_iput__ticket_2557(self):
         # local setup
         # break the second child resource
-        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path /nopes","LIST","unix2RescVault")
+        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path /nopes", "LIST", "unix2RescVault")
         filename = "reliableputfile.txt"
         filepath = create_local_testfile(filename)
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmdFail(s.adminsession, "iput " + filename,"LIST","put error")  # put file
+        assertiCmdFail(s.adminsession, "iput " + filename, "LIST", "put error")  # put file
         assertiCmd(s.adminsession, "ils -L " + filename, "LIST", "unix1Resc")  # should be listed
         assertiCmd(s.adminsession, "ils -L " + filename, "LIST", "unix3Resc")  # should be listed
 
         # cleanup
-        oldvault=get_irods_top_level_dir() + "/unix2RescVault"
-        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path "+oldvault,"LIST","/nopes")
+        oldvault = get_irods_top_level_dir() + "/unix2RescVault"
+        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path " + oldvault, "LIST", "/nopes")
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
