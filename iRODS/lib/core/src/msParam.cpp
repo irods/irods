@@ -495,12 +495,12 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
     if ( msParam->label != NULL ) {
         free( msParam->label );
     }
-    if ( msParam->label != NULL ) {
-        free( msParam->type );
-    }
     if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
                                            ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
         free( msParam->inOutStruct );
+    }
+    if ( msParam->type != NULL ) {
+        free( msParam->type );
     }
 
     memset( msParam, 0, sizeof( msParam_t ) );
