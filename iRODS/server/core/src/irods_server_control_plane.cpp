@@ -229,11 +229,10 @@ namespace irods {
 
         error ret;
 
-        int sleep_time_out_milli_sec = 0;
-        ret = get_server_property <
-              int > (
-                  CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                  sleep_time_out_milli_sec );
+        size_t sleep_time_out_milli_sec = 0;
+        ret = get_server_property < size_t > (
+                CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                sleep_time_out_milli_sec );
         if ( !ret.ok() ) {
             return PASS( ret );
 
@@ -293,8 +292,8 @@ namespace irods {
     } // server_operation_shutdown
 
     static error rule_engine_operation_shutdown(
-        const std::string& _wait_option,
-        const size_t       _wait_seconds,
+        const std::string&, // _wait_option,
+        const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -310,8 +309,8 @@ namespace irods {
     } // rule_engine_server_operation_shutdown
 
     static error operation_pause(
-        const std::string& _wait_option,
-        const size_t       _wait_seconds,
+        const std::string&, // _wait_option,
+        const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -328,8 +327,8 @@ namespace irods {
     } // operation_pause
 
     static error operation_resume(
-        const std::string& _wait_option,
-        const size_t       _wait_seconds,
+        const std::string&, // _wait_option,
+        const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -378,8 +377,8 @@ namespace irods {
     } // get_pid_age
 
     static error operation_status(
-        const std::string& _wait_option,
-        const size_t       _wait_seconds,
+        const std::string&, // _wait_option,
+        const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
         _getRodsEnv( my_env );
@@ -419,7 +418,7 @@ namespace irods {
         }
 
         std::vector<int> pids;
-        int cnt = getAgentProcPIDs( pids );
+        getAgentProcPIDs( pids );
         for ( size_t i = 0;
                 i < pids.size();
                 ++i ) {
