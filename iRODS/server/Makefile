@@ -409,7 +409,7 @@ $(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.
 
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
-	echo "Compile rods server `basename $@`..."
+	@echo "Compile rods server `basename $@`..."
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
