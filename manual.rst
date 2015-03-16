@@ -9,7 +9,7 @@
 |
 |
 |
-|
+|/d
 |
 |
 |
@@ -90,11 +90,11 @@ License
 Overview
 --------
 
-This manual provides standalone documentation for iRODS (http://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (http://irods-consortium.org).
+This manual provides standalone documentation for iRODS (https://irods.org) as packaged by the Renaissance Computing Institute (RENCI) (http://www.renci.org) under the aegis of the iRODS Consortium (https://irods.org/consortium).
 
-    http://irods.org
+    https://irods.org
 
-Additional documentation is available on the iRODS wiki (http://wiki.irods.org), the iRODS Doxygen site (http://irods.org/doxygen), and in the two books previously published by the iRODS team:
+Additional documentation is available on the iRODS wiki (http://wiki.irods.org), the iRODS Doxygen site (https://irods.org/doxygen), and in the two books previously published by the iRODS team:
 
     (2010) iRODS Primer: integrated Rule-Oriented Data System (Synthesis Lectures on Information Concepts, Retrieval, and Services)
     http://www.amazon.com/dp/1608453332
@@ -115,7 +115,7 @@ RPM and DEB formats are available for both iCAT-enabled servers and resource-onl
 
 More combinations will be made available as our testing matrix continues to mature and increase in scope.
 
-The latest files can be downloaded from http://irods.org/download.
+The latest files can be downloaded from https://irods.org/download.
 
 Open Source
 -----------
@@ -911,7 +911,7 @@ iRODS is in the process of being modularized whereby existing iRODS 3.x function
 
 .. _examples/microservices: https://github.com/irods/irods/tree/master/examples/microservices
 
-A separate development package, irods-dev, available at http://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_.
+A separate development package, irods-dev, available at https://irods.org/download, contains the necessary header files to write your own microservice plugins (as well as any other type of iRODS plugin).  Additional information can be found in the `Microservice Developers Tutorial`_.
 
 .. _Microservice Developers Tutorial: https://github.com/irods/irods/blob/master/examples/microservices/microservice_tutorial.rst
 
@@ -948,16 +948,16 @@ This virtualization enables the coordinating resources to manage both the placem
 
 An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in iRODS 3.x could not be put into other resource groups. A specific limiting example is a compound resource that, by definition, was a group and could not be placed into another group.  This significantly limited its functionality as a management tool. Groups in iRODS now only refer to user groups.
 
-Read more about Composable Resources at `http://irods.org/2013/02/e-irods-composable-resources/`__:
+Read more about Composable Resources at `https://irods.org/2013/02/e-irods-composable-resources/`__:
 
 - `Paper (279kB, PDF)`__
 - `Slides (321kB, PDF)`__
 - `Poster (6.4MB, PDF)`__
 
-.. __: http://irods.org/2013/02/e-irods-composable-resources/
-.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources.pdf
-.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-cr-slides.pdf
-.. __: http://irods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources-poster.pdf
+.. __: https://irods.org/2013/02/e-irods-composable-resources/
+.. __: https://irods.org/wp-content/uploads/2013/02/eirods-composable-resources.pdf
+.. __: https://irods.org/wp-content/uploads/2013/02/eirods-cr-slides.pdf
+.. __: https://irods.org/wp-content/uploads/2013/02/eirods-composable-resources-poster.pdf
 
 Coordinating Resources
 ----------------------
