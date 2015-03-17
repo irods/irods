@@ -560,6 +560,10 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_TYPE_KW,  genQueryOut->sqlResult[0].value );
 
+    if ( strcmp(dataObjInfoHead->rescHier, "") ) {
+        addKeyVal( &regParam, IN_PDMO_KW, dataObjInfoHead->rescHier );
+    }
+
     modDataObjMeta_t modDataObjMetaInp;
     modDataObjMetaInp.dataObjInfo = dataObjInfoHead;
     modDataObjMetaInp.regParam = &regParam;
@@ -1518,7 +1522,7 @@ msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] inpParam1 - a INT with the id of the object (can be null if unknown, the next param will then be used)
+ * \param[in] inpParam1 - a STR_MS_T with the id of the object (can be null if unknown, the next param will then be used)
  * \param[in] inpParam2 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path
  * \param[in] inpParam3 - a INT which gives the replica number
  * \param[in] inpParam4 - a STR_MS_T containing the comment
@@ -1588,6 +1592,9 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
     }
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_COMMENTS_KW, dataCommentStr );
+    if ( strcmp(dataObjInfo.rescHier, "") ) {
+        addKeyVal( &regParam, IN_PDMO_KW, dataObjInfo.rescHier );
+    }
 
     rodsLog( LOG_NOTICE, "msiSetReplComment: mod %s (%d) with %s",
              dataObjInfo.objPath, dataObjInfo.replNum, dataCommentStr );
@@ -1831,6 +1838,11 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
                                 "msiSysMetaModify: unknown system metadata or impossible to modify it: %s",
                                 ( char * ) sysMetadata->inOutStruct );
         }
+
+        if ( strcmp(dataObjInfo.rescHier,  "") ) {
+            addKeyVal( &regParam, IN_PDMO_KW, dataObjInfo.rescHier );
+        }
+
         modDataObjMetaInp.dataObjInfo = &dataObjInfo; // JMC - backport 4573
         modDataObjMetaInp.regParam = &regParam;
         rei->status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
