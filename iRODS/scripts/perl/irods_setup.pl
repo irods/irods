@@ -946,6 +946,10 @@ sub configureIrodsServer
                 printLog( "    \nIf your network environment is unusual, you may need to update the\n");
                 printLog( "    server/config/irodsHost.\n");
 
+                # repave zone_port, to be considerate of the next attept to setup
+                my %svr_variables = ( "zone_port",  $IRODS_PORT + 0 );
+                update_json_configuration_file( $serverConfigFile, %svr_variables );
+
                 cleanAndExit( 1 );
         }
 
@@ -975,8 +979,8 @@ sub configureIrodsServer
                 delete $ENV{"IRODS_ENVIRONMENT_FILE"};
 
                 # need to repave the irods_port in the server_config.json to
-                # the configured port after using 1233 for irodsBoot user
-                my %svr_variables = ("zone_port",  $IRODS_PORT + 0 );
+                # the original configured port after using 1233 for irodsBoot user
+                my %svr_variables = ( "zone_port",  $IRODS_PORT + 0 );
                 update_json_configuration_file( $serverConfigFile, %svr_variables );
 
                 # Restart the server with admin credentials
