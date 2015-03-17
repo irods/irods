@@ -290,9 +290,7 @@ d 755 root root ${IRODS_HOME_DIR}/tests/pydevtest -
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.r
 f 755 root root ${IRODS_HOME_DIR}/tests/pydevtest/rulebase_fastswap_test_2276.sh ./tests/pydevtest/rulebase_fastswap_test_2276.sh
-#f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest/topology_tests.tar ./tests/pydevtest/topology_tests.tar
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
-f 755 root root ${IRODS_HOME_DIR}/tests/devtest.sh ./tests/devtest.sh
 f 755 root root ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
 
 %if COVERAGE

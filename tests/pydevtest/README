@@ -44,22 +44,14 @@ Run the test suite as irods
 
 The following command will run the entire test suite and take a few seconds for each test.  This could take a couple hours to run on a relatively modern machine:
 
-  ./devtest.sh
+  python run_tests.py --run_python_suite --include_auth_suite_tests --include_fuse_suite_tests --run_devtesty
 
-The following command will run all the tests in a particular module (python file):
+The following command will run specific tests
 
-  ./devtest.sh iadmin_suite
-
-The following command will run all the tests in a particular class (including all the tests it inherits from its base class(es)):
-
-  ./devtest.sh test_irods_resource_types.Test_Replication_Resource
-
-The following command will run a single test (in this case, inherited from the ResourceBase (resource_base.py) base class):
-
-  ./devtest.sh test_irods_resource_types.Test_Replication_Resource.test_local_iput
+  python run_tests.py --run_specific_test <module name [.class name [.method name]]>
 
 
-The devtest.sh script can run on systems with Python both older and newer than 2.7 (when the unittest2 module was included by default).
+The run_tests.py requires Python 2.6 or Python 2.7
 
 
 Clean up this directory
