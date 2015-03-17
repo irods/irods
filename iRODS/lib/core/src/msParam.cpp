@@ -395,7 +395,7 @@ writeMsParam( char *buf, int len, msParam_t *msParam ) {
 
 
 msParam_t *
-getMsParamByLabel( msParamArray_t *msParamArray, char *label ) {
+getMsParamByLabel( msParamArray_t *msParamArray, const char *label ) {
     int i;
 
     if ( msParamArray == NULL || msParamArray->msParam == NULL || label == NULL ) {
@@ -427,7 +427,7 @@ getMsParamByType( msParamArray_t *msParamArray, const char *type ) {
 }
 
 void
-*getMspInOutStructByLabel( msParamArray_t *msParamArray, char *label ) {
+*getMspInOutStructByLabel( msParamArray_t *msParamArray, const char *label ) {
     int i;
 
     if ( msParamArray == NULL || label == NULL ) {
@@ -443,7 +443,7 @@ void
 }
 
 int
-rmMsParamByLabel( msParamArray_t *msParamArray, char *label, int freeStruct ) {
+rmMsParamByLabel( msParamArray_t *msParamArray, const char *label, int freeStruct ) {
     int i, j;
 
     if ( msParamArray == NULL || label == NULL ) {

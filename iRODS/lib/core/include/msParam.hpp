@@ -166,11 +166,11 @@ int
 fillMsParam( msParam_t *msParam, char *label,
              const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf );
 msParam_t *
-getMsParamByLabel( msParamArray_t *msParamArray, char *label );
+getMsParamByLabel( msParamArray_t *msParamArray, const char *label );
 msParam_t *
 getMsParamByType( msParamArray_t *msParamArray, const char *type );
 int
-rmMsParamByLabel( msParamArray_t *msParamArray, char *label, int freeStruct );
+rmMsParamByLabel( msParamArray_t *msParamArray, const char *label, int freeStruct );
 int
 trimMsParamArray( msParamArray_t *msParamArray, char *outParamDesc );
 int
@@ -217,7 +217,7 @@ int
 parseMspForExecCmdInp( msParam_t *inpParam,
                        execCmd_t *execCmdInpCache, execCmd_t **ouExecCmdInp );
 void
-*getMspInOutStructByLabel( msParamArray_t *msParamArray, char *label );
+*getMspInOutStructByLabel( msParamArray_t *msParamArray, const char *label );
 int
 getStdoutInExecCmdOut( msParam_t *inpExecCmdOut, char **outStr );
 int
