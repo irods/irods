@@ -1,7 +1,6 @@
 BASEDIRS = \
            load_balanced \
            mso \
-           mssofile \
            deferred \
            nonblocking \
            unixfilesystem \
