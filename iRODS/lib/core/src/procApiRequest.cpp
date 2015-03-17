@@ -28,7 +28,7 @@
 
 
 /* procApiRequest - This is the main function used by the client API
- * function to issue API requests and recieve output returned from
+ * function to issue API requests and receive output returned from
  * the server.
  * rcComm_t *conn - the client communication handle.
  * int apiNumber - the API number of this call defined in apiNumber.h.
