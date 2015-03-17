@@ -2155,7 +2155,7 @@ rmFilesInDir( char *mydir ) {
     return savedStatus;
 }
 int
-getNumFilesInDir( char *mydir ) {
+getNumFilesInDir( const char *mydir ) {
     using namespace boost::filesystem;
     int status = 0;
     int savedStatus = 0;

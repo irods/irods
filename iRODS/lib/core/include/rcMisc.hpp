@@ -289,27 +289,27 @@ mySetenvStr( const char *envname, const char *envval );
 int
 mySetenvInt( char *envname, int envval );
 int
-getNumFilesInDir( char *mydir );
+getNumFilesInDir( const char *mydir );
 int
 getRandomArray( int **randomArray, int size );
 int
-isPathSymlink( rodsArguments_t *rodsArgs, char *path );
+isPathSymlink( rodsArguments_t *rodsArgs, const char *path );
 int
-getAttriInAttriArray( char *objPath, genQueryOut_t *attriArray,
+getAttriInAttriArray( const char *objPath, genQueryOut_t *attriArray,
                       int *outDataMode, char **outChksum );
 
 char *trimSpaces( char *str );
 char *trimPrefix( char *str );
 int  convertListToMultiString( char *strInput, int input );
-int startsWith( char *str, char *prefix );
+int startsWith( const char *str, const char *prefix );
 int splitMultiStr( char *strInput, strArray_t *strArray );
 
 int
-hasSymlinkInDir( char *mydir );
+hasSymlinkInDir( const char *mydir );
 int
-hasSymlinkInPath( char *myPath );
+hasSymlinkInPath( const char *myPath );
 int
-hasSymlinkInPartialPath( char *myPath, int pos );
+hasSymlinkInPartialPath( const char *myPath, int pos );
 
 // Special status that supresses reError header printing
 static const int STDOUT_STATUS = 1000000;
