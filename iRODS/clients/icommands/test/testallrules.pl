@@ -257,8 +257,6 @@ foreach $rulefile (@rules)
 
     # skip rules that fail by design
     if ($rulefile =~ /GoodFailure/) { print "----- skipping failbydesign -- $rulefile\n"; next; }
-    if ($rulefile =~ /ruleworkflowcut/) { print "----- skipping failbydesign -- $rulefile\n"; next; }
-    if ($rulefile =~ /ruleworkflowfail/) { print "----- skipping failbydesign -- $rulefile\n"; next; }
 
     # skip if an action (run in the core.re), not enough input/output for irule
     if ($rulefile =~ /rulemsiAclPolicy/) { print "----- skipping input/output -- $rulefile\n"; next; }

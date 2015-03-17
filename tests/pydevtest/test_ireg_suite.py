@@ -19,7 +19,6 @@ import socket
 RODSHOME = get_irods_top_level_dir() + "/iRODS/"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
-FILESDIR = ABSPATHTESTDIR + '/workflow_testfiles'
 
 
 class Test_ireg_Suite(unittest.TestCase, ResourceBase):

@@ -125,21 +125,13 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
 
             # skip rules that fail by design
             names_to_skip = [
-                "GoodFailure",
-                "ruleworkflowcut",
-                "ruleworkflowfail",
+                "GoodFailure"
             ]
             for n in names_to_skip:
                 if n in rulefile:
                     # print "skipping " + rulefile + " ----- failbydesign"
                     return False
 
-            # skip rules that are for workflows
-            names_to_skip = [
-                "ruleTestWSO.r",
-                "ruleTestWSO1.r",
-                "ruleTestWSO2.r",
-            ]
             for n in names_to_skip:
                 if n in rulefile:
                     # print "skipping " + rulefile + " ----- failbydesign"
