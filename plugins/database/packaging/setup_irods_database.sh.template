@@ -280,6 +280,15 @@ perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT
 
 # =-=-=-=-=-=-=-
 # sanitize irods admin password
+if [ "$RUNINPLACE" == "1" ] ; then
+    TOPLEVELDIR=$DETECTEDDIR/../../../
+else
+    TOPLEVELDIR=$DETECTEDDIR/../
+fi
+# templated sql setup file
+MYSETUPVALUESSQL=`find $TOPLEVELDIR -name icatSetupValues.sql`
+rm -f $MYSETUPVALUESSQL
+# server config
 $PYTHON $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
 
 # =-=-=-=-=-=-=-

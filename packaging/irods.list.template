@@ -436,8 +436,6 @@ d 755 root root ${IRODS_HOME}/server/test/obj -
 f 644 root root ${IRODS_HOME}/server/test/README.txt ./iRODS/server/test/README.txt
 d 755 root root ${IRODS_HOME}/server/icat -
 d 755 root root ${IRODS_HOME}/server/icat/src -
-d 755 root root ${IRODS_HOME}/config -
-f 644 root root ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 755 root root ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
 
 

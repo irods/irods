@@ -1,0 +1,50 @@
+/* -----------------------------------------------
+ * This template file is populated before
+ * the iRODS server is run for the first time.
+ * ----------------------------------------------- */
+
+/* zone */
+insert into R_ZONE_MAIN values (9000,'ZONE_NAME_TEMPLATE','local','','','1170000000','1170000000');
+
+/* groups */
+insert into R_USER_MAIN values (9001,'rodsadmin','rodsgroup','ZONE_NAME_TEMPLATE','','','1170000000','1170000000');
+insert into R_USER_MAIN values (9002,'public','rodsgroup','ZONE_NAME_TEMPLATE','','','1170000000','1170000000');
+
+/* users */
+insert into R_USER_MAIN values (9010,'ADMIN_NAME_TEMPLATE','rodsadmin','ZONE_NAME_TEMPLATE','','','1170000000','1170000000');
+
+/* group membership */
+insert into R_USER_GROUP values (9001,9010,'1170000000','1170000000');
+insert into R_USER_GROUP values (9002,9002,'1170000000','1170000000');
+insert into R_USER_GROUP values (9002,9010,'1170000000','1170000000');
+insert into R_USER_GROUP values (9010,9010,'1170000000','1170000000');
+
+/* password */
+insert into R_USER_PASSWORD values (9010,'ADMIN_PASSWORD_TEMPLATE','9999-12-31-23.59.00','1170000000','1170000000');
+
+/* collections */
+insert into R_COLL_MAIN values (9020,'/','/','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9021,'/','/ZONE_NAME_TEMPLATE','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9022,'/ZONE_NAME_TEMPLATE','/ZONE_NAME_TEMPLATE/home','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9023,'/ZONE_NAME_TEMPLATE','/ZONE_NAME_TEMPLATE/trash','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9024,'/ZONE_NAME_TEMPLATE/trash','/ZONE_NAME_TEMPLATE/trash/home','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9025,'/ZONE_NAME_TEMPLATE/home','/ZONE_NAME_TEMPLATE/home/public','public','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9026,'/ZONE_NAME_TEMPLATE/trash/home','/ZONE_NAME_TEMPLATE/trash/home/public','public','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9027,'/ZONE_NAME_TEMPLATE/home','/ZONE_NAME_TEMPLATE/home/ADMIN_NAME_TEMPLATE','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9028,'/ZONE_NAME_TEMPLATE/trash/home','/ZONE_NAME_TEMPLATE/trash/home/ADMIN_NAME_TEMPLATE','ADMIN_NAME_TEMPLATE','ZONE_NAME_TEMPLATE',0,'','','','','','','1170000000','1170000000');
+
+/* permissions */
+insert into R_OBJT_ACCESS values (9020,9001,1130,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9020,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9021,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9022,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9023,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9024,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9025,9002,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9026,9002,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9027,9010,1200,'1170000000','1170000000');
+insert into R_OBJT_ACCESS values (9028,9010,1200,'1170000000','1170000000');
+
+/* bundle resource */
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'ZONE_NAME_TEMPLATE', 'unixfilesystem', 'bundle', 'localhost', '/bundle', '', '', '', '', '', '1170000000','1170000000');
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9101, 'demoResc', 'ZONE_NAME_TEMPLATE', 'unixfilesystem', 'cache', 'HOSTNAME_TEMPLATE', 'RESOURCE_DIR_TEMPLATE', '', '', '', '', '', '1170000000','1170000000');

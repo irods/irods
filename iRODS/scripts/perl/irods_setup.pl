@@ -114,12 +114,6 @@ my %thisHostAddresses = getCurrentHostAddresses( );
 # Name a log file.
 my $logFile = File::Spec->catfile( $logDir, "irods_setup.log" );
 
-# Set the default iRODS boot administrator name and password.
-# These are the defaults when iRODS is first installed.
-# The boot account is deleted after the first run.
-my $IRODS_ADMIN_BOOT_NAME     = "rodsBoot";
-my $IRODS_ADMIN_BOOT_PASSWORD = "RODS";
-
 # iRODS Server names (don't change these names without also changing
 # code later in this file that depends upon them).
 %servers = (
@@ -366,17 +360,13 @@ else
         # 2.  Create the database schema and tables.
         if (!$isUpgrade) {
             createDatabaseAndTables( );
-        }
-
-        # 3.  Test database connection.
-        if (!$isUpgrade) {
             testDatabase( );
         }
 
-        # 4.  Configure
+        # 3.  Configure
         configureIrodsServer( );
 
-        # 5.  Configure the iRODS user account.
+        # 4.  Configure the iRODS user account.
         configureIrodsUser( );
 }
 
@@ -613,7 +603,8 @@ sub createDatabaseAndTables
         {
                 my @sqlfiles = (
                         "icatSysTables.sql",
-                        "icatSysInserts.sql" );
+                        "icatSysInserts.sql",
+                        "icatSetupValues.sql");
 
                 my $alreadyCreated = 0;
                 my $sqlfile;
@@ -739,19 +730,7 @@ sub testDatabase()
 #
 # @brief        Configure iRODS.
 #
-# Update the iRODS server_config.json file and create the default
-# directories.
-#
-# This is made more complicated by a lot of error checking to
-# see if each of these tasks has already been done.  If a task
-# has been done, we skip it and try the next one.  This insures
-# that we'll pick up wherever we left off from a prior failure.
-#
-# The last step here changes the user's account *AND*
-# deletes the boot account.  If this script gets run a second
-# time, we have to notice that the original boot account
-# may be missing.  In that case, we try the user's password.
-# And if that fails, there's not much we can do.
+# Update the iRODS server_config.json file.
 #
 # Output error messages and exit on problems.
 #
@@ -888,434 +867,6 @@ sub configureIrodsServer
                 delete $ENV{"IRODS_ZONE"};
                 return;
         }
-
-        # Set the name of the authorization file created
-        # by 'iinit' when using this boot environment.
-        #       By default, this is 'install/auth.tmp',  We
-        #       change it here to a full path so that it isn't
-        #       dependent upon the directory from which this
-        #       script is run.
-        printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
-        my $bootEnv  = File::Spec->catfile( $IRODS_HOME, "config", "irodsEnv.boot" );
-        my $authFile = File::Spec->catfile( $IRODS_HOME, "config", "auth.tmp" );
-        my %envVariables = ( "irods_authentication_file_name", $authFile, "irods_zone", $ZONE_NAME) ;
-        printLog( "    irods_authentication_file_name = $authFile\n" );
-
-        #($status,$output) = replaceVariablesInFile( $bootEnv, "config", 1, %envVariables );
-        $status = update_json_configuration_file( $bootEnv, %envVariables );
-        if ( $status == 0 )
-        {
-                printError( "\nInstall problem:\n" );
-                printError( "    Updating of iRODS irodsEnv.boot failed.\n" );
-                printError( "        ", $output );
-                printLog( "\nCannot update variables in irodsEnv.boot.\n" );
-                printLog( "    ", $output );
-                cleanAndExit( 1 );
-        }
-
-        # repave the irods_port with 1233 which is expected by the boot user
-        my %svr_variables = (
-            "zone_name",        $ZONE_NAME,
-            "zone_port",        1233,
-            "zone_auth_scheme", "native" );
-        $status = update_json_configuration_file(
-            $serverConfigFile,
-            %svr_variables );
-
-
-        # Start iRODS.
-        #       We need the server started so that we can
-        #       issue commands to create an iRODS account and
-        #       directories.
-        printStatus( "Starting iRODS server with boot environment...\n" );
-        printLog( "\nStarting iRODS server with boot environment...\n" );
-        printLog( "    Setting IRODS_ENVIRONMENT_FILE to $bootEnv\n" );
-
-        $ENV{"IRODS_ENVIRONMENT_FILE"} = $bootEnv;
-
-        if ( startIrods( ) == 0 )
-        {
-                printError( "\nInstall problem:\n" );
-                printError( "    Cannot start iRODS server.\n" );
-
-                printError( "    \nIf your network environment is unusual, you may need to update the\n");
-                printError( "    server/config/irodsHost.\n");
-
-                printLog( "\nCannot start iRODS server.\n" );
-
-                printLog( "    \nIf your network environment is unusual, you may need to update the\n");
-                printLog( "    server/config/irodsHost.\n");
-
-                # repave zone_port, to be considerate of the next attept to setup
-                my %svr_variables = ( "zone_port",  $IRODS_PORT + 0 );
-                update_json_configuration_file( $serverConfigFile, %svr_variables );
-
-                cleanAndExit( 1 );
-        }
-
-
-        # Connect to iRODS.
-        #       Instead of the user's account (if they have one),
-        #       use the default boot account.  This is configured
-        #       in the boot environment script.
-        #
-        #       The boot account has a default password.  However,
-        #       a last step of this function deletes the boot
-        #       account.  If this script is run again, we have to
-        #       try both passwords.
-        printStatus( "Opening iRODS connection with boot password...\n" );
-        printLog( "\nOpening iRODS connection using boot password...\n" );
-        my $passwordsAlreadySet = 0;
-        ($status,$output) = run( "$iinit $IRODS_ADMIN_BOOT_PASSWORD" );
-
-        if ( $status != 0 )
-        {
-                # Failed with the boot password.
-                # Log in as the existing admin user.
-                printStatus( "Opening iRODS connection with admin password...\n" );
-                printLog( "\nOpening iRODS connection using admin password...\n" );
-
-                # Delete the in-flight boot envfile;
-                delete $ENV{"IRODS_ENVIRONMENT_FILE"};
-
-                # need to repave the irods_port in the server_config.json to
-                # the original configured port after using 1233 for irodsBoot user
-                my %svr_variables = ( "zone_port",  $IRODS_PORT + 0 );
-                update_json_configuration_file( $serverConfigFile, %svr_variables );
-
-                # Restart the server with admin credentials
-                if ( stopIrods( ) == 0 )
-                {
-                    printError( "\nServer did not shut down properly.\n" );
-                    cleanAndExit( 1 );
-                }
-                if ( startIrods( ) == 0 )
-                {
-                    printError( "\nInstall problem:\n" );
-                    printError( "    Cannot start iRODS server.\n" );
-
-                    printError( "    \nIf your network environment is unusual, you may need to update the\n");
-                    printError( "    server/config/irodsHost.\n");
-
-                    printLog( "\nCannot start iRODS server.\n" );
-
-                    printLog( "    \nIf your network environment is unusual, you may need to update the\n");
-                    printLog( "    server/config/irodsHost.\n");
-
-                    cleanAndExit( 1 );
-                }
-                # Connect with admin password
-                my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
-                if ( $status != 0 )
-                {
-                        # Neither worked.
-                        if ( -e $authFile )
-                        {
-                                unlink( $authFile );
-                        }
-                        printError( "\nInstall problem:\n" );
-                        printError( "    Connection to the iRODS server failed.\n" );
-                        printError( "        ", $output );
-                        printLog( "\nCannot initialize connection to iRODS server using boot/admin account.\n" );
-                        printLog( "    ", $output );
-                        cleanAndExit( 1 );
-                }
-
-                # Since we connected with the user's password
-                # for the boot account, this script must have
-                # been run once before and made it to the part
-                # below that sets the boot acount to the user's
-                # password.  Flag that we don't need to do
-                # that again.
-                $passwordsAlreadySet = 1;
-
-
-        }
-
-        my $somethingFailed = 0;
-
-        # need to repave the irods_port in the server_config.json to
-        # the original configured port after using 1233 for irodsBoot user
-        my %svr_variables = (
-            "zone_port",  $IRODS_PORT + 0 );
-        update_json_configuration_file(
-            $serverConfigFile,
-            %svr_variables );
-
-        # Create directories.
-        #       If the directory already exists, continue without
-        #       an error.  One of the other directories might not
-        #       exist yet.
-        #
-        #       If the directory doesn't exist, create it.
-        #
-        #       Otherwise, something is wrong.  An error message is
-        #       already output.  Flag the error so that we can
-        #       clean up and quit later.
-        printStatus( "Creating iRODS directories...\n" );
-        printLog( "\nCreating iRODS directories...\n" );
-        my $createdDirectory = 0;
-
-        printLog( "    Create /$ZONE_NAME...\n" );
-        $status = imkdir( "/$ZONE_NAME" );
-        if ( $status == 0 ) { $somethingFailed = 1; }
-        elsif ( $status == 1 ) { $createdDirectory = 1; }
-
-        if ( !$somethingFailed )
-        {
-                printLog( "    Create /$ZONE_NAME/home...\n" );
-                $status = imkdir( "/$ZONE_NAME/home" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdDirectory = 1; }
-        }
-
-        if ( !$somethingFailed && $ENV{"IRODS_ENVIRONMENT_FILE"} ne "")
-        {
-                printLog( "    Create /$ZONE_NAME/home/rodsBoot...\n" );
-                $status = imkdir( "/$ZONE_NAME/home/rodsBoot" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdDirectory = 1; }
-        }
-
-        if ( !$somethingFailed )
-        {
-                printLog( "    Create /$ZONE_NAME/trash...\n" );
-                $status = imkdir( "/$ZONE_NAME/trash" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdDirectory = 1; }
-        }
-
-        if ( !$somethingFailed )
-        {
-                printLog( "    Create /$ZONE_NAME/trash/home...\n" );
-                $status = imkdir( "/$ZONE_NAME/trash/home" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdDirectory = 1; }
-        }
-
-        if ( !$somethingFailed && $ENV{"IRODS_ENVIRONMENT_FILE"} ne "")
-        {
-                printLog( "    Create /$ZONE_NAME/trash/home/rodsBoot...\n" );
-                $status = imkdir( "/$ZONE_NAME/trash/home/rodsBoot" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdDirectory = 1; }
-        }
-
-        if ( !$somethingFailed && !$createdDirectory )
-        {
-                printStatus( "    Skipped.  Directories already created.\n" );
-        }
-
-
-        # At this point, if $somethingFailed == 1, then one or
-        # more directories could not be created.  There's no
-        # point in creating the user account since there is
-        # no home directory for it.
-
-
-        # Create the public group, if no earlier error occurred.
-        #       If the group already exists, continue without
-        #       an error.
-        #
-        #       If the group doesn't exist, create it.
-        #
-        #       Otherwise, something is wrong.  An error message is
-        #       already output.  Flag the error so that we can
-        #       clean up and quit later.
-        if ( !$somethingFailed )
-        {
-                printStatus( "Creating iRODS group 'public'...\n" );
-                printLog( "\nCreating iRODS group 'public'...\n" );
-
-                my $createdGroup = 0;
-
-                $status = imkgroup( "public" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdGroup = 1; }
-
-                if ( !$somethingFailed && !$createdGroup )
-                {
-                        printStatus( "    Skipped.  Group already created.\n" );
-                }
-        }
-
-        # Create the admin account, if no earlier error occurred.
-        #       If the account already exists, continue without
-        #       an error.
-        #
-        #       If the account doesn't exist, create it.
-        #
-        #       Otherwise, something is wrong.  An error message is
-        #       already output.  Flag the error so that we can
-        #       clean up and quit later.
-        if ( !$somethingFailed )
-        {
-                printStatus( "Creating iRODS user account...\n" );
-                printLog( "\nCreating iRODS user account...\n" );
-
-                my $createdUser = 0;
-
-                $status = imkuser( $IRODS_ADMIN_NAME );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $createdUser = 1; }
-
-                if ( !$somethingFailed && !$createdUser )
-                {
-                        printStatus( "    Skipped.  Account already created.\n" );
-                }
-        }
-
-        # At this point, if $somethingFailed == 1, then one or
-        # more directories could not be created, or the user
-        # account could not be created.  There's no point in
-        # changing directory ownership since there's no account
-        # or there are no directories.
-
-
-        # Give ownership permission to the admin for the main directories,
-        # if no earlier error occurred.
-        #       If the directory is already set properly, continue
-        #       without an error
-        #
-        #       If not set right, set it.
-        #
-        #       Otherwise, something is wrong.  An error message is
-        #       already output.  Flag the error so that we can
-        #       clean up and quit later.
-        if ( !$somethingFailed )
-        {
-                printStatus( "Setting iRODS directory ownership...\n" );
-                printLog( "\nSetting iRODS directory ownership...\n" );
-                my $chownedDirectory = 0;
-
-                printLog( "    chown /\n" );
-                $status = ichown( $IRODS_ADMIN_NAME, "/" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $chownedDirectory = 1; }
-
-                printLog( "    chown /$ZONE_NAME...\n" );
-                $status = ichown( $IRODS_ADMIN_NAME, "/$ZONE_NAME" );
-                if ( $status == 0 ) { $somethingFailed = 1; }
-                elsif ( $status == 1 ) { $chownedDirectory = 1; }
-
-                if ( !$somethingFailed )
-                {
-                        printLog( "    chown /$ZONE_NAME/home...\n" );
-                        $status = ichown( $IRODS_ADMIN_NAME, "/$ZONE_NAME/home" );
-                        if ( $status == 0 ) { $somethingFailed = 1; }
-                        elsif ( $status == 1 ) { $chownedDirectory = 1; }
-                }
-
-                if ( !$somethingFailed )
-                {
-                        printLog( "    chown /$ZONE_NAME/trash...\n" );
-                        $status = ichown( $IRODS_ADMIN_NAME, "/$ZONE_NAME/trash" );
-                        if ( $status == 0 ) { $somethingFailed = 1; }
-                        elsif ( $status == 1 ) { $chownedDirectory = 1; }
-                }
-
-                if ( !$somethingFailed )
-                {
-                        printLog( "    chown /$ZONE_NAME/trash/home...\n" );
-                        $status = ichown( $IRODS_ADMIN_NAME, "/$ZONE_NAME/trash/home" );
-                        if ( $status == 0 ) { $somethingFailed = 1; }
-                        elsif ( $status == 1 ) { $chownedDirectory = 1; }
-                }
-
-                if ( !$somethingFailed && !$chownedDirectory )
-                {
-                        printStatus( "    Skipped.  Directories already uptodate.\n" );
-                }
-        }
-
-        # At this point, if $somethingFailed == 1, then one or
-        # more directories could not be created, the user account
-        # could not be created, or directory ownership changes
-        # failed.  Without an account, there's certainly no point
-        # in setting a password next.
-
-
-        # Set the password for the admin account
-        if ( !$somethingFailed && !$passwordsAlreadySet )
-        {
-                printStatus( "Setting iRODS user password...\n" );
-                printLog( "\nSetting iRODS user password...\n" );
-                my $command = "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD";
-                if ( runIcommand( $command ) == 0 )
-                {
-                        $somethingFailed = 1;
-                }
-        }
-
-        # Remove the boot account.
-        if ( !$somethingFailed )
-        {
-                printStatus( "Checking for iRODS boot user...\n" );
-                printLog( "\nChecking for iRODS boot user...\n" );
-                my $command = "$iadmin lu";
-                my ($status, $output) = run( $command );
-                if ($status != 0)
-                {
-                        $somethingFailed = 1;
-                }
-                else
-                {
-                        # does rodsBoot exist
-                        if (index($output, "rodsBoot#") != -1) {
-                                printStatus( "    Removing iRODS boot user...\n" );
-                                printLog( "\nRemoving iRODS boot user...\n" );
-
-                                # restart server as non-boot admin
-                                stopIrods();
-                                $ENV{"IRODS_HOST"}=$thisHost;
-                                $ENV{"IRODS_PORT"}=$IRODS_PORT;
-                                $ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
-                                $ENV{"IRODS_ZONE"}=$ZONE_NAME;
-                                $ENV{"IRODS_AUTHENTICATION_SCHEME"}="native";
-                                startIrods();
-                                # login
-                                $command = "$iinit $IRODS_ADMIN_PASSWORD";
-                                my ($status, $output) = run( $command );
-                                if ($status != 0)
-                                {
-                                        $somethingFailed = 1;
-                                }
-                                # remove the boot user
-                                $command = "$iadmin rmuser $IRODS_ADMIN_BOOT_NAME";
-                                my ($status,$output) = run( $command );
-                                if ($status != 0)
-                                {
-                                        printLog(" -- $output\n");
-                                        $somethingFailed = 1;
-                                }
-                        }
-                        else
-                        {
-                                printStatus( "    No boot user found.\n");
-                                printLog( "\nNo boot user found.\n");
-                        }
-                }
-        }
-
-
-
-        # Clean up.  Stop using the boot environment and delete
-        # the authorization file.
-        runIcommand( "$iexit full" );
-        $ENV{"IRODS_ENVIRONMENT_FILE"} = undef;
-        if ( -e $authFile )
-        {
-                unlink( $authFile );
-        }
-
-
-        # Stop iRODS.
-        printStatus( "Stopping iRODS server...\n" );
-        printLog( "\nStopping iRODS server...\n" );
-        stopIrods( );
-
-        # Switch to the new (non-boot) port (for checking processes)
-        $currentPort = $IRODS_PORT;
 
 
         if ( $somethingFailed )
@@ -1454,6 +1005,23 @@ sub configureIrodsUser
                 printLog( "\nCannot open connection to iRODS server.\n" );
                 printLog( "    ", $output );
                 cleanAndExit( 1 );
+        }
+
+        # Update admin password
+        if ( $IRODS_ICAT_HOST eq "" )
+        {
+            printStatus( "Updating admin user...\n" );
+            printLog( "\nUpdating admin user...\n" );
+            my ($status,$output) = run( "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD" );
+            if ( $status != 0 )
+            {
+                printError( "\nInstall problem:\n" );
+                printError( "    Cannot update admin user [$IRODS_ADMIN_NAME] password:\n" );
+                printError( "        ", $output );
+                printLog( "\nCannot update admin user [$IRODS_ADMIN_NAME] password:\n" );
+                printLog( "    ", $output );
+                cleanAndExit( 1 );
+            }
         }
 
         # Create the default resource, if needed.

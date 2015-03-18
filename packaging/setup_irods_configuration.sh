@@ -22,7 +22,7 @@ fi
 # set some paths
 if [ $RUNINPLACE -eq 1 ] ; then
     MYSERVERCONFIGJSON=$DETECTEDDIR/../iRODS/server/config/server_config.json
-    MYICATSYSINSERTS=$DETECTEDDIR/../plugins/database/src/icatSysInserts.sql
+    MYICATSETUPVALUES=$DETECTEDDIR/../plugins/database/src/icatSetupValues.sql
     # clean full paths
     MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
     if [ ! -f $MYSERVERCONFIGJSON ]; then
@@ -30,7 +30,7 @@ if [ $RUNINPLACE -eq 1 ] ; then
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
 
-    MYICATSYSINSERTS="$(cd "$( dirname $MYICATSYSINSERTS )" && pwd)"/"$( basename $MYICATSYSINSERTS )"
+    MYICATSETUPVALUES="$(cd "$( dirname $MYICATSETUPVALUES )" && pwd)"/"$( basename $MYICATSETUPVALUES )"
     DEFAULTRESOURCEDIR="$( cd "$( dirname "$( dirname "$DETECTEDDIR/../" )" )" && pwd )"/Vault
 else
     MYSERVERCONFIGJSON=/etc/irods/server_config.json
@@ -38,7 +38,7 @@ else
         echo ">>> Copying new server_config.json to /etc/irods"
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
-    MYICATSYSINSERTS=/var/lib/irods/iRODS/server/icat/src/icatSysInserts.sql
+    MYICATSETUPVALUES=/var/lib/irods/iRODS/server/icat/src/icatSetupValues.sql
     DEFAULTRESOURCEDIR=/var/lib/irods/iRODS/Vault
 fi
 
@@ -332,37 +332,6 @@ fi
     if [ $ICAT_SERVER -eq 1 ] ; then
         $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_name $MYZONE
     fi
-    if [ $ICAT_SERVER -eq 1 ] ; then
-        # updating SQL
-        TMPFILE="/tmp/$USER/setupicatsysinserts.txt"
-        echo "Updating $MYICATSYSINSERTS..."
-        if [ $(grep -c "'tempZone'" $MYICATSYSINSERTS) -eq 0 ] ; then
-            echo "====================================="
-            echo "ERROR:"
-            echo "Unknown existing Zone name in $MYICATSYSINSERTS."
-            echo "Please drop all tables and try again."
-            echo "====================================="
-            # restore original
-            cp $MYICATSYSINSERTS.orig $MYICATSYSINSERTS
-            exit 1
-        fi
-        if [ "$LASTMYADMINNAME" != "" -a "$LASTMYADMINNAME" != "rods" -a "$LASTMYADMINNAME" != "$MYADMINNAME" ] ; then
-            echo "====================================="
-            echo "ERROR:"
-            echo "Cannot change existing non-default administrator username."
-            echo ""
-            echo "Please:"
-            echo "1) Drop all of the iCAT tables,"
-            echo "2) Reset $MYSERVERCONFIGJSON with 'zone_user': 'rods', and"
-            echo "3) Run this script again."
-            echo "====================================="
-            exit 1
-        fi
-        # store original
-        cp $MYICATSYSINSERTS $MYICATSYSINSERTS.orig
-        # substitute
-        sed -e "s/'tempZone'/'$MYZONE'/" $MYICATSYSINSERTS > $TMPFILE ; mv $TMPFILE $MYICATSYSINSERTS
-    fi
     # everything else
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string default_resource_directory $MYRESOURCEDIR
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer zone_port $MYPORT
@@ -374,4 +343,17 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
     if [ $ICAT_SERVER -eq 1 ] ; then
         $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD
+    fi
+
+    # prepare SQL from template
+    if [ $ICAT_SERVER -eq 1 ] ; then
+        echo "Preparing $MYICATSETUPVALUES..."
+        TMPFILE="/tmp/$USER/icatsetupvalues.txt"
+        MYHOSTNAME=`hostname`
+        sed -e "s/ZONE_NAME_TEMPLATE/$MYZONE/g" $MYICATSETUPVALUES.template > $TMPFILE; mv $TMPFILE $MYICATSETUPVALUES
+        sed -e "s/ADMIN_NAME_TEMPLATE/$MYADMINNAME/g" $MYICATSETUPVALUES > $TMPFILE; mv $TMPFILE $MYICATSETUPVALUES
+        sed -e "s/HOSTNAME_TEMPLATE/$MYHOSTNAME/g" $MYICATSETUPVALUES > $TMPFILE; mv $TMPFILE $MYICATSETUPVALUES
+        sed -e "s;RESOURCE_DIR_TEMPLATE;$MYRESOURCEDIR;g" $MYICATSETUPVALUES > $TMPFILE; mv $TMPFILE $MYICATSETUPVALUES
+        sed -e "s/ADMIN_PASSWORD_TEMPLATE/$MYADMINPASSWORD/g" $MYICATSETUPVALUES > $TMPFILE; mv $TMPFILE $MYICATSETUPVALUES
+        chmod 600 $MYICATSETUPVALUES
     fi

@@ -179,6 +179,7 @@ f 755 root root ${IRODS_HOME_DIR}/packaging/find_bin_mysql.sh ./packaging/find_b
 f 644 root root ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./src/icatSysTables.sql
 f 644 root root ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDropSysTables.sql
 f 644 root root ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
+f 644 root root ${IRODS_HOME}/server/icat/src/icatSetupValues.sql.template ./src/icatSetupValues.sql.template
 f 644 root root ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
 f 755 root root ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
 
