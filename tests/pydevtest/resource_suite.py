@@ -856,7 +856,7 @@ class ResourceSuite(ResourceBase):
         # for debugging
         assertiCmd(s.adminsession, "ils -L " + filename, "STDOUT", filename)
         # replicate to bad resource
-        assertiCmd(s.adminsession, "irepl -R nonresc " + filename, "STDERR", "SYS_INVALID_INPUT_PARAM")
+        assertiCmd(s.adminsession, "irepl -R nonresc " + filename, "STDERR", "SYS_RESC_DOES_NOT_EXIST")
         assertiCmd(s.adminsession, "irm -f " + filename)                                               # cleanup file
         # local cleanup
         os.remove(filepath)
