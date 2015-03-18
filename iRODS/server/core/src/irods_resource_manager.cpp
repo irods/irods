@@ -58,7 +58,7 @@ namespace irods {
             std::stringstream msg;
             msg << "no resource found for name ["
                 << _key << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+            return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
 
         }
 
