@@ -195,9 +195,26 @@ namespace irods {
         zmq::message_t req;
         zmq_skt.recv( &req );
 
+        // decrypt the message before passing to avro
+        buffer_crypt::array_t data_to_process;
+        const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
+        buffer_crypt::array_t data_to_decrypt(
+            data_ptr,
+            data_ptr + req.size() );
+        ret = crypt.decrypt(
+                  shared_secret,
+                  iv,
+                  data_to_decrypt,
+                  data_to_process );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return PASS( ret );
+
+        }
+
         std::string rep_str(
-            static_cast< char* >( req.data() ),
-            req.size() );
+            reinterpret_cast< char* >( data_to_process.data() ),
+            data_to_process.size() );
         if ( SERVER_CONTROL_SUCCESS != rep_str ) {
             // check if the result is really an error or a status
             if ( std::string::npos == rep_str.find( "[-]" ) ) {
@@ -229,8 +246,8 @@ namespace irods {
 
         error ret;
 
-        size_t sleep_time_out_milli_sec = 0;
-        ret = get_server_property < size_t > (
+        int sleep_time_out_milli_sec = 0;
+        ret = get_server_property < int > (
                 CFG_SERVER_CONTROL_PLANE_TIMEOUT,
                 sleep_time_out_milli_sec );
         if ( !ret.ok() ) {
@@ -263,9 +280,9 @@ namespace irods {
         server_state& s = server_state::instance();
         s( server_state::PAUSED );
 
-        size_t sleep_time  = 0;
-        bool   timeout_flg = false;
-        int    proc_cnt = getAgentProcCnt();
+        int  sleep_time  = 0;
+        bool timeout_flg = false;
+        int  proc_cnt = getAgentProcCnt();
 
         while ( proc_cnt > 0 && !timeout_flg ) {
             // takes sec, microsec
@@ -384,13 +401,10 @@ namespace irods {
         _getRodsEnv( my_env );
 
         int re_pid = 0;
+        // no error case, resource servers have no re server
         error ret = get_server_property< int > (
                         irods::RE_PID_KW,
                         re_pid );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
 
         int my_pid = getpid();
         int xmsg_pid = 0;
@@ -446,7 +460,7 @@ namespace irods {
 
         json_decref( obj );
 
-        _output = tmp_buf;
+        _output += tmp_buf;
         _output += ",";
 
         return SUCCESS();
@@ -974,7 +988,7 @@ namespace irods {
 
         }
 
-        error fwd_err;
+        error fwd_err = SUCCESS();
         host_list_t::const_iterator itr;
         for ( itr  = _hosts.begin();
                 itr != _hosts.end();
@@ -989,11 +1003,13 @@ namespace irods {
                 error ret = op_map_[ _cmd_name ](
                                 _wait_option,
                                 _wait_seconds,
-                                _output );
+                                output );
                 if ( !ret.ok() ) {
                     fwd_err = PASS( ret );
 
                 }
+
+                _output += output;
 
                 continue;
             }
@@ -1004,15 +1020,18 @@ namespace irods {
                             port_prop_,
                             _wait_option,
                             _wait_seconds,
-                            _output );
+                            output );
             if ( !ret.ok() ) {
                 log( PASS( ret ) );
+
+            } else {
+                _output += output;
 
             }
 
         } // for itr
 
-        return SUCCESS();
+        return fwd_err;
 
     } // process_host_list
 

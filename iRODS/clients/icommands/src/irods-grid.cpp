@@ -262,7 +262,13 @@ std::string format_grid_status(
     status += "]    \n}";
 
     std::string::size_type pos = status.find_last_of( "," );
-    status.erase( pos, 1 );
+    if( std::string::npos != pos ) {
+        status.erase( pos, 1 );
+    } else {
+        // possible error message
+        return _status;
+    
+    }
 
     json_error_t j_err;
     json_t* obj = json_loads(

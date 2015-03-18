@@ -81,7 +81,10 @@ namespace irods {
             error get_property( const std::string& _key, T& _val ) {
                 error ret = config_props_.get< T >( _key, _val );
                 if ( !ret.ok() ) {
-                    ret = config_props_.get< T >( key_map_[ _key ], _val );
+                    if( key_map_.has_entry( _key ) ) {
+                        ret = config_props_.get< T >( key_map_[ _key ], _val );
+
+                    }
                 }
                 return PASS( ret );
             }
