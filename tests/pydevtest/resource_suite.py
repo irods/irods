@@ -700,7 +700,7 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag, "Expected ERRORs did not occur"
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Lists Vault files")
     def test_iput_overwrite_others_file__ticket_2086(self):
         # pre state
         assertiCmd(s.adminsession, "ils -L", "LIST", self.testfile)  # should be listed
@@ -778,7 +778,7 @@ class ResourceSuite(ResourceBase):
     # ireg
     ###################
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Registers local file")
     def test_ireg_as_rodsadmin(self):
         # local setup
         filename = "newfile.txt"
@@ -796,7 +796,7 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Registers local file")
     def test_ireg_as_rodsuser(self):
         # local setup
         filename = "newfile.txt"
@@ -814,7 +814,7 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Registers file in Vault")
     def test_ireg_as_rodsuser_in_vault(self):
         # get vault base path
         cmdout = s.sessions[1].runCmd('iquest', ["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
