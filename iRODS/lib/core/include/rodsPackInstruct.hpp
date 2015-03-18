@@ -83,7 +83,7 @@
 #define UserInfo_PI "str userName[NAME_LEN]; str rodsZone[NAME_LEN]; str userType[NAME_LEN]; int sysUid; struct AuthInfo_PI; struct UserOtherInfo_PI;"
 #define CollInfo_PI "double collId; str collName[MAX_NAME_LEN]; str collParentName[MAX_NAME_LEN]; str collOwnerName[NAME_LEN]; str collOwnerZone[NAME_LEN]; int collMapId; int collAccessInx; str collComments[LONG_NAME_LEN]; str collInheritance[LONG_NAME_LEN]; str collExpiry[TIME_LEN]; str collCreate[TIME_LEN]; str collModify[TIME_LEN]; str collAccess[NAME_LEN]; str collType[NAME_LEN]; str collInfo1[MAX_NAME_LEN]; str collInfo2[MAX_NAME_LEN]; struct KeyValPair_PI; int *next;"
 
-#define Rei_PI "int status; str statusStr[MAX_NAME_LEN]; str ruleName[NAME_LEN]; int *rsComm; str pluginInstanceName[MAX_NAME_LEN]; struct *MsParamArray_PI; struct MsParamArray_PI; int l1descInx; struct *DataObjInp_PI; struct *DataObjInfo_PI; struct *UserInfo_PI; struct *UserInfo_PI; struct *CollInfo_PI; struct *UserInfo_PI; struct *KeyValPair_PI; str ruleSet[RULE_SET_DEF_LENGTH]; int *next;"
+#define Rei_PI "int status; str statusStr[MAX_NAME_LEN]; str ruleName[NAME_LEN]; int *rsComm; str pluginInstanceName[MAX_NAME_LEN]; struct *MsParamArray_PI; struct MsParamArray_PI; int l1descInx; struct *DataObjInp_PI; struct *DataObjInfo_PI; str rescName[NAME_LEN]; struct *UserInfo_PI; struct *UserInfo_PI; struct *CollInfo_PI; struct *UserInfo_PI; struct *KeyValPair_PI; str ruleSet[RULE_SET_DEF_LENGTH]; int *next;"
 
 #define ReArg_PI "int myArgc; str *myArgv[myArgc];"
 #define ReiAndArg_PI "struct *Rei_PI; struct ReArg_PI;"
