@@ -655,8 +655,11 @@ createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath,
                     char *outPhyBundleDir, char* hier ) {
     /* the dir where we put the files to bundle is in phyPath.dir */
     snprintf( outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath );
-    mkFileDirR( rsComm, 0, outPhyBundleDir, hier, getDefDirMode() );
-    return 0;
+    int status = mkFileDirR( rsComm, 0, outPhyBundleDir, hier, getDefDirMode() );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "mkFileDirR failed in createPhyBundleDir with status %d", status );
+    }
+    return status;
 }
 
 int

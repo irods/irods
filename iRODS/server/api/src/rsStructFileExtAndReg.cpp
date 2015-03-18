@@ -413,12 +413,16 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
         }
     }
     /* make the necessary dir */
-    mkDirForFilePath(
+    status = mkDirForFilePath(
         rsComm,
         0,
         dataObjInfo.filePath,
         dataObjInfo.rescHier,
         getDefDirMode() );
+    if ( status ) {
+        rodsLog( LOG_ERROR, "mkDirForFilePath failed in regSubfile with status %d.", status );
+        return status;
+    }
     /* add a link */
 
 #ifndef windows_platform   /* Windows does not support link */

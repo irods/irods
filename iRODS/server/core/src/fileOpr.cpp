@@ -133,6 +133,9 @@ mkDirForFilePath(
     }
 
     status = mkFileDirR( rsComm, startDirLen, myDir, hier, mode );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "mkFileDirR failed in mkDirForFilePath with status %d", status );
+    }
 
     return status;
 }

@@ -146,12 +146,16 @@ int _rsFileSyncToArch(
         if ( getErrno( sync_err.code() ) == ENOENT ) {
             // =-=-=-=-=-=-=-
             // the directory does not exist, lets make one
-            mkDirForFilePath(
+            int status = mkDirForFilePath(
                 _comm,
                 0,
                 _sync_inp->filename,
                 _sync_inp->rescHier,
                 getDefDirMode() );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR, "mkDirForFilePath failed in _rsFileSyncToArch with status %d", status );
+                return status;
+            }
         }
         else if ( getErrno( sync_err.code() ) == EEXIST ) {
             // =-=-=-=-=-=-=-

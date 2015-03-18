@@ -187,8 +187,10 @@ procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, cha
 
     }
 
-    mkFileDirR( rsComm, 0, cacheDir, hier, getDefDirMode() );
-
-    return 0;
+    int status = mkFileDirR( rsComm, 0, cacheDir, hier, getDefDirMode() );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "mkFileDirR failed in procCacheDir with status %d", status );
+    }
+    return status;
 }
 

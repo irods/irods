@@ -299,8 +299,12 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( specColl != NULL ) {
         status = getMountedSubPhyPath( specColl->collection,
                                        specColl->phyPath, dataObjInp->objPath, phyBunDir );
-        if ( status >= 0 ) {
-            mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
+        if ( status < 0 ) {
+            return status;
+        }
+        status = mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "mkFileDirR failed in createBunDirForBulkPut with status %d", status );
         }
         return status;
     }
@@ -325,9 +329,12 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     while ( status == 0 );
 
-    mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
+    status = mkFileDirR( rsComm, 0, phyBunDir, dataObjInfo.rescHier, getDefDirMode() );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "mkFileDirR failed in createBunDirForBulkPut with status %d", status );
+    }
+    return status;
 
-    return 0;
 }
 
 int
@@ -535,12 +542,16 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
     }
     else {
         /* make the necessary dir */
-        mkDirForFilePath(
+        status = mkDirForFilePath(
             rsComm,
             0,
             dataObjInfo.filePath,
             dataObjInfo.rescHier,
             getDefDirMode() );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "mkDirForFilePath failed in bulkProcAndRegSubfile with status %d", status );
+            return status;
+        }
     }
     /* add a link */
 #ifndef windows_platform

@@ -269,12 +269,16 @@ regPhySubFile( rsComm_t *rsComm, char *subfilePath,
     }
 
     /* make the necessary dir */
-    mkDirForFilePath(
+    status = mkDirForFilePath(
         rsComm,
         0,
         stageDataObjInfo.filePath,
         stageDataObjInfo.rescHier,
         getDefDirMode() );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "mkDirForFilePath failed in regPhySubFile with status %d", status );
+        return status;
+    }
 
     /* add a link */
     status = link( subfilePath, stageDataObjInfo.filePath );
