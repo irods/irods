@@ -315,14 +315,7 @@ reSvrSleep( rsComm_t *rsComm ) {
 
 int
 chkAndResetRule() {
-//    char *configDir;
-//    char rulesFileName[MAX_NAME_LEN];
     int status = 0;
-    uint mtime;
-
-//    configDir = getConfigDir();
-//    snprintf( rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.re",
-//              configDir );
 
     std::string re_full_path;
     irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
@@ -340,7 +333,7 @@ chkAndResetRule() {
         return status;
     }
 
-    mtime = ( uint ) last_write_time( p );
+    const uint mtime = ( uint ) last_write_time( p );
 
     if ( CoreIrbTimeStamp == 0 ) {
         /* first time */
@@ -364,4 +357,3 @@ chkAndResetRule() {
     }
     return status;
 }
-

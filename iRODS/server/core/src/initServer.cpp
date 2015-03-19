@@ -1233,25 +1233,18 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
 
 int
 initConnectControl() {
-    char *conFile;
-    char *configDir;
-    FILE *file;
     char buf[LONG_NAME_LEN * 5];
-    int len;
     char *bufPtr;
     int status;
     struct allowedUser *tmpAllowedUser;
     int allowUserFlag = 0;
     int disallowUserFlag = 0;
-
-    configDir = getConfigDir();
-    len = strlen( configDir ) + strlen( CONNECT_CONTROL_FILE ) + 2;
-    ;
-
-    conFile = ( char * ) malloc( len );
+    char *configDir = getConfigDir();
+    int len = strlen( configDir ) + strlen( CONNECT_CONTROL_FILE ) + 2;
+    char *conFile = ( char * ) malloc( len );
 
     snprintf( conFile, len, "%s/%s", configDir, CONNECT_CONTROL_FILE );
-    file = fopen( conFile, "r" );
+    FILE *file = fopen( conFile, "r" );
 
     if ( file == NULL ) {
 #ifdef DEBUG_CONNECT_CONTROL
@@ -1524,7 +1517,6 @@ int
 purgeLockFileDir( int chkLockFlag ) {
     char lockFileDir[MAX_NAME_LEN];
     char lockFilePath[MAX_NAME_LEN * 2];
-    DIR *dirPtr;
     struct dirent *myDirent;
     struct stat statbuf;
     int status;
@@ -1532,10 +1524,9 @@ purgeLockFileDir( int chkLockFlag ) {
     struct flock myflock;
     uint purgeTime;
 
-    snprintf( lockFileDir, MAX_NAME_LEN, "%-s/%-s", getConfigDir(),
-              LOCK_FILE_DIR );
+    snprintf( lockFileDir, MAX_NAME_LEN, "%-s/%-s", getConfigDir(), LOCK_FILE_DIR );
 
-    dirPtr = opendir( lockFileDir );
+    DIR *dirPtr = opendir( lockFileDir );
     if ( dirPtr == NULL ) {
         rodsLog( LOG_ERROR,
                  "purgeLockFileDir: opendir error for %s, errno = %d",

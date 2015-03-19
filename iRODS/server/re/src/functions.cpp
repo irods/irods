@@ -2200,10 +2200,6 @@ Res *smsi_msiAdmShowIRB( Node**, int, Node*, ruleExecInfo_t* rei, int, Env* env,
 }
 Res *smsi_msiAdmShowCoreRE( Node**, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char buf[1024];
-    //char *conDir = getConfigDir();
-    //char file2[1024];
-    //snprintf( file2, 1024, "%s/reConfigs/core.re",
-    //          conDir );
 
     std::string full_path;
     irods::error ret = irods::get_full_path_for_config_file( "core.re", full_path );
@@ -2345,13 +2341,6 @@ Res *smsi_msiAdmChangeCoreRE( Node** paramsr, int, Node* node, ruleExecInfo_t* r
         return newErrorRes( r, i );
     }
 #endif
-//   char *conDir = getConfigDir();
-//    char file1[1024];
-//    char file2[1024];
-//    snprintf( file1, 1024, "%s/reConfigs/%s.re",
-//              conDir, paramsr[0]->text );
-//    snprintf( file2, 1024, "%s/reConfigs/core.re",
-//              conDir );
 
     std::string re_full_path;
     irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
@@ -2467,8 +2456,6 @@ Res *smsi_msiAdmWriteRulesFromStructIntoFile( Node** paramsr, int, Node* node, r
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        //configDir = getConfigDir();
-        //snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.re", configDir, inFileName );
         std::string cfg_file, fn( inFileName );
         fn += ".re";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -2508,15 +2495,6 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node** paramsr, int, Node* node,
 
     int i;
     RuleSet *ruleSet;
-    /*
-    #ifndef DEBUG
-      if ((i = isUserPrivileged(rei->rsComm)) != 0) {
-    	  generateAndAddErrMsg("error reading rules from database", node, i, errmsg);
-          return newIntRes(r, i);
-      }
-    #endif
-    */
-    /* RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct"); */
 
     if ( paramsr[0]->text == NULL ||
             strlen( paramsr[0]->text ) == 0 ) {
@@ -2532,10 +2510,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct( Node** paramsr, int, Node* node,
 
     ruleSet = newRuleSet( rsr );
 
-    /* Env *rsEnv = newEnv(newHashTable2(100, rsr), NULL, NULL, rsr); */
-
     i = readRuleSetFromDB( paramsr[0]->text, paramsr[1]->text, ruleSet, rei, errmsg, rsr );
-    /*deleteEnv(rsEnv, 3); */
     if ( i != 0 ) {
         region_free( rsr );
         generateAndAddErrMsg( "error retrieving rules from database.", node, i, errmsg );

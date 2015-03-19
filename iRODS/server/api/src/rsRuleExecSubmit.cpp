@@ -140,4 +140,3 @@ getReiFilePath( char *reiFilePath, char *userName ) {
 
     return 0;
 }
-

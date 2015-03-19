@@ -807,8 +807,6 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
         snprintf( dvarsFileName, MAX_NAME_LEN, "%s", dvarBaseName );
     }
     else {
-        //configDir = getConfigDir();
-        //snprintf( dvarsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, dvarBaseName );
         std::string cfg_file, fn( dvarBaseName );
         fn += ".dvm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -872,8 +870,6 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
         snprintf( fmapsFileName, MAX_NAME_LEN, "%s", fmapBaseName );
     }
     else {
-//        configDir = getConfigDir();
-//        snprintf( fmapsFileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, fmapBaseName );
         std::string cfg_file, fn( fmapBaseName );
         fn += ".fnm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -1378,8 +1374,6 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-//        configDir = getConfigDir();
-//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir, inFileName );
         std::string cfg_file, fn( inFileName );
         fn += ".irb";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -1417,15 +1411,12 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-//    char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-//        configDir = getConfigDir();
-//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir, inFileName );
         std::string cfg_file, fn( inFileName );
         fn += ".dvm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -1460,15 +1451,11 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-//    char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
-    }
-    else {
-//        configDir = getConfigDir();
-//        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir, inFileName );
+    } else {
         std::string cfg_file, fn( inFileName );
         fn += ".fnm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -1545,41 +1532,3 @@ finalizeRuleEngine() {
     }
     return 0;
 }
-
-
-
-/************** moved to stringOpr.c
-void *
-mymalloc(char *file,int line, int x)
-{
-    void *p;
-        p = malloc(x);
-        rodsLog(LOG_NOTICE, "MYMALLOC: %s:%i:%i=%x",file,line,x,p);
-       return p;
-}
-
-void *
-mycalloc(char *file,int line, int x, int y)
-{
-    void *p;
-    p = malloc(x * y );
-    bzero(p, x * y);
-    rodsLog(LOG_NOTICE, "MYCALLOC: %s:%i:%i:%i=%x",file,line,x,y,p);
-       return p;
-}
-
-void
-myfree(char *file,int line, void* p)
-{
-      rodsLog(LOG_NOTICE, "MYFREE: %s:%i=%x",file,line, p);
-        free(p);
-}
-void *
-mystrdup(char *file,int line, char *x)
-{
-    void *p;
-        p = strdup(x);
-        rodsLog(LOG_NOTICE, "MYSTRDUP: %s:%i=%d",file,line,p);
-       return p;
-}
-moved to stringOpr.c *****/
