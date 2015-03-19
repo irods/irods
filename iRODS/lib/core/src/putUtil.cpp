@@ -17,7 +17,6 @@
 #include "sockComm.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-using namespace boost::filesystem;
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {
@@ -560,7 +559,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     rcComm_t *conn = *myConn;
-    path srcDirPath( srcDir );
+    boost::filesystem::path srcDirPath( srcDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
                  "putDirUtil: opendir local dir error for %s, errno = %d\n",
@@ -578,9 +577,9 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     int savedStatus = 0;
-    directory_iterator end_itr; // default construction yields past-the-end
-    for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
-        path p = itr->path();
+    boost::filesystem::directory_iterator end_itr; // default construction yields past-the-end
+    for ( boost::filesystem::directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
+        boost::filesystem::path p = itr->path();
         snprintf( srcChildPath, MAX_NAME_LEN, "%s",
                   p.c_str() );
 
@@ -595,10 +594,10 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         }
 
         if ( is_symlink( p ) ) {
-            path cp = read_symlink( p );
+            boost::filesystem::path cp = read_symlink( p );
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       srcDir, cp.c_str() );
-            p = path( srcChildPath );
+            p = boost::filesystem::path( srcChildPath );
         }
         rodsLong_t dataSize = 0;
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
@@ -617,7 +616,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             savedStatus = USER_INPUT_PATH_ERR;
             continue;
         }
-        path childPath = p.filename();
+        boost::filesystem::path childPath = p.filename();
         snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );
         if ( childObjType == DATA_OBJ_T ) {
@@ -768,7 +767,7 @@ getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
     while ( 1 ) {
         snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%d", phyBunRootDir,
                   userName, ( int ) random() );
-        path p( outPhyBunDir );
+        boost::filesystem::path p( outPhyBunDir );
         if ( !exists( p ) ) {
             break;
         }
