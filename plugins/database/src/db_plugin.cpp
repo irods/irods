@@ -428,7 +428,7 @@ irods::error _childIsValid(
             std::stringstream ss;
             ss << "Child resource \"" << resc_name << "\" not found";
             irods::log( LOG_NOTICE, ss.str() );
-            return ERROR( CHILD_NOT_FOUND, "child resource already has a parent" );
+            return ERROR( CHILD_NOT_FOUND, "child resource not found" );
         }
         else {
             _rollback( "_childIsValid" );
@@ -440,8 +440,7 @@ irods::error _childIsValid(
         std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         irods::log( LOG_NOTICE, ss.str() );
-        result = CHILD_HAS_PARENT;
-        return ERROR( result, "child resource already has a parent" );
+        return ERROR( CHILD_HAS_PARENT, "child resource already has a parent" );
     }
     return SUCCESS();
 }
