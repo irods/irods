@@ -411,7 +411,7 @@ irods::error _childIsValid(
         return PASS( ret );
     }
 
-    // Get resources parent
+    // Get resource's parent
     irods::sql_logger logger( "_childIsValid", logSQL );
     logger.log();
     parent[0] = '\0';
@@ -428,12 +428,12 @@ irods::error _childIsValid(
             std::stringstream ss;
             ss << "Child resource \"" << resc_name << "\" not found";
             irods::log( LOG_NOTICE, ss.str() );
+            return ERROR( CHILD_NOT_FOUND, "child resource already has a parent" );
         }
         else {
             _rollback( "_childIsValid" );
+            return ERROR( status, "error encountered in query for _childIsValid" );
         }
-        result = status;
-
     }
     else if ( strlen( parent ) != 0 ) {
         // If the resource already has a parent it cannot be added as a child of another one
@@ -441,8 +441,9 @@ irods::error _childIsValid(
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         irods::log( LOG_NOTICE, ss.str() );
         result = CHILD_HAS_PARENT;
+        return ERROR( result, "child resource already has a parent" );
     }
-    return ERROR( result, "child resource already has a parent" );
+    return SUCCESS();
 }
 
 int
@@ -4107,10 +4108,10 @@ extern "C" {
                     parser.first_child( resc_name );
 
                     std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Resource '" << resc_name << "' already has a parent.";
-                    addRErrorMsg( &_comm->rError, 0, msg.str().c_str() );
-                    result = status;
+                    msg << "Encountered an error adding '" << resc_name << "' as a child resource.";
+                    ret = PASSMSG( msg.str(), ret );
+                    addRErrorMsg( &_comm->rError, 0, ret.result().c_str() );
+                    result = ret.code();
                 }
             }
         }
