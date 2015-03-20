@@ -101,7 +101,7 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         // =-=-=-=-=-=-=-
         // extract resource location from hierarchy
-        err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_ZONE, location );
+        err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_LOCATION, location );
         if ( !err.ok() ) {
             irods::log( PASSMSG( "rsGetRemoteZoneResc - failed in get_resc_hier_property", err ) );
             return err.code();
