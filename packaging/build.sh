@@ -137,6 +137,14 @@ while getopts ":chj:rspz" opt; do
 done
 echo ""
 
+# detect lack of submodules, and exit
+if [ ! -e irods_schema_configuration/v1 -o ! -e irods_schema_messaging/v1 ] ; then
+    echo "${text_red}#######################################################" 1>&2
+    echo "ERROR :: Missing Submodules... Try:" 1>&2
+    echo "      git submodule init; git submodule update" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
+    exit 1
+fi
 # detect illogical combinations, and exit
 if [ "$BUILDIRODS" == "0" -a "$RELEASE" == "1" ] ; then
     echo "${text_red}#######################################################" 1>&2
