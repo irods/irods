@@ -1948,10 +1948,10 @@ usage( char *subOpt ) {
         "Use null to remove ACLs and read access for another user or group.",
         " ",
         "For example, to allow all users to see the remote zones via 'ils /':",
-        "iadmin modzoneacl read public /r3",
+        "iadmin modzonecollacl read public /r3",
         " ",
         "To remove it:",
-        "iadmin modzoneacl null public /r3",
+        "iadmin modzonecollacl null public /r3",
         " ",
         "Access below this level is controlled at the remote zone.",
         ""
