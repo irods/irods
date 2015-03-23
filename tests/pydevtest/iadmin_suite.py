@@ -154,13 +154,24 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin rmresc %s" % "pt1")
 
     def test_resource_hierarchy_errors(self):
+        # prep
         assertiCmd(s.adminsession, "iadmin mkresc %s passthru" %
-                   ("pt"), "LIST", "Creating")  # passthru
+                   ("pt"), "LIST", "Creating")
+        assertiCmd(s.adminsession, "iadmin mkresc %s passthru" %
+                   ("the_child"), "LIST", "Creating")
+        # bad parent
         assertiCmd(s.adminsession, "iadmin addchildtoresc non_existent_resource %s" %
                    ("pt"), "ERROR", "CAT_INVALID_RESOURCE")
+        # bad child
         assertiCmd(s.adminsession, "iadmin addchildtoresc %s non_existent_resource" %
                    ("pt"), "ERROR", "CHILD_NOT_FOUND")
-        assertiCmd(s.adminsession, "iadmin rmresc %s" % "pt")
+        # duplicate parent
+        assertiCmd(s.adminsession, "iadmin addchildtoresc pt the_child")
+        assertiCmd(s.adminsession, "iadmin addchildtoresc pt the_child", "ERROR", "CHILD_HAS_PARENT")
+        # cleanup
+        assertiCmd(s.adminsession, "iadmin rmchildfromresc pt the_child")
+        assertiCmd(s.adminsession, "iadmin rmresc the_child")
+        assertiCmd(s.adminsession, "iadmin rmresc pt")
 
     def test_resource_hierarchy_manipulation(self):
         h = get_hostname()
