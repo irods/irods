@@ -61,38 +61,33 @@ acRenameLocalZone(*oldZone,*newZone) {
 acGetUserByDN(*arg,*OUT) { }
 #
 # --------------------------------------------------------------------------
-# The following rule is for setting Access Control List policy.  If
-# not called or called with an argument other than STRICT, the
-# STANDARD setting is in effect, which is fine for many sites.  By
-# default, users are allowed to see certain metadata, for example the
-# data-object and sub-collection names in each other's collections.
-# When made STRICT by calling msiAclPolicy(STRICT), the General Query
-# Access Control is applied on collections and dataobject metadata
-# which means that ils, etc, will need 'read' access or better to the
-# collection to return the collection contents (name of data-objects,
-# sub-collections, etc).  Formerly this was controlled at build-time
-# via a GEN_QUERY_AC flag in config.mk.  Default is the normal,
-# non-strict level, allowing users to see other collections.  In all
-# cases, access control to the data-objects is enforced.  Even with
-# STRICT access control, the admin user is not restricted so various
-# microservices and queries will still be able to evaluate system-wide
-# information.
-# Post irods 2.5, $userNameClient is available although this
-# is only secure in a irods-password environment (not GSI), but you can
-# then have rules for specific users:
-#   acAclPolicy {ON($userNameClient == "quickshare") { } }
-#   acAclPolicy {msiAclPolicy("STRICT"); }
-# which was requested by ARCS (Sean Fleming).  See rsGenQuery.c for more
-# information on $userNameClient.  But the typical use is to just set it
-# strict or not for all users:
+# The following rule is for setting Access Control List (ACL) policy.
+# The possible modifiers are "STRICT", "STANDARD", or any other string,
+# in which case the "STANDARD" behavior will apply.
+#
+# "STANDARD" ACL policy permits permits rodsusers to see other 
+# rodsusers' collections by allowing access to metadata which may
+# be sensitive, including data-object and sub-collection names in
+# other users' collections. 
+#
+# "STRICT" ACL policy will apply the General Query Access Control to
+# collections and dataobject metadata. Thus, ils and other operations
+# will need 'read' access or higher to a collection to access the
+# collection contents (name of data-objects, sub-collections, etc).
+# With STRICT access control, a rodsadmin can still execute
+# microservices and queries to access system-wide information.
+#
+# This policy enforcement point (PEP) obviates the buildtime flag
+# GEN_QUERY_AC in config.mk
+#
+# In federated scenarios with "STRICT" ACLs enabled, you may wish to
+# permit rodsusers to access the root collection ("/") to list
+# available remote zones. The 'iadmin modzonecollacl' command was
+# written for this purpose. See 'iadmin h modzonecollacl' for
+# additional details.
+#
 #acAclPolicy { }
 acAclPolicy {msiAclPolicy("STRICT"); }
-# When choosing a "STRICT" ACL policy you should consider setting the
-# following permissions if you are using the PHP web browser:
-# ichmod -M read public /ZONE_NAME
-# ichmod -M read public /ZONE_NAME/home
-# Post-3.2, you may also want to use 'iadmin modzonecollacl'; see the
-# help 'iadmin h modzonecollacl' for more information on this.
 #
 # --------------------------------------------------------------------------
 # This is a policy point for ticket-based access (added in iRODS 3.1),
