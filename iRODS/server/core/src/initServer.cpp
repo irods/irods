@@ -1311,7 +1311,7 @@ initConnectControl() {
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             }
-            status = parseUserName( myInput, myuser, myZone );
+            status = splitUserName( myInput, myuser, myZone );
             if ( status >= 0 ) {
                 if ( strlen( myZone ) == 0 ) {
                     zoneInfo_t *tmpZoneInfo;

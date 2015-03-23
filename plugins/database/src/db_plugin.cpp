@@ -123,6 +123,53 @@ const std::string ZONE_PROP( "irods_zone_property" );
 // virtual path management
 #define PATH_SEPARATOR irods::get_virtual_path_separator().c_str()
 
+/*
+   Parse the input fullUserNameIn into an output userName and userZone
+   and check that the username is a valid format, meaning at most one
+   '@' and at most one '#'.
+   Full userNames are of the form user@department[#zone].
+   It is assumed the output strings are at least NAME_LEN characters long
+   and the input string is at most that long.
+ */
+int
+parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
+    const std::string input( fullUserNameIn );
+    boost::smatch matches;
+    // This regex matches usernames with no hashes and optionally one at symbol,
+    // and then optionally a hash followed by a zone name containing no hashes.
+    //
+    // Username must be between 1 and NAME_LEN-1 characters.
+    // Username may contain any combination of word characters, @ symbols, dashes, and dots.
+    // Username may not be . or .., as we create home directories for users
+    const boost::regex expression( "((\\w|[-.@])+)(#([^#]*))?" );
+    try {
+        const bool matched = boost::regex_match( input, matches, expression );
+        if ( !matched || matches.str( 1 ).size() >= NAME_LEN ||
+                matches.str( 1 ).size() < 1 ||
+                matches.str( 4 ).size() >= NAME_LEN ||
+                matches.str( 1 ) == "." ||
+                matches.str( 1 ) == ".." ) {
+            if ( userName != NULL ) {
+                userName[0] = '\0';
+            }
+            if ( userZone != NULL ) {
+                userZone[0] = '\0';
+            }
+            return USER_INVALID_USERNAME_FORMAT;
+        }
+        if ( userName != NULL ) {
+            snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
+        }
+        if ( userZone != NULL ) {
+            snprintf( userZone, NAME_LEN, "%s", matches.str( 4 ).c_str() );
+        }
+    }
+    catch ( const boost::exception& ) {
+        return SYS_INTERNAL_ERR;
+    }
+    return 0;
+}
+
 // =-=-=-=-=-=-=-
 // helper fcn to handle cast to pg object
 irods::error make_db_ptr(

@@ -44,7 +44,7 @@ replErrorStack( rError_t *srcRError, rError_t *destRError );
 int
 freeRErrorContent( rError_t *myError );
 int
-parseUserName( const char *fullUserNameIn, char *userName, char *userZone );
+splitUserName( const char *fullUserNameIn, char *userName, char *userZone );
 int
 apiTableLookup( int apiNumber );
 int

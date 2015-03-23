@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
@@ -37,7 +38,6 @@
 // boost includes
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/regex.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
@@ -185,32 +185,13 @@ freeRErrorContent( rError_t *myError ) {
     return 0;
 }
 
-/*
-   Parse the input fullUserNameIn into an output userName and userZone
-   and check that the username is a valid format, meaning at most one
-   '@' and at most one '#'.
-   Full userNames are of the form user@department[#zone].
-   It is assumed the output strings are at least NAME_LEN characters long
-   and the input string is at most that long.
- */
+//Only split the username from the zone name, based on the first occurence of '#'
+//Further parsing of the username is the responsibility of the database plugin.
 int
-parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
-    const std::string input( fullUserNameIn );
-    boost::smatch matches;
-    // This regex matches usernames with no hashes and optionally one at symbol,
-    // and then optionally a hash followed by a zone name containing no hashes.
-    //
-    // Username must be between 1 and NAME_LEN-1 characters.
-    // Username may contain any combination of word characters, @ symbols, dashes, and dots.
-    // Username may not be . or .., as we create home directories for users
-    const boost::regex expression( "((\\w|[-.@])+)(#([^#]*))?" );
-    try {
-        const bool matched = boost::regex_match( input, matches, expression );
-        if ( !matched || matches.str( 1 ).size() >= NAME_LEN ||
-                matches.str( 1 ).size() < 1 ||
-                matches.str( 4 ).size() >= NAME_LEN ||
-                matches.str( 1 ) == "." ||
-                matches.str( 1 ) == ".." ) {
+splitUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
+    std::string userNameString;
+    if ( const char * octothorpePointer = strchr( fullUserNameIn, '#' ) ) {
+        if ( strchr( octothorpePointer, '#' ) ) {
             if ( userName != NULL ) {
                 userName[0] = '\0';
             }
@@ -219,15 +200,21 @@ parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
             }
             return USER_INVALID_USERNAME_FORMAT;
         }
-        if ( userName != NULL ) {
-            snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
-        }
+        userNameString = std::string( fullUserNameIn, octothorpePointer - fullUserNameIn );
+        std::string zoneNameString( octothorpePointer + 1 );
         if ( userZone != NULL ) {
-            snprintf( userZone, NAME_LEN, "%s", matches.str( 4 ).c_str() );
+            snprintf( userZone, NAME_LEN, "%s", zoneNameString.c_str() );
         }
     }
-    catch ( const boost::exception& ) {
-        return SYS_INTERNAL_ERR;
+    else {
+        userNameString = std::string( fullUserNameIn );
+        if ( userZone != NULL ) {
+            userZone[0] = '\0';
+        }
+    }
+
+    if ( userName != NULL ) {
+        snprintf( userName, NAME_LEN, "%s", userNameString.c_str() );
     }
     return 0;
 }

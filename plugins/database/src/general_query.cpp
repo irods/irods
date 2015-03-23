@@ -1625,7 +1625,7 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
 
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_USER_NAME ) {
-            parseUserName( genQueryInp.sqlCondInp.value[i], userName,
+            splitUserName( genQueryInp.sqlCondInp.value[i], userName,
                            userZone );
             if ( userZone[0] == '\0' ) {
                 std::string zoneName;

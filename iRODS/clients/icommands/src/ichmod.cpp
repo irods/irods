@@ -109,7 +109,7 @@ main( int argc, char **argv ) {
         modAccessControl.zone = "";
     }
     else {
-        status = parseUserName( argv[myRodsArgs.optind + 1], userName, zoneName );
+        status = splitUserName( argv[myRodsArgs.optind + 1], userName, zoneName );
         if ( status != 0 ) {
             printf( "Invalid iRODS user name format: %s\n",
                     argv[myRodsArgs.optind + 1] );

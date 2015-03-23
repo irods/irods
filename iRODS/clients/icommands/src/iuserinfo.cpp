@@ -250,7 +250,6 @@ main( int argc, char **argv ) {
         status = showUser( myEnv.rodsUserName );
     }
 
-    /* status = parseUserName(cmdToken[1], userName, zoneName); needed? */
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 

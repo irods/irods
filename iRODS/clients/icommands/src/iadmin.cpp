@@ -534,7 +534,10 @@ showGlobalQuotas( char *inputUserOrGroup ) {
         if ( status ) {
             return status;
         }
-        status = parseUserName( inputUserOrGroup, userName, zoneName );
+        status = splitUserName( inputUserOrGroup, userName, zoneName );
+        if ( status ) {
+            return status;
+        }
         if ( zoneName[0] == '\0' ) {
             snprintf( zoneName, sizeof( zoneName ), "%s", localZone );
         }
@@ -575,7 +578,10 @@ showResourceQuotas( char *inputUserOrGroup ) {
         if ( status ) {
             return status;
         }
-        status = parseUserName( inputUserOrGroup, userName, zoneName );
+        status = splitUserName( inputUserOrGroup, userName, zoneName );
+        if ( status ) {
+            return status;
+        }
         if ( zoneName[0] == '\0' ) {
             snprintf( zoneName, sizeof( zoneName ), "%s", localZone );
         }
@@ -775,9 +781,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "lu" ) == 0 ) {
         char userName[NAME_LEN] = "";
         char zoneName[NAME_LEN] = "";
-        int status = parseUserName( cmdToken[1], userName, zoneName );
+        int status = splitUserName( cmdToken[1], userName, zoneName );
         if ( status < 0 ) {
-            // error case
+            return status;
         }
 
         if ( zoneName[0] != '\0' ) {
@@ -840,7 +846,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
-        status = parseUserName( cmdToken[1], userName, zoneName );
+        status = splitUserName( cmdToken[1], userName, zoneName );
         if ( status ) {
             printf( "Invalid user name format\n" );
             return USER_INVALID_USERNAME_FORMAT;
@@ -941,9 +947,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
         int status;
-        status = parseUserName( cmdToken[1], userName, zoneName );
+        status = splitUserName( cmdToken[1], userName, zoneName );
         if ( status < 0 ) {
-            // error case
+            return status;
         }
 
         if ( zoneName[0] != '\0' ) {
@@ -1205,11 +1211,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
-        status = parseUserName( cmdToken[1], userName, zoneName );
+        status = splitUserName( cmdToken[1], userName, zoneName );
         /* just check for format */
         if ( status ) {
             printf( "Invalid user name format\n" );
-            return 0;
+            return status;
         }
         /* also check for current user, should not be able to rm own account */
         if ( strcmp( userName, myEnv.rodsUserName ) == 0 ) {
