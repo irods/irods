@@ -153,13 +153,22 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin rmresc %s" % newnodename)
         assertiCmd(s.adminsession, "iadmin rmresc %s" % "pt1")
 
+    def test_resource_hierarchy_errors(self):
+        assertiCmd(s.adminsession, "iadmin mkresc %s passthru" %
+                   ("pt"), "LIST", "Creating")  # passthru
+        assertiCmd(s.adminsession, "iadmin addchildtoresc non_existent_resource %s" %
+                   ("pt"), "ERROR", "CAT_INVALID_RESOURCE")
+        assertiCmd(s.adminsession, "iadmin addchildtoresc %s non_existent_resource" %
+                   ("pt"), "ERROR", "CHILD_NOT_FOUND")
+        assertiCmd(s.adminsession, "iadmin rmresc %s" % "pt")
+
     def test_resource_hierarchy_manipulation(self):
         h = get_hostname()
         # first tree standup
-        assertiCmd(s.adminsession, "iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt", h, "pt"), "LIST", "Creating")  # passthru
-        assertiCmd(s.adminsession, "iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replA", h, "replA"), "LIST", "Creating")  # replication
+        assertiCmd(s.adminsession, "iadmin mkresc %s passthru" %
+                   ("pt"), "LIST", "Creating")  # passthru
+        assertiCmd(s.adminsession, "iadmin mkresc %s replication" %
+                   ("replA"), "LIST", "Creating")  # replication
         assertiCmd(s.adminsession, "iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
                    ("unixA1", h, "unixA1"), "LIST", "Creating")  # unix
         assertiCmd(s.adminsession, "iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
@@ -168,8 +177,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         assertiCmd(s.adminsession, "iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
-        assertiCmd(s.adminsession, "iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replB", h, "replB"), "LIST", "Creating")  # replication
+        assertiCmd(s.adminsession, "iadmin mkresc %s replication" %
+                   ("replB"), "LIST", "Creating")  # replication
         assertiCmd(s.adminsession, "iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
                    ("unixB1", h, "unixB1"), "LIST", "Creating")  # unix
         assertiCmd(s.adminsession, "iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
