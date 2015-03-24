@@ -21,7 +21,7 @@ typedef struct {
     char rodsZone[NAME_LEN];
     char *rodsServerDn;
     int rodsLogLevel;
-    char rodsAuthFileName[LONG_NAME_LEN];
+    char rodsAuthFile[LONG_NAME_LEN];
     char rodsDebug[NAME_LEN];
     char rodsClientServerPolicy[ LONG_NAME_LEN ];
     char rodsClientServerNegotiation[ LONG_NAME_LEN ];
@@ -54,9 +54,6 @@ typedef struct {
 
     int  irodsCtrlPlaneEncryptionNumHashRounds;
     char irodsCtrlPlaneEncryptionAlgorithm[ HEADER_TYPE_LEN ];
-
-
-
 
 } rodsEnv;
 

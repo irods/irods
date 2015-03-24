@@ -348,16 +348,16 @@ extern "C" {
 
         }
 
-        memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
+        memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
         status = capture_string_property(
                      msg_lvl,
                      props,
-                     irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW,
-                     _env->rodsAuthFileName );
+                     irods::CFG_IRODS_AUTHENTICATION_FILE_KW,
+                     _env->rodsAuthFile );
         if ( status == 0 ) {
             rstrcpy(
                 authFileName,
-                _env->rodsAuthFileName,
+                _env->rodsAuthFile,
                 LONG_NAME_LEN - 1 );
         }
 
@@ -648,13 +648,13 @@ extern "C" {
             rodsLogLevel( _env->rodsLogLevel ); /* go ahead and process it */
         }
 
-        memset( _env->rodsAuthFileName, 0, sizeof( _env->rodsAuthFileName ) );
-        env_var = irods::CFG_IRODS_AUTHENTICATION_FILE_NAME_KW;
+        memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
+        env_var = irods::CFG_IRODS_AUTHENTICATION_FILE_KW;
         capture_string_env_var(
             env_var,
-            _env->rodsAuthFileName );
-        if ( strlen( _env->rodsAuthFileName ) > 0 ) {
-            rstrcpy( authFileName, _env->rodsAuthFileName, LONG_NAME_LEN );
+            _env->rodsAuthFile );
+        if ( strlen( _env->rodsAuthFile ) > 0 ) {
+            rstrcpy( authFileName, _env->rodsAuthFile, LONG_NAME_LEN );
 
         }
 
@@ -798,5 +798,3 @@ extern "C" {
     }
 
 } // extern "C"
-
-

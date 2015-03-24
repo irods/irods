@@ -66,7 +66,7 @@ main( int argc, char **argv ) {
         password = argv[ix];
     }
 
-    status = getRodsEnv( &myEnv ); /* Need to get irodsAuthFileName (if set) */
+    status = getRodsEnv( &myEnv ); /* Need to get irodsAuthFile (if set) */
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );

@@ -295,7 +295,7 @@ Once a server is up and running, the default environment can be shown::
  NOTICE: irods_gsi_server_dn is not defined
  NOTICE: irods_debug is not defined
  NOTICE: irods_log_level is not defined
- NOTICE: irods_authentication_file_name is not defined
+ NOTICE: irods_authentication_file is not defined
  NOTICE: irods_ssl_ca_certificate_path is not defined
  NOTICE: irods_ssl_ca_certificate_file is not defined
  NOTICE: irods_ssl_verify_server is not defined

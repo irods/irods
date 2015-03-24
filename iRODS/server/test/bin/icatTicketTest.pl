@@ -125,7 +125,7 @@ sub teardown {
 # switch to being the user user2.
 sub becomeuser2 {
     $ENV{'IRODS_USER_NAME'}=$user2;
-    $ENV{'IRODS_AUTHENTICATION_FILE_NAME'}=$tmpAuthFile;
+    $ENV{'IRODS_AUTHENTICATION_FILE'}=$tmpAuthFile;
     if ($iinited == 0) {
         runCmd(0, "iinit $user2_Password");
         $iinited = 1;
@@ -136,13 +136,13 @@ sub becomeuser2 {
 # switch to being user anonymous.
 sub becomeAnon {
     $ENV{'IRODS_USER_NAME'}='anonymous';
-    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE'};
     printf("Became Anonymous\n");
 }
 
 # Undo becomeuser2 to become the initial user again
 sub becomeSelfAgain {
-    delete $ENV{'IRODS_AUTHENTICATION_FILE_NAME'};
+    delete $ENV{'IRODS_AUTHENTICATION_FILE'};
     delete $ENV{'IRODS_USER_NAME'};
     printf("Became self again.\n");
 }
