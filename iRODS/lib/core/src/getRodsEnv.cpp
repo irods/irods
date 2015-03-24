@@ -408,13 +408,13 @@ extern "C" {
         capture_integer_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
+            irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
             _env->irodsCtrlPlaneEncryptionNumHashRounds );
 
         capture_string_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
+            irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
             _env->irodsCtrlPlaneEncryptionAlgorithm );
 
         capture_integer_property(

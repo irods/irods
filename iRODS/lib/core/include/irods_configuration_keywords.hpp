@@ -79,9 +79,9 @@ namespace irods {
 
     const std::string CFG_IRODS_SERVER_CONTROL_PLANE_KEY(
         "irods_server_control_plane_key" );
-    const std::string CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW(
+    const std::string CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW(
         "irods_server_control_plane_encryption_num_hash_rounds" );
-    const std::string CFG_IRODS_SERVER_CONOTROL_PLANE_ENCRYPTION_ALGORITHM_KW(
+    const std::string CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW(
         "irods_server_control_plane_encryption_algorithm" );
 
     // legacy ssl environment variables
