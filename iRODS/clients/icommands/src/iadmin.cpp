@@ -2114,19 +2114,12 @@ usage( char *subOpt ) {
         ""
     };
 
-
     char *helpMsgs[] = {
         " help (or h) [command] (general help, or more details on a command)",
         " If you specify a command, a brief description of that command",
         " will be displayed.",
         ""
     };
-
-    /*
-      char *noMsgs[]={
-      "Help has not been written yet",
-      ""};
-    */
 
     char *subCmds[] = {"lu", "lua", "luan", "luz", "lt", "lr",
                        "ls", "lz",
@@ -2138,11 +2131,10 @@ usage( char *subOpt ) {
                        "mkzone", "modzone", "modzonecollacl", "rmzone",
                        "mkgroup", "rmgroup", "atg",
                        "rfg", "at", "rt", "spass", "dspass",
-                       "pv", "ctime",
+                       "ctime",
                        "suq", "sgq", "lq", "cu",
                        "rum", "asq", "rsq",
-                       "help", "h",
-                       ""
+                       "help", "h"
                       };
 
     char **pMsgs[] = { luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs,
@@ -2154,8 +2146,8 @@ usage( char *subOpt ) {
                        addchildtorescMsgs, rmchildfromrescMsgs,
                        mkzoneMsgs, modzoneMsgs, modzonecollaclMsgs, rmzoneMsgs,
                        mkgroupMsgs, rmgroupMsgs, atgMsgs,
-                       rfgMsgs, atMsgs, rtMsgs, spassMsgs,
-                       dspassMsgs, ctimeMsgs,
+                       rfgMsgs, atMsgs, rtMsgs, spassMsgs, dspassMsgs,
+                       ctimeMsgs,
                        suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
                        rumMsgs, asqMsgs, rsqMsgs,
                        helpMsgs, helpMsgs
@@ -2165,11 +2157,7 @@ usage( char *subOpt ) {
         usageMain();
     }
     else {
-        int i;
-        for ( i = 0;; i++ ) {
-            if ( strlen( subCmds[i] ) == 0 ) {
-                break;
-            }
+        for (size_t i = 0; i < sizeof(subCmds)/sizeof(subCmds[0]); ++i ) {
             if ( strcmp( subOpt, subCmds[i] ) == 0 ) {
                 printMsgs( pMsgs[i] );
             }
