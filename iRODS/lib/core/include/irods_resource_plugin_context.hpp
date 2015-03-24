@@ -3,6 +3,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_plugin_context.hpp"
+#include <boost/pointer_cast.hpp>
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -51,18 +52,10 @@ namespace irods {
             // test to determine if contents are valid
             template < typename OBJ_TYPE >
             error valid() {
-                // =-=-=-=-=-=-=
-                // trap case of non type related checks
-                error ret = valid();
-
-                // =-=-=-=-=-=-=
                 // trap case of incorrect type for first class object
-                boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
-                if ( ref == NULL ) {
-                    ret = ERROR( INVALID_DYNAMIC_CAST, "invalid type for fco cast" );
-                }
-
-                return ret;
+                return boost::dynamic_pointer_cast< OBJ_TYPE >( fco_.get() ) == NULL ?
+                    ERROR( INVALID_DYNAMIC_CAST, "invalid type for fco cast" ) :
+                    valid();
 
             } // valid
 
