@@ -409,13 +409,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # Test invalid names
         for name in invalid:
             assertiCmd(s.adminsession, "iadmin mkuser " + name + " rodsuser",
-                       "LIST", "Invalid user name format")  # should be rejected
+                       "ERROR", "Invalid username format")  # should be rejected
 
         # Invalid names with special characters
         assertiCmd(s.adminsession, r"iadmin mkuser hawai\'i rodsuser",
-                   "LIST", "Invalid user name format")  # should be rejected
+                   "ERROR", "Invalid username format")  # should be rejected
         assertiCmd(s.adminsession, r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser",
-                   "LIST", "Invalid user name format")  # should be rejected
+                   "ERROR", "Invalid username format")  # should be rejected
 
     # =-=-=-=-=-=-=-
     # REBALANCE

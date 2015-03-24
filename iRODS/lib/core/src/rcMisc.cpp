@@ -189,32 +189,28 @@ freeRErrorContent( rError_t *myError ) {
 //Further parsing of the username is the responsibility of the database plugin.
 int
 splitUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
-    std::string userNameString;
-    if ( const char * octothorpePointer = strchr( fullUserNameIn, '#' ) ) {
-        if ( strchr( octothorpePointer, '#' ) ) {
-            if ( userName != NULL ) {
-                userName[0] = '\0';
-            }
-            if ( userZone != NULL ) {
-                userZone[0] = '\0';
-            }
-            return USER_INVALID_USERNAME_FORMAT;
+    const char * octothorpePointer = strchr( fullUserNameIn, '#' );
+    const std::string userNameString = octothorpePointer ?
+        std::string( fullUserNameIn, octothorpePointer - fullUserNameIn ) :
+        std::string( fullUserNameIn );
+    const std::string zoneNameString = octothorpePointer ?
+        std::string( octothorpePointer + 1 ) :
+        std::string();
+    if ( zoneNameString.find( '#' ) != std::string::npos || userNameString.size() >= NAME_LEN || zoneNameString.size() >= NAME_LEN ) {
+        if ( userName != NULL ) {
+            userName[0] = '\0';
         }
-        userNameString = std::string( fullUserNameIn, octothorpePointer - fullUserNameIn );
-        std::string zoneNameString( octothorpePointer + 1 );
-        if ( userZone != NULL ) {
-            snprintf( userZone, NAME_LEN, "%s", zoneNameString.c_str() );
-        }
-    }
-    else {
-        userNameString = std::string( fullUserNameIn );
         if ( userZone != NULL ) {
             userZone[0] = '\0';
         }
+        return USER_INVALID_USERNAME_FORMAT;
     }
 
     if ( userName != NULL ) {
         snprintf( userName, NAME_LEN, "%s", userNameString.c_str() );
+    }
+    if ( userZone != NULL ) {
+        snprintf( userZone, NAME_LEN, "%s", zoneNameString.c_str() );
     }
     return 0;
 }
