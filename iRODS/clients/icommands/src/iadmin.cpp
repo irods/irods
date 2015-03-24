@@ -235,7 +235,7 @@ getLocalZone() {
             myName = rodsErrorName( status, &mySubName );
             rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
                      status, myName, mySubName );
-            printf( "Error getting local zone\n" );
+            fprintf( stderr, "Error getting local zone\n" );
             return status;
         }
         strncpy( localZone, simpleQueryOut->outBuf, BIG_STR );
@@ -330,7 +330,7 @@ showGroup( char *groupName ) { // JMC - backport 4742
 
     status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        printf( "No rows found\n" );
+        fprintf( stderr, "No rows found\n" );
         return -1;
     }
     else {
@@ -355,7 +355,7 @@ showFile( char *file ) {
     memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
     simpleQueryInp.control = 0;
     if ( file == 0 || *file == '\0' ) {
-        printf( "Need to specify a data_id number\n" );
+        fprintf( stderr, "Need to specify a data_id number\n" );
         return USER__NULL_INPUT_ERR;
     }
     simpleQueryInp.form = 2;
@@ -657,11 +657,14 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
             printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
         } // else
     }
+    else if ( status == USER_INVALID_USERNAME_FORMAT ) {
+        fprintf( stderr, "Invalid username format." );
+    }
     else if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
         myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
         if ( status == CAT_INVALID_USER_TYPE ) {
-            printf( "See 'lt user_type' for a list of valid user types.\n" );
+            fprintf( stderr, "See 'lt user_type' for a list of valid user types.\n" );
         }
     } // else if status < 0
 
@@ -829,7 +832,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "lgd" ) == 0 ) {
         if ( *cmdToken[1] == '\0' ) {
-            printf( "You must specify a group with the lgd command\n" );
+            fprintf( stderr, "You must specify a group with the lgd command\n" );
         }
         else {
             showUser( cmdToken[1] );
@@ -837,9 +840,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "lrg" ) == 0 ) {
-        printf( "Resource groups are deprecated.\n" );
-        printf( "Please investigate the available coordinating resource plugins.\n" );
-        printf( "(e.g. random, replication, etc.)\n" );
+        fprintf( stderr, "Resource groups are deprecated.\n"
+            "Please investigate the available coordinating resource plugins.\n"
+            "(e.g. random, replication, etc.)\n" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
@@ -848,7 +851,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char zoneName[NAME_LEN];
         status = splitUserName( cmdToken[1], userName, zoneName );
         if ( status ) {
-            printf( "Invalid user name format\n" );
+            fprintf( stderr, "Invalid username format\n" );
             return USER_INVALID_USERNAME_FORMAT;
         }
         status = getLocalZone();
@@ -902,7 +905,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 int errsv = errno;
 #endif
                 if ( error ) {
-                    printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plain text.", errsv );
+                    fprintf( stderr, "WARNING: Error %d disabling echo mode. Password will be displayed in plain text.", errsv );
                 }
                 printf( "Enter your current iRODS password:" );
                 std::string password = "";
@@ -910,12 +913,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 strncpy( buf1, password.c_str(), MAX_PASSWORD_LEN );
 #ifdef WIN32
                 if ( !SetConsoleMode( hStdin, lastMode ) ) {
-                    printf( "Error reinstating echo mode." );
+                    fprintf( stderr, "Error reinstating echo mode." );
                 }
 #else
                 tty.c_lflag = oldflag;
                 if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-                    printf( "Error reinstating echo mode." );
+                    fprintf( stderr, "Error reinstating echo mode." );
                 }
 #endif
 
@@ -1083,12 +1086,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "modresc" ) == 0 ) {
         if ( strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
-                "If you modify a resource name, you and other users will need to\n" );
-            printf( "change your irods_environment.json files to use it, you may need to update\n" );
-            printf( "server_config.json and, if rules use the resource name, you'll need to\n" );
-            printf( "update the core rules (core.re).  This command will update various\n" );
-            printf( "tables with the new name.\n" );
-            printf( "Do you really want to modify the resource name? (enter y or yes to do so):" );
+                    "If you modify a resource name, you and other users will need to\n"
+                    "change your irods_environment.json files to use it, you may need to update\n"
+                    "server_config.json and, if rules use the resource name, you'll need to\n"
+                    "update the core rules (core.re).  This command will update various\n"
+                    "tables with the new name.\n"
+                    "Do you really want to modify the resource name? (enter y or yes to do so):" );
             std::string response = "";
             getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
@@ -1098,10 +1101,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                                      cmdToken[3], "", "", "", "", "" );
                 if ( strcmp( cmdToken[2], "path" ) == 0 ) {
                     if ( stat == 0 ) {
-                        printf( "Modify resource path was successful.\n" );
-                        printf( "If the existing iRODS files have been physically moved,\n" );
-                        printf( "you may want to run 'iadmin modrescdatapaths' with the old\n" );
-                        printf( "and new path.  See 'iadmin h modrescdatapaths' for more information.\n" );
+                        printf(
+                                "Modify resource path was successful.\n"
+                                "If the existing iRODS files have been physically moved,\n"
+                                "you may want to run 'iadmin modrescdatapaths' with the old\n"
+                                "and new path.  See 'iadmin h modrescdatapaths' for more information.\n" );
                     }
                 }
 
@@ -1125,12 +1129,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         if ( strcmp( myEnv.rodsZone, cmdToken[1] ) == 0 &&
                 strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
-                "If you modify the local zone name, you and other users will need to\n" );
-            printf( "change your irods_environment.json files to use it, you may need to update\n" );
-            printf( "server_config.json and, if rules use the zone name, you'll need to update\n" );
-            printf( "core.re.  This command will update various tables with the new name\n" );
-            printf( "and rename the top-level collection.\n" );
-            printf( "Do you really want to modify the local zone name? (enter y or yes to do so):" );
+                    "If you modify the local zone name, you and other users will need to\n"
+                    "change your irods_environment.json files to use it, you may need to update\n"
+                    "server_config.json and, if rules use the zone name, you'll need to update\n"
+                    "core.re.  This command will update various tables with the new name\n"
+                    "and rename the top-level collection.\n"
+                    "Do you really want to modify the local zone name? (enter y or yes to do so):" );
             std::string response = "";
             getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
@@ -1185,16 +1189,18 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if ( strcmp( cmdToken[0], "atrg" ) == 0 ) {
-        printf( "Resource groups are deprecated.\n" );
-        printf( "Please investigate the available coordinating resource plugins.\n" );
-        printf( "(e.g. random, replication, etc.)\n" );
+        fprintf( stderr,
+                "Resource groups are deprecated.\n"
+                "Please investigate the available coordinating resource plugins.\n"
+                "(e.g. random, replication, etc.)\n" );
         return 0;
     }
 
     if ( strcmp( cmdToken[0], "rfrg" ) == 0 ) {
-        printf( "Resource groups are deprecated.\n" );
-        printf( "Please investigate the available coordinating resource plugins.\n" );
-        printf( "(e.g. random, replication, etc.)\n" );
+        fprintf( stderr,
+                "Resource groups are deprecated.\n"
+                "Please investigate the available coordinating resource plugins.\n"
+                "(e.g. random, replication, etc.)\n" );
         return 0;
     }
 
@@ -1214,13 +1220,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         status = splitUserName( cmdToken[1], userName, zoneName );
         /* just check for format */
         if ( status ) {
-            printf( "Invalid user name format\n" );
+            fprintf( stderr, "Invalid username format\n" );
             return status;
         }
         /* also check for current user, should not be able to rm own account */
         if ( strcmp( userName, myEnv.rodsUserName ) == 0 ) {
             if ( ( strcmp( zoneName, "" ) == 0 ) || ( strcmp( zoneName, myEnv.rodsZone ) == 0 ) ) {
-                printf( "Cannot remove currently authenticated user (yourself)\n" );
+                fprintf( stderr, "Cannot remove currently authenticated user (yourself)\n" );
                 return 0;
             }
         }
@@ -1241,11 +1247,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "spass" ) == 0 ) {
         char scrambled[MAX_PASSWORD_LEN + 100];
         if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
-            printf( "Password exceeds maximum length\n" );
+            fprintf( stderr, "Password exceeds maximum length\n" );
         }
         else {
             if ( strlen( cmdToken[2] ) == 0 ) {
-                printf( "Warning, scramble key is null\n" );
+                fprintf( stderr, "Warning, scramble key is null\n" );
             }
             obfEncodeByKey( cmdToken[1], cmdToken[2], scrambled );
             printf( "Scrambled form is:%s\n", scrambled );
@@ -1258,11 +1264,11 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             exit( -1 ); /* not authorized */
         }
         if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
-            printf( "Scrambled password exceeds maximum length\n" );
+            fprintf( stderr, "Scrambled password exceeds maximum length\n" );
         }
         else {
             if ( strlen( cmdToken[2] ) == 0 ) {
-                printf( "Warning, scramble key is null\n" );
+                fprintf( stderr, "Warning, scramble key is null\n" );
             }
             obfDecodeByKey( cmdToken[1], cmdToken[2], unscrambled );
             printf( "Unscrambled form is:%s\n", unscrambled );
@@ -1296,11 +1302,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                                "", "", "", "", "", "" );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             printf(
-                "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n" );
-            printf(
-                "SQL succeeded but there were no rows removed; there were no unused\n" );
-            printf(
-                "AVUs to remove.\n" );
+                    "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n"
+                    "SQL succeeded but there were no rows removed; there were no unused\n"
+                    "AVUs to remove.\n" );
             lastCommandStatus = 0;
 
         }
@@ -1341,7 +1345,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( *cmdToken[0] != '\0' ) {
-        printf( "unrecognized command, try 'help'\n" );
+        fprintf( stderr, "unrecognized command, try 'help'\n" );
         return -2;
     }
     return -3;
@@ -1385,7 +1389,7 @@ main( int argc, char **argv ) {
 
 
     if ( status ) {
-        printf( "Use -h for help.\n" );
+        fprintf( stderr, "Use -h for help.\n" );
         exit( 2 );
     }
     if ( myRodsArgs.help == True ) {
@@ -1423,11 +1427,11 @@ main( int argc, char **argv ) {
     if ( strcmp( cmdToken[0], "spass" ) == 0 ) {
         char scrambled[MAX_PASSWORD_LEN + 100];
         if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
-            printf( "Password exceeds maximum length\n" );
+            fprintf( stderr, "Password exceeds maximum length\n" );
         }
         else {
             if ( strlen( cmdToken[2] ) == 0 ) {
-                printf( "Warning, scramble key is null\n" );
+                fprintf( stderr, "Warning, scramble key is null\n" );
             }
             obfEncodeByKey( cmdToken[1], cmdToken[2], scrambled );
             printf( "Scrambled form is:%s\n", scrambled );
