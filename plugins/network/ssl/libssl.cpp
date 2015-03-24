@@ -770,7 +770,7 @@ extern "C" {
                                 if ( ( result = ASSERT_ERROR( 0 != msg_header.msgLen && 0 != msg_header.errorLen && 0 != msg_header.bsLen,
                                                               -1, "irodsEncryption error. Key size, salt size or num hash rounds is 0." ) ).ok() ) {
 
-                                    if ( ( result = ASSERT_ERROR( EVP_get_cipherbyname( msg_header.type ), -1, "irodsEncryptionAlgorithm \"%s\" is invalid.",
+                                    if ( ( result = ASSERT_ERROR( EVP_get_cipherbyname( msg_header.type ), -1, "irods_encryption_algorithm \"%s\" is invalid.",
                                                                   msg_header.type ) ).ok() ) {
 
                                         // =-=-=-=-=-=-=-

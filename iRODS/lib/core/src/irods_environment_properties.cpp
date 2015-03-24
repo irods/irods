@@ -49,51 +49,28 @@ namespace irods {
     environment_properties::environment_properties() :
         captured_( false ) {
 
-        key_map_[ CFG_IRODS_USER_NAME_KW ]                  = "irodsUserName";
-        key_map_[ CFG_IRODS_HOST_KW ]                       = "irodsHost";
-        key_map_[ CFG_IRODS_PORT_KW ]                       = "irodsPort";
-        key_map_[ CFG_IRODS_XMSG_HOST_KW ]                  = "xmsgHost";
-        key_map_[ CFG_IRODS_XMSG_PORT_KW ]                  = "xmsgPort";
-        key_map_[ CFG_IRODS_HOME_KW ]                       = "irodsHome";
-        key_map_[ CFG_IRODS_CWD_KW ]                        = "irodsCwd";
-        key_map_[ CFG_IRODS_AUTHENTICATION_SCHEME_KW ]      = "irodsAuthScheme";
-        key_map_[ CFG_IRODS_DEFAULT_RESOURCE_KW ]           = "irodsDefResource";
-        key_map_[ CFG_IRODS_ZONE_KW ]                       = "irodsZone";
-        key_map_[ CFG_IRODS_GSI_SERVER_DN_KW ]              = "irodsServerDn";
-        key_map_[ CFG_IRODS_LOG_LEVEL_KW ]                  = "irodsLogLevel";
-        key_map_[ CFG_IRODS_AUTHENTICATION_FILE_KW ]   = "irodsAuthFileName";
-        key_map_[ CFG_IRODS_DEBUG_KW ]                      = "irodsDebug";
-        key_map_[ CFG_IRODS_CLIENT_SERVER_POLICY_KW ]       = "irodsClientServerPolicy";
-        key_map_[ CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW ]  = "irodsClientServerNegotiation";
-        key_map_[ CFG_IRODS_ENCRYPTION_KEY_SIZE_KW ]        = "irodsEncryptionKeySize";
-        key_map_[ CFG_IRODS_ENCRYPTION_SALT_SIZE_KW ]       = "irodsEncryptionSaltSize";
-        key_map_[ CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW ] = "irodsEncryptionNumHashRounds";
-        key_map_[ CFG_IRODS_ENCRYPTION_ALGORITHM_KW ]       = "irodsEncryptionAlgorithm";
-        key_map_[ CFG_IRODS_DEFAULT_HASH_SCHEME_KW ]        = "irodsDefaultHashScheme";
-        key_map_[ CFG_IRODS_MATCH_HASH_POLICY_KW ]          = "irodsMatchHashPolicy";
-
-        key_map_[ "irodsUserName" ]                = CFG_IRODS_USER_NAME_KW;
-        key_map_[ "irodsHost" ]                    = CFG_IRODS_HOST_KW;
-        key_map_[ "irodsPort" ]                    = CFG_IRODS_PORT_KW;
-        key_map_[ "xmsgHost" ]                     = CFG_IRODS_XMSG_HOST_KW;
-        key_map_[ "xmsgPort" ]                     = CFG_IRODS_XMSG_PORT_KW;
-        key_map_[ "irodsHome" ]                    = CFG_IRODS_HOME_KW;
-        key_map_[ "irodsCwd" ]                     = CFG_IRODS_CWD_KW;
-        key_map_[ "irodsAuthScheme" ]              = CFG_IRODS_AUTHENTICATION_SCHEME_KW;
-        key_map_[ "irodsDefResource" ]             = CFG_IRODS_DEFAULT_RESOURCE_KW;
-        key_map_[ "irodsZone" ]                    = CFG_IRODS_ZONE_KW;
-        key_map_[ "irodsServerDn" ]                = CFG_IRODS_GSI_SERVER_DN_KW;
-        key_map_[ "irodsLogLevel" ]                = CFG_IRODS_LOG_LEVEL_KW;
-        key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILE_KW;
-        key_map_[ "irodsDebug" ]                   = CFG_IRODS_DEBUG_KW;
-        key_map_[ "irodsClientServerPolicy" ]      = CFG_IRODS_CLIENT_SERVER_POLICY_KW;
-        key_map_[ "irodsClientServerNegotiation" ] = CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
-        key_map_[ "irodsEncryptionKeySize" ]       = CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
-        key_map_[ "irodsEncryptionSaltSize" ]      = CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
-        key_map_[ "irodsEncryptionNumHashRounds" ] = CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
-        key_map_[ "irodsEncryptionAlgorithm" ]     = CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
-        key_map_[ "irodsDefaultHashScheme" ]       = CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
-        key_map_[ "irodsMatchHashPolicy" ]         = CFG_IRODS_MATCH_HASH_POLICY_KW;
+        legacy_key_map_[ "irodsUserName" ]                = CFG_IRODS_USER_NAME_KW;
+        legacy_key_map_[ "irodsHost" ]                    = CFG_IRODS_HOST_KW;
+        legacy_key_map_[ "irodsPort" ]                    = CFG_IRODS_PORT_KW;
+        legacy_key_map_[ "xmsgHost" ]                     = CFG_IRODS_XMSG_HOST_KW;
+        legacy_key_map_[ "xmsgPort" ]                     = CFG_IRODS_XMSG_PORT_KW;
+        legacy_key_map_[ "irodsHome" ]                    = CFG_IRODS_HOME_KW;
+        legacy_key_map_[ "irodsCwd" ]                     = CFG_IRODS_CWD_KW;
+        legacy_key_map_[ "irodsAuthScheme" ]              = CFG_IRODS_AUTHENTICATION_SCHEME_KW;
+        legacy_key_map_[ "irodsDefResource" ]             = CFG_IRODS_DEFAULT_RESOURCE_KW;
+        legacy_key_map_[ "irodsZone" ]                    = CFG_IRODS_ZONE_KW;
+        legacy_key_map_[ "irodsServerDn" ]                = CFG_IRODS_GSI_SERVER_DN_KW;
+        legacy_key_map_[ "irodsLogLevel" ]                = CFG_IRODS_LOG_LEVEL_KW;
+        legacy_key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILE_KW;
+        legacy_key_map_[ "irodsDebug" ]                   = CFG_IRODS_DEBUG_KW;
+        legacy_key_map_[ "irodsClientServerPolicy" ]      = CFG_IRODS_CLIENT_SERVER_POLICY_KW;
+        legacy_key_map_[ "irodsClientServerNegotiation" ] = CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
+        legacy_key_map_[ "irodsEncryptionKeySize" ]       = CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
+        legacy_key_map_[ "irodsEncryptionSaltSize" ]      = CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
+        legacy_key_map_[ "irodsEncryptionNumHashRounds" ] = CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
+        legacy_key_map_[ "irodsEncryptionAlgorithm" ]     = CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
+        legacy_key_map_[ "irodsDefaultHashScheme" ]       = CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
+        legacy_key_map_[ "irodsMatchHashPolicy" ]         = CFG_IRODS_MATCH_HASH_POLICY_KW;
 
     } // ctor
 
@@ -293,9 +270,7 @@ namespace irods {
             std::string msg( "failed to open legacy file [" );
             msg += _fn;
             msg += "]";
-            return ERROR(
-                       SYS_INVALID_FILE_PATH,
-                       msg );
+            return ERROR( SYS_INVALID_FILE_PATH, msg );
         }
 
         std::string line;
@@ -337,9 +312,8 @@ namespace irods {
             }
 
             std::string& key = toks[0];
-            if ( key_map_.has_entry( key ) ) {
-                std::string pkey = key;
-                key = key_map_[ key ];
+            if ( legacy_key_map_.has_entry( key ) ) {
+                key = legacy_key_map_[ key ];
 
             } //if has entry
 
@@ -359,11 +333,11 @@ namespace irods {
 
             error ret;
             if ( CFG_IRODS_PORT_KW                        == key ||
-                    CFG_IRODS_XMSG_PORT_KW                   == key ||
-                    CFG_IRODS_LOG_LEVEL_KW                   == key ||
-                    CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
-                    CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
-                    CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
+                 CFG_IRODS_XMSG_PORT_KW                   == key ||
+                 CFG_IRODS_LOG_LEVEL_KW                   == key ||
+                 CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
+                 CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
+                 CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
                 try {
                     int i_val = boost::lexical_cast< int >( val );
                     ret = config_props_.set< int >( key, i_val );
@@ -375,7 +349,6 @@ namespace irods {
                         key.c_str(),
                         val.c_str() );
                 }
-
             }
             else {
                 ret = config_props_.set <
@@ -385,7 +358,6 @@ namespace irods {
             }
             if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
-
             }
 
         } // while

@@ -642,12 +642,12 @@ printZoneInfo() {
     if ( getXmsgHost( &tmpRodsServerHost ) >= 0 ) {
 #ifndef windows_platform
 #ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "xmsgHost:  %s", tmpRodsServerHost->hostName->name );
+        rodsLog( LOG_NOTICE, "%s:  %s", CFG_IRODS_XMSG_HOST_KW.c_str(), tmpRodsServerHost->hostName->name );
 #else /* SYSLOG */
-        fprintf( stderr, "xmsgHost:  %s\n\n", tmpRodsServerHost->hostName->name );
+        fprintf( stderr, "%s:  %s\n\n", CFG_IRODS_XMSG_HOST_KW.c_str(), tmpRodsServerHost->hostName->name );
 #endif /* SYSLOG */
 #else
-        rodsLog( LOG_NOTICE, "xmsgHost:  %s", tmpRodsServerHost->hostName->name );
+        rodsLog( LOG_NOTICE, "%s:  %s", CFG_IRODS_XMSG_HOST_KW.c_str(), tmpRodsServerHost->hostName->name );
 #endif
     }
 

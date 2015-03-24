@@ -2,7 +2,7 @@
   This program performs a PAM authentication check, taking the username from
   the first command line argument and reading the password from stdin (for
   security). When PAM mode is enabled and users request LDAP/PAM
-  authentication (irodsAuthScheme of 'PAM' or 'pam'), the irodsAgent
+  authentication (irods_authentication_scheme of 'PAM' or 'pam'), the irodsAgent
   spawns this process.
 
   This program can be run manually, to directly check that PAM

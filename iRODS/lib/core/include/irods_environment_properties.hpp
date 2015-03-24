@@ -50,18 +50,12 @@ namespace irods {
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
                 error ret = config_props_.get< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    ret = config_props_.get< T >( key_map_[ _key ], _val );
-                }
                 return PASS( ret );
             }
 
             template< typename T >
             error set_property( const std::string& _key, const T& _val ) {
                 error ret = config_props_.set< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    ret = config_props_.set< T >( key_map_[ _key ], _val );
-                }
                 return PASS( ret );
             }
 
@@ -100,7 +94,7 @@ namespace irods {
             configuration_parser config_props_;
 
             /// @brief map of old keys to new keys
-            lookup_table< std::string > key_map_;
+            lookup_table< std::string > legacy_key_map_;
             bool captured_;
 
     }; // class environment_properties
@@ -108,7 +102,3 @@ namespace irods {
 } // namespace irods
 
 #endif /* IRODS_ENVIRONMENT_PROPERTIES_HPP_ */
-
-
-
-
