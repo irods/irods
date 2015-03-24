@@ -397,15 +397,6 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                    '<bob>',
                    '________________________________longer_than_NAME_LEN________________________________________________']
 
-
-#         invalid = ['.bob',
-#                    'bob.',
-#                    'jim--bob',
-#                    'user@email.',
-#                    'user.',
-#                    'jamesbond..007',
-#                    '________________________________longer_than_NAME_LEN________________________________________________']
-
         # Test valid names
         for name in valid:
             assertiCmd(s.adminsession, "iadmin mkuser " + name + " rodsuser")  # should be accepted
