@@ -64,14 +64,9 @@ namespace irods {
 
                 // =-=-=-=-=-=-=
                 // trap case of incorrect type for first class object
-                try {
-                    OBJ_TYPE* ref = dynamic_cast< OBJ_TYPE* >( fco_.get() );
-                    if ( ref == NULL ) {
-                        ret = PASSMSG( "invalid type for fco cast", ret );
-                    }
-                }
-                catch ( const std::bad_cast& ) {
-                    ret = PASSMSG( "invalid type for fco cast", ret );
+                OBJ_TYPE* ref = dynamic_cast< OBJ_TYPE* >( fco_.get() );
+                if ( ref == NULL ) {
+                    ret = ERROR( INVALID_DYNAMIC_CAST, "invalid type for fco cast" );
                 }
 
                 return ret;
