@@ -1351,13 +1351,8 @@ irods::error sendRodsMsg(
 
 int
 rodsSleep( int sec, int microSec ) {
-    struct timeval sleepTime;
-
-    sleepTime.tv_sec = sec;
-    sleepTime.tv_usec = microSec;
-
-    select( 0, NULL, NULL, NULL, &sleepTime );
-
+    unsigned int us = sec * 1000000 + microSec; 
+    usleep( us );
     return 0;
 }
 

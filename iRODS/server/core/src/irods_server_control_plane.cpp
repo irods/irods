@@ -26,12 +26,21 @@
 #include "jansson.h"
 
 #include <ctime>
+#include <unistd.h>
 
 int getAgentProcCnt();
 int getAgentProcPIDs(
     std::vector<int>& _pids );
 
 namespace irods {
+    static void ctrl_plane_sleep( 
+        int _s, 
+        int _ms ) {
+        unsigned int us = _s * 1000000 + _ms * 1000;
+        usleep( us );
+
+    }
+
 
     static error get_server_properties(
         const std::string&     _port_keyword,
@@ -286,7 +295,7 @@ namespace irods {
 
         while ( proc_cnt > 0 && !timeout_flg ) {
             // takes sec, microsec
-            rodsSleep(
+            ctrl_plane_sleep(
                 0,
                 wait_milliseconds );
 
@@ -571,7 +580,7 @@ namespace irods {
                              my_env.rodsPort,
                              my_env.rodsUserName,
                              my_env.rodsZone,
-                             RECONN_TIMEOUT, 0 );
+                             NO_RECONN, 0 );
         if ( !comm ) {
             return ERROR(
                        LOG_ERROR,
@@ -639,9 +648,15 @@ namespace irods {
 
         } // while
 
-        rcDisconnect( comm );
         freeGenQueryOut( &gen_out );
         clearGenQueryInp( &gen_inp );
+
+        status = rcDisconnect( comm );
+        if( status < 0 ) {
+            return ERROR( 
+                       status,
+                       "failed in rcDisconnect" );
+        }
 
         return SUCCESS();
 
@@ -777,7 +792,7 @@ namespace irods {
                       _wait_seconds,
                       _output );
             // takes sec, microsec
-            rodsSleep(
+            ctrl_plane_sleep(
                 0, SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000 );
         }
 

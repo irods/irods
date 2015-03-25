@@ -57,11 +57,16 @@ rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char 
     return conn;
 }
 
-rcComm_t *
-_rcConnect( const char *rodsHost, int rodsPort,
-            const char *proxyUserName, const char *proxyRodsZone,
-            const char *clientUserName, const char *clientRodsZone, rErrMsg_t *errMsg, int connectCnt,
-            int reconnFlag ) {
+rcComm_t* _rcConnect( 
+    const char *rodsHost, 
+    int         rodsPort,
+    const char *proxyUserName, 
+    const char *proxyRodsZone,
+    const char *clientUserName, 
+    const char *clientRodsZone, 
+    rErrMsg_t *errMsg, 
+    int connectCnt,
+    int reconnFlag ) {
     rcComm_t *conn;
     int status;
     char *tmpStr;
@@ -92,7 +97,12 @@ _rcConnect( const char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setUserInfo failed\n" );
         }
-        free( conn->thread_ctx );
+        if ( conn->thread_ctx != NULL ) {
+            delete  conn->thread_ctx->reconnThr;
+            delete  conn->thread_ctx->lock;
+            delete  conn->thread_ctx->cond;
+            free( conn->thread_ctx );
+        }
         free( conn );
         return NULL;
     }
@@ -107,7 +117,12 @@ _rcConnect( const char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setRhostInfo failed\n" );
         }
-        free( conn->thread_ctx );
+        if ( conn->thread_ctx != NULL ) {
+            delete  conn->thread_ctx->reconnThr;
+            delete  conn->thread_ctx->lock;
+            delete  conn->thread_ctx->cond;
+            free( conn->thread_ctx );
+        }
         free( conn );
         return NULL;
     }
@@ -131,7 +146,12 @@ _rcConnect( const char *rodsHost, int rodsPort,
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: connectToRhost failed\n" );
         }
-        free( conn->thread_ctx );
+        if ( conn->thread_ctx != NULL ) {
+            delete  conn->thread_ctx->reconnThr;
+            delete  conn->thread_ctx->lock;
+            delete  conn->thread_ctx->cond;
+            free( conn->thread_ctx );
+        }
         free( conn );
         return NULL;
     }
@@ -282,7 +302,18 @@ int rcDisconnect(
     _conn->exit_flg = true; //
     if ( _conn->thread_ctx->reconnThr ) {
         try {
-            _conn->thread_ctx->reconnThr->try_join_for( boost::chrono::seconds( 2 ) );    // force an interruption point
+            // force an interruption point
+            _conn->exit_flg = true;
+            bool val = _conn->thread_ctx->reconnThr->try_join_for( 
+                           boost::chrono::seconds( 
+                               2 ) );
+            if( true != val ) {
+                rodsLog( 
+                    LOG_ERROR, 
+                    "failed to interrupt reconn thread." );
+
+            }
+
         }
         catch ( const boost::thread_interrupted& ) {
             rodsLog( LOG_ERROR, "Thread encountered interrupt." );
@@ -295,6 +326,7 @@ int rcDisconnect(
     }
 
     status = freeRcComm( _conn );
+
     return status;
 
 } // rcDisconnect
@@ -360,7 +392,6 @@ cliReconnManager( rcComm_t *conn ) {
     struct hostent *myHostent;
     reconnMsg_t reconnMsg;
     reconnMsg_t *reconnMsgOut = NULL;
-
     if ( conn == NULL || conn->svrVersion == NULL ||
             conn->svrVersion->reconnPort <= 0 ) {
         return;
