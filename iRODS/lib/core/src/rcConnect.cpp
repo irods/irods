@@ -308,10 +308,7 @@ int rcDisconnect(
                            boost::chrono::seconds( 
                                2 ) );
             if( true != val ) {
-                rodsLog( 
-                    LOG_ERROR, 
-                    "failed to interrupt reconn thread." );
-
+                // do not error out to client
             }
 
         }
