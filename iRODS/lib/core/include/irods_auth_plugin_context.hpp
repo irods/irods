@@ -40,7 +40,7 @@ namespace irods {
             template < typename OBJ_TYPE >
             error valid() {
                 // trap case of incorrect type for first class object
-                return boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ ) == NULL ?
+                return boost::dynamic_pointer_cast< OBJ_TYPE >( fco_.get() ) == NULL ?
                     ERROR( INVALID_DYNAMIC_CAST, "invalid type for fco cast" ) :
                     valid();
 
