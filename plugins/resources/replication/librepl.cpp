@@ -705,7 +705,7 @@ extern "C" {
         irods::error result = SUCCESS();
         irods::error ret;
 
-        ret = replCheckParams< irods::file_object >( _ctx );
+        ret = replCheckParams< irods::data_object >( _ctx );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -749,7 +749,7 @@ extern "C" {
         irods::error result = SUCCESS();
         irods::error ret;
 
-        ret = replCheckParams< irods::file_object >( _ctx );
+        ret = replCheckParams< irods::data_object >( _ctx );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -843,9 +843,9 @@ extern "C" {
             result = PASSMSG( msg.str(), ret );
         }
         else {
-            irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
+            irods::collection_object_ptr collection_obj = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
             irods::hierarchy_parser parser;
-            parser.set_string( data_obj->resc_hier() );
+            parser.set_string( collection_obj->resc_hier() );
             irods::resource_ptr child;
             ret = replGetNextRescInHier( parser, _ctx, child );
             if ( !ret.ok() ) {
@@ -927,9 +927,9 @@ extern "C" {
             result = PASSMSG( msg.str(), ret );
         }
         else {
-            irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
+            irods::collection_object_ptr collection_obj = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
             irods::hierarchy_parser parser;
-            parser.set_string( data_obj->resc_hier() );
+            parser.set_string( collection_obj->resc_hier() );
             irods::resource_ptr child;
             ret = replGetNextRescInHier( parser, _ctx, child );
             if ( !ret.ok() ) {
@@ -969,9 +969,9 @@ extern "C" {
             result = PASSMSG( msg.str(), ret );
         }
         else {
-            irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
+            irods::collection_object_ptr collection_obj = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
             irods::hierarchy_parser parser;
-            parser.set_string( data_obj->resc_hier() );
+            parser.set_string( collection_obj->resc_hier() );
             irods::resource_ptr child;
             ret = replGetNextRescInHier( parser, _ctx, child );
             if ( !ret.ok() ) {
@@ -1012,9 +1012,9 @@ extern "C" {
             result = PASSMSG( msg.str(), ret );
         }
         else {
-            irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
+            irods::collection_object_ptr collection_obj = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
             irods::hierarchy_parser parser;
-            parser.set_string( data_obj->resc_hier() );
+            parser.set_string( collection_obj->resc_hier() );
             irods::resource_ptr child;
             ret = replGetNextRescInHier( parser, _ctx, child );
             if ( !ret.ok() ) {
