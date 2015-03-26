@@ -1031,11 +1031,7 @@ extern "C" {
                 std::string new_path = new_full_path;
                 std::size_t last_slash = new_path.find_last_of( '/' );
                 new_path.erase( last_slash );
-<<<<<<< HEAD
                 ret = unix_file_mkdir_r( new_path.c_str(), mode );
-=======
-                ret = unix_file_mkdir_r( new_path.c_str(), fco->mode() );
->>>>>>> b8a8842... [#2201] remove use of hardcoded mode
                 if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
 
                 }
