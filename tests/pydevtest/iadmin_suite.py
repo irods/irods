@@ -5,7 +5,7 @@ else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
 import pydevtest_common
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
 import pydevtest_sessions as s
 import commands
 import os
@@ -73,7 +73,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     # LISTS
 
     def test_list_zones(self):
-        assertiCmd(s.adminsession, "iadmin lz", "LIST", s.adminsession.getZoneName())
+        assertiCmd(s.adminsession, "iadmin lz", "LIST", s.adminsession.get_zone_name())
         assertiCmdFail(s.adminsession, "iadmin lz", "LIST", "notazone")
 
     def test_list_resources(self):
@@ -82,14 +82,14 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     def test_list_users(self):
         assertiCmd(s.adminsession, "iadmin lu", "LIST", [
-                   s.adminsession.getUserName() + "#" + s.adminsession.getZoneName()])
+                   s.adminsession.get_username() + "#" + s.adminsession.get_zone_name()])
         assertiCmdFail(s.adminsession, "iadmin lu", "LIST", "notauser")
 
     def test_list_groups(self):
         assertiCmd(s.adminsession, "iadmin lg", "LIST", self.testgroup)
         assertiCmdFail(s.adminsession, "iadmin lg", "LIST", "notagroup")
-        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[1].getUserName()])
-        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[2].getUserName()])
+        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[1].get_username()])
+        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[2].get_username()])
         assertiCmdFail(s.adminsession, "iadmin lg " + self.testgroup, "LIST", "notauser")
 
     # RESOURCES
@@ -364,19 +364,17 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin modresc " + self.testresc + " comment 'none'")
         assertiCmdFail(s.adminsession, "iadmin lr " + self.testresc, "LIST", mycomment)
 
-    # USERS
-
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
         # should not be listed
-        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.getZoneName()])
+        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
         assertiCmd(s.adminsession, "iadmin mkuser " + testuser1 + " rodsuser")  # add rodsuser
         # should be listed
-        assertiCmd(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.getZoneName()])
+        assertiCmd(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
         assertiCmdFail(s.adminsession, "iadmin rmuser notauser")  # bad remove
         assertiCmd(s.adminsession, "iadmin rmuser " + testuser1)  # good remove
         # should be gone
-        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.getZoneName()])
+        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
 
     def test_iadmin_mkuser(self):
 
@@ -401,10 +399,10 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         for name in valid:
             assertiCmd(s.adminsession, "iadmin mkuser " + name + " rodsuser")  # should be accepted
             # should be listed
-            assertiCmd(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.getZoneName()])
+            assertiCmd(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.get_zone_name()])
             assertiCmd(s.adminsession, "iadmin rmuser " + name)  # remove user
             # should be gone
-            assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.getZoneName()])
+            assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.get_zone_name()])
 
         # Test invalid names
         for name in invalid:
@@ -419,7 +417,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     # =-=-=-=-=-=-=-
     # REBALANCE
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_rebalance_for_object_count(self):
         # =-=-=-=-=-=-=-
         # read server_config.json and .odbc.ini
@@ -720,15 +718,15 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_iexecmd(self):
         assertiCmd(s.adminsession, "iput README foo")
         assertiCmd(s.adminsession, "iexecmd -p /tempZone/home/rods/" +
-                   s.adminsession.sessionId + "/foo hello", "LIST", "Hello world  from irods")
+                   s.adminsession._session_id + "/foo hello", "LIST", "Hello world  from irods")
         assertiCmd(s.adminsession, "irm -f foo")
 
     def test_ibun(self):
         cmd = "tar cf somefile.tar ./README"
         output = commands.getstatusoutput(cmd)
 
-        tar_path = "/tempZone/home/rods/" + s.adminsession.sessionId + "/somefile.tar"
-        dir_path = "/tempZone/home/rods/" + s.adminsession.sessionId + "/somedir"
+        tar_path = "/tempZone/home/rods/" + s.adminsession._session_id + "/somefile.tar"
+        dir_path = "/tempZone/home/rods/" + s.adminsession._session_id + "/somedir"
 
         assertiCmd(s.adminsession, "iput somefile.tar")
         assertiCmd(s.adminsession, "imkdir " + dir_path)
@@ -950,7 +948,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
             svr_cfg = json.load(f)
         the_value = 'THIS_IS_THE_VALUE'
         svr_cfg['environment_variables']['foo_bar'] = the_value
-        mod_json_file(svr_cfg_file, svr_cfg)
+        update_json_file_from_dict(svr_cfg_file, svr_cfg)
 
         # bounce the server to get the new env variable
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")

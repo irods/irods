@@ -60,7 +60,7 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_load_balanced(self):
         # =-=-=-=-=-=-=-
         # read server_config.json and .odbc.ini
@@ -76,8 +76,8 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
 
             # =-=-=-=-=-=-=-
             # build a logical path for putting a file
-            test_file_path = "/" + s.adminsession.getZoneName() + "/home/" + s.adminsession.getUserName() + \
-                "/" + s.adminsession.sessionId
+            test_file_path = "/" + s.adminsession.get_zone_name() + "/home/" + s.adminsession.get_username() + \
+                "/" + s.adminsession._session_id
             test_file = test_file_path + "/test_file.txt"
 
             # =-=-=-=-=-=-=-

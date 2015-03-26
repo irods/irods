@@ -56,8 +56,8 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         s.twousers_down()
 
     def test_mso_http(self):
-        test_file_path = "/" + s.adminsession.getZoneName() + "/home/" + s.adminsession.getUserName() + \
-            "/" + s.adminsession.sessionId
+        test_file_path = "/" + s.adminsession.get_zone_name() + "/home/" + s.adminsession.get_username() + \
+            "/" + s.adminsession._session_id
         assertiCmd(s.adminsession, 'ireg -D mso -R archiveResc "//http://people.renci.org/~jasonc/irods/http_mso_test_file.txt" ' +
                    test_file_path + '/test_file.txt')
         assertiCmd(s.adminsession, 'iget -f ' + test_file_path + '/test_file.txt')
@@ -68,8 +68,8 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, 'ils -L', 'STDOUT', 'tempZone')
 
     def test_mso_slink(self):
-        test_file_path = "/" + s.adminsession.getZoneName() + "/home/" + s.adminsession.getUserName() + \
-            "/" + s.adminsession.sessionId
+        test_file_path = "/" + s.adminsession.get_zone_name() + "/home/" + s.adminsession.get_username() + \
+            "/" + s.adminsession._session_id
         assertiCmd(s.adminsession, 'iput -fR origResc ../zombiereaper.sh src_file.txt')
         assertiCmd(s.adminsession, 'ireg -D mso -R archiveResc "//slink:' +
                    test_file_path + '/src_file.txt" ' + test_file_path + '/test_file.txt')
@@ -85,8 +85,8 @@ class Test_MSOSuite(unittest.TestCase, ResourceBase):
 
     def test_mso_irods(self):
         hostname = socket.gethostname()
-        test_file_path = "/" + s.adminsession.getZoneName() + "/home/" + s.adminsession.getUserName() + \
-            "/" + s.adminsession.sessionId
+        test_file_path = "/" + s.adminsession.get_zone_name() + "/home/" + s.adminsession.get_username() + \
+            "/" + s.adminsession._session_id
         assertiCmd(s.adminsession, 'iput -fR pydevtest_AnotherResc ../zombiereaper.sh src_file.txt')
         assertiCmd(s.adminsession, 'ireg -D mso -R archiveResc "//irods:' + hostname +
                    ':1247:rods@tempZone' + test_file_path + '/src_file.txt" ' + test_file_path + '/test_file.txt')

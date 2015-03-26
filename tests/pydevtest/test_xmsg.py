@@ -7,7 +7,7 @@ if (sys.version_info >= (2, 7)):
 else:
     import unittest2 as unittest
 import pydevtest_sessions as s
-from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir, mod_json_file
+from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_common
 
 
@@ -50,7 +50,7 @@ class Test_ixmsg(unittest.TestCase):
         # Close admin session
         s.admin_down()
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_send_and_receive_one_xmsg(self):
         message = 'Hello World!'
 

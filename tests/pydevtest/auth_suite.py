@@ -4,7 +4,7 @@ if (sys.version_info >= (2, 7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir, mod_json_file
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
 import pydevtest_common
 import pydevtest_sessions as s
 import commands
@@ -26,7 +26,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_OSAuth(self):
         # add auth test user
         authTestUser = "irods"
@@ -34,7 +34,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin mkuser %s rodsuser" % authTestUser)
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir + "/irods_environment.json"
+        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {}
@@ -42,7 +42,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/' + authTestUser
         env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        mod_json_file(clientEnvFile, env)
+        update_json_file_from_dict(clientEnvFile, env)
 
         # setup the irods.key file necessary for OSAuth
         keyfile = get_irods_config_dir() + "/irods.key"
@@ -59,7 +59,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
         # reconnect as admin
         assertiCmd(s.adminsession, "iexit full")                     # exit out entirely
-        assertiCmd(s.adminsession, "iinit %s" % s.users[0]['passwd'])  # reinitialize
+        assertiCmd(s.adminsession, 'iinit %s' % s.adminsession._password)  # reinitialize
 
         # remove auth test user
         assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)
@@ -81,7 +81,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         self.run_resource_teardown()
         s.twousers_down()
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_PAM_without_negotiation(self):
         # add auth test user
         authTestUser = "irodsauthuser"
@@ -107,7 +107,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir + "/irods_environment.json"
+        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         # does not use our SSL to test legacy SSL code path
@@ -116,7 +116,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/' + authTestUser
         env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        mod_json_file(clientEnvFile, env)
+        update_json_file_from_dict(clientEnvFile, env)
 
         # server reboot to pick up new irodsEnv settings
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
@@ -130,7 +130,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # reset client environment to original
         os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
         # reconnect as admin
-        assertiCmd(s.adminsession, "iinit %s" % s.users[0]['passwd'])  # reinitialize
+        assertiCmd(s.adminsession, "iinit %s" % s.adminsession._password)  # reinitialize
 
         # remove auth test user
         assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)
@@ -138,7 +138,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # clean up
         os.system("rm server.key chain.pem dhparams.pem")
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_PAM_with_server_params(self):
         # add auth test user
         authTestUser = "irodsauthuser"
@@ -164,7 +164,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession.sessionDir + "/irods_environment.json"
+        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {}
@@ -173,7 +173,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         env['irods_user_name'] = authTestUser
         env['irods_home'] = '/tempZone/home/' + authTestUser
         env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        mod_json_file(clientEnvFile, env)
+        update_json_file_from_dict(clientEnvFile, env)
 
         # add server_config.json settings
         serverConfigFile = get_irods_config_dir() + "/server_config.json"
@@ -199,7 +199,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         # reset client environment to original
         os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
         # reconnect as admin
-        assertiCmd(s.adminsession, "iinit %s" % s.users[0]['passwd'])  # reinitialize
+        assertiCmd(s.adminsession, "iinit %s" % s.adminsession._password)  # reinitialize
 
         # remove auth test user
         assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)

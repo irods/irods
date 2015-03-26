@@ -30,11 +30,11 @@ def test_original_devtest():
     # build expected variables with similar devtest names
     progname = "README"
     myssize = str(os.stat(progname).st_size)
-    username = s.adminsession.getUserName()
-    irodszone = s.adminsession.getZoneName()
-    testuser1 = s.sessions[1].getUserName()
-    irodshome = "/" + irodszone + "/home/rods/" + s.adminsession.sessionId
-    irodsdefresource = s.adminsession.getDefResource()
+    username = s.adminsession.get_username()
+    irodszone = s.adminsession.get_zone_name()
+    testuser1 = s.sessions[1].get_username()
+    irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
+    irodsdefresource = s.adminsession.get_default_resource()
     dir_w = "."
     sfile2 = dir_w + "/sfile2"
     commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -217,7 +217,7 @@ def test_original_devtest():
     assert output[1] == "", "diff output was not empty..."
     shutil.rmtree(dir_w + "/testa")
     # test ireg with normal user
-    testuser2home = "/" + irodszone + "/home/" + s.sessions[2].getUserName()
+    testuser2home = "/" + irodszone + "/home/" + s.sessions[2].get_username()
     commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2c")
     # this should fail
     assertiCmd(s.sessions[2], "ireg -KR " + s.testresc + " /tmp/sfile2c " +
@@ -436,9 +436,9 @@ def test_original_devtest():
     assertiCmd(s.adminsession, "iput -kf  " + progname + "  " + irodshome + "/icmdtest1/foo1")
     assertiCmd(s.adminsession, "ils -l " + irodshome + "/icmdtest1/foo1", "LIST", ["foo1", myssize])
     assertiCmd(s.adminsession, "iadmin ls " + irodshome + "/icmdtest1", "LIST", "foo1")
-    assertiCmd(s.adminsession, "ichmod read " + s.sessions[1].getUserName() + " " + irodshome + "/icmdtest1/foo1")
+    assertiCmd(s.adminsession, "ichmod read " + s.sessions[1].get_username() + " " + irodshome + "/icmdtest1/foo1")
     assertiCmd(s.adminsession, "ils -A " + irodshome + "/icmdtest1/foo1",
-               "LIST", s.sessions[1].getUserName() + "#" + irodszone + ":read")
+               "LIST", s.sessions[1].get_username() + "#" + irodszone + ":read")
     assertiCmd(s.adminsession, "irepl -B -R " + s.testresc + " " + irodshome + "/icmdtest1/foo1")
     # overwrite a copy
     assertiCmd(s.adminsession, "itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1")

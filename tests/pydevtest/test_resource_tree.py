@@ -29,7 +29,7 @@ class Test_ilsresc(unittest.TestCase):
         # Clean up and exit admin session
         print "admin session: removing session files"
         s.adminsession.runCmd('icd')
-        s.adminsession.runCmd('irm', ['-rf', s.adminsession.sessionId])
+        s.adminsession.runCmd('irm', ['-rf', s.adminsession._session_id])
         s.admin_down()
 
     def test_ilsresc_tree(self):

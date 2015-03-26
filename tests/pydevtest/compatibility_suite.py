@@ -26,17 +26,17 @@ class Test_CompatibilitySuite(unittest.TestCase, ResourceBase):
         s.twousers_down()
 
     def test_imeta_set(self):
-        assertiCmd(s.adminsession, "iadmin lu", "LIST", "rods")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "None")
-        assertiCmd(s.adminsession, "imeta add -u " + s.users[1]["name"] + " att val")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "attribute: att")
-        assertiCmd(s.adminsession, "imeta set -u " + s.users[1]["name"] + " att newval")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "value: newval")
-        assertiCmd(s.adminsession, "imeta set -u " + s.users[1]["name"] + " att newval someunit")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "units: someunit")
-        assertiCmd(s.adminsession, "imeta set -u " + s.users[1]["name"] + " att verynewval")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "value: verynewval")
-        assertiCmd(s.adminsession, "imeta ls -u " + s.users[1]["name"] + " att", "LIST", "units: someunit")
+        assertiCmd(s.adminsession, 'iadmin lu', 'STDOUT', 'rods')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'None')
+        assertiCmd(s.adminsession, 'imeta add -u ' + s.sessions[1].get_username() + ' att val')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'attribute: att')
+        assertiCmd(s.adminsession, 'imeta set -u ' + s.sessions[1].get_username() + ' att newval')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'value: newval')
+        assertiCmd(s.adminsession, 'imeta set -u ' + s.sessions[1].get_username() + ' att newval someunit')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'units: someunit')
+        assertiCmd(s.adminsession, 'imeta set -u ' + s.sessions[1].get_username() + ' att verynewval')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'value: verynewval')
+        assertiCmd(s.adminsession, 'imeta ls -u ' + s.sessions[1].get_username() + ' att', 'STDOUT', 'units: someunit')
 
     def test_iphybun_n(self):
         assertiCmd(s.adminsession, "imkdir testColl")

@@ -1,62 +1,54 @@
+from __future__ import print_function
+
 import os
 import datetime
-import commands
 import socket
-import pydevtest_common
+
 import icommands
-import time
-import inspect
+import pydevtest_common
 
-global users
-output = commands.getstatusoutput("hostname")
-hostname = output[1]
-users = []
-users.append(
-    {'name': 'rods',  'passwd': 'rods',  'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
-users.append(
-    {'name': 'alice', 'passwd': 'apass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
-users.append(
-    {'name': 'bobby', 'passwd': 'bpass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
+_user_creation_information = [
+    {'name': 'rods',
+     'password': 'rods',
+ },
+    {'name': 'alice',
+     'password': 'apass',
+ },
+    {'name': 'bobby',
+     'password': 'bpass',
+ },
+]
 
-global mycwd
-mycwd = os.getcwd()
-global icommands_bin
-icommands_bin = "/usr/bin"
+
+def make_environment_dict(username):
+    return {
+        'irods_host': socket.gethostname(),
+        'irods_port': 1247,
+        'irods_default_resource': 'demoResc',
+        'irods_home': os.path.join('/tempZone/home', username),
+        'irods_cwd': os.path.join('/tempZone/home', username),
+        'irods_user_name': username,
+        'irods_zone': 'tempZone',
+        'irods_client_server_negotiation': 'request_server_negotiation',
+        'irods_client_server_policy': 'CS_NEG_REFUSE',
+        'irods_encryption_key_size': 32,
+        'irods_encryption_salt_size': 8,
+        'irods_encryption_num_hash_rounds': 16,
+        'irods_encryption_algorithm': 'AES-256-CBC',
+        'irods_default_hash_scheme': 'SHA256',
+    }
 
 ######################################################
 # generic standup functions for admin and user
 #   called by more specific functions down below
 ######################################################
-
-
 def admin_up():
-    # set up admin session
-    admin = users[0]
-    rightnow = datetime.datetime.now()
-    sessionid = "session-" + rightnow.strftime("%Y%m%dT%H%M%S.") + str(rightnow.microsecond)
-    myenv = icommands.RodsEnv(admin['host'],
-                              admin['port'],
-                              admin['resc'],
-                              '/' + admin['zone'] + '/home/' + admin['name'],
-                              '/' + admin['zone'] + '/home/' + admin['name'],
-                              admin['name'],
-                              admin['zone'],
-                              admin['passwd'],
-                              "request_server_negotiation",
-                              "CS_NEG_REFUSE",
-                              "32",
-                              "8",
-                              "16",
-                              "AES-256-CBC",
-                              "SHA256",
-                              )
     global adminsession
-    adminsession = icommands.RodsSession(mycwd, icommands_bin, sessionid)
-    adminsession.createEnvFiles(myenv)
-    adminsession.runCmd('iinit', [myenv.auth])
-    adminsession.runCmd('imkdir', [sessionid])
-    adminsession.runCmd('icd', [sessionid])
-    print "admin session created: user[" + adminsession.getUserName() + "] zone[" + adminsession.getZoneName() + "]"
+    adminsession = icommands.RodsSession('/usr/bin', make_environment_dict(_user_creation_information[0]['name']), _user_creation_information[0]['password'])
+    adminsession.runCmd('iinit', [adminsession._password])
+    adminsession.runCmd('imkdir', [adminsession._session_id])
+    adminsession.runCmd('icd', [adminsession._session_id])
+    print('admin session created: user[' + adminsession.get_username() + '] zone[' + adminsession.get_zone_name() + ']')
 
     # set sessions[0] as adminsession
     global sessions
@@ -66,80 +58,49 @@ def admin_up():
     # users, passwords, and groups
     global testgroup
     testgroup = "pydevtest_user_group"
-    if not pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER:
-        adminsession.runAdminCmd('iadmin', ["mkgroup", testgroup])
-        for u in users[1:]:
-            adminsession.runAdminCmd('iadmin', ["mkuser", u['name'], "rodsuser"])
-            adminsession.runAdminCmd('iadmin', ["moduser", u['name'], "password", u['passwd']])
-            adminsession.runAdminCmd('iadmin', ["atg", testgroup, u['name']])
+    if not pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER:
+        adminsession.runAdminCmd('iadmin', ['mkgroup', testgroup])
+        for u in _user_creation_information[1:]:
+            adminsession.runAdminCmd('iadmin', ['mkuser', u['name'], 'rodsuser'])
+            adminsession.runAdminCmd('iadmin', ['moduser', u['name'], 'password', u['password']])
+            adminsession.runAdminCmd('iadmin', ['atg', testgroup, u['name']])
 
     # get back into the proper directory
-    adminsession.runCmd('icd', [sessionid])
-
+    adminsession.runCmd('icd', [adminsession._session_id])
 
 def admin_down():
-    # globals needed
-    global adminsession
-    global testgroup
-
     # trash
     adminsession.runCmd('irmtrash', ['-M'])  # removes all trash for all users (admin mode)
 
     # users
-    if not pydevtest_common.irods_test_constants.RUN_AS_RESOURCE_SERVER:
-        for u in users[1:]:
-            adminsession.runAdminCmd('iadmin', ["rfg", testgroup, u['name']])
-            adminsession.runAdminCmd('iadmin', ["rmuser", u['name']])
+    if not pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER:
+        for u in _user_creation_information[1:]:
+            adminsession.runAdminCmd('iadmin', ['rfg', testgroup, u['name']])
+            adminsession.runAdminCmd('iadmin', ['rmuser', u['name']])
         # groups
         adminsession.runAdminCmd('iadmin', ['rmgroup', testgroup])
         adminsession.runAdminCmd('iadmin', ['rum'])
 
-    print "admin session exiting: user[" + adminsession.getUserName() + "] zone[" + adminsession.getZoneName() + "]"
+    print('admin session exiting: user[' + adminsession.get_username() + '] zone[' + adminsession.get_zone_name() + ']')
     adminsession.runCmd('iexit', ['full'])
-    adminsession.deleteEnvFiles()
+    adminsession.delete_session_dir()
 
-
-##################
 def user_up(user):
     # set up single user session
-    rightnow = datetime.datetime.now()
-    sessionid = "session-" + rightnow.strftime("%Y%m%dT%H%M%S.") + str(rightnow.microsecond)
-    myenv = icommands.RodsEnv(user['host'],
-                              user['port'],
-                              user['resc'],
-                              '/' + user['zone'] + '/home/' + user['name'],
-                              '/' + user['zone'] + '/home/' + user['name'],
-                              user['name'],
-                              user['zone'],
-                              user['passwd'],
-                              "request_server_negotiation",
-                              "CS_NEG_REFUSE",
-                              "32",
-                              "8",
-                              "16",
-                              "AES-256-CBC",
-                              "SHA256",
-                              )
-    new = icommands.RodsSession(mycwd, icommands_bin, sessionid)
-    new.createEnvFiles(myenv)
-    new.runCmd('iinit', [myenv.auth])
-    new.runCmd('imkdir', [sessionid])
-    new.runCmd('icd', [sessionid])
-    print "user session created: user[" + new.getUserName() + "] zone[" + new.getZoneName() + "]"
-
-    # add new session to existing sessions list
-    global sessions
-    sessions.append(new)
-
+    user_session = icommands.RodsSession('/usr/bin', make_environment_dict(user['name']), user['password'])
+    user_session.runCmd('iinit', [user_session._password])
+    user_session.runCmd('imkdir', [user_session._session_id])
+    user_session.runCmd('icd', [user_session._session_id])
+    print('user session created: user[' + user_session.get_username() + '] zone[' + user_session.get_zone_name() + ']')
+    sessions.append(user_session)
 
 def user_down(usersession):
     # tear down user session
     usersession.runCmd('icd')
-    usersession.runCmd('irm', ['-rf', usersession.sessionId])
-    print "user session exiting: user[" + usersession.getUserName() + "] zone[" + usersession.getZoneName() + "]"
+    usersession.runCmd('irm', ['-rf', usersession._session_id])
+    print('user session exiting: user[' + usersession.get_username() + '] zone[' + usersession.get_zone_name() + ']')
     usersession.runCmd('iexit', ['full'])
-    usersession.deleteEnvFiles()
-
+    usersession.delete_session_dir()
 
 #################################################################
 # routines to be called from with_setup
@@ -149,30 +110,23 @@ def user_down(usersession):
 def adminonly_up():
     admin_up()
 
-
 def adminonly_down():
     admin_down()
 
-
 def oneuser_up():
     admin_up()
-    user_up(users[1])
-
+    user_up(_user_creation_information[1])
 
 def oneuser_down():
-    global sessions
     user_down(sessions[1])
     admin_down()
 
-
 def twousers_up():
     admin_up()
-    user_up(users[1])
-    user_up(users[2])
-
+    user_up(_user_creation_information[1])
+    user_up(_user_creation_information[2])
 
 def twousers_down():
-    global sessions
     user_down(sessions[2])
     user_down(sessions[1])
     admin_down()

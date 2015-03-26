@@ -10,21 +10,18 @@ import time
 
 class irods_test_constants(object):
     RUN_IN_TOPOLOGY = False
-    RUN_AS_RESOURCE_SERVER = False
+    TOPOLOGY_FROM_RESOURCE_SERVER = False
     HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
 
-
-def mod_json_file(fn, new_dict):
-    with open(fn) as f:
+def update_json_file_from_dict(filename, update_dict):
+    with open(filename) as f:
         env = json.load(f)
-    env.update(new_dict)
-    with open(fn, 'w') as f:
+    env.update(update_dict)
+    with open(filename, 'w') as f:
         json.dump(env, f, indent=4)
-
 
 def get_hostname():
     return socket.gethostname()
-
 
 def get_irods_top_level_dir():
     configdir = "/etc/irods/server_config.json"
@@ -33,14 +30,12 @@ def get_irods_top_level_dir():
         topleveldir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return topleveldir
 
-
 def get_irods_config_dir():
     configfile = "/etc/irods/server_config.json"
     configdir = os.path.dirname(configfile)
     if(not os.path.isfile(configfile)):
         configdir = get_irods_top_level_dir() + "/iRODS/config"
     return configdir
-
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):
@@ -50,7 +45,6 @@ def create_directory_of_small_files(directory_name_suffix, file_count):
         target.write("iglkg3fqfhwpwpo-" + "A" * i)
         target.close()
 
-
 def create_local_testfile(filename):
     filepath = os.path.abspath(filename)
     f = open(filepath, 'wb')
@@ -58,12 +52,10 @@ def create_local_testfile(filename):
     f.close()
     return filepath
 
-
 def create_local_largefile(filename):
     filepath = os.path.abspath(filename)
     os.system('dd if=/dev/zero of=' + filepath + ' bs=1M count=64')
     return filepath
-
 
 def check_icmd_outputtype(fullcmd, outputtype):
     allowed_outputtypes = ["LIST", "EMPTY", "ERROR", "", 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
@@ -73,10 +65,9 @@ def check_icmd_outputtype(fullcmd, outputtype):
         print "  unknown outputtype requested: [" + outputtype + "]"
         assert False, "hard fail, bad icommand output format requested"
 
-
 def getiCmdOutput(mysession, fullcmd):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
     if parameters[0] == "iadmin":
         output = mysession.runAdminCmd(parameters[0], parameters[1:])
     else:
@@ -85,7 +76,6 @@ def getiCmdOutput(mysession, fullcmd):
     #   [0] is stdout
     #   [1] is stderr
     return output
-
 
 def getiCmdBoolean(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
     result = False  # should start as failing, then get set to pass
@@ -209,7 +199,6 @@ def assertiCmdFail(mysession, fullcmd, outputtype="", expectedresults="", use_re
     elapsed = time.time() - begin
     return elapsed
 
-
 def interruptiCmd(mysession, fullcmd, filename, filesize):
     ''' Runs an icommand, but does not let it complete.
 
@@ -223,7 +212,7 @@ def interruptiCmd(mysession, fullcmd, filename, filesize):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
     print "  filename set to: [" + filename + "]"
     print "  filesize set to: [" + str(filesize) + "] bytes"
     resultcode = mysession.interruptCmd(parameters[0], parameters[1:], filename, filesize)
@@ -233,9 +222,8 @@ def interruptiCmd(mysession, fullcmd, filename, filesize):
         print "  resultcode: [-1], icommand completed"
     else:
         print "  resultcode: [-2], icommand timeout"
-    assert 0 == resultcode, "0 == resultcode"
+    assert 0 == resultcode
     return resultcode
-
 
 def interruptiCmdDelay(mysession, fullcmd, delay):
     ''' Runs an icommand, but does not let it complete.
@@ -249,26 +237,23 @@ def interruptiCmdDelay(mysession, fullcmd, delay):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.getUserName() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
     print "  timeout set to: [" + str(delay) + " seconds]"
     resultcode = mysession.interruptCmdDelay(parameters[0], parameters[1:], delay)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
     else:
         print "  resultcode: [-1], icommand completed"
-    assert 0 == resultcode, "0 == resultcode"
+    assert 0 == resultcode
     return resultcode
-
 
 def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
 
-
 def cat(fname, string, times=None):
     with file(fname, 'a') as f:
         f.write(string)
-
 
 def make_file(f_name, f_size, source='/dev/zero'):
     output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
@@ -276,13 +261,11 @@ def make_file(f_name, f_size, source='/dev/zero'):
         sys.stderr.write(output[1] + '\n')
         raise OSError(output[0], "call to dd returned non-zero")
 
-
 def runCmd_ils_to_entries(runCmd_output):
     raw = runCmd_output[0].strip().split('\n')
     collection = raw[0]
     entries = [entry.strip() for entry in raw[1:]]
     return entries
-
 
 def get_vault_path(session):
     cmdout = session.runCmd("iquest", ["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
@@ -290,13 +273,11 @@ def get_vault_path(session):
         raise OSError(cmdout[1], "iquest wrote to stderr when called from get_vault_path()")
     return cmdout[0].rstrip('\n')
 
-
 def get_vault_session_path(session):
     return os.path.join(get_vault_path(session),
                         "home",
-                        session.getUserName(),
-                        session.sessionId)
-
+                        session.get_username(),
+                        session._session_id)
 
 def make_large_local_tmp_dir(dir_name, file_count, file_size):
     os.mkdir(dir_name)
