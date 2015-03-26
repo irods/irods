@@ -77,6 +77,7 @@
 
 // =-=-=-=-=-=-=-
 // 1. Define utility functions that the operations might need
+const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
@@ -1013,13 +1014,28 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // cast down the hierarchy to the desired object
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+                
+                // =-=-=-=-=-=-=-
+                // get the default directory mode
+                mode_t mode = 0750;
+                ret = _ctx.prop_map().get<mode_t>(
+                          DEFAULT_VAULT_DIR_MODE,
+                          mode );
+                if( !ret.ok() ) {
+                    return PASS( ret );
+
+                }
 
                 // =-=-=-=-=-=-=-
                 // make the directories in the path to the new file
                 std::string new_path = new_full_path;
                 std::size_t last_slash = new_path.find_last_of( '/' );
                 new_path.erase( last_slash );
-                ret = unix_file_mkdir_r( new_path.c_str(), 0750 );
+<<<<<<< HEAD
+                ret = unix_file_mkdir_r( new_path.c_str(), mode );
+=======
+                ret = unix_file_mkdir_r( new_path.c_str(), fco->mode() );
+>>>>>>> b8a8842... [#2201] remove use of hardcoded mode
                 if ( ( result = ASSERT_PASS( ret, "Mkdir error for \"%s\".", new_path.c_str() ) ).ok() ) {
 
                 }
@@ -1415,6 +1431,8 @@ extern "C" {
                 irods::resource(
                     _inst_name,
                     _context ) {
+                    properties_.set<mode_t>( DEFAULT_VAULT_DIR_MODE, 0750 );
+
             } // ctor
 
 
