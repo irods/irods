@@ -787,7 +787,17 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
         }
-        return 0;
+
+        // rcDataObjRead may return 0 in an error case, we need
+        // to ensure the total written is matching the total size
+        // otherwise we are also in an error case
+        if( totalWritten == dataSize ) {
+            return 0;
+
+        } else {
+            return SYS_COPY_LEN_ERR;
+
+        }
     }
     else {
         rodsLog( LOG_ERROR,
