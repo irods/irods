@@ -11,6 +11,10 @@ include $(buildDir)/config/common.mk
 
 GCC = gcc
 
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
+GCC += -fprofile-arcs -ftest-coverage -lgcov
+endif
+
 CFLAGS = -I../../lib/core/include/ \
 	-I../../lib/api/include/ \
 	-I../../lib/md5/include/ \
