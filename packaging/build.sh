@@ -138,7 +138,7 @@ done
 echo ""
 
 # detect lack of submodules, and exit
-if [ ! -e irods_schema_configuration/v1 -o ! -e irods_schema_messaging/v1 ] ; then
+if [ ! -e ${SCRIPTPATH}/../irods_schema_configuration/v1 -o ! -e ${SCRIPTPATH}/../irods_schema_messaging/v1 ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Missing Submodules... Try:" 1>&2
     echo "      git submodule init; git submodule update" 1>&2
@@ -502,7 +502,7 @@ if [ "$1" == "clean" ] ; then
     set +e
     echo "Cleaning EPM residuals..."
     cd $BUILDDIR
-    rm -rf build 
+    rm -rf build
     rm -f packaging/irods-dev.list
     rm -f packaging/irods-runtime.list
     rm -f packaging/irods.list
@@ -1419,53 +1419,53 @@ else
     IRODSMANVERSION=`$GREPCMD "^%version" ./packaging/irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
-    iadmin        
-    ibun          
-    icd           
-    ichksum       
-    ichmod        
-    icp           
-    idbug         
-    ienv          
-    ierror        
-    iexecmd       
-    iexit         
-    ifsck         
-    iget          
-    igetwild      
-    igroupadmin   
-    ihelp         
-    iinit         
-    ilocate       
-    ils           
-    ilsresc       
-    imcoll        
-    imeta         
-    imiscsvrinfo  
-    imkdir        
-    imv           
-    ipasswd       
-    iphybun       
-    iphymv        
-    ips           
-    iput          
-    ipwd          
-    iqdel         
-    iqmod         
-    iqstat        
-    iquest        
-    iquota        
-    ireg          
-    irepl         
-    irm           
-    irmtrash      
-    irsync        
-    irule         
-    iscan         
-    isysmeta      
-    itrim         
-    iuserinfo     
-    ixmsg         
+    iadmin
+    ibun
+    icd
+    ichksum
+    ichmod
+    icp
+    idbug
+    ienv
+    ierror
+    iexecmd
+    iexit
+    ifsck
+    iget
+    igetwild
+    igroupadmin
+    ihelp
+    iinit
+    ilocate
+    ils
+    ilsresc
+    imcoll
+    imeta
+    imiscsvrinfo
+    imkdir
+    imv
+    ipasswd
+    iphybun
+    iphymv
+    ips
+    iput
+    ipwd
+    iqdel
+    iqmod
+    iqstat
+    iquest
+    iquota
+    ireg
+    irepl
+    irm
+    irmtrash
+    irsync
+    irule
+    iscan
+    isysmeta
+    itrim
+    iuserinfo
+    ixmsg
     )
     for ICMD in "${ICMDS[@]}"
     do
