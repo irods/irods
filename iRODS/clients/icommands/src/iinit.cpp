@@ -167,7 +167,7 @@ main( int argc, char **argv ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
         }
-        printf( "Enter the host name (DNS) of the server to connect to:" );
+        printf( "Enter the host name (DNS) of the server to connect to: " );
         std::string response;
         getline( std::cin, response );
         snprintf(
@@ -185,7 +185,7 @@ main( int argc, char **argv ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
         }
-        printf( "Enter the port number:" );
+        printf( "Enter the port number: " );
         std::string response;
         getline( std::cin, response );
         try {
@@ -207,7 +207,7 @@ main( int argc, char **argv ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
         }
-        printf( "Enter your irods user name:" );
+        printf( "Enter your irods user name: " );
         std::string response;
         getline( std::cin, response );
         snprintf(
@@ -225,7 +225,7 @@ main( int argc, char **argv ) {
             doingEnvFileUpdate = 1;
             printUpdateMsg();
         }
-        printf( "Enter your irods zone:" );
+        printf( "Enter your irods zone: " );
         std::string response;
         getline( std::cin, response );
         snprintf(
@@ -441,4 +441,3 @@ void usageTTL() {
     printf( "specify how long this derived password will be valid, within the\n" );
     printf( "limits set by the administrator.\n" );
 }
-
