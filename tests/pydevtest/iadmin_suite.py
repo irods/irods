@@ -1,21 +1,24 @@
 import sys
-if (sys.version_info >= (2, 7)):
-    import unittest
-else:
+if sys.version_info < (2, 7):
     import unittest2 as unittest
+else:
+    import unittest
+
+import commands
+import getpass
+import json
+import os
+import shutil
+import socket
+import stat
+import subprocess
+import time
+
 from resource_suite import ResourceBase
 import pydevtest_common
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
 import pydevtest_sessions as s
-import commands
-import os
-import shutil
-import time
-import subprocess
-import stat
-import socket
-import json
-import getpass
+
 
 # =-=-=-=-=-=-=-
 # build path magic to import server_config.py
@@ -995,3 +998,31 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, 'iadmin rum')
         assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()),
                        'STDOUT', a)
+
+    def test_rule_engine_2521(self):
+        with pydevtest_common.core_re_backed_up():
+            initial_size_of_re_log = pydevtest_common.get_re_log_size()
+            rules_to_prepend = '''
+first_rule_called_from_delay() {
+    writeLine("serverLog","test_rule_engine_2521: first delay rule executed successfully");
+}
+
+second_rule_called_from_delay() {
+    writeLine("serverLog","test_rule_engine_2521: second delay rule executed successfully");
+}
+
+acPostProcForPut() {
+    delay("<PLUSET>0m</PLUSET>") {
+        first_rule_called_from_delay();
+        second_rule_called_from_delay();
+    }
+}
+'''
+            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            trigger_file = 'file_to_trigger_acPostProcForPut'
+            pydevtest_common.make_file(trigger_file, 10)
+            assertiCmd(s.adminsession, 'iput {0}'.format(trigger_file))
+            time.sleep(30)
+            assert 1 == pydevtest_common.count_occurances_of_string_in_re_log('writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
+            assert 0 == pydevtest_common.count_occurances_of_string_in_re_log('free(): invalid size', start_index=initial_size_of_re_log)
+            assert 0 == pydevtest_common.count_occurances_of_string_in_re_log('free(): invalid pointer', start_index=initial_size_of_re_log)

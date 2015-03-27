@@ -1,10 +1,15 @@
 import commands
+import contextlib
 import json
+import mmap
 import os
 import psutil
 import re
 import shlex
+import shutil
 import socket
+import subprocess
+import tempfile
 import time
 
 
@@ -288,3 +293,40 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
     local_files = os.listdir(dir_name)
     assert len(local_files) == file_count, "dd loop did not make all " + str(file_count) + " files"
     return local_files
+
+@contextlib.contextmanager
+def core_re_backed_up():
+    with tempfile.NamedTemporaryFile(prefix='core.re_backup') as f:
+        shutil.copyfile('/etc/irods/core.re', f.name)
+        yield
+        shutil.copyfile(f.name, '/etc/irods/core.re')
+
+def prepend_string_to_core_re(string):
+    core_re_path = '/etc/irods/core.re'
+    with open(core_re_path, 'r') as f: contents = f.read()
+    with open(core_re_path, 'w') as f:
+        f.write(string)
+        f.write(contents)
+
+def get_re_log_size():
+    return os.stat(get_re_log_path()).st_size
+
+def get_re_log_path():
+    server_log_dir = os.path.join(get_irods_top_level_dir(), 'iRODS/server/log')
+    command_str = 'ls -t ' + server_log_dir + '/reLog* | head -n1'
+    proc = subprocess.Popen(command_str, stdout=subprocess.PIPE, shell=True)
+    stdout, stderr = proc.communicate()
+    log_file_path = stdout.rstrip()
+    if proc.returncode != 0 or log_file_path == '':
+        raise subprocess.CalledProcessError(proc.returncode, command_str, 'stdout [{0}] stderr[{1}]'.format(log_file_path, err))
+    return log_file_path
+
+def count_occurances_of_string_in_re_log(string, start_index=0):
+    with open(get_re_log_path()) as f:
+        m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        n = 0
+        i = m.find(string, start_index)
+        while i != -1:
+            n += 1
+            i = m.find(string, i+1)
+        return n
