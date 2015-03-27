@@ -32,7 +32,6 @@ insert into R_TOKN_MAIN values ('user_type',201,'rodsadmin','','rods administrat
 insert into R_TOKN_MAIN values ('user_type',202,'rodsuser','','normal rods user','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',203,'domainadmin','','user domain administrators','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',204,'groupadmin','','user group administrators','','','1170000000','1170000000');
-insert into R_TOKN_MAIN values ('user_type',205,'storageadmin','','storage system administrators','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',206,'rodscurators','','data collection curators at RODS level','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('object_type',300,'data','','','','','1170000000','1170000000');

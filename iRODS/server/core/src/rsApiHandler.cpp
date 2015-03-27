@@ -375,11 +375,6 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
         return SYS_NO_API_PRIV;
     }
 
-    if ( ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 )
-            && ( clientUserAuth & STORAGE_ADMIN_USER ) ) {
-        return 0;
-    }
-
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 
     if ( clientUserAuth > rsComm->clientUser.authInfo.authFlag ) {

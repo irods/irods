@@ -7378,44 +7378,6 @@ checkLevel:
             }
         }
 
-        else if ( strcmp( userType, STORAGE_ADMIN_USER_TYPE ) == 0 ) {
-            /* Add a bit to the userPrivLevel to indicate that
-               this user has the storageadmin role */
-            *_user_priv_level = *_user_priv_level | STORAGE_ADMIN_USER;
-
-            /* If the storageadmin is also the client, then we can just
-               set the client privilege level without querying again.
-               Otherwise, we query for the user to make sure they exist,
-               but we don't set any privilege since storageadmin can't
-               proxy all API calls. */
-            if ( strcmp( _comm->clientUser.userName, userName2 ) == 0 &&
-                    strcmp( _comm->clientUser.rodsZone, userZone ) == 0 ) {
-                *_client_priv_level = LOCAL_USER_AUTH;
-            }
-            else {
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlCheckAuth xSQL 8" );
-                }
-                {
-                    std::vector<std::string> bindVars;
-                    bindVars.push_back( _comm->clientUser.userName );
-                    bindVars.push_back( _comm->clientUser.rodsZone );
-                    status = cmlGetStringValueFromSql(
-                                 "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
-                                 userType, MAX_NAME_LEN, bindVars, &icss );
-                }
-                if ( status != 0 ) {
-                    if ( status == CAT_NO_ROWS_FOUND ) {
-                        status = CAT_INVALID_CLIENT_USER; /* more specific */
-                    }
-                    else {
-                        _rollback( "chlCheckAuth" );
-                    }
-                    return ERROR( status, "select user_type_name failed" );
-                }
-            }
-        }
-
         prevFailure = 0;
         return SUCCESS();
 

@@ -89,14 +89,6 @@ chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv ) {
         return 0;
     }
 
-    /* if the proxy is a storageadmin, and is from the local zone,
-       then it can proxy for client, but client won't have any
-       privileges (as set in chlAuthCheck) */
-    if ( proxyUserPriv == LOCAL_USER_AUTH &&
-            ( strcmp( rsComm->proxyUser.userType, STORAGE_ADMIN_USER_TYPE ) == 0 ) ) {
-        return 0;
-    }
-
     /* remote privileged user can only do things on behalf of users from
      * the same zone */
     if ( proxyUserPriv >= LOCAL_PRIV_USER_AUTH ||

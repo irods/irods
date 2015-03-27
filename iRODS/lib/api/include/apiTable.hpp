@@ -194,7 +194,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         GEN_QUERY_AN, RODS_API_VERSION,
-        REMOTE_USER_AUTH | STORAGE_ADMIN_USER, REMOTE_USER_AUTH | STORAGE_ADMIN_USER,
+        REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "GenQueryInp_PI", 0, "GenQueryOut_PI", 0, ( funcPtr ) RS_GEN_QUERY, clearGenQueryInp
     },
     {
