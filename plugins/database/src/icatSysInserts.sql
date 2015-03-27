@@ -30,9 +30,7 @@ insert into R_TOKN_MAIN values ('zone_type',101,'remote','','foreign zone','',''
 insert into R_TOKN_MAIN values ('user_type',200,'rodsgroup','','rods group users','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',201,'rodsadmin','','rods administrators','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',202,'rodsuser','','normal rods user','','','1170000000','1170000000');
-insert into R_TOKN_MAIN values ('user_type',203,'domainadmin','','user domain administrators','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('user_type',204,'groupadmin','','user group administrators','','','1170000000','1170000000');
-insert into R_TOKN_MAIN values ('user_type',206,'rodscurators','','data collection curators at RODS level','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('object_type',300,'data','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('object_type',301,'resource','','','','','1170000000','1170000000');
