@@ -79,6 +79,10 @@ if __name__ == '__main__':
                       callback=optparse_callback_catch_keyboard_interrupt)
     options, _ = parser.parse_args()
 
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+
     test_identifiers = []
     if options.run_specific_test:
         test_identifiers.append(options.run_specific_test)
