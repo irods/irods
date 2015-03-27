@@ -1364,12 +1364,8 @@ main( int argc, char **argv ) {
     char *mySubName;
     char *myName;
 
-    int argOffset;
-
     int maxCmdTokens = 20;
     char *cmdToken[20];
-    int keepGoing;
-    int firstTime;
 
     status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
 
@@ -1390,20 +1386,20 @@ main( int argc, char **argv ) {
 
     if ( status ) {
         fprintf( stderr, "Use -h for help.\n" );
-        exit( 2 );
+        return 2;
     }
     if ( myRodsArgs.help == True ) {
         usage( "" );
-        exit( 0 );
+        return 0;
     }
-    argOffset = myRodsArgs.optind;
+    int argOffset = myRodsArgs.optind;
 
     memset( &myEnv, 0, sizeof( myEnv ) );
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
-        exit( 1 );
+        return 1;
     }
 
     if ( myRodsArgs.veryVerbose == True ) {
@@ -1421,7 +1417,7 @@ main( int argc, char **argv ) {
     if ( strcmp( cmdToken[0], "help" ) == 0 ||
             strcmp( cmdToken[0], "h" ) == 0 ) {
         usage( cmdToken[1] );
-        exit( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "spass" ) == 0 ) {
@@ -1436,7 +1432,7 @@ main( int argc, char **argv ) {
             obfEncodeByKey( cmdToken[1], cmdToken[2], scrambled );
             printf( "Scrambled form is:%s\n", scrambled );
         }
-        exit( 0 );
+        return 0;
     }
 
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
@@ -1448,17 +1444,17 @@ main( int argc, char **argv ) {
                 rodsLogError( LOG_ERROR, status, "ctime str:checkDateFormat error" );
             }
             printf( "Converted to local iRODS integer time: %s\n", cmdToken[2] );
-            exit( 0 );
+            return 0;
         }
         if ( strcmp( cmdToken[1], "now" ) == 0 ) {
             char nowString[100];
             getNowStr( nowString );
             printf( "Current time as iRODS integer time: %s\n", nowString );
-            exit( 0 );
+            return 0;
         }
         getLocalTimeFromRodsTime( cmdToken[1], myString );
         printf( "Converted to local time: %s\n", myString );
-        exit( 0 );
+        return 0;
     }
 
     /* need to copy time convert commands up here too */
@@ -1479,47 +1475,42 @@ main( int argc, char **argv ) {
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
-
-        exit( 2 );
+        return 2;
     }
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
         if ( !debug ) {
-            exit( 3 );
+            return 3;
         }
     }
 
-    keepGoing = 1;
-    firstTime = 1;
-    while ( keepGoing ) {
-        int status;
-        status = doCommand( cmdToken, &myRodsArgs );
+    bool keepGoing = argc == 1;
+    bool firstTime = true;
+    do {
+        int status = doCommand( cmdToken, &myRodsArgs );
         if ( status == -1 ) {
-            keepGoing = 0;
+            keepGoing = false;
         }
         if ( firstTime ) {
-            if ( status == 0 ) {
-                keepGoing = 0;
+            if ( status == 0 ||
+                 status == -2 ) {
+                keepGoing = false;
             }
-            if ( status == -2 ) {
-                keepGoing = 0;
-            }
-            firstTime = 0;
+            firstTime = false;
         }
         if ( keepGoing ) {
             getInput( cmdToken, maxCmdTokens );
         }
-    }
-
+    } while ( keepGoing );
 
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
 
     if ( lastCommandStatus != 0 ) {
-        exit( 4 );
+        return 4;
     }
-    exit( 0 );
+    return 0;
 }
 
 void
