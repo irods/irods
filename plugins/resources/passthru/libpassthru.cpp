@@ -836,6 +836,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "pass_thru_file_registered" );
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "pass_thru_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "pass_thru_file_modified" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "pass_thru_file_truncate_plugin" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );

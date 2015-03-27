@@ -866,6 +866,31 @@ extern "C" {
     } // compound_file_rename
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX rename
+    irods::error compound_file_truncate(
+        irods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // check the context for validity
+        irods::error ret = compound_check_param< irods::data_object >( _ctx );
+        if ( !ret.ok() ) {
+            return PASSMSG( "invalid resource context", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the next child resource
+        irods::resource_ptr resc;
+        ret = get_next_child< irods::data_object >( _ctx, resc );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // forward the call
+        return resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+
+    } // compound_file_truncate
+
+    /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     irods::error compound_file_getfs_freespace(
         irods::resource_plugin_context& _ctx ) {
@@ -1619,6 +1644,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "compound_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "compound_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate_plugin" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "compound_file_rebalance" );

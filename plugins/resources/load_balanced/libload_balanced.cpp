@@ -446,6 +446,27 @@ extern "C" {
     } // load_balanced_file_rename
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface to truncate a file
+    irods::error load_balanced_file_truncate(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        irods::resource_ptr resc;
+        irods::error err = load_balanced_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting load_balanced resource." ) ).ok() ) {
+
+            // =-=-=-=-=-=-=-
+            // call freespace on the child
+            err = resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
+        }
+
+        return result;
+    } // load_balanced_file_truncate
+
+    /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     irods::error load_balanced_file_getfs_freespace(
         irods::resource_plugin_context& _ctx ) {
@@ -1022,6 +1043,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "load_balanced_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "load_balanced_file_modified" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "load_balanced_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "load_balanced_file_truncate" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "load_balanced_redirect" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "load_balanced_file_rebalance" );

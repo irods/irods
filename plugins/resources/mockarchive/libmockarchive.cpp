@@ -348,6 +348,35 @@ extern "C" {
     } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
+    // interface for POSIX Truncate
+    irods::error mock_archive_truncate_plugin(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        irods::error ret = unix_check_params_and_path< irods::file_object >( _ctx );
+        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
+
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+            // =-=-=-=-=-=-=-
+            // make the call to unlink
+            int status = truncate( fco->physical_path().c_str(), fco->size() );
+
+            // =-=-=-=-=-=-=-
+            // error handling
+            int err_status = UNIX_FILE_UNLINK_ERR - errno;
+            result = ASSERT_ERROR( status >= 0, err_status, "Truncate error for: \"%s\", errno = \"%s\", status = %d.",
+                                   fco->physical_path().c_str(), strerror( errno ), err_status );
+        }
+
+        return result;
+
+    } // mock_archive_truncate_plugin
+
+    // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     irods::error mock_archive_unlink_plugin(
         irods::resource_plugin_context& _ctx ) {
@@ -789,6 +818,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mock_archive_mkdir_plugin" );
         resc->add_operation( irods::RESOURCE_OP_RENAME,            "mock_archive_rename_plugin" );
         resc->add_operation( irods::RESOURCE_OP_STAT,              "mock_archive_stat_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,          "mock_archive_truncate_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

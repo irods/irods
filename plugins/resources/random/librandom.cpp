@@ -526,6 +526,27 @@ extern "C" {
     } // random_file_rename
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface to truncate a file
+    irods::error random_file_truncate(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        irods::resource_ptr resc;
+        irods::error err = random_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting random resource." ) ).ok() ) {
+
+            // =-=-=-=-=-=-=-
+            // call freespace on the child
+            err = resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
+        }
+
+        return result;
+    } // random_file_truncate
+
+    /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     irods::error random_file_getfs_freespace(
         irods::resource_plugin_context& _ctx ) {
@@ -916,6 +937,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "random_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "random_file_modified" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "random_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "random_file_truncate" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "random_redirect" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "random_file_rebalance" );

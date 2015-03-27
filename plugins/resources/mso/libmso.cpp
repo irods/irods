@@ -106,6 +106,16 @@ extern "C" {
     } // mso_rename_plugin
 
     // =-=-=-=-=-=-=-
+    // interface for POSIX readdir
+    irods::error mso_truncate_plugin(
+        irods::resource_plugin_context& ) {
+        // =-=-=-=-=-=-=-
+        // stub out
+        return SUCCESS();
+
+    } // mso_truncate_plugin
+
+    // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     irods::error mso_unlink_plugin(
         irods::resource_plugin_context& ) {
@@ -558,6 +568,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_MKDIR,             "mso_mkdir_plugin" );
         resc->add_operation( irods::RESOURCE_OP_RENAME,            "mso_rename_plugin" );
         resc->add_operation( irods::RESOURCE_OP_STAT,              "mso_file_stat_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,          "mso_truncate_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

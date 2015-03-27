@@ -491,6 +491,27 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
+    irods::error deferred_file_truncate(
+        irods::resource_plugin_context& _ctx ) {
+        irods::error result = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        irods::resource_ptr resc;
+        irods::error err = deferred_get_resc_for_call< irods::file_object >( _ctx, resc );
+        if ( ( result = ASSERT_PASS( err, "Failed selecting deferred resource." ) ).ok() ) {
+
+            // =-=-=-=-=-=-=-
+            // call freespace on the child
+            err = resc->call( _ctx.comm(), irods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+            result = ASSERT_PASS( err, "Failed calling child operation." );
+        }
+
+        return result;
+    } // deferred_file_getfs_truncate
+
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to determine free space on a device given a path
     irods::error deferred_file_getfs_freespace(
         irods::resource_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
@@ -887,6 +908,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "deferred_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "deferred_file_modified" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "deferred_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "deferred_file_truncate" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "deferred_redirect" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "deferred_file_rebalance" );
