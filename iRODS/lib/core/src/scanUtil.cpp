@@ -16,7 +16,7 @@ int
 scanObj( rcComm_t *conn,
          rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp,
-         char hostname[LONG_NAME_LEN] ) {
+         const char * hostname ) {
 
     if ( rodsPathInp->numSrc != 1 ) {
         rodsLog( LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc );
@@ -24,7 +24,7 @@ scanObj( rcComm_t *conn,
     }
 
     char * inpPathO = rodsPathInp->srcPath[0].outPath;
-    if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
+    if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T ||
             rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
         path p( inpPathO );
         if ( !exists( p ) ) {
@@ -36,20 +36,19 @@ scanObj( rcComm_t *conn,
             return 0;
         }
 
-        int lenInpPath = strlen( inpPathO );
+        size_t lenInpPath = strlen( inpPathO );
         /* remove any trailing "/" from inpPathO */
-        if ( lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ] ) {
+        if ( lenInpPath > 1 && '/' == inpPathO[ lenInpPath - 1 ] ) {
             lenInpPath--;
         }
         if ( lenInpPath >= LONG_NAME_LEN ) {
             rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in scanObj",
-                     inpPathO, ( intmax_t ) LONG_NAME_LEN );
+                    inpPathO, ( intmax_t ) LONG_NAME_LEN );
             return USER_STRLEN_TOOLONG;
         }
 
         char inpPath[ LONG_NAME_LEN ];
-        strncpy( inpPath, inpPathO, lenInpPath );
-        inpPath[ lenInpPath ] = '\0';
+        snprintf( inpPath, sizeof( inpPath ), "%s", inpPathO );
         // if it is part of a mounted collection, abort
         if ( is_directory( p ) ) {
             if ( int status = checkIsMount( conn, inpPath ) ) {
@@ -70,7 +69,7 @@ scanObj( rcComm_t *conn,
 }
 
 int
-scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname ) {
+scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, const char *hostname ) {
     int status = 0;
     char fullPath[LONG_NAME_LEN] = "\0";
 
@@ -80,9 +79,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
         /* don't do anything if it is symlink */
         return 0;
     }
-    else if ( is_directory( srcDirPath ) ) {
-    }
-    else {
+    else if ( !is_directory( srcDirPath ) ) {
         status = chkObjExist( conn, inpPath, hostname );
         return status;
     }
@@ -91,7 +88,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
         snprintf( fullPath, LONG_NAME_LEN, "%s",
-                  cp.c_str() );
+                cp.c_str() );
         if ( is_symlink( cp ) ) {
             /* don't do anything if it is symlink */
             continue;
@@ -110,15 +107,15 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 }
 
 int
-scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
+scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
     int isColl, status;
     genQueryInp_t genQueryInp1, genQueryInp2;
     genQueryOut_t *genQueryOut1 = NULL, *genQueryOut2 = NULL;
-    char condStr1[MAX_NAME_LEN], condStr2[MAX_NAME_LEN], *lastPart;
+    char condStr1[MAX_NAME_LEN], condStr2[MAX_NAME_LEN];
     char firstPart[MAX_NAME_LEN] = "";
 
     /* check if inpPath is a file or a collection */
-    lastPart = strrchr( inpPath, '/' ) + 1;
+    const char *lastPart = strrchr( inpPath, '/' ) + 1;
     strncpy( firstPart, inpPath, strlen( inpPath ) - strlen( lastPart ) - 1 );
     memset( &genQueryInp1, 0, sizeof( genQueryInp1 ) );
     addInxIval( &genQueryInp1.selectInp, COL_COLL_ID, 1 );
@@ -145,6 +142,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
     addInxIval( &genQueryInp2.selectInp, COL_R_ZONE_NAME, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_DATA_NAME, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_COLL_NAME, 1 );
+    addInxIval( &genQueryInp2.selectInp, COL_D_RESC_HIER, 1 );
     genQueryInp2.maxRows = MAX_SQL_ROWS;
 
     if ( isColl ) {
@@ -168,6 +166,9 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
     if ( status == 0 ) {
         statPhysFile( conn, genQueryOut2 );
     }
+    else {
+        printf( "Could not find the requested data object or collection in iRODS.\n" );
+    }
     while ( status == 0 && genQueryOut2->continueInx > 0 ) {
         genQueryInp2.continueInx = genQueryOut2->continueInx;
         status = rcGenQuery( conn, &genQueryInp2, &genQueryOut2 );
@@ -185,38 +186,39 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath ) {
 
 int
 statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
-    int i = 0, rc = 0;
-    char *dataPath = 0, *loc = 0, *zone = 0, *dataName = 0, *collName = 0;
-    sqlResult_t *dataPathStruct, *locStruct, *zoneStruct,
-                *dataNameStruct, *collNameStruct;
-    fileStatInp_t fileStatInp;
-    rodsStat_t *fileStatOut;
+    int rc = 0;
 
-    for ( i = 0; i < genQueryOut2->rowCnt; i++ ) {
-        dataPathStruct = getSqlResultByInx( genQueryOut2, COL_D_DATA_PATH );
-        locStruct = getSqlResultByInx( genQueryOut2, COL_R_LOC );
-        zoneStruct = getSqlResultByInx( genQueryOut2, COL_R_ZONE_NAME );
-        dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
-        collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
+    for ( int i = 0; i < genQueryOut2->rowCnt; i++ ) {
+        sqlResult_t *dataPathStruct = getSqlResultByInx( genQueryOut2, COL_D_DATA_PATH );
+        sqlResult_t *locStruct = getSqlResultByInx( genQueryOut2, COL_R_LOC );
+        sqlResult_t *zoneStruct = getSqlResultByInx( genQueryOut2, COL_R_ZONE_NAME );
+        sqlResult_t *dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
+        sqlResult_t *collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
+        sqlResult_t *rescHierStruct = getSqlResultByInx( genQueryOut2, COL_D_RESC_HIER );
         if ( dataPathStruct == NULL || locStruct == NULL || zoneStruct == NULL ||
                 dataNameStruct == NULL || collNameStruct == NULL ) {
             printf( "getSqlResultByInx returned null in statPhysFile." );
             return -1;
         }
-        dataPath = &dataPathStruct->value[dataPathStruct->len * i];
-        loc = &locStruct->value[locStruct->len * i];
-        zone = &zoneStruct->value[zoneStruct->len * i];
-        dataName = &dataNameStruct->value[dataNameStruct->len * i];
-        collName = &collNameStruct->value[collNameStruct->len * i];
+        char *dataPath = &dataPathStruct->value[dataPathStruct->len * i];
+        char *loc = &locStruct->value[locStruct->len * i];
+        char *zone = &zoneStruct->value[zoneStruct->len * i];
+        char *dataName = &dataNameStruct->value[dataNameStruct->len * i];
+        char *collName = &collNameStruct->value[collNameStruct->len * i];
+        char *rescHier = &rescHierStruct->value[rescHierStruct->len * i];
 
         /* check if the physical file does exist on the filesystem */
-        rstrcpy( fileStatInp.addr.hostAddr, loc, NAME_LEN );
-        rstrcpy( fileStatInp.addr.zoneName, zone, NAME_LEN );
-        rstrcpy( fileStatInp.fileName, dataPath, MAX_NAME_LEN );
-        rc = rcFileStat( conn, &fileStatInp, &fileStatOut );
-        if ( rc != 0 ) {
-            printf( "Physical file %s on server %s is missing, corresponding to \
-iRODS object %s/%s \n", dataPath, loc, collName, dataName );
+        fileStatInp_t fileStatInp;
+        rstrcpy( fileStatInp.addr.hostAddr, loc, sizeof( fileStatInp.addr.hostAddr ) );
+        rstrcpy( fileStatInp.addr.zoneName, zone, sizeof( fileStatInp.addr.zoneName ) );
+        rstrcpy( fileStatInp.fileName, dataPath, sizeof( fileStatInp.fileName ) );
+        rstrcpy( fileStatInp.rescHier, rescHier, sizeof( fileStatInp.rescHier ) );
+        snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName);
+        rodsStat_t *fileStatOut;
+        if ( int status = rcFileStat( conn, &fileStatInp, &fileStatOut ) ) {
+            printf( "Physical file %s on server %s is missing, corresponding to "
+                    "iRODS object %s/%s \n", dataPath, loc, collName, dataName );
+            rc = status;
         }
 
     }
@@ -226,7 +228,7 @@ iRODS object %s/%s \n", dataPath, loc, collName, dataName );
 }
 
 int
-chkObjExist( rcComm_t *conn, char *inpPath, char *hostname ) {
+chkObjExist( rcComm_t *conn, const char *inpPath, const char *hostname ) {
     int status;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -246,12 +248,12 @@ chkObjExist( rcComm_t *conn, char *inpPath, char *hostname ) {
 
     snprintf( condStr, MAX_NAME_LEN, "='%s'", inpPath );
     addInxVal( &genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr );
-    snprintf( condStr, MAX_NAME_LEN, "like '%s%s' || ='%s'", hostname, "%", hostname );
+    snprintf( condStr, MAX_NAME_LEN, "like '%s%%' || ='%s'", hostname, hostname );
     addInxVal( &genQueryInp.sqlCondInp, COL_R_LOC, condStr );
 
     status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
     if ( status == CAT_NO_ROWS_FOUND ) {
-        printf( "%s tagged as orphan file\n", inpPath );
+        printf( "%s is not registered in iRODS\n", inpPath );
     }
 
     clearGenQueryInp( &genQueryInp );
@@ -262,7 +264,7 @@ chkObjExist( rcComm_t *conn, char *inpPath, char *hostname ) {
 }
 
 int
-checkIsMount( rcComm_t *conn, char *inpPath ) {
+checkIsMount( rcComm_t *conn, const char *inpPath ) {
     int i, minLen, status, status1;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;

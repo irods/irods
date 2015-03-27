@@ -150,6 +150,3 @@ namespace irods {
 }; // namespace irods
 
 #endif // __IRODS_FILE_OBJECT_HPP__
-
-
-

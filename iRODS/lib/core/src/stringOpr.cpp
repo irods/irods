@@ -216,20 +216,19 @@ isAllDigit( const char * myStr ) {
 int
 splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
                 char * file, size_t maxFileLen, char key ) {
-    std::string srcPathString( srcPath );
-
     if ( maxDirLen == 0 || maxFileLen == 0 ) {
         rodsLog( LOG_ERROR, "splitPathByKey called with buffers of size 0" );
         return SYS_INVALID_INPUT_PARAM;
     }
 
+    const std::string srcPathString( srcPath );
     if ( srcPathString.size() == 0 ) {
         *dir = '\0';
         *file = '\0';
         return 0;
     }
 
-    size_t index_of_last_key = srcPathString.rfind( key );
+    const size_t index_of_last_key = srcPathString.rfind( key );
     if ( std::string::npos == index_of_last_key ) {
         *dir = '\0';
         rstrcpy( file, srcPathString.c_str(), maxFileLen );
@@ -238,16 +237,16 @@ splitPathByKey( const char * srcPath, char * dir, size_t maxDirLen,
 
     // If dir is the root directory, we want to return the single-character
     // string consisting of the key, NOT the empty string.
-    std::string dirPathString = srcPathString.substr( 0, std::max< size_t >( index_of_last_key, 1 ) );
-    std::string filePathString = srcPathString.substr( index_of_last_key + 1 ) ;
-
-    rstrcpy( dir, dirPathString.c_str(), maxDirLen );
-    rstrcpy( file, filePathString.c_str(), maxFileLen );
+    const std::string dirPathString = srcPathString.substr( 0, std::max< size_t >( index_of_last_key, 1 ) );
+    const std::string filePathString = srcPathString.substr( index_of_last_key + 1 ) ;
 
     if ( dirPathString.size() >= maxDirLen || filePathString.size() >= maxFileLen ) {
         rodsLog( LOG_ERROR, "splitPathByKey called with buffers of insufficient size" );
         return USER_STRLEN_TOOLONG;
     }
+
+    rstrcpy( dir, dirPathString.c_str(), maxDirLen );
+    rstrcpy( file, filePathString.c_str(), maxFileLen );
 
     return 0;
 

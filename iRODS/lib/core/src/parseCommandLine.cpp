@@ -36,8 +36,6 @@ CommandLineOptions document so we can keep it all consistent.
 int
 parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                  rodsArguments_t *rodsArgs ) {
-    int i;
-
     char fullOpts[] = "aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
     int VCount = 0;
 
@@ -56,7 +54,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
 
     /* handle the long options first */
     if ( includeLong ) {
-        for ( i = 0; i < argc; i++ ) {
+        for ( int i = 0; i < argc; i++ ) {
             if ( strcmp( "--link", argv[i] ) == 0 ) {
                 rodsArgs->link = True;
                 argv[i] = "-Z"; /* ignore symlink */
@@ -310,13 +308,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
     }
 
     /* handle the short options */
-    const char *opts;
-    if ( optString != NULL && *optString != '\0' ) {
-        opts = optString;
-    }
-    else {
-        opts = fullOpts;
-    }
+    const char *opts = optString && *optString ? optString : fullOpts;
 
     int opt;
     while ( ( opt = getopt( argc, argv, opts ) ) != EOF ) {

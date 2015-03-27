@@ -14,17 +14,17 @@ extern "C" {
 #endif
 
 int
-scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
+scanObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, const char *hostname );
 int
-scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
+scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, const char *hostname );
 int
-scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath );
+scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath );
 int
 statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut );
 int
-chkObjExist( rcComm_t *conn, char *inpPath, char *hostname );
+chkObjExist( rcComm_t *conn, const char *inpPath, const char *hostname );
 int
-checkIsMount( rcComm_t *conn, char *inpPath );
+checkIsMount( rcComm_t *conn, const char *inpPath );
 
 #ifdef __cplusplus
 }
