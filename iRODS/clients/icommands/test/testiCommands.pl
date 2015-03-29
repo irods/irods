@@ -7,9 +7,9 @@
 # usage:   ./testiCommands.pl [debug] [noprompt] [help]
 #    help - Print usage messages.
 #    debug - print debug messages.
-#    noprompt - assumes iinit was done before running this script 
+#    noprompt - assumes iinit was done before running this script
 #    and will not ask for path nor password input.
-# 
+#
 #
 # Copyright (c), CCIN2P3
 # For more information please refer to files in the COPYRIGHT directory.
@@ -52,7 +52,7 @@ my $username;
 my @words;
 
 # If noprompt_flag is set to 1, it assume iinit was done before running this
-# script and will not ask for path and password input. A "noprompt" input 
+# script and will not ask for path and password input. A "noprompt" input
 # will set it.
 my $noprompt_flag;
 my $arg;
@@ -64,12 +64,12 @@ foreach $arg (@ARGV)
     if ( $arg =~ "debug" ) {
         $debug = 1;
     } elsif ( $arg =~ "noprompt" ) {
-	$noprompt_flag = 1;
+        $noprompt_flag = 1;
     } elsif ( $arg =~ "help" ) {
         &printUsage ();
-	exit( 0 );
+        exit( 0 );
     }  else {
-	print ("unknown input - $arg \n");
+        print ("unknown input - $arg \n");
         &printUsage ();
         exit( 1 );
     }
@@ -82,8 +82,8 @@ my $mysdir = '/tmp/irodssdir';
 my $myssize;
 my $host         = hostname();
 if ( $host =~ '.' ) {
-	@words = split( /\./, $host );
-	$host  = $words[0];
+        @words = split( /\./, $host );
+        $host  = $words[0];
 }
 my $irodsfile;
 my $irodsEnvFile = $ENV{'IRODS_ENVIRNOMENT_FILE'};
@@ -109,16 +109,16 @@ $outputfile   = $dir_w . '/' . $outputfile;
 $ruletestfile = $dir_w . '/' . $ruletestfile;
 
 if ( $progname !~ '/' ) {
-	$progname = $dir_w . '/' . $progname;
+        $progname = $dir_w . '/' . $progname;
 } else {
-	if ( substr( $progname, 0, 2 ) eq './' ) {
-		@words    = split( /\//, $progname );
-		$i        = $#words;
-		$progname = $dir_w . '/' . $words[$i];
-	}
-	if ( substr( $progname, 0, 1 ) ne '/' ) {
-		$progname = $dir_w . '/' . $progname;
-	}
+        if ( substr( $progname, 0, 2 ) eq './' ) {
+                @words    = split( /\//, $progname );
+                $i        = $#words;
+                $progname = $dir_w . '/' . $words[$i];
+        }
+        if ( substr( $progname, 0, 1 ) ne '/' ) {
+                $progname = $dir_w . '/' . $progname;
+        }
 }
 
 #-- Remove ruletestfile
@@ -129,29 +129,29 @@ if ( -e $ruletestfile ) { unlink( $ruletestfile ); }
 
 # $debug = shift;
 # if ( ! $debug ) {
-# 	$debug = 0;
+#       $debug = 0;
 # } else {
-# 	$debug = 1;
+#       $debug = 1;
 # }
 
 #-- Print debug
 
 if ( $debug ) {
-	print( "\n" );
-	print( "MAIN: irodsfile        = $irodsfile\n" );
-	print( "MAIN: cwd              = $dir_w\n" );
-	print( "MAIN: outputfile       = $outputfile\n" );
-	print( "MAIN: ruletestfile     = $ruletestfile\n" );
-	print( "MAIN: progname         = $progname\n" );
-	print( "\n" );
+        print( "\n" );
+        print( "MAIN: irodsfile        = $irodsfile\n" );
+        print( "MAIN: cwd              = $dir_w\n" );
+        print( "MAIN: outputfile       = $outputfile\n" );
+        print( "MAIN: ruletestfile     = $ruletestfile\n" );
+        print( "MAIN: progname         = $progname\n" );
+        print( "\n" );
 }
 # read and parse the irods json environment file
 # and extract useful values
 my $json_text = do {
    open(my $json_fh, "<:encoding(UTF-8)", $irodsfile)
-	 or die("Can't open \$filename\": $!\n");
-	    local $/;
-	       <$json_fh>
+         or die("Can't open \$filename\": $!\n");
+            local $/;
+               <$json_fh>
 };
 
 my $json = JSON->new;
@@ -172,48 +172,48 @@ my $tempFile   = "/tmp/iCommand.log";
 
 
 #-- Loop on content of @list
-# The below parsing works in the current environment 
+# The below parsing works in the current environment
 # but there are two shortcomings:
 #   1) single quotes are removed, but if there were to be embedded ones,
 #      they would be removed too.
 #   2) if the name and value are separated by =, the line will not split right.
 #foreach $line ( @list ) {
-# 	chomp( $line );
-#	if ( ! $line ) { next; }
-# 	if ( $line =~ /irodsUserName/ ) {
-#		( $misc, $username ) = split( / /, $line );
-#		$username =~ s/\'//g; #remove all ' chars, if any
-#		next;
-#	}
-#	if ( $line =~ /irodsHome/ ) {
-#		( $misc, $irodshome ) = split( / /, $line );
-#		$irodshome =~ s/\'//g; #remove all ' chars, if any
-#		next;
-#	}
-#	if ( $line =~ /irodsZone/ ) {
-#		( $misc, $irodszone ) = split( / /, $line );
-#		$irodszone =~ s/\'//g; #remove all ' chars, if any
-#		next;
-#	}
-#	if ( $line =~ /irodsHost/ ) {
-#		( $misc, $irodshost ) = split( / /, $line );
-#		$irodshost =~ s/\'//g; #remove all ' chars, if any
-#		next;
-#	}
-#	if ( $line =~ /irodsDefResource/ ) {
-#		( $misc, $irodsdefresource ) = split( / /, $line );
-#		$irodsdefresource =~ s/\'//g; #remove all ' chars, if any
-#	}
+#       chomp( $line );
+#       if ( ! $line ) { next; }
+#       if ( $line =~ /irodsUserName/ ) {
+#               ( $misc, $username ) = split( / /, $line );
+#               $username =~ s/\'//g; #remove all ' chars, if any
+#               next;
+#       }
+#       if ( $line =~ /irodsHome/ ) {
+#               ( $misc, $irodshome ) = split( / /, $line );
+#               $irodshome =~ s/\'//g; #remove all ' chars, if any
+#               next;
+#       }
+#       if ( $line =~ /irodsZone/ ) {
+#               ( $misc, $irodszone ) = split( / /, $line );
+#               $irodszone =~ s/\'//g; #remove all ' chars, if any
+#               next;
+#       }
+#       if ( $line =~ /irodsHost/ ) {
+#               ( $misc, $irodshost ) = split( / /, $line );
+#               $irodshost =~ s/\'//g; #remove all ' chars, if any
+#               next;
+#       }
+#       if ( $line =~ /irodsDefResource/ ) {
+#               ( $misc, $irodsdefresource ) = split( / /, $line );
+#               $irodsdefresource =~ s/\'//g; #remove all ' chars, if any
+#       }
 #}
 
 #-- Print debug
 
 if ( $debug ) {
-	print( "MAIN: username         = $username\n" );
-	print( "MAIN: irodshome        = $irodshome\n" );
-	print( "MAIN: irodszone        = $irodszone\n" );
-	print( "MAIN: irodshost        = $irodshost\n" );
-	print( "MAIN: irodsdefresource = $irodsdefresource\n" );
+        print( "MAIN: username         = $username\n" );
+        print( "MAIN: irodshome        = $irodshome\n" );
+        print( "MAIN: irodszone        = $irodszone\n" );
+        print( "MAIN: irodshost        = $irodshost\n" );
+        print( "MAIN: irodsdefresource = $irodsdefresource\n" );
 }
 
 #-- Environment setup and print to stdout
@@ -230,10 +230,10 @@ if ( ! $noprompt_flag ) {
     print "Please, enter the password of the iRODS user used for the test: ";
     chomp( $input = <STDIN> );
     if ( ! $input ) {
-	print( "\nYou should give valid pwd.\n\n");
-	exit;
+        print( "\nYou should give valid pwd.\n\n");
+        exit;
     } else {
-	print( "\n" );
+        print( "\n" );
     }
 
 
@@ -309,7 +309,7 @@ runCmd( "ichmod read testuser1 $irodshome/icmdtest/foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "testuser1#$irodszone:read" );
 runCmd( "irepl -B -R testresource --rlock $irodshome/icmdtest/foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "1 testresource" );
-# overwrite a copy 
+# overwrite a copy
 runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/icmdtest/foo1" );
 runCmd( "ils -L $irodshome/icmdtest/foo1", "negtest", "LIST", "$irodsdefresource" );
 runCmd( "iphymv -R  $irodsdefresource $irodshome/icmdtest/foo1" );
@@ -537,9 +537,9 @@ system ( "rm -r $mysdir" );
 
 $rc = makeRuleFile();
 if ( $rc ) {
-	print( "Problem with makeRuleFile. Rc = $rc\n" );
+        print( "Problem with makeRuleFile. Rc = $rc\n" );
 } else {
-	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/icmdtest/foo3" );
+        runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/icmdtest/foo3" );
 }
 
 runCmd( "irsync $ruletestfile i:$irodshome/icmdtest/foo100" );
@@ -654,11 +654,11 @@ if ( $debug ) { print( "\nMAIN ########### Roll back ################\n" ); }
 for ( $i = $#returnref; $i >= 0; $i-- ) {
     undef( @tmp_tab );
     $line     = $returnref[$i];
-    @tmp_tab = @{$line};	
+    @tmp_tab = @{$line};
     #if ( $tmp_tab[0] eq "irmtrash" ) { last; }
     runCmd( $tmp_tab[0], $tmp_tab[1], $tmp_tab[2], $tmp_tab[3] );
 }
-    
+
 #-- Execute last commands before leaving
 if ( $debug ) { print( "\nMAIN ########### Last ################\n" ); }
 runCmd( "iadmin lg", "negtest", "LIST", "testgroup" );
@@ -702,206 +702,206 @@ close( FILE );
 exit;
 
 ##########################################################################################################################
-# runCmd needs at least 8 arguments: 
+# runCmd needs at least 8 arguments:
 #   1- command name + arguments
 #   2- specify if it is a negative test by providing the "negtest" value, ie it is successfull if the test fails (optional).
 #   If this value is "failtest", this command is expected to fail.
 #   3- output line of interest (optional), if equal to "LIST" then match test the entire list of answers provided in 4-. if equal to "NOANSWER" then expect no answer.
 #   4- expected list of results separeted by ',' (optional: must be given if second argument provided else it will fail).
-#	5- command name to go back to first situation
-#	6- same as 2 but for 5
-#	7- same as 3 but for 5
-#	8- same as 4 but for 5
+#       5- command name to go back to first situation
+#       6- same as 2 but for 5
+#       7- same as 3 but for 5
+#       8- same as 4 but for 5
 
 sub runCmd {
- 	my ( $cmd, $testtype, $stringToCheck, $expResult, $r_cmd, $r_testtype, $r_stringToCheck, $r_expResult ) = @_;
+        my ( $cmd, $testtype, $stringToCheck, $expResult, $r_cmd, $r_testtype, $r_stringToCheck, $r_expResult ) = @_;
 
-	my $rc = 0;
-	my @returnList;
-	my @words;
-	my $line;
+        my $rc = 0;
+        my @returnList;
+        my @words;
+        my $line;
 
- 	my $answer     = "";
- 	my @list       = "";
- 	my $numinlist  = 0;
- 	my $numsuccess = 0;
- 	my $negtest    = 0;
- 	my $failtest    = 0;
- 	my $result     = 1; 		# used only in the case where the answer of the command has to be compared to an expected answer.
+        my $answer     = "";
+        my @list       = "";
+        my $numinlist  = 0;
+        my $numsuccess = 0;
+        my $negtest    = 0;
+        my $failtest    = 0;
+        my $result     = 1;             # used only in the case where the answer of the command has to be compared to an expected answer.
 
 #-- Check inputs
-	#sleep(1);
-	if ( ! $cmd ) {
-		print( "No command given to runCmd; Exit\n" );
-		exit;
-	}
-	if ( ! $testtype ) {
-		$testtype = 0;
-		$negtest  = 0;
-	} else {
-		if ( $testtype eq "negtest" ) {
-			$negtest = 1;
+        #sleep(1);
+        if ( ! $cmd ) {
+                print( "No command given to runCmd; Exit\n" );
+                exit;
+        }
+        if ( ! $testtype ) {
+                $testtype = 0;
+                $negtest  = 0;
+        } else {
+                if ( $testtype eq "negtest" ) {
+                        $negtest = 1;
                 } elsif ( $testtype eq "failtest" ) {
                         $failtest = 1;
-		} else {
-			$negtest = 0;
-		}	
-	}
-	if ( ! $stringToCheck   ) { $stringToCheck = ""; }
-	if ( ! $expResult       ) { $expResult = ""; }
-	if ( ! $r_cmd           ) { $r_cmd = ""; }
-	if ( ! $r_testtype      ) { $r_testtype = ""; }
-	if ( ! $r_stringToCheck ) { $r_stringToCheck = ""; }
-	if ( ! $r_expResult     ) { $r_expResult = ""; }
+                } else {
+                        $negtest = 0;
+                }
+        }
+        if ( ! $stringToCheck   ) { $stringToCheck = ""; }
+        if ( ! $expResult       ) { $expResult = ""; }
+        if ( ! $r_cmd           ) { $r_cmd = ""; }
+        if ( ! $r_testtype      ) { $r_testtype = ""; }
+        if ( ! $r_stringToCheck ) { $r_stringToCheck = ""; }
+        if ( ! $r_expResult     ) { $r_expResult = ""; }
 
 #-- Update counter
 
-	$ntests++;
+        $ntests++;
 
 #-- Print debug
-	
-	if ( $debug ) { print( "\n" ); }
-	printf( "%3d - cmd executed: $cmd\n", $ntests );
-	use File::Basename;
-	my $thescriptname = basename($0);
+
+        if ( $debug ) { print( "\n" ); }
+        printf( "%3d - cmd executed: $cmd\n", $ntests );
+        use File::Basename;
+        my $thescriptname = basename($0);
         my $IRODS_HOME = dirname(dirname(dirname(dirname(abs_path(__FILE__)))));
-	chomp(my $therodslog = `ls -t $IRODS_HOME/server/log/rodsLog* | head -n1`);
-	open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
-	print THERODSLOG " --- $thescriptname $ntests [$cmd] --- \n";
-	close THERODSLOG;
-	if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }
+        chomp(my $therodslog = `ls -t $IRODS_HOME/server/log/rodsLog* | head -n1`);
+        open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
+        print THERODSLOG " --- $thescriptname $ntests [$cmd] --- \n";
+        close THERODSLOG;
+        if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }
 
 #-- Push return command in list
 
-	undef( @returnList );
-	if ( $r_cmd ){
-		$returnList[0] = $r_cmd;
-		$returnList[1] = $r_testtype;
-		$returnList[2] = $r_stringToCheck;
-		$returnList[3] = $r_expResult;
-		push( @returnref, \@returnList );
-		
-		if ( $debug ) { print( "DEBUG: roll back:       $returnList[0], $returnList[1], $returnList[2], $returnList[3].\n" ); }
-	} else {
-		if ( $debug ) { print( "DEBUG: roll back:       no.\n" ); }		
-	}
-	
+        undef( @returnList );
+        if ( $r_cmd ){
+                $returnList[0] = $r_cmd;
+                $returnList[1] = $r_testtype;
+                $returnList[2] = $r_stringToCheck;
+                $returnList[3] = $r_expResult;
+                push( @returnref, \@returnList );
+
+                if ( $debug ) { print( "DEBUG: roll back:       $returnList[0], $returnList[1], $returnList[2], $returnList[3].\n" ); }
+        } else {
+                if ( $debug ) { print( "DEBUG: roll back:       no.\n" ); }
+        }
+
 #-- Push icommand in @summarylist
 
-	push( @summarylist, "$cmd" );
+        push( @summarylist, "$cmd" );
 
 #-- Execute icommand
 
-	$rc = system( "$cmd > $tempFile" );
+        $rc = system( "$cmd > $tempFile" );
 
 #-- check that the list of answers is part of the result of the command.
 
-	if (( $rc == 0 ) and $stringToCheck ) {
-		@words     = split( ",", $expResult );
-		$numinlist = @words;
-		@list      = dumpFileContent( $tempFile );
-		
-		if ( $debug ) {
-			print( "DEBUG: numinlist = $numinlist\n" );
-			print( "DEBUG: list =\n@list\n" );
-		}
-				
+        if (( $rc == 0 ) and $stringToCheck ) {
+                @words     = split( ",", $expResult );
+                $numinlist = @words;
+                @list      = dumpFileContent( $tempFile );
+
+                if ( $debug ) {
+                        print( "DEBUG: numinlist = $numinlist\n" );
+                        print( "DEBUG: list =\n@list\n" );
+                }
+
 #---- If LIST is given as 3rd element: compare output of icommand to list in 4th argument
-		
-		if ( $stringToCheck eq "LIST" ) {
-			foreach $line ( @list ) {
-				chomp( $line );
-				$line =~ s/^\s+//;
-				$line =~ s/\s+$//;
-				$answer .= "$line ";
-			}
-			chomp( $answer );
-			$answer =~ s/^\s+//;
-			$answer =~ s/\s+$//;
 
-			if ( $debug ) { print( "DEBUG: answer    = $answer\n" ); }
+                if ( $stringToCheck eq "LIST" ) {
+                        foreach $line ( @list ) {
+                                chomp( $line );
+                                $line =~ s/^\s+//;
+                                $line =~ s/\s+$//;
+                                $answer .= "$line ";
+                        }
+                        chomp( $answer );
+                        $answer =~ s/^\s+//;
+                        $answer =~ s/\s+$//;
 
-			foreach $entry ( @words ) {
-				if ( $answer =~ /$entry/ ) { $numsuccess++; }
-			}
-			
-			if ( $numsuccess >= $numinlist ) {
-				$result = 1;
-			} else {
-				$result = 0;
-			}
-		} elsif ( $stringToCheck eq "NOANSWER" ) {
-			my $numanswer = @list;
-			if ($numanswer == 0) {
-				$result = 1;
+                        if ( $debug ) { print( "DEBUG: answer    = $answer\n" ); }
+
+                        foreach $entry ( @words ) {
+                                if ( $answer =~ /$entry/ ) { $numsuccess++; }
+                        }
+
+                        if ( $numsuccess >= $numinlist ) {
+                                $result = 1;
                         } else {
                                 $result = 0;
                         }
-		} else {
-			if ( $debug ) { print( "DEBUG: stringToCheck = $stringToCheck\n" ); }
-			foreach $line ( @list ) {
-				chomp( $line );
-				if ( $debug ) { print( "DEBUG: line = $line\n" ); }
-				if ( $line =~ /$stringToCheck/ ) {
-					( $misc, $answer ) = split( /$stringToCheck/, $line );
-					$answer =~ s/^\s+//;		# remove blanks
-					$answer =~ s/\s+$//;		# remove blanks
-					last;
-				}
-			}
-			
-			if ( $answer eq $words[0] ) {
-				$result = 1;
-			} else {
-				$result = 0;
-			}
-		}
-	}
-	
+                } elsif ( $stringToCheck eq "NOANSWER" ) {
+                        my $numanswer = @list;
+                        if ($numanswer == 0) {
+                                $result = 1;
+                        } else {
+                                $result = 0;
+                        }
+                } else {
+                        if ( $debug ) { print( "DEBUG: stringToCheck = $stringToCheck\n" ); }
+                        foreach $line ( @list ) {
+                                chomp( $line );
+                                if ( $debug ) { print( "DEBUG: line = $line\n" ); }
+                                if ( $line =~ /$stringToCheck/ ) {
+                                        ( $misc, $answer ) = split( /$stringToCheck/, $line );
+                                        $answer =~ s/^\s+//;            # remove blanks
+                                        $answer =~ s/\s+$//;            # remove blanks
+                                        last;
+                                }
+                        }
+
+                        if ( $answer eq $words[0] ) {
+                                $result = 1;
+                        } else {
+                                $result = 0;
+                        }
+                }
+        }
+
         if ( $rc != 0 and $failtest == 1) {
                 push( @successlist, "$ntests - $cmd  ====> OK\n" );
                 $result = 1;
-	} elsif ( $rc == 0 and ( $result ^ $negtest ) ) {
-		push( @successlist, "$ntests - $cmd  ====> OK\n" );
-		$result = 1;
-	} else {
-		push( @failureList, "$ntests - $cmd  ====> error code = $rc\n" );
-		$result = 0;
-	}
+        } elsif ( $rc == 0 and ( $result ^ $negtest ) ) {
+                push( @successlist, "$ntests - $cmd  ====> OK\n" );
+                $result = 1;
+        } else {
+                push( @failureList, "$ntests - $cmd  ====> error code = $rc\n" );
+                $result = 0;
+        }
 
-	if ( $debug ) { print( "DEBUG: result    = $result (1 is OK).\n" ); }			
-	
-	unlink( $tempFile );
-	return();
+        if ( $debug ) { print( "DEBUG: result    = $result (1 is OK).\n" ); }
+
+        unlink( $tempFile );
+        return();
 }
 ##########################################################################################################################
 # dumpFileContent: open a file in order to dump its content to an array
 
 sub dumpFileContent {
-	my $file = shift;
-	my @filecontent;
-	my $line;
+        my $file = shift;
+        my @filecontent;
+        my $line;
 
-	open( DUMP, $file ) or die "Unable to open the file $file in read mode.\n";
-	foreach $line ( <DUMP> ) {
-		$line =~ s/^\s+//;		# remove blanks
-		$line =~ s/\s+$//;		# remove blanks
-		push( @filecontent, $line );
-	}
-	close( DUMP );
-	return( @filecontent );
+        open( DUMP, $file ) or die "Unable to open the file $file in read mode.\n";
+        foreach $line ( <DUMP> ) {
+                $line =~ s/^\s+//;              # remove blanks
+                $line =~ s/\s+$//;              # remove blanks
+                push( @filecontent, $line );
+        }
+        close( DUMP );
+        return( @filecontent );
 }
 ##########################################################################################################################
 # makeRuleFile: make a rule test file
 
 sub makeRuleFile {
-	my $rc;
-	
-	$rc = open( FILE2, ">$ruletestfile" );
-	if ( ! $rc ) {
-		print( "Impossible to open the file $ruletestfile in write mode.\n" );
-		return( 1 );
-	}
+        my $rc;
+
+        $rc = open( FILE2, ">$ruletestfile" );
+        if ( ! $rc ) {
+                print( "Impossible to open the file $ruletestfile in write mode.\n" );
+                return( 1 );
+        }
 
         print( FILE2 "#\n" );
         print( FILE2 "# This is an example of an input for the irule command.\n" );
@@ -928,8 +928,8 @@ sub makeRuleFile {
 sub mkldir
 {
     my $i;
-    my $count = 5; 
-    my $fcount = 2; 
+    my $count = 5;
+    my $fcount = 2;
     my $mylfile;
     my $mysfile;
     my $lfile = $dir_w . "/lfile";
@@ -937,19 +937,19 @@ sub mkldir
     system( "echo 012345678901234567890123456789012345678901234567890123456789012 > $lfile" );
     for ( $i = $count; $i >= 0; $i-- ) {
       system ( "cat $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile $lfile > $lfile1" );
-	rename ( $lfile1, $lfile );
+        rename ( $lfile1, $lfile );
     }
     $mylsize = stat ($lfile)->size;
     system ( "mkdir $myldir" );
     for ( $i = $fcount; $i > 0; $i-- ) {
         $mylfile = $myldir . '/' . 'lfile' . $i;
         $mysfile = $myldir . '/' . 'sfile' . $i;
-	if ($i != 1) {
-	    copy ( $lfile, $mylfile );
-	} else { 
-	    rename ( $lfile, $mylfile );
-	}
-	copy ( $progname, $mysfile );
+        if ($i != 1) {
+            copy ( $lfile, $mylfile );
+        } else {
+            rename ( $lfile, $mylfile );
+        }
+        copy ( $progname, $mysfile );
     }
 }
 
@@ -962,7 +962,7 @@ sub mksdir
     system ( "mkdir $mysdir" );
     for ( $i = $count; $i > 0; $i-- ) {
         $mysfile = $mysdir . '/' . 'sfile' . $i;
-	copy ( $progname, $mysfile );
+        copy ( $progname, $mysfile );
     }
 }
 
@@ -999,4 +999,3 @@ sub printUsage ()
     print ("  noprompt -  Assumes iinit was done before running this script and\n");
     print ("    will not ask for password nor path input.\n");
 }
-
