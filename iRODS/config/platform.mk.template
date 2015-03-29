@@ -35,7 +35,10 @@ endif
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -fPIC
-LDRFLAGS += -ldl -rdynamic
+LDRFLAGS += -ldl
+ifneq ($(OS_platform), osx_platform)
+LDRFLAGS += -rdynamic
+endif
 
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
