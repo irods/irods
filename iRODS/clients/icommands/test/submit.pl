@@ -238,8 +238,7 @@ for ( $cnt=1; $cnt<=$test_number; $cnt++ ) {
 	push( @commandlist, "iinit $input" );
 	push( @commandlist, "iadmin lt" );
 	push( @commandlist, "iadmin lz" );
-	push( @commandlist, "iadmin lu $testuser1" );
-	push( @commandlist, "iadmin moduser $testuser1 type rodsuser" );
+	push( @commandlist, "iadmin mkuser $testuser1 rodsuser" );
 	push( @commandlist, "iadmin lu $testuser1" );
 	push( @commandlist, "iadmin mkuser $testuser2 rodsuser" );
 	push( @commandlist, "iadmin lu" );

@@ -246,7 +246,7 @@ if ( ! $noprompt_flag ) {
 
 runCmd( "iadmin lt" );
 runCmd( "iadmin lz", "", "LIST", $irodszone );
-runCmd( "iadmin moduser testuser1 type rodsuser" );
+runCmd( "iadmin mkuser testuser1 rodsuser", "", "", "", "iadmin rmuser testuser1" );
 runCmd( "iadmin lu testuser1", "", "user_type_name:", "rodsuser" );
 runCmd( "iadmin mkuser testuser2 rodsuser", "", "", "", "iadmin rmuser testuser2" );
 runCmd( "iadmin lu", "", "LIST", "testuser1,testuser2" );
