@@ -194,8 +194,6 @@ static SSL_CTX* ssl_init_context(
     char *keyfile ) {
     static int init_done = 0;
     SSL_CTX *ctx = 0;
-    char *ca_path = 0;
-    char *ca_file = 0;
     char *verify_server = 0;
 
     rodsEnv env;
@@ -214,9 +212,7 @@ static SSL_CTX* ssl_init_context(
         SSL_load_error_strings();
         init_done = 1;
     }
-    /* in our test programs we set up a null signal
-       handler for SIGPIPE */
-    /* signal(SIGPIPE, sslSigpipeHandler); */
+
     ctx = SSL_CTX_new( SSLv23_method() );
 
     SSL_CTX_set_options( ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_SINGLE_DH_USE );
@@ -238,9 +234,9 @@ static SSL_CTX* ssl_init_context(
     }
 
     /* set up CA paths and files here */
-    ca_path = env.irodsSSLCACertificatePath;
-    ca_file = env.irodsSSLCACertificateFile;
-    if ( strlen( ca_path ) > 0 || strlen( ca_file ) > 0 ) {
+    const char *ca_path = strcmp(env.irodsSSLCACertificatePath, "") ? env.irodsSSLCACertificatePath : NULL;
+    const char *ca_file = strcmp(env.irodsSSLCACertificateFile, "") ? env.irodsSSLCACertificateFile : NULL;
+    if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             ssl_log_error( "sslInit: error loading CA certificate locations" );
         }
