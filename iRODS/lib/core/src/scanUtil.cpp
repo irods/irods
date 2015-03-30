@@ -140,6 +140,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
        physical resource */
     memset( &genQueryInp2, 0, sizeof( genQueryInp2 ) );
     addInxIval( &genQueryInp2.selectInp, COL_D_DATA_PATH, 1 );
+    addInxIval( &genQueryInp2.selectInp, COL_DATA_SIZE, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_R_LOC, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_R_ZONE_NAME, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_DATA_NAME, 1 );
@@ -192,23 +193,30 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
 
     for ( int i = 0; i < genQueryOut2->rowCnt; i++ ) {
         sqlResult_t *dataPathStruct = getSqlResultByInx( genQueryOut2, COL_D_DATA_PATH );
+        sqlResult_t *dataSizeStruct = getSqlResultByInx( genQueryOut2, COL_DATA_SIZE );
         sqlResult_t *locStruct = getSqlResultByInx( genQueryOut2, COL_R_LOC );
         sqlResult_t *zoneStruct = getSqlResultByInx( genQueryOut2, COL_R_ZONE_NAME );
         sqlResult_t *dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
         sqlResult_t *collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
         sqlResult_t *rescHierStruct = getSqlResultByInx( genQueryOut2, COL_D_RESC_HIER );
-        if ( dataPathStruct == NULL || locStruct == NULL || zoneStruct == NULL ||
-                dataNameStruct == NULL || collNameStruct == NULL ) {
+        if ( dataPathStruct == NULL || dataSizeStruct == NULL || locStruct == NULL ||
+                zoneStruct == NULL || dataNameStruct == NULL || collNameStruct == NULL ||
+                rescHierStruct == NULL ) {
             printf( "getSqlResultByInx returned null in statPhysFile." );
             return -1;
         }
         char *dataPath = &dataPathStruct->value[dataPathStruct->len * i];
+        char *dataSize = &dataSizeStruct->value[dataSizeStruct->len * i];
         char *loc = &locStruct->value[locStruct->len * i];
         char *zone = &zoneStruct->value[zoneStruct->len * i];
         char *dataName = &dataNameStruct->value[dataNameStruct->len * i];
         char *collName = &collNameStruct->value[collNameStruct->len * i];
         char *rescHier = &rescHierStruct->value[rescHierStruct->len * i];
 
+        //zero-length files are not stored on disk
+        if ( strcmp( dataSize, "0" ) == 0 ) {
+            return 0;
+        }
         /* check if the physical file does exist on the filesystem */
         fileStatInp_t fileStatInp;
         rstrcpy( fileStatInp.addr.hostAddr, loc, sizeof( fileStatInp.addr.hostAddr ) );
