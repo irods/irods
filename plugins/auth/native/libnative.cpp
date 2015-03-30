@@ -1,3 +1,8 @@
+// Ilari Korhonen 26-11-2014 (on OS X builds use CC MD5!)
+#ifdef osx_platform
+#include <CommonCrypto/CommonDigest.h>
+#endif
+
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.hpp"
@@ -191,12 +196,20 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // create a md5 hash of the challenge
+
+
+#ifdef osx_platform
+	    // Ilari Korhonen 26-11-2014 (on OS X builds use CC MD5!)
+	    char digest[ RESPONSE_LEN + 2 ];
+	    CC_MD5(md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN, (unsigned char*)digest);
+#else
             MD5_CTX context;
             MD5Init( &context );
             MD5Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
 
             char digest[ RESPONSE_LEN + 2 ];
             MD5Final( ( unsigned char* )digest, &context );
+#endif
 
             // =-=-=-=-=-=-=-
             // make sure 'string' doesn't end early -
