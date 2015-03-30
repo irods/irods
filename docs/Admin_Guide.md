@@ -626,7 +626,7 @@ The core is designed to be as immutable as possible and serve as a bus for handl
 The planned plugin interfaces and their status are listed here:
 
 | Plugin Interface               | Status     |  Since   |
-| ------------------------------ | ---------- | -------- |  
+| ------------------------------ | ---------- | -------- |
 | Pluggable Microservices        | Complete   |  3.0b2   |
 | Composable Resources           | Complete   |  3.0b3   |
 | Pluggable Authentication       | Complete   |  3.0.1b1 |
@@ -1036,7 +1036,7 @@ The SSL parameters are tunable via the following `irods_environment.json` variab
 
 ~~~
 "irods_client_server_negotiation": "request_server_negotiation",
-"irods_client_server_policy": "CS_NEG_REFUSE",
+"irods_client_server_policy": "CS_NEG_REQUIRE",
 "irods_encryption_key_size": 32,
 "irods_encryption_salt_size": 8,
 "irods_encryption_num_hash_rounds": 16,
@@ -1576,7 +1576,7 @@ The following two settings, the default hash scheme and the default hash policy,
  | irods_default_hash_scheme       | default_hash_scheme            |
  |  - SHA256 (default)             |  - SHA256 (default)            |
  |  - MD5                          |  - MD5                         |
- | ------------------------------- | ------------------------------ | 
+ | ------------------------------- | ------------------------------ |
  | irods_match_hash_policy         | match_hash_policy              |
  |  - Compatible (default)         |  - Compatible (default)        |
  |  - Strict                       |  - Strict                      |
@@ -1811,4 +1811,3 @@ It is recommended to use the supported iCommands from 4.0+.
                             iRODS 3.0 community codebase.
 </td></tr>
 </table>
-
