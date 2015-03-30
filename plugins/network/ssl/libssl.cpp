@@ -692,9 +692,6 @@ extern "C" {
             std::string err_str = "failed to initialize SSL context";
             ssl_build_error_string( err_str );
             if ( ( result = ASSERT_ERROR( ctx, SSL_INIT_ERROR, err_str.c_str() ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                //
                 SSL* ssl = ssl_init_socket( ctx, ssl_obj->socket_handle() );
                 std::string err_str = "couldn't initialize SSL socket";
                 ssl_build_error_string( err_str );
@@ -702,9 +699,6 @@ extern "C" {
                     SSL_CTX_free( ctx );
                 }
                 else {
-
-                    // =-=-=-=-=-=-=-
-                    //
                     int status = SSL_connect( ssl );
                     std::string err_str = "error in SSL_connect";
                     ssl_build_error_string( err_str );
@@ -713,9 +707,9 @@ extern "C" {
                         SSL_CTX_free( ctx );
                     }
                     else {
+                        ssl_obj->ssl( ssl );
+                        ssl_obj->ssl_ctx( ctx );
 
-                        // =-=-=-=-=-=-=-
-                        //
                         int status = ssl_post_connection_check( ssl, ssl_obj->host().c_str() );
                         std::string err_str = "post connection certificate check failed";
                         ssl_build_error_string( err_str );
@@ -723,10 +717,6 @@ extern "C" {
                             ssl_client_stop( _ctx );
                         }
                         else {
-
-                            ssl_obj->ssl( ssl );
-                            ssl_obj->ssl_ctx( ctx );
-
                             // =-=-=-=-=-=-=-
                             // check to see if a key has already been placed
                             // in the property map
