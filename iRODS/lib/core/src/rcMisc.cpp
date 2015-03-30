@@ -1698,7 +1698,7 @@ getLocalTimeFromRodsTime( const char *timeStrIn, char *timeStr ) {
     struct tm *mytm;
 
     // This is 1 because they actually capture a leading space
-    if ( strlen( timeStrIn ) == 1 ) {
+    if ( strlen( timeStrIn ) <= 1 ) {
         strcpy( timeStr, "Never" );
     }
     else {
