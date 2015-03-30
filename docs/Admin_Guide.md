@@ -633,7 +633,7 @@ The planned plugin interfaces and their status are listed here:
 | Pluggable Network              | Complete   |  3.0.1b1 |
 | Pluggable Database             | Complete   |  4.0.0b1 |
 | Pluggable RPC API              | Complete   |  4.0.0b2 |
-| Pluggable Rule Engine          | Complete   |  4.1.0   |
+| Pluggable Rule Engine          | Requested  |          |
 | Pluggable First Class Objects  | Requested  |          |
 
 
