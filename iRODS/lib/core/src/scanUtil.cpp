@@ -64,8 +64,10 @@ scanObj( rcComm_t *conn,
               rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
         return scanObjCol( conn, myRodsArgs, inpPathO );
     }
-
-    return 0;
+    else {
+        rodsLog( LOG_ERROR, "scanObj: %s does not exist", inpPathO );
+        return USER_INPUT_PATH_ERR;
+    }
 }
 
 int
