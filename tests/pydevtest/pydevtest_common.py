@@ -12,6 +12,7 @@ class irods_test_constants(object):
     RUN_IN_TOPOLOGY = False
     TOPOLOGY_FROM_RESOURCE_SERVER = False
     HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
+    USE_SSL = False
 
 def update_json_file_from_dict(filename, update_dict):
     with open(filename) as f:

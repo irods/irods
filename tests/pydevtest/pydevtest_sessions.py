@@ -21,7 +21,7 @@ _user_creation_information = [
 
 
 def make_environment_dict(username):
-    return {
+    environment = {
         'irods_host': socket.gethostname(),
         'irods_port': 1247,
         'irods_default_resource': 'demoResc',
@@ -37,6 +37,13 @@ def make_environment_dict(username):
         'irods_encryption_algorithm': 'AES-256-CBC',
         'irods_default_hash_scheme': 'SHA256',
     }
+    if pydevtest_common.irods_test_constants.USE_SSL:
+        environment.update({
+            'irods_client_server_policy': 'CS_NEG_REQUIRE',
+            "irods_ssl_verify_server": "cert",
+            "irods_ssl_ca_certificate_file": "/etc/irods/server.crt",
+        })
+    return environment
 
 ######################################################
 # generic standup functions for admin and user

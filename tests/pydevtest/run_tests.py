@@ -14,28 +14,26 @@ else:
 def get_irods_root_directory():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(get_irods_root_directory(), 'iRODS', 'irodsctl')
     print(irodsctl)
     subprocess.check_call([irodsctl, arg])
 
-
 def restart_irods_server():
     run_irodsctl_with_arg('restart')
-
 
 def run_devtesty():
     run_irodsctl_with_arg('devtesty')
 
-
 def run_fastswap_test():
     subprocess.check_call('rulebase_fastswap_test_2276.sh')
-
 
 def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
+def optparse_callback_use_ssl(*args, **kwargs):
+    import pydevtest_common
+    pydevtest_common.irods_test_constants.USE_SSL = True
 
 def optparse_callback_topology_test(option, opt_str, value, parser):
     import pydevtest_common
@@ -45,7 +43,6 @@ def optparse_callback_topology_test(option, opt_str, value, parser):
     pydevtest_common.irods_test_constants.HOSTNAME_2 = 'resource2.example.org'
     pydevtest_common.irods_test_constants.HOSTNAME_3 = 'resource3.example.org'
 
-
 def run_tests_from_names(names):
     loader = unittest.TestLoader()
     suites = [loader.loadTestsFromName(name) for name in names]
@@ -54,9 +51,7 @@ def run_tests_from_names(names):
     results = runner.run(super_suite)
     return results
 
-
 class RegisteredTestResult(unittest.TextTestResult):
-
     def __init__(self, *args, **kwargs):
         super(RegisteredTestResult, self).__init__(*args, **kwargs)
         unittest.registerResult(self)
@@ -73,10 +68,9 @@ if __name__ == '__main__':
     parser.add_option("--include_auth_suite_tests", action='store_true')
     parser.add_option("--include_fuse_suite_tests", action='store_true')
     parser.add_option("--run_devtesty", action='store_true')
-    parser.add_option("--topology_test", type='choice',
-                      choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
-    parser.add_option("--catch_keyboard_interrupt", action='callback',
-                      callback=optparse_callback_catch_keyboard_interrupt)
+    parser.add_option("--topology_test", type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
+    parser.add_option("--catch_keyboard_interrupt", action='callback', callback=optparse_callback_catch_keyboard_interrupt)
+    parser.add_option("--use_ssl", action='callback', callback=optparse_callback_use_ssl)
     options, _ = parser.parse_args()
 
     if len(sys.argv) == 1:
