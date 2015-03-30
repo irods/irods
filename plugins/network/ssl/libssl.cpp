@@ -303,14 +303,7 @@ static SSL* ssl_init_socket(
 static int ssl_post_connection_check(
     SSL *ssl,
     const char *peer ) {
-    char *verify_server = 0;
-    X509 *cert = 0;
-    int match = 0;
-    STACK_OF( GENERAL_NAMES ) *names = 0;
     GENERAL_NAME *name = 0;
-    int num_names = 0, i = 0;
-    char *namestr = 0;
-    char cn[256];
 
     rodsEnv env;
     int status = getRodsEnv( &env );
@@ -323,14 +316,14 @@ static int ssl_post_connection_check(
 
     }
 
-    verify_server = env.irodsSSLVerifyServer;
+    char *verify_server = env.irodsSSLVerifyServer;
     if ( strlen( verify_server ) > 0 && strcmp( verify_server, "hostname" ) ) {
         /* not being asked to verify that the peer hostname
            is in the certificate. */
         return 1;
     }
 
-    cert = SSL_get_peer_certificate( ssl );
+    X509 *cert = SSL_get_peer_certificate( ssl );
     if ( cert == NULL ) {
         /* no certificate presented */
         return 0;
@@ -344,14 +337,15 @@ static int ssl_post_connection_check(
 
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
-    names = ( STACK_OF( GENERAL_NAMES )* )X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL );
-    num_names = GENERAL_NAMES_NUM( names );
-    for ( i = 0; i < num_names; i++ ) {
+    bool match = false;
+    STACK_OF( GENERAL_NAMES ) *names = ( STACK_OF( GENERAL_NAMES )* )X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL );
+    int num_names = GENERAL_NAMES_NUM( names );
+    for ( int i = 0; i < num_names; i++ ) {
         name = ( GENERAL_NAME* )GENERAL_NAMES_VALUE( names, i );
         if ( name->type == GEN_DNS ) {
-            namestr = ( char* )ASN1_STRING_data( name->d.dNSName );
+            char *namestr = ( char* )ASN1_STRING_data( name->d.dNSName );
             if ( !strcasecmp( namestr, peer ) ) {
-                match = 1;
+                match = true;
                 break;
             }
         }
@@ -359,17 +353,17 @@ static int ssl_post_connection_check(
     GENERAL_NAMES_FREE( names );
 
     /* if no match above, check the common name in the certificate */
+    char name_text[256];
     if ( !match &&
             ( X509_NAME_get_text_by_NID( X509_get_subject_name( cert ),
-                                         NID_commonName, cn, 256 ) != -1 ) ) {
-        cn[255] = 0;
-        if ( !strcasecmp( cn, peer ) ) {
-            match = 1;
+                                         NID_commonName, name_text, sizeof(name_text) ) != -1 ) ) {
+        if ( !strcasecmp( name_text, peer ) ) {
+            match = true;
         }
-        else if ( cn[0] == '*' ) { /* wildcard domain */
+        else if ( name_text[0] == '*' ) { /* wildcard domain */
             const char *tmp = strchr( peer, '.' );
-            if ( tmp && !strcasecmp( tmp, cn + 1 ) ) {
-                match = 1;
+            if ( tmp && !strcasecmp( tmp, name_text + 1 ) ) {
+                match = true;
             }
         }
     }
