@@ -812,7 +812,7 @@ else
     echo "Detected unixODBC library [$UNIXODBC]"
 fi
 
-LIBFUSEDEV=`find /usr/include /usr/local/Cellar -name fuse.h 2> /dev/null | $GREPCMD -v linux`
+LIBFUSEDEV=`find /usr/include /usr/local /usr/local/fuse /usr/local/Cellar -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libfuse-dev"
