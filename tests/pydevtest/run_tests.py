@@ -82,7 +82,7 @@ if __name__ == '__main__':
         test_identifiers.append(options.run_specific_test)
     if options.run_python_suite:
         test_identifiers.extend(['test_xmsg', 'iadmin_suite', 'test_mso_suite', 'test_resource_types', 'catalog_suite', 'rulebase_suite',
-                                 'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set', 'test_allrules'])
+                                 'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set', 'test_allrules', 'test_iscan'])
     if options.include_auth_suite_tests:
         test_identifiers.append('auth_suite')
     if options.include_fuse_suite_tests:

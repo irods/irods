@@ -158,7 +158,7 @@ class RodsSession(object):
                       'iuserinfo', 'ipwd', 'ierror', 'iexecmd', 'ips',
                       'iqstat', 'ichksum', 'itrim', 'iphymv', 'ibun',
                       'iphybun', 'ireg', 'imcoll', 'irsync', 'ixmsg',
-                      'irule', 'iqdel', 'iticket', 'iapitest',
+                      'irule', 'iqdel', 'iticket', 'iapitest', 'iscan',
                       'isysmeta',]
 
         if icommand not in valid_cmds:
