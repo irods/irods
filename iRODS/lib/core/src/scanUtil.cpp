@@ -213,10 +213,6 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         char *collName = &collNameStruct->value[collNameStruct->len * i];
         char *rescHier = &rescHierStruct->value[rescHierStruct->len * i];
 
-        //zero-length files are not stored on disk
-        if ( strcmp( dataSize, "0" ) == 0 ) {
-            return 0;
-        }
         /* check if the physical file does exist on the filesystem */
         fileStatInp_t fileStatInp;
         rstrcpy( fileStatInp.addr.hostAddr, loc, sizeof( fileStatInp.addr.hostAddr ) );
@@ -225,9 +221,15 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         rstrcpy( fileStatInp.rescHier, rescHier, sizeof( fileStatInp.rescHier ) );
         snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName);
         rodsStat_t *fileStatOut;
-        if ( int status = rcFileStat( conn, &fileStatInp, &fileStatOut ) ) {
+        int status = rcFileStat( conn, &fileStatInp, &fileStatOut );
+        if ( SYS_NO_API_PRIV == status ) {
+            printf( "User must be a rodsadmin to scan iRODS data objects.\n" );
+            rc = status;
+        }
+        //zero-length files are not stored on disk
+        else if ( status < 0 && strcmp( dataSize, "0" ) != 0 ) {
             printf( "Physical file %s on server %s is missing, corresponding to "
-                    "iRODS object %s/%s \n", dataPath, loc, collName, dataName );
+                    "iRODS object %s/%s\n", dataPath, loc, collName, dataName );
             rc = status;
         }
 

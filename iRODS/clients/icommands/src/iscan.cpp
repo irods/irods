@@ -95,10 +95,11 @@ void
 usage() {
     char *msgs[] = {
         "Usage: iscan [-drh] srcPhysicalFile|srcPhysicalDirectory|srcDataObj|srcCollection",
-        "If the input is a local data file or a local directory, it checks if the content is registered in irods.",
+        "If the input is a local data file or a local directory, it checks if the content is registered in iRODS.",
         "Full path must be used for local files and directories.",
         "If the input is an iRODS file or an iRODS collection, it checks if the physical files corresponding ",
-        "to the iRODS object does exist on the data servers.",
+        "to the iRODS object does exist on the data servers. Scanning data objects and collections may only be ",
+        "performed by a rodsadmin."
         "If the operation is successful, nothing will be output and 0 will be returned.",
         "Options are:",
         " -r  recursive - scan local subdirectories or subcollections",
