@@ -82,7 +82,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // determine if rule exists
         bool ret;
-        error err;
         if ( !(err = re_ctx_mgr.rule_exists(_name, ret)).ok() ) {
             return err;
         } else if( !ret ) {
