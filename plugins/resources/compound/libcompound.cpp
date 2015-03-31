@@ -1644,7 +1644,7 @@ extern "C" {
         resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "compound_file_unregistered" );
         resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
         resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "compound_file_notify" );
-        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate_plugin" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate" );
 
         resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
         resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "compound_file_rebalance" );
@@ -1662,6 +1662,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
