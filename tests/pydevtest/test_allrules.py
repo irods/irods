@@ -342,15 +342,6 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
             if "rulemsiCollRepl" in rulefile:
                 # print "skipping " + rulefile + " ----- deprecated"
                 return False
-            if "rulemsiDataObjGetWithOptions" in rulefile:
-                # print "skipping " + rulefile + " ----- deprecated"
-                return False
-            if "rulemsiDataObjReplWithOptions" in rulefile:
-                # print "skipping " + rulefile + " ----- deprecated"
-                return False
-            if "rulemsiExecStrCondQueryWithOptions" in rulefile:
-                # print "skipping " + rulefile + " ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"
-                return False
             if "rulemsiTarFileExtract" in rulefile:
                 # print "skipping " + rulefile + " ----- CAT_NO_ROWS_FOUND - failed in
                 # call to getDataObjInfoIncSpecColl"

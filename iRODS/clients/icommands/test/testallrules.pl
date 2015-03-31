@@ -345,7 +345,6 @@ foreach $rulefile (@rules)
     if ($rulefile =~ /rulemsiRda/) { print "----- skipping RDA -- $rulefile\n"; next; }
 
     if ($rulefile =~ /rulemsiCollRepl/) { print "----- skipping deprecated -- $rulefile\n"; next; }
-    if ($rulefile =~ /rulemsiDataObjGetWithOptions/) { print "----- skipping deprecated -- $rulefile\n"; next; }
 
 
     # run it

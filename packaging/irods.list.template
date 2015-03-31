@@ -520,7 +520,6 @@ f 755 root root ${IRODS_HOME}/clients/icommands/test/repeatiPutTest.sh ./iRODS/c
 d 755 root root ${IRODS_HOME}/clients/icommands/test/rules3.0 -
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleprint_hello.r ./iRODS/clients/icommands/test/rules3.0/ruleprint_hello.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCommit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCommit.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRename.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRename.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiMergeDataCopies.r ./iRODS/clients/icommands/test/rules3.0/rulemsiMergeDataCopies.r
@@ -595,7 +594,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiPropertiesG
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiOprDisallowed.r ./iRODS/clients/icommands/test/rules3.0/rulemsiOprDisallowed.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetObjType.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetObjType.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiApplyDCMetadataTemplate.r ./iRODS/clients/icommands/test/rules3.0/rulemsiApplyDCMetadataTemplate.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiExecStrCondQueryWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiExecStrCondQueryWithOptions.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetRandomScheme.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetRandomScheme.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiTarFileExtract.r ./iRODS/clients/icommands/test/rules3.0/rulemsiTarFileExtract.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetQuota.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetQuota.r
@@ -700,11 +698,8 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulewriteString.r 
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetContInxFromGenQueryOut.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetContInxFromGenQueryOut.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRegisterData.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRegisterData.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiSetDataObjAvoidResc.r ./iRODS/clients/icommands/test/rules3.0/rulemsiSetDataObjAvoidResc.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjChksumWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjChksumWithOptions.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiAdmAddAppRuleStruct.r ./iRODS/clients/icommands/test/rules3.0/rulemsiAdmAddAppRuleStruct.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetSystemTime.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetSystemTime.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjGetWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjGetWithOptions.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjReplWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjReplWithOptions.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjRsync.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjRsync.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiRenameLocalZone.r ./iRODS/clients/icommands/test/rules3.0/rulemsiRenameLocalZone.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiObjByName.r ./iRODS/clients/icommands/test/rules3.0/rulemsiObjByName.r

@@ -104,7 +104,6 @@
   - #msiRenameLocalZone  - Renames the local zone by updating various tables
   - #msiRenameCollection  - Renames a collection; used via a rule with the above #msiRenameLocalZone
   - #msiExecStrCondQuery - Creates an iCAT query, given a condition string, and executes it and returns the values
-  - #msiExecStrCondQueryWithOptions - Like #msiExecStrCondQuery, with extra options
   - #msiExecGenQuery - Executes a given general query structure and returns results
   - #msiMakeQuery - Creates a psuedo-SQL query, given a select list and a condition list
   - #msiGetMoreRows - Continues an unfinished query and #msiExecStrCondQuery and returns results

@@ -144,19 +144,6 @@ int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei );
 
-int msiExecStrCondQueryWithOptionsNew( msParam_t* queryParam,
-                                       msParam_t* zeroResultsIsOK,
-                                       msParam_t* maxReturnedRowsParam,
-                                       msParam_t* genQueryOutParam,
-                                       ruleExecInfo_t *rei );
-int msiExecStrCondQueryWithOptions( msParam_t* queryParam,
-                                    msParam_t* zeroResultsIsOK,
-                                    msParam_t* maxReturnedRowsParam,
-                                    msParam_t* genQueryOutParam,
-                                    ruleExecInfo_t *rei );
-
-
-
 int
 msiGetContInxFromGenQueryOut( msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei );
 
@@ -285,8 +272,6 @@ namespace irods {
         table_[ "msiAddKeyVal" ] = new irods::ms_table_entry( "msiAddKeyVal", 3, ( funcPtr ) msiAddKeyVal );
         table_[ "applyAllRules" ] = new irods::ms_table_entry( "applyAllRules", 3, ( funcPtr ) msiApplyAllRules );
         table_[ "msiExecStrCondQuery" ] = new irods::ms_table_entry( "msiExecStrCondQuery", 2, ( funcPtr ) msiExecStrCondQuery );
-        table_[ "msiExecStrCondQueryWithOptionsNew" ] = new irods::ms_table_entry( "msiExecStrCondQueryWithOptionsNew", 4, ( funcPtr ) msiExecStrCondQueryWithOptionsNew );
-        table_[ "msiExecStrCondQueryWithOptions" ] = new irods::ms_table_entry( "msiExecStrCondQueryWithOptions", 4, ( funcPtr ) msiExecStrCondQueryWithOptions );
         table_[ "msiExecGenQuery" ] = new irods::ms_table_entry( "msiExecGenQuery", 2, ( funcPtr ) msiExecGenQuery );
         table_[ "msiMakeQuery" ] = new irods::ms_table_entry( "msiMakeQuery", 3, ( funcPtr ) msiMakeQuery );
         table_[ "msiMakeGenQuery" ] = new irods::ms_table_entry( "msiMakeGenQuery", 3, ( funcPtr ) msiMakeGenQuery );
