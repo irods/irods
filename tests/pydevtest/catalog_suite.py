@@ -96,7 +96,7 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
 
     def test_local_ihelp_with_help(self):
         # assertions
-        assertiCmd(s.adminsession, "ihelp -h", "LIST", "Display i-commands synopsis")  # run ihelp with help
+        assertiCmd(s.adminsession, "ihelp -h", "LIST", "Display iCommands synopsis")  # run ihelp with help
 
     def test_local_ihelp_all(self):
         # assertions
