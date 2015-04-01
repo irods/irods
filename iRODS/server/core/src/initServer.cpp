@@ -1335,6 +1335,7 @@ initConnectControl() {
                 else {
                     rodsLog( LOG_ERROR,
                              "initConnectControl: neither allowUserList nor disallowUserList has been set" );
+                    fclose( file );
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             }
