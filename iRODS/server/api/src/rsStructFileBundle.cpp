@@ -270,6 +270,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     getDefDirMode() );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "mkDirForFilePath failed in _rsStructFileBundle with status %d", status );
+                    free( collEnt );
                     return status;
                 }
             }
