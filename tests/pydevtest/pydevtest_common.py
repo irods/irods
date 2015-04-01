@@ -321,7 +321,7 @@ def get_re_log_path():
         raise subprocess.CalledProcessError(proc.returncode, command_str, 'stdout [{0}] stderr[{1}]'.format(log_file_path, err))
     return log_file_path
 
-def count_occurances_of_string_in_re_log(string, start_index=0):
+def count_occurrences_of_string_in_re_log(string, start_index=0):
     with open(get_re_log_path()) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         n = 0
