@@ -154,7 +154,7 @@ irods::error make_federation_set(
 
 } // make_federation_set
 
-irods::error sanitize_federation_keys(
+irods::error sanitize_server_config_keys(
     json_t* _svr_cfg ) {
     if ( !_svr_cfg ) {
         return ERROR(
@@ -163,10 +163,15 @@ irods::error sanitize_federation_keys(
 
     }
 
-    // sanitize the top level key
+    // sanitize the top level keys
     json_object_set(
         _svr_cfg,
         "negotiation_key",
+        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+
+    json_object_set(
+        _svr_cfg,
+        "server_control_plane_key",
         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
     // get the federation object
@@ -177,6 +182,9 @@ irods::error sanitize_federation_keys(
         return SUCCESS();
 
     }
+
+
+
 
     // sanitize all federation keys
     size_t      idx = 0;
@@ -191,7 +199,7 @@ irods::error sanitize_federation_keys(
 
     return SUCCESS();
 
-} // sanitize_federation_keys
+} // sanitize_server_config_keys
 
 irods::error convert_server_config(
     json_t*& _svr_cfg ) {
@@ -220,7 +228,7 @@ irods::error convert_server_config(
 
         }
         else {
-            return sanitize_federation_keys( _svr_cfg );
+            return sanitize_server_config_keys( _svr_cfg );
 
         }
     }
@@ -455,6 +463,12 @@ irods::error convert_service_account(
 
         }
         else {
+            // sanitize the keys
+            json_object_set(
+                _svc_acct,
+                "rods_server_control_plane_key",
+                json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+
             return SUCCESS();
 
         }
