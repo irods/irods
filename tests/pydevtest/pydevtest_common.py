@@ -316,7 +316,7 @@ def get_re_log_path():
     command_str = 'ls -t ' + server_log_dir + '/reLog* | head -n1'
     proc = subprocess.Popen(command_str, stdout=subprocess.PIPE, shell=True)
     stdout, stderr = proc.communicate()
-    if proc.returncode != 0 or log_file_path == '':
+    if proc.returncode != 0 or stdout == '':
         raise subprocess.CalledProcessError(proc.returncode, command_str, 'stdout [{0}] stderr[{1}]'.format(stdout, stderr))
     log_file_path = stdout.rstrip()
     return log_file_path
