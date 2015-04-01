@@ -1625,8 +1625,13 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
 
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_USER_NAME ) {
-            splitUserName( genQueryInp.sqlCondInp.value[i], userName,
+            int status = splitUserName( genQueryInp.sqlCondInp.value[i], userName,
                            userZone );
+            if ( status ) {
+                rodsLog( LOG_ERROR, "splitUserName failed in generateSpecialQuery on %s with status %d.",
+                        genQueryInp.sqlCondInp.value[i], status );
+                return status;
+            }
             if ( userZone[0] == '\0' ) {
                 std::string zoneName;
                 if ( !chlGetLocalZone( zoneName ) ) {
