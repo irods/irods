@@ -44,7 +44,7 @@
  * \post none
  * \sa none
 **/
-int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* rei ) {
+int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t* ) {
 
     const char * toAddr = ( char * ) xtoAddr->inOutStruct;
     const char * subjectLine = xsubjectLine->inOutStruct ? ( char * ) xsubjectLine->inOutStruct : "";

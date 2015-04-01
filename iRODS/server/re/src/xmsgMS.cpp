@@ -209,7 +209,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
                       msParam_t* inMiscInfo,
                       msParam_t* inXmsgTicketInfoParam,
                       msParam_t* outSendXmsgInpParam,
-                      ruleExecInfo_t* rei ) {
+                      ruleExecInfo_t* ) {
 
 
     sendXmsgInp_t  *sendXmsgInp;

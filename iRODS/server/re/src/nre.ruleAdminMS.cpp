@@ -51,7 +51,7 @@
  * \post none
  * \sa msiAdmShowFNM
 **/
-int msiAdmShowDVM( msParam_t *bufP, ruleExecInfo_t *rei ) {
+int msiAdmShowDVM( msParam_t *, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- DVM -----------------------------\n", rei );
@@ -114,7 +114,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  * \post none
  * \sa msiAdmShowDVM
 **/
-int msiAdmShowFNM( msParam_t *bufP, ruleExecInfo_t *rei ) {
+int msiAdmShowFNM( msParam_t *, ruleExecInfo_t *rei ) {
     int i;
 
     _writeString( "stdout", "----------------------------- FNM -----------------------------\n", rei );
@@ -827,7 +827,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  * \post none
  * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
 **/
-int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
+int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t *, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei )
 
 {
 

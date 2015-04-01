@@ -573,7 +573,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  * \sa  none
 **/
 int
-msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* rei ) {
+msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
 
     int sec, microsec;
 
@@ -907,7 +907,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  * \sa none
 **/
 int
-msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* rei ) {
+msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
     char *inStr;
     bytesBuf_t *outBuf;
 
@@ -972,7 +972,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* rei ) 
  * \sa none
 **/
 int
-msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* rei ) {
+msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     char *outStr;
     bytesBuf_t *inBuf;
 

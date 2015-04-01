@@ -43,7 +43,7 @@
  * \sa none
 **/
 int
-msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei ) {
+msiGetIcatTime( msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *) {
     char *type;
     char tStr0[TIME_LEN], tStr[TIME_LEN];
     int i;

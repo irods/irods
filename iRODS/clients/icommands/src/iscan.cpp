@@ -35,7 +35,6 @@ main( int argc, char **argv ) {
     }
 
     objType_t srcType;
-    char buffer[HUGE_NAME_LEN];
     if ( myRodsArgs.dataObjects ) {
         srcType = UNKNOWN_OBJ_T;
     }

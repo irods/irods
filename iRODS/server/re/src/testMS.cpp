@@ -144,7 +144,7 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
  * \sa None
 **/
 int
-msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei ) {
+msiDoSomething( msParam_t *, msParam_t *outParam, ruleExecInfo_t * rei ) {
     keyValPair_t *myKeyVal;						/* will contain results */
 
     /* For testing mode when used with irule --test */

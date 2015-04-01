@@ -256,7 +256,7 @@ _makeQuery( char *sel, char *cond, char **sql ) {
 **/
 int
 msiMakeQuery( msParam_t* selectListParam, msParam_t* conditionsParam,
-              msParam_t* queryOutParam, ruleExecInfo_t* rei ) {
+              msParam_t* queryOutParam, ruleExecInfo_t* ) {
     char *sql, *sel, *cond;
     int i;
     sel = ( char * ) selectListParam->inOutStruct;
