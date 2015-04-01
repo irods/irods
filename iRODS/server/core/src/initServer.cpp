@@ -826,8 +826,11 @@ int initHostConfigByFile() {
                            HOST_CONFIG_FILE,
                            cfg_file );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+        rodsLog(
+            LOG_NOTICE,
+            "config file [%s] not found",
+            HOST_CONFIG_FILE );
+        return 0;
     }
 
     irods::configuration_parser cfg;
