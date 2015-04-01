@@ -56,7 +56,7 @@ main( int, char** ) {
     status = procApiRequest( conn, ZONE_REPORT_AN, NULL, NULL,
                              &tmp_out, NULL );
     if ( status < 0 ) {
-        printf( "\n\nERROR - failed in call to rcZoneReport" );
+        printf( "\n\nERROR - failed in call to rcZoneReport - %d\n", status );
         return 0;
     }
     else {
