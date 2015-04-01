@@ -79,15 +79,18 @@ $RESOURCE=true
 %requires sudo
 %requires libssl1.0.0
 %requires libfuse2
+%requires libjson-perl
 %endif
 
 %if REDHAT
 %requires fuse-libs
+%requires perl-JSON
 %endif
 
 %if SUSE
 %requires libopenssl1_0_0
 %requires libfuse2
+%requires perl-JSON
 %endif
 
 # =-=-=-=-=-=-=-
