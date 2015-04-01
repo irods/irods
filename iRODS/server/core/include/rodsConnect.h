@@ -108,12 +108,6 @@ typedef struct zoneInfo {
 #define REMOTE_ZONE_SID_KW      "RemoteZoneSID"
 #define SID_KEY_KW              "SIDKey"
 
-struct allowedUser {
-    char userName[NAME_LEN];
-    char rodsZone[NAME_LEN];
-    struct allowedUser *next;
-};
-
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int

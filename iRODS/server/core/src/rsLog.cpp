@@ -23,7 +23,7 @@ getLogDir() {
 }
 
 void
-getLogfileName( char **logFile, char *logDir, char *logFileName ) {
+getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 #ifndef _WIN32
     time_t myTime;
     struct tm *mytm;
@@ -75,7 +75,7 @@ getLogfileName( char **logFile, char *logDir, char *logFileName ) {
 
 #ifndef _WIN32
 int
-chkLogfileName( char *logDir, char *logFileName ) {
+chkLogfileName( const char *logDir, const char *logFileName ) {
     time_t myTime;
     char *logFile = NULL;
     int i;

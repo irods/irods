@@ -38,10 +38,10 @@ char *
 getLogDir();
 
 void
-getLogfileName( char **logFile, char *logDir, char *logFileName );
+getLogfileName( char **logFile, const char *logDir, const char *logFileName );
 
 #ifndef _WIN32
-int chkLogfileName( char *logDir, char *logFileName );
+int chkLogfileName( const char *logDir, const char *logFileName );
 #endif
 
 #endif	/* RS_LOG_H */

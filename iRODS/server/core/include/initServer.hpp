@@ -4,13 +4,10 @@
 /* initServer.h - common header file for initServer.c
  */
 
-
-
 #ifndef INIT_SERVER_HPP
 #define INIT_SERVER_HPP
 
 #include "rodsConnect.h"
-//#include "sockComm.hpp"
 #include <vector>
 #include <string>
 
@@ -39,21 +36,13 @@ initRsComm( rsComm_t *rsComm );
 void
 daemonize( int runMode, int logFd );
 int
-logFileOpen( int runMode, char *logDir, char *logFileName );
+logFileOpen( int runMode, const char *logDir, const char *logFileName );
 int
 initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
 int
 initConnectControl();
 int
-chkAllowedUser( char *userName, char *rodsZone );
-int
-queAllowedUser( struct allowedUser *allowedUser,
-                struct allowedUser **allowedUserHead );
-int
-matchAllowedUser( char *userName, char *rodsZone,
-                  struct allowedUser *allowedUserHead );
-int
-freeAllAllowedUser( struct allowedUser *allowedUserHead );
+chkAllowedUser( const char *userName, const char *rodsZone );
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm );
 int

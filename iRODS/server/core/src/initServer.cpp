@@ -30,6 +30,7 @@
 #include "irods_server_properties.hpp"
 
 #include <vector>
+#include <set>
 #include <string>
 #include <fstream>
 
@@ -38,6 +39,12 @@
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
+namespace {
+
+    static std::set<std::vector<std::string> > allowedUsers;
+    static std::set<std::vector<std::string> > disallowedUsers;
+
+}
 
 int
 initServerInfo( rsComm_t *rsComm ) {
@@ -139,8 +146,6 @@ initServerInfo( rsComm_t *rsComm ) {
 
 int
 initLocalServerHost() {
-    int status;
-    char myHostName[MAX_NAME_LEN];
 
     LocalServerHost = ServerHostHead = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
     memset( ServerHostHead, 0, sizeof( rodsServerHost_t ) );
@@ -148,9 +153,10 @@ initLocalServerHost() {
     LocalServerHost->localFlag = LOCAL_HOST;
     LocalServerHost->zoneInfo = ZoneInfoHead;
 
-    status = matchHostConfig( LocalServerHost );
+    int status = matchHostConfig( LocalServerHost );
 
     queHostName( ServerHostHead, "localhost", 0 );
+    char myHostName[MAX_NAME_LEN];
     status = gethostname( myHostName, MAX_NAME_LEN );
     if ( status < 0 ) {
         status = SYS_GET_HOSTNAME_ERR - errno;
@@ -1036,7 +1042,7 @@ daemonize( int runMode, int logFd ) {
  */
 
 int
-logFileOpen( int runMode, char *logDir, char *logFileName ) {
+logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
     char *logFile = NULL;
 #ifdef SYSLOG
     int logFd = 0;
@@ -1239,7 +1245,7 @@ initConnectControl() {
     char buf[LONG_NAME_LEN * 5];
     char *bufPtr;
     int status;
-    struct allowedUser *tmpAllowedUser;
+    std::vector<std::string> tmpAllowedUser;
     int allowUserFlag = 0;
     int disallowUserFlag = 0;
     char *configDir = getConfigDir();
@@ -1261,9 +1267,8 @@ initConnectControl() {
     free( conFile );
 
     MaxConnections = DEF_MAX_CONNECTION;        /* no limit */
-    freeAllAllowedUser( AllowedUserHead );
-    freeAllAllowedUser( DisallowedUserHead );
-    AllowedUserHead = DisallowedUserHead = NULL;
+    allowedUsers.clear();
+    disallowedUsers.clear();
     while ( fgets( buf, LONG_NAME_LEN * 5, file ) != NULL ) {
         char myuser[NAME_LEN];
         char myZone[NAME_LEN];
@@ -1322,18 +1327,15 @@ initConnectControl() {
                         rstrcpy( myZone, tmpZoneInfo->zoneName, NAME_LEN );
                     }
                 }
-                tmpAllowedUser = ( struct allowedUser* )
-                                 malloc( sizeof( struct allowedUser ) );
-                memset( tmpAllowedUser, 0, sizeof( struct allowedUser ) );
-                rstrcpy( tmpAllowedUser->userName, myuser, NAME_LEN );
-                rstrcpy( tmpAllowedUser->rodsZone, myZone, NAME_LEN );
+                tmpAllowedUser.push_back( myuser );
+                tmpAllowedUser.push_back( myZone );
                 /* queue it */
 
                 if ( allowUserFlag != 0 ) {
-                    queAllowedUser( tmpAllowedUser, &AllowedUserHead );
+                    allowedUsers.insert( tmpAllowedUser );
                 }
                 else if ( disallowUserFlag != 0 ) {
-                    queAllowedUser( tmpAllowedUser, &DisallowedUserHead );
+                    disallowedUsers.insert( tmpAllowedUser );
                 }
                 else {
                     rodsLog( LOG_ERROR,
@@ -1355,10 +1357,9 @@ initConnectControl() {
 }
 
 int
-chkAllowedUser( char *userName, char *rodsZone ) {
-    int status;
+chkAllowedUser( const char *userName, const char *rodsZone ) {
 
-    if ( userName == NULL || rodsZone == 0 ) {
+    if ( userName == NULL || rodsZone == NULL ) {
         return SYS_USER_NOT_ALLOWED_TO_CONN;
     }
 
@@ -1367,82 +1368,18 @@ chkAllowedUser( char *userName, char *rodsZone ) {
         return 0;
     }
 
-    if ( AllowedUserHead != NULL ) {
-        status = matchAllowedUser( userName, rodsZone, AllowedUserHead );
-        if ( status == 1 ) {    /* a match */
-            return 0;
-        }
-        else {
+    std::vector<std::string> user;
+    user.push_back( userName );
+    user.push_back( rodsZone );
+    if ( !allowedUsers.empty() ) {
+        if ( allowedUsers.count( user ) == 0 ) {
             return SYS_USER_NOT_ALLOWED_TO_CONN;
         }
     }
-    else if ( DisallowedUserHead != NULL ) {
-        status = matchAllowedUser( userName, rodsZone, DisallowedUserHead );
-        if ( status == 1 ) {    /* a match, disallow */
+    else if ( !disallowedUsers.empty() ) {
+        if ( disallowedUsers.count( user ) != 0 ) {
             return SYS_USER_NOT_ALLOWED_TO_CONN;
         }
-        else {
-            return 0;
-        }
-    }
-    else {
-        /* no control, return 0 */
-        return 0;
-    }
-}
-
-int
-matchAllowedUser( char *userName, char *rodsZone,
-                  struct allowedUser *allowedUserHead ) {
-    struct allowedUser *tmpAllowedUser;
-
-    if ( allowedUserHead == NULL ) {
-        return 0;
-    }
-
-    tmpAllowedUser = allowedUserHead;
-    while ( tmpAllowedUser != NULL ) {
-        if ( strcmp( tmpAllowedUser->userName, userName ) == 0 &&
-                strcmp( tmpAllowedUser->rodsZone, rodsZone ) == 0 ) {
-            /* we have a match */
-            break;
-        }
-        tmpAllowedUser = tmpAllowedUser->next;
-    }
-    if ( tmpAllowedUser == NULL ) {
-        /* no match */
-        return 0;
-    }
-    else {
-        return 1;
-    }
-}
-
-int
-queAllowedUser( struct allowedUser *allowedUser,
-                struct allowedUser **allowedUserHead ) {
-    if ( allowedUserHead == NULL || allowedUser == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    if ( *allowedUserHead == NULL ) {
-        *allowedUserHead = allowedUser;
-    }
-    else {
-        allowedUser->next = *allowedUserHead;
-        *allowedUserHead = allowedUser;
-    }
-    return 0;
-}
-
-int
-freeAllAllowedUser( struct allowedUser *allowedUserHead ) {
-    struct allowedUser *tmpAllowedUser, *nextAllowedUser;
-    tmpAllowedUser = allowedUserHead;
-    while ( tmpAllowedUser != NULL ) {
-        nextAllowedUser = tmpAllowedUser->next;
-        free( tmpAllowedUser );
-        tmpAllowedUser = nextAllowedUser;
     }
     return 0;
 }

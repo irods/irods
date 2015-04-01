@@ -67,8 +67,6 @@ extern rodsLong_t GlobalQuotaLimit; /* quota for all resources for this user */
 extern rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
 extern int RescQuotaPolicy;
 /* connection control config */
-extern struct allowedUser *AllowedUserHead;
-extern struct allowedUser *DisallowedUserHead;
 extern int MaxConnections;          /* no control */
 extern time_t LastRescUpdateTime;
 
