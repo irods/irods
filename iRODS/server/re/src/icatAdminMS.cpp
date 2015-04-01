@@ -485,7 +485,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * \sa none
  **/
 int
-msiAclPolicy( msParam_t *msParam, ruleExecInfo_t *) {
+msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     char *inputArg;
 
     std::string strict = "off";
