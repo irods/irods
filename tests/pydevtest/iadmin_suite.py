@@ -866,13 +866,13 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         lib.restart_irods_server()
 
         host_access_control = ''
-        if os.path.isfile('/etc/irods/host_access_control.json'):
-            host_access_control = '/etc/irods/host_access_control.json'
+        if os.path.isfile('/etc/irods/host_access_control_config.json'):
+            host_access_control = '/etc/irods/host_access_control_config.json'
         else:
             install_dir = os.path.dirname(
                 os.path.dirname(
                     os.path.realpath(__file__)))
-            host_access_control = install_dir + '/iRODS/server/config/host_access_control.json'
+            host_access_control = install_dir + '/iRODS/server/config/host_access_control_config.json'
 
         orig_file = host_access_control + '.orig'
         os.system('cp %s %s' % (host_access_control, orig_file))

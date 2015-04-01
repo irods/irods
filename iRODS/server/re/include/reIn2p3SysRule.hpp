@@ -27,7 +27,7 @@
 #define MAXSTR 30
 #define MAXLIST 40 /* max number of entries in the access list tab. */
 
-#define HOST_ACCESS_CONTROL_FILE "host_access_control.json"
+#define HOST_ACCESS_CONTROL_FILE "host_access_control_config.json"
 
 #define MON_PERF_SCRIPT "irodsServerMonPerf"
 #define MON_CFG_FILE "../config/irodsMonPerf.config" /* contains list of servers to monitor,

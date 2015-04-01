@@ -6,6 +6,11 @@ SERVER_TYPE=$2
 IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
+# touch the binary_installation.flag file
+BINARY_INSTALL_FLAG_FILE=$IRODS_HOME_DIR/packaging/binary_installation.flag
+touch $BINARY_INSTALL_FLAG_FILE
+
+# =-=-=-=-=-=-=-
 # detect whether this is an upgrade
 UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/upgrade.tmp
 if [ -f "$UPGRADE_FLAG_FILE" ] ; then
@@ -133,6 +138,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     source /etc/irods/service_account.config 2> /dev/null
 
     # make sure the service acount owns everything except the PAM executable, once again
+    chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME_DIR
     if [ "$DETECTEDOS" == "MacOSX" ] ; then
         chown root:wheel $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
@@ -142,6 +148,11 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     chmod 4755 $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
     chmod 4755 /usr/bin/genOSAuth
 
+
+    # convert the configuration files
+    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/convert_configuration_to_json.py"
+    # update the configuration files
+#    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_configuration_schema.py"
 
     # stop server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl stop"
@@ -167,9 +178,11 @@ else
 fi
 
 # =-=-=-=-=-=-=-
-# touch the binary_installation.flag file
-BINARY_INSTALL_FLAG_FILE=$IRODS_HOME_DIR/packaging/binary_installation.flag
-touch $BINARY_INSTALL_FLAG_FILE
+# remove temporary files
+rm -f $IRODS_HOME_DIR/plaintext_database_password.txt
+
+# =-=-=-=-=-=-=-
+# chown the binary_installation.flag file
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $BINARY_INSTALL_FLAG_FILE
 
 # =-=-=-=-=-=-=-

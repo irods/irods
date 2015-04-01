@@ -185,15 +185,28 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
     python -c "from __future__ import print_function; import json; print(json.dumps({'irods_version': '$$IRODSVERSION', 'catalog_schema_version': $$CATALOG_SCHEMA_VERSION, 'commit_id': '0000000000000000000000000000000000000000', 'installation_time': '2014-08-20T17:36:40Z', 'build_system_information': '', 'compiler_version': '', 'compile_time': '2014-08-20T17:36:40Z'}))" > $IRODS_HOME_DIR/VERSION.json.previous
   fi
 
+  # service account information
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
+  # detect current service account information
+  MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $$3}'`
+  MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $$4}'`
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
-    # detect current service account information
-    MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $$3}'`
-    MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $$4}'`
     # populate configuration file
     echo "IRODS_SERVICE_ACCOUNT_NAME=$$MYACCTNAME " > $$SERVICE_ACCOUNT_CONFIG_FILE
     echo "IRODS_SERVICE_GROUP_NAME=$$MYGROUPNAME " >> $$SERVICE_ACCOUNT_CONFIG_FILE
     chown $$MYACCTNAME:$$MYGROUPNAME $$SERVICE_ACCOUNT_CONFIG_FILE
+  fi
+
+  # get database password from pre-4.1 installations
+  if [ "$$IRODSVERSION" \< "4.1.0" ] ; then
+    OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
+    DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
+    UNOBFDBLINE=`su - $$MYACCTNAME -c "iadmin dspass \"$$OBFDBPASS\" \"$$DBKEY\""`
+    UNOBFDBPASS=`echo $$UNOBFDBLINE | awk -F ':' '{print $$2}'`
+    PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
+    echo $$UNOBFDBPASS > $$PLAINTEXT_FILENAME
+    chown $$MYACCTNAME:$$MYGROUPNAME $$PLAINTEXT_FILENAME
+    chmod 600 $$PLAINTEXT_FILENAME
   fi
 
 else
@@ -311,6 +324,8 @@ f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods.sh ./packaging/setup_iro
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_service_account.sh ./packaging/setup_irods_service_account.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_configuration.sh ./packaging/setup_irods_configuration.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/update_json.py ./packaging/update_json.py
+f 755 root root ${IRODS_HOME_DIR}/packaging/convert_configuration_to_json.py ./packaging/convert_configuration_to_json.py
+f 755 root root ${IRODS_HOME_DIR}/packaging/update_configuration_schema.py ./packaging/update_configuration_schema.py
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
@@ -355,11 +370,11 @@ f 644 root root ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
 
 d 755 root root /etc/irods -
-c 644 root root /etc/irods/host_access_control.json ./iRODS/server/config/host_access_control.json
 c 644 root root /etc/irods/core.dvm ./iRODS/server/config/reConfigs/core.dvm
 c 644 root root /etc/irods/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 c 644 root root /etc/irods/core.re ./iRODS/server/config/reConfigs/core.re
 c 644 root root /etc/irods/hosts_config.json ./iRODS/server/config/hosts_config.json
+c 644 root root /etc/irods/host_access_control_config.json ./iRODS/server/config/host_access_control_config.json
 
 d 755 root root ${IRODS_HOME}/installLogs -
 
@@ -374,6 +389,7 @@ f 644 root root ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
 d 755 root root ${IRODS_HOME}/scripts/python -
 f 644 root root ${IRODS_HOME}/scripts/python/system_identification.py ./iRODS/scripts/python/system_identification.py
 f 644 root root ${IRODS_HOME}/scripts/python/pid_age.py ./iRODS/scripts/python/pid_age.py
+f 644 root root ${IRODS_HOME}/scripts/validate_json.py ./iRODS/scripts/python/validate_json.py
 f 644 root root ${IRODS_HOME}/scripts/python/kill_pid.py ./iRODS/scripts/python/kill_pid.py
 d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
