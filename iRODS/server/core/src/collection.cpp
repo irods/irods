@@ -7,6 +7,9 @@
 #include "genQuery.hpp"
 #include "rodsClient.hpp"
 
+#include "irods_virtual_path.hpp"
+
+
 /* checkCollAccessPerm - Check whether the user is allowed to perform
  * operation specified by the accessPerm string on the collection.
  * Various accessPerm are defined in  icatDefines.h. (e.g.,
@@ -419,7 +422,15 @@ rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {
     startLen = strlen( startColl );
     pathLen = strlen( destColl );
 
-    rstrcpy( tmpPath, destColl, MAX_NAME_LEN );
+    // sanitize destColl
+    std::string dest_coll( destColl );
+    const std::string log_sep = irods::get_virtual_path_separator();
+    size_t pos = dest_coll.find_last_of( log_sep );
+    if( ( dest_coll.size() - 1 ) == pos ) {
+        dest_coll.erase( pos, std::string::npos );
+    }
+
+    rstrcpy( tmpPath, dest_coll.c_str(), MAX_NAME_LEN );
 
     tmpLen = pathLen;
 
