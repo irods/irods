@@ -316,9 +316,9 @@ def get_re_log_path():
     command_str = 'ls -t ' + server_log_dir + '/reLog* | head -n1'
     proc = subprocess.Popen(command_str, stdout=subprocess.PIPE, shell=True)
     stdout, stderr = proc.communicate()
-    log_file_path = stdout.rstrip()
     if proc.returncode != 0 or log_file_path == '':
-        raise subprocess.CalledProcessError(proc.returncode, command_str, 'stdout [{0}] stderr[{1}]'.format(log_file_path, err))
+        raise subprocess.CalledProcessError(proc.returncode, command_str, 'stdout [{0}] stderr[{1}]'.format(stdout, stderr))
+    log_file_path = stdout.rstrip()
     return log_file_path
 
 def count_occurrences_of_string_in_re_log(string, start_index=0):

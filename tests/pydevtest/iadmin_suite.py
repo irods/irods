@@ -999,6 +999,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()),
                        'STDOUT', a)
 
+    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log")
     def test_rule_engine_2521(self):
         with pydevtest_common.core_re_backed_up():
             initial_size_of_re_log = pydevtest_common.get_re_log_size()
