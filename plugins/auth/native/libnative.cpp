@@ -262,8 +262,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call
     irods::error native_auth_agent_request(
-        irods::auth_plugin_context& _ctx,
-        rsComm_t*                    _comm ) {
+        irods::auth_plugin_context& _ctx ) {
         irods::error result = SUCCESS();
         irods::error ret;
 
@@ -272,7 +271,7 @@ extern "C" {
         ret = _ctx.valid< irods::native_auth_object >();
         if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
 
-            if ( ( result = ASSERT_ERROR( _comm, SYS_INVALID_INPUT_PARAM, "Null comm pointer." ) ).ok() ) {
+            if ( ( result = ASSERT_ERROR( _ctx.comm(), SYS_INVALID_INPUT_PARAM, "Null comm pointer." ) ).ok() ) {
 
                 // =-=-=-=-=-=-=-
                 // generate a random buffer and copy it to the challenge
@@ -291,10 +290,10 @@ extern "C" {
                 // cache the challenge in the server for later usage
                 _rsSetAuthRequestGetChallenge( buf );
 
-                if ( _comm->auth_scheme != NULL ) {
-                    free( _comm->auth_scheme );
+                if ( _ctx.comm()->auth_scheme != NULL ) {
+                    free( _ctx.comm()->auth_scheme );
                 }
-                _comm->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
+                _ctx.comm()->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
             }
         }
 
@@ -350,7 +349,6 @@ extern "C" {
     // handle an agent-side auth request call
     irods::error native_auth_agent_response(
         irods::auth_plugin_context& _ctx,
-        rsComm_t*                    _comm,
         authResponseInp_t*           _resp ) {
         irods::error result = SUCCESS();
         irods::error ret;
@@ -359,7 +357,7 @@ extern "C" {
         // validate incoming parameters
         ret = _ctx.valid();
         if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-            if ( ( result = ASSERT_ERROR( _resp && _comm, SYS_INVALID_INPUT_PARAM, "Invalid response or comm pointers." ) ).ok() ) {
+            if ( ( result = ASSERT_ERROR( _resp, SYS_INVALID_INPUT_PARAM, "Invalid response or comm pointers." ) ).ok() ) {
 
                 int status;
                 char *bufp;
@@ -376,8 +374,8 @@ extern "C" {
                 /* need to do NoLogin because it could get into inf loop for cross
                  * zone auth */
 
-                status = getAndConnRcatHostNoLogin( _comm, MASTER_RCAT,
-                                                    _comm->proxyUser.rodsZone, &rodsServerHost );
+                status = getAndConnRcatHostNoLogin( _ctx.comm(), MASTER_RCAT,
+                                                    _ctx.comm()->proxyUser.rodsZone, &rodsServerHost );
                 if ( ( result = ASSERT_ERROR( status >= 0, status, "Connecting to rcat host failed." ) ).ok() ) {
                     memset( &authCheckInp, 0, sizeof( authCheckInp ) );
                     authCheckInp.challenge = bufp;
@@ -388,7 +386,7 @@ extern "C" {
                     authCheckInp.username = _resp->username;
 
                     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-                        status = rsAuthCheck( _comm, &authCheckInp, &authCheckOut );
+                        status = rsAuthCheck( _ctx.comm(), &authCheckInp, &authCheckOut );
                     }
                     else {
                         status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
@@ -455,11 +453,11 @@ extern "C" {
                         }
 
                         /* Set the clientUser zone if it is null. */
-                        if ( result.ok() && strlen( _comm->clientUser.rodsZone ) == 0 ) {
+                        if ( result.ok() && strlen( _ctx.comm()->clientUser.rodsZone ) == 0 ) {
                             zoneInfo_t *tmpZoneInfo;
                             status = getLocalZoneInfo( &tmpZoneInfo );
                             if ( ( result = ASSERT_ERROR( status >= 0, status, "getLocalZoneInfo failed." ) ).ok() ) {
-                                strncpy( _comm->clientUser.rodsZone, tmpZoneInfo->zoneName, NAME_LEN );
+                                strncpy( _ctx.comm()->clientUser.rodsZone, tmpZoneInfo->zoneName, NAME_LEN );
                             }
                         }
 
@@ -479,14 +477,14 @@ extern "C" {
                             }
 
                             /* adjust client user */
-                            if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName ) == 0 ) {
+                            if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) == 0 ) {
                                 authCheckOut->clientPrivLevel = authCheckOut->privLevel;
                             }
                             else {
                                 zoneInfo_t *tmpZoneInfo;
                                 status = getLocalZoneInfo( &tmpZoneInfo );
                                 if ( ( result = ASSERT_ERROR( status >= 0, status, "getLocalZoneInfo failed." ) ).ok() ) {
-                                    if ( strcmp( tmpZoneInfo->zoneName,  _comm->clientUser.rodsZone ) == 0 ) {
+                                    if ( strcmp( tmpZoneInfo->zoneName,  _ctx.comm()->clientUser.rodsZone ) == 0 ) {
                                         /* client is from local zone */
                                         if ( authCheckOut->clientPrivLevel == REMOTE_PRIV_USER_AUTH ) {
                                             authCheckOut->clientPrivLevel = LOCAL_PRIV_USER_AUTH;
@@ -507,12 +505,12 @@ extern "C" {
                                 }
                             }
                         }
-                        else if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName ) == 0 ) {
+                        else if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) == 0 ) {
                             authCheckOut->clientPrivLevel = authCheckOut->privLevel;
                         }
 
                         if ( result.ok() ) {
-                            ret = check_proxy_user_privileges( _comm, authCheckOut->privLevel );
+                            ret = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
 
                             if ( ( result = ASSERT_PASS( ret, "Check proxy user priviledges failed." ) ).ok() ) {
                                 rodsLog( LOG_DEBUG,
@@ -520,16 +518,16 @@ extern "C" {
                                          authCheckOut->privLevel,
                                          authCheckOut->clientPrivLevel,
                                          authCheckInp.username,
-                                         _comm->proxyUser.userName,
-                                         _comm->clientUser.userName );
+                                         _ctx.comm()->proxyUser.userName,
+                                         _ctx.comm()->clientUser.userName );
 
-                                if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName ) != 0 ) {
-                                    _comm->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
-                                    _comm->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
+                                if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
+                                    _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
+                                    _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
                                 }
                                 else {          /* proxyUser and clientUser are the same */
-                                    _comm->proxyUser.authInfo.authFlag =
-                                        _comm->clientUser.authInfo.authFlag = authCheckOut->privLevel;
+                                    _ctx.comm()->proxyUser.authInfo.authFlag =
+                                        _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
                                 }
 
                             }

@@ -309,22 +309,17 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call
     irods::error pam_auth_agent_request(
-        irods::auth_plugin_context& _ctx,
-        rsComm_t*                    _comm ) {
-
+        irods::auth_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::pam_auth_object >().ok() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "invalid plugin context" );
         }
-        else if ( !_comm ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
-        }
 
         // =-=-=-=-=-=-=-
         // get the server host handle
         rodsServerHost_t* server_host = 0;
-        int status = getAndConnRcatHost( _comm, MASTER_RCAT, ( const char* )_comm->clientUser.rodsZone, &server_host );
+        int status = getAndConnRcatHost( _ctx.comm(), MASTER_RCAT, ( const char* )_ctx.comm()->clientUser.rodsZone, &server_host );
         if ( status < 0 ) {
             return ERROR( status, "getAndConnRcatHost failed." );
         }
@@ -374,10 +369,10 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // set the result for communication back to the client
                 ptr->request_result( req_out->result_ );
-                if ( _comm->auth_scheme != NULL ) {
-                    free( _comm->auth_scheme );
+                if ( _ctx.comm()->auth_scheme != NULL ) {
+                    free( _ctx.comm()->auth_scheme );
                 }
-                _comm->auth_scheme = strdup( irods::AUTH_PAM_SCHEME.c_str() );
+                _ctx.comm()->auth_scheme = strdup( irods::AUTH_PAM_SCHEME.c_str() );
                 return SUCCESS();
 
             }
@@ -422,7 +417,7 @@ extern "C" {
         // request the resulting irods password after the handshake
         char password_out[ MAX_NAME_LEN ];
         char* pw_ptr = &password_out[0];
-        status = chlUpdateIrodsPamPassword( _comm, const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
+        status = chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
 
         // =-=-=-=-=-=-=-
         // set the result for communication back to the client
@@ -430,10 +425,10 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // win!
-        if ( _comm->auth_scheme != NULL ) {
-            free( _comm->auth_scheme );
+        if ( _ctx.comm()->auth_scheme != NULL ) {
+            free( _ctx.comm()->auth_scheme );
         }
-        _comm->auth_scheme = strdup( "pam" );
+        _ctx.comm()->auth_scheme = strdup( "pam" );
         return SUCCESS();
 
     } // pam_auth_agent_request

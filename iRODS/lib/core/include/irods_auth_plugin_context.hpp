@@ -20,12 +20,15 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // ctor
             auth_plugin_context(
+                rsComm_t*               _comm,
                 plugin_property_map&    _prop_map,
                 first_class_object_ptr  _fco,
                 const std::string&      _results ) :
-                plugin_context( _prop_map,
-                                _fco,
-                                _results ) {
+                plugin_context( 
+                    _comm,
+                    _prop_map,
+                    _fco,
+                    _results ) {
             } // ctor
 
             // =-=-=-=-=-=-=-

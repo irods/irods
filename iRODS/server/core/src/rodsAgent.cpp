@@ -357,7 +357,7 @@ int agentMain(
 
                 // Call agent start
                 char* foo = "";
-                ret = auth_plugin->call <rsComm_t*, const char* > ( irods::AUTH_AGENT_START, auth_obj, rsComm, foo );
+                ret = auth_plugin->call < const char* > ( rsComm, irods::AUTH_AGENT_START, auth_obj, foo );
                 result = ASSERT_PASS( ret, "Failed during auth plugin agent start for scheme: \"%s\".", rsComm->auth_scheme );
             }
 

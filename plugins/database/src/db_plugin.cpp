@@ -1166,7 +1166,7 @@ irods::error verify_auth_response(
 
     // =-=-=-=-=-=-=-
     // call auth verify on plugin
-    ret = auth_plugin->call <const char*, const char*, const char* > ( irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
+    ret = auth_plugin->call <const char*, const char*, const char* > ( 0, irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret;

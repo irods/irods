@@ -292,16 +292,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // handle an agent-side auth request call
     irods::error osauth_auth_agent_request(
-        irods::auth_plugin_context& _ctx,
-        rsComm_t*                    _comm ) {
+        irods::auth_plugin_context& _ctx ) {
 
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_ctx.valid< irods::osauth_auth_object >().ok() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "invalid plugin context" );
-        }
-        else if ( !_comm ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
         }
 
         // =-=-=-=-=-=-=-
@@ -321,10 +317,10 @@ extern "C" {
         // cache the challenge in the server for later usage
         _rsSetAuthRequestGetChallenge( buf );
 
-        if ( _comm->auth_scheme != NULL ) {
-            free( _comm->auth_scheme );
+        if ( _ctx.comm()->auth_scheme != NULL ) {
+            free( _ctx.comm()->auth_scheme );
         }
-        _comm->auth_scheme = strdup( irods::AUTH_OSAUTH_SCHEME.c_str() );
+        _ctx.comm()->auth_scheme = strdup( irods::AUTH_OSAUTH_SCHEME.c_str() );
 
         // =-=-=-=-=-=-=-
         // win!
@@ -396,7 +392,6 @@ extern "C" {
     // handle an agent-side auth request call
     irods::error osauth_auth_agent_response(
         irods::auth_plugin_context& _ctx,
-        rsComm_t*                    _comm,
         authResponseInp_t*           _resp ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
@@ -409,11 +404,6 @@ extern "C" {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null authResponseInp_t ptr" );
-        }
-        else if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null rsComm_t ptr" );
         }
 
         int status;
@@ -432,9 +422,9 @@ extern "C" {
         // need to do NoLogin because it could get into inf loop for cross
         // zone auth
         status = getAndConnRcatHostNoLogin(
-                     _comm,
+                     _ctx.comm(),
                      MASTER_RCAT,
-                     _comm->proxyUser.rodsZone,
+                     _ctx.comm()->proxyUser.rodsZone,
                      &rodsServerHost );
         if ( status < 0 ) {
             return ERROR(
@@ -457,7 +447,7 @@ extern "C" {
 
         authCheckOut_t *authCheckOut = NULL;
         if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-            status = rsAuthCheck( _comm, &authCheckInp, &authCheckOut );
+            status = rsAuthCheck( _ctx.comm(), &authCheckInp, &authCheckOut );
         }
         else {
             status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
@@ -549,7 +539,7 @@ extern "C" {
         }
 
         /* Set the clientUser zone if it is null. */
-        if ( strlen( _comm->clientUser.rodsZone ) == 0 ) {
+        if ( strlen( _ctx.comm()->clientUser.rodsZone ) == 0 ) {
             zoneInfo_t *tmpZoneInfo;
             status = getLocalZoneInfo( &tmpZoneInfo );
             if ( status < 0 ) {
@@ -559,7 +549,7 @@ extern "C" {
                            status,
                            "getLocalZoneInfo failed" );
             }
-            strncpy( _comm->clientUser.rodsZone,
+            strncpy( _ctx.comm()->clientUser.rodsZone,
                      tmpZoneInfo->zoneName, NAME_LEN );
         }
 
@@ -578,7 +568,7 @@ extern "C" {
             }
 
             /* adjust client user */
-            if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName )
+            if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName )
                     == 0 ) {
                 authCheckOut->clientPrivLevel = authCheckOut->privLevel;
             }
@@ -593,7 +583,7 @@ extern "C" {
                                "getLocalZoneInfo failed" );
                 }
 
-                if ( strcmp( tmpZoneInfo->zoneName,  _comm->clientUser.rodsZone )
+                if ( strcmp( tmpZoneInfo->zoneName,  _ctx.comm()->clientUser.rodsZone )
                         == 0 ) {
                     /* client is from local zone */
                     if ( authCheckOut->clientPrivLevel == REMOTE_PRIV_USER_AUTH ) {
@@ -614,12 +604,12 @@ extern "C" {
                 }
             }
         }
-        else if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName )
+        else if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName )
                   == 0 ) {
             authCheckOut->clientPrivLevel = authCheckOut->privLevel;
         }
 
-        status = check_proxy_user_privileges( _comm, authCheckOut->privLevel );
+        status = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
 
         if ( status < 0 ) {
             free( authCheckOut->serverResponse );
@@ -634,16 +624,16 @@ extern "C" {
                  authCheckOut->privLevel,
                  authCheckOut->clientPrivLevel,
                  authCheckInp.username,
-                 _comm->proxyUser.userName,
-                 _comm->clientUser.userName );
+                 _ctx.comm()->proxyUser.userName,
+                 _ctx.comm()->clientUser.userName );
 
-        if ( strcmp( _comm->proxyUser.userName,  _comm->clientUser.userName ) != 0 ) {
-            _comm->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
-            _comm->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
+        if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
+            _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
+            _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
         }
         else {	/* proxyUser and clientUser are the same */
-            _comm->proxyUser.authInfo.authFlag =
-                _comm->clientUser.authInfo.authFlag = authCheckOut->privLevel;
+            _ctx.comm()->proxyUser.authInfo.authFlag =
+                _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
         }
 
         free( authCheckOut->serverResponse );

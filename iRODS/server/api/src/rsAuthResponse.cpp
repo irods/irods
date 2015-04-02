@@ -69,7 +69,7 @@ int rsAuthResponse(
 
     // =-=-=-=-=-=-=-
     // call client side init - 'establish creds'
-    ret = auth_plugin->call <rsComm_t*, authResponseInp_t* > ( irods::AUTH_AGENT_AUTH_RESPONSE, auth_obj, _comm, _resp );
+    ret = auth_plugin->call < authResponseInp_t* > ( _comm, irods::AUTH_AGENT_AUTH_RESPONSE, auth_obj, _resp );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
