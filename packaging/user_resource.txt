@@ -14,7 +14,7 @@ This will result in a running resource server with a default
 resource named with your hostname concatenated with "Resource"
 and a local vault in /var/lib/irods/iRODS/Vault.
 
-Please consult the manual for further configuration details.
+Please consult the documentation for further configuration details.
 
 =======================================================================
 

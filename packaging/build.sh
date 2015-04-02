@@ -490,8 +490,6 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning $SCRIPTNAME residuals..."
     rm -f changelog.gz
     rm -rf $MANDIR
-    rm -f manual.pdf
-    rm -f irods-manual*.pdf
     rm -f examples/microservices/*.pdf
     rm -f libirods_client.a
     rm -f libirods_server.a
@@ -639,7 +637,6 @@ if [ "$1" == "docs" ] ; then
         $EPMCMD -f pkg irods-docs $LISTFILE
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
         echo "${text_green}${text_bold}$DETECTEDOS - No packaging supported.${text_reset}"
-        ls -l irods-manual*.pdf
     elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
         echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
         $EPMCMD -f portable irods-docs $LISTFILE

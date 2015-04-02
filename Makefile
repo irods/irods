@@ -2,11 +2,9 @@ include VERSION
 
 include ./iRODS/config/external_versions.txt
 
-MANUAL=irods-manual-$(IRODSVERSION).pdf
-
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm manual mkdocs squeaky_clean clean libs plugins plugins-nodb plugins-db code-generation irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
+.PHONY : default all epm mkdocs squeaky_clean clean libs plugins plugins-nodb plugins-db code-generation irods external external-build docs doxygen icat icat-package icommands icommands-package resource resource-package resource
 
 default : external-build libs plugins irods
 
@@ -55,13 +53,7 @@ code-generation : external
 irods : libs
 	@$(MAKE) -C iRODS
 
-docs : manual doxygen mkdocs
-
-manual :
-	@echo "Generating Manual..."
-	@sed -e 's,TEMPLATE_IRODSVERSION,$(IRODSVERSION),' manual.rst > manual.tmp
-	@rst2pdf manual.tmp -o $(MANUAL)
-	@rm -f manual.tmp
+docs : doxygen mkdocs
 
 doxygen :
 	@echo "Generating Doxygen..."
@@ -85,7 +77,6 @@ clean :
 	@$(MAKE) -C iRODS clean
 	@$(MAKE) -C examples/microservices clean
 	@$(MAKE) -C examples/resources clean
-	@rm -f $(MANUAL)
 	@rm -rf doxygen/html
 	@rm -rf mkdocs/html
 	@rm -rf docs/icommands

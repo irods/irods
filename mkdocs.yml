@@ -10,9 +10,3 @@ markdown_extensions:
  - admonition
  - attr_list
  - def_list
-
-#pages:
-# - [index.md, Home]
-# - [manual.md, The Manual]
-# - [developers.md, Some Developers and Stuff]
-# - [Rule_Language.md, ROOOOLS]

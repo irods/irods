@@ -29,5 +29,4 @@ $IRODS_DOC_DIR=/usr/share/doc/$IRODS_PACKAGENAME
 #f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.js
 
 d 755 root root ${IRODS_DOC_DIR} -
-f 644 root root ${IRODS_DOC_DIR}/irods-manual-TEMPLATE_IRODSVERSION.pdf ./irods-manual-TEMPLATE_IRODSVERSION.pdf
 

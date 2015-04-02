@@ -115,7 +115,7 @@ if [ $# -eq 1 ] ; then
     # for devtest in the cloud
     perl ./scripts/perl/irods_setup.pl $1
 else
-    # manual
+    # by hand
     perl ./scripts/perl/irods_setup.pl
 fi
 

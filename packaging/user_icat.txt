@@ -7,7 +7,7 @@ This installation of an iCAT server is currently incomplete and
 needs a database plugin to be installed and configured before
 it can be started and used.
 
-Please consult the manual for further instructions.
+Please consult the documentation for further instructions.
 
 =======================================================================
 
