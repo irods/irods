@@ -88,9 +88,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call( ctx );
 
             } // call -
@@ -99,10 +100,11 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
             template< typename T1 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1 >( ctx, _t1 );
 
             } // call - T1
@@ -111,11 +113,12 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
             template< typename T1, typename T2 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
                 T2 _t2 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2 >(
                            ctx, _t1, _t2 );
 
@@ -125,12 +128,13 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
             template< typename T1, typename T2, typename T3 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
                 T2 _t2,
                 T3 _t3 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3 >(
                            ctx, _t1, _t2, _t3 );
 
@@ -140,13 +144,14 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
             template< typename T1, typename T2, typename T3, typename T4 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
                 T2 _t2,
                 T3 _t3,
                 T4 _t4 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return  operations_[ _op ].call< T1, T2, T3, T4 >(
                             ctx, _t1, _t2, _t3, _t4 );
 
@@ -156,6 +161,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -163,7 +169,7 @@ namespace irods {
                 T3 _t3,
                 T4 _t4,
                 T5 _t5 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5 >(
                            ctx, _t1, _t2, _t3, _t4, _t5 );
 
@@ -173,6 +179,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -181,7 +188,7 @@ namespace irods {
                 T4 _t4,
                 T5 _t5,
                 T6 _t6 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
 
@@ -191,6 +198,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -200,7 +208,7 @@ namespace irods {
                 T5 _t5,
                 T6 _t6,
                 T7 _t7 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
 
@@ -210,6 +218,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -220,7 +229,7 @@ namespace irods {
                 T6 _t6,
                 T7 _t7,
                 T8 _t8 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
 
@@ -230,6 +239,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 9 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -241,7 +251,7 @@ namespace irods {
                 T7 _t7,
                 T8 _t8,
                 T9 _t9 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9 );
 
@@ -251,6 +261,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 10 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -263,7 +274,7 @@ namespace irods {
                 T8 _t8,
                 T9 _t9,
                 T10 _t10 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10 );
 
@@ -273,6 +284,7 @@ namespace irods {
             /// @brief delegate the call to the operation in question to the operation wrapper, with 11 params
             template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11 >
             error call(
+                rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj,
                 T1 _t1,
@@ -286,7 +298,7 @@ namespace irods {
                 T9 _t9,
                 T10 _t10,
                 T11 _t11 ) {
-                plugin_context ctx( properties_, _obj, "" );
+                plugin_context ctx( _comm, properties_, _obj, "" );
                 return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 >(
                            ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11 );
 

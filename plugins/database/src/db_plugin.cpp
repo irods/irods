@@ -2219,7 +2219,6 @@ extern "C" {
     // return the local zone
     irods::error db_check_and_get_object_id_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _type,
         char*                  _name,
         char*                  _access ) {
@@ -2235,7 +2234,7 @@ extern "C" {
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         rodsLong_t status = checkAndGetObjectId(
-                                _comm,
+                                _ctx.comm(),
                                 _ctx.prop_map(),
                                 _type,
                                 _name,
@@ -2345,7 +2344,6 @@ extern "C" {
     // update the data obj count of a resource
     irods::error db_mod_data_obj_meta_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
@@ -2357,8 +2355,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm          ||
-                !_data_obj_info ||
+        if (    !_data_obj_info ||
                 !_reg_param ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -2500,7 +2497,7 @@ extern "C" {
                         std::stringstream msg;
                         msg << __FUNCTION__;
                         msg << " - Invalid data type specified.";
-                        addRErrorMsg( &_comm->rError, 0, msg.str().c_str() );
+                        addRErrorMsg( &_ctx.comm()->rError, 0, msg.str().c_str() );
                         return ERROR(
                                    CAT_INVALID_DATA_TYPE,
                                    msg.str() );
@@ -2548,7 +2545,7 @@ extern "C" {
                 char errMsg[105];
                 snprintf( errMsg, 100, "collection '%s' is unknown",
                           logicalDirName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 _rollback( "chlModDataObjMeta" );
                 return ERROR(
                            CAT_UNKNOWN_COLLECTION,
@@ -2571,7 +2568,7 @@ extern "C" {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to find file in database by its logical path.";
-                addRErrorMsg( &_comm->rError, 0, msg.str().c_str() );
+                addRErrorMsg( &_ctx.comm()->rError, 0, msg.str().c_str() );
                 _rollback( "chlModDataObjMeta" );
                 return ERROR(
                            CAT_UNKNOWN_FILE,
@@ -2585,7 +2582,7 @@ extern "C" {
         snprintf( objIdString, MAX_NAME_LEN, "%lld", _data_obj_info->dataId );
 
         if ( adminMode ) {
-            if ( _comm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
                 return ERROR(
                            CAT_INSUFFICIENT_PRIVILEGE_LEVEL,
                            "failed with insufficient privilege" );
@@ -2605,8 +2602,8 @@ extern "C" {
 
             status = cmlCheckDataObjId(
                          objIdString,
-                         _comm->clientUser.userName,
-                         _comm->clientUser.rodsZone,
+                         _ctx.comm()->clientUser.userName,
+                         _ctx.comm()->clientUser.rodsZone,
                          neededAccess,
                          mySessionTicket,
                          mySessionClientAddr,
@@ -2628,8 +2625,8 @@ extern "C" {
                     if ( strncmp( theVal, _data_obj_info->objPath, len ) == 0 ) {
 
                         iVal = cmlCheckDir( theVal,
-                                            _comm->clientUser.userName,
-                                            _comm->clientUser.rodsZone,
+                                            _ctx.comm()->clientUser.userName,
+                                            _ctx.comm()->clientUser.rodsZone,
                                             ACCESS_OWN,
                                             &icss );
                     }
@@ -2829,7 +2826,6 @@ extern "C" {
     // update the data obj count of a resource
     irods::error db_reg_data_obj_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -2840,8 +2836,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm       ||
-                !_data_obj_info ) {
+        if (    !_data_obj_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
@@ -2904,8 +2899,8 @@ extern "C" {
         /* Check that collection exists and user has write permission.
            At the same time, also get the inherit flag */
         iVal = cmlCheckDirAndGetInheritFlag( logicalDirName,
-                                             _comm->clientUser.userName,
-                                             _comm->clientUser.rodsZone,
+                                             _ctx.comm()->clientUser.userName,
+                                             _ctx.comm()->clientUser.rodsZone,
                                              ACCESS_MODIFY_OBJECT,
                                              &inheritFlag,
                                              mySessionTicket,
@@ -2916,12 +2911,12 @@ extern "C" {
             if ( iVal == CAT_UNKNOWN_COLLECTION ) {
                 snprintf( errMsg, 100, "collection '%s' is unknown",
                           logicalDirName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
             if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
                 snprintf( errMsg, 100, "no permission to update collection '%s'",
                           logicalDirName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
             return ERROR( iVal, "" );
         }
@@ -2966,8 +2961,8 @@ extern "C" {
         cllBindVars[7] = _data_obj_info->rescName;
         cllBindVars[8] = _data_obj_info->rescHier;
         cllBindVars[9] = _data_obj_info->filePath;
-        cllBindVars[10] = _comm->clientUser.userName;
-        cllBindVars[11] = _comm->clientUser.rodsZone;
+        cllBindVars[10] = _ctx.comm()->clientUser.userName;
+        cllBindVars[11] = _ctx.comm()->clientUser.rodsZone;
         cllBindVars[12] = dataStatusNum;
         cllBindVars[13] = _data_obj_info->chksum;
         cllBindVars[14] = _data_obj_info->dataMode;
@@ -3025,8 +3020,8 @@ extern "C" {
         }
         else {
             cllBindVars[0] = dataIdNum;
-            cllBindVars[1] = _comm->clientUser.userName;
-            cllBindVars[2] = _comm->clientUser.rodsZone;
+            cllBindVars[1] = _ctx.comm()->clientUser.userName;
+            cllBindVars[2] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[3] = ACCESS_OWN;
             cllBindVars[4] = myTime;
             cllBindVars[5] = myTime;
@@ -3047,8 +3042,8 @@ extern "C" {
         }
 
         status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone, "", &icss );
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone, "", &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlRegDataObj cmlAudit3 failure %d",
@@ -3077,7 +3072,6 @@ extern "C" {
     // register a data object into the catalog
     irods::error db_reg_replica_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         dataObjInfo_t*         _src_data_obj_info,
         dataObjInfo_t*         _dst_data_obj_info,
         keyValPair_t*          _cond_input ) {
@@ -3090,7 +3084,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm              ||
+        if ( 
                 !_src_data_obj_info ||
                 !_dst_data_obj_info ||
                 !_cond_input ) {
@@ -3165,7 +3159,7 @@ extern "C" {
                                  logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
         if ( adminMode ) {
-            if ( _comm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
         }
@@ -3175,8 +3169,8 @@ extern "C" {
                 rodsLog( LOG_SQL, "chlRegReplica SQL 1 " );
             }
             status = cmlCheckDataObjOnly( logicalDirName, logicalFileName,
-                                          _comm->clientUser.userName,
-                                          _comm->clientUser.rodsZone,
+                                          _ctx.comm()->clientUser.userName,
+                                          _ctx.comm()->clientUser.rodsZone,
                                           ACCESS_READ_OBJECT, &icss );
             if ( status < 0 ) {
                 _rollback( "chlRegReplica" );
@@ -3284,8 +3278,8 @@ extern "C" {
         }
 
         status = cmlAudit3( AU_REGISTER_DATA_REPLICA, objIdString,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone, nextRepl, &icss );
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone, nextRepl, &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
                      "chlRegDataReplica cmlAudit3 failure %d",
@@ -3310,7 +3304,6 @@ extern "C" {
     // unregister a data object
     irods::error db_unreg_replica_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         dataObjInfo_t*         _data_obj_info,
         keyValPair_t*          _cond_input ) {
         // =-=-=-=-=-=-=-
@@ -3322,7 +3315,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm          ||
+        if ( 
                 !_data_obj_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -3391,8 +3384,8 @@ extern "C" {
                 rodsLog( LOG_SQL, "chlUnregDataObj SQL 1 " );
             }
             status = cmlCheckDataObjOnly( logicalDirName, logicalFileName,
-                                          _comm->clientUser.userName,
-                                          _comm->clientUser.rodsZone,
+                                          _ctx.comm()->clientUser.userName,
+                                          _ctx.comm()->clientUser.rodsZone,
                                           ACCESS_DELETE_OBJECT, &icss );
             if ( status < 0 ) {
                 _rollback( "chlUnregDataObj" );
@@ -3401,7 +3394,7 @@ extern "C" {
             snprintf( dataObjNumber, sizeof dataObjNumber, "%lld", status );
         }
         else {
-            if ( _comm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
             if ( trashMode ) {
@@ -3414,7 +3407,7 @@ extern "C" {
                 snprintf( checkPath, MAX_NAME_LEN, "/%s/trash", zone.c_str() );
                 len = strlen( checkPath );
                 if ( strncmp( checkPath, logicalDirName, len ) != 0 ) {
-                    addRErrorMsg( &_comm->rError, 0,
+                    addRErrorMsg( &_ctx.comm()->rError, 0,
                                   "TRASH_KW but not zone/trash path" );
                     return ERROR( CAT_INVALID_ARGUMENT, "TRASH_KW but not zone/trash path" );
                 }
@@ -3441,13 +3434,13 @@ extern "C" {
                                      cVal, sizeof cVal, bindVars, &icss );
                     }
                     if ( status != 0 ) {
-                        addRErrorMsg( &_comm->rError, 0,
+                        addRErrorMsg( &_ctx.comm()->rError, 0,
                                       "This is the last replica, removal by admin not allowed" );
                         return ERROR( CAT_LAST_REPLICA, "This is the last replica, removal by admin not allowed" );
                     }
                 }
                 else {
-                    addRErrorMsg( &_comm->rError, 0,
+                    addRErrorMsg( &_ctx.comm()->rError, 0,
                                   "dataId and replNum required" );
                     _rollback( "chlUnregDataObj" );
                     return ERROR( CAT_INVALID_ARGUMENT, "dataId and replNum required" );
@@ -3517,7 +3510,7 @@ extern "C" {
                 status = CAT_UNKNOWN_FILE;  /* More accurate, in this case */
                 snprintf( errMsg, 100, "data object '%s' is unknown",
                           logicalFileName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( status, "data object unknown" );
             }
             _rollback( "chlUnregDataObj" );
@@ -3554,13 +3547,13 @@ extern "C" {
         /* Audit */
         if ( dataObjNumber[0] != '\0' ) {
             status = cmlAudit3( AU_UNREGISTER_DATA_OBJ, dataObjNumber,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone, "", &icss );
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone, "", &icss );
         }
         else {
             status = cmlAudit3( AU_UNREGISTER_DATA_OBJ, "0",
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 _data_obj_info->objPath, &icss );
         }
         if ( status != 0 ) {
@@ -3588,7 +3581,6 @@ extern "C" {
     //
     irods::error db_reg_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         ruleExecSubmitInp_t*   _re_sub_inp ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -3599,7 +3591,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm          ||
+        if ( 
                 !_re_sub_inp ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -3679,8 +3671,8 @@ extern "C" {
 
         /* Audit */
         status = cmlAudit3( AU_REGISTER_DELAYED_RULE,  ruleExecIdNum,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _re_sub_inp->ruleName, &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -3706,7 +3698,6 @@ extern "C" {
     // unregister a data object
     irods::error db_mod_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _re_id,
         keyValPair_t*          _reg_param ) {
         // =-=-=-=-=-=-=-
@@ -3718,7 +3709,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_re_id  ||
                 !_reg_param ) {
             return ERROR(
@@ -3808,8 +3799,8 @@ extern "C" {
 
         /* Audit */
         status = cmlAudit3( AU_MODIFY_DELAYED_RULE,  _re_id,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             "", &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -3836,7 +3827,6 @@ extern "C" {
     // unregister a data object
     irods::error db_del_rule_exec_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _re_id ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -3847,7 +3837,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm ||
+        if ( 
                 !_re_id ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -3877,8 +3867,8 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            if ( _comm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH ) {
                 if ( logSQL != 0 ) {
                     rodsLog( LOG_SQL, "chlDelRuleExec SQL 1 " );
                 }
@@ -3890,7 +3880,7 @@ extern "C" {
                                  "select user_name from R_RULE_EXEC where rule_exec_id=?",
                                  userName, MAX_NAME_LEN, bindVars, &icss );
                 }
-                if ( status != 0 || strncmp( userName, _comm->clientUser.userName, MAX_NAME_LEN )
+                if ( status != 0 || strncmp( userName, _ctx.comm()->clientUser.userName, MAX_NAME_LEN )
                         != 0 ) {
                     return ERROR( CAT_NO_ACCESS_PERMISSION, "no access permission" );
                 }
@@ -3917,8 +3907,8 @@ extern "C" {
 
         /* Audit */
         status = cmlAudit3( AU_DELETE_DELAYED_RULE,  _re_id,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             "", &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -3944,15 +3934,7 @@ extern "C" {
     //
     irods::error db_add_child_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         std::map<std::string, std::string> *_resc_input ) {
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm || !_resc_input ) {
-            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
-        }
-
         // =-=-=-=-=-=-=-
         // for readability
         std::map<std::string, std::string>& resc_input = *_resc_input;
@@ -3992,7 +3974,7 @@ extern "C" {
 
         logger.log();
 
-        if ( !( result = _canConnectToCatalog( _comm ) ) ) {
+        if ( !( result = _canConnectToCatalog( _ctx.comm() ) ) ) {
             std::string zone;
             if ( !( ret = getLocalZone( _ctx.prop_map(), &icss, zone ) ).ok() ) {
                 result = ret.code();
@@ -4000,7 +3982,7 @@ extern "C" {
             }
             else if ( resc_input[irods::RESOURCE_ZONE].length() > 0 &&
                       resc_input[irods::RESOURCE_ZONE] != zone ) {
-                addRErrorMsg( &_comm->rError, 0,
+                addRErrorMsg( &_ctx.comm()->rError, 0,
                               "Currently, resources must be in the local zone" );
                 result = CAT_INVALID_ZONE;
 
@@ -4095,7 +4077,7 @@ extern "C" {
 
                             // Substitute 'child' with '...;parent;child'
                             status = chlSubstituteResourceHierarchies(
-                                         _comm,
+                                         _ctx.comm(),
                                          child_resc.c_str(),
                                          hierarchy.c_str() );
 
@@ -4138,8 +4120,8 @@ extern "C" {
                         if ( ( status = cmlAudit3(
                                             AU_ADD_CHILD_RESOURCE,
                                             resc_id,
-                                            _comm->clientUser.userName,
-                                            _comm->clientUser.rodsZone,
+                                            _ctx.comm()->clientUser.userName,
+                                            _ctx.comm()->clientUser.rodsZone,
                                             commentStr,
                                             &icss ) ) != 0 ) {
                             std::stringstream ss;
@@ -4165,7 +4147,7 @@ extern "C" {
                     std::stringstream msg;
                     msg << "Encountered an error adding '" << resc_name << "' as a child resource.";
                     ret = PASSMSG( msg.str(), ret );
-                    addRErrorMsg( &_comm->rError, 0, ret.result().c_str() );
+                    addRErrorMsg( &_ctx.comm()->rError, 0, ret.result().c_str() );
                     result = ret.code();
                 }
             }
@@ -4179,12 +4161,11 @@ extern "C" {
     //
     irods::error db_reg_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm || !_resc_input ) {
+        if ( !_resc_input ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
         }
 
@@ -4225,14 +4206,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // error trap empty resc name
         if ( resc_input[irods::RESOURCE_NAME].length() < 1 ) {
-            addRErrorMsg( &_comm->rError, 0, "resource name is empty" );
+            addRErrorMsg( &_ctx.comm()->rError, 0, "resource name is empty" );
             return ERROR( CAT_INVALID_RESOURCE_NAME, "resource name is empty" );
         }
 
         // =-=-=-=-=-=-=-
         // error trap empty resc type
         if ( resc_input[irods::RESOURCE_TYPE].length() < 1 ) {
-            addRErrorMsg( &_comm->rError, 0, "resource type is empty" );
+            addRErrorMsg( &_ctx.comm()->rError, 0, "resource type is empty" );
             return ERROR( CAT_INVALID_RESOURCE_TYPE, "resource type is empty" );
         }
 
@@ -4240,10 +4221,10 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -4278,7 +4259,7 @@ extern "C" {
 
         if ( resc_input[irods::RESOURCE_ZONE].length() > 0 ) {
             if ( resc_input[irods::RESOURCE_ZONE] != zone ) {
-                addRErrorMsg( &_comm->rError, 0,
+                addRErrorMsg( &_ctx.comm()->rError, 0,
                               "Currently, resources must be in the local zone" );
                 return ERROR( CAT_INVALID_ZONE, "resources must be in the local zone" );
             }
@@ -4294,7 +4275,7 @@ extern "C" {
         if ( resc_input[irods::RESOURCE_LOCATION] != irods::EMPTY_RESC_HOST ) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4597
-            _resolveHostName( _comm, resc_input[irods::RESOURCE_LOCATION].c_str(), myHostEnt );
+            _resolveHostName( _ctx.comm(), resc_input[irods::RESOURCE_LOCATION].c_str(), myHostEnt );
         }
 
         getNowStr( myTime );
@@ -4331,8 +4312,8 @@ extern "C" {
 
         /* Audit */
         status = cmlAudit3( AU_REGISTER_RESOURCE,  idNum,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             resc_input[irods::RESOURCE_NAME].c_str(), &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -4357,12 +4338,11 @@ extern "C" {
     //
     irods::error db_del_child_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         std::map<std::string, std::string> *_resc_input ) {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm || !_resc_input ) {
+        if ( !_resc_input ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "NULL parameter" );
         }
 
@@ -4403,7 +4383,7 @@ extern "C" {
         parser.first_child( child );
 
         std::string zone;
-        if ( !( status = _canConnectToCatalog( _comm ) ) ) {
+        if ( !( status = _canConnectToCatalog( _ctx.comm() ) ) ) {
             if ( ( result = getLocalZone( _ctx.prop_map(), &icss, zone ) ).ok() ) {
                 logger.log();
 
@@ -4488,7 +4468,7 @@ extern "C" {
                         hierarchy += irods::hierarchy_parser::delimiter() + child;
 
                         // Substitute '...;parent;child' with 'child
-                        status = chlSubstituteResourceHierarchies( _comm, hierarchy.c_str(), child.c_str() );
+                        status = chlSubstituteResourceHierarchies( _ctx.comm(), hierarchy.c_str(), child.c_str() );
 
                         // =-=-=-=-=-=-=-
                         // Update resource name for objects in child
@@ -4516,7 +4496,7 @@ extern "C" {
                     /* Audit */
                     char commentStr[1024]; // this prolly should be better sized
                     snprintf( commentStr, sizeof commentStr, "%s %s", resc_input[irods::RESOURCE_NAME].c_str(), child_string.c_str() );
-                    if ( ( status = cmlAudit3( AU_DEL_CHILD_RESOURCE, resc_id, _comm->clientUser.userName, _comm->clientUser.rodsZone,
+                    if ( ( status = cmlAudit3( AU_DEL_CHILD_RESOURCE, resc_id, _ctx.comm()->clientUser.userName, _ctx.comm()->clientUser.rodsZone,
                                                commentStr, &icss ) ) != 0 ) {
                         std::stringstream ss;
                         ss << "chlDelChildResc cmlAudit3 failure " << status;
@@ -4542,7 +4522,6 @@ extern "C" {
     // delete a resource
     irods::error db_del_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         const char *_resc_name,
         int                    _dry_run ) {
 
@@ -4555,7 +4534,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm || !_resc_name ) {
+        if ( !_resc_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
@@ -4586,10 +4565,10 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -4600,7 +4579,7 @@ extern "C" {
             snprintf( errMsg, 150,
                       "%s is a built-in resource needed for bundle operations.",
                       BUNDLE_RESC );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_PSEUDO_RESC_MODIFY_DISALLOWED, "cannot delete bundle resc" );
         }
         // =-=-=-=-=-=-=-
@@ -4610,7 +4589,7 @@ extern "C" {
             snprintf( errMsg, 100,
                       "resource '%s' contains one or more dataObjects",
                       _resc_name );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_RESOURCE_NOT_EMPTY, "resc not empty" );
         }
 
@@ -4638,7 +4617,7 @@ extern "C" {
                 snprintf( errMsg, 100,
                           "resource '%s' does not exist",
                           _resc_name );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( status, "resource does not exits" );
             }
             _rollback( "chlDelResc" );
@@ -4650,7 +4629,7 @@ extern "C" {
             snprintf( errMsg, 100,
                       "resource '%s' has a parent or child",
                       _resc_name );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_RESOURCE_NOT_EMPTY, "resource not empty" );
         }
 
@@ -4667,7 +4646,7 @@ extern "C" {
                 snprintf( errMsg, 100,
                           "resource '%s' does not exist",
                           _resc_name );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( status, "resource does not exist" );
             }
             _rollback( "chlDelResc" );
@@ -4699,8 +4678,8 @@ extern "C" {
         /* Audit */
         status = cmlAudit3( AU_DELETE_RESOURCE,
                             rescId,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _resc_name,
                             &icss );
         if ( status != 0 ) {
@@ -4730,21 +4709,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // rollback the db
     irods::error db_rollback_op(
-        irods::plugin_context& _ctx,
-        rsComm_t*              _comm ) {
+        irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null parameter" );
         }
 
         // =-=-=-=-=-=-=-
@@ -4779,21 +4749,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // commit the transaction
     irods::error db_commit_op(
-        irods::plugin_context& _ctx,
-        rsComm_t*              _comm ) {
+        irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null parameter" );
         }
 
         // =-=-=-=-=-=-=-
@@ -4828,7 +4789,6 @@ extern "C" {
     // commit the transaction
     irods::error db_del_user_re_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         userInfo_t*            _user_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -4839,7 +4799,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_user_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -4870,10 +4830,10 @@ extern "C" {
             rodsLog( LOG_SQL, "chlDelUserRE" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -4896,9 +4856,9 @@ extern "C" {
             rstrcpy( zoneToUse, zoneName, NAME_LEN );
         }
 
-        if ( strncmp( _comm->clientUser.userName, userName2, sizeof( userName2 ) ) == 0 &&
-                strncmp( _comm->clientUser.rodsZone, zoneToUse, sizeof( zoneToUse ) ) == 0 ) {
-            addRErrorMsg( &_comm->rError, 0, "Cannot remove your own admin account, probably unintended" );
+        if ( strncmp( _ctx.comm()->clientUser.userName, userName2, sizeof( userName2 ) ) == 0 &&
+                strncmp( _ctx.comm()->clientUser.rodsZone, zoneToUse, sizeof( zoneToUse ) ) == 0 ) {
+            addRErrorMsg( &_ctx.comm()->rError, 0, "Cannot remove your own admin account, probably unintended" );
             return ERROR( CAT_INVALID_USER, "invalid user" );
         }
 
@@ -4916,7 +4876,7 @@ extern "C" {
         }
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
                 status == CAT_NO_ROWS_FOUND ) {
-            addRErrorMsg( &_comm->rError, 0, "Invalid user" );
+            addRErrorMsg( &_ctx.comm()->rError, 0, "Invalid user" );
             return ERROR( CAT_INVALID_USER, "invalid user" );
         }
         if ( status != 0 ) {
@@ -4953,7 +4913,7 @@ extern "C" {
                      "chlDelUserRE delete password failure %d",
                      status );
             snprintf( errMsg, sizeof errMsg, "Error removing password entry" );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             _rollback( "chlDelUserRE" );
             return ERROR( status, "Error removing password entry" );
         }
@@ -4974,7 +4934,7 @@ extern "C" {
                      "chlDelUserRE delete user_group entry failure %d",
                      status );
             snprintf( errMsg, sizeof errMsg, "Error removing user_group entry" );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             _rollback( "chlDelUserRE" );
             return ERROR( status, "Error removing user_group entry" );
         }
@@ -4993,7 +4953,7 @@ extern "C" {
                      "chlDelUserRE delete user_auth entries failure %d",
                      status );
             snprintf( errMsg, sizeof errMsg, "Error removing user_auth entries" );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             _rollback( "chlDelUserRE" );
             return ERROR( status, "Error removing user_auth entries" );
         }
@@ -5006,8 +4966,8 @@ extern "C" {
                   userName2, zoneToUse );
         status = cmlAudit3( AU_DELETE_USER_RE,
                             iValStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             userStr,
                             &icss );
         if ( status != 0 ) {
@@ -5026,7 +4986,6 @@ extern "C" {
     // commit the transaction
     irods::error db_reg_coll_by_admin_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -5037,7 +4996,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5080,12 +5039,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // JMC - backport 4772
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-                _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+                _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             int status2;
             status2  = cmlCheckGroupAdminAccess(
-                           _comm->clientUser.userName,
-                           _comm->clientUser.rodsZone,
+                           _ctx.comm()->clientUser.userName,
+                           _ctx.comm()->clientUser.rodsZone,
                            "", &icss );
             if ( status2 != 0 ) {
                 return ERROR( status2, "no group admin access" );
@@ -5121,7 +5080,7 @@ extern "C" {
                 snprintf( errMsg, sizeof errMsg,
                           "collection '%s' is unknown, cannot create %s under it",
                           logicalParentDirName, logicalEndName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( status, "collection is unknown" );
             }
             _rollback( "chlRegCollByAdmin" );
@@ -5183,7 +5142,7 @@ extern "C" {
                           status,
                           "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME"
                         );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
 
             rodsLog( LOG_NOTICE,
@@ -5224,7 +5183,7 @@ extern "C" {
                             "",
                             userName2,
                             zoneName,
-                            _comm->clientUser.userName,
+                            _ctx.comm()->clientUser.userName,
                             &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -5242,7 +5201,6 @@ extern "C" {
     // commit the transaction
     irods::error db_reg_coll_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -5253,7 +5211,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5307,8 +5265,8 @@ extern "C" {
             rodsLog( LOG_SQL, "chlRegColl SQL 1 " );
         }
         status = cmlCheckDirAndGetInheritFlag( logicalParentDirName,
-                                               _comm->clientUser.userName,
-                                               _comm->clientUser.rodsZone,
+                                               _ctx.comm()->clientUser.userName,
+                                               _ctx.comm()->clientUser.rodsZone,
                                                ACCESS_MODIFY_OBJECT, &inheritFlag,
                                                mySessionTicket, mySessionClientAddr, &icss );
         if ( status < 0 ) {
@@ -5316,7 +5274,7 @@ extern "C" {
             if ( status == CAT_UNKNOWN_COLLECTION ) {
                 snprintf( errMsg, 100, "collection '%s' is unknown",
                           logicalParentDirName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( status, "collection is unknown" );
             }
             _rollback( "chlRegColl" );
@@ -5349,8 +5307,8 @@ extern "C" {
 
         cllBindVars[cllBindVarCount++] = logicalParentDirName;
         cllBindVars[cllBindVarCount++] = _coll_info->collName;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
         cllBindVars[cllBindVarCount++] = _coll_info->collType;
         cllBindVars[cllBindVarCount++] = _coll_info->collInfo1;
         cllBindVars[cllBindVarCount++] = _coll_info->collInfo2;
@@ -5427,8 +5385,8 @@ extern "C" {
             }
         }
         else {
-            cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
-            cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone;
+            cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[cllBindVarCount++] = ACCESS_OWN;
             cllBindVars[cllBindVarCount++] = myTime;
             cllBindVars[cllBindVarCount++] = myTime;
@@ -5452,8 +5410,8 @@ extern "C" {
         status = cmlAudit4( AU_REGISTER_COLL,
                             currStr2,
                             "",
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _coll_info->collName,
                             &icss );
         if ( status != 0 ) {
@@ -5480,7 +5438,6 @@ extern "C" {
     // commit the transaction
     irods::error db_mod_coll_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -5491,7 +5448,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5526,8 +5483,8 @@ extern "C" {
         }
 
         /* Check that collection exists and user has write permission */
-        iVal = cmlCheckDir( _coll_info->collName,  _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+        iVal = cmlCheckDir( _coll_info->collName,  _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             ACCESS_MODIFY_OBJECT, &icss );
 
         if ( iVal < 0 ) {
@@ -5535,13 +5492,13 @@ extern "C" {
             if ( iVal == CAT_UNKNOWN_COLLECTION ) {
                 snprintf( errMsg, 100, "collection '%s' is unknown",
                           _coll_info->collName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( CAT_UNKNOWN_COLLECTION, "unknown collection" );
             }
             if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
                 snprintf( errMsg, 100, "no permission to update collection '%s'",
                           _coll_info->collName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return  ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
             }
             return ERROR( iVal, "cmlCheckDir failed" );
@@ -5611,8 +5568,8 @@ extern "C" {
         snprintf( iValStr, sizeof iValStr, "%lld", iVal );
         status = cmlAudit3( AU_REGISTER_COLL,
                             iValStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _coll_info->collName,
                             &icss );
         if ( status != 0 ) {
@@ -5630,7 +5587,6 @@ extern "C" {
     // commit the transaction
     irods::error db_reg_zone_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _zone_name,
         char*                  _zone_type,
         char*                  _zone_conn_info,
@@ -5644,7 +5600,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_zone_name ||
                 !_zone_type ||
                 !_zone_conn_info ||
@@ -5680,15 +5636,15 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
         if ( strncmp( _zone_type, "remote", 6 ) != 0 ) {
-            addRErrorMsg( &_comm->rError, 0,
+            addRErrorMsg( &_ctx.comm()->rError, 0,
                           "Currently, only zones of type 'remote' are allowed" );
             return ERROR( CAT_INVALID_ARGUMENT, "Currently, only zones of type 'remote' are allowed" );
         }
@@ -5729,8 +5685,8 @@ extern "C" {
 
         /* Audit */
         status = cmlAudit3( AU_REGISTER_ZONE,  "0",
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             "", &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -5756,7 +5712,6 @@ extern "C" {
     // modify the zone
     irods::error db_mod_zone_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _zone_name,
         char*                  _option,
         char*                  _option_value ) {
@@ -5769,7 +5724,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_zone_name ||
                 !_option ||
                 !_option_value ) {
@@ -5804,10 +5759,10 @@ extern "C" {
             return  ERROR( CAT_INVALID_ARGUMENT, "invalid arument value" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -5875,7 +5830,7 @@ extern "C" {
         }
         if ( strcmp( _option, "name" ) == 0 ) {
             if ( strcmp( _zone_name, zone.c_str() ) == 0 ) {
-                addRErrorMsg( &_comm->rError, 0,
+                addRErrorMsg( &_ctx.comm()->rError, 0,
                               "It is not valid to rename the local zone via chlModZone; iadmin should use acRenameLocalZone" );
                 return ERROR( CAT_INVALID_ARGUMENT, "cannot rename localzone" );
             }
@@ -5904,8 +5859,8 @@ extern "C" {
         snprintf( commentStr, sizeof commentStr, "%s %s", _option, _option_value );
         status = cmlAudit3( AU_MOD_ZONE,
                             zoneId,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             commentStr,
                             &icss );
         if ( status != 0 ) {
@@ -5931,7 +5886,6 @@ extern "C" {
     // modify the zone
     irods::error db_rename_coll_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _old_coll,
         char*                  _new_coll ) {
         // =-=-=-=-=-=-=-
@@ -5943,7 +5897,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_old_coll ||
                 !_new_coll ) {
             return ERROR(
@@ -5974,8 +5928,8 @@ extern "C" {
         }
 
         status1 = cmlCheckDir( _old_coll,
-                               _comm->clientUser.userName,
-                               _comm->clientUser.rodsZone,
+                               _ctx.comm()->clientUser.userName,
+                               _ctx.comm()->clientUser.rodsZone,
                                ACCESS_OWN,
                                &icss );
 
@@ -5984,7 +5938,7 @@ extern "C" {
         }
 
         /* call chlRenameObject to rename */
-        status = chlRenameObject( _comm, status1, _new_coll );
+        status = chlRenameObject( _ctx.comm(), status1, _new_coll );
         if ( !status ) {
             return ERROR( status, "chlRenameObject failed" );
         }
@@ -5997,7 +5951,6 @@ extern "C" {
     // modify the zone
     irods::error db_mod_zone_coll_acl_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _access_level,
         char*                  _user_name,
         char*                  _path_name ) {
@@ -6010,7 +5963,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_access_level ||
                 !_user_name ||
                 !_path_name ) {
@@ -6041,10 +5994,10 @@ extern "C" {
         if ( strstr( cp, PATH_SEPARATOR ) != NULL ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid path name" );
         }
-        status =  chlModAccessControl( _comm, 0,
+        status =  chlModAccessControl( _ctx.comm(), 0,
                                        _access_level,
                                        _user_name,
-                                       _comm->clientUser.rodsZone,
+                                       _ctx.comm()->clientUser.rodsZone,
                                        _path_name );
         if ( !status ) {
             return ERROR( status, "chlModAccessControl failed" );
@@ -6058,7 +6011,6 @@ extern "C" {
     // modify the zone
     irods::error db_rename_local_zone_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _old_zone,
         char*                  _new_zone ) {
         // =-=-=-=-=-=-=-
@@ -6070,7 +6022,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_old_zone ||
                 !_new_zone ) {
             return ERROR(
@@ -6104,10 +6056,10 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -6151,8 +6103,8 @@ extern "C" {
                   _old_zone, _new_zone );
         status = cmlAudit3( AU_MOD_ZONE,
                             "0",
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             commentStr,
                             &icss );
         if ( status != 0 ) {
@@ -6272,7 +6224,6 @@ extern "C" {
     // modify the zone
     irods::error db_del_zone_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _zone_name ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6283,7 +6234,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_zone_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -6314,10 +6265,10 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -6340,7 +6291,7 @@ extern "C" {
         }
 
         if ( strcmp( zoneType, "remote" ) != 0 ) {
-            addRErrorMsg( &_comm->rError, 0,
+            addRErrorMsg( &_ctx.comm()->rError, 0,
                           "It is not permitted to remove the local zone" );
             return ERROR( CAT_INVALID_ARGUMENT, "cannot remove local zone" );
         }
@@ -6362,8 +6313,8 @@ extern "C" {
         /* Audit */
         status = cmlAudit3( AU_DELETE_ZONE,
                             "0",
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _zone_name,
                             &icss );
         if ( status != 0 ) {
@@ -6390,7 +6341,6 @@ extern "C" {
     // modify the zone
     irods::error db_simple_query_op_vector(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _sql,
         std::vector<std::string> _bindVars,
         int                    _format,
@@ -6402,14 +6352,6 @@ extern "C" {
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm ) {
-            return ERROR(
-                       CAT_INVALID_ARGUMENT,
-                       "null parameter" );
         }
 
         // =-=-=-=-=-=-=-
@@ -6466,10 +6408,10 @@ extern "C" {
             rodsLog( LOG_SQL, "chlSimpleQuery" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -6664,7 +6606,6 @@ extern "C" {
 
     irods::error db_simple_query_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _sql,
         char*                  _arg1,
         char*                  _arg2,
@@ -6688,14 +6629,13 @@ extern "C" {
                 }
             }
         }
-        return db_simple_query_op_vector( _ctx, _comm, _sql, bindVars, _format, _control, _out_buf, _max_out_buf );
+        return db_simple_query_op_vector( _ctx, _sql, bindVars, _format, _control, _out_buf, _max_out_buf );
     }
 
     // =-=-=-=-=-=-=-
     // commit the transaction
     irods::error db_del_coll_by_admin_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6706,7 +6646,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -6740,10 +6680,10 @@ extern "C" {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -6773,7 +6713,7 @@ extern "C" {
                 char errMsg[105];
                 snprintf( errMsg, 100, "collection '%s' is not empty",
                           _coll_info->collName );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( CAT_COLLECTION_NOT_EMPTY, "collection not empty" );
             }
             _rollback( "chlDelCollByAdmin" );
@@ -6826,8 +6766,8 @@ extern "C" {
         status = cmlAudit4( AU_DELETE_COLL_BY_ADMIN,
                             "select coll_id from R_COLL_MAIN where coll_name=?",
                             _coll_info->collName,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _coll_info->collName,
                             &icss );
         if ( status != 0 ) {
@@ -6851,7 +6791,7 @@ extern "C" {
             char errMsg[105];
             snprintf( errMsg, 100, "collection '%s' is unknown",
                       _coll_info->collName );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             _rollback( "chlDelCollByAdmin" );
             return ERROR( CAT_UNKNOWN_COLLECTION, "unknown collection" );
         }
@@ -6864,7 +6804,6 @@ extern "C" {
     // commit the transaction
     irods::error db_del_coll_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         collInfo_t*            _coll_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -6875,7 +6814,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -6901,7 +6840,7 @@ extern "C" {
             rodsLog( LOG_SQL, "chlDelColl" );
         }
 
-        status = _delColl( _comm, _coll_info );
+        status = _delColl( _ctx.comm(), _coll_info );
         if ( status != 0 ) {
             return ERROR( status, "_delColl failed" );
         }
@@ -6923,7 +6862,6 @@ extern "C" {
     // authenticate user
     irods::error db_check_auth_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         const char*            _scheme,
         char*                  _challenge,
         char*                  _response,
@@ -6939,7 +6877,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm || !_challenge || !_response || !_user_name || !_user_priv_level || !_client_priv_level ) {
+        if ( !_challenge || !_response || !_user_name || !_user_priv_level || !_client_priv_level ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
@@ -7327,12 +7265,12 @@ checkLevel:
             *_user_priv_level = LOCAL_PRIV_USER_AUTH;
 
             /* Since the user is admin, also get the client privilege level */
-            if ( strcmp( _comm->clientUser.userName, userName2 ) == 0 &&
-                    strcmp( _comm->clientUser.rodsZone, userZone ) == 0 ) {
+            if ( strcmp( _ctx.comm()->clientUser.userName, userName2 ) == 0 &&
+                    strcmp( _ctx.comm()->clientUser.rodsZone, userZone ) == 0 ) {
                 *_client_priv_level = LOCAL_PRIV_USER_AUTH; /* same user, no query req */
             }
             else {
-                if ( _comm->clientUser.userName[0] == '\0' ) {
+                if ( _ctx.comm()->clientUser.userName[0] == '\0' ) {
                     /*
                        When using GSI, the client might not provide a user
                        name, in which case we avoid the query below (which
@@ -7355,8 +7293,8 @@ checkLevel:
                     }
                     {
                         std::vector<std::string> bindVars;
-                        bindVars.push_back( _comm->clientUser.userName );
-                        bindVars.push_back( _comm->clientUser.rodsZone );
+                        bindVars.push_back( _ctx.comm()->clientUser.userName );
+                        bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
                         status = cmlGetStringValueFromSql(
                                      "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
                                      userType, MAX_NAME_LEN, bindVars, &icss );
@@ -7387,7 +7325,6 @@ checkLevel:
     // authenticate user
     irods::error db_make_temp_pw_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _pw_value_to_hash,
         char*                  _other_user ) {
         // =-=-=-=-=-=-=-
@@ -7399,7 +7336,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm             ||
+        if ( 
                 !_pw_value_to_hash ||
                 !_other_user ) {
             return ERROR(
@@ -7440,10 +7377,10 @@ checkLevel:
         }
 
         if ( _other_user != NULL && strlen( _other_user ) > 0 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
-            if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
             useOtherUser = 1;
@@ -7459,8 +7396,8 @@ checkLevel:
 
         {
             std::vector<std::string> bindVars;
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValueFromSql( tSQL, password, MAX_PASSWORD_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
@@ -7514,9 +7451,9 @@ checkLevel:
             cllBindVars[cllBindVarCount++] = _other_user;
         }
         else {
-            cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
+            cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
         }
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone,
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone,
                                          cllBindVars[cllBindVarCount++] = newPw;
         cllBindVars[cllBindVarCount++] = myTimeExp;
         cllBindVars[cllBindVarCount++] = myTime;
@@ -7552,7 +7489,6 @@ checkLevel:
     // authenticate user
     irods::error db_make_limited_pw_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _ttl,
         char*                  _pw_value_to_hash ) {
         // =-=-=-=-=-=-=-
@@ -7564,7 +7500,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm             ||
+        if ( 
                 !_pw_value_to_hash ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -7614,8 +7550,8 @@ checkLevel:
 
         {
             std::vector<std::string> bindVars;
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValueFromSql( tSQL, password, MAX_PASSWORD_LEN, bindVars, &icss );
         }
         if ( status != 0 ) {
@@ -7671,8 +7607,8 @@ checkLevel:
 
         /* Insert the limited password */
         snprintf( expTime, sizeof expTime, "%d", timeToLive );
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone,
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone,
                                          cllBindVars[cllBindVarCount++] = newPw;
         cllBindVars[cllBindVarCount++] = expTime;
         cllBindVars[cllBindVarCount++] = myTime;
@@ -7724,7 +7660,6 @@ checkLevel:
     // authenticate user
     irods::error db_update_pam_password_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _user_name,
         int                    _ttl,
         char*                  _test_time,
@@ -7738,7 +7673,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm      ||
+        if ( 
                 !_user_name ||
                 !_irods_password ) {
             return ERROR(
@@ -7943,7 +7878,6 @@ checkLevel:
     // authenticate user
     irods::error db_mod_user_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _user_name,
         char*                  _option,
         char*                  _new_value ) {
@@ -7956,7 +7890,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm      ||
+        if ( 
                 !_user_name ||
                 !_option    ||
                 !_new_value ) {
@@ -8018,8 +7952,8 @@ checkLevel:
         // =-=-=-=-=-=-=-
         // JMC - backport 4772
         groupAdminSettingPassword = 0;
-        if ( _comm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH && // JMC - backport 4773
-                _comm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH && // JMC - backport 4773
+                _ctx.comm()->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
             /* user is OK */
         }
         else {
@@ -8028,14 +7962,14 @@ checkLevel:
                 /* only password (in cases below) is allowed */
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
-            if ( strcmp( _user_name, _comm->clientUser.userName ) == 0 )  {
+            if ( strcmp( _user_name, _ctx.comm()->clientUser.userName ) == 0 )  {
                 userSettingOwnPassword = 1;
             }
             else {
                 int status2;
                 status2  = cmlCheckGroupAdminAccess(
-                               _comm->clientUser.userName,
-                               _comm->clientUser.rodsZone,
+                               _ctx.comm()->clientUser.userName,
+                               _ctx.comm()->clientUser.rodsZone,
                                "", &icss );
                 if ( status2 != 0 ) {
                     return ERROR( status2, "cmlCheckGroupAdminAccess failed" );
@@ -8167,11 +8101,11 @@ checkLevel:
         if ( strcmp( _option, "password" ) == 0 ) {
             int i;
             char userIdStr[MAX_NAME_LEN];
-            i = decodePw( _comm, _new_value, decoded );
-            int status2 = icatApplyRule( _comm, ( char* )"acCheckPasswordStrength", decoded );
+            i = decodePw( _ctx.comm(), _new_value, decoded );
+            int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
             if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
                 int status3;
-                status3 = addRErrorMsg( &_comm->rError, 0,
+                status3 = addRErrorMsg( &_ctx.comm()->rError, 0,
                                         "acCheckPasswordStrength rule not found" );
             }
 
@@ -8251,7 +8185,7 @@ checkLevel:
                     char errMsg[105];
                     snprintf( errMsg, 100, "user_type '%s' is not valid",
                               _new_value );
-                    addRErrorMsg( &_comm->rError, 0, errMsg );
+                    addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
 
                     rodsLog( LOG_NOTICE,
                              "chlModUser invalid user_type" );
@@ -8285,7 +8219,7 @@ checkLevel:
             return ERROR( status, "get user_id failed" );
         }
 
-        status = cmlAudit1( auditId, _comm->clientUser.userName,
+        status = cmlAudit1( auditId, _ctx.comm()->clientUser.userName,
                             ( char* )zone.c_str(), auditUserName, auditComment, &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -8311,7 +8245,6 @@ checkLevel:
     // authenticate user
     irods::error db_mod_group_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _group_name,
         char*                  _option,
         char*                  _user_name,
@@ -8325,7 +8258,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm       ||
+        if ( 
                 !_group_name ||
                 !_option     ||
                 !_user_name ) {
@@ -8365,20 +8298,20 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "argument is empty" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-                _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+                _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             int status2;
             status2  = cmlCheckGroupAdminAccess(
-                           _comm->clientUser.userName,
-                           _comm->clientUser.rodsZone, _group_name, &icss );
+                           _ctx.comm()->clientUser.userName,
+                           _ctx.comm()->clientUser.rodsZone, _group_name, &icss );
             if ( status2 != 0 ) {
                 /* User is not a groupadmin that is a member of this group. */
                 /* But if we're doing an 'add' and they are a groupadmin
                     and the group is empty, allow it */
                 if ( strcmp( _option, "add" ) == 0 ) {
                     int status3 =  cmlCheckGroupAdminAccess(
-                                       _comm->clientUser.userName,
-                                       _comm->clientUser.rodsZone, "", &icss );
+                                       _ctx.comm()->clientUser.userName,
+                                       _ctx.comm()->clientUser.rodsZone, "", &icss );
                     if ( status3 == 0 ) {
                         int status4 = cmlGetGroupMemberCount( _group_name, &icss );
                         if ( status4 == 0 ) { /* call succeeded and the total is 0 */
@@ -8502,8 +8435,8 @@ checkLevel:
         snprintf( commentStr, sizeof commentStr, "%s %s", _option, userId );
         status = cmlAudit3( AU_MOD_GROUP,
                             groupId,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             commentStr,
                             &icss );
         if ( status != 0 ) {
@@ -8530,7 +8463,6 @@ checkLevel:
     // authenticate user
     irods::error db_mod_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _resc_name,
         char*                  _option,
         char*                  _option_value ) {
@@ -8543,7 +8475,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm       ||
+        if ( 
                 !_resc_name  ||
                 !_option     ||
                 !_option_value ) {
@@ -8581,10 +8513,10 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "argument is empty" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -8595,7 +8527,7 @@ checkLevel:
             snprintf( errMsg, 150,
                       "%s is a built-in resource needed for bundle operations.",
                       BUNDLE_RESC );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_PSEUDO_RESC_MODIFY_DISALLOWED, "cannot mod bundle resc" );
         }
         // =-=-=-=-=-=-=-
@@ -8765,7 +8697,7 @@ checkLevel:
         if ( strcmp( _option, "host" ) == 0 ) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4597
-            _resolveHostName( _comm, _option_value, myHostEnt );
+            _resolveHostName( _ctx.comm(), _option_value, myHostEnt );
 
             // =-=-=-=-=-=-=-
             cllBindVars[cllBindVarCount++] = _option_value;
@@ -9064,8 +8996,8 @@ checkLevel:
         snprintf( commentStr, sizeof commentStr, "%s %s", _option, _option_value );
         status = cmlAudit3( AU_MOD_RESC,
                             rescId,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             commentStr,
                             &icss );
         if ( status != 0 ) {
@@ -9089,7 +9021,7 @@ checkLevel:
 
             snprintf( rescPathMsg, sizeof( rescPathMsg ), "Previous resource path: %s",
                       rescPath );
-            addRErrorMsg( &_comm->rError, 0, rescPathMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, rescPathMsg );
         }
 
         return SUCCESS();
@@ -9100,7 +9032,6 @@ checkLevel:
     // authenticate user
     irods::error db_mod_resc_data_paths_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _resc_name,
         char*                  _old_path,
         char*                  _new_path,
@@ -9114,7 +9045,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm      ||
+        if ( 
                 !_resc_name ||
                 !_old_path  ||
                 !_new_path ) {
@@ -9168,10 +9099,10 @@ checkLevel:
             return ERROR( CAT_INVALID_ARGUMENT, "invalid new path" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -9266,7 +9197,7 @@ checkLevel:
             char rowsMsg[100];
             snprintf( rowsMsg, 100, "%d rows updated",
                       rows );
-            status = addRErrorMsg( &_comm->rError, 0, rowsMsg );
+            status = addRErrorMsg( &_ctx.comm()->rError, 0, rowsMsg );
         }
 
         return SUCCESS();
@@ -9277,7 +9208,6 @@ checkLevel:
     // authenticate user
     irods::error db_mod_resc_freespace_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _resc_name,
         int                    _update_value ) {
         // =-=-=-=-=-=-=-
@@ -9289,7 +9219,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm      ||
+        if ( 
                 !_resc_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -9325,10 +9255,10 @@ checkLevel:
            shouldn't hurt, for now.
         */
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
-        if ( _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -9358,8 +9288,8 @@ checkLevel:
         status = cmlAudit4( AU_MOD_RESC_FREE_SPACE,
                             "select resc_id from R_RESC_MAIN where resc_name=?",
                             _resc_name,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             updateValueStr,
                             &icss );
         if ( status != 0 ) {
@@ -9378,7 +9308,6 @@ checkLevel:
     // commit the transaction
     irods::error db_reg_user_re_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         userInfo_t*            _user_info ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -9389,7 +9318,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_user_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -9440,12 +9369,12 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // JMC - backport 4772
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
-                _comm->proxyUser.authInfo.authFlag  < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+                _ctx.comm()->proxyUser.authInfo.authFlag  < LOCAL_PRIV_USER_AUTH ) {
             int status2;
             status2  = cmlCheckGroupAdminAccess(
-                           _comm->clientUser.userName,
-                           _comm->clientUser.rodsZone,
+                           _ctx.comm()->clientUser.userName,
+                           _ctx.comm()->clientUser.rodsZone,
                            "",
                            &icss );
             if ( status2 != 0 ) {
@@ -9478,7 +9407,7 @@ checkLevel:
             else {
                 snprintf( errMsg, 100, "user_type '%s' is not valid",
                           _user_info->userType );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( CAT_INVALID_USER_TYPE, "invalid user type" );
             }
         }
@@ -9526,7 +9455,7 @@ checkLevel:
                     snprintf( errMsg, 100,
                               "zone '%s' does not exist",
                               userZone );
-                    addRErrorMsg( &_comm->rError, 0, errMsg );
+                    addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                     return ERROR( CAT_INVALID_ZONE, "invalid zone name" );
                 }
                 return ERROR( status, "get zone id failure" );
@@ -9566,7 +9495,7 @@ checkLevel:
                           status,
                           "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME"
                         );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             }
             _rollback( "chlRegUserRE" );
             rodsLog( LOG_NOTICE,
@@ -9600,7 +9529,7 @@ checkLevel:
           is now set via the chlModUser call below.  This is untested, though.
         */
         if ( strlen( _user_info->authInfo.authStr ) > 0 ) {
-            status = chlModUser( _comm, _user_info->userName, "addAuth",
+            status = chlModUser( _ctx.comm(), _user_info->userName, "addAuth",
                                  _user_info->authInfo.authStr );
             if ( status != 0 ) {
                 rodsLog( LOG_NOTICE,
@@ -9617,8 +9546,8 @@ checkLevel:
         status = cmlAudit4( AU_REGISTER_USER_RE,
                             auditSQL,
                             userName2,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             userZone,
                             &icss );
         if ( status != 0 ) {
@@ -9637,7 +9566,6 @@ checkLevel:
     // commit the transaction
     irods::error db_set_avu_metadata_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _type,
         char*                  _name,
         char*                  _attribute,
@@ -9652,7 +9580,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -9691,7 +9619,7 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlSetAVUMetadata SQL 1 " );
         }
-        objId = checkAndGetObjectId( _comm, _ctx.prop_map(), _type, _name, ACCESS_CREATE_METADATA );
+        objId = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type, _name, ACCESS_CREATE_METADATA );
         if ( objId < 0 ) {
             return ERROR( objId, "checkAndGetObjectId failed" );
         }
@@ -9726,7 +9654,7 @@ checkLevel:
         if ( status <= 0 ) {
             if ( status == CAT_NO_ROWS_FOUND ) {
                 /* Need to add the metadata */
-                status = chlAddAVUMetadata( _comm, 0, _type, _name, _attribute,
+                status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute,
                                             _new_value, _new_unit );
             }
             else {
@@ -9739,7 +9667,7 @@ checkLevel:
 
         if ( status > 1 ) {
             /* Cannot update AVU in-place, need to do a delete with wildcards then add */
-            status = chlDeleteAVUMetadata( _comm, 1, _type, _name, _attribute, "%",
+            status = chlDeleteAVUMetadata( _ctx.comm(), 1, _type, _name, _attribute, "%",
                                            "%", 1 );
             if ( status != 0 ) {
                 /* Give it a second chance
@@ -9763,14 +9691,14 @@ checkLevel:
                  * actually fixed. Leaving it in for now, as it is marginally better than the
                  * alternative, but this is a definite TODO: Implement AVUMetadata locks.
                  */
-                status = chlDeleteAVUMetadata( _comm, 1, _type, _name, _attribute, "%",
+                status = chlDeleteAVUMetadata( _ctx.comm(), 1, _type, _name, _attribute, "%",
                                                "%", 1 );
             }
             if ( status != 0 ) {
                 _rollback( "chlSetAVUMetadata" );
                 return ERROR( status, "delete avu metadata failed" );
             }
-            status = chlAddAVUMetadata( _comm, 0, _type, _name, _attribute,
+            status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute,
                                         _new_value, _new_unit );
             return ERROR( status, "delete avu metadata failed" );
         }
@@ -9806,8 +9734,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_ADD_AVU_METADATA,
                             objIdStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _type,
                             &icss );
         if ( status != 0 ) {
@@ -9842,7 +9770,6 @@ checkLevel:
     // to which the AVU was associated.
     irods::error db_add_avu_metadata_wild_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _admin_mode,
         char*                  _type,
         char*                  _name,
@@ -9858,7 +9785,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -9980,8 +9907,8 @@ checkLevel:
 
         cllBindVars[cllBindVarCount++] = objectName;
         cllBindVars[cllBindVarCount++] = collection;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
         status =  cmlExecuteNoAnswerSql(
                       "insert into ACCESS_VIEW_ONE (access_type_id, data_id) (select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id)",
                       &icss );
@@ -10001,8 +9928,8 @@ checkLevel:
 #else
         cllBindVars[cllBindVarCount++] = objectName;
         cllBindVars[cllBindVarCount++] = collection;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _comm->clientUser.rodsZone;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
         status =  cmlExecuteNoAnswerSql(
                       "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
                       &icss );
@@ -10186,8 +10113,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_ADD_AVU_WILD_METADATA,
                             seqNumStr,  /* for WILD, record the AVU id */
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _name,       /* and the input wildcard path */
                             &icss );
         if ( status != 0 ) {
@@ -10214,7 +10141,6 @@ checkLevel:
 
     irods::error db_add_avu_metadata_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _admin_mode,
         char*                  _type,
         char*                  _name,
@@ -10230,7 +10156,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10287,7 +10213,7 @@ checkLevel:
         }
 
         if ( _admin_mode == 1 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
         }
@@ -10330,8 +10256,8 @@ checkLevel:
                     rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 2" );
                 }
                 status = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                              _comm->clientUser.userName,
-                                              _comm->clientUser.rodsZone,
+                                              _ctx.comm()->clientUser.userName,
+                                              _ctx.comm()->clientUser.rodsZone,
                                               ACCESS_CREATE_METADATA, &icss );
             }
             if ( status < 0 ) {
@@ -10364,8 +10290,8 @@ checkLevel:
                     rodsLog( LOG_SQL, "chlAddAVUMetadata SQL 4" );
                 }
                 status = cmlCheckDir( _name,
-                                      _comm->clientUser.userName,
-                                      _comm->clientUser.rodsZone,
+                                      _ctx.comm()->clientUser.userName,
+                                      _ctx.comm()->clientUser.rodsZone,
                                       ACCESS_CREATE_METADATA, &icss );
             }
             if ( status < 0 ) {
@@ -10374,7 +10300,7 @@ checkLevel:
                 if ( status == CAT_UNKNOWN_COLLECTION ) {
                     snprintf( errMsg, 100, "collection '%s' is unknown",
                               _name );
-                    addRErrorMsg( &_comm->rError, 0, errMsg );
+                    addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 }
                 else {
                     _rollback( "chlAddAVUMetadata" );
@@ -10385,7 +10311,7 @@ checkLevel:
         }
 
         if ( itype == 3 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
@@ -10417,7 +10343,7 @@ checkLevel:
         }
 
         if ( itype == 4 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
@@ -10456,7 +10382,7 @@ checkLevel:
         }
 
         if ( itype == 5 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL , "insufficient privilege" );
             }
 
@@ -10520,8 +10446,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_ADD_AVU_METADATA,
                             objIdStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _type,
                             &icss );
         if ( status != 0 ) {
@@ -10546,7 +10472,6 @@ checkLevel:
 
     irods::error db_mod_avu_metadata_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _type,
         char*                  _name,
         char*                  _attribute,
@@ -10564,7 +10489,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10597,7 +10522,7 @@ checkLevel:
             snprintf( myUnits, sizeof( myUnits ), "%s", _unitsOrArg0 );
         }
 
-        status = chlDeleteAVUMetadata( _comm, 0, _type, _name, _attribute, _value,
+        status = chlDeleteAVUMetadata( _ctx.comm(), 0, _type, _name, _attribute, _value,
                                        myUnits, 1 );
         if ( status != 0 ) {
             _rollback( "chlModAVUMetadata" );
@@ -10665,7 +10590,7 @@ checkLevel:
             addUnits = myUnits;
         }
 
-        status = chlAddAVUMetadata( _comm, 0, _type, _name, addAttr, addValue,
+        status = chlAddAVUMetadata( _ctx.comm(), 0, _type, _name, addAttr, addValue,
                                     addUnits );
         return CODE( status );
 
@@ -10673,7 +10598,6 @@ checkLevel:
 
     irods::error db_del_avu_metadata_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _option,
         char*                  _type,
         char*                  _name,
@@ -10690,7 +10614,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10766,8 +10690,8 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlDeleteAVUMetadata SQL 1 " );
             }
             status = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                          _comm->clientUser.userName,
-                                          _comm->clientUser.rodsZone,
+                                          _ctx.comm()->clientUser.userName,
+                                          _ctx.comm()->clientUser.rodsZone,
                                           ACCESS_DELETE_METADATA, &icss );
             if ( status < 0 ) {
                 if ( _nocommit != 1 ) {
@@ -10785,15 +10709,15 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlDeleteAVUMetadata SQL 2" );
             }
             status = cmlCheckDir( _name,
-                                  _comm->clientUser.userName,
-                                  _comm->clientUser.rodsZone,
+                                  _ctx.comm()->clientUser.userName,
+                                  _ctx.comm()->clientUser.rodsZone,
                                   ACCESS_DELETE_METADATA, &icss );
             if ( status < 0 ) {
                 char errMsg[105];
                 if ( status == CAT_UNKNOWN_COLLECTION ) {
                     snprintf( errMsg, 100, "collection '%s' is unknown",
                               _name );
-                    addRErrorMsg( &_comm->rError, 0, errMsg );
+                    addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 }
                 return ERROR( status, "cmlCheckDir failed" );
             }
@@ -10801,7 +10725,7 @@ checkLevel:
         }
 
         if ( itype == 3 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
@@ -10835,7 +10759,7 @@ checkLevel:
         }
 
         if ( itype == 4 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
@@ -10876,7 +10800,7 @@ checkLevel:
         }
 
         if ( itype == 5 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
@@ -10939,8 +10863,8 @@ checkLevel:
             /* Audit */
             status = cmlAudit3( AU_DELETE_AVU_METADATA,
                                 objIdStr,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 _type,
                                 &icss );
             if ( status != 0 ) {
@@ -11033,8 +10957,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_DELETE_AVU_METADATA,
                             objIdStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _type,
                             &icss );
         if ( status != 0 ) {
@@ -11063,7 +10987,6 @@ checkLevel:
 
     irods::error db_copy_avu_metadata_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _type1,
         char*                  _type2,
         char*                  _name1,
@@ -11077,7 +11000,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( !_comm   ||
+        if ( 
                 !_type1  ||
                 !_type2  ||
                 !_name1  ||
@@ -11116,7 +11039,7 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 1 " );
         }
-        objId1 = checkAndGetObjectId( _comm, _ctx.prop_map(), _type1, _name1, ACCESS_READ_METADATA );
+        objId1 = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type1, _name1, ACCESS_READ_METADATA );
         if ( objId1 < 0 ) {
             return ERROR( objId1, "checkAndGetObjectId failure" );
         }
@@ -11124,7 +11047,7 @@ checkLevel:
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlCopyAVUMetadata SQL 2" );
         }
-        objId2 = checkAndGetObjectId( _comm, _ctx.prop_map(), _type2, _name2, ACCESS_CREATE_METADATA );
+        objId2 = checkAndGetObjectId( _ctx.comm(), _ctx.prop_map(), _type2, _name2, ACCESS_CREATE_METADATA );
 
         if ( objId2 < 0 ) {
             return ERROR( objId2, "checkAndGetObjectId failure" );
@@ -11155,8 +11078,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_COPY_AVU_METADATA,
                             objIdStr1,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             objIdStr2,
                             &icss );
         if ( status != 0 ) {
@@ -11181,7 +11104,6 @@ checkLevel:
 
     irods::error db_mod_access_control_resc_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _recursive_flag,
         char*                  _access_level,
         char*                  _user_name,
@@ -11191,14 +11113,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -11244,11 +11158,11 @@ checkLevel:
             char errMsg[105];
             snprintf( errMsg, 100, "access level '%s' is invalid for a resource",
                       myAccessStr );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_INVALID_ARGUMENT, "invalid argument" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH ) {
             /* admin, so just get the resc_id */
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModAccessControlResc SQL 1" );
@@ -11270,8 +11184,8 @@ checkLevel:
         }
         else {
             status = cmlCheckResc( _resc_name,
-                                   _comm->clientUser.userName,
-                                   _comm->clientUser.rodsZone,
+                                   _ctx.comm()->clientUser.userName,
+                                   _ctx.comm()->clientUser.rodsZone,
                                    ACCESS_OWN,
                                    &icss );
             if ( status < 0 ) {
@@ -11371,7 +11285,6 @@ checkLevel:
 
     irods::error db_mod_access_control_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         int                    _recursive_flag,
         char*                  _access_level,
         char*                  _user_name,
@@ -11381,14 +11294,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -11428,7 +11333,6 @@ checkLevel:
         if ( strncmp( _access_level, MOD_RESC_PREFIX, strlen( MOD_RESC_PREFIX ) ) == 0 ) {
             ret = db_mod_access_control_resc_op(
                       _ctx,
-                      _comm,
                       _recursive_flag,
                       _access_level,
                       _user_name,
@@ -11440,8 +11344,8 @@ checkLevel:
         adminMode = 0;
         if ( strncmp( _access_level, MOD_ADMIN_MODE_PREFIX,
                       strlen( MOD_ADMIN_MODE_PREFIX ) ) == 0 ) {
-            if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-                addRErrorMsg( &_comm->rError, 0,
+            if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+                addRErrorMsg( &_ctx.comm()->rError, 0,
                               "You must be the admin to use the -M admin mode" );
                 return ERROR( CAT_NO_ACCESS_PERMISSION, "You must be the admin to use the -M admin mode" );
             }
@@ -11473,7 +11377,7 @@ checkLevel:
             char errMsg[105];
             snprintf( errMsg, 100, "access level '%s' is invalid",
                       _access_level );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_INVALID_ARGUMENT, errMsg );
         }
 
@@ -11508,8 +11412,8 @@ checkLevel:
                 rodsLog( LOG_SQL, "chlModAccessControl SQL 1 " );
             }
             status1 = cmlCheckDir( _path_name,
-                                   _comm->clientUser.userName,
-                                   _comm->clientUser.rodsZone,
+                                   _ctx.comm()->clientUser.userName,
+                                   _ctx.comm()->clientUser.rodsZone,
                                    ACCESS_OWN,
                                    &icss );
         }
@@ -11520,7 +11424,7 @@ checkLevel:
         if ( status1 < 0 && inheritFlag != 0 ) {
             char errMsg[105];
             snprintf( errMsg, 100, "either the collection does not exist or you do not have sufficient access" );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_NO_ACCESS_PERMISSION, errMsg );
         }
 
@@ -11558,8 +11462,8 @@ checkLevel:
                     rodsLog( LOG_SQL, "chlModAccessControl SQL 2" );
                 }
                 status2 = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                               _comm->clientUser.userName,
-                                               _comm->clientUser.rodsZone,
+                                               _ctx.comm()->clientUser.userName,
+                                               _ctx.comm()->clientUser.rodsZone,
                                                ACCESS_OWN, &icss );
             }
             if ( status2 > 0 ) {
@@ -11575,7 +11479,7 @@ checkLevel:
                 snprintf( errMsg, 200,
                           "Input path is not a collection and not a dataObj: %s",
                           _path_name );
-                addRErrorMsg( &_comm->rError, 0, errMsg );
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
                 return ERROR( CAT_INVALID_ARGUMENT, "unknown collection or file" );
             }
             if ( status1 != CAT_UNKNOWN_COLLECTION ) {
@@ -11583,8 +11487,8 @@ checkLevel:
                     rodsLog( LOG_SQL, "chlModAccessControl SQL 12" );
                 }
                 status3 = cmlCheckDirOwn( _path_name,
-                                          _comm->clientUser.userName,
-                                          _comm->clientUser.rodsZone,
+                                          _ctx.comm()->clientUser.userName,
+                                          _ctx.comm()->clientUser.rodsZone,
                                           &icss );
                 if ( status3 < 0 ) {
                     return ERROR( status1, "cmlCheckDirOwn failed" );
@@ -11599,8 +11503,8 @@ checkLevel:
                         rodsLog( LOG_SQL, "chlModAccessControl SQL 13" );
                     }
                     status3 = cmlCheckDataObjOwn( logicalParentDirName, logicalEndName,
-                                                  _comm->clientUser.userName,
-                                                  _comm->clientUser.rodsZone,
+                                                  _ctx.comm()->clientUser.userName,
+                                                  _ctx.comm()->clientUser.rodsZone,
                                                   &icss );
                     if ( status3 < 0 ) {
                         _rollback( "chlModAccessControl" );
@@ -11783,7 +11687,7 @@ checkLevel:
             snprintf( errMsg, 200,
                       "Input path is not a collection and recursion was requested: %s",
                       _path_name );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_INVALID_ARGUMENT, errMsg );
         }
 
@@ -12018,21 +11922,12 @@ checkLevel:
 
     irods::error db_rename_object_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         rodsLong_t             _obj_id,
         char*                  _new_name ) {
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -12090,8 +11985,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetIntegerValueFromSql(
                          "select coll_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
                          &collId, bindVars,  &icss );
@@ -12171,8 +12066,8 @@ checkLevel:
             /* Audit */
             status = cmlAudit3( AU_RENAME_DATA_OBJ,
                                 objIdString,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 _new_name,
                                 &icss );
             if ( status != 0 ) {
@@ -12202,8 +12097,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
                          "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
                          cVal, iVal, 2, bindVars, &icss );
@@ -12341,8 +12236,8 @@ checkLevel:
             /* Audit */
             status = cmlAudit3( AU_RENAME_COLLECTION,
                                 objIdString,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 _new_name,
                                 &icss );
             if ( status != 0 ) {
@@ -12399,21 +12294,12 @@ checkLevel:
 
     irods::error db_move_object_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         rodsLong_t             _obj_id,
         rodsLong_t             _target_coll_id ) {
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -12474,8 +12360,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
                          "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'modify object'",
                          cVal, iVal, 2, bindVars, &icss );
@@ -12510,8 +12396,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValueFromSql(
                          "select data_name from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
                          dataObjName, MAX_NAME_LEN, bindVars, &icss );
@@ -12594,8 +12480,8 @@ checkLevel:
             /* Audit */
             status = cmlAudit3( AU_MOVE_DATA_OBJ,
                                 objIdString,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 collIdString,
                                 &icss );
             if ( status != 0 ) {
@@ -12622,8 +12508,8 @@ checkLevel:
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( objIdString );
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetStringValuesFromSql(
                          "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
                          cVal, iVal, 2, bindVars, &icss );
@@ -12655,8 +12541,8 @@ checkLevel:
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlMoveObject SQL 9" );
             }
-            status = cmlCheckDir( parentCollName,  _comm->clientUser.userName,
-                                  _comm->clientUser.rodsZone,
+            status = cmlCheckDir( parentCollName,  _ctx.comm()->clientUser.userName,
+                                  _ctx.comm()->clientUser.rodsZone,
                                   ACCESS_MODIFY_OBJECT, &icss );
             if ( status < 0 ) {
                 return ERROR( status, "cmlCheckDir failed" );
@@ -12770,8 +12656,8 @@ checkLevel:
             /* Audit */
             status = cmlAudit3( AU_MOVE_COLL,
                                 objIdString,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone,
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone,
                                 targetCollName,
                                 &icss );
             if ( status != 0 ) {
@@ -12825,7 +12711,6 @@ checkLevel:
 
     irods::error db_reg_token_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _name_space,
         char*                  _name,
         char*                  _value,
@@ -12837,14 +12722,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -12894,7 +12771,7 @@ checkLevel:
             snprintf( errMsg, 200,
                       "Token namespace '%s' does not exist",
                       _name_space );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return  ERROR( CAT_INVALID_ARGUMENT, "namespace does not exist" );
         }
 
@@ -12913,7 +12790,7 @@ checkLevel:
             snprintf( errMsg, 200,
                       "Token '%s' already exists in namespace '%s'",
                       _name, _name_space );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return ERROR( CAT_INVALID_ARGUMENT, "token is already in namespace" );
         }
 
@@ -12969,8 +12846,8 @@ checkLevel:
         /* Audit */
         status = cmlAudit3( AU_REG_TOKEN,
                             seqNumStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _name,
                             &icss );
         if ( status != 0 ) {
@@ -12993,7 +12870,6 @@ checkLevel:
 
     irods::error db_del_token_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _name_space,
         char*                  _name ) {
         // =-=-=-=-=-=-=-
@@ -13001,14 +12877,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13057,7 +12925,7 @@ checkLevel:
             snprintf( errMsg, 200,
                       "Token '%s' does not exist in namespace '%s'",
                       _name, _name_space );
-            addRErrorMsg( &_comm->rError, 0, errMsg );
+            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
             return  ERROR( CAT_INVALID_ARGUMENT, "token is not in namespace" );
         }
 
@@ -13078,8 +12946,8 @@ checkLevel:
         snprintf( objIdStr, sizeof objIdStr, "%lld", objId );
         status = cmlAudit3( AU_DEL_TOKEN,
                             objIdStr,
-                            _comm->clientUser.userName,
-                            _comm->clientUser.rodsZone,
+                            _ctx.comm()->clientUser.userName,
+                            _ctx.comm()->clientUser.rodsZone,
                             _name,
                             &icss );
         if ( status != 0 ) {
@@ -13102,7 +12970,6 @@ checkLevel:
 
     irods::error db_reg_server_load_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _host_name,
         char*                  _resc_name,
         char*                  _cpu_used,
@@ -13117,14 +12984,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13148,7 +13007,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlRegServerLoad" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -13197,21 +13056,12 @@ checkLevel:
 
     irods::error db_purge_server_load_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13241,7 +13091,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlPurgeServerLoad" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -13276,7 +13126,6 @@ checkLevel:
 
     irods::error db_reg_server_load_digest_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _resc_name,
         char*                  _load_factor ) {
         // =-=-=-=-=-=-=-
@@ -13284,14 +13133,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13315,7 +13156,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlRegServerLoadDigest" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -13358,21 +13199,12 @@ checkLevel:
 
     irods::error db_purge_server_load_digest_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _seconds_ago ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13401,7 +13233,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlPurgeServerLoadDigest" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -13435,21 +13267,12 @@ checkLevel:
     } // db_purge_server_load_digest_op
 
     irods::error db_calc_usage_and_quota_op(
-        irods::plugin_context& _ctx,
-        rsComm_t*              _comm ) {
+        irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13469,7 +13292,7 @@ checkLevel:
         char myTime[50];
 
         status = 0;
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -13508,7 +13331,7 @@ checkLevel:
         }
 
         /* Set the over_quota flags where appropriate */
-        status = setOverQuota( _comm );
+        status = setOverQuota( _ctx.comm() );
         if ( status != 0 ) {
             _rollback( "chlCalcUsageAndQuota" );
             return ERROR( status, "setOverQuota failed" );
@@ -13526,7 +13349,6 @@ checkLevel:
 
     irods::error db_set_quota_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _type,
         char*                  _name,
         char*                  _resc_name,
@@ -13536,14 +13358,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13701,7 +13515,7 @@ checkLevel:
         /* Reset the over_quota flags based on previous usage info.  The
            usage info may take a while to set, but setting the OverQuota
            should be quick.  */
-        status = setOverQuota( _comm );
+        status = setOverQuota( _ctx.comm() );
         if ( status != 0 ) {
             _rollback( "chlSetQuota" );
             return ERROR( status, "setOverQuota failed" );
@@ -13719,7 +13533,6 @@ checkLevel:
 
     irods::error db_check_quota_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _user_name,
         char*                  _resc_name,
         rodsLong_t*            _user_quota,
@@ -13729,14 +13542,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13815,21 +13620,12 @@ checkLevel:
     } // db_check_quota_op
 
     irods::error db_del_unused_avus_op(
-        irods::plugin_context& _ctx,
-        rsComm_t*              _comm ) {
+        irods::plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13868,7 +13664,6 @@ checkLevel:
 
     irods::error db_ins_rule_table_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _map_priority_str,
         char*                  _rule_name,
@@ -13883,14 +13678,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -13914,7 +13701,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlInsRuleTable" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -13961,8 +13748,8 @@ checkLevel:
             cllBindVars[i++] = _rule_condition;
             cllBindVars[i++] = _rule_action;
             cllBindVars[i++] = _rule_recovery;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -13988,8 +13775,8 @@ checkLevel:
         cllBindVars[i++] = _base_name;
         cllBindVars[i++] = _map_priority_str;
         cllBindVars[i++] = _rule_id_str;
-        cllBindVars[i++] = _comm->clientUser.userName;
-        cllBindVars[i++] = _comm->clientUser.rodsZone;
+        cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
         cllBindVars[i++] = _my_time;
         cllBindVars[i++] = _my_time;
         cllBindVarCount = i;
@@ -14009,7 +13796,6 @@ checkLevel:
 
     irods::error db_ins_dvm_table_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _var_name,
         char*                  _action,
@@ -14020,14 +13806,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14051,7 +13829,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlInsDvmTable" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -14094,8 +13872,8 @@ checkLevel:
             cllBindVars[i++] = _var_name;
             cllBindVars[i++] = _action;
             cllBindVars[i++] = _var_2_cmap;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -14120,8 +13898,8 @@ checkLevel:
         i = 0;
         cllBindVars[i++] = _base_name;
         cllBindVars[i++] = dvmIdStr;
-        cllBindVars[i++] = _comm->clientUser.userName;
-        cllBindVars[i++] = _comm->clientUser.rodsZone;
+        cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
         cllBindVars[i++] = _my_time;
         cllBindVars[i++] = _my_time;
         cllBindVarCount = i;
@@ -14141,7 +13919,6 @@ checkLevel:
 
     irods::error db_ins_fnm_table_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _func_name,
         char*                  _func_2_cmap,
@@ -14151,14 +13928,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14182,7 +13951,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlInsFnmTable" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -14223,8 +13992,8 @@ checkLevel:
             cllBindVars[i++] = _base_name;
             cllBindVars[i++] = _func_name;
             cllBindVars[i++] = _func_2_cmap;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -14249,8 +14018,8 @@ checkLevel:
         i = 0;
         cllBindVars[i++] = _base_name;
         cllBindVars[i++] = fnmIdStr;
-        cllBindVars[i++] = _comm->clientUser.userName;
-        cllBindVars[i++] = _comm->clientUser.rodsZone;
+        cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+        cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
         cllBindVars[i++] = _my_time;
         cllBindVars[i++] = _my_time;
         cllBindVarCount = i;
@@ -14270,7 +14039,6 @@ checkLevel:
 
     irods::error db_ins_msrvc_table_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _module_name,
         char*                  _msrvc_name,
         char*                  _msrvc_signature,
@@ -14286,14 +14054,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14317,7 +14077,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlInsMsrvcTable" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -14357,8 +14117,8 @@ checkLevel:
             cllBindVars[i++] = _msrvc_name;
             cllBindVars[i++] = _module_name;
             cllBindVars[i++] = _msrvc_signature;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -14382,8 +14142,8 @@ checkLevel:
             cllBindVars[i++] = _msrvc_language;
             cllBindVars[i++] = _msrvc_type_name;
             cllBindVars[i++] = _msrvc_status;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -14426,8 +14186,8 @@ checkLevel:
             cllBindVars[i++] = _msrvc_location;
             cllBindVars[i++] = _msrvc_language;
             cllBindVars[i++] = _msrvc_type_name;
-            cllBindVars[i++] = _comm->clientUser.userName;
-            cllBindVars[i++] = _comm->clientUser.rodsZone;
+            cllBindVars[i++] = _ctx.comm()->clientUser.userName;
+            cllBindVars[i++] = _ctx.comm()->clientUser.rodsZone;
             cllBindVars[i++] = _my_time;
             cllBindVars[i++] = _my_time;
             cllBindVarCount = i;
@@ -14450,7 +14210,6 @@ checkLevel:
 
     irods::error db_version_rule_base_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
@@ -14458,14 +14217,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14487,7 +14238,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlVersionRuleBase" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -14519,7 +14270,6 @@ checkLevel:
 
     irods::error db_version_dvm_base_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
@@ -14527,14 +14277,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14556,7 +14298,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlVersionDvmBase" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -14588,7 +14330,6 @@ checkLevel:
 
     irods::error db_version_fnm_base_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _base_name,
         char*                  _my_time ) {
         // =-=-=-=-=-=-=-
@@ -14596,14 +14337,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14625,7 +14358,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlVersionFnmBase" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -14657,7 +14390,6 @@ checkLevel:
 
     irods::error db_add_specific_query_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _sql,
         char*                  _alias ) {
         // =-=-=-=-=-=-=-
@@ -14665,14 +14397,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14695,7 +14419,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlAddSpecificQuery" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -14721,7 +14445,7 @@ checkLevel:
                              tsCreateTime, 50, bindVars, &icss );
             }
             if ( status == 0 ) {
-                i = addRErrorMsg( &_comm->rError, 0, "Alias is not unique" );
+                i = addRErrorMsg( &_ctx.comm()->rError, 0, "Alias is not unique" );
                 return ERROR( CAT_INVALID_ARGUMENT, "alias is not unique" );
             }
             i = 0;
@@ -14768,21 +14492,12 @@ checkLevel:
 
     irods::error db_del_specific_query_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _sql_or_alias ) {
         // =-=-=-=-=-=-=-
         // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check the params
-        if ( !_comm
-           ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -14803,7 +14518,7 @@ checkLevel:
             rodsLog( LOG_SQL, "chlDelSpecificQuery" );
         }
 
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege level" );
         }
 
@@ -15091,7 +14806,6 @@ checkLevel:
 
     irods::error db_substitute_resource_hierarchies_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         const char*            _old_hier,
         const char*            _new_hier ) {
         // =-=-=-=-=-=-=-
@@ -15125,10 +14839,10 @@ checkLevel:
         if ( !icss.status ) {
             return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
         }
-        if ( !_comm || !_old_hier || !_new_hier ) {
+        if ( !_old_hier || !_new_hier ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "null parameter" );
         }
-        if ( _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
 
@@ -15424,7 +15138,6 @@ checkLevel:
 
     irods::error db_mod_ticket_op(
         irods::plugin_context& _ctx,
-        rsComm_t*              _comm,
         char*                  _op_name,
         char*                  _ticket_string,
         char*                  _arg3,
@@ -15435,14 +15148,6 @@ checkLevel:
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check incoming pointers
-        if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null or invalid input param" );
         }
 
         // =-=-=-=-=-=-=-
@@ -15488,13 +15193,13 @@ checkLevel:
             }
             else {
                 /* for direct connections, rsComm has the original client addr */
-                status = chlGenQueryTicketSetup( _ticket_string, _comm->clientAddr );
+                status = chlGenQueryTicketSetup( _ticket_string, _ctx.comm()->clientAddr );
                 snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
-                snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _comm->clientAddr );
+                snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _ctx.comm()->clientAddr );
             }
             status = cmlAudit3( AU_USE_TICKET, "0",
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone, _ticket_string, &icss );
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
             if ( status != 0 ) {
                 return ERROR( status, "cmlAudit3 ticket string failed" );
             }
@@ -15510,16 +15215,16 @@ checkLevel:
                 snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _arg4 + 1 );
             }
             status2 = cmlCheckDataObjOnly( logicalParentDirName, logicalEndName,
-                                           _comm->clientUser.userName,
-                                           _comm->clientUser.rodsZone,
+                                           _ctx.comm()->clientUser.userName,
+                                           _ctx.comm()->clientUser.rodsZone,
                                            ACCESS_OWN, &icss );
             if ( status2 > 0 ) {
                 snprintf( objTypeStr, sizeof( objTypeStr ), "%s", TICKET_TYPE_DATA );
                 objId = status2;
             }
             else {
-                status3 = cmlCheckDir( _arg4,   _comm->clientUser.userName,
-                                       _comm->clientUser.rodsZone,
+                status3 = cmlCheckDir( _arg4,   _ctx.comm()->clientUser.userName,
+                                       _ctx.comm()->clientUser.rodsZone,
                                        ACCESS_OWN, &icss );
                 if ( status3 == CAT_NO_ROWS_FOUND && status2 == CAT_NO_ROWS_FOUND ) {
                     return ERROR( CAT_UNKNOWN_COLLECTION, _arg4 );
@@ -15536,8 +15241,8 @@ checkLevel:
             }
             {
                 std::vector<std::string> bindVars;
-                bindVars.push_back( _comm->clientUser.userName );
-                bindVars.push_back( _comm->clientUser.rodsZone );
+                bindVars.push_back( _ctx.comm()->clientUser.userName );
+                bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
                 status = cmlGetIntegerValueFromSql(
                              "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
                              &userId, bindVars, &icss );
@@ -15586,14 +15291,14 @@ checkLevel:
                 return ERROR( status, "insert failure" );
             }
             status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone, _ticket_string, &icss );
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
             if ( status != 0 ) {
                 return ERROR( status, "cmlAudit3 ticket string failed" );
             }
             status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone, objIdStr, &icss ); /* target obj */
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone, objIdStr, &icss ); /* target obj */
             if ( status != 0 ) {
                 return ERROR( status, "cmlAudit3 target obj failed" );
             }
@@ -15611,17 +15316,17 @@ checkLevel:
         }
         {
             std::vector<std::string> bindVars;
-            bindVars.push_back( _comm->clientUser.userName );
-            bindVars.push_back( _comm->clientUser.rodsZone );
+            bindVars.push_back( _ctx.comm()->clientUser.userName );
+            bindVars.push_back( _ctx.comm()->clientUser.rodsZone );
             status = cmlGetIntegerValueFromSql(
                          "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
                          &userId, bindVars, &icss );
         }
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
                 status == CAT_NO_ROWS_FOUND ) {
-            if ( !addRErrorMsg( &_comm->rError, 0, "Invalid user" ) ) {
+            if ( !addRErrorMsg( &_ctx.comm()->rError, 0, "Invalid user" ) ) {
             }
-            return ERROR( CAT_INVALID_USER, _comm->clientUser.userName );
+            return ERROR( CAT_INVALID_USER, _ctx.comm()->clientUser.userName );
         }
         if ( status < 0 ) {
             return ERROR( status, "failed to select user_id" );
@@ -15715,8 +15420,8 @@ checkLevel:
                          status );
             }
             status = cmlAudit3( AU_DELETE_TICKET, ticketIdStr,
-                                _comm->clientUser.userName,
-                                _comm->clientUser.rodsZone, _ticket_string, &icss );
+                                _ctx.comm()->clientUser.userName,
+                                _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
             if ( status != 0 ) {
                 return ERROR( status, "cmlAudit3 ticket string failure" );
             }
@@ -15753,8 +15458,8 @@ checkLevel:
                     return ERROR( status, "update failure" );
                 }
                 status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _comm->clientUser.userName,
-                                    _comm->clientUser.rodsZone, "uses", &icss );
+                                    _ctx.comm()->clientUser.userName,
+                                    _ctx.comm()->clientUser.rodsZone, "uses", &icss );
                 if ( status != 0 ) {
                     return ERROR( status, "cmlAudit3 uses failed" );
                 }
@@ -15790,8 +15495,8 @@ checkLevel:
                         return ERROR( status, "update failure" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "write file",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "write file",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 write file failure" );
@@ -15826,8 +15531,8 @@ checkLevel:
                         return ERROR( status, "update failure" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "write byte",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "write byte",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 write byte failed" );
@@ -15868,8 +15573,8 @@ checkLevel:
                     return ERROR( status, "update failure" );
                 }
                 status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _comm->clientUser.userName,
-                                    _comm->clientUser.rodsZone, "expire",
+                                    _ctx.comm()->clientUser.userName,
+                                    _ctx.comm()->clientUser.rodsZone, "expire",
                                     &icss );
                 if ( status != 0 ) {
                     return ERROR( status, "cmlAudit3 expire failed" );
@@ -15910,8 +15615,8 @@ checkLevel:
                         return ERROR( status, "insert host failure" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "add host",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "add host",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );
@@ -15949,8 +15654,8 @@ checkLevel:
                         return ERROR( status, "insert user failure" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "add user",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "add user",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );
@@ -15988,8 +15693,8 @@ checkLevel:
                         return ERROR( status, "insert failed" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "add group",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "add group",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );
@@ -16030,8 +15735,8 @@ checkLevel:
                         return ERROR( status, "delete failed" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "remove host",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "remove host",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );
@@ -16070,8 +15775,8 @@ checkLevel:
                         return ERROR( status, "delete failed" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "remove user",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "remove user",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );
@@ -16109,8 +15814,8 @@ checkLevel:
                         return ERROR( status, "delete group failed" );
                     }
                     status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                        _comm->clientUser.userName,
-                                        _comm->clientUser.rodsZone, "remove group",
+                                        _ctx.comm()->clientUser.userName,
+                                        _ctx.comm()->clientUser.rodsZone, "remove group",
                                         &icss );
                     if ( status != 0 ) {
                         return ERROR( status, "cmlAudit3 failed" );

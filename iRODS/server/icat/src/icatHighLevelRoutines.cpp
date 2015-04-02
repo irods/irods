@@ -140,7 +140,7 @@ int chlOpen() {
                                        irods::database > ( db_plug_ptr );
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call(
+    ret = db->call( 0,
               irods::DATABASE_OP_OPEN,
               ptr );
 
@@ -204,7 +204,7 @@ int chlClose() {
 
     // =-=-=-=-=-=-=-
     // call the close operation on the plugin
-    ret = db->call(
+    ret = db->call( 0,
               irods::DATABASE_OP_CLOSE,
               ptr );
 
@@ -255,7 +255,7 @@ int chlGetRcs(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call< icatSessionStruct** >(
+    ret = db->call< icatSessionStruct** >( 0,
               irods::DATABASE_OP_GET_RCS,
               ptr,
               _icss );
@@ -304,7 +304,7 @@ int chlGetLocalZone(
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
     ret = db->call <
-          const std::string* > (
+          const std::string* > ( 0,
               irods::DATABASE_OP_GET_LOCAL_ZONE,
               ptr,
               &_zone );
@@ -355,13 +355,12 @@ int chlCheckAndGetObjectID(
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_CHECK_AND_GET_OBJ_ID,
               ptr,
-              _comm,
               _type,
               _name,
               _access );
@@ -373,6 +372,7 @@ int chlCheckAndGetObjectID(
 /// =-=-=-=-=-=-=-
 /// @brief Public function for updating object count on the specified resource by the specified amount
 int chlUpdateRescObjCount(
+    rsComm_t*          _comm,
     const std::string& _resc,
     int                _delta ) {
     // =-=-=-=-=-=-=-
@@ -412,6 +412,7 @@ int chlUpdateRescObjCount(
     ret = db->call <
           const std::string*,
           int > (
+              _comm,
               irods::DATABASE_OP_UPDATE_RESC_OBJ_COUNT,
               ptr,
               &_resc,
@@ -471,13 +472,12 @@ int chlModDataObjMeta(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t*,
+    ret = db->call<
           dataObjInfo_t*,
           keyValPair_t* > (
+              _comm,
               irods::DATABASE_OP_MOD_DATA_OBJ_META,
               ptr,
-              _comm,
               _data_obj_info,
               _reg_param );
 
@@ -527,11 +527,10 @@ int chlRegDataObj(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           dataObjInfo_t* > (
+              _comm,
               irods::DATABASE_OP_REG_DATA_OBJ,
               ptr,
-              _comm,
               _data_obj_info );
 
     return ret.code();
@@ -585,13 +584,12 @@ int chlRegReplica(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           dataObjInfo_t*,
           dataObjInfo_t*,
           keyValPair_t* > (
+              _comm,
               irods::DATABASE_OP_REG_REPLICA,
               ptr,
-              _comm,
               _src_data_obj_info,
               _dst_data_obj_info,
               _cond_input );
@@ -644,12 +642,11 @@ int chlUnregDataObj(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           dataObjInfo_t*,
           keyValPair_t* > (
+              _comm,
               irods::DATABASE_OP_UNREG_REPLICA,
               ptr,
-              _comm,
               _data_obj_info,
               _cond_input );
 
@@ -700,11 +697,10 @@ int chlRegRuleExec(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           ruleExecSubmitInp_t* > (
+              _comm,
               irods::DATABASE_OP_REG_RULE_EXEC,
               ptr,
-              _comm,
               _re_sub_inp );
 
     return ret.code();
@@ -757,12 +753,11 @@ int chlModRuleExec(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           keyValPair_t* > (
+              _comm,
               irods::DATABASE_OP_MOD_RULE_EXEC,
               ptr,
-              _comm,
               _re_id,
               _reg_param );
 
@@ -810,11 +805,10 @@ int chlDelRuleExec(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_DEL_RULE_EXEC,
               ptr,
-              _comm,
               _re_id );
 
     return ret.code();
@@ -885,11 +879,10 @@ int chlAddChildResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           std::map<std::string, std::string>* > (
+              _comm,
               irods::DATABASE_OP_ADD_CHILD_RESC,
               ptr,
-              _comm,
               &_resc_input );
 
     return ret.code();
@@ -936,11 +929,10 @@ int chlRegResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           std::map<std::string, std::string>* > (
+              _comm,
               irods::DATABASE_OP_REG_RESC,
               ptr,
-              _comm,
               &_resc_input );
 
     return ret.code();
@@ -987,11 +979,10 @@ int chlDelChildResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           std::map<std::string, std::string>* > (
+              _comm,
               irods::DATABASE_OP_DEL_CHILD_RESC,
               ptr,
-              _comm,
               &_resc_input );
 
     return ret.code();
@@ -1039,12 +1030,11 @@ int chlDelResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           int > (
+              _comm,
               irods::DATABASE_OP_DEL_RESC,
               ptr,
-              _comm,
               _resc_name.c_str(),
               _dry_run );
 
@@ -1099,11 +1089,10 @@ int chlRollback(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t* > (
+    ret = db->call(
+              _comm,
               irods::DATABASE_OP_ROLLBACK,
-              ptr,
-              _comm );
+              ptr );
 
     return ret.code();
 
@@ -1151,11 +1140,10 @@ int chlCommit(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t* > (
+    ret = db->call(
+              _comm,
               irods::DATABASE_OP_COMMIT,
-              ptr,
-              _comm );
+              ptr );
 
     return ret.code();
 
@@ -1201,11 +1189,10 @@ int chlDelUserRE(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           userInfo_t* > (
+              _comm,
               irods::DATABASE_OP_DEL_USER_RE,
               ptr,
-              _comm,
               _user_info );
 
     return ret.code();
@@ -1255,11 +1242,10 @@ int chlRegCollByAdmin(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           collInfo_t* > (
+              _comm,
               irods::DATABASE_OP_REG_COLL_BY_ADMIN,
               ptr,
-              _comm,
               _coll_info );
 
     return ret.code();
@@ -1312,11 +1298,10 @@ int chlRegColl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           collInfo_t* > (
+              _comm,
               irods::DATABASE_OP_REG_COLL,
               ptr,
-              _comm,
               _coll_info );
 
     return ret.code();
@@ -1369,11 +1354,10 @@ int chlModColl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           collInfo_t* > (
+              _comm,
               irods::DATABASE_OP_MOD_COLL,
               ptr,
-              _comm,
               _coll_info );
 
     return ret.code();
@@ -1423,14 +1407,13 @@ int chlRegZone(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_REG_ZONE,
               ptr,
-              _comm,
               _zone_name,
               _zone_type,
               _zone_conn_info,
@@ -1482,13 +1465,12 @@ int chlModZone(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_ZONE,
               ptr,
-              _comm,
               _zone_name,
               _option,
               _option_value );
@@ -1538,12 +1520,11 @@ int chlRenameColl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_RENAME_COLL,
               ptr,
-              _comm,
               _old_coll,
               _new_coll );
 
@@ -1593,13 +1574,12 @@ int chlModZoneCollAcl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_ZONE_COLL_ACL,
               ptr,
-              _comm,
               _access_level,
               _user_name,
               _path_name );
@@ -1649,12 +1629,11 @@ int chlRenameLocalZone(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_RENAME_LOCAL_ZONE,
               ptr,
-              _comm,
               _old_zone,
               _new_zone );
 
@@ -1701,11 +1680,10 @@ int chlDelZone(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_DEL_ZONE,
               ptr,
-              _comm,
               _zone_name );
 
     return ret.code();
@@ -1781,7 +1759,6 @@ int chlSimpleQuery(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
@@ -1791,9 +1768,9 @@ int chlSimpleQuery(
           int*,
           char*,
           int > (
+              _comm,
               irods::DATABASE_OP_SIMPLE_QUERY,
               ptr,
-              _comm,
               _sql,
               _arg1,
               _arg2,
@@ -1849,11 +1826,10 @@ int chlDelCollByAdmin(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           collInfo_t* > (
+              _comm,
               irods::DATABASE_OP_DEL_COLL_BY_ADMIN,
               ptr,
-              _comm,
               _coll_info );
 
     return ret.code();
@@ -1900,11 +1876,10 @@ int chlDelColl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           collInfo_t* > (
+              _comm,
               irods::DATABASE_OP_DEL_COLL,
               ptr,
-              _comm,
               _coll_info );
 
     return ret.code();
@@ -1956,7 +1931,7 @@ int chlCheckAuth(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <rsComm_t*, const char*, const char*, const char*, const char*, int*, int* > ( irods::DATABASE_OP_CHECK_AUTH, ptr, _comm, _scheme, _challenge, _response,
+    ret = db->call < const char*, const char*, const char*, const char*, int*, int* > ( _comm, irods::DATABASE_OP_CHECK_AUTH, ptr, _scheme, _challenge, _response,
             _user_name, _user_priv_level, _client_priv_level );
 
     return ret.code();
@@ -2013,12 +1988,11 @@ int chlMakeTempPw(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MAKE_TEMP_PW,
               ptr,
-              _comm,
               _pw_value_to_hash,
               _other_user );
 
@@ -2066,12 +2040,11 @@ chlMakeLimitedPw(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MAKE_LIMITED_PW,
               ptr,
-              _comm,
               _ttl,
               _pw_value_to_hash );
 
@@ -2128,14 +2101,13 @@ int chlUpdateIrodsPamPassword(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           int,
           const char*,
           char** > (
+              _comm,
               irods::DATABASE_OP_UPDATE_PAM_PASSWORD,
               ptr,
-              _comm,
               _user_name,
               _ttl,
               _test_time,
@@ -2188,13 +2160,12 @@ int chlModUser(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_USER,
               ptr,
-              _comm,
               _user_name,
               _option,
               _new_value );
@@ -2248,13 +2219,12 @@ int chlModGroup(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_GROUP,
               ptr,
-              _comm,
               _group_name,
               _option,
               _user_name,
@@ -2306,13 +2276,12 @@ int chlModResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_RESC,
               ptr,
-              _comm,
               _resc_name,
               _option,
               _option_value );
@@ -2364,14 +2333,13 @@ int chlModRescDataPaths(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_RESC_DATA_PATHS,
               ptr,
-              _comm,
               _resc_name,
               _old_path,
               _new_path,
@@ -2423,12 +2391,11 @@ int chlModRescFreeSpace(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           int > (
+              _comm,
               irods::DATABASE_OP_MOD_RESC_FREESPACE,
               ptr,
-              _comm,
               _resc_name,
               _update_value );
 
@@ -2476,11 +2443,10 @@ int chlRegUserRE(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           userInfo_t* > (
+              _comm,
               irods::DATABASE_OP_REG_USER_RE,
               ptr,
-              _comm,
               _user_info );
 
     return ret.code();
@@ -2532,15 +2498,14 @@ int chlSetAVUMetadata(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_SET_AVU_METADATA,
               ptr,
-              _comm,
               _type,
               _name,
               _attribute,
@@ -2601,16 +2566,15 @@ int chlAddAVUMetadataWild(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_ADD_AVU_METADATA_WILD,
               ptr,
-              _comm,
               _admin_mode,
               _type,
               _name,
@@ -2667,16 +2631,15 @@ int chlAddAVUMetadata(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_ADD_AVU_METADATA,
               ptr,
-              _comm,
               _admin_mode,
               _type,
               _name,
@@ -2734,7 +2697,6 @@ int chlModAVUMetadata(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
@@ -2743,9 +2705,9 @@ int chlModAVUMetadata(
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_AVU_METADATA,
               ptr,
-              _comm,
               _type,
               _name,
               _attribute,
@@ -2806,7 +2768,6 @@ int chlDeleteAVUMetadata(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char*,
           const char*,
@@ -2814,9 +2775,9 @@ int chlDeleteAVUMetadata(
           const char*,
           const char*,
           int > (
+              _comm,
               irods::DATABASE_OP_DEL_AVU_METADATA,
               ptr,
-              _comm,
               _option,
               _type,
               _name,
@@ -2872,14 +2833,13 @@ int chlCopyAVUMetadata(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_COPY_AVU_METADATA,
               ptr,
-              _comm,
               _type1,
               _type2,
               _name1,
@@ -2931,15 +2891,14 @@ int chlModAccessControlResc(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_ACCESS_CONTROL_RESC,
               ptr,
-              _comm,
               _recursive_flag,
               _access_level,
               _user_name,
@@ -2996,15 +2955,14 @@ int chlModAccessControl(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           int,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_ACCESS_CONTROL,
               ptr,
-              _comm,
               _recursive_flag,
               _access_level,
               _user_name,
@@ -3056,12 +3014,11 @@ int chlRenameObject(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           rodsLong_t,
           const char* > (
+              _comm,
               irods::DATABASE_OP_RENAME_OBJECT,
               ptr,
-              _comm,
               _obj_id,
               _new_name );
 
@@ -3111,12 +3068,11 @@ int chlMoveObject(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           rodsLong_t,
           rodsLong_t > (
+              _comm,
               irods::DATABASE_OP_MOVE_OBJECT,
               ptr,
-              _comm,
               _obj_id,
               _target_coll_id );
 
@@ -3169,16 +3125,15 @@ int chlRegToken(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_REG_TOKEN,
               ptr,
-              _comm,
               _name_space,
               _name,
               _value,
@@ -3232,12 +3187,11 @@ int chlDelToken(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_DEL_TOKEN,
               ptr,
-              _comm,
               _name_space,
               _name );
 
@@ -3295,7 +3249,6 @@ int chlRegServerLoad(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
@@ -3305,9 +3258,9 @@ int chlRegServerLoad(
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_REG_SERVER_LOAD,
               ptr,
-              _comm,
               _host_name,
               _resc_name,
               _cpu_used,
@@ -3365,11 +3318,10 @@ int chlPurgeServerLoad(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_PURGE_SERVER_LOAD,
               ptr,
-              _comm,
               _seconds_ago );
 
     return ret.code();
@@ -3419,12 +3371,11 @@ int chlRegServerLoadDigest(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_REG_SERVER_LOAD_DIGEST,
               ptr,
-              _comm,
               _resc_name,
               _load_factor );
 
@@ -3475,11 +3426,10 @@ int chlPurgeServerLoadDigest(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_PURGE_SERVER_LOAD_DIGEST,
               ptr,
-              _comm,
               _seconds_ago );
 
     return ret.code();
@@ -3522,11 +3472,10 @@ int chlCalcUsageAndQuota(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t* > (
+    ret = db->call (
+              _comm,
               irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,
-              ptr,
-              _comm );
+              ptr );
 
     return ret.code();
 
@@ -3573,14 +3522,13 @@ int chlSetQuota(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_SET_QUOTA,
               ptr,
-              _comm,
               _type,
               _name,
               _resc_name,
@@ -3631,14 +3579,13 @@ int chlCheckQuota(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           rodsLong_t*,
           int* > (
+              _comm,
               irods::DATABASE_OP_CHECK_QUOTA,
               ptr,
-              _comm,
               _user_name,
               _resc_name,
               _user_quota,
@@ -3685,11 +3632,10 @@ chlDelUnusedAVUs(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call <
-          rsComm_t* > (
+    ret = db->call (
+              _comm,
               irods::DATABASE_OP_DEL_UNUSED_AVUS,
-              ptr,
-              _comm );
+              ptr );
 
     return ret.code();
 
@@ -3746,7 +3692,6 @@ int chlInsRuleTable(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
@@ -3756,9 +3701,9 @@ int chlInsRuleTable(
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_INS_RULE_TABLE,
               ptr,
-              _comm,
               _base_name,
               _map_priority_str,
               _rule_name,
@@ -3819,15 +3764,14 @@ int chlInsDvmTable(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_INS_DVM_TABLE,
               ptr,
-              _comm,
               _base_name,
               _var_name,
               _action,
@@ -3883,14 +3827,13 @@ int chlInsFnmTable(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_INS_FNM_TABLE,
               ptr,
-              _comm,
               _base_name,
               _func_name,
               _func_2_cmap,
@@ -3951,7 +3894,6 @@ int chlInsMsrvcTable(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
@@ -3962,9 +3904,9 @@ int chlInsMsrvcTable(
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_INS_MSRVC_TABLE,
               ptr,
-              _comm,
               _module_name,
               _msrvc_name,
               _msrvc_signature,
@@ -4023,12 +3965,11 @@ int chlVersionRuleBase(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_VERSION_RULE_BASE,
               ptr,
-              _comm,
               _base_name,
               _my_time );
 
@@ -4080,12 +4021,11 @@ int chlVersionDvmBase(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_VERSION_DVM_BASE,
               ptr,
-              _comm,
               _base_name,
               _my_time );
 
@@ -4137,12 +4077,11 @@ int chlVersionFnmBase(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_VERSION_FNM_BASE,
               ptr,
-              _comm,
               _base_name,
               _my_time );
 
@@ -4189,12 +4128,11 @@ int chlAddSpecificQuery(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_ADD_SPECIFIC_QUERY,
               ptr,
-              _comm,
               _sql,
               _alias );
 
@@ -4240,11 +4178,10 @@ int chlDelSpecificQuery(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_DEL_SPECIFIC_QUERY,
               ptr,
-              _comm,
               _sql_or_alias );
 
     return ret.code();
@@ -4298,7 +4235,7 @@ int chlSpecificQuery(
     // call the operation on the plugin
     ret = db->call <
           specificQueryInp_t*,
-          genQueryOut_t* > (
+          genQueryOut_t* > ( 0,
               irods::DATABASE_OP_SPECIFIC_QUERY,
               ptr,
               &_spec_query_inp,
@@ -4351,12 +4288,11 @@ int chlSubstituteResourceHierarchies(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
               ptr,
-              _comm,
               _old_hier,
               _new_hier );
 
@@ -4406,7 +4342,7 @@ int chlGetDistinctDataObjCountOnResource(
     // call the operation on the plugin
     ret = db->call <
           const char*,
-          long long* > (
+          long long* > ( 0,
               irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
               ptr,
               _resc_name.c_str(),
@@ -4463,7 +4399,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
           const std::string*,
           const std::string*,
           int,
-          dist_child_result_t* > (
+          dist_child_result_t* > ( 0,
               irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
               ptr,
               &_parent,
@@ -4518,7 +4454,7 @@ int chlGetHierarchyForResc(
     ret = db->call <
           const std::string*,
           const std::string*,
-          std::string* > (
+          std::string* > ( 0,
               irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
               ptr,
               &_resc_name,
@@ -4575,14 +4511,13 @@ int chlModTicket(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          rsComm_t*,
           const char*,
           const char*,
           const char*,
           const char* > (
+              _comm,
               irods::DATABASE_OP_MOD_TICKET,
               ptr,
-              _comm,
               _op_name,
               _ticket_string,
               _arg3,
@@ -4632,7 +4567,7 @@ int chlGenQuery(
     // call the operation on the plugin
     ret = db->call <
           genQueryInp_t*,
-          genQueryOut_t* > (
+          genQueryOut_t* > ( 0,
               irods::DATABASE_OP_GEN_QUERY,
               ptr,
               &_gen_query_inp,
@@ -4687,7 +4622,7 @@ int chlGenQueryAccessControlSetup(
           const char*,
           const char*,
           int,
-          int > (
+          int > ( 0,
               irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
               ptr,
               _user,
@@ -4739,7 +4674,7 @@ int chlGenQueryTicketSetup(
     // call the operation on the plugin
     ret = db->call <
           const char*,
-          const char* > (
+          const char* > ( 0,
               irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
               ptr,
               _ticket,
@@ -4787,7 +4722,7 @@ int chlGeneralUpdate(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          generalUpdateInp_t* > (
+          generalUpdateInp_t* > ( 0,
               irods::DATABASE_OP_GENERAL_UPDATE,
               ptr,
               &_update_inp );
