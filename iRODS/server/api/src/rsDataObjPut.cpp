@@ -306,12 +306,9 @@ int
 _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                      bytesBuf_t *dataObjInpBBuf ) {
     int status = 0;
-    int bytesWritten;
-    dataObjInfo_t *myDataObjInfo;
+    dataObjInfo_t *myDataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-
-    bytesWritten = l3FilePutSingleBuf( rsComm, l1descInx, dataObjInpBBuf );
+    int bytesWritten = l3FilePutSingleBuf( rsComm, l1descInx, dataObjInpBBuf );
     if ( bytesWritten >= 0 ) {
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY &&
                 myDataObjInfo->specColl == NULL &&

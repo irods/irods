@@ -419,7 +419,7 @@ _rsDataObjClose(
     // archive plugins report UNKNOWN_FILE_SZ as their size since they may
     // not be able to stat the file.  filter that out and trust the plugin
     // in this instance
-    if ( newSize == UNKNOWN_FILE_SZ && L1desc[l1descInx].dataSize > 0 ) {
+    if ( newSize == UNKNOWN_FILE_SZ && L1desc[l1descInx].dataSize >= 0 ) {
         newSize = L1desc[l1descInx].dataSize;
     }
     /* check for consistency of the write operation */
