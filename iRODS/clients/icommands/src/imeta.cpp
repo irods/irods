@@ -1562,8 +1562,8 @@ void usageMain() {
         " -z Zonename  work with the specified Zone",
         " -h This help",
         "Commands are:",
-        " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)",
-        " addw -d Name AttName AttValue [AttUnits] (Add new AVU triplet",
+        " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
+        " addw -d Name AttName AttValue [AttUnits] (Add new AVU triple",
         "                                           using Wildcards in Name)",
         " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
         " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)",
@@ -1576,7 +1576,7 @@ void usageMain() {
         " cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)",
         " upper (Toggle between upper case mode for queries (qu)",
         " ",
-        "Metadata attribute-value-units triplets (AVUs) consist of an Attribute-Name,",
+        "Metadata attribute-value-units triples (AVUs) consist of an Attribute-Name,",
         "Attribute-Value, and an optional Attribute-Units.  They can be added",
         "via the 'add' command (and in other ways), and",
         "then queried to find matching objects.",
@@ -1638,7 +1638,7 @@ usage( char *subOpt ) {
     else {
         if ( strcmp( subOpt, "add" ) == 0 ) {
             char *msgs[] = {
-                " add -d|C|R|u Name AttName AttValue [AttUnits]  (Add new AVU triplet)",
+                " add -d|C|R|u Name AttName AttValue [AttUnits]  (Add new AVU triple)",
                 "Add an AVU to a dataobj (-d), collection(-C), resource(-R), ",
                 "or user(-u)",
                 "Example: add -d file1 distance 12 miles",
@@ -1657,7 +1657,7 @@ usage( char *subOpt ) {
         }
         if ( strcmp( subOpt, "addw" ) == 0 ) {
             char *msgs[] = {
-                " addw -d Name AttName AttValue [AttUnits]  (Add new AVU triplet)",
+                " addw -d Name AttName AttValue [AttUnits]  (Add new AVU triple)",
                 "Add an AVU to a set of data-objects using wildcards to match",
                 "the data-object names.",
                 " ",

@@ -30,7 +30,7 @@ extern char *__loc1;
  *  and stores the tags in a tag structure.
  *
  *
- * \note  The template buffer should contain triplets of the form:
+ * \note  The template buffer should contain triples of the form:
  *  \<PRETAG\>re1\</PRETAG\>kw\<POSTTAG\>re2\</POSTTAG\>.
  *  re1 identifies the pre-string and re2 identifies the post-string and
  *  any value between re1 and re2 in a metadata buffer can be

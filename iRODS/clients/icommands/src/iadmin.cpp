@@ -2061,7 +2061,7 @@ usage( char *subOpt ) {
 
     char *rumMsgs[] = {
         " rum (remove unused metadata (user-defined AVUs)",
-        "When users remove user-defined metadata (Attribute-Value-Unit triplets",
+        "When users remove user-defined metadata (Attribute-Value-Unit triples",
         "(AVUs)) on objects (collections, data-objects, etc), or remove the",
         "objects themselves, the associations between those objects and the",
         "AVUs are removed but the actual AVUs (rows in another table) are left",

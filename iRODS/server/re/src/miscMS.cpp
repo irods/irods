@@ -289,7 +289,7 @@ msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecIn
         modAVUMetadataInp.arg4 = " ";           /* value, cannot be empty */
         modAVUMetadataInp.arg5 = "";            /* units, can be empty */
 
-        /* add metadata AVU triplet */
+        /* add metadata AVU triple */
         status = rsModAVUMetadata( rei->rsComm, &modAVUMetadataInp );
     }
 

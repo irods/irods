@@ -15,7 +15,7 @@
  *
  * \remark
  *  This call performs various operations on the Attribute-Value-Units
- *  (AVU) triplets type of metadata.  The Units are optional, so these
+ *  (AVU) triples type of metadata.  The Units are optional, so these
  *  are frequently Attribute-Value pairs.  ATUs are user-defined
  *  metadata items.  The imeta command makes extensive use of this and
  *  the genQuery call.

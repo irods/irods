@@ -2,7 +2,7 @@ myTestRule {
 #Input parameter is:
 #  Path of the file
 #Output parameter is:
-#  Buffer listing the AVU triplets
+#  Buffer listing the AVU triples
   msiGetDataObjPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
 }
