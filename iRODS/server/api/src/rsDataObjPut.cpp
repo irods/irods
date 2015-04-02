@@ -22,6 +22,7 @@
 #include "dataObjRepl.hpp"
 #include "getRemoteZoneResc.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "modDataObjMeta.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -315,6 +316,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY &&
                 myDataObjInfo->specColl == NULL &&
                 L1desc[l1descInx].remoteZoneHost == NULL ) {
+
             /* the check for remoteZoneHost host is not needed because
              * the put would have done in the remote zone. But it make
              * the code easier to read (similar ro copy).
@@ -332,6 +334,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
             else {
                 myDataObjInfo->replNum = status;
             }
+
         }
         /* myDataObjInfo->dataSize = bytesWritten; update size problem */
         if ( bytesWritten == 0 && myDataObjInfo->dataSize > 0 ) {
@@ -341,7 +344,32 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
         else {
             L1desc[l1descInx].bytesWritten = bytesWritten;
         }
+
+        // special case of zero length files, trigger the fileModified
+        // operation for execution of coordinating resource logic
+        if( 0 == dataObjInp->dataSize ) {
+            irods::file_object_ptr file_obj(
+                new irods::file_object(
+                    rsComm,
+                    myDataObjInfo ) );
+
+            char* pdmo_kw = getValByKey( &myDataObjInfo->condInput, IN_PDMO_KW );
+            if ( pdmo_kw != NULL ) {
+                file_obj->in_pdmo( pdmo_kw );
+            }
+            irods::error ret = fileModified( rsComm, file_obj );
+            if ( !ret.ok() ) {
+                std::stringstream msg;
+                msg << "fileModified failed for [";
+                msg << myDataObjInfo->objPath;
+                msg << "]";
+                ret = PASSMSG( msg.str(), ret );
+                irods::log( ret );
+                status = ret.code();
+            }
+        }
     }
+
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
 
     return bytesWritten;
