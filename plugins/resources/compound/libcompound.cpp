@@ -463,6 +463,7 @@ extern "C" {
                             bzero( &data_obj_inp, sizeof( data_obj_inp ) );
                             rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
                             data_obj_inp.createMode = obj->mode();
+                            copyKeyVal( (keyValPair_t*)&obj->cond_input(), &data_obj_inp.condInput );
 
                             char* no_chk = getValByKey( ( keyValPair_t* )&obj->cond_input(), NO_CHK_COPY_LEN_KW );
                             if ( no_chk ) {

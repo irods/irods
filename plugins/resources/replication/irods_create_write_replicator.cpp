@@ -48,6 +48,7 @@ namespace irods {
                     rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
                     dataObjInp.createMode = object.mode();
 
+                    copyKeyVal( (keyValPair_t*)&object.cond_input(), &dataObjInp.condInput );
                     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
                     addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str() );
                     addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str() );
