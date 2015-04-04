@@ -490,7 +490,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # place data into the resource
         num_children = 11
         for i in range(num_children):
-            assertiCmd(s.adminsession, "iput -R pt README.md foo%d" % i)
+            assertiCmd(s.adminsession, "iput -R pt README foo%d" % i)
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
@@ -608,7 +608,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # place data into the resource
         num_children = 11
         for i in range(num_children):
-            assertiCmd(s.adminsession, "iput -R pt README.md foo%d" % i)
+            assertiCmd(s.adminsession, "iput -R pt README foo%d" % i)
 
         # =-=-=-=-=-=-=-
         # visualize our replication
@@ -719,13 +719,13 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin rmresc %s" % "pt")
 
     def test_iexecmd(self):
-        assertiCmd(s.adminsession, "iput README.md foo")
+        assertiCmd(s.adminsession, "iput README foo")
         assertiCmd(s.adminsession, "iexecmd -p /tempZone/home/rods/" +
                    s.adminsession._session_id + "/foo hello", "LIST", "Hello world  from irods")
         assertiCmd(s.adminsession, "irm -f foo")
 
     def test_ibun(self):
-        cmd = "tar cf somefile.tar ./README.md"
+        cmd = "tar cf somefile.tar ./README"
         output = commands.getstatusoutput(cmd)
 
         tar_path = "/tempZone/home/rods/" + s.adminsession._session_id + "/somefile.tar"
@@ -733,8 +733,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         assertiCmd(s.adminsession, "iput somefile.tar")
         assertiCmd(s.adminsession, "imkdir " + dir_path)
-        assertiCmd(s.adminsession, "iput README.md " + dir_path + "/foo0")
-        assertiCmd(s.adminsession, "iput README.md " + dir_path + "/foo1")
+        assertiCmd(s.adminsession, "iput README " + dir_path + "/foo0")
+        assertiCmd(s.adminsession, "iput README " + dir_path + "/foo1")
 
         assertiCmd(s.adminsession, "ibun -cD tar " + tar_path + " " +
                    dir_path, "ERROR", "OVERWRITE_WITHOUT_FORCE_FLAG")
@@ -760,8 +760,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # place data into the resource
         num_children = 3
         for i in range(num_children):
-            assertiCmd(s.adminsession, "iput -R repl README.md foo%d" % i)
-            assertiCmd(s.sessions[1], "iput -R repl README.md bar%d" % i)
+            assertiCmd(s.adminsession, "iput -R repl README foo%d" % i)
+            assertiCmd(s.sessions[1], "iput -R repl README bar%d" % i)
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
@@ -860,7 +860,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         hostuser = getpass.getuser()
         assertiCmd(s.adminsession, "iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
                    hostuser, "LIST", "jimbo")
-        assertiCmd(s.adminsession, "iput -R jimboResc README.md jimbofile")
+        assertiCmd(s.adminsession, "iput -R jimboResc README jimbofile")
         assertiCmd(s.adminsession, "irm -f jimbofile")
         assertiCmd(s.adminsession, "iadmin rmresc jimboResc")
 
