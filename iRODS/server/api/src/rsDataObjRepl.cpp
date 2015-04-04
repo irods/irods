@@ -45,7 +45,6 @@
 int
 rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                transferStat_t **transStat ) {
-
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -216,7 +215,6 @@ _rsDataObjRepl(
         accessPerm = ACCESS_READ_OBJECT;
     }
 
-
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
     status = applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
@@ -251,7 +249,7 @@ _rsDataObjRepl(
         rodsLog( LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__ );
         return status;
     }
-
+    
     // =-=-=-=-=-=-=-
     // if a resc is specified and it has a stale copy then we should just treat this as an update
     // also consider the 'update' keyword as that might also have some bearing on updates
@@ -339,7 +337,6 @@ _rsDataObjRepl(
 
     } // if multicopy flg
 
-
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
@@ -412,6 +409,7 @@ int _rsDataObjReplUpdate(
     dataObjInfo_t*  srcDataObjInfoHead,
     dataObjInfo_t*  destDataObjInfoHead,
     transferStat_t* transStat ) {
+
     // =-=-=-=-=-=-=-
     //
     dataObjInfo_t *destDataObjInfo = 0;
@@ -583,7 +581,6 @@ _rsDataObjReplS(
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
                                     _resc_name, destDataObjInfo, updateFlag );
-
     if ( l1descInx < 0 ) {
         return l1descInx;
     }
@@ -652,7 +649,6 @@ dataObjOpenForRepl(
     int updateFlag ) {
 
     irods::error resc_err;
-
     const char *my_resc_name; // replaces myDestRescInfo
     if ( _resc_name && strlen( _resc_name ) ) {
         my_resc_name = _resc_name;
@@ -666,12 +662,10 @@ dataObjOpenForRepl(
         return resc_err.code();
     }
 
-
     resc_err = irods::is_resc_live( inpSrcDataObjInfo->rescName );
     if ( !resc_err.ok() ) {
         return resc_err.code();
     }
-
 
     dataObjInfo_t * srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
     if ( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
@@ -683,9 +677,9 @@ dataObjOpenForRepl(
     memset( &srcDataObjInfo->condInput, 0, sizeof( srcDataObjInfo->condInput ) );
     replKeyVal( &inpSrcDataObjInfo->condInput, &srcDataObjInfo->condInput );
 
-
     /* open the dest */
     dataObjInp_t myDataObjInp = *dataObjInp;
+    replKeyVal( &dataObjInp->condInput, &myDataObjInp.condInput );
     myDataObjInp.dataSize = inpSrcDataObjInfo->dataSize;
 
     int destL1descInx = allocL1desc();
@@ -695,11 +689,9 @@ dataObjOpenForRepl(
         return destL1descInx;
     }
 
-
     // =-=-=-=-=-=-=-=-
     // use for redirect
     std::string op_name;
-
     dataObjInfo_t * myDestDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
 
     int replStatus;
@@ -716,6 +708,7 @@ dataObjOpenForRepl(
             freeDataObjInfo( srcDataObjInfo );
             return SYS_UPDATE_REPL_INFO_ERR;
         }
+
         /* inherit the replStatus of the src */
         inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
         *myDestDataObjInfo = *inpDestDataObjInfo;
@@ -729,6 +722,7 @@ dataObjOpenForRepl(
         replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
         addKeyVal( &myDataObjInp.condInput, FORCE_FLAG_KW, "" );
         myDataObjInp.openFlags |= ( O_TRUNC | O_WRONLY );
+
     }
     else {      /* a new copy */
         // =-=-=-=-=-=-=-
@@ -774,6 +768,7 @@ dataObjOpenForRepl(
         hier = dst_hier_str;
 
     }
+
     // =-=-=-=-=-=-=-
     // expected by fillL1desc
     //rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
@@ -855,7 +850,6 @@ dataObjOpenForRepl(
         inpDestDataObjInfo->next = NULL;
     }
 
-
     // =-=-=-=-=-=-=-
     // notify the dest resource hierarchy that something is afoot
     irods::file_object_ptr file_obj(
@@ -916,6 +910,8 @@ dataObjOpenForRepl(
     }
 
     L1desc[destL1descInx].srcL1descInx = srcL1descInx;
+
+    clearKeyVal( &myDataObjInp.condInput );
 
     return destL1descInx;
 }
