@@ -97,6 +97,13 @@ namespace irods {
                 const size_t&,      // wait seconds
                 std::string& );     // output
 
+            bool compare_host_names(
+                const std::string&,   // host name 1
+                const std::string& ); // host name 2
+
+            bool is_host_in_list(
+                const std::string&,   // host name in question
+                const host_list_t& ); // list of candidates
             // attributes
             const std::string port_prop_;
             boost::unordered_map< std::string, ctrl_func_t >  op_map_;

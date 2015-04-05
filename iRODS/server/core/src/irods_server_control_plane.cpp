@@ -36,9 +36,8 @@ namespace irods {
     static void ctrl_plane_sleep( 
         int _s, 
         int _ms ) {
-        unsigned int us = _s * 1000000 + _ms * 1000;
+        useconds_t us = ( _s * 1000000 ) + ( _ms * 1000 );
         usleep( us );
-
     }
 
 
@@ -484,7 +483,7 @@ namespace irods {
 
     } // operation_status
 
-    static bool compare_host_names(
+    bool server_control_executor::compare_host_names(
         const std::string& _hn1,
         const std::string& _hn2 ) {
 
@@ -506,6 +505,24 @@ namespace irods {
         return we_are_the_host;
 
     } // compare_host_names
+    
+    bool server_control_executor::is_host_in_list(
+        const std::string& _hn,
+        const host_list_t& _hosts ) {
+        for( size_t i = 0;
+             i < _hosts.size();
+             ++i ) {
+            if( compare_host_names(
+                    _hn,
+                    _hosts[ i ] ) ) {
+                return true;
+            }
+
+        } // for i
+
+        return false;
+
+    } // is_host_in_list
 
     server_control_plane::server_control_plane(
         const std::string& _prop ) :
@@ -579,16 +596,16 @@ namespace irods {
         const std::string& _wait_option,
         const size_t&      _wait_seconds,
         std::string&       _output ) {
-
         bool we_are_the_host = compare_host_names(
                                    _host,
                                    my_host_name_ );
 
+        irods::error ret = SUCCESS();
         // if this is forwarded to us, just perform the operation
         if ( we_are_the_host ) {
             host_list_t hosts;
             hosts.push_back( _host );
-            return process_host_list(
+            ret = process_host_list(
                        _name,
                        _wait_option,
                        _wait_seconds,
@@ -597,13 +614,15 @@ namespace irods {
 
         }
         else {
-            return forward_server_control_command(
+            ret = forward_server_control_command(
                        _name,
                        _host,
                        _port_keyword,
                        _output );
 
         }
+
+        return ret;
 
     } // forward_command
 
@@ -804,18 +823,14 @@ namespace irods {
         }
 
         error ret = SUCCESS();
-        const bool found_my_host = ( std::find(
-                                         _cmd_hosts.begin(),
-                                         _cmd_hosts.end(),
-                                         my_host_name_ )
-                                     != _cmd_hosts.end() );
-        const bool found_icat_host = ( std::find(
-                                           _cmd_hosts.begin(),
-                                           _cmd_hosts.end(),
-                                           icat_host_name_ )
-                                       != _cmd_hosts.end() );
         const bool is_all_opt  = ( SERVER_CONTROL_ALL_OPT == _cmd_option );
-        const bool is_icat_host = ( my_host_name_ == icat_host_name_ );
+        const bool found_my_host = is_host_in_list(
+                                       my_host_name_,
+                                       _cmd_hosts );
+        const bool found_icat_host = is_host_in_list(
+                                         icat_host_name_,
+                                         _cmd_hosts );
+        const bool is_icat_host = compare_host_names( my_host_name_, icat_host_name_ );
         // for pause or shutdown: pre-op forwards to the ies first,
         // then to myself, then others
         // for resume: we skip doing work here (we'll go last in post-op)
@@ -829,7 +844,7 @@ namespace irods {
                       _output );
             // takes sec, microsec
             ctrl_plane_sleep(
-                0, SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000 );
+                0, SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC );
         }
 
         // pre-op forwards to the local server second
@@ -861,18 +876,14 @@ namespace irods {
 
         }
 
-        bool found_my_host = ( std::find(
-                                   _cmd_hosts.begin(),
-                                   _cmd_hosts.end(),
-                                   my_host_name_ )
-                               != _cmd_hosts.end() );
-        bool found_icat_host = ( std::find(
-                                     _cmd_hosts.begin(),
-                                     _cmd_hosts.end(),
-                                     icat_host_name_ )
-                                 != _cmd_hosts.end() );
         bool is_all_opt  = ( SERVER_CONTROL_ALL_OPT == _cmd_option );
-        bool is_icat_host = ( my_host_name_ == icat_host_name_ );
+        const bool found_my_host = is_host_in_list(
+                                       my_host_name_,
+                                       _cmd_hosts );
+        const bool found_icat_host = is_host_in_list(
+                                         icat_host_name_,
+                                         _cmd_hosts );
+        const bool is_icat_host = compare_host_names( my_host_name_, icat_host_name_ );
 
         // post-op forwards to the local server first
         // then the icat such as for shutdown
@@ -899,7 +910,7 @@ namespace irods {
 
         return ret;
 
-    } // notify_icat_server_postop
+    } // notify_icat_and_local_servers_postop
 
     error server_control_executor::validate_host_list(
         const host_list_t&  _irods_hosts,
@@ -926,13 +937,13 @@ namespace irods {
 
             // skip the IES since it is a special case
             // and handled elsewhere
-            if ( icat_host_name_ == *itr ) {
+            if( compare_host_names( icat_host_name_, *itr ) ) {
                 continue;
             }
 
             // skip the local server since it is also a
             // special case and handled elsewhere
-            if ( my_host_name_ == *itr ) {
+            if( compare_host_names( my_host_name_, *itr ) ) {
                 continue;
 
             }
@@ -1064,22 +1075,22 @@ namespace irods {
 
                 _output += output;
 
-                continue;
-            }
-
-            error ret = forward_command(
-                            _cmd_name,
-                            *itr,
-                            port_prop_,
-                            _wait_option,
-                            _wait_seconds,
-                            output );
-            if ( !ret.ok() ) {
-                log( PASS( ret ) );
-                fwd_err = PASS( ret );
-
             } else {
-                _output += output;
+                error ret = forward_command(
+                                _cmd_name,
+                                *itr,
+                                port_prop_,
+                                _wait_option,
+                                _wait_seconds,
+                                output );
+                if ( !ret.ok() ) {
+                    log( PASS( ret ) );
+                    fwd_err = PASS( ret );
+
+                } else {
+                    _output += output;
+
+                }
 
             }
 
