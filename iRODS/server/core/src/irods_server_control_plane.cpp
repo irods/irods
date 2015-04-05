@@ -204,6 +204,13 @@ namespace irods {
         zmq::message_t req;
         zmq_skt.recv( &req );
 
+        if( 0 == req.size() ) {
+            return ERROR( 
+                        SYS_INVALID_INPUT_PARAM, 
+                        "empty response string" );
+
+        }
+
         // decrypt the message before passing to avro
         buffer_crypt::array_t data_to_process;
         const uint8_t* data_ptr = static_cast< const uint8_t* >( req.data() );
@@ -217,6 +224,7 @@ namespace irods {
                   data_to_process );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
+            rodsLog( LOG_ERROR, "Failed to decrpyt [%s]", req.data() );
             return PASS( ret );
 
         }
@@ -476,6 +484,29 @@ namespace irods {
 
     } // operation_status
 
+    static bool compare_host_names(
+        const std::string& _hn1,
+        const std::string& _hn2 ) {
+
+        bool we_are_the_host = ( _hn1 == _hn2 );
+        if( !we_are_the_host ) {
+            bool host_has_dots = ( std::string::npos != _hn1.find( "." ) );
+            bool my_host_has_dots = ( std::string::npos != _hn2.find( "." ) );
+
+            if( host_has_dots && !my_host_has_dots ) {
+                we_are_the_host = ( std::string::npos != _hn1.find( _hn2 ) );
+
+            } else if ( !host_has_dots && my_host_has_dots ) {
+                we_are_the_host = ( std::string::npos != _hn2.find( _hn1 ) );
+
+            }
+
+        }
+
+        return we_are_the_host;
+
+    } // compare_host_names
+
     server_control_plane::server_control_plane(
         const std::string& _prop ) :
         control_executor_( _prop ),
@@ -548,8 +579,13 @@ namespace irods {
         const std::string& _wait_option,
         const size_t&      _wait_seconds,
         std::string&       _output ) {
+
+        bool we_are_the_host = compare_host_names(
+                                   _host,
+                                   my_host_name_ );
+
         // if this is forwarded to us, just perform the operation
-        if ( _host == my_host_name_ ) {
+        if ( we_are_the_host ) {
             host_list_t hosts;
             hosts.push_back( _host );
             return process_host_list(
@@ -1014,7 +1050,9 @@ namespace irods {
             }
 
             std::string output;
-            if ( *itr == my_host_name_ ) {
+            if ( compare_host_names( 
+                    *itr,
+                    my_host_name_ ) ) {
                 error ret = op_map_[ _cmd_name ](
                                 _wait_option,
                                 _wait_seconds,
@@ -1038,6 +1076,7 @@ namespace irods {
                             output );
             if ( !ret.ok() ) {
                 log( PASS( ret ) );
+                fwd_err = PASS( ret );
 
             } else {
                 _output += output;
