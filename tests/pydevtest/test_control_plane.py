@@ -19,13 +19,13 @@ class TestControlPlane(unittest.TestCase):
     def test_pause_and_resume(self):
         # test pause
         pydevtest_common.assert_command('irods-grid pause --all', 'STDOUT', 'pausing')
-        
+
         # need a time-out assert icommand for ils here
-        
+
         # resume the server
         pydevtest_common.assert_command('irods-grid resume --all', 'STDOUT', 'resuming')
         pydevtest_common.assert_command('ils', 'STDOUT', 'tempZone')
-        
+
     def test_status(self):
         # test grid status
         pydevtest_common.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
@@ -36,5 +36,4 @@ class TestControlPlane(unittest.TestCase):
         time.sleep( 2 )
         pydevtest_common.assert_command('ils', 'STDERR', 'USER_SOCK_CONNECT_ERR')
 
-        os.system( pydevtest_common.get_irods_top_level_dir() + "/iRODS/irodsctl start > /dev/null")
-
+        pydevtest_common.restart_irods_server()

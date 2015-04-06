@@ -30,11 +30,9 @@ def get_hostname():
     return socket.gethostname()
 
 def get_irods_top_level_dir():
-    configdir = "/etc/irods/server_config.json"
-    topleveldir = "/var/lib/irods"
-    if not os.path.isfile(configdir):
-        topleveldir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return topleveldir
+    if os.path.isfile('/etc/irods/server_config.json'):
+        return '/var/lib/irods'
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def get_irods_config_dir():
     if os.path.isfile('/etc/irods/server_config.json'):
@@ -392,3 +390,6 @@ def run_command_check_output(args, check_type='EMPTY', expected_results='', use_
 
 def assert_command(*args, **kwargs):
     assert run_command_check_output(*args, **kwargs)
+
+def restart_irods_server():
+    assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'])

@@ -318,12 +318,13 @@ class ResourceSuite(ResourceBase):
         clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
-        env = {}
-        env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
-        env['irods_ssl_certificate_chain_file'] = get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
-        env['irods_ssl_certificate_key_file'] = get_irods_top_level_dir() + "/tests/pydevtest/server.key"
-        env['irods_ssl_dh_params_file'] = get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
-        env['irods_ssl_verify_server'] = "none"
+        env = {
+            'irods_client_server_policy': 'CS_NEG_REQUIRE',
+            'irods_ssl_certificate_chain_file': os.path.join(get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+            'irods_ssl_certificate_key_file': os.path.join(get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+            'irods_ssl_dh_params_file': os.path.join(get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+            'irods_ssl_verify_server': 'none',
+        }
 
         update_json_file_from_dict(clientEnvFile, env)
 
@@ -332,8 +333,7 @@ class ResourceSuite(ResourceBase):
 
         # server reboot to pick up new irodsEnv settings
         env_val = s.adminsession._session_dir + "/irods_environment.json"
-        sys_cmd = "export IRODS_ENVIRONMENT_FILE=" + env_val + ";" + \
-            get_irods_top_level_dir() + "/iRODS/irodsctl restart"
+        sys_cmd = 'export IRODS_ENVIRONMENT_FILE={0};{1} restart'.format(env_val, os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl'))
         os.system(sys_cmd)
 
         # do the encrypted put
@@ -349,6 +349,10 @@ class ResourceSuite(ResourceBase):
         # clean up
         os.system("rm server.key server.csr chain.pem dhparams.pem")
         os.remove(filename)
+
+        # restart iRODS server without altered environment
+        pydevtest_common.restart_irods_server()
+
 
     @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
@@ -402,6 +406,9 @@ class ResourceSuite(ResourceBase):
         os.system("rm server.key server.csr chain.pem dhparams.pem")
         os.remove(filename)
         os.remove(largefilename)
+
+        # restart iRODS server without altered environment
+        pydevtest_common.restart_irods_server()
 
     @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.2GB file ( local + iput + 3 repl children )")
     def test_local_iput_with_really_big_file__ticket_1623(self):
