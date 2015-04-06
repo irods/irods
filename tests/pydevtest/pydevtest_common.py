@@ -37,25 +37,21 @@ def get_irods_top_level_dir():
     return topleveldir
 
 def get_irods_config_dir():
-    configfile = "/etc/irods/server_config.json"
-    configdir = os.path.dirname(configfile)
-    if(not os.path.isfile(configfile)):
-        configdir = get_irods_top_level_dir() + "/iRODS/config"
-    return configdir
+    if os.path.isfile('/etc/irods/server_config.json'):
+        return '/etc/irods'
+    return os.path.join(get_irods_top_level_dir(), 'iRODS/config')
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):
         os.mkdir(directory_name_suffix)
     for i in range(file_count):
-        target = open(("%s/%d" % (directory_name_suffix, i)), 'w')
-        target.write("iglkg3fqfhwpwpo-" + "A" * i)
-        target.close()
+        with open('{0}/{1}'.format(directory_name_suffix, i), 'w') as f:
+            f.write("iglkg3fqfhwpwpo-" + "A" * i)
 
 def create_local_testfile(filename):
     filepath = os.path.abspath(filename)
-    f = open(filepath, 'wb')
-    f.write("TESTFILE -- [" + filepath + "]")
-    f.close()
+    with open(filepath, 'wb') as f:
+        f.write('TESTFILE -- [' + filepath + ']')
     return filepath
 
 def create_local_largefile(filename):
@@ -330,3 +326,69 @@ def count_occurrences_of_string_in_re_log(string, start_index=0):
             n += 1
             i = m.find(string, i+1)
         return n
+
+def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, environment=None):
+    if not use_unsafe_shell and isinstance(args, str):
+        args = shlex.split(args)
+    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment, shell=use_unsafe_shell)
+    stdout, stderr = p.communicate(input=stdin_string)
+    rc = p.returncode
+    if check_rc:
+        if rc != 0:
+            raise subprocess.CalledProcessError(rc, args, stdout + '\n\n' + stderr)
+    return rc, stdout, stderr
+
+def run_command_check_output(args, check_type='EMPTY', expected_results='', use_regex=False, **kwargs):
+    assert check_type in {'EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'}, check_type
+
+    rc, stdout, stderr = run_command(args, **kwargs)
+
+    if isinstance(expected_results, str):
+        expected_results = [expected_results]
+
+    regex_msg = 'regex ' if use_regex else ''
+
+    print 'Expecting {0}: {1}{2}'.format(check_type, regex_msg, expected_results)
+    print '  stdout:'
+    print '    | ' + '\n    | '.join(stdout.splitlines())
+    print '  stderr:'
+    print '    | ' + '\n    | '.join(stderr.splitlines())
+
+    if check_type not in {'STDERR', 'STDERR_MULTILINE'} and stderr != '':
+        print 'Unexpected output on stderr'
+        return False
+
+    if check_type in {'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'}:
+        lines = stdout.splitlines() if check_type in {'STDOUT', 'STDOUT_MULTILINE'} else stderr.splitlines()
+
+        if check_type in {'STDOUT_MULTILINE', 'STDERR_MULTILINE'}:
+            for er in expected_results:
+                regex_pattern = er if use_regex else re.escape(er)
+                for line in lines:
+                    if re.search(regex_pattern, line.rstrip('\n')):
+                        break
+                else:
+                    print '    --> stopping search - expected result not found'
+                    break
+            else:
+                return True
+            return False
+        else:
+            for line in lines:
+                found_count = 0
+                for er in expected_results:
+                    regex_pattern = er if use_regex else re.escape(er)
+                    if re.search(regex_pattern, line.rstrip('\n')):
+                        found_count += 1
+                if found_count == len(expected_results):
+                    return True
+            return False
+    elif check_type == 'EMPTY':
+        if stdout == '':
+            return True
+        print 'Unexpected output on stdout'
+        return False
+    assert False
+
+def assert_command(*args, **kwargs):
+    assert run_command_check_output(*args, **kwargs)
