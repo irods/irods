@@ -339,7 +339,7 @@ def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, e
     return rc, stdout, stderr
 
 def run_command_check_output(args, check_type='EMPTY', expected_results='', use_regex=False, **kwargs):
-    assert check_type in {'EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'}, check_type
+    assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
 
     rc, stdout, stderr = run_command(args, **kwargs)
 
@@ -354,14 +354,14 @@ def run_command_check_output(args, check_type='EMPTY', expected_results='', use_
     print '  stderr:'
     print '    | ' + '\n    | '.join(stderr.splitlines())
 
-    if check_type not in {'STDERR', 'STDERR_MULTILINE'} and stderr != '':
+    if check_type not in ['STDERR', 'STDERR_MULTILINE'] and stderr != '':
         print 'Unexpected output on stderr'
         return False
 
-    if check_type in {'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'}:
-        lines = stdout.splitlines() if check_type in {'STDOUT', 'STDOUT_MULTILINE'} else stderr.splitlines()
+    if check_type in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
+        lines = stdout.splitlines() if check_type in ['STDOUT', 'STDOUT_MULTILINE'] else stderr.splitlines()
 
-        if check_type in {'STDOUT_MULTILINE', 'STDERR_MULTILINE'}:
+        if check_type in ['STDOUT_MULTILINE', 'STDERR_MULTILINE']:
             for er in expected_results:
                 regex_pattern = er if use_regex else re.escape(er)
                 for line in lines:
