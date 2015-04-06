@@ -261,7 +261,6 @@ namespace irods {
         _output += "\n";
 
         error ret;
-
         int sleep_time_out_milli_sec = 0;
         ret = get_server_property < int > (
                 CFG_SERVER_CONTROL_PLANE_TIMEOUT,
@@ -276,7 +275,7 @@ namespace irods {
             sleep_time_out_milli_sec = _wait_seconds * 1000;
         }
 
-        int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000;
+        int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
         // rule engine server only runs on IES
 #ifdef RODS_CAT
@@ -301,7 +300,7 @@ namespace irods {
         int  proc_cnt = getAgentProcCnt();
 
         while ( proc_cnt > 0 && !timeout_flg ) {
-            // takes sec, microsec
+            // takes sec, millisec
             ctrl_plane_sleep(
                 0,
                 wait_milliseconds );
@@ -922,10 +921,9 @@ namespace irods {
                 itr != _cmd_hosts.end();
                 ++itr ) {
             // check host value against list from the icat
-            if ( _irods_hosts.end() == std::find(
-                        _irods_hosts.begin(),
-                        _irods_hosts.end(),
-                        *itr ) ) {
+            if( !is_host_in_list(
+                     *itr,
+                     _irods_hosts ) ) {
                 std::string msg( "invalid server hostname [" );
                 msg += *itr;
                 msg += "]";

@@ -1351,7 +1351,7 @@ irods::error sendRodsMsg(
 
 int
 rodsSleep( int sec, int microSec ) {
-    unsigned int us = sec * 1000000 + microSec; 
+    unsigned int us = ( sec * 1000000 ) + ( microSec ); 
     usleep( us );
     return 0;
 }

@@ -361,7 +361,7 @@ serverMain( char *logDir ) {
                 procChildren( &ConnectedAgentHead );
                 rodsSleep(
                     0,
-                    irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 );
+                    irods::SERVER_CONTROL_FWD_SLEEP_TIME_MILLI_SEC * 1000 );
                 continue;
 
             }
@@ -1363,7 +1363,7 @@ purgeLockFileWorkerTask() {
 
     irods::server_state& state = irods::server_state::instance();
     while ( irods::server_state::STOPPED != state() ) {
-        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // microseconds
+        rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // second, microseconds
         wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
         if ( wait_time_ms >= purge_time_ms ) {
