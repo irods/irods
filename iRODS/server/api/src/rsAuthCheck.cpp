@@ -55,7 +55,7 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
                 char *response_ptr = authCheckInp->response +
                                      ( response_key_pos +
                                        irods::AUTH_RESPONSE_KEY.length() +
-                                       irods::KVP_DEF_ASSOC.length() );
+                                       irods::KVP_DEF_ASSOCIATION.length() );
                 response.assign( response_ptr, RESPONSE_LEN + 2 );
             }
 

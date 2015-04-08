@@ -187,6 +187,7 @@
 #define SYS_SOCK_SELECT_ERR                         -155000
 #define SYS_THREAD_ENCOUNTERED_INTERRUPT            -156000
 #define SYS_THREAD_RESOURCE_ERR                     -157000
+#define SYS_BAD_INPUT                               -158000
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */

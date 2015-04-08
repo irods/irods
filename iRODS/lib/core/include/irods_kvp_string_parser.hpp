@@ -21,39 +21,41 @@
 namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief default delimiter and key-value association
-    static const std::string KVP_DEF_DELIM( ";" );
-    static const std::string KVP_DEF_ASSOC( "=" );
+    static const std::string KVP_DEF_DELIMITER( ";" );
+    static const std::string KVP_DEF_ASSOCIATION( "=" );
+    static const std::string KVP_DEF_ESCAPE( "\\" );
 
 /// =-=-=-=-=-=-=-
 /// @brief typedef of key-value map
     typedef std::map< std::string, std::string > kvp_map_t;
 
 /// =-=-=-=-=-=-=-
-/// @brief function to return defined delimiter
+/// @brief function to return defined delimiter token
     std::string kvp_delimiter();
 
 /// =-=-=-=-=-=-=-
-/// @brief function to return defined delimiter
+/// @brief function to return defined association token
     std::string kvp_association();
+
+/// =-=-=-=-=-=-=-
+/// @brief function to return defined escape token
+    std::string kvp_escape();
 
 /// =-=-=-=-=-=-=-
 /// @brief given a string, break the string along the delimiter and then
 ///        break the tokens along the assignment for key-value pairs
     error parse_kvp_string(
-        const std::string& _str,                    // string to be parsed
-        kvp_map_t&         _kvp,                    // map of kvp
-        const std::string& _assoc = KVP_DEF_ASSOC,  // associative token, defaults
-        const std::string& _delim = KVP_DEF_DELIM ); // delimiter, defaults
+        const std::string& _str,                                // string to be parsed
+        kvp_map_t&         _kvp,                                // map of kvp
+        const std::string& _association = KVP_DEF_ASSOCIATION,  // association token, defaults
+        const std::string& _delimeter = KVP_DEF_DELIMITER,      // delimiter token, defaults
+        const std::string& _escape = KVP_DEF_ESCAPE );          // escape token, defaults
 
 /// @brief Given a kvp map, generate a properly delimited string.
-    error kvp_string(
-        const kvp_map_t& _kvp,	// The map from which to generate the string
-        std::string& _str );	// A reference to the string to return
+    std::string kvp_string(
+        const kvp_map_t& _kvp );    // The map from which to generate the string
 
 }; // namespace irods
 
 
 #endif // __IRODS_KVP_STRING_PARSER_HPP__
-
-
-
