@@ -40,8 +40,8 @@ def make_environment_dict(username):
     if pydevtest_common.irods_test_constants.USE_SSL:
         environment.update({
             'irods_client_server_policy': 'CS_NEG_REQUIRE',
-            "irods_ssl_verify_server": "cert",
-            "irods_ssl_ca_certificate_file": "/etc/irods/server.crt",
+            'irods_ssl_verify_server': 'cert',
+            'irods_ssl_ca_certificate_file': '/etc/irods/server.crt',
         })
     return environment
 
