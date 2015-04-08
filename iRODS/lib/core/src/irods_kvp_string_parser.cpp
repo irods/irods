@@ -119,6 +119,7 @@ namespace irods {
                 continue;
             }
             escaped_str << _string[i];
+            ++i;
         }
         return escaped_str.str();
     }
