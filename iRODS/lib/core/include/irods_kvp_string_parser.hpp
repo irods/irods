@@ -48,11 +48,24 @@ namespace irods {
         const std::string& _str,                                // string to be parsed
         kvp_map_t&         _kvp,                                // map of kvp
         const std::string& _association = KVP_DEF_ASSOCIATION,  // association token, defaults
+        const std::string& _delimeter = KVP_DEF_DELIMITER );    // delimiter token, defaults
+
+/// =-=-=-=-=-=-=-
+/// @brief given a string, break the escaped string along the delimiter and then
+///        break the tokens along the assignment for key-value pairs
+    error parse_escaped_kvp_string(
+        const std::string& _str,                                // string to be parsed
+        kvp_map_t&         _kvp,                                // map of kvp
+        const std::string& _association = KVP_DEF_ASSOCIATION,  // association token, defaults
         const std::string& _delimeter = KVP_DEF_DELIMITER,      // delimiter token, defaults
         const std::string& _escape = KVP_DEF_ESCAPE );          // escape token, defaults
 
 /// @brief Given a kvp map, generate a properly delimited string.
     std::string kvp_string(
+        const kvp_map_t& _kvp );    // The map from which to generate the string
+
+/// @brief Given a kvp map, generate a properly delimited, escaped string.
+    std::string escaped_kvp_string(
         const kvp_map_t& _kvp );    // The map from which to generate the string
 
 }; // namespace irods
