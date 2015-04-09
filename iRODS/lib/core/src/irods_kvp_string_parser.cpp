@@ -188,25 +188,17 @@ namespace irods {
         return SUCCESS();
     }
 
-    error kvp_string(
-            const kvp_map_t& _kvp,
-            std::string& _rtn_str ) {
-        error result = SUCCESS();
-        std::string str;
+    std::string kvp_string(
+            const kvp_map_t& _kvp ) {
+        std::stringstream str;
         bool first = true;
-        for ( kvp_map_t::const_iterator it = _kvp.begin(); result.ok() && it != _kvp.end(); ++it ) {
-            if ( !first ) {
-                str.append( kvp_delimiter() );
-            }
-            else {
-                first = false;
-            }
-            str.append( it->first );
-            str.append( kvp_association() );
-            str.append( it->second );
+        for ( kvp_map_t::const_iterator it = _kvp.begin(); it != _kvp.end(); ++it ) {
+            first ?
+                first = false :
+                str << kvp_delimiter();
+            str << it->first << kvp_association() << it->second;
         }
-        _rtn_str = str;
-        return result;
+        return str.str();
     }
 
     std::string escape_string( const std::string& _string,
