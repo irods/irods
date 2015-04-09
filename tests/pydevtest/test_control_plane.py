@@ -24,7 +24,10 @@ class TestControlPlane(unittest.TestCase):
 
         # resume the server
         pydevtest_common.assert_command('irods-grid resume --all', 'STDOUT', 'resuming')
+
+        # Make sure server is actually responding
         pydevtest_common.assert_command('ils', 'STDOUT', 'tempZone')
+        pydevtest_common.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
 
     def test_status(self):
         # test grid status
