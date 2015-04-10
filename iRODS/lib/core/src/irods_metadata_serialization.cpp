@@ -35,3 +35,13 @@ namespace irods {
         return deserialized_metadata;
     }
 }
+
+extern "C" {
+    char* serialize_metadata_c( const char** metadata, size_t metadata_len ) {
+        std::vector<std::string> metadata_strings;
+        for ( int i = 0; i < metadata_len; i++ ) {
+            metadata_strings.push_back( metadata[i] );
+        }
+        return strdup( irods::serialize_metadata( metadata_strings ).c_str() );
+    }
+}
