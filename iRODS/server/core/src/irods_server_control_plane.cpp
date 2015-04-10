@@ -249,6 +249,34 @@ namespace irods {
 
     } // forward_server_control_command
 
+    static error kill_re_server( ) {
+        int re_pid = 0;
+        // no error case, resource servers have no re server
+        error ret = get_server_property< int > (
+                        irods::RE_PID_KW,
+                        re_pid );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        std::stringstream pid_str; pid_str << re_pid;
+        std::vector<std::string> args;
+        args.push_back( pid_str.str() );
+
+        std::string output;
+        ret = get_script_output_single_line(
+                  "python",
+                  "kill_pid.py",
+                  args,
+                  output );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        return SUCCESS();
+
+    } // kill_re_server
+
     static error server_operation_shutdown(
         const std::string& _wait_option,
         const size_t       _wait_seconds,
@@ -278,7 +306,8 @@ namespace irods {
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
         // rule engine server only runs on IES
-#ifdef RODS_CAT
+#if 0
+//#ifdef RODS_CAT
         std::string output;
         ret = forward_server_control_command(
                   SERVER_CONTROL_SHUTDOWN,
@@ -315,6 +344,12 @@ namespace irods {
             proc_cnt = getAgentProcCnt();
 
         } // while
+
+        // kill the rule engine server
+        ret = kill_re_server( );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+        }
 
         // actually shut down the server
         s( server_state::STOPPED );

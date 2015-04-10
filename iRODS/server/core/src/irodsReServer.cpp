@@ -18,8 +18,10 @@
 #include "irods_server_state.hpp"
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
-#include "irods_server_control_plane.hpp"
 #include "readServerConfig.hpp"
+
+
+//#include "irods_server_control_plane.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -186,18 +188,8 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
     initReExec( rsComm, &reExec );
     LastRescUpdateTime = time( NULL );
 
-    // =-=-=-=-=-=-=-
-    // Launch the Control Plane
     try {
-        irods::server_control_plane ctrl_plane(
-            irods::CFG_RULE_ENGINE_CONTROL_PLANE_PORT );
-
-        irods::server_state& state = irods::server_state::instance();
-        while ( irods::server_state::STOPPED != state() ) {
-            if ( irods::server_state::PAUSED == state() ) {
-                sleep( 1 );
-                continue;
-            }
+        while ( true ) { 
 
 #ifndef windows_platform
 #ifndef SYSLOG

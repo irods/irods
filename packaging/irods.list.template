@@ -374,6 +374,7 @@ f 644 root root ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
 d 755 root root ${IRODS_HOME}/scripts/python -
 f 644 root root ${IRODS_HOME}/scripts/python/system_identification.py ./iRODS/scripts/python/system_identification.py
 f 644 root root ${IRODS_HOME}/scripts/python/pid_age.py ./iRODS/scripts/python/pid_age.py
+f 644 root root ${IRODS_HOME}/scripts/python/kill_pid.py ./iRODS/scripts/python/kill_pid.py
 d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/configure.pl ./iRODS/scripts/perl/configure.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
