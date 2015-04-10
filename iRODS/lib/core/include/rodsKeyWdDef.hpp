@@ -31,6 +31,7 @@
 #define WRITE_FLAG_KW	"writeFlag"	/* whether it is opened for write */
 #define REPL_STATUS_KW	"replStatus"	/* status of the replica */
 #define ALL_REPL_STATUS_KW	"allReplStatus"	/* update all replStatus */
+#define METADATA_INCLUDED_KW "metadataIncluded" /* for atomic puts of data / metadata */
 #define DATA_INCLUDED_KW "dataIncluded"	/* data included in the input buffer */
 #define DATA_OWNER_KW	"dataOwner"
 #define DATA_OWNER_ZONE_KW	"dataOwnerZone"
@@ -216,7 +217,6 @@
 #define RULE_LAST_EXE_TIME_KW        "lastExeTime"
 #define RULE_EXE_STATUS_KW           "exeStatus"
 
-
 #define EXCLUDE_FILE_KW         "excludeFile"
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
@@ -280,20 +280,6 @@
 #define SPEC_COLL_CACHE_DIRTY        "spec_coll_cache_dirty"
 #define SPEC_COLL_REPL_NUM           "spec_coll_repl_num"
 
-
 #define DISABLE_STRICT_ACL_KW "disable_strict_acls"
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif	/* RODS_KEYWD_DEF */

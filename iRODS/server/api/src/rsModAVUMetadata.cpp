@@ -88,14 +88,13 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
         rei2.uoip = &rsComm->proxyUser;
     }
 
-    args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp,
-					  or mod */
-    args[1] = modAVUMetadataInp->arg1; /* item type -d,-d,-c,-C,-r,-R,-u,-U */
-    args[2] = modAVUMetadataInp->arg2; /* item name */
-    args[3] = modAVUMetadataInp->arg3; /* attr name */
-    args[4] = modAVUMetadataInp->arg4; /* attr val */
-    args[5] = modAVUMetadataInp->arg5;
-    if ( args[5] == NULL ) { args[5] = ""; } /* attr unit */
+    args[0] = modAVUMetadataInp->arg0; // option add, adda, rm, rmw, rmi, cp, mod, or set
+    args[1] = modAVUMetadataInp->arg1; // item type -d,-D,-c,-C,-r,-R,-u,-U
+    args[2] = modAVUMetadataInp->arg2; // item name
+    args[3] = modAVUMetadataInp->arg3; // attr name
+    args[4] = modAVUMetadataInp->arg4; // attr val
+    args[5] = modAVUMetadataInp->arg5; // attr unit
+    if ( args[5] == NULL ) { args[5] = ""; }
     if ( strcmp( args[0], "mod" ) == 0 ) {
         argc = 9;
 #define ARG(arg) { int ix; if( ( ix = checkModArgType(arg) ) >= 0 ) avu[ix] = arg; }

@@ -9785,7 +9785,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10156,7 +10156,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type   ||
                 !_name   ||
                 !_attribute ) {

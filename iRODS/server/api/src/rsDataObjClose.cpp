@@ -11,6 +11,7 @@
 #include "reFuncDefs.hpp"
 #include "regReplica.hpp"
 #include "modDataObjMeta.hpp"
+#include "modAVUMetadata.hpp"
 #include "dataObjOpr.hpp"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
@@ -42,6 +43,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_file_object.hpp"
+#include "irods_metadata_serialization.hpp"
 
 
 int
@@ -666,14 +668,36 @@ _rsDataObjClose(
         modDataObjMetaInp.regParam = &regParam;
 
         status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-
-
         clearKeyVal( &regParam );
 
         if ( status < 0 ) {
             free( chksumStr );
             return status;
         }
+
+        if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
+            const std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
+            for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
+                modAVUMetadataInp_t modAVUMetadataInp;
+                memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+
+                modAVUMetadataInp.arg0 = strdup( "add" );
+                modAVUMetadataInp.arg1 = strdup( "-d" );
+                modAVUMetadataInp.arg2 = strdup( L1desc[l1descInx].dataObjInfo->objPath );
+                modAVUMetadataInp.arg3 = strdup( deserialized_metadata[i].c_str() );
+                modAVUMetadataInp.arg4 = strdup( deserialized_metadata[i + 1].c_str() );
+                modAVUMetadataInp.arg5 = strdup( deserialized_metadata[i + 2].c_str() );
+
+                int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
+                clearModAVUMetadataInp( &modAVUMetadataInp );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "rsModAVUMetadata failed in _rsDataObjClose with status %d", status );
+                    return status;
+                }
+            }
+        }
+
+
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
             /* update quota overrun */
             updatequotaOverrun( L1desc[l1descInx].dataObjInfo->rescHier,
