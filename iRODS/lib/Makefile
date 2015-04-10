@@ -111,6 +111,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_configuration_parser.o \
 		$(libCoreObjDir)/irods_server_properties.o \
 		$(libCoreObjDir)/irods_environment_properties.o \
+		$(libCoreObjDir)/irods_parse_command_line_options.o \
 		$(libCoreObjDir)/list.o \
 		$(libCoreObjDir)/hashtable.o \
 		$(libCoreObjDir)/region.o \

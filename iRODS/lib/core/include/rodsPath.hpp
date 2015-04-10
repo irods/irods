@@ -59,7 +59,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv );
 int
 parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath );
 int
-addSrcInPath( rodsPathInp_t *rodsPathInp, char *inPath );
+addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath );
 int
 parseLocalPath( rodsPath_t *rodsPath );
 int

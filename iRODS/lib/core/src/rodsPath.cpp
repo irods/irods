@@ -254,7 +254,7 @@ getFileType( rodsPath_t *rodsPath ) {
 }
 
 int
-addSrcInPath( rodsPathInp_t *rodsPathInp, char *inPath ) {
+addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
     rodsPath_t *newSrcPath, *newTargPath;
     int newNumSrc;
 
