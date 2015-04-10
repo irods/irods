@@ -55,7 +55,7 @@ def admin_up():
     adminsession.runCmd('iinit', [adminsession._password])
     adminsession.runCmd('imkdir', [adminsession._session_id])
     adminsession.runCmd('icd', [adminsession._session_id])
-    print('admin session created: user[' + adminsession.get_username() + '] zone[' + adminsession.get_zone_name() + ']')
+    print('admin session created: user[' + adminsession.username + '] zone[' + adminsession.zone_name + ']')
 
     # set sessions[0] as adminsession
     global sessions
@@ -88,7 +88,7 @@ def admin_down():
         adminsession.runAdminCmd('iadmin', ['rmgroup', testgroup])
         adminsession.runAdminCmd('iadmin', ['rum'])
 
-    print('admin session exiting: user[' + adminsession.get_username() + '] zone[' + adminsession.get_zone_name() + ']')
+    print('admin session exiting: user[' + adminsession.username + '] zone[' + adminsession.zone_name + ']')
     adminsession.runCmd('iexit', ['full'])
     adminsession.delete_session_dir()
 
@@ -98,14 +98,14 @@ def user_up(user):
     user_session.runCmd('iinit', [user_session._password])
     user_session.runCmd('imkdir', [user_session._session_id])
     user_session.runCmd('icd', [user_session._session_id])
-    print('user session created: user[' + user_session.get_username() + '] zone[' + user_session.get_zone_name() + ']')
+    print('user session created: user[' + user_session.username + '] zone[' + user_session.zone_name + ']')
     sessions.append(user_session)
 
 def user_down(usersession):
     # tear down user session
     usersession.runCmd('icd')
     usersession.runCmd('irm', ['-rf', usersession._session_id])
-    print('user session exiting: user[' + usersession.get_username() + '] zone[' + usersession.get_zone_name() + ']')
+    print('user session exiting: user[' + usersession.username + '] zone[' + usersession.zone_name + ']')
     usersession.runCmd('iexit', ['full'])
     usersession.delete_session_dir()
 

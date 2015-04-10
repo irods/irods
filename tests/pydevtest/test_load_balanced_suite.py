@@ -76,7 +76,7 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
 
             # =-=-=-=-=-=-=-
             # build a logical path for putting a file
-            test_file_path = "/" + s.adminsession.get_zone_name() + "/home/" + s.adminsession.get_username() + \
+            test_file_path = "/" + s.adminsession.zone_name + "/home/" + s.adminsession.username + \
                 "/" + s.adminsession._session_id
             test_file = test_file_path + "/test_file.txt"
 

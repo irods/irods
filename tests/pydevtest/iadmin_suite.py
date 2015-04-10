@@ -30,15 +30,15 @@ from server_config import ServerConfig
 
 
 def write_host_access_control(filename, username, group, address, mask):
-    add_ent = {}
-    add_ent['user'] = username
-    add_ent['group'] = group
-    add_ent['address'] = address
-    add_ent['mask'] = mask
+    add_ent = {
+        'user': username,
+        'group': group,
+        'address': address,
+        'mask': mask,
+    }
 
     address_entries = [add_ent]
-    hac = {}
-    hac['access_entries'] = address_entries
+    hac = {'access_entries': address_entries}
 
     with open(filename, 'w') as f:
         json.dump(
@@ -76,7 +76,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     # LISTS
 
     def test_list_zones(self):
-        assertiCmd(s.adminsession, "iadmin lz", "LIST", s.adminsession.get_zone_name())
+        assertiCmd(s.adminsession, "iadmin lz", "LIST", s.adminsession.zone_name)
         assertiCmdFail(s.adminsession, "iadmin lz", "LIST", "notazone")
 
     def test_list_resources(self):
@@ -85,14 +85,14 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     def test_list_users(self):
         assertiCmd(s.adminsession, "iadmin lu", "LIST", [
-                   s.adminsession.get_username() + "#" + s.adminsession.get_zone_name()])
+                   s.adminsession.username + "#" + s.adminsession.zone_name])
         assertiCmdFail(s.adminsession, "iadmin lu", "LIST", "notauser")
 
     def test_list_groups(self):
         assertiCmd(s.adminsession, "iadmin lg", "LIST", self.testgroup)
         assertiCmdFail(s.adminsession, "iadmin lg", "LIST", "notagroup")
-        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[1].get_username()])
-        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[2].get_username()])
+        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[1].username])
+        assertiCmd(s.adminsession, "iadmin lg " + self.testgroup, "LIST", [s.sessions[2].username])
         assertiCmdFail(s.adminsession, "iadmin lg " + self.testgroup, "LIST", "notauser")
 
     # RESOURCES
@@ -370,14 +370,14 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
         # should not be listed
-        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
+        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.zone_name])
         assertiCmd(s.adminsession, "iadmin mkuser " + testuser1 + " rodsuser")  # add rodsuser
         # should be listed
-        assertiCmd(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
+        assertiCmd(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.zone_name])
         assertiCmdFail(s.adminsession, "iadmin rmuser notauser")  # bad remove
         assertiCmd(s.adminsession, "iadmin rmuser " + testuser1)  # good remove
         # should be gone
-        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.get_zone_name()])
+        assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [testuser1 + "#" + s.adminsession.zone_name])
 
     def test_iadmin_mkuser(self):
 
@@ -402,10 +402,10 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         for name in valid:
             assertiCmd(s.adminsession, "iadmin mkuser " + name + " rodsuser")  # should be accepted
             # should be listed
-            assertiCmd(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.get_zone_name()])
+            assertiCmd(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.zone_name])
             assertiCmd(s.adminsession, "iadmin rmuser " + name)  # remove user
             # should be gone
-            assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.get_zone_name()])
+            assertiCmdFail(s.adminsession, "iadmin lu", "LIST", [name + "#" + s.adminsession.zone_name])
 
         # Test invalid names
         for name in invalid:
@@ -996,13 +996,12 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, 'irm -r {collection_basename}'.format(**vars()))
         assertiCmd(s.adminsession, 'irmtrash -M')
         assertiCmd(s.adminsession, 'iadmin rum')
-        assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()),
-                       'STDOUT', a)
+        assertiCmdFail(s.adminsession, '''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT', a)
 
     @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log")
     def test_rule_engine_2521(self):
         with pydevtest_common.core_re_backed_up():
-            initial_size_of_re_log = pydevtest_common.get_re_log_size()
+            initial_size_of_re_log = pydevtest_common.get_log_size('re')
             rules_to_prepend = '''
 first_rule_called_from_delay() {
     writeLine("serverLog","test_rule_engine_2521: first delay rule executed successfully");
@@ -1024,6 +1023,34 @@ acPostProcForPut() {
             pydevtest_common.make_file(trigger_file, 10)
             assertiCmd(s.adminsession, 'iput {0}'.format(trigger_file))
             time.sleep(30)
-            assert 1 == pydevtest_common.count_occurrences_of_string_in_re_log('writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_re_log('free(): invalid size', start_index=initial_size_of_re_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_re_log('free(): invalid pointer', start_index=initial_size_of_re_log)
+            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
+            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
+            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
+
+    @unittest.skipIf(True, 'Enable once fix is committed; Skip for topology testing from resource server: reads re server log')
+    def test_rule_engine_2309(self):
+        with pydevtest_common.core_re_backed_up():
+            initial_size_of_server_log = pydevtest_common.get_log_size('server')
+            rules_to_prepend = '''
+acSetNumThreads() {
+    writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
+}
+'''
+            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            trigger_file = 'file_to_trigger_acPostProcForPut'
+            pydevtest_common.make_file(trigger_file, 4*pow(10, 7))
+            s.adminsession.assert_icommand('iput {0}'.format(trigger_file))
+            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
+            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+
+        with pydevtest_common.core_re_backed_up():
+            initial_size_of_server_log = pydevtest_common.get_log_size('server')
+            rules_to_prepend = '''
+acSetNumThreads() {
+    writeLine("serverLog","test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
+}
+'''
+            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            s.adminsession.assert_icommand('iget {0} - > /dev/null'.format(trigger_file))
+            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
+            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)

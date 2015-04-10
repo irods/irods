@@ -61,9 +61,9 @@ class ResourceBase(object):
         print "run_resource_setup - setting permissions"
         # permissions
         s.adminsession.runCmd(
-            'ichmod', ["read", s.sessions[1].get_username(), "../../public/" + self.testfile])
+            'ichmod', ["read", s.sessions[1].username, "../../public/" + self.testfile])
         s.adminsession.runCmd(
-            'ichmod', ["write", s.sessions[2].get_username(), "../../public/" + self.testfile])
+            'ichmod', ["write", s.sessions[2].username, "../../public/" + self.testfile])
         # set test group
         self.testgroup = s.testgroup
         print "run_resource_setup - END"
@@ -252,33 +252,33 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L second_dir/first_dir", "STDOUT", self.testfile)  # should be listed
 
     def test_local_imv_collection_to_collection_with_modify_access_not_own__ticket_2317(self):
-        publicpath = "/" + s.adminsession.get_zone_name() + "/home/public"
+        publicpath = "/" + s.adminsession.zone_name + "/home/public"
         targetpath = publicpath + "/target"
         sourcepath = publicpath + "/source"
         # cleanup
         assertiCmd(s.adminsession, "imkdir -p " + targetpath)  # target
-        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.get_username() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.username + " " + targetpath)  # ichmod
         assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
         assertiCmd(s.adminsession, "imkdir -p " + sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.get_username() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.username + " " + sourcepath)  # ichmod
         assertiCmd(s.adminsession, "irm -rf " + sourcepath)  # cleanup
         # setup and test
         assertiCmd(s.adminsession, "imkdir " + targetpath)  # target
         assertiCmd(s.adminsession, "ils -rAL " + targetpath, "STDOUT", "own")  # debugging
-        assertiCmd(s.adminsession, "ichmod -r write " + s.sessions[1].get_username() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -r write " + s.sessions[1].username + " " + targetpath)  # ichmod
         assertiCmd(s.adminsession, "ils -rAL " + targetpath, "STDOUT", "modify object")  # debugging
         assertiCmd(s.adminsession, "imkdir " + sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -r own " + s.sessions[1].get_username() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -r own " + s.sessions[1].username + " " + sourcepath)  # ichmod
         assertiCmd(s.adminsession, "ils -AL " + sourcepath, "STDOUT", "own")  # debugging
         assertiCmd(s.sessions[1], "imv " + sourcepath + " " + targetpath)  # imv
         assertiCmd(s.adminsession, "ils -AL " + targetpath, "STDOUT", targetpath + "/source")  # debugging
         assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
         # cleanup
         assertiCmd(s.adminsession, "imkdir -p " + targetpath)  # target
-        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.get_username() + " " + targetpath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.username + " " + targetpath)  # ichmod
         assertiCmd(s.adminsession, "irm -rf " + targetpath)  # cleanup
         assertiCmd(s.adminsession, "imkdir -p " + sourcepath)  # source
-        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.get_username() + " " + sourcepath)  # ichmod
+        assertiCmd(s.adminsession, "ichmod -M -r own " + s.adminsession.username + " " + sourcepath)  # ichmod
         assertiCmd(s.adminsession, "irm -rf " + sourcepath)  # cleanup
 
     ###################
@@ -295,8 +295,8 @@ class ResourceSuite(ResourceBase):
         pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.get_zone_name() + "/home/" + \
-            s.sessions[1].get_username() + "/" + s.sessions[1]._session_id
+        homepath = "/" + s.adminsession.zone_name + "/home/" + \
+            s.sessions[1].username + "/" + s.sessions[1]._session_id
         assertiCmd(s.adminsession, "iphymv -r -M -R " + self.testresc + " " + homepath, "EMPTY")  # creates replica
 
     ###################
@@ -315,7 +315,7 @@ class ResourceSuite(ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null")
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
+        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {
@@ -332,7 +332,7 @@ class ResourceSuite(ResourceBase):
         # read the correctly changed environment
 
         # server reboot to pick up new irodsEnv settings
-        env_val = s.adminsession._session_dir + "/irods_environment.json"
+        env_val = s.adminsession.local_session_dir + "/irods_environment.json"
         sys_cmd = 'export IRODS_ENVIRONMENT_FILE={0};{1} restart'.format(env_val, os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl'))
         os.system(sys_cmd)
 
@@ -375,7 +375,7 @@ class ResourceSuite(ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
+        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
         env = {}
         env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
@@ -717,8 +717,8 @@ class ResourceSuite(ResourceBase):
         filepath = create_local_testfile(filename)
 
         # alice tries to put
-        homepath = "/home/" + s.adminsession.get_username() + "/" + s.adminsession._session_id + "/" + self.testfile
-        logicalpath = "/" + s.adminsession.get_zone_name() + homepath
+        homepath = "/home/" + s.adminsession.username + "/" + s.adminsession._session_id + "/" + self.testfile
+        logicalpath = "/" + s.adminsession.zone_name + homepath
         assertiCmd(s.sessions[1], "iput " + filepath + " " + logicalpath, "ERROR", "CAT_NO_ACCESS_PERMISSION")  # iput
 
         # check physicalpaths (of all replicas)
@@ -796,8 +796,8 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "ireg " + filepath + " /" + s.adminsession.get_zone_name() + "/home/" +
-                   s.adminsession.get_username() + "/" + s.adminsession._session_id + "/" + filename)  # ireg
+        assertiCmd(s.adminsession, "ireg " + filepath + " /" + s.adminsession.zone_name + "/home/" +
+                   s.adminsession.username + "/" + s.adminsession._session_id + "/" + filename)  # ireg
         assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)  # should be listed
 
         # local cleanup
@@ -814,8 +814,8 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.sessions[1], "ireg " + filepath + " /" + s.sessions[1].get_zone_name() + "/home/" + s.sessions[
-                   1].get_username() + "/" + s.sessions[1]._session_id + "/" + filename, "ERROR", "PATH_REG_NOT_ALLOWED")  # ireg
+        assertiCmd(s.sessions[1], "ireg " + filepath + " /" + s.sessions[1].zone_name + "/home/" + s.sessions[
+                   1].username + "/" + s.sessions[1]._session_id + "/" + filename, "ERROR", "PATH_REG_NOT_ALLOWED")  # ireg
         assertiCmdFail(s.sessions[1], "ils -L " + filename, "LIST", filename)  # should not be listed
 
         # local cleanup
@@ -828,7 +828,7 @@ class ResourceSuite(ResourceBase):
         vaultpath = cmdout[0].rstrip('\n')
 
         # make dir in vault if necessary
-        dir = os.path.join(vaultpath, 'home', s.sessions[1].get_username())
+        dir = os.path.join(vaultpath, 'home', s.sessions[1].username)
         if not os.path.exists(dir):
             os.makedirs(dir)
 
@@ -841,8 +841,8 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.sessions[1], "ireg " + filepath + " /" + s.sessions[1].get_zone_name() + "/home/" + s.sessions[
-                   1].get_username() + "/" + s.sessions[1]._session_id + "/" + filename, "ERROR", "PATH_REG_NOT_ALLOWED")  # ireg
+        assertiCmd(s.sessions[1], "ireg " + filepath + " /" + s.sessions[1].zone_name + "/home/" + s.sessions[
+                   1].username + "/" + s.sessions[1]._session_id + "/" + filename, "ERROR", "PATH_REG_NOT_ALLOWED")  # ireg
         assertiCmdFail(s.sessions[1], "ils -L " + filename, "LIST", filename)  # should not be listed
 
         # local cleanup
@@ -1055,8 +1055,8 @@ class ResourceSuite(ResourceBase):
         pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.get_zone_name() + "/home/" + \
-            s.sessions[1].get_username() + "/" + s.sessions[1]._session_id
+        homepath = "/" + s.adminsession.zone_name + "/home/" + \
+            s.sessions[1].username + "/" + s.sessions[1]._session_id
         assertiCmd(s.adminsession, "irepl -r -M -R " + self.testresc + " " + homepath, "EMPTY")  # creates replica
 
     ###################
@@ -1070,7 +1070,7 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
         assertiCmd(s.adminsession, "irm " + self.testfile)  # remove from grid
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be deleted
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         # should be in trash
         assertiCmd(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST", self.testfile)
@@ -1079,7 +1079,7 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
         assertiCmd(s.adminsession, "irm -f " + self.testfile)  # remove from grid
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be deleted
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         # should not be in trash
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST", self.testfile)
@@ -1092,11 +1092,11 @@ class ResourceSuite(ResourceBase):
         # replica 1 should be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["1 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     def test_irm_recursive_file(self):
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
@@ -1130,7 +1130,7 @@ class ResourceSuite(ResourceBase):
         filepath = os.path.abspath(filename)
         pydevtest_common.make_file(filepath, 15)
         # define
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         # loop
         for i in range(many_times):
@@ -1145,11 +1145,11 @@ class ResourceSuite(ResourceBase):
     def test_irmtrash_admin(self):
         # assertions
         assertiCmd(s.adminsession, "irm " + self.testfile)  # remove from grid
-        assertiCmd(s.adminsession, "ils -rL /" + s.adminsession.get_zone_name() + "/trash/home/" +
-                   s.adminsession.get_username() + "/", "LIST", self.testfile)  # should be listed
+        assertiCmd(s.adminsession, "ils -rL /" + s.adminsession.zone_name + "/trash/home/" +
+                   s.adminsession.username + "/", "LIST", self.testfile)  # should be listed
         assertiCmd(s.adminsession, "irmtrash")  # should be listed
-        assertiCmdFail(s.adminsession, "ils -rL /" + s.adminsession.get_zone_name() + "/trash/home/" +
-                       s.adminsession.get_username() + "/", "LIST", self.testfile)  # should be deleted
+        assertiCmdFail(s.adminsession, "ils -rL /" + s.adminsession.zone_name + "/trash/home/" +
+                       s.adminsession.username + "/", "LIST", self.testfile)  # should be deleted
 
     ###################
     # itrim
@@ -1159,7 +1159,7 @@ class ResourceSuite(ResourceBase):
         pydevtest_common.touch("file.txt")
         for i in range(0, 100):
             assertiCmd(s.sessions[1], "iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + s.adminsession.get_zone_name() + "/home/" + \
-            s.sessions[1].get_username() + "/" + s.sessions[1]._session_id
+        homepath = "/" + s.adminsession.zone_name + "/home/" + \
+            s.sessions[1].username + "/" + s.sessions[1]._session_id
         assertiCmd(s.sessions[1], "irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
         assertiCmd(s.adminsession, "itrim -M -N1 -r " + homepath, "LIST", "Number of files trimmed = 100.")

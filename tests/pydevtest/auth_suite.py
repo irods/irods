@@ -34,7 +34,7 @@ class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "iadmin mkuser %s rodsuser" % authTestUser)
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
+        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {}
@@ -107,7 +107,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
+        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         # does not use our SSL to test legacy SSL code path
@@ -164,7 +164,7 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.environ['irodsSSLVerifyServer'] = "none"
 
         # add client irodsEnv settings
-        clientEnvFile = s.adminsession._session_dir + "/irods_environment.json"
+        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
 
         env = {}

@@ -51,14 +51,14 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
         s.twousers_up()
         self.run_resource_setup()
 
-        usernames = [ss.get_username() for ss in s.sessions]
+        usernames = [ss.username for ss in s.sessions]
         assertiCmd(s.adminsession, 'iadmin lu', 'STDOUT_MULTILINE', usernames)
 
         for u in usernames:
             assertiCmd(s.adminsession, 'imeta ls -u ' + u, 'STDOUT', 'None')
 
     def tearDown(self):
-        usernames = [ss.get_username() for ss in s.sessions]
+        usernames = [ss.username for ss in s.sessions]
 
         for u in usernames:
             s.adminsession.runCmd('imeta', ['rmw', '-u', u, '%', '%', '%'])
@@ -67,28 +67,28 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
 
     def test_imeta_set_single_object_triple(self, user=None):
         if user is None:
-            user = s.sessions[1].get_username()
+            user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', 'unt0')
         set_and_check_avu(user, 'att0', 'val1', 'unt1')
 
     def test_imeta_set_single_object_double(self, user=None):
         if user is None:
-            user = s.sessions[1].get_username()
+            user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', '')
         set_and_check_avu(user, 'att0', 'val1', '')
 
     def test_imeta_set_single_object_double_to_triple(self, user=None):
         if user is None:
-            user = s.sessions[1].get_username()
+            user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', '')
         set_and_check_avu(user, 'att0', 'val1', 'unt1')
 
     def test_imeta_set_single_object_triple_to_double_no_unit(self, user=None):
         if user is None:
-            user = s.sessions[1].get_username()
+            user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', 'unt0')
         set_and_check_avu(user, 'att0', 'val1', '')
@@ -97,7 +97,7 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
 
     def test_imeta_set_single_object_triple_to_double_empty_unit(self, user=None):
         if user is None:
-            user = s.sessions[1].get_username()
+            user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', 'unt0')
         set_and_check_avu(user, 'att0', 'val1', '""')
@@ -105,42 +105,42 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession, 'imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
 
     def test_imeta_set_multi_object_triple(self):
-        user1 = s.sessions[1].get_username()
-        user2 = s.sessions[2].get_username()
+        user1 = s.sessions[1].username
+        user2 = s.sessions[2].username
 
         self.test_imeta_set_single_object_triple(user=user1)
         self.test_imeta_set_single_object_triple(user=user2)
 
     def test_imeta_set_multi_object_double(self):
-        user1 = s.sessions[1].get_username()
-        user2 = s.sessions[2].get_username()
+        user1 = s.sessions[1].username
+        user2 = s.sessions[2].username
 
         self.test_imeta_set_single_object_double(user=user1)
         self.test_imeta_set_single_object_double(user=user2)
 
     def test_imeta_set_multi_object_double_to_triple(self):
-        user1 = s.sessions[1].get_username()
-        user2 = s.sessions[2].get_username()
+        user1 = s.sessions[1].username
+        user2 = s.sessions[2].username
 
         self.test_imeta_set_single_object_double_to_triple(user=user1)
         self.test_imeta_set_single_object_double_to_triple(user=user2)
 
     def test_imeta_set_multi_object_triple_to_double_no_unit(self):
-        user1 = s.sessions[1].get_username()
-        user2 = s.sessions[2].get_username()
+        user1 = s.sessions[1].username
+        user2 = s.sessions[2].username
 
         self.test_imeta_set_single_object_triple_to_double_no_unit(user=user1)
         self.test_imeta_set_single_object_triple_to_double_no_unit(user=user2)
 
     def test_imeta_set_multi_object_triple_to_double_empty_unit(self):
-        user1 = s.sessions[1].get_username()
-        user2 = s.sessions[2].get_username()
+        user1 = s.sessions[1].username
+        user2 = s.sessions[2].username
 
         self.test_imeta_set_single_object_triple_to_double_empty_unit(user=user1)
         self.test_imeta_set_single_object_triple_to_double_empty_unit(user=user2)
 
     def test_imeta_set_single_object_abandoned_avu_triple_to_double_no_unit(self):
-        user = s.sessions[1].get_username()
+        user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', 'unt0')
 
@@ -151,7 +151,7 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession, 'imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
 
     def test_imeta_set_single_object_abandoned_avu_triple_to_double_empty_unit(self):
-        user = s.sessions[1].get_username()
+        user = s.sessions[1].username
 
         set_and_check_avu(user, 'att0', 'val0', 'unt0')
 
@@ -162,7 +162,7 @@ class Test_iMetaSet(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession, 'imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
 
     def test_imeta_set_single_object_multi_avu_removal(self):
-        user = s.sessions[1].get_username()
+        user = s.sessions[1].username
 
         original_avus = [('att' + str(i), 'val' + str(i), 'unt' + str(i)) for i in range(30)]
 

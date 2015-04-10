@@ -35,27 +35,27 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession, "ils -L", "LIST", "test")  # whatever
         assertiCmd(s.adminsession, "icd " + self.testdir)  # get into subdir
         assertiCmd(s.adminsession, "icd")  # just go home
-        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.get_zone_name() +
-                   "/home/" + s.adminsession.get_username() + ":")  # listing
+        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.zone_name +
+                   "/home/" + s.adminsession.username + ":")  # listing
 
     def test_empty_icd_verbose(self):
         # assertions
         assertiCmd(s.adminsession, "icd " + self.testdir)  # get into subdir
         assertiCmd(s.adminsession, "icd -v", "LIST", "Deleting (if it exists) session envFile:")  # home, verbose
-        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.get_zone_name() +
-                   "/home/" + s.adminsession.get_username() + ":")  # listing
+        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.zone_name +
+                   "/home/" + s.adminsession.username + ":")  # listing
 
     def test_icd_to_subdir(self):
         # assertions
         assertiCmd(s.adminsession, "icd " + self.testdir)  # get into subdir
-        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.get_zone_name() + "/home/" +
-                   s.adminsession.get_username() + "/" + s.adminsession._session_id + "/" + self.testdir + ":")  # listing
+        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.zone_name + "/home/" +
+                   s.adminsession.username + "/" + s.adminsession._session_id + "/" + self.testdir + ":")  # listing
 
     def test_icd_to_parentdir(self):
         # assertions
         assertiCmd(s.adminsession, "icd ..")  # go to parent
-        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.get_zone_name() +
-                   "/home/" + s.adminsession.get_username() + ":")  # listing
+        assertiCmd(s.adminsession, "ils", "LIST", "/" + s.adminsession.zone_name +
+                   "/home/" + s.adminsession.username + ":")  # listing
 
     def test_icd_to_root(self):
         # assertions
@@ -172,7 +172,7 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
 
     def test_iquest_totaldatasize(self):
         assertiCmd(s.adminsession, "iquest \"select sum(DATA_SIZE) where COLL_NAME like '/" +
-                   s.adminsession.get_zone_name() + "/home/%'\"", "LIST", "DATA_SIZE")  # selects total data size
+                   s.adminsession.zone_name + "/home/%'\"", "LIST", "DATA_SIZE")  # selects total data size
 
     def test_iquest_bad_format(self):
         assertiCmd(s.adminsession, "iquest \"bad formatting\"", "ERROR",
@@ -227,7 +227,7 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
         check_relative_expiry(seconds_ahead)
 
     def test_isysmeta_no_permission(self):
-        assertiCmd(s.sessions[1], "icd /" + s.adminsession.get_zone_name() + "/home/public", "EMPTY")  # get into public/
+        assertiCmd(s.sessions[1], "icd /" + s.adminsession.zone_name + "/home/public", "EMPTY")  # get into public/
         assertiCmd(s.sessions[1], "ils -L ", "STDOUT", "pydevtest_testfile.txt")  # basic listing
         assertiCmd(s.sessions[1], "isysmeta ls pydevtest_testfile.txt", "STDOUT",
                    "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros

@@ -22,11 +22,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -37,9 +37,9 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession, "imkdir " + irodshome + "/icmdtest")
 
         # test basic informational commands
-        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.get_username())
-        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.get_zone_name())
-        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.get_default_resource())
+        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.username)
+        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.zone_name)
+        assertiCmd(s.adminsession, "iinit -l", "LIST", s.adminsession.default_resource)
         res = s.adminsession.runCmd('ils', ['-V'])
         assert (res[0].count('irods_host') == 1
                 and res[0].count('irods_port') == 1
@@ -126,11 +126,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -257,11 +257,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -299,7 +299,7 @@ class ChunkyDevTest(ResourceBase):
         assert output[1] == "", "diff output was not empty..."
         shutil.rmtree(dir_w + "/testa")
         # test ireg with normal user
-        testuser2home = "/" + irodszone + "/home/" + s.sessions[2].get_username()
+        testuser2home = "/" + irodszone + "/home/" + s.sessions[2].username
         commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2c")
         assertiCmd(s.sessions[2], "ireg -KR " + self.testresc + " /tmp/sfile2c " +
                    testuser2home + "/foo5", "ERROR", "PATH_REG_NOT_ALLOWED")
@@ -319,11 +319,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -423,11 +423,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -485,11 +485,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -538,11 +538,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -570,11 +570,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -605,9 +605,9 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession, "iput -kf  " + progname + "  " + irodshome + "/icmdtest1/foo1")
         assertiCmd(s.adminsession, "ils -l " + irodshome + "/icmdtest1/foo1", "LIST", ["foo1", myssize])
         assertiCmd(s.adminsession, "iadmin ls " + irodshome + "/icmdtest1", "LIST", "foo1")
-        assertiCmd(s.adminsession, "ichmod read " + s.sessions[1].get_username() + " " + irodshome + "/icmdtest1/foo1")
+        assertiCmd(s.adminsession, "ichmod read " + s.sessions[1].username + " " + irodshome + "/icmdtest1/foo1")
         assertiCmd(s.adminsession, "ils -A " + irodshome + "/icmdtest1/foo1",
-                   "LIST", s.sessions[1].get_username() + "#" + irodszone + ":read")
+                   "LIST", s.sessions[1].username + "#" + irodszone + ":read")
         assertiCmd(s.adminsession, "irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest1/foo1")
         # overwrite a copy
         assertiCmd(s.adminsession, "itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1")
@@ -636,11 +636,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
@@ -736,11 +736,11 @@ class ChunkyDevTest(ResourceBase):
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
-        username = s.adminsession.get_username()
-        irodszone = s.adminsession.get_zone_name()
-        testuser1 = s.sessions[1].get_username()
+        username = s.adminsession.username
+        irodszone = s.adminsession.zone_name
+        testuser1 = s.sessions[1].username
         irodshome = "/" + irodszone + "/home/rods/" + s.adminsession._session_id
-        irodsdefresource = s.adminsession.get_default_resource()
+        irodsdefresource = s.adminsession.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)

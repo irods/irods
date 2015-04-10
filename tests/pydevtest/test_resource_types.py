@@ -293,11 +293,11 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -604,11 +604,11 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -749,7 +749,7 @@ class Test_WeightedPassthru_Resource(unittest.TestCase, ResourceBase):
         # repave a copy in the vault to differentiate
         vaultpath = os.path.join( pdc.get_irods_top_level_dir(), "unixBVault/home/rods", os.path.basename( s.adminsession._session_id ), filename )
         subprocess.check_call( "echo 'THISISBROEKN' | cat > %s" % (vaultpath),shell=True)
-        
+
         pdc.assertiCmd(s.adminsession, "iadmin modresc w_pt context 'write=1.0;read=2.0'")
         pdc.assertiCmd(s.adminsession, "iget " + filename + " - ", "LIST", "THISISBROEKN" )
 
@@ -904,11 +904,11 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1219,11 +1219,11 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1530,11 +1530,11 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2152,11 +2152,11 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # replica 3 should be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["3 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -2254,11 +2254,11 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["4 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2734,11 +2734,11 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # replica 2 should still be there
         assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["4 " + self.testresc, self.testfile])
         assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.get_zone_name() + "/trash/home/" + s.adminsession.get_username() + \
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
             "/" + s.adminsession._session_id
         assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.get_default_resource(), self.testfile])  # replica should not be in trash
+                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):

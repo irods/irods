@@ -67,7 +67,7 @@ def check_icmd_outputtype(fullcmd, outputtype):
 
 def getiCmdOutput(mysession, fullcmd):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
     if parameters[0] == "iadmin":
         output = mysession.runAdminCmd(parameters[0], parameters[1:])
     else:
@@ -212,7 +212,7 @@ def interruptiCmd(mysession, fullcmd, filename, filesize):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
     print "  filename set to: [" + filename + "]"
     print "  filesize set to: [" + str(filesize) + "] bytes"
     resultcode = mysession.interruptCmd(parameters[0], parameters[1:], filename, filesize)
@@ -237,7 +237,7 @@ def interruptiCmdDelay(mysession, fullcmd, delay):
     parameters = shlex.split(fullcmd)  # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.get_username() + "[" + fullcmd + "]"
+    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
     print "  timeout set to: [" + str(delay) + " seconds]"
     resultcode = mysession.interruptCmdDelay(parameters[0], parameters[1:], delay)
     if resultcode == 0:
@@ -276,7 +276,7 @@ def get_vault_path(session):
 def get_vault_session_path(session):
     return os.path.join(get_vault_path(session),
                         "home",
-                        session.get_username(),
+                        session.username,
                         session._session_id)
 
 def make_large_local_tmp_dir(dir_name, file_count, file_size):
@@ -302,12 +302,16 @@ def prepend_string_to_core_re(string):
         f.write(string)
         f.write(contents)
 
-def get_re_log_size():
-    return os.stat(get_re_log_path()).st_size
+def get_log_path(log_source):
+    log_prefix_dict = {
+        'server': 'rodsLog',
+        're': 'reLog',
+    }
+    assert log_source in log_prefix_dict, log_source
 
-def get_re_log_path():
+    log_prefix = log_prefix_dict[log_source]
     server_log_dir = os.path.join(get_irods_top_level_dir(), 'iRODS/server/log')
-    command_str = 'ls -t ' + server_log_dir + '/reLog* | head -n1'
+    command_str = 'ls -t {0}/{1}* | head -n1'.format(server_log_dir, log_prefix)
     proc = subprocess.Popen(command_str, stdout=subprocess.PIPE, shell=True)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0 or stdout == '':
@@ -315,8 +319,11 @@ def get_re_log_path():
     log_file_path = stdout.rstrip()
     return log_file_path
 
-def count_occurrences_of_string_in_re_log(string, start_index=0):
-    with open(get_re_log_path()) as f:
+def get_log_size(log_source):
+    return os.stat(get_log_path(log_source)).st_size
+
+def count_occurrences_of_string_in_log(log_source, string, start_index=0):
+    with open(get_log_path('re')) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         n = 0
         i = m.find(string, start_index)
@@ -325,10 +332,10 @@ def count_occurrences_of_string_in_re_log(string, start_index=0):
             i = m.find(string, i+1)
         return n
 
-def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, environment=None):
+def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
     if not use_unsafe_shell and isinstance(args, str):
         args = shlex.split(args)
-    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment, shell=use_unsafe_shell)
+    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=use_unsafe_shell, cwd=cwd)
     stdout, stderr = p.communicate(input=stdin_string)
     rc = p.returncode
     if check_rc:
@@ -336,10 +343,8 @@ def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, e
             raise subprocess.CalledProcessError(rc, args, stdout + '\n\n' + stderr)
     return rc, stdout, stderr
 
-def run_command_check_output(args, check_type='EMPTY', expected_results='', use_regex=False, **kwargs):
+def check_run_command_output(stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
-
-    rc, stdout, stderr = run_command(args, **kwargs)
 
     if isinstance(expected_results, str):
         expected_results = [expected_results]
@@ -351,6 +356,7 @@ def run_command_check_output(args, check_type='EMPTY', expected_results='', use_
     print '    | ' + '\n    | '.join(stdout.splitlines())
     print '  stderr:'
     print '    | ' + '\n    | '.join(stderr.splitlines())
+    print ''
 
     if check_type not in ['STDERR', 'STDERR_MULTILINE'] and stderr != '':
         print 'Unexpected output on stderr'
@@ -388,8 +394,23 @@ def run_command_check_output(args, check_type='EMPTY', expected_results='', use_
         return False
     assert False
 
-def assert_command(*args, **kwargs):
-    assert run_command_check_output(*args, **kwargs)
+def extract_function_kwargs(func, kwargs):
+    args = func.func_code.co_varnames
+    args_dict = {}
+    for k, v in kwargs.items():
+        if k in args:
+            args_dict[k] = v
+    return args_dict
+
+def assert_command(args, check_type='EMPTY', expected_results='', **kwargs):
+    run_command_arg_dict = extract_function_kwargs(run_command, kwargs)
+    _, stdout, stderr = run_command(args, **run_command_arg_dict)
+    check_run_command_output_arg_dict = extract_function_kwargs(check_run_command_output, kwargs)
+    assert check_run_command_output(stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
 
 def restart_irods_server():
     assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'])
+
+def write_to_log(log_source, message):
+    with open(get_log_path(log_source), 'a') as f:
+        f.write(message)
