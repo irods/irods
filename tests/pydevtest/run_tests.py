@@ -32,16 +32,17 @@ def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
 def optparse_callback_use_ssl(*args, **kwargs):
-    import pydevtest_common
-    pydevtest_common.irods_test_constants.USE_SSL = True
+    import configuration
+    configuration.USE_SSL = True
 
 def optparse_callback_topology_test(option, opt_str, value, parser):
-    import pydevtest_common
-    pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY = True
-    pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER = value == 'resource'
-    pydevtest_common.irods_test_constants.HOSTNAME_1 = 'resource1.example.org'
-    pydevtest_common.irods_test_constants.HOSTNAME_2 = 'resource2.example.org'
-    pydevtest_common.irods_test_constants.HOSTNAME_3 = 'resource3.example.org'
+    import configuration
+    configuration.RUN_IN_TOPOLOGY = True
+    configuration.TOPOLOGY_FROM_RESOURCE_SERVER = value == 'resource'
+    configuration.HOSTNAME_1 = 'resource1.example.org'
+    configuration.HOSTNAME_2 = 'resource2.example.org'
+    configuration.HOSTNAME_3 = 'resource3.example.org'
+    configuration.ICAT_HOSTNAME = 'icat.example.org'
 
 def run_tests_from_names(names, buffer_test_output):
     loader = unittest.TestLoader()

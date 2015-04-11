@@ -2,65 +2,59 @@ import time
 import sys
 import shutil
 import os
-if (sys.version_info >= (2, 7)):
+import socket
+import commands
+import datetime
+import imp
+if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput, get_irods_top_level_dir, get_irods_config_dir
-import pydevtest_common
-import pydevtest_sessions as s
-import socket
-import commands
-import shlex
-import datetime
 
-pydevtestdir = os.path.realpath(__file__)
-topdir = os.path.dirname(os.path.dirname(os.path.dirname(pydevtestdir)))
-packagingdir = os.path.join(topdir, "packaging")
-sys.path.append(packagingdir)
+import configuration
+from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
+import pydevtest_common
+import pydevtest_sessions
+
+pydevtestdir = os.path.dirname(os.path.realpath(__file__))
+topdir = os.path.dirname(os.path.dirname(pydevtestdir))
+packagingdir = os.path.join(topdir, 'packaging')
+module_tuple = imp.find_module('server_config', [packagingdir])
+imp.load_module('server_config', *module_tuple)
 from server_config import ServerConfig
 
 
-class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
-
-    hostname = socket.gethostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc load_balanced",
-            "iadmin mkresc rescA 'unix file system' " + hostname + ":" + get_irods_top_level_dir() + "/rescAVault",
-            "iadmin mkresc rescB 'unix file system' " + hostname + ":" + get_irods_top_level_dir() + "/rescBVault",
-            "iadmin mkresc rescC 'unix file system' " + hostname + ":" + get_irods_top_level_dir() + "/rescCVault",
-            "iadmin addchildtoresc demoResc rescA",
-            "iadmin addchildtoresc demoResc rescB",
-            "iadmin addchildtoresc demoResc rescC",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc rescA",
-            "iadmin rmchildfromresc demoResc rescB",
-            "iadmin rmchildfromresc demoResc rescC",
-            "iadmin rmresc rescA",
-            "iadmin rmresc rescB",
-            "iadmin rmresc rescC",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/rescAVault",
-            "rm -rf " + get_irods_top_level_dir() + "/rescBVault",
-            "rm -rf " + get_irods_top_level_dir() + "/rescCVault",
-        ],
-    }
-
+class Test_LoadBalanced_Resource(ResourceBase, unittest.TestCase):
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            context_prefix = pydevtest_common.get_hostname() + ':' + get_irods_top_level_dir()
+            admin_session.assert_icommand('iadmin modresc demoResc name origResc', 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand('iadmin mkresc demoResc load_balanced', 'STDOUT', 'load_balanced')
+            admin_session.assert_icommand('iadmin mkresc rescA "unixfilesystem" ' + context_prefix + '/rescAVault', 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand('iadmin mkresc rescB "unixfilesystem" ' + context_prefix + '/rescBVault', 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand('iadmin mkresc rescC "unixfilesystem" ' + context_prefix + '/rescCVault', 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc rescA')
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc rescB')
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc rescC')
+        super(Test_LoadBalanced_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_LoadBalanced_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescA")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescB")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescC")
+            admin_session.assert_icommand("iadmin rmresc rescA")
+            admin_session.assert_icommand("iadmin rmresc rescB")
+            admin_session.assert_icommand("iadmin rmresc rescC")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/rescAVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/rescBVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/rescCVault", ignore_errors=True)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_load_balanced(self):
         # =-=-=-=-=-=-=-
         # read server_config.json and .odbc.ini
@@ -76,15 +70,13 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
 
             # =-=-=-=-=-=-=-
             # build a logical path for putting a file
-            test_file_path = "/" + s.adminsession.zone_name + "/home/" + s.adminsession.username + \
-                "/" + s.adminsession._session_id
-            test_file = test_file_path + "/test_file.txt"
+            test_file = self.admin.session_collection + "/test_file.txt"
 
             # =-=-=-=-=-=-=-
             # put a test_file.txt - should be on rescA given load table values
-            assertiCmd(s.adminsession, "iput -f ./test_load_balanced_suite.py " + test_file)
-            assertiCmd(s.adminsession, "ils -L " + test_file, "LIST", "rescA")
-            assertiCmd(s.adminsession, "irm -f " + test_file)
+            self.admin.assert_icommand("iput -f ./test_load_balanced_suite.py " + test_file)
+            self.admin.assert_icommand("ils -L " + test_file, 'STDOUT', "rescA")
+            self.admin.assert_icommand("irm -f " + test_file)
 
             # =-=-=-=-=-=-=-
             # drop rescC to a load of 15 - this should now win
@@ -92,9 +84,9 @@ class Test_LoadBalanced_Resource(unittest.TestCase, ResourceBase):
 
             # =-=-=-=-=-=-=-
             # put a test_file.txt - should be on rescC given load table values
-            assertiCmd(s.adminsession, "iput -f ./test_load_balanced_suite.py " + test_file)
-            assertiCmd(s.adminsession, "ils -L " + test_file, "LIST", "rescC")
-            assertiCmd(s.adminsession, "irm -f " + test_file)
+            self.admin.assert_icommand("iput -f ./test_load_balanced_suite.py " + test_file)
+            self.admin.assert_icommand("ils -L " + test_file, 'STDOUT', "rescC")
+            self.admin.assert_icommand("irm -f " + test_file)
 
             # =-=-=-=-=-=-=-
             # clean up our alterations to the load table

@@ -13,12 +13,6 @@ import tempfile
 import time
 
 
-class irods_test_constants(object):
-    RUN_IN_TOPOLOGY = False
-    TOPOLOGY_FROM_RESOURCE_SERVER = False
-    HOSTNAME_1 = HOSTNAME_2 = HOSTNAME_3 = socket.gethostname()
-    USE_SSL = False
-
 def update_json_file_from_dict(filename, update_dict):
     with open(filename) as f:
         env = json.load(f)
@@ -57,196 +51,6 @@ def create_local_largefile(filename):
     os.system('dd if=/dev/zero of=' + filepath + ' bs=1M count=64')
     return filepath
 
-def check_icmd_outputtype(fullcmd, outputtype):
-    allowed_outputtypes = ["LIST", "EMPTY", "ERROR", "", 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']
-    if outputtype not in allowed_outputtypes:
-        print "  full command: [" + fullcmd + "]"
-        print "  allowed outputtypes: " + str(allowed_outputtypes)
-        print "  unknown outputtype requested: [" + outputtype + "]"
-        assert False, "hard fail, bad icommand output format requested"
-
-def getiCmdOutput(mysession, fullcmd):
-    parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
-    if parameters[0] == "iadmin":
-        output = mysession.runAdminCmd(parameters[0], parameters[1:])
-    else:
-        output = mysession.runCmd(parameters[0], parameters[1:])
-    # return output array
-    #   [0] is stdout
-    #   [1] is stderr
-    return output
-
-def getiCmdBoolean(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
-    result = False  # should start as failing, then get set to pass
-    parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    # expectedresults needs to be a list
-    if isinstance(expectedresults, str):  # converts a string to a list
-        expectedresults = [expectedresults]
-    # get output from icommand
-    output = getiCmdOutput(mysession, fullcmd)
-    # allow old outputtype identifiers
-    if outputtype == "LIST":
-        outputtype = "STDOUT"
-    elif outputtype == "ERROR":
-        outputtype = "STDERR"
-
-    if use_regex:
-        regex_msg = 'regex '
-    else:
-        regex_msg = ''
-
-    # check result listing for expected results
-    if outputtype in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
-        print "  Expecting " + outputtype + ": " + regex_msg + str(expectedresults)
-        print "  stdout:"
-        print "    | " + "\n    | ".join(output[0].splitlines())
-        print "  stderr: [" + output[1].rstrip('\n') + "]"
-        # generate lines based on outputtype
-        if outputtype in ['STDOUT', 'STDOUT_MULTILINE']:
-            lines = output[0].splitlines()
-        else:
-            lines = output[1].splitlines()
-        # look for expected results in the output lines
-        if outputtype in ['STDOUT_MULTILINE', 'STDERR_MULTILINE']:
-            for er in expectedresults:
-                if use_regex:
-                    regex_pattern = er
-                else:
-                    regex_pattern = re.escape(er)
-                for line in lines:
-                    print '  searching for ' + regex_msg + '[' + er + '] in [' + line.rstrip('\n') + '] ...',
-                    if re.search(regex_pattern, line.rstrip('\n')):
-                        print "FOUND"
-                        break
-                    else:
-                        print "NOTFOUND"
-                else:
-                    print "    --> stopping search - expected result not found"
-                    break
-            else:
-                print "    --> stopping search - expected result(s) found"
-                result = True
-        else:
-            for line in lines:
-                foundcount = 0
-                for er in expectedresults:
-                    if use_regex:
-                        regex_pattern = er
-                    else:
-                        regex_pattern = re.escape(er)
-                    print '  searching for ' + regex_msg + '[' + er + '] in [' + line.rstrip('\n') + ']...',
-                    if re.search(regex_pattern, line.rstrip('\n')):
-                        foundcount += 1
-                        print "found (" + str(foundcount) + " of " + str(len(expectedresults)) + ")"
-                    else:
-                        print "NOTFOUND"
-                if foundcount == len(expectedresults):
-                    print "    --> stopping search - expected result(s) found"
-                    result = True
-                    break
-                else:
-                    print "    --> did not find expected result(s)"
-    # check that icommand returned no result
-    elif (outputtype == "EMPTY" or outputtype == ""):
-        print "  Expecting EMPTY output"
-        print "  stdout: [" + ",".join(output[0].splitlines()) + "]"
-        print "  stderr: [" + output[1].strip() + "]"
-        if output[0] == "":
-            result = True
-    # bad test formatting
-    else:
-        print "  WEIRD - SHOULD ALREADY HAVE BEEN CAUGHT ABOVE"
-        print "  unknown outputtype requested: [" + outputtype + "]"
-        assert False, "WEIRD - DUPLICATE BRANCH - hard fail, bad icommand format"
-    # return error if stderr is populated unexpectedly
-    if outputtype not in ['STDERR', 'STDERR_MULTILINE'] and output[1] != "":
-        return False
-    # return value
-    return result
-
-
-def assertiCmd(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
-    ''' Runs an icommand, detects output type, and searches for
-    values in expected results list.
-
-    Asserts that this result is correct.
-
-    Returns elapsed runtime.
-    '''
-    begin = time.time()
-    print "\n"
-    print "ASSERTING PASS"
-    check_icmd_outputtype(fullcmd, outputtype)
-    assert getiCmdBoolean(mysession, fullcmd, outputtype, expectedresults, use_regex)
-    elapsed = time.time() - begin
-    return elapsed
-
-
-def assertiCmdFail(mysession, fullcmd, outputtype="", expectedresults="", use_regex=False):
-    ''' Runs an icommand, detects output type, and searches for
-    values in expected results list.
-
-    Asserts that this result is NOT correct.
-
-    Returns elapsed runtime.
-    '''
-    begin = time.time()
-    print "\n"
-    print "ASSERTING FAIL"
-    check_icmd_outputtype(fullcmd, outputtype)
-    assert not getiCmdBoolean(mysession, fullcmd, outputtype, expectedresults, use_regex)
-    elapsed = time.time() - begin
-    return elapsed
-
-def interruptiCmd(mysession, fullcmd, filename, filesize):
-    ''' Runs an icommand, but does not let it complete.
-
-    This function terminates the icommand once filename reaches (>=)
-    filesize in bytes.
-
-    Asserts that the icommand was successfully terminated early.
-
-    Returns 0 or -1 or -2.
-    '''
-    parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    print "\n"
-    print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
-    print "  filename set to: [" + filename + "]"
-    print "  filesize set to: [" + str(filesize) + "] bytes"
-    resultcode = mysession.interruptCmd(parameters[0], parameters[1:], filename, filesize)
-    if resultcode == 0:
-        print "  resultcode: [0], interrupted successfully"
-    elif resultcode == -1:
-        print "  resultcode: [-1], icommand completed"
-    else:
-        print "  resultcode: [-2], icommand timeout"
-    assert 0 == resultcode
-    return resultcode
-
-def interruptiCmdDelay(mysession, fullcmd, delay):
-    ''' Runs an icommand, but does not let it complete.
-
-    This function terminates the icommand after delay seconds.
-
-    Asserts that the icommand was successfully terminated early.
-
-    Returns 0 or -1.
-    '''
-    parameters = shlex.split(fullcmd)  # preserves quoted substrings
-    print "\n"
-    print "INTERRUPTING iCMD"
-    print "running icommand: " + mysession.username + "[" + fullcmd + "]"
-    print "  timeout set to: [" + str(delay) + " seconds]"
-    resultcode = mysession.interruptCmdDelay(parameters[0], parameters[1:], delay)
-    if resultcode == 0:
-        print "  resultcode: [0], interrupted successfully"
-    else:
-        print "  resultcode: [-1], icommand completed"
-    assert 0 == resultcode
-    return resultcode
-
 def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
@@ -261,17 +65,17 @@ def make_file(f_name, f_size, source='/dev/zero'):
         sys.stderr.write(output[1] + '\n')
         raise OSError(output[0], "call to dd returned non-zero")
 
-def runCmd_ils_to_entries(runCmd_output):
-    raw = runCmd_output[0].strip().split('\n')
+def ils_output_to_entries(stdout):
+    raw = stdout.strip().split('\n')
     collection = raw[0]
     entries = [entry.strip() for entry in raw[1:]]
     return entries
 
 def get_vault_path(session):
-    cmdout = session.runCmd("iquest", ["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
-    if cmdout[1] != "":
-        raise OSError(cmdout[1], "iquest wrote to stderr when called from get_vault_path()")
-    return cmdout[0].rstrip('\n')
+    cmdout = session.run_icommand(['iquest', '%s', "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+    if cmdout[2] != '':
+        raise OSError(cmdout[2], 'iquest wrote to stderr when called from get_vault_path()')
+    return cmdout[1].rstrip('\n')
 
 def get_vault_session_path(session):
     return os.path.join(get_vault_path(session),
@@ -322,8 +126,12 @@ def get_log_path(log_source):
 def get_log_size(log_source):
     return os.stat(get_log_path(log_source)).st_size
 
+def write_to_log(log_source, message):
+    with open(get_log_path(log_source), 'a') as f:
+        f.write(message)
+
 def count_occurrences_of_string_in_log(log_source, string, start_index=0):
-    with open(get_log_path('re')) as f:
+    with open(get_log_path(log_source)) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         n = 0
         i = m.find(string, start_index)
@@ -332,18 +140,18 @@ def count_occurrences_of_string_in_log(log_source, string, start_index=0):
             i = m.find(string, i+1)
         return n
 
-def run_command(args, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
-    if not use_unsafe_shell and isinstance(args, str):
-        args = shlex.split(args)
-    p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=use_unsafe_shell, cwd=cwd)
+def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
+    if not use_unsafe_shell and isinstance(command_arg, str):
+        command_arg = shlex.split(command_arg)
+    p = subprocess.Popen(command_arg, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=use_unsafe_shell, cwd=cwd)
     stdout, stderr = p.communicate(input=stdin_string)
     rc = p.returncode
     if check_rc:
         if rc != 0:
-            raise subprocess.CalledProcessError(rc, args, stdout + '\n\n' + stderr)
+            raise subprocess.CalledProcessError(rc, command_arg, stdout + '\n\n' + stderr)
     return rc, stdout, stderr
 
-def check_run_command_output(stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
+def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
 
     if isinstance(expected_results, str):
@@ -351,15 +159,15 @@ def check_run_command_output(stdout, stderr, check_type='EMPTY', expected_result
 
     regex_msg = 'regex ' if use_regex else ''
 
+
     print 'Expecting {0}: {1}{2}'.format(check_type, regex_msg, expected_results)
     print '  stdout:'
     print '    | ' + '\n    | '.join(stdout.splitlines())
     print '  stderr:'
     print '    | ' + '\n    | '.join(stderr.splitlines())
-    print ''
 
     if check_type not in ['STDERR', 'STDERR_MULTILINE'] and stderr != '':
-        print 'Unexpected output on stderr'
+        print 'FAILURE: Unexpected output on stderr\n'
         return False
 
     if check_type in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
@@ -375,7 +183,9 @@ def check_run_command_output(stdout, stderr, check_type='EMPTY', expected_result
                     print '    --> stopping search - expected result not found'
                     break
             else:
+                print 'SUCCESS\n'
                 return True
+            print 'FAILURE: Not found\n'
             return False
         else:
             for line in lines:
@@ -385,12 +195,15 @@ def check_run_command_output(stdout, stderr, check_type='EMPTY', expected_result
                     if re.search(regex_pattern, line.rstrip('\n')):
                         found_count += 1
                 if found_count == len(expected_results):
+                    print 'SUCCESS\n'
                     return True
+            print 'FAILURE: Not found\n'
             return False
     elif check_type == 'EMPTY':
         if stdout == '':
+            print 'SUCCESS\n'
             return True
-        print 'Unexpected output on stdout'
+        print 'FAILURE: Unexpected output on stdout\n'
         return False
     assert False
 
@@ -402,15 +215,27 @@ def extract_function_kwargs(func, kwargs):
             args_dict[k] = v
     return args_dict
 
-def assert_command(args, check_type='EMPTY', expected_results='', **kwargs):
+def assert_command(*args, **kwargs):
+    _assert_helper(*args, should_fail=False, **kwargs)
+
+def assert_command_fail(*args, **kwargs):
+    _assert_helper(*args, should_fail=True, **kwargs)
+
+def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_fail=False, **kwargs):
     run_command_arg_dict = extract_function_kwargs(run_command, kwargs)
-    _, stdout, stderr = run_command(args, **run_command_arg_dict)
+    _, stdout, stderr = run_command(command_arg, **run_command_arg_dict)
+
+    fail_string = ' FAIL' if should_fail else ''
+    if isinstance(command_arg, list):
+        print 'Assert{0}Command: {1}'.format(fail_string, ' '.join(command_arg))
+    else:
+        print 'Assert{0} Command: {1}'.format(fail_string, command_arg)
+
     check_run_command_output_arg_dict = extract_function_kwargs(check_run_command_output, kwargs)
-    assert check_run_command_output(stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
+    result = should_fail != check_run_command_output(command_arg, stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
+    if not result:
+        print 'ASSERT COMMAND FAILED'
+    assert result
 
-def restart_irods_server():
-    assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'])
-
-def write_to_log(log_source, message):
-    with open(get_log_path(log_source), 'a') as f:
-        f.write(message)
+def restart_irods_server(env=None):
+    assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'], env=env)

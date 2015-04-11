@@ -1,95 +1,69 @@
+import copy
 import sys
-if (sys.version_info >= (2, 7)):
+if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
-from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
-import pydevtest_common
-import pydevtest_sessions as s
-import commands
 import os
 import time
 import json
 
+import configuration
+from resource_suite import ResourceBase
+from pydevtest_common import get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
+import pydevtest_common
+import pydevtest_sessions
 
-class Test_OSAuth_Only(unittest.TestCase, ResourceBase):
 
-    my_test_resource = {"setup": [], "teardown": []}
-
+# Requires OS account 'irods' to have password 'temporarypasswordforci'
+class Test_OSAuth_Only(ResourceBase, unittest.TestCase):
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        super(Test_OSAuth_Only, self).setUp()
+        self.auth_session = pydevtest_sessions.mkuser_and_return_session('rodsuser', 'irods', 'temporarypasswordforci',
+                                                                         pydevtest_common.get_hostname())
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_OSAuth_Only, self).tearDown()
+        self.auth_session.__exit__()
+        pydevtest_sessions.rmuser(self.auth_session.username)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_OSAuth(self):
-        # add auth test user
-        authTestUser = "irods"
-        authTestPass = "temporarypasswordforci"
-        assertiCmd(s.adminsession, "iadmin mkuser %s rodsuser" % authTestUser)
-
-        # add client irodsEnv settings
-        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
-        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-
-        env = {}
-        env['irods_authentication_scheme'] = "OSAuth"
-        env['irods_user_name'] = authTestUser
-        env['irods_home'] = '/tempZone/home/' + authTestUser
-        env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        update_json_file_from_dict(clientEnvFile, env)
+        self.auth_session.environment_file_contents['irods_authentication_scheme'] = 'OSAuth'
 
         # setup the irods.key file necessary for OSAuth
-        keyfile = get_irods_config_dir() + "/irods.key"
-        os.system("echo \"gibberish\" > %s" % keyfile)
+        keyfile_path = os.path.join(get_irods_config_dir(), 'irods.key')
+        with open(keyfile_path, 'w') as f:
+            f.write('gibberish\n')
 
         # do the reauth
-        assertiCmd(s.adminsession, "iexit full")             # exit out entirely
-        assertiCmd(s.adminsession, "iinit %s" % authTestPass)  # reinitialize
+        self.auth_session.assert_icommand('iexit full')
+        self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
-        assertiCmd(s.adminsession, "icd")  # home directory
-        assertiCmd(s.adminsession, "ils -L", "LIST", "home")  # should be listed
+        self.auth_session.assert_icommand('icd')
+        self.auth_session.assert_icommand('ils -L', 'STDOUT', 'home')
 
         # reset client environment to original
-        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
-        # reconnect as admin
-        assertiCmd(s.adminsession, "iexit full")                     # exit out entirely
-        assertiCmd(s.adminsession, 'iinit %s' % s.adminsession._password)  # reinitialize
-
-        # remove auth test user
-        assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)
+        del self.auth_session.environment_file_contents['irods_authentication_scheme']
 
         # clean up keyfile
-        os.system("rm %s" % keyfile)
+        os.unlink(keyfile_path)
 
-
-class Test_Auth_Suite(unittest.TestCase, ResourceBase):
-
-    my_test_resource = {"setup": [], "teardown": []}
-
+# Requires existence of OS account 'irodsauthuser' with password 'iamnotasecret'
+class Test_Auth_Suite(ResourceBase, unittest.TestCase):
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        super(Test_Auth_Suite, self).setUp()
+        self.auth_session = pydevtest_sessions.mkuser_and_return_session('rodsuser', 'irodsauthuser', 'iamnotasecret',
+                                                                         pydevtest_common.get_hostname())
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Auth_Suite, self).tearDown()
+        self.auth_session.__exit__()
+        pydevtest_sessions.rmuser(self.auth_session.username)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(True, '''Renable after #2614 fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server"''')
     def test_authentication_PAM_without_negotiation(self):
-        # add auth test user
-        authTestUser = "irodsauthuser"
-        authTestPass = "iamnotasecret"
-        assertiCmd(s.adminsession, "iadmin mkuser %s rodsuser" % authTestUser)
-
-        # set up client and server side for ssl handshake
-
+        ## set up client and server side for ssl handshake
         # server side certificate setup
         os.system("openssl genrsa -out server.key")
         # os.system("openssl req -batch -new -key server.key -out server.csr")    # if use external CA
@@ -99,81 +73,49 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 100")  # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = get_irods_top_level_dir() + "/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = get_irods_top_level_dir() + '/tests/pydevtest/chain.pem'
+        os.environ['irodsSSLCertificateKeyFile'] = get_irods_top_level_dir() + '/tests/pydevtest/server.key'
+        os.environ['irodsSSLDHParamsFile'] = get_irods_top_level_dir() + '/tests/pydevtest/dhparams.pem'
 
         # client side environment variables
-        os.environ['irodsSSLVerifyServer'] = "none"
-
-        # add client irodsEnv settings
-        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
-        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-
-        # does not use our SSL to test legacy SSL code path
-        env = {}
-        env['irods_authentication_scheme'] = "PaM"
-        env['irods_user_name'] = authTestUser
-        env['irods_home'] = '/tempZone/home/' + authTestUser
-        env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        update_json_file_from_dict(clientEnvFile, env)
+        self.auth_session.environment_file_contents['irods_ssl_verify_server'] = 'none'
+        self.auth_session.environment_file_contents['irods_authentication_scheme'] = 'PaM'
 
         # server reboot to pick up new irodsEnv settings
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
+        pydevtest_common.restart_irods_server()
 
         # do the reauth
-        assertiCmd(s.adminsession, "iinit %s" % authTestPass)  # reinitialize
+        self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
-        assertiCmd(s.adminsession, "icd")  # home directory
-        assertiCmd(s.adminsession, "ils -L", "LIST", "home")  # should be listed
+        self.auth_session.assert_icommand('icd')
+        self.auth_session.assert_icommand('ils -L', 'STDOUT', 'home')
 
         # reset client environment to original
-        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
-        # reconnect as admin
-        assertiCmd(s.adminsession, "iinit %s" % s.adminsession._password)  # reinitialize
-
-        # remove auth test user
-        assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)
+        del self.auth_session.environment_file_contents['irods_authentication_scheme']
 
         # clean up
-        os.system("rm server.key chain.pem dhparams.pem")
+        for file in ['server.key', 'chain.pem', 'dhparams.pem']:
+            os.unlink(file)
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(True, '''Renable after #2614 fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server"''')
     def test_authentication_PAM_with_server_params(self):
-        # add auth test user
-        authTestUser = "irodsauthuser"
-        authTestPass = "iamnotasecret"
-        assertiCmd(s.adminsession, "iadmin mkuser %s rodsuser" % authTestUser)
-
-        # set up client and server side for ssl handshake
-
+        ## set up client and server side for ssl handshake
         # server side certificate setup
-        os.system("openssl genrsa -out server.key")
-        # os.system("openssl req -batch -new -key server.key -out server.csr")    # if use external CA
-        # self-signed certificate
-        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
-        os.system("mv server.crt chain.pem")
-        os.system("openssl dhparam -2 -out dhparams.pem 100")  # normally 2048, but smaller size here for speed
+        os.system('openssl genrsa -out server.key')
+        os.system('openssl req -batch -new -x509 -key server.key -out server.crt -days 365')
+        os.system('mv server.crt chain.pem')
+        os.system('openssl dhparam -2 -out dhparams.pem 100')  # normally 2048, but smaller size here for speed
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = get_irods_top_level_dir() + "/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = get_irods_top_level_dir() + '/tests/pydevtest/chain.pem'
+        os.environ['irodsSSLCertificateKeyFile'] = get_irods_top_level_dir() + '/tests/pydevtest/server.key'
+        os.environ['irodsSSLDHParamsFile'] = get_irods_top_level_dir() + '/tests/pydevtest/dhparams.pem'
 
         # client side environment variables
-        os.environ['irodsSSLVerifyServer'] = "none"
-
-        # add client irodsEnv settings
-        clientEnvFile = s.adminsession.local_session_dir + "/irods_environment.json"
-        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
-
-        env = {}
-        env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
-        env['irods_authentication_scheme'] = "PaM"
-        env['irods_user_name'] = authTestUser
-        env['irods_home'] = '/tempZone/home/' + authTestUser
-        env['irods_cwd'] = '/tempZone/home/' + authTestUser
-        update_json_file_from_dict(clientEnvFile, env)
+        backup_env_contents = copy.deepcopy(self.auth_session.environment_file_contents)
+        self.auth_session.environment_file_contents['irods_ssl_verify_server'] = 'none'
+        self.auth_session.environment_file_contents['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
+        self.auth_session.environment_file_contents['irods_authentication_scheme'] = 'PaM'
 
         # add server_config.json settings
         serverConfigFile = get_irods_config_dir() + "/server_config.json"
@@ -188,29 +130,26 @@ class Test_Auth_Suite(unittest.TestCase, ResourceBase):
             json.dump(contents, f)
 
         # server reboot to pick up new irodsEnv and server settings
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
+        pydevtest_common.restart_irods_server()
 
         # do the reauth
-        assertiCmd(s.adminsession, "iinit %s" % authTestPass)  # reinitialize
+        self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
-        assertiCmd(s.adminsession, "icd")  # home directory
-        assertiCmd(s.adminsession, "ils -L", "LIST", "home")  # should be listed
+        self.auth_session.assert_icommand("icd")
+        self.auth_session.assert_icommand("ils -L", 'STDOUT', "home")
 
         # reset client environment to original
-        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
-        # reconnect as admin
-        assertiCmd(s.adminsession, "iinit %s" % s.adminsession._password)  # reinitialize
+        self.auth_session.environment_file_contents = backup_env_contents
 
-        # remove auth test user
-        assertiCmd(s.adminsession, "iadmin rmuser %s" % authTestUser)
 
         # clean up
-        os.system("rm server.key chain.pem dhparams.pem")
+        for file in ['server.key', 'chain.pem', 'dhparams.pem']:
+            os.unlink(file)
 
         # reset server_config.json to original
-        os.system("mv %sOrig %s" % (serverConfigFile, serverConfigFile))
+        os.system('mv %sOrig %s' % (serverConfigFile, serverConfigFile))
 
         # server reboot to revert to previous server configuration
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
-        os.system(get_irods_top_level_dir() + "/tests/zombiereaper.sh")
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        os.system(get_irods_top_level_dir() + '/iRODS/irodsctl stop')
+        os.system(get_irods_top_level_dir() + '/tests/zombiereaper.sh')
+        os.system(get_irods_top_level_dir() + '/iRODS/irodsctl start')

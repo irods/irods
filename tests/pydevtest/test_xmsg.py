@@ -2,11 +2,12 @@ import sys
 import os
 import subprocess
 import json
-if (sys.version_info >= (2, 7)):
+if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
-import pydevtest_sessions as s
+
+import configuration
 from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
 import pydevtest_common
 
@@ -17,13 +18,10 @@ class Test_ixmsg(unittest.TestCase):
     xmsgPort = 1279
 
     def setUp(self):
-        # Set up admin session
-        s.admin_up()
-
         # add Xmsg settings to server_config.json
         with open(self.serverConfigFile) as f:
             contents = json.load(f)
-        os.system("cp %s %s_orig" % (self.serverConfigFile, self.serverConfigFile))
+        os.system('cp {0} {0}_orig'.format(self.serverConfigFile))
         contents["xmsg_host"] = self.xmsgHost
         contents["xmsg_port"] = self.xmsgPort
         with open(self.serverConfigFile, 'w') as f:
@@ -35,8 +33,7 @@ class Test_ixmsg(unittest.TestCase):
         my_env['XMSG_PORT'] = str(self.xmsgPort)
 
         # restart server with Xmsg
-        args = [get_irods_top_level_dir() + '/iRODS/irodsctl', 'restart']
-        subprocess.Popen(args, env=my_env).communicate()
+        pydevtest_common.restart_irods_server(env=my_env)
 
     def tearDown(self):
         # revert to original server_config.json
@@ -44,13 +41,9 @@ class Test_ixmsg(unittest.TestCase):
 
         # restart server
         my_env = os.environ.copy()
-        args = [get_irods_top_level_dir() + '/iRODS/irodsctl', 'restart']
-        subprocess.Popen(args, env=my_env).communicate()
+        pydevtest_common.restart_irods_server(env=my_env)
 
-        # Close admin session
-        s.admin_down()
-
-    @unittest.skipIf(pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_send_and_receive_one_xmsg(self):
         message = 'Hello World!'
 
@@ -61,7 +54,6 @@ class Test_ixmsg(unittest.TestCase):
 
         # send msg
         args = ['/usr/bin/ixmsg', 's', '-M "{0}"'.format(message)]
-        # couldn't get ixmsg to work non-interactively in assertiCmd()...
         subprocess.Popen(args, env=my_env).communicate()
 
         # receive msg
@@ -70,4 +62,4 @@ class Test_ixmsg(unittest.TestCase):
 
         # assertion
         print 'looking for "{0}" in "{1}"'.format(message, res[0].rstrip())
-        assert (res[0].find(message) >= 0)
+        assert res[0].find(message) >= 0

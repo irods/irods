@@ -3,6 +3,7 @@ import getpass
 import os
 import re
 import shutil
+import subprocess
 import sys
 
 if sys.version_info < (2, 7):
@@ -10,59 +11,46 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+import configuration
 import pydevtest_common as pdc
 import pydevtest_common
-from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_irods_config_dir, get_irods_top_level_dir
-import pydevtest_sessions as s
-from resource_suite import ResourceSuite, ShortAndSuite, ResourceBase
+from pydevtest_common import create_local_testfile, get_irods_config_dir, get_irods_top_level_dir
+import pydevtest_sessions
+from resource_suite import ResourceSuite, ResourceBase
 from test_chunkydevtest import ChunkyDevTest
-import subprocess
 
 
-class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc rrResc random",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unixB2Vault",
-            "iadmin addchildtoresc demoResc rrResc",
-            "iadmin addchildtoresc demoResc unixA",
-            "iadmin addchildtoresc rrResc unixB1",
-            "iadmin addchildtoresc rrResc unixB2",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc rrResc unixB2",
-            "iadmin rmchildfromresc rrResc unixB1",
-            "iadmin rmchildfromresc demoResc unixA",
-            "iadmin rmchildfromresc demoResc rrResc",
-            "iadmin rmresc unixB1",
-            "iadmin rmresc unixB2",
-            "iadmin rmresc unixA",
-            "iadmin rmresc rrResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB2Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixAVault",
-        ],
-    }
-
+class Test_Random_within_Replication_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc rrResc random", 'STDOUT', 'random')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc rrResc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB2")
+        super(Test_Random_within_Replication_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Random_within_Replication_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB2")
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unixA")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc rrResc")
+            admin_session.assert_icommand("iadmin rmresc unixB1")
+            admin_session.assert_icommand("iadmin rmresc unixB2")
+            admin_session.assert_icommand("iadmin rmresc unixA")
+            admin_session.assert_icommand("iadmin rmresc rrResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB2Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB1Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -72,17 +60,16 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed once - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -91,17 +78,16 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed once
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed once
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -110,17 +96,16 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -133,32 +118,32 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource repl 0 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource repl 0 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource repl 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource 1 should have double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
 
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -170,24 +155,24 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -196,20 +181,20 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -224,80 +209,80 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -308,72 +293,59 @@ class Test_Random_within_Replication_Resource(unittest.TestCase, ResourceSuite, 
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                                    #
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                                    #
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
 
-class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unixB2Vault",
-            "iadmin addchildtoresc demoResc rrResc",
-            "iadmin addchildtoresc demoResc unixA",
-            "iadmin addchildtoresc rrResc unixB1",
-            "iadmin addchildtoresc rrResc unixB2",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc rrResc unixB2",
-            "iadmin rmchildfromresc rrResc unixB1",
-            "iadmin rmchildfromresc demoResc unixA",
-            "iadmin rmchildfromresc demoResc rrResc",
-            "iadmin rmresc unixB1",
-            "iadmin rmresc unixB2",
-            "iadmin rmresc unixA",
-            "iadmin rmresc rrResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB2Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixAVault",
-        ],
-    }
-
+class Test_RoundRobin_within_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT', 'roundrobin')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc rrResc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB2")
+        super(Test_RoundRobin_within_Replication_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_RoundRobin_within_Replication_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB2")
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unixA")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc rrResc")
+            admin_session.assert_icommand("iadmin rmresc unixB1")
+            admin_session.assert_icommand("iadmin rmresc unixB2")
+            admin_session.assert_icommand("iadmin rmresc unixA")
+            admin_session.assert_icommand("iadmin rmresc rrResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB2Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB1Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -383,17 +355,16 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed once - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -402,17 +373,16 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed once
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed once
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -421,17 +391,16 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -444,32 +413,32 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource repl 0 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource repl 0 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource repl 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource 1 should have double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
 
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -481,24 +450,24 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -507,20 +476,20 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -535,80 +504,80 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -619,296 +588,215 @@ class Test_RoundRobin_within_Replication_Resource(unittest.TestCase, ResourceSui
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                                    #
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                                    #
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
 
-class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc 'unix file system' " + hostname +
-            ":" + get_irods_top_level_dir() + "/demoRescVault",
-        ],
-        "teardown": [
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/demoRescVault",
-        ],
-    }
-
+class Test_UnixFileSystem_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        hostname = pydevtest_common.get_hostname()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":" + get_irods_top_level_dir() + "/demoRescVault", 'STDOUT', 'unixfilesystem')
+        super(Test_UnixFileSystem_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_UnixFileSystem_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/demoRescVault", ignore_errors=True)
 
-
-class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc passthru",
-            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin addchildtoresc demoResc unix1Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc unix1Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-        ],
-    }
-
+class Test_Passthru_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT', 'passthru')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
+        super(Test_Passthru_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Passthru_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_WeightedPassthru_Resource(unittest.TestCase, ResourceBase):
-    hostname = pdc.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc unixA 'unix file system' " + hostname +
-                ":" + pdc.get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB 'unix file system' " + hostname +
-                ":" + pdc.get_irods_top_level_dir() + "/unixBVault",
-            "iadmin mkresc w_pt passthru 'write=1.0;read=1.0'",
-            "iadmin addchildtoresc demoResc unixA",
-            "iadmin addchildtoresc demoResc w_pt",
-            "iadmin addchildtoresc w_pt unixB",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc w_pt unixB",
-            "iadmin rmchildfromresc demoResc w_pt",
-            "iadmin rmchildfromresc demoResc unixA",
-            "iadmin rmresc unixB",
-            "iadmin rmresc unixA",
-            "iadmin rmresc demoResc",
-            "iadmin rmresc w_pt",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + pdc.get_irods_top_level_dir() + "/unixBVault",
-            "rm -rf " + pdc.get_irods_top_level_dir() + "/unixAVault",
-        ],
-    }
-
+class Test_WeightedPassthru_Resource(ResourceBase, unittest.TestCase):
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        hostname = pdc.get_hostname()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + hostname + ":" + pdc.get_irods_top_level_dir() + "/unixAVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":" + pdc.get_irods_top_level_dir() + "/unixBVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc w_pt passthru 'write=1.0;read=1.0'", 'STDOUT', 'passthru')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc w_pt")
+            admin_session.assert_icommand("iadmin addchildtoresc w_pt unixB")
+        super(Test_WeightedPassthru_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_WeightedPassthru_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc w_pt unixB")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc w_pt")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unixA")
+            admin_session.assert_icommand("iadmin rmresc unixB")
+            admin_session.assert_icommand("iadmin rmresc unixA")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin rmresc w_pt")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(pdc.get_irods_top_level_dir() + "/unixBVault", ignore_errors=True)
+        shutil.rmtree(pdc.get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
     def test_weighted_passthrough(self):
         filename = "some_local_file.txt"
         filepath = pdc.create_local_testfile(filename)
 
-        # assertions
-        pdc.assertiCmd(s.adminsession, "iput " + filepath)
-        pdc.assertiCmd(s.adminsession, "ils -L", "LIST", "local")
+        self.admin.assert_icommand("iput " + filepath)
+        self.admin.assert_icommand("ils -L", 'STDOUT', "local")
 
         # repave a copy in the vault to differentiate
-        vaultpath = os.path.join( pdc.get_irods_top_level_dir(), "unixBVault/home/rods", os.path.basename( s.adminsession._session_id ), filename )
+        vaultpath = os.path.join( pdc.get_irods_top_level_dir(), "unixBVault/home/" + self.admin.username, os.path.basename( self.admin._session_id ), filename )
         subprocess.check_call( "echo 'THISISBROEKN' | cat > %s" % (vaultpath),shell=True)
 
-        pdc.assertiCmd(s.adminsession, "iadmin modresc w_pt context 'write=1.0;read=2.0'")
-        pdc.assertiCmd(s.adminsession, "iget " + filename + " - ", "LIST", "THISISBROEKN" )
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT', "THISISBROEKN" )
 
-        pdc.assertiCmd(s.adminsession, "iadmin modresc w_pt context 'write=1.0;read=0.01'")
-        pdc.assertiCmd(s.adminsession, "iget " + filename + " - ", "LIST", "TESTFILE" )
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT', "TESTFILE" )
 
-class Test_Deferred_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc deferred",
-            "iadmin mkresc unix1Resc 'unixfilesystem' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin addchildtoresc demoResc unix1Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc unix1Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-        ],
-    }
-
+class Test_Deferred_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc deferred", 'STDOUT', 'deferred')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
+        super(Test_Deferred_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Deferred_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
+class Test_Random_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+    def setUp(self):
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc random", 'STDOUT', 'random')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
+        super(Test_Random_Resource, self).setUp()
+
+    def tearDown(self):
+        super(Test_Random_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix3Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc unix3Resc")
+            admin_session.assert_icommand("iadmin rmresc unix2Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix3RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
 
-class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc random",
-            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unix3RescVault",
-            "iadmin addchildtoresc demoResc unix1Resc",
-            "iadmin addchildtoresc demoResc unix2Resc",
-            "iadmin addchildtoresc demoResc unix3Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc unix3Resc",
-            "iadmin rmchildfromresc demoResc unix2Resc",
-            "iadmin rmchildfromresc demoResc unix1Resc",
-            "iadmin rmresc unix3Resc",
-            "iadmin rmresc unix2Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
-        ],
-    }
-
+class Test_NonBlocking_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/nbVault", 'STDOUT', 'nonblocking')
+        super(Test_NonBlocking_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
-
-    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
-    def test_ireg_as_rodsuser_in_vault(self):
-        pass
+        super(Test_NonBlocking_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
 
 
-class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc nonblocking " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/nbVault",
-        ],
-        "teardown": [
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-        ],
-    }
-
+class Test_Compound_with_MockArchive_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT', 'mockarchive')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
+        super(Test_Compound_with_MockArchive_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
-
-
-class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc mockarchive " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" +
-            get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
-            "iadmin addchildtoresc demoResc cacheResc cache",
-            "iadmin addchildtoresc demoResc archiveResc archive",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc archiveResc",
-            "iadmin rmchildfromresc demoResc cacheResc",
-            "iadmin rmresc archiveResc",
-            "iadmin rmresc cacheResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
-        ],
-    }
-
-    def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
-
-    def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Compound_with_MockArchive_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc archiveResc")
+            admin_session.assert_icommand("iadmin rmresc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -931,23 +819,23 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                                    #
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                                    #
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -967,62 +855,62 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -1033,20 +921,20 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -1057,24 +945,24 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -1086,31 +974,31 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource cache should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource cache should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource archive should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource archive should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1119,18 +1007,17 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed once - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed only once
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed only once
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1139,18 +1026,17 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed once
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should not be listed
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed once
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should not be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1159,71 +1045,58 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed twice - 1 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed twice - 1 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc univmss " + pydevtest_common.irods_test_constants.HOSTNAME_1 + ":" +
-            get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh",
-            "iadmin addchildtoresc demoResc cacheResc cache",
-            "iadmin addchildtoresc demoResc archiveResc archive",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc archiveResc",
-            "iadmin rmchildfromresc demoResc cacheResc",
-            "iadmin rmresc archiveResc",
-            "iadmin rmresc cacheResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
-        ],
-    }
-
+class Test_Compound_with_UniversalMSS_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT', 'univmss')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
+        super(Test_Compound_with_UniversalMSS_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Compound_with_UniversalMSS_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc archiveResc")
+            admin_session.assert_icommand("iadmin rmresc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1242,23 +1115,23 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                                    #
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                                    #
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1278,62 +1151,62 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -1344,20 +1217,20 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -1368,24 +1241,24 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -1397,31 +1270,31 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource cache should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource cache should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource archive should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource archive should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1430,18 +1303,17 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed once - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed only once
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed only once
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1450,18 +1322,17 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed once
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should not be listed
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed once
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should not be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1470,71 +1341,57 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed twice - 1 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed twice - 1 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc compound",
-            "iadmin mkresc cacheResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/cacheRescVault",
-            "iadmin mkresc archiveResc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/archiveRescVault",
-            "iadmin addchildtoresc demoResc cacheResc cache",
-            "iadmin addchildtoresc demoResc archiveResc archive",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc archiveResc",
-            "iadmin rmchildfromresc demoResc cacheResc",
-            "iadmin rmresc archiveResc",
-            "iadmin rmresc cacheResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveRescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheRescVault",
-        ],
-    }
-
+class Test_Compound_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/archiveRescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
+        super(Test_Compound_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Compound_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc archiveResc")
+            admin_session.assert_icommand("iadmin rmresc cacheResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
+        shutil.rmtree("rm -rf " + get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
-        # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1557,29 +1414,25 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # manipulate core.re (leave as 'when_necessary' - default)
 
         # put the file
-        assertiCmd(s.adminsession, "iput " + filename)        # put file
+        self.admin.assert_icommand("iput " + filename)        # put file
 
         # manually update the replica in archive vault
-        output = getiCmdOutput(s.adminsession, "ils -L " + filename)
-        archivereplicaphypath = output[0].split()[-1]  # split into tokens, get the last one
-        myfile = open(archivereplicaphypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE\n')
-        myfile.close()
-
+        output = self.admin.run_icommand('ils -L ' + filename)
+        archivereplicaphypath = output[1].split()[-1]  # split into tokens, get the last one
+        with open(archivereplicaphypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE\n')
         # get file
         retrievedfile = "retrieved.txt"
         os.system("rm -f %s" % retrievedfile)
-        assertiCmd(s.adminsession, "iget -f %s %s" % (filename, retrievedfile))  # get file from cache
+        self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from cache
 
         # confirm retrieved file is same as original
         assert 0 == os.system("diff %s %s" % (filepath, retrievedfile))
 
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
-        myfile = open(corefile, "a")
-        myfile.write(
-            'pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
-        myfile.close()
+        with open(corefile, 'a') as f:
+            f.write('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
 
         # restart the server to reread the new core.re
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
@@ -1587,20 +1440,20 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
 
         # manually update the replica in archive vault
-        output = getiCmdOutput(s.adminsession, "ils -L " + filename)
-        archivereplicaphypath = output[0].split()[-1]  # split into tokens, get the last one
-        myfile = open(archivereplicaphypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE **AGAIN**\n')
-        myfile.close()
+        output = self.admin.run_icommand('ils -L ' + filename)
+        archivereplicaphypath = output[1].split()[-1]  # split into tokens, get the last one
+        with open(archivereplicaphypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE **AGAIN**\n')
 
         # get the file
-        assertiCmd(s.adminsession, "iget -f %s %s" % (filename, retrievedfile))  # get file from archive
+        self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from archive
 
         # confirm this is the new archive file
         matchfound = False
-        for line in open(retrievedfile):
-            if "**AGAIN**" in line:
-                matchfound = True
+        with open(retrievedfile) as f:
+            for line in f:
+                if "**AGAIN**" in line:
+                    matchfound = True
         assert matchfound
 
         # restore the original core.re
@@ -1620,24 +1473,24 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # debugging
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1657,62 +1510,62 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -1723,20 +1576,20 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -1747,24 +1600,24 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -1776,31 +1629,31 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource cache should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource cache should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource archive should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource archive should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1809,18 +1662,17 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed once - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed only once
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed only once
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1829,19 +1681,18 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)  # should be listed
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)  # should be listed
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed once
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should not be listed
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed once
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should not be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1850,83 +1701,68 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed twice - 1 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed twice - 1 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc replResc replication",
-            "iadmin mkresc unixA 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unixAVault",
-            "iadmin mkresc unixB1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unixB1Vault",
-            "iadmin mkresc unixB2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unixB2Vault",
-            "iadmin addchildtoresc demoResc replResc",
-            "iadmin addchildtoresc demoResc unixA",
-            "iadmin addchildtoresc replResc unixB1",
-            "iadmin addchildtoresc replResc unixB2",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc replResc unixB2",
-            "iadmin rmchildfromresc replResc unixB1",
-            "iadmin rmchildfromresc demoResc unixA",
-            "iadmin rmchildfromresc demoResc replResc",
-            "iadmin rmresc unixB1",
-            "iadmin rmresc unixB2",
-            "iadmin rmresc unixA",
-            "iadmin rmresc replResc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB2Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixB1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/unixAVault",
-        ],
-    }
-
+class Test_Replication_within_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc replResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unixAVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc replResc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
+            admin_session.assert_icommand("iadmin addchildtoresc replResc unixB1")
+            admin_session.assert_icommand("iadmin addchildtoresc replResc unixB2")
+        super(Test_Replication_within_Replication_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Replication_within_Replication_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc replResc unixB2")
+            admin_session.assert_icommand("iadmin rmchildfromresc replResc unixB1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unixA")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc replResc")
+            admin_session.assert_icommand("iadmin rmresc unixB1")
+            admin_session.assert_icommand("iadmin rmresc unixB2")
+            admin_session.assert_icommand("iadmin rmresc unixA")
+            admin_session.assert_icommand("iadmin rmresc replResc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB2Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixB1Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])  # replica 0 should be trimmed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # replica 1 should be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # replica 2 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])  # replica 0 should be trimmed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # replica 1 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # replica 2 should be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1935,16 +1771,15 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])  # replica 0 should be trimmed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # replica 1 should be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # replica 2 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])  # replica 0 should be trimmed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # replica 1 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # replica 2 should be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1953,18 +1788,17 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])  # replica 0 should be trimmed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # replica 1 should be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # replica 2 should be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # replica 2 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])  # replica 0 should be trimmed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # replica 1 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # replica 2 should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # replica 2 should be listed
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -1985,34 +1819,34 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # default resource should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # default resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])  # should not have a replica 4
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", filename])  # should not have a replica 4
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -2022,17 +1856,17 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)       # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl " + filename)               # replicate to default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl " + filename)               # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)       # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl " + filename)               # replicate to default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl " + filename)               # replicate overtop default resource
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -2043,22 +1877,22 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -2073,90 +1907,90 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from grid
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from grid
         # replica 1 should be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["1 ", self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["1 ", self.testfile])
         # replica 2 should be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["2 ", self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["2 ", self.testfile])
         # replica 3 should be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["3 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["3 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -2166,99 +2000,85 @@ class Test_Replication_within_Replication_Resource(unittest.TestCase, ResourceSu
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)  # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)  # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
 
 
-class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc compResc1 compound",
-            "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/archiveResc2Vault",
-            "iadmin addchildtoresc demoResc compResc1",
-            "iadmin addchildtoresc demoResc compResc2",
-            "iadmin addchildtoresc compResc1 cacheResc1 cache",
-            "iadmin addchildtoresc compResc1 archiveResc1 archive",
-            "iadmin addchildtoresc compResc2 cacheResc2 cache",
-            "iadmin addchildtoresc compResc2 archiveResc2 archive",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc compResc2 archiveResc2",
-            "iadmin rmchildfromresc compResc2 cacheResc2",
-            "iadmin rmchildfromresc compResc1 archiveResc1",
-            "iadmin rmchildfromresc compResc1 cacheResc1",
-            "iadmin rmchildfromresc demoResc compResc2",
-            "iadmin rmchildfromresc demoResc compResc1",
-            "iadmin rmresc archiveResc2",
-            "iadmin rmresc cacheResc2",
-            "iadmin rmresc archiveResc1",
-            "iadmin rmresc cacheResc1",
-            "iadmin rmresc compResc2",
-            "iadmin rmresc compResc1",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveResc2Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheResc2Vault",
-        ],
-    }
-
+class Test_Replication_to_two_Compound_Resources(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc1 archiveResc1 archive")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc2 cacheResc2 cache")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc2 archiveResc2 archive")
+        super(Test_Replication_to_two_Compound_Resources, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Replication_to_two_Compound_Resources, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc2 archiveResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc2 cacheResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc1 archiveResc1")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc1 cacheResc1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc compResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc compResc1")
+            admin_session.assert_icommand("iadmin rmresc archiveResc2")
+            admin_session.assert_icommand("iadmin rmresc cacheResc2")
+            admin_session.assert_icommand("iadmin rmresc archiveResc1")
+            admin_session.assert_icommand("iadmin rmresc cacheResc1")
+            admin_session.assert_icommand("iadmin rmresc compResc2")
+            admin_session.assert_icommand("iadmin rmresc compResc1")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            shutil.rmtree(get_irods_top_level_dir() + "/archiveResc1Vault", ignore_errors=True)
+            shutil.rmtree(get_irods_top_level_dir() + "/cacheResc1Vault", ignore_errors=True)
+            shutil.rmtree(get_irods_top_level_dir() + "/archiveResc2Vault", ignore_errors=True)
+            shutil.rmtree(get_irods_top_level_dir() + "/cacheResc2Vault", ignore_errors=True)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["4 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["4 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2268,7 +2088,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = get_irods_config_dir() + "/core.re"
@@ -2280,79 +2100,77 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # manipulate core.re (leave as 'when_necessary' - default)
 
         # put the file
-        assertiCmd(s.adminsession, "iput " + filename)     # put file
+        self.admin.assert_icommand("iput " + filename)     # put file
 
         # manually update the replicas in archive vaults
-        output = getiCmdOutput(s.adminsession, "ils -L " + filename)
-        print output[0]
-        archive1replicaphypath = output[0].split()[-19]  # split into tokens, get the 19th from the end
-        archive2replicaphypath = output[0].split()[-1]  # split into tokens, get the last one
+        stdout = self.admin.run_icommand('ils -L ' + filename)[1]
+        print stdout
+        archive1replicaphypath = stdout.split()[-19]  # split into tokens, get the 19th from the end
+        archive2replicaphypath = stdout.split()[-1]  # split into tokens, get the last one
         print archive1replicaphypath
         print archive2replicaphypath
-        myfile = open(archive1replicaphypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE 1\n')
-        myfile.close()
-        myfile = open(archive2replicaphypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE 2\n')
-        myfile.close()
+        with open(archive1replicaphypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE 1\n')
+        with open(archive2replicaphypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE 2\n')
 
         # get file
         retrievedfile = "retrieved.txt"
         os.system("rm -f %s" % retrievedfile)
-        assertiCmd(s.adminsession, "iget -f %s %s" % (filename, retrievedfile))  # get file from cache
+        self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from cache
         # confirm retrieved file is same as original
         assert 0 == os.system("diff %s %s" % (filepath, retrievedfile))
         print "original file diff confirmed"
 
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
-        myfile = open(corefile, "a")
-        myfile.write(
-            'pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
-        myfile.close()
+        with open(corefile, 'a') as f:
+            f.write('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
 
         # restart the server to reread the new core.re
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl restart")
+        pydevtest_common.restart_irods_server()
 
         # manually update the replicas in archive vaults
-        output = getiCmdOutput(s.adminsession, "ils -L " + filename)
-        archivereplica1phypath = output[0].split()[-19]  # split into tokens, get the 19th from the end
-        archivereplica2phypath = output[0].split()[-1]  # split into tokens, get the last one
+        stdout = self.admin.run_icommand('ils -L ' + filename)[1]
+        archivereplica1phypath = stdout.split()[-19]  # split into tokens, get the 19th from the end
+        archivereplica2phypath = stdout.split()[-1]  # split into tokens, get the last one
         print archive1replicaphypath
         print archive2replicaphypath
-        myfile = open(archivereplica1phypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE 1 **AGAIN**\n')
-        myfile.close()
-        myfile = open(archivereplica2phypath, "w")
-        myfile.write('MANUALLY UPDATED ON ARCHIVE 2 **AGAIN**\n')
-        myfile.close()
+        with open(archivereplica1phypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE 1 **AGAIN**\n')
+        with open(archivereplica2phypath, 'w') as f:
+            f.write('MANUALLY UPDATED ON ARCHIVE 2 **AGAIN**\n')
 
         # confirm the new content is on disk
-        for line in open(archivereplica1phypath):
-            print line
-        for line in open(archivereplica2phypath):
-            print line
+        with open(archivereplica1phypath) as f:
+            for line in f:
+                print line
+        with open(archivereplica2phypath) as f:
+            for line in f:
+                print line
 
         # confirm the core file has new policy
         print "----- confirm core has new policy ----"
-        for line in open(corefile):
-            if "pep_" in line:
-                print line
-            else:
-                print ".",
+        with open(corefile) as f:
+            for line in f:
+                if 'pep_' in line:
+                    print line
+                else:
+                    print '.',
         print "----- confirmation done ----"
 
         # get the file
-        assertiCmd(s.adminsession, "iget -V -f %s %s" %
-                   (filename, retrievedfile), "LIST", "NOTICE")  # get file from archive
+        self.admin.assert_icommand("iget -V -f %s %s" %
+                   (filename, retrievedfile), 'STDOUT', "NOTICE")  # get file from archive
 
         # confirm this is the new archive file
-        matchfound = False
-        for line in open(retrievedfile):
-            print line
-            if "AGAIN" in line:
-                matchfound = True
-        assert matchfound
+        with open(retrievedfile) as f:
+            for line in f:
+                print line
+                if 'AGAIN' in line:
+                    break
+            else:
+                assert False
 
         # restore the original core.re
         shutil.copy(backupcorefile, corefile)
@@ -2360,7 +2178,6 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
 
         # local cleanup
         os.remove(filepath)
-#        os.remove(retrievedfile)
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -2371,32 +2188,32 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # debugging
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache   1 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive 1 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache   2 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + filename])
         # default resource archive 2 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + filename])
         # default resource cache   1 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive 1 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # default resource cache   2 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " " + filename])
         # default resource archive 2 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -2416,74 +2233,74 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")   # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")   # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -2494,20 +2311,20 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -2518,24 +2335,24 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 6
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
         # should not have a replica 7
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 7 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 7 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -2547,39 +2364,39 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource cache 1 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource cache 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource archive 1 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource archive 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # default resource cache 2 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # default resource cache 2 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " & " + filename])
         # default resource archive 2 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # default resource archive 2 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -2588,20 +2405,19 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - replica 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 3x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 3x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 3x - replica 3
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -2610,21 +2426,20 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - replica 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 3x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 3x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 3x - replica 3
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -2633,92 +2448,74 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 4x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 4x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 4x - replica 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])  # should be listed 4x - replica 4
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 4x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 4x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 4x - replica 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", filename])  # should be listed 4x - replica 4
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-
-class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc compResc1 compound",
-            "iadmin mkresc compResc2 compound",
-            "iadmin mkresc cacheResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "iadmin mkresc archiveResc1 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "iadmin mkresc cacheResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/cacheResc2Vault",
-            "iadmin mkresc archiveResc2 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/archiveResc2Vault",
-            "iadmin addchildtoresc demoResc compResc1",
-            "iadmin addchildtoresc demoResc compResc2",
-            "iadmin addchildtoresc compResc1 cacheResc1 cache",
-            "iadmin addchildtoresc compResc1 archiveResc1 archive",
-            "iadmin addchildtoresc compResc2 cacheResc2 cache",
-            "iadmin addchildtoresc compResc2 archiveResc2 archive",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc compResc2 archiveResc2",
-            "iadmin rmchildfromresc compResc2 cacheResc2",
-            "iadmin rmchildfromresc compResc1 archiveResc1",
-            "iadmin rmchildfromresc compResc1 cacheResc1",
-            "iadmin rmchildfromresc demoResc compResc2",
-            "iadmin rmchildfromresc demoResc compResc1",
-            "iadmin rmresc archiveResc2",
-            "iadmin rmresc cacheResc2",
-            "iadmin rmresc archiveResc1",
-            "iadmin rmresc cacheResc1",
-            "iadmin rmresc compResc2",
-            "iadmin rmresc compResc1",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveResc1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheResc1Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/archiveResc2Vault",
-            "rm -rf " + get_irods_top_level_dir() + "/cacheResc2Vault",
-        ],
-    }
-
+class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
         # back up core file
         corefile = get_irods_config_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
         # manipulate the core.re to add the new policy
-        myfile = open(corefile, "a")
-        myfile.write(
-            'pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
-        myfile.close()
+        with open(corefile, 'a') as f:
+            f.write('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
 
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc1 archiveResc1 archive")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc2 cacheResc2 cache")
+            admin_session.assert_icommand("iadmin addchildtoresc compResc2 archiveResc2 archive")
+        super(Test_Replication_to_two_Compound_Resources_with_Prefer_Archive, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Replication_to_two_Compound_Resources_with_Prefer_Archive, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc2 archiveResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc2 cacheResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc1 archiveResc1")
+            admin_session.assert_icommand("iadmin rmchildfromresc compResc1 cacheResc1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc compResc2")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc compResc1")
+            admin_session.assert_icommand("iadmin rmresc archiveResc2")
+            admin_session.assert_icommand("iadmin rmresc cacheResc2")
+            admin_session.assert_icommand("iadmin rmresc archiveResc1")
+            admin_session.assert_icommand("iadmin rmresc cacheResc1")
+            admin_session.assert_icommand("iadmin rmresc compResc2")
+            admin_session.assert_icommand("iadmin rmresc compResc1")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/archiveResc1Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/cacheResc1Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/archiveResc2Vault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/cacheResc2Vault", ignore_errors=True)
 
         # restore the original core.re
         corefile = get_irods_config_dir() + "/core.re"
@@ -2727,18 +2524,18 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         os.remove(backupcorefile)
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + self.testfile)  # creates replica
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", self.testfile)  # should be listed twice
-        assertiCmd(s.adminsession, "irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', self.testfile)  # should be listed twice
+        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         # replica 2 should still be there
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", ["4 " + self.testresc, self.testfile])
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica 0 should be gone
-        trashpath = "/" + s.adminsession.zone_name + "/trash/home/" + s.adminsession.username + \
-            "/" + s.adminsession._session_id
-        assertiCmdFail(s.adminsession, "ils -L " + trashpath + "/" + self.testfile, "LIST",
-                       ["0 " + s.adminsession.default_resource, self.testfile])  # replica should not be in trash
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', ["4 " + self.testresc, self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+        trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
+            "/" + self.admin._session_id
+        self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT',
+                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2761,32 +2558,32 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
-        assertiCmd(s.adminsession, "iput " + filename)                                                      # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
+        self.admin.assert_icommand("iput " + filename)                                                      # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # debugging
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource cache   1 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource archive 1 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource cache   2 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + filename])
         # default resource archive 2 should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + filename])
         # default resource cache   1 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource archive 1 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # default resource cache   2 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " " + filename])
         # default resource archive 2 should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -2806,74 +2603,74 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -2884,20 +2681,20 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -2908,24 +2705,24 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 6
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
         # should not have a replica 7
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 7 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 7 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -2937,39 +2734,39 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource cache 1 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource cache 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource archive 1 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource archive 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # default resource cache 2 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # default resource cache 2 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " & " + filename])
         # default resource archive 2 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # default resource archive 2 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -2978,20 +2775,19 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput --purgec " + filename)  # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput --purgec " + filename)  # put file
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - replica 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 3x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 3x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 3x - replica 3
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -3000,21 +2796,20 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # local setup
         filename = "purgecgetfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - replica 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 3x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 3x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 3x - replica 3
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -3023,61 +2818,48 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(unittest.Te
         # local setup
         filename = "purgecreplfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 4x - replica 1
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 4x - replica 2
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 4x - replica 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", filename])  # should be listed 4x - replica 4
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 4x - replica 1
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 4x - replica 2
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 4x - replica 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", filename])  # should be listed 4x - replica 4
         # should not have any extra replicas
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin addchildtoresc demoResc unix1Resc",
-            "iadmin addchildtoresc demoResc unix2Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc unix2Resc",
-            "iadmin rmchildfromresc demoResc unix1Resc",
-            "iadmin rmresc unix2Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
-        ],
-    }
-
+class Test_RoundRobin_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc roundrobin", 'STDOUT', 'roundrobin')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
+        super(Test_RoundRobin_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_RoundRobin_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc unix2Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
@@ -3087,76 +2869,62 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # local setup
         filename = "rrfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
-        assertiCmd(s.sessions[1], "iput " + filename + " file0.txt")
-        assertiCmd(s.sessions[1], "iput " + filename + " file1.txt")
+        self.user1.assert_icommand("iput " + filename + " file0.txt")
+        self.user1.assert_icommand("iput " + filename + " file1.txt")
 
-        assertiCmd(s.sessions[1], "ils -l", "LIST", "unix1Resc")
-        assertiCmd(s.sessions[1], "ils -l", "LIST", "unix2Resc")
+        self.user1.assert_icommand("ils -l", 'STDOUT', "unix1Resc")
+        self.user1.assert_icommand("ils -l", 'STDOUT', "unix2Resc")
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc replication",
-            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unix3RescVault",
-            "iadmin addchildtoresc demoResc unix1Resc",
-            "iadmin addchildtoresc demoResc unix2Resc",
-            "iadmin addchildtoresc demoResc unix3Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc demoResc unix3Resc",
-            "iadmin rmchildfromresc demoResc unix2Resc",
-            "iadmin rmchildfromresc demoResc unix1Resc",
-            "iadmin rmresc unix3Resc",
-            "iadmin rmresc unix2Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
-        ],
-    }
-
+class Test_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT', 'replication')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
+        super(Test_Replication_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_Replication_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix3Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc unix3Resc")
+            admin_session.assert_icommand("iadmin rmresc unix2Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix3RescVault", ignore_errors=True)
 
     def test_irm_specific_replica(self):
         # not allowed here - this is a managed replication resource
         # should be listed 3x
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", [" 0 ", " & " + self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', [" 0 ", " & " + self.testfile])
         # should be listed 3x
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", [" 1 ", " & " + self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', [" 1 ", " & " + self.testfile])
         # should be listed 3x
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", [" 2 ", " & " + self.testfile])
-        assertiCmd(s.adminsession, "irm -n 1 " + self.testfile)  # try to remove one of the managed replicas
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', [" 2 ", " & " + self.testfile])
+        self.admin.assert_icommand("irm -n 1 " + self.testfile)  # try to remove one of the managed replicas
         # should be listed 2x
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", [" 0 ", " & " + self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', [" 0 ", " & " + self.testfile])
         # should not be listed
-        assertiCmdFail(s.adminsession, "ils -L " + self.testfile, "LIST", [" 1 ", " & " + self.testfile])
+        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT', [" 1 ", " & " + self.testfile])
         # should be listed 2x
-        assertiCmd(s.adminsession, "ils -L " + self.testfile, "LIST", [" 2 ", " & " + self.testfile])
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT', [" 2 ", " & " + self.testfile])
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -3169,17 +2937,17 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     def test_reliable_iput__ticket_2557(self):
         # local setup
         # break the second child resource
-        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path /nopes", "LIST", "unix2RescVault")
+        self.admin.assert_icommand("iadmin modresc unix2Resc path /nopes", 'STDOUT', "unix2RescVault")
         filename = "reliableputfile.txt"
         filepath = create_local_testfile(filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmdFail(s.adminsession, "iput " + filename, "LIST", "put error")  # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", "unix1Resc")  # should be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", "unix3Resc")  # should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand_fail("iput " + filename, 'STDOUT', "put error")  # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', "unix1Resc")  # should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', "unix3Resc")  # should be listed
 
         # cleanup
         oldvault = get_irods_top_level_dir() + "/unix2RescVault"
-        assertiCmd(s.adminsession, "iadmin modresc unix2Resc path " + oldvault, "LIST", "/nopes")
+        self.admin.assert_icommand("iadmin modresc unix2Resc path " + oldvault, 'STDOUT', "/nopes")
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -3189,26 +2957,26 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)  # replicate to test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)  # replicate to test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite test repl with different data
-        assertiCmd(s.adminsession, "iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
+        self.admin.assert_icommand("iput -f -R %s %s %s" % (self.testresc, doublefile, filename))
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + filename])
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + filename])
         # default resource should have dirty copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " " + filename])
         # default resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " " + filename])
         # targeted resource should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " " + doublesize + " ", "& " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " " + doublesize + " ", "& " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -3224,68 +2992,68 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         doublesize = str(os.stat(doublefile).st_size)
 
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create fourth resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")              # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                                         # put file
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create fourth resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")              # should not be listed
+        self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # replicate to third resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)
         # replicate to fourth resource
-        assertiCmd(s.adminsession, "irepl -R fourthresc " + filename)
+        self.admin.assert_icommand("irepl -R fourthresc " + filename)
         # repave overtop test resource
-        assertiCmd(s.adminsession, "iput -f -R " + self.testresc + " " + doublefile + " " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                       # for debugging
+        self.admin.assert_icommand("iput -f -R " + self.testresc + " " + doublefile + " " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                       # for debugging
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession,    "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
 
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession,    "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a dirty copy
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession,    "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # should have a clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
 
-        assertiCmd(s.adminsession, "irm -f " + filename)                                   # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                            # remove third resource
-        assertiCmd(s.adminsession, "iadmin rmresc fourthresc")                           # remove third resource
+        self.admin.assert_icommand("irm -f " + filename)                                   # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                            # remove third resource
+        self.admin.assert_icommand("iadmin rmresc fourthresc")                           # remove third resource
 
         # local cleanup
         os.remove(filepath)
@@ -3296,20 +3064,20 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         filename = "secondreplicatest.txt"
         filepath = create_local_testfile(filename)
         # assertions
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")          # should not be listed
-        assertiCmd(s.adminsession, "iput -R " + self.testresc + " " + filename)                # put file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")          # should not be listed
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)                # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate to default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)                   # for debugging
+        self.admin.assert_icommand("irepl " + filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)                   # for debugging
         # replicate overtop default resource
-        assertiCmd(s.adminsession, "irepl " + filename)
+        self.admin.assert_icommand("irepl " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # replicate overtop test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
 
@@ -3320,24 +3088,24 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         hostname = pydevtest_common.get_hostname()
         hostuser = getpass.getuser()
         # assertions
-        assertiCmd(s.adminsession, "iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), "LIST", "Creating")  # create third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)                            # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate to third resource
-        assertiCmd(s.adminsession, "irepl " + filename)                           # replicate overtop default resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
-        assertiCmd(s.adminsession, "irepl -R thirdresc " + filename)              # replicate overtop third resource
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)          # for debugging
+        self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
+                   (hostname, hostuser), 'STDOUT', "Creating")  # create third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)                            # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate to third resource
+        self.admin.assert_icommand("irepl " + filename)                           # replicate overtop default resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate overtop test resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
+        self.admin.assert_icommand("irepl -R thirdresc " + filename)              # replicate overtop third resource
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)          # for debugging
         # should not have a replica 4
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 5 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 5 ", " & " + filename])
         # should not have a replica 5
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 6 ", " & " + filename])
-        assertiCmd(s.adminsession, "irm -f " + filename)                          # cleanup file
-        assertiCmd(s.adminsession, "iadmin rmresc thirdresc")                   # remove third resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 6 ", " & " + filename])
+        self.admin.assert_icommand("irm -f " + filename)                          # cleanup file
+        self.admin.assert_icommand("iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
         os.remove(filepath)
 
@@ -3350,39 +3118,39 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         doublesize = str(os.stat(doublefile).st_size)
         # assertions
         # should not be listed
-        assertiCmd(s.adminsession, "ils -L " + filename, "ERROR", "does not exist")
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR', "does not exist")
         # put file
-        assertiCmd(s.adminsession, "iput " + filename)
+        self.admin.assert_icommand("iput " + filename)
         # for debugging
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # replicate to test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # for debugging
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)
         # overwrite default repl with different data
-        assertiCmd(s.adminsession, "iput -f %s %s" % (doublefile, filename))
+        self.admin.assert_icommand("iput -f %s %s" % (doublefile, filename))
         # default resource 1 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " & " + filename])
         # default resource 1 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 0 ", " " + doublesize + " ", " & " + filename])
         # default resource 2 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " & " + filename])
         # default resource 2 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", " " + doublesize + " ", " & " + filename])
         # default resource 3 should have clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " & " + filename])
         # default resource 3 should have new double clean copy
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", " " + doublesize + " ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT',
                        [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST",
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT',
                    [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 4 ", " & " + filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 4 ", " & " + filename])
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -3391,20 +3159,19 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local setup
         filename = "purgecfile.txt"
         filepath = os.path.abspath(filename)
-        f = open(filepath, 'wb')
-        f.write("TESTFILE -- [" + filepath + "]")
-        f.close()
+        with open(filepath, 'w') as f:
+            f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
         # put file, but trim 'cache' copy (purgec) (backwards compatibility)
-        assertiCmd(s.adminsession, "iput --purgec " + filename)
+        self.admin.assert_icommand("iput --purgec " + filename)
         # should not be listed (trimmed first replica)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
         # should be listed twice - replica 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])
         # should be listed twice - replica 3 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -3417,13 +3184,13 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
             f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "iget -f --purgec " + filename)  # get file and purge 'cached' replica
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f --purgec " + filename)  # get file and purge 'cached' replica
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed twice - 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed twice - 2 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed twice - 2 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
@@ -3436,67 +3203,54 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
             f.write("TESTFILE -- [" + filepath + "]")
 
         # assertions
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", filename)  # should not be listed
-        assertiCmd(s.adminsession, "iput " + filename)  # put file
-        assertiCmd(s.adminsession, "irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', filename)  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("irepl -R " + self.testresc + " --purgec " + filename)  # replicate to test resource
         # should not be listed (trimmed)
-        assertiCmdFail(s.adminsession, "ils -L " + filename, "LIST", [" 0 ", filename])
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 1 ", filename])  # should be listed 3x - 1 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 2 ", filename])  # should be listed 3x - 2 of 3
-        assertiCmd(s.adminsession, "ils -L " + filename, "LIST", [" 3 ", filename])  # should be listed 3x - 3 of 3
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT', [" 0 ", filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 1 ", filename])  # should be listed 3x - 1 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 2 ", filename])  # should be listed 3x - 2 of 3
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', [" 3 ", filename])  # should be listed 3x - 3 of 3
 
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
-
-    hostname = pydevtest_common.get_hostname()
-    my_test_resource = {
-        "setup": [
-            "iadmin modresc demoResc name origResc",
-            "iadmin mkresc demoResc passthru",
-            "iadmin mkresc pass2Resc passthru",
-            "iadmin mkresc rrResc roundrobin",
-            "iadmin mkresc unix1Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_1 +
-            ":" + get_irods_top_level_dir() + "/unix1RescVault",
-            "iadmin mkresc unix2Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_2 +
-            ":" + get_irods_top_level_dir() + "/unix2RescVault",
-            "iadmin mkresc unix3Resc 'unix file system' " + pydevtest_common.irods_test_constants.HOSTNAME_3 +
-            ":" + get_irods_top_level_dir() + "/unix3RescVault",
-            "iadmin addchildtoresc demoResc pass2Resc",
-            "iadmin addchildtoresc pass2Resc rrResc",
-            "iadmin addchildtoresc rrResc unix1Resc",
-            "iadmin addchildtoresc rrResc unix2Resc",
-            "iadmin addchildtoresc rrResc unix3Resc",
-        ],
-        "teardown": [
-            "iadmin rmchildfromresc rrResc unix3Resc",
-            "iadmin rmchildfromresc rrResc unix2Resc",
-            "iadmin rmchildfromresc rrResc unix1Resc",
-            "iadmin rmchildfromresc pass2Resc rrResc",
-            "iadmin rmchildfromresc demoResc pass2Resc",
-            "iadmin rmresc unix3Resc",
-            "iadmin rmresc unix2Resc",
-            "iadmin rmresc unix1Resc",
-            "iadmin rmresc rrResc",
-            "iadmin rmresc pass2Resc",
-            "iadmin rmresc demoResc",
-            "iadmin modresc origResc name demoResc",
-            "rm -rf " + get_irods_top_level_dir() + "/unix1RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix2RescVault",
-            "rm -rf " + get_irods_top_level_dir() + "/unix3RescVault",
-        ],
-    }
-
+class Test_MultiLayered_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
-        ResourceSuite.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT', 'passthru')
+            admin_session.assert_icommand("iadmin mkresc pass2Resc passthru", 'STDOUT', 'passthru')
+            admin_session.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT', 'roundrobin')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc pass2Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc pass2Resc rrResc")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
+            admin_session.assert_icommand("iadmin addchildtoresc rrResc unix3Resc")
+        super(Test_MultiLayered_Resource, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_MultiLayered_Resource, self).tearDown()
+        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unix3Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unix2Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc rrResc unix1Resc")
+            admin_session.assert_icommand("iadmin rmchildfromresc pass2Resc rrResc")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc pass2Resc")
+            admin_session.assert_icommand("iadmin rmresc unix3Resc")
+            admin_session.assert_icommand("iadmin rmresc unix2Resc")
+            admin_session.assert_icommand("iadmin rmresc unix1Resc")
+            admin_session.assert_icommand("iadmin rmresc rrResc")
+            admin_session.assert_icommand("iadmin rmresc pass2Resc")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+        shutil.rmtree(get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
+        shutil.rmtree(get_irods_top_level_dir() + "/unix3RescVault", ignore_errors=True)
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):

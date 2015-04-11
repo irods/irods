@@ -7,15 +7,11 @@ else:
 
 import os
 import time
+
+import configuration
 import pydevtest_common
 
 class TestControlPlane(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_pause_and_resume(self):
         # test pause
         pydevtest_common.assert_command('irods-grid pause --all', 'STDOUT', 'pausing')
@@ -33,7 +29,7 @@ class TestControlPlane(unittest.TestCase):
         # test grid status
         pydevtest_common.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
 
-    @unittest.skipIf(pydevtest_common.irods_test_constants.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown(self):
         # test shutdown
         pydevtest_common.assert_command('irods-grid shutdown --all', 'STDOUT', 'shutting down')

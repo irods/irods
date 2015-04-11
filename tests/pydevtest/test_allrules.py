@@ -10,13 +10,12 @@ else:
     import unittest2 as unittest
 
 import metaclass_unittest_test_case_generator
-import pydevtest_sessions as s
-from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, get_irods_config_dir
+from pydevtest_common import get_irods_config_dir
+import pydevtest_common
 from resource_suite import ResourceBase
+import pydevtest_sessions
 
-
-class Test_AllRules(unittest.TestCase, ResourceBase):
-
+class Test_AllRules(ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
     global rules30dir
@@ -24,91 +23,79 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
     rules30dir = currentdir + "/../../iRODS/clients/icommands/test/rules3.0/"
     conf_dir = get_irods_config_dir()
 
-    my_test_resource = {
-        "setup": [
-        ],
-        "teardown": [
-        ],
-    }
-
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        super(Test_AllRules, self).setUp()
 
-        # testallrules setup
-        global rules30dir
+        self.rods_session = pydevtest_sessions.make_session_for_existing_admin() # some rules hardcode 'rods' and 'tempZone'
+
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
         progname = __file__
         dir_w = rules30dir + ".."
-        s.adminsession.runCmd('icd')  # to get into the home directory (for testallrules assumption)
-        s.adminsession.runAdminCmd('iadmin', ["mkuser", "devtestuser", "rodsuser"])
-        s.adminsession.runAdminCmd(
-            'iadmin', ["mkresc", "testallrulesResc", "unix file system", hostname + ":/tmp/" + hostuser + "/pydevtest_testallrulesResc"])
-        s.adminsession.runCmd('imkdir', ["sub1"])
-        s.adminsession.runCmd('imkdir', ["sub3"])
-        s.adminsession.runCmd('imkdir', ["forphymv"])
-        s.adminsession.runCmd('imkdir', ["ruletest"])
-        s.adminsession.runCmd('imkdir', ["test"])
-        s.adminsession.runCmd('imkdir', ["test/phypathreg"])
-        s.adminsession.runCmd('imkdir', ["ruletest/subforrmcoll"])
-        s.adminsession.runCmd('iput', [progname, "test/foo1"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/dcmetadatatarget"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/mdcopysource"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/mdcopydest"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/foo1"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/foo2"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/foo3"])
-        s.adminsession.runCmd('icp', ["test/foo1", "forphymv/phymvfile"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/objunlink1"])
-        s.adminsession.runCmd('irm', ["sub1/objunlink1"])  # put it in the trash
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/objunlink2"])
-        s.adminsession.runCmd('irepl', ["-R", "testallrulesResc", "sub1/objunlink2"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/freebuffer"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/automove"])
-        s.adminsession.runCmd('icp', ["test/foo1", "test/versiontest.txt"])
-        s.adminsession.runCmd('icp', ["test/foo1", "test/metadata-target.txt"])
-        s.adminsession.runCmd('icp', ["test/foo1", "test/ERAtestfile.txt"])
-        s.adminsession.runCmd('ichmod', ["read devtestuser", "test/ERAtestfile.txt"])
-        s.adminsession.runCmd('imeta', ["add", "-d", "test/ERAtestfile.txt", "Fun", "99", "Balloons"])
-        s.adminsession.runCmd('icp', ["test/foo1", "sub1/for_versioning.txt"])
-        s.adminsession.runCmd('imkdir', ["sub1/SaveVersions"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/devtestuser-account-ACL.txt", "test"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/load-metadata.txt", "test"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/load-usermods.txt", "test"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/sample.email", "test"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/email.tag", "test"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/sample.email", "test/sample2.email"])
-        s.adminsession.runCmd('iput', [dir_w + "/misc/email.tag", "test/email2.tag"])
+        self.rods_session.assert_icommand('icd')  # to get into the home directory (for testallrules assumption)
+        self.rods_session.assert_icommand('iadmin mkuser devtestuser rodsuser')
+        self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' + hostuser + '/pydevtest_testallrulesResc', 'STDOUT', 'unixfilesystem')
+        self.rods_session.assert_icommand('imkdir sub1')
+        self.rods_session.assert_icommand('imkdir sub3')
+        self.rods_session.assert_icommand('imkdir forphymv')
+        self.rods_session.assert_icommand('imkdir ruletest')
+        self.rods_session.assert_icommand('imkdir test')
+        self.rods_session.assert_icommand('imkdir test/phypathreg')
+        self.rods_session.assert_icommand('imkdir ruletest/subforrmcoll')
+        self.rods_session.assert_icommand('iput ' + progname + ' test/foo1')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/dcmetadatatarget')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/mdcopysource')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/mdcopydest')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/foo1')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/foo2')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/foo3')
+        self.rods_session.assert_icommand('icp test/foo1 forphymv/phymvfile')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/objunlink1')
+        self.rods_session.assert_icommand('irm sub1/objunlink1')  # put it in the trash
+        self.rods_session.assert_icommand('icp test/foo1 sub1/objunlink2')
+        self.rods_session.assert_icommand('irepl -R testallrulesResc sub1/objunlink2')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/freebuffer')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/automove')
+        self.rods_session.assert_icommand('icp test/foo1 test/versiontest.txt')
+        self.rods_session.assert_icommand('icp test/foo1 test/metadata-target.txt')
+        self.rods_session.assert_icommand('icp test/foo1 test/ERAtestfile.txt')
+        self.rods_session.assert_icommand('ichmod read devtestuser test/ERAtestfile.txt')
+        self.rods_session.assert_icommand('imeta add -d test/ERAtestfile.txt Fun 99 Balloons')
+        self.rods_session.assert_icommand('icp test/foo1 sub1/for_versioning.txt')
+        self.rods_session.assert_icommand('imkdir sub1/SaveVersions')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/devtestuser-account-ACL.txt test')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/load-metadata.txt test')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/load-usermods.txt test')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/sample.email test')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/email.tag test')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/sample.email test/sample2.email')
+        self.rods_session.assert_icommand('iput ' + dir_w + '/misc/email.tag test/email2.tag')
 
         # setup for rulemsiAdmChangeCoreRE and the likes
         empty_core_file_name = 'empty.test.re'
         new_core_file_name = 'new.test.re'
-        open(self.conf_dir + "/" + empty_core_file_name, 'w').close()                       # create empty file
+        with open(self.conf_dir + '/' + empty_core_file_name, 'w'):
+            pass
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp")           # back up core.re
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
 
     def tearDown(self):
-        # testallrules teardown
-        s.adminsession.runCmd('icd')  # for home directory assumption
-        s.adminsession.runCmd('ichmod', ["-r", "own", "rods", "."])
-        s.adminsession.runCmd('imcoll', ["-U", "/" + s.adminsession.zone_name + "/home/rods/test/phypathreg"])
-        s.adminsession.runCmd('irm', ["-rf", "test", "ruletest", "forphymv", "sub1", "sub2", "sub3",
-                                      "bagit", "rules", "bagit.tar", "/" + s.adminsession.zone_name + "/bundle/home/rods"])
-        s.adminsession.runAdminCmd('iadmin', ["rmresc", "testallrulesResc"])
-        s.adminsession.runAdminCmd('iadmin', ["rmuser", "devtestuser"])
-        s.adminsession.runCmd('iqdel', ["-a"])  # remove all/any queued rules
+        self.rods_session.run_icommand('icd')  # for home directory assumption
+        self.rods_session.run_icommand(['ichmod', '-r', 'own', self.rods_session.username, '.'])
+        self.rods_session.run_icommand('imcoll -U ' + self.rods_session.home_collection + 'test/phypathreg')
+        self.rods_session.run_icommand('irm -rf test ruletest forphymv sub1 sub2 sub3 bagit rules bagit.tar /' + self.rods_session.zone_name + '/bundle/home/' + self.rods_session.username)
+        self.rods_session.run_icommand('iadmin rmresc testallrulesResc')
+        self.rods_session.run_icommand('iadmin rmuser devtestuser')
+        self.rods_session.run_icommand('iqdel -a')  # remove all/any queued rules
 
         # cleanup mods in iRODS config dir
-        os.system('mv -f %s/core.re.bckp %s/core.re' % (self.conf_dir, self.conf_dir))
-        os.system('rm -f %s/*.test.re' % self.conf_dir)
+        pydevtest_common.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
+        pydevtest_common.run_command('rm -f %s/*.test.re' % self.conf_dir)
 
-        self.run_resource_teardown()
-        s.twousers_down()
+        self.rods_session.__exit__()
+        super(Test_AllRules, self).tearDown()
 
     def generate_tests_allrules():
-        global rules30dir
 
         def filter_rulefiles(rulefile):
 
@@ -355,9 +342,8 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         for rulefile in filter(filter_rulefiles, sorted(os.listdir(rules30dir))):
             def make_test(rulefile):
                 def test(self):
-                    global rules30dir
-                    assertiCmd(s.adminsession, "icd")
-                    assertiCmd(s.adminsession, "irule -vF " + rules30dir + rulefile,
+                    self.rods_session.assert_icommand("icd")
+                    self.rods_session.assert_icommand("irule -vF " + rules30dir + rulefile,
                                "STDOUT", "completed successfully")
                 return test
 
@@ -368,53 +354,52 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         src_filename = 'source.txt'
         dest_filename = 'dest.txt'
         test_dir = '/tmp'
-        test_coll = '/tempZone/home/rods/synctest'
+        test_coll = self.rods_session.home_collection + '/synctest'
         src_file = os.path.join(test_dir, src_filename)
         src_obj = test_coll + '/' + src_filename
         dest_obj = test_coll + '/' + dest_filename
 
         # create test collection
-        s.adminsession.runCmd('imkdir', [test_coll])
+        self.rods_session.run_icommand(['imkdir', test_coll])
 
         # create source test file
-        f = open(src_file, 'a')
-        f.write('blah\n')
-        f.close()
+        with open(src_file, 'a') as f:
+            f.write('blah\n')
 
         # upload source test file
-        s.adminsession.runCmd('iput', [src_file, test_coll])
+        self.rods_session.run_icommand(['iput', src_file, test_coll])
 
         # first rsync rule test
-        assertiCmd(s.adminsession, "irule -F " + rules30dir + rulefile, "LIST", "status = 99999992")
+        self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT', "status = 99999992")
 
         # modify the source and try again
         for i in range(1, 5):
-            f = open(src_file, 'a')
-            f.write('blah_' + str(i) + '\n')
-            f.close()
+            with open(src_file, 'a') as f:
+                f.write('blah_' + str(i) + '\n')
 
             # force upload source
-            s.adminsession.runCmd('iput', ['-f', src_file, test_coll])
+            self.rods_session.run_icommand(['iput', '-f', src_file, test_coll])
 
             # sync test
-            assertiCmd(s.adminsession, "irule -F " + rules30dir + rulefile, "LIST", "status = 99999992")
+            self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT', "status = 99999992")
 
         # cleanup
-        s.adminsession.runCmd('irm', ['-rf', test_coll])
+        self.rods_session.run_icommand(['irm', '-rf', test_coll])
         os.remove(src_file)
 
     def test_rulemsiPhyBundleColl(self):
         rulefile = 'rulemsiPhyBundleColl.r'
 
         # rule test
-        assertiCmd(s.adminsession, "irule -F " + rules30dir + rulefile, "LIST",
+        self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT',
                    "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
 
         # look for the bundle
-        output = getiCmdOutput(s.adminsession, "ils -L /tempZone/bundle/home/rods")
+        bundle_path = '/tempZone/bundle/home/' + self.rods_session.username
+        output = self.rods_session.run_icommand(['ils', '-L', bundle_path])
 
         # last token in stdout should be the bundle file's full physical path
-        bundlefile = output[0].split()[-1]
+        bundlefile = output[1].split()[-1]
 
         # check on the bundle file's name
         assert bundlefile.find('test.') >= 0
@@ -423,7 +408,7 @@ class Test_AllRules(unittest.TestCase, ResourceBase):
         assert os.path.isfile(bundlefile)
 
         # now try as a normal user (expect err msg)
-        assertiCmd(s.sessions[1], "irule -F " + rules30dir + rulefile, "ERROR", "SYS_NO_API_PRIV")
+        self.user0.assert_icommand("irule -F " + rules30dir + rulefile, 'STDERR', "SYS_NO_API_PRIV")
 
         # cleanup
-        s.adminsession.runCmd('irm', ['-rf', '/tempZone/bundle/home/rods'])
+        self.rods_session.run_icommand(['irm', '-rf', bundle_path])

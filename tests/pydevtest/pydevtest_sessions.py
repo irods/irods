@@ -1,28 +1,16 @@
 from __future__ import print_function
 
+import itertools
 import os
-import datetime
-import socket
 
-import icommands
+import configuration
+import irods_session
 import pydevtest_common
 
-_user_creation_information = [
-    {'name': 'rods',
-     'password': 'rods',
- },
-    {'name': 'alice',
-     'password': 'apass',
- },
-    {'name': 'bobby',
-     'password': 'bpass',
- },
-]
 
-
-def make_environment_dict(username):
+def make_environment_dict(username, hostname):
     environment = {
-        'irods_host': socket.gethostname(),
+        'irods_host': hostname,
         'irods_port': 1247,
         'irods_default_resource': 'demoResc',
         'irods_home': os.path.join('/tempZone/home', username),
@@ -37,7 +25,7 @@ def make_environment_dict(username):
         'irods_encryption_algorithm': 'AES-256-CBC',
         'irods_default_hash_scheme': 'SHA256',
     }
-    if pydevtest_common.irods_test_constants.USE_SSL:
+    if configuration.USE_SSL:
         environment.update({
             'irods_client_server_policy': 'CS_NEG_REQUIRE',
             'irods_ssl_verify_server': 'cert',
@@ -45,95 +33,46 @@ def make_environment_dict(username):
         })
     return environment
 
-######################################################
-# generic standup functions for admin and user
-#   called by more specific functions down below
-######################################################
-def admin_up():
-    global adminsession
-    adminsession = icommands.RodsSession('/usr/bin', make_environment_dict(_user_creation_information[0]['name']), _user_creation_information[0]['password'])
-    adminsession.runCmd('iinit', [adminsession._password])
-    adminsession.runCmd('imkdir', [adminsession._session_id])
-    adminsession.runCmd('icd', [adminsession._session_id])
-    print('admin session created: user[' + adminsession.username + '] zone[' + adminsession.zone_name + ']')
+def make_session_for_existing_admin():
+    env_dict = make_environment_dict(configuration.PREEXISTING_ADMIN_USERNAME,
+                                     configuration.ICAT_HOSTNAME)
+    return irods_session.IrodsSession('/usr/bin', env_dict, configuration.PREEXISTING_ADMIN_PASSWORD, False)
 
-    # set sessions[0] as adminsession
-    global sessions
-    sessions = []
-    sessions.append(adminsession)
+def mkuser_and_return_session(user_type, username, password, hostname):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'mkuser', username, user_type])
+        admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])
+        env_dict = make_environment_dict(username, hostname)
+        return irods_session.IrodsSession('/usr/bin', env_dict, password, True)
 
-    # users, passwords, and groups
-    global testgroup
-    testgroup = "pydevtest_user_group"
-    if not pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER:
-        adminsession.runAdminCmd('iadmin', ['mkgroup', testgroup])
-        for u in _user_creation_information[1:]:
-            adminsession.runAdminCmd('iadmin', ['mkuser', u['name'], 'rodsuser'])
-            adminsession.runAdminCmd('iadmin', ['moduser', u['name'], 'password', u['password']])
-            adminsession.runAdminCmd('iadmin', ['atg', testgroup, u['name']])
+def mkgroup_and_add_users(group_name, usernames):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'mkgroup', group_name])
+        for username in usernames:
+            admin_session.assert_icommand(['iadmin', 'atg', group_name, username])
 
-    # get back into the proper directory
-    adminsession.runCmd('icd', [adminsession._session_id])
+def rmgroup(group_name):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'rmgroup', group_name])
 
-def admin_down():
-    # trash
-    adminsession.runCmd('irmtrash', ['-M'])  # removes all trash for all users (admin mode)
+def rmuser(username):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'rmuser', username])
 
-    # users
-    if not pydevtest_common.irods_test_constants.TOPOLOGY_FROM_RESOURCE_SERVER:
-        for u in _user_creation_information[1:]:
-            adminsession.runAdminCmd('iadmin', ['rfg', testgroup, u['name']])
-            adminsession.runAdminCmd('iadmin', ['rmuser', u['name']])
-        # groups
-        adminsession.runAdminCmd('iadmin', ['rmgroup', testgroup])
-        adminsession.runAdminCmd('iadmin', ['rum'])
+def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
+    class SessionsMixin(object):
+        def setUp(self):
+            with make_session_for_existing_admin() as admin_session:
+                self.admin_sessions = [mkuser_and_return_session('rodsadmin', name, password, pydevtest_common.get_hostname())
+                                           for name, password in rodsadmin_name_password_list]
+                self.user_sessions = [mkuser_and_return_session('rodsuser', name, password, pydevtest_common.get_hostname())
+                                           for name, password in rodsuser_name_password_list]
+            super(SessionsMixin, self).setUp()
 
-    print('admin session exiting: user[' + adminsession.username + '] zone[' + adminsession.zone_name + ']')
-    adminsession.runCmd('iexit', ['full'])
-    adminsession.delete_session_dir()
-
-def user_up(user):
-    # set up single user session
-    user_session = icommands.RodsSession('/usr/bin', make_environment_dict(user['name']), user['password'])
-    user_session.runCmd('iinit', [user_session._password])
-    user_session.runCmd('imkdir', [user_session._session_id])
-    user_session.runCmd('icd', [user_session._session_id])
-    print('user session created: user[' + user_session.username + '] zone[' + user_session.zone_name + ']')
-    sessions.append(user_session)
-
-def user_down(usersession):
-    # tear down user session
-    usersession.runCmd('icd')
-    usersession.runCmd('irm', ['-rf', usersession._session_id])
-    print('user session exiting: user[' + usersession.username + '] zone[' + usersession.zone_name + ']')
-    usersession.runCmd('iexit', ['full'])
-    usersession.delete_session_dir()
-
-#################################################################
-# routines to be called from with_setup
-#   designed this way since with_setup cannot pass variables
-#################################################################
-
-def adminonly_up():
-    admin_up()
-
-def adminonly_down():
-    admin_down()
-
-def oneuser_up():
-    admin_up()
-    user_up(_user_creation_information[1])
-
-def oneuser_down():
-    user_down(sessions[1])
-    admin_down()
-
-def twousers_up():
-    admin_up()
-    user_up(_user_creation_information[1])
-    user_up(_user_creation_information[2])
-
-def twousers_down():
-    user_down(sessions[2])
-    user_down(sessions[1])
-    admin_down()
+        def tearDown(self):
+            with make_session_for_existing_admin() as admin_session:
+                for session in itertools.chain(self.admin_sessions, self.user_sessions):
+                    session.__exit__()
+                    admin_session.assert_icommand(['iadmin', 'rmuser', session.username])
+            super(SessionsMixin, self).tearDown()
+    return SessionsMixin

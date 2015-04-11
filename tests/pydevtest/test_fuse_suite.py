@@ -1,11 +1,9 @@
 import sys
-if (sys.version_info >= (2, 7)):
+if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, getiCmdOutput
-import pydevtest_sessions as s
 import commands
 import distutils.spawn
 import os
@@ -14,18 +12,12 @@ import stat
 import socket
 
 
-class Test_FuseSuite(unittest.TestCase, ResourceBase):
-
-    my_test_resource = {"setup": [], "teardown": []}
-
+class Test_FuseSuite(ResourceBase, unittest.TestCase):
     def setUp(self):
-        ResourceBase.__init__(self)
-        s.twousers_up()
-        self.run_resource_setup()
+        super(Test_FuseSuite, self).setUp()
 
     def tearDown(self):
-        self.run_resource_teardown()
-        s.twousers_down()
+        super(Test_FuseSuite, self).tearDown()
 
     def test_irodsFs_issue_2252(self):
         # =-=-=-=-=-=-=-
