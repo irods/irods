@@ -121,6 +121,9 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     L1desc[l1descInx].oprType = GET_OPR;
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    copyKeyVal(
+        &dataObjInp->condInput,
+        &dataObjInfo->condInput );
 
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 && // JMC - backport 4682
             L1desc[l1descInx].l3descInx > 0 ) {
@@ -330,6 +333,11 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
     fileGetInp.mode = getFileMode( dataObjInp );
     fileGetInp.flags = O_RDONLY;
     fileGetInp.dataSize = dataObjInfo->dataSize;
+
+    copyKeyVal(
+        &dataObjInfo->condInput,
+        &fileGetInp.condInput );
+
     /* XXXXX need to be able to handle structured file */
     bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
     return bytesRead;

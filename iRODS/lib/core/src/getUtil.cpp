@@ -277,6 +277,14 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
 
     dataObjOprInp->oprType = GET_OPR;
 
+    if ( rodsArgs->kv_pass ) {
+        addKeyVal( 
+            &dataObjOprInp->condInput,
+            KEY_VALUE_PASSTHROUGH_KW,
+            rodsArgs->kv_pass_string );
+
+    }
+
     if ( rodsArgs->force == True ) {
         addKeyVal( &dataObjOprInp->condInput, FORCE_FLAG_KW, "" );
     }

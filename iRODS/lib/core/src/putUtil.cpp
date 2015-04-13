@@ -305,6 +305,14 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
+    if ( rodsArgs->kv_pass ) {
+        addKeyVal( 
+            &dataObjOprInp->condInput,
+            KEY_VALUE_PASSTHROUGH_KW,
+            rodsArgs->kv_pass_string );
+
+    }
+
     if ( rodsArgs->bulk == True ) {
         if ( bulkOprInp == NULL ) {
             rodsLog( LOG_ERROR,

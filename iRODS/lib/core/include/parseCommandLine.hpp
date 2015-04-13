@@ -146,7 +146,7 @@ typedef struct {
     int metadata;
     char* metadata_string;
     int kv_pass;
-    int kv_pass_string;
+    char* kv_pass_string;
 
 } rodsArguments_t;
 

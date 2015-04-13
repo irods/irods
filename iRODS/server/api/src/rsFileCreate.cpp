@@ -104,6 +104,8 @@ int _rsFileCreate(
     // NOTE:: need to check resource permission and vault permission when RCAT
     // is available
 
+char* kvp_str = getValByKey(  &_create_inp->condInput, KEY_VALUE_PASSTHROUGH_KW );
+rodsLog( LOG_NOTICE, "rsFileCreate1 - kvp [%s]", kvp_str );
     // =-=-=-=-=-=-=-
     // check path permissions before creating the file
     if ( ( _create_inp->otherFlags & NO_CHK_PERM_FLAG ) == 0 ) { // JMC - backport 4758
@@ -135,6 +137,8 @@ int _rsFileCreate(
     // pass condInput
     file_obj->cond_input( _create_inp->condInput );
 
+kvp_str = getValByKey(  &file_obj->cond_input(), KEY_VALUE_PASSTHROUGH_KW );
+rodsLog( LOG_NOTICE, "rsFileCreate2 - kvp [%s]", kvp_str );
     irods::error create_err = fileCreate( _comm, file_obj );
 
     // =-=-=-=-=-=-=-

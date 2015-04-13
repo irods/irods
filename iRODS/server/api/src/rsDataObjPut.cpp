@@ -440,6 +440,10 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
 
     filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
     rstrcpy( filePutInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN );
+    // kv pasthru
+    copyKeyVal( 
+        &dataObjInfo->condInput,
+        &filePutInp.condInput );
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4774

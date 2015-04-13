@@ -280,6 +280,7 @@
 #define SPEC_COLL_CACHE_DIRTY        "spec_coll_cache_dirty"
 #define SPEC_COLL_REPL_NUM           "spec_coll_repl_num"
 
+#define KEY_VALUE_PASSTHROUGH_KW "key_value_passthrough"
 #define DISABLE_STRICT_ACL_KW "disable_strict_acls"
 
 #endif	/* RODS_KEYWD_DEF */

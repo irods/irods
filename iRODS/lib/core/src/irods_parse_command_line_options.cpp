@@ -178,8 +178,13 @@ static int parse_program_options(
     if( global_prog_ops_var_map.count( "purgec" ) ) {
         _rods_args.purgeCache = 1;
     }
+    if( global_prog_ops_var_map.count( "kv_pass" ) ) {
+        _rods_args.kv_pass = 1;
+        _rods_args.kv_pass_string = (char*)global_prog_ops_var_map[ "kv_pass" ].as< std::string >().c_str(); 
+    }
     if( global_prog_ops_var_map.count( "metadata" ) ) {
-        _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
+        _rods_args.metadata = 1;
+        _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str(); 
     }
 
     return 0;

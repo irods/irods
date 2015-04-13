@@ -207,6 +207,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
     }
 
+
     freeRodsObjStat( rodsObjStatOut );
 
     // =-=-=-=-=-=-=-
@@ -322,6 +323,19 @@ _rsDataObjCreateWithResc(
 
     dataObjInfo = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
     initDataObjInfoWithInp( dataObjInfo, dataObjInp );
+
+    // =-=-=-=-=-=-=-
+    // stage kvp for passthru
+    char* kvp_str = getValByKey(
+                        &dataObjInp->condInput,
+                        KEY_VALUE_PASSTHROUGH_KW );
+    if( kvp_str ) {
+        addKeyVal( 
+            &dataObjInfo->condInput,
+            KEY_VALUE_PASSTHROUGH_KW,
+            kvp_str );
+
+    }
 
     // =-=-=-=-=-=-=-
     // honor the purge flag
@@ -489,6 +503,9 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
     rstrcpy( fileCreateInp.addr.hostAddr, location.c_str(), NAME_LEN );
+    copyKeyVal( 
+        &dataObjInfo->condInput,
+        &fileCreateInp.condInput );
 
     rstrcpy( fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
     fileCreateInp.mode = getFileMode( dataObjInp );
