@@ -168,8 +168,8 @@ namespace irods {
                 }
                 _kvp[ key.str() ] = value.str();
                 assoc_encountered = false;
-                key.clear();
-                value.clear();
+                key.str( "" );
+                value.str( "" );
                 i += _delim.size();
                 continue;
             }

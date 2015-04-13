@@ -22,12 +22,10 @@ namespace irods {
         for ( std::string::const_iterator iter = metadata.begin(); iter != metadata.end(); ++iter ) {
             if ( *iter == '\\' ) {
                 ++iter;
-                current_string << *iter;
-                continue;
             }
             else if ( *iter == ';' ) {
                 deserialized_metadata.push_back( current_string.str() );
-                current_string.clear();
+                current_string.str( "" );
                 continue;
             }
             current_string << *iter;

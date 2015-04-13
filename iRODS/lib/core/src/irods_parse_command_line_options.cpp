@@ -177,6 +177,9 @@ static int parse_program_options(
     if( global_prog_ops_var_map.count( "purgec" ) ) {
         _rods_args.purgeCache = 1;
     }
+    if( global_prog_ops_var_map.count( "metadata" ) ) {
+        _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
+    }
 
     return 0;
 
@@ -297,14 +300,3 @@ int parse_opts_and_paths(
     return 0;
 
 } // parse_opts_and_paths
-
-
-
-
-
-
-
-
-
-
-
