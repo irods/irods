@@ -44,6 +44,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_file_object.hpp"
 #include "irods_metadata_serialization.hpp"
+#include "irods_exception.hpp"
 
 
 int
@@ -676,7 +677,14 @@ _rsDataObjClose(
         }
 
         if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
-            const std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
+            std::vector<std::string> deserialized_metadata;
+            try {
+                deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
+            }
+            catch ( const irods::exception& e ) {
+                rodsLog( LOG_ERROR, "%s", e.stack_trace().c_str() );
+                return e.code();
+            }
             for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
                 modAVUMetadataInp_t modAVUMetadataInp;
                 memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
@@ -692,6 +700,9 @@ _rsDataObjClose(
                 clearModAVUMetadataInp( &modAVUMetadataInp );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "rsModAVUMetadata failed in _rsDataObjClose with status %d", status );
+                    if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                        rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
+                    }
                     return status;
                 }
             }

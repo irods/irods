@@ -30,6 +30,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_exception.hpp"
+#include "irods_metadata_serialization.hpp"
 
 int
 rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -44,6 +46,17 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                        &dataObjInp->condInput );
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE );
+
+
+    if ( char* metadata_string = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
+        try {
+            irods::deserialize_metadata( metadata_string );
+        }
+        catch ( const irods::exception& e  ) {
+            rodsLog( LOG_ERROR, "%s", e.stack_trace().c_str() );
+            return e.code();
+        }
+    }
 
     if ( remoteFlag < 0 ) {
         return remoteFlag;

@@ -2,6 +2,8 @@
 #include <sstream>
 #include <vector>
 #include <boost/algorithm/string/replace.hpp>
+#include "irods_exception.hpp"
+#include "rodsError.hpp"
 
 namespace irods {
     std::string serialize_metadata( const std::vector<std::string>& metadata ) {
@@ -22,6 +24,9 @@ namespace irods {
         for ( std::string::const_iterator iter = metadata.begin(); iter != metadata.end(); ++iter ) {
             if ( *iter == '\\' ) {
                 ++iter;
+                if ( iter == metadata.end() ) {
+                    break;
+                }
             }
             else if ( *iter == ';' ) {
                 deserialized_metadata.push_back( current_string.str() );
@@ -30,6 +35,14 @@ namespace irods {
             }
             current_string << *iter;
         }
+        if ( !current_string.str().empty() || deserialized_metadata.size() % 3 == 2 ) {
+            deserialized_metadata.push_back( current_string.str() );
+        }
+
+        if ( deserialized_metadata.size() % 3 != 0 ) {
+            THROW( SYS_BAD_INPUT, "Metadata strings must consist of triplets of semicolon-separated tokens" );
+        }
+
         return deserialized_metadata;
     }
 }
@@ -37,9 +50,14 @@ namespace irods {
 extern "C" {
     char* serialize_metadata_c( const char** metadata, size_t metadata_len ) {
         std::vector<std::string> metadata_strings;
-        for ( int i = 0; i < metadata_len; i++ ) {
+        for ( size_t i = 0; i < metadata_len; i++ ) {
             metadata_strings.push_back( metadata[i] );
         }
-        return strdup( irods::serialize_metadata( metadata_strings ).c_str() );
+        try {
+            return strdup( irods::serialize_metadata( metadata_strings ).c_str() );
+        }
+        catch ( const irods::exception& ) {
+            return NULL;
+        }
     }
 }
