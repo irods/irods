@@ -31,10 +31,10 @@ main( int argc, char **argv ) {
         return status;
     }
 
-    int p_err = parse_opts_and_paths( 
-                    argc, 
-                    argv, 
-                    myRodsArgs, 
+    int p_err = parse_opts_and_paths(
+                    argc,
+                    argv,
+                    myRodsArgs,
                     &myEnv,
                     UNKNOWN_FILE_T,
                     UNKNOWN_OBJ_T,

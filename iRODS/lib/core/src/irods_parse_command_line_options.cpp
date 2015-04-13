@@ -20,10 +20,10 @@ static boost::program_options::variables_map global_prog_ops_var_map;
 
 // currently only written to support iput.  needs to be expanded to
 // support the full range of icommand options
-static int parse_program_options( 
-    int              _argc, 
-    char**           _argv, 
-    rodsArguments_t& _rods_args, 
+static int parse_program_options(
+    int              _argc,
+    char**           _argv,
+    rodsArguments_t& _rods_args,
     path_list_t&     _paths ) {
     namespace po = boost::program_options;
 
@@ -87,7 +87,7 @@ static int parse_program_options(
     if( global_prog_ops_var_map.count( "help" ) ) {
         usage();
         return -1;
-    } 
+    }
     if( global_prog_ops_var_map.count( "all" ) ) {
         _rods_args.all = 1;
     }
@@ -123,7 +123,7 @@ static int parse_program_options(
     if( global_prog_ops_var_map.count( "physical_path" ) ) {
         _rods_args.physicalPath = 1;
         _rods_args.physicalPathString = (char*)global_prog_ops_var_map[ "physical_path" ].as< std::string >().c_str();
-    } 
+    }
     if( global_prog_ops_var_map.count( "progress" ) ) {
         _rods_args.progressFlag = 1;
     }
@@ -135,11 +135,11 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "dest_resc" ) ) {
         _rods_args.resource = 1;
-        _rods_args.resourceString = (char*)global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str(); 
+        _rods_args.resourceString = (char*)global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str();
     }
     if( global_prog_ops_var_map.count( "ticket" ) ) {
         _rods_args.ticket = 1;
-        _rods_args.ticketString = (char*)global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str(); 
+        _rods_args.ticketString = (char*)global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str();
     }
     if( global_prog_ops_var_map.count( "renew_socket" ) ) {
         _rods_args.reconnect = 1;
@@ -154,18 +154,18 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "data_type" ) ) {
         _rods_args.dataType = 1;
-        _rods_args.dataTypeString = (char*)global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str(); 
+        _rods_args.dataTypeString = (char*)global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str();
     }
     if( global_prog_ops_var_map.count( "restart_file" ) ) {
         _rods_args.restart = 1;
-        _rods_args.restartFileString = (char*)global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str(); 
+        _rods_args.restartFileString = (char*)global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str();
     }
     if( global_prog_ops_var_map.count( "link" ) ) {
         _rods_args.link = 1;
     }
     if( global_prog_ops_var_map.count( "lfrestart" ) ) {
         _rods_args.lfrestart = 1;
-        _rods_args.lfrestartFileString = (char*)global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str(); 
+        _rods_args.lfrestartFileString = (char*)global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str();
     }
     if( global_prog_ops_var_map.count( "retries" ) ) {
         _rods_args.retries = 1;
@@ -182,12 +182,12 @@ static int parse_program_options(
 
 } // parse_program_options
 
-static int build_irods_path_structure( 
+static int build_irods_path_structure(
     const path_list_t& _path_list,
     rodsEnv*           _rods_env,
-    int                _src_type, 
-    int                _dst_type, 
-    int                _flag, 
+    int                _src_type,
+    int                _dst_type,
+    int                _flag,
     rodsPathInp_t*     _rods_paths ) {
 
     int numSrc = 0;
@@ -240,8 +240,8 @@ static int build_irods_path_structure(
         _rods_paths->destPath = ( rodsPath_t* )malloc( sizeof( rodsPath_t ) );
         memset( _rods_paths->destPath, 0, sizeof( rodsPath_t ) );
         if ( _path_list.size() > 1 ) {
-            rstrcpy( 
-                _rods_paths->destPath->inPath, 
+            rstrcpy(
+                _rods_paths->destPath->inPath,
                 _path_list.rbegin()->c_str(),
                 MAX_NAME_LEN );
         }
@@ -262,21 +262,21 @@ static int build_irods_path_structure(
 } // build_irods_path_structure
 
 // single C-friendly interface for the above two functions
-int parse_opts_and_paths( 
-    int               _argc, 
-    char**            _argv, 
-    rodsArguments_t&  _rods_args, 
+int parse_opts_and_paths(
+    int               _argc,
+    char**            _argv,
+    rodsArguments_t&  _rods_args,
     rodsEnv*          _rods_env,
-    int               _src_type, 
-    int               _dst_type, 
-    int               _flag, 
+    int               _src_type,
+    int               _dst_type,
+    int               _flag,
     rodsPathInp_t*    _rods_paths ) {
 
     path_list_t paths;
-    int p_err = parse_program_options( 
-                    _argc, 
-                    _argv, 
-                    _rods_args, 
+    int p_err = parse_program_options(
+                    _argc,
+                    _argv,
+                    _rods_args,
                     paths );
     if( p_err < 0 ) {
         return p_err;
@@ -286,9 +286,9 @@ int parse_opts_and_paths(
     p_err = build_irods_path_structure(
                  paths,
                  _rods_env,
-                 _src_type, 
-                 _dst_type, 
-                 _flag, 
+                 _src_type,
+                 _dst_type,
+                 _flag,
                  _rods_paths );
     if( p_err < 0 ) {
         return p_err;
