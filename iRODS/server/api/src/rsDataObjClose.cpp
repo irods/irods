@@ -3,8 +3,6 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjClose.h for a description of this API call.*/
 
-/* XXXXXX take me out. For testing only */
-/* #define TEST_QUE_RULE        1 */
 
 #include "dataObjClose.hpp"
 #include "rodsLog.hpp"
@@ -64,10 +62,6 @@ irsDataObjClose(
     openedDataObjInp_t myDataObjCloseInp;
     int l1descInx;
     ruleExecInfo_t rei;
-#ifdef TEST_QUE_RULE
-    bytesBuf_t *packedReiAndArgBBuf = NULL;;
-    ruleExecSubmitInp_t ruleExecSubmitInp;
-#endif
     l1descInx = dataObjCloseInp->l1descInx;
     if ( l1descInx <= 2 || l1descInx >= NUM_L1_DESC ) {
         rodsLog( LOG_NOTICE,
@@ -159,35 +153,11 @@ irsDataObjClose(
                 initReiWithDataObjInp( &rei, rsComm,
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
-#ifdef TEST_QUE_RULE
-                status = packReiAndArg( &rei, NULL, 0,
-                                        &packedReiAndArgBBuf );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "rsDataObjClose: packReiAndArg error" );
-                }
-                else {
-                    memset( &ruleExecSubmitInp, 0, sizeof( ruleExecSubmitInp ) );
-                    rstrcpy( ruleExecSubmitInp.ruleName, "acPostProcForPut",
-                             NAME_LEN );
-                    rstrcpy( ruleExecSubmitInp.userName, rei.uoic->userName,
-                             NAME_LEN );
-                    ruleExecSubmitInp.packedReiAndArgBBuf = packedReiAndArgBBuf;
-                    getNowStr( ruleExecSubmitInp.exeTime );
-                    status = rsRuleExecSubmit( rsComm, &ruleExecSubmitInp );
-                    free( packedReiAndArgBBuf );
-                    if ( status < 0 ) {
-                        rodsLog( LOG_ERROR,
-                                 "rsDataObjClose: rsRuleExecSubmit failed" );
-                    }
-                }
-#else
                 rei.status = status;
                 rei.status = applyRule( "acPostProcForPut", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
-#endif
             }
             else if ( L1desc[l1descInx].dataObjInp != NULL &&
                       L1desc[l1descInx].dataObjInp->oprType == PHYMV_OPR ) {

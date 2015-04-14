@@ -9,31 +9,31 @@ import os
 import time
 
 import configuration
-import pydevtest_common
+import lib
 
 class TestControlPlane(unittest.TestCase):
     def test_pause_and_resume(self):
         # test pause
-        pydevtest_common.assert_command('irods-grid pause --all', 'STDOUT', 'pausing')
+        lib.assert_command('irods-grid pause --all', 'STDOUT', 'pausing')
 
         # need a time-out assert icommand for ils here
 
         # resume the server
-        pydevtest_common.assert_command('irods-grid resume --all', 'STDOUT', 'resuming')
+        lib.assert_command('irods-grid resume --all', 'STDOUT', 'resuming')
 
         # Make sure server is actually responding
-        pydevtest_common.assert_command('ils', 'STDOUT', 'tempZone')
-        pydevtest_common.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
+        lib.assert_command('ils', 'STDOUT', self.lib.get_service_account_environment_file_contents()['zone_name'])
+        lib.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
 
     def test_status(self):
         # test grid status
-        pydevtest_common.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
+        lib.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
 
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown(self):
         # test shutdown
-        pydevtest_common.assert_command('irods-grid shutdown --all', 'STDOUT', 'shutting down')
+        lib.assert_command('irods-grid shutdown --all', 'STDOUT', 'shutting down')
         time.sleep( 2 )
-        pydevtest_common.assert_command('ils', 'STDERR', 'USER_SOCK_CONNECT_ERR')
+        lib.assert_command('ils', 'STDERR', 'USER_SOCK_CONNECT_ERR')
 
-        pydevtest_common.restart_irods_server()
+        lib.restart_irods_server()

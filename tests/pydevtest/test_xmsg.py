@@ -8,12 +8,11 @@ else:
     import unittest2 as unittest
 
 import configuration
-from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
-import pydevtest_common
+import lib
 
 
 class Test_ixmsg(unittest.TestCase):
-    serverConfigFile = get_irods_config_dir() + "/server_config.json"
+    serverConfigFile = lib.get_irods_config_dir() + "/server_config.json"
     xmsgHost = 'localhost'
     xmsgPort = 1279
 
@@ -33,7 +32,7 @@ class Test_ixmsg(unittest.TestCase):
         my_env['XMSG_PORT'] = str(self.xmsgPort)
 
         # restart server with Xmsg
-        pydevtest_common.restart_irods_server(env=my_env)
+        lib.restart_irods_server(env=my_env)
 
     def tearDown(self):
         # revert to original server_config.json
@@ -41,7 +40,7 @@ class Test_ixmsg(unittest.TestCase):
 
         # restart server
         my_env = os.environ.copy()
-        pydevtest_common.restart_irods_server(env=my_env)
+        lib.restart_irods_server(env=my_env)
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_send_and_receive_one_xmsg(self):

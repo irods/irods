@@ -4,29 +4,27 @@ import shutil
 import sys
 import getpass
 
-if (sys.version_info >= (2, 7)):
+if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
 
+import lib
 import metaclass_unittest_test_case_generator
-from pydevtest_common import get_irods_config_dir
-import pydevtest_common
-from resource_suite import ResourceBase
-import pydevtest_sessions
+import resource_suite
 
-class Test_AllRules(ResourceBase, unittest.TestCase):
+class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
     global rules30dir
     currentdir = os.path.dirname(os.path.realpath(__file__))
     rules30dir = currentdir + "/../../iRODS/clients/icommands/test/rules3.0/"
-    conf_dir = get_irods_config_dir()
+    conf_dir = lib.get_irods_config_dir()
 
     def setUp(self):
         super(Test_AllRules, self).setUp()
 
-        self.rods_session = pydevtest_sessions.make_session_for_existing_admin() # some rules hardcode 'rods' and 'tempZone'
+        self.rods_session = lib.make_session_for_existing_admin() # some rules hardcode 'rods' and 'tempZone'
 
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
@@ -80,17 +78,17 @@ class Test_AllRules(ResourceBase, unittest.TestCase):
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
 
     def tearDown(self):
-        self.rods_session.run_icommand('icd')  # for home directory assumption
-        self.rods_session.run_icommand(['ichmod', '-r', 'own', self.rods_session.username, '.'])
-        self.rods_session.run_icommand('imcoll -U ' + self.rods_session.home_collection + 'test/phypathreg')
+        self.rods_session.assert_icommand('icd')  # for home directory assumption
+        self.rods_session.assert_icommand(['ichmod', '-r', 'own', self.rods_session.username, '.'])
+        self.rods_session.run_icommand(['imcoll', '-U', self.rods_session.home_collection + '/test/phypathreg'])
         self.rods_session.run_icommand('irm -rf test ruletest forphymv sub1 sub2 sub3 bagit rules bagit.tar /' + self.rods_session.zone_name + '/bundle/home/' + self.rods_session.username)
-        self.rods_session.run_icommand('iadmin rmresc testallrulesResc')
-        self.rods_session.run_icommand('iadmin rmuser devtestuser')
-        self.rods_session.run_icommand('iqdel -a')  # remove all/any queued rules
+        self.rods_session.assert_icommand('iadmin rmresc testallrulesResc')
+        self.rods_session.assert_icommand('iadmin rmuser devtestuser')
+        self.rods_session.assert_icommand('iqdel -a')  # remove all/any queued rules
 
         # cleanup mods in iRODS config dir
-        pydevtest_common.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
-        pydevtest_common.run_command('rm -f %s/*.test.re' % self.conf_dir)
+        lib.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
+        lib.run_command('rm -f %s/*.test.re' % self.conf_dir)
 
         self.rods_session.__exit__()
         super(Test_AllRules, self).tearDown()

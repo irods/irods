@@ -16,10 +16,8 @@ import subprocess
 import time
 
 import configuration
-from resource_suite import ResourceBase
-import pydevtest_common
-from pydevtest_common import get_hostname, create_directory_of_small_files, get_irods_config_dir, get_irods_top_level_dir, update_json_file_from_dict
-import pydevtest_sessions
+import lib
+import resource_suite
 
 # path to server_config.py
 pydevtestdir = os.path.dirname(os.path.realpath(__file__))
@@ -44,7 +42,7 @@ def write_host_access_control(filename, username, group, address, mask):
     with open(filename, 'w') as f:
         json.dump(hac, f, sort_keys=True, indent=4, ensure_ascii=False)
 
-class Test_iAdminSuite(ResourceBase, unittest.TestCase):
+class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_iAdminSuite, self).setUp()
 
@@ -53,7 +51,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
 
     def test_api_plugin(self):
         self.admin.assert_icommand("iapitest", 'STDOUT', 'this')
-        assert 0 < pydevtest_common.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
+        assert 0 < lib.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
 
     ###################
     # iadmin
@@ -76,17 +74,17 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
 
     def test_list_groups(self):
         group_name = 'test_group'
-        pydevtest_sessions.mkgroup_and_add_users(group_name, [self.admin.username, self.user0.username])
+        lib.mkgroup_and_add_users(group_name, [self.admin.username, self.user0.username])
         self.admin.assert_icommand('iadmin lg', 'STDOUT', group_name)
         self.admin.assert_icommand_fail('iadmin lg', 'STDOUT', 'notagroup')
         self.admin.assert_icommand('iadmin lg ' + group_name, 'STDOUT', self.user0.username)
         self.admin.assert_icommand_fail('iadmin lg ' + group_name, 'STDOUT', 'notauser')
-        pydevtest_sessions.rmgroup(group_name)
+        lib.rmgroup(group_name)
 
     # RESOURCES
 
     def test_resource_name_restrictions(self):
-        h = get_hostname()
+        h = lib.get_hostname()
         oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  # longer than NAME_LEN
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
                    ("?/=*", h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # invalid char
@@ -98,7 +96,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
                    (oversize_name, h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # too long
 
     def test_modify_resource_name(self):
-        h = get_hostname()
+        h = lib.get_hostname()
         # tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
                    ("pt1", h, "pt1"), 'STDOUT', "Creating")  # passthru
@@ -165,7 +163,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc pt")
 
     def test_resource_hierarchy_manipulation(self):
-        h = get_hostname()
+        h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
                    ("pt"), 'STDOUT', "Creating")  # passthru
@@ -196,8 +194,8 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         doubletree1 = 2 * tree1  # 10
         doubletree2 = 2 * tree2  # 16
         totaltree = doubletree1 + doubletree2  # 26
-        create_directory_of_small_files(dir1, tree1)
-        create_directory_of_small_files(dir2, tree2)
+        lib.create_directory_of_small_files(dir1, tree1)
+        lib.create_directory_of_small_files(dir2, tree2)
 
         # add files
         self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1))
@@ -564,7 +562,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         output = commands.getstatusoutput("hostname")
         # =-=-=-=-=-=-=-
         # STANDUP
-        h = get_hostname()
+        h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
                    ("pt", h, "pt"), 'STDOUT', "Creating")  # passthru
@@ -855,7 +853,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         my_ip = socket.gethostbyname(socket.gethostname())
 
         # manipulate the core.re to enable host access control
-        corefile = get_irods_config_dir() + "/core.re"
+        corefile = lib.get_irods_config_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
         os.system(
@@ -865,8 +863,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        lib.restart_irods_server()
 
         host_access_control = ''
         if os.path.isfile('/etc/irods/host_access_control.json'):
@@ -886,7 +883,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
 
         write_host_access_control(host_access_control, 'all', 'all', my_ip, '255.255.255.255')
 
-        self.admin.assert_icommand("ils", 'STDOUT', "tempZone")
+        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
 
         # restore the original host_access_control.json
         os.system('mv %s %s' % (orig_file, host_access_control))
@@ -897,7 +894,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
 
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
-        corefile = get_irods_config_dir() + "/core.re"
+        corefile = lib.get_irods_config_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
         os.system(
@@ -907,10 +904,9 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        lib.restart_irods_server()
 
-        self.admin.assert_icommand("ils", 'STDOUT', "tempZone")
+        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
 
         # look for the error "unable to read session variable $userNameClient."
         p = subprocess.Popen(
@@ -929,20 +925,19 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         os.environ['spLogLevel'] = '11'
 
         # set a random environment value to find in the log
-        svr_cfg_file = get_irods_config_dir() + "/server_config.json"
+        svr_cfg_file = lib.get_irods_config_dir() + "/server_config.json"
         os.system("cp %s %sOrig" % (svr_cfg_file, svr_cfg_file))
 
         with open(svr_cfg_file) as f:
             svr_cfg = json.load(f)
         the_value = 'THIS_IS_THE_VALUE'
         svr_cfg['environment_variables']['foo_bar'] = the_value
-        update_json_file_from_dict(svr_cfg_file, svr_cfg)
+        lib.update_json_file_from_dict(svr_cfg_file, svr_cfg)
 
         # bounce the server to get the new env variable
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        lib.restart_irods_server()
 
-        self.admin.assert_icommand("ils", 'STDOUT', "tempZone")
+        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
 
         # look for the error "unable to read session variable $userNameClient."
         p = subprocess.Popen(
@@ -952,8 +947,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         del os.environ['spLogLevel']
         os.system("mv %sOrig %s" % (svr_cfg_file, svr_cfg_file))
 
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl stop")
-        os.system(get_irods_top_level_dir() + "/iRODS/irodsctl start")
+        lib.restart_irods_server()
 
         # check the results for the error
         assert(-1 != result.find(the_value))
@@ -972,7 +966,7 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
         collection_basename = sys._getframe().f_code.co_name
         self.admin.assert_icommand('imkdir {collection_basename}'.format(**vars()))
         file_basename = 'dummy_file_to_trigger_recursive_rm'
-        pydevtest_common.make_file(file_basename, 10)
+        lib.make_file(file_basename, 10)
         file_irods_path = os.path.join(collection_basename, file_basename)
         self.admin.assert_icommand('iput {file_basename} {file_irods_path}'.format(**vars()))
         a, v, u = ('attribute_' + collection_basename, 'value_' + collection_basename, 'unit_' + collection_basename)
@@ -985,8 +979,8 @@ class Test_iAdminSuite(ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log")
     def test_rule_engine_2521(self):
-        with pydevtest_common.core_re_backed_up():
-            initial_size_of_re_log = pydevtest_common.get_log_size('re')
+        with lib.core_re_backed_up():
+            initial_size_of_re_log = lib.get_log_size('re')
             rules_to_prepend = '''
 first_rule_called_from_delay() {
     writeLine("serverLog","test_rule_engine_2521: first delay rule executed successfully");
@@ -1003,39 +997,39 @@ acPostProcForPut() {
     }
 }
 '''
-            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            lib.prepend_string_to_core_re(rules_to_prepend)
             trigger_file = 'file_to_trigger_acPostProcForPut'
-            pydevtest_common.make_file(trigger_file, 10)
+            lib.make_file(trigger_file, 10)
             self.admin.assert_icommand('iput {0}'.format(trigger_file))
             time.sleep(30)
-            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
+            assert 1 == lib.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
+            assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
+            assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
 
     @unittest.skipIf(True, 'Enable once fix is committed; Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        with pydevtest_common.core_re_backed_up():
-            initial_size_of_server_log = pydevtest_common.get_log_size('server')
+        with lib.core_re_backed_up():
+            initial_size_of_server_log = lib.get_log_size('server')
             rules_to_prepend = '''
 acSetNumThreads() {
     writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
 }
 '''
-            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            lib.prepend_string_to_core_re(rules_to_prepend)
             trigger_file = 'file_to_trigger_acPostProcForPut'
-            pydevtest_common.make_file(trigger_file, 4*pow(10, 7))
+            lib.make_file(trigger_file, 4*pow(10, 7))
             self.admin.assert_icommand('iput {0}'.format(trigger_file))
-            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+            assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
+            assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
 
-        with pydevtest_common.core_re_backed_up():
-            initial_size_of_server_log = pydevtest_common.get_log_size('server')
+        with lib.core_re_backed_up():
+            initial_size_of_server_log = lib.get_log_size('server')
             rules_to_prepend = '''
 acSetNumThreads() {
     writeLine("serverLog","test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
 }
 '''
-            pydevtest_common.prepend_string_to_core_re(rules_to_prepend)
+            lib.prepend_string_to_core_re(rules_to_prepend)
             self.admin.assert_icommand('iget {0} - > /dev/null'.format(trigger_file))
-            assert 1 == pydevtest_common.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
-            assert 0 == pydevtest_common.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+            assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
+            assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)

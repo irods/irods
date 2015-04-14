@@ -9,15 +9,15 @@ import os
 import datetime
 import socket
 
-from resource_suite import ResourceBase
-from pydevtest_common import get_irods_top_level_dir
+import lib
+import resource_suite
 
 
-RODSHOME = get_irods_top_level_dir() + "/iRODS/"
+RODSHOME = lib.get_irods_top_level_dir() + "/iRODS/"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 
-class Test_ireg_Suite(ResourceBase, unittest.TestCase):
+class Test_ireg_Suite(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_ireg_Suite, self).setUp()
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg_suite.py', ABSPATHTESTDIR + '/file0')

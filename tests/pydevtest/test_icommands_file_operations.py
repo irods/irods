@@ -8,13 +8,12 @@ import time
 import shutil
 
 import configuration
-from pydevtest_common import make_file, get_vault_session_path, make_large_local_tmp_dir
-import pydevtest_common
-from resource_suite import ResourceBase
+import lib
+import resource_suite
 
 
 @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
-class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
+class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_ICommands_File_Operations, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
@@ -27,13 +26,13 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
 
     def iput_r_large_collection(self, session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_files = make_large_local_tmp_dir(local_dir, file_count, file_size)
+        local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
         session.assert_icommand(['iput', '-r', local_dir])
-        rods_files = set(pydevtest_common.ils_output_to_entries(session.run_icommand(['ils', base_name])[1]))
+        rods_files = set(lib.ils_output_to_entries(session.run_icommand(['ils', base_name])[1]))
         self.assertTrue(set(local_files) == rods_files,
                         msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - set(local_files)))
-        vault_files = set(os.listdir(os.path.join(get_vault_session_path(session), base_name)))
+        vault_files = set(os.listdir(os.path.join(lib.get_vault_session_path(session), base_name)))
         self.assertTrue(set(local_files) == vault_files,
                         msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files - set(local_files)))
@@ -49,7 +48,7 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand("irm -r " + base_name, "EMPTY")
         self.user0.assert_icommand("ils " + base_name, 'STDERR', "does not exist")
 
-        vault_files_post_irm = os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irm = os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                        base_name))
         self.assertTrue(len(vault_files_post_irm) == 0,
                         msg="Files not removed from vault:\n" + str(vault_files_post_irm))
@@ -63,16 +62,16 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand("imv " + base_name_source + " " + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils " + base_name_source, 'STDERR', "does not exist")
         self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
-        rods_files_post_imv = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_post_imv = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_post_imv,
                         msg="Files missing:\n" + str(file_names - rods_files_post_imv) + "\n\n" +
                             "Extra files:\n" + str(rods_files_post_imv - file_names))
 
-        vault_files_post_irm_source = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irm_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                   base_name_source)))
         self.assertTrue(len(vault_files_post_irm_source) == 0)
 
-        vault_files_post_irm_target = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irm_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                   base_name_target)))
         self.assertTrue(file_names == vault_files_post_irm_target,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_irm_target) + "\n\n" +
@@ -86,24 +85,24 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         base_name_target = "test_icp_r_dir_target"
         self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
-        rods_files_source = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
 
-        rods_files_target = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_target = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_target,
                         msg="Files missing:\n" + str(file_names - rods_files_target) + "\n\n" +
                             "Extra files:\n" + str(rods_files_target - file_names))
 
-        vault_files_post_icp_source = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_icp_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                   base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_icp_source,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_icp_source) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files_post_icp_source - file_names))
 
-        vault_files_post_icp_target = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_icp_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                   base_name_target)))
         self.assertTrue(file_names == vault_files_post_icp_target,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_icp_target) + "\n\n" +
@@ -112,16 +111,16 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
     def test_irsync_r_dir_to_coll(self):
         base_name = "test_irsync_r_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        file_names = set(make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
+        file_names = set(lib.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
 
         self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT', base_name)
-        rods_files = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name])[1]))
+        rods_files = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name])[1]))
         self.assertTrue(file_names == rods_files,
                         msg="Files missing:\n" + str(file_names - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - file_names))
 
-        vault_files_post_irsync = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irsync = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                               base_name)))
 
         self.assertTrue(file_names == vault_files_post_irsync,
@@ -136,24 +135,24 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " i:" + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT', base_name_source)
         self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
-        rods_files_source = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
 
-        rods_files_target = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_target = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_target,
                         msg="Files missing:\n" + str(file_names - rods_files_target) + "\n\n" +
                             "Extra files :\n" + str(rods_files_target - file_names))
 
-        vault_files_post_irsync_source = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                      base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_irsync_source,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_irsync_source) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files_post_irsync_source - file_names))
 
-        vault_files_post_irsync_target = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irsync_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                      base_name_target)))
 
         self.assertTrue(file_names == vault_files_post_irsync_target,
@@ -167,7 +166,7 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         local_dir = os.path.join(self.testing_tmp_dir, "test_irsync_r_coll_to_dir_target")
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " " + local_dir, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT', base_name_source)
-        rods_files_source = set(pydevtest_common.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
@@ -177,7 +176,7 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
                         msg="Files missing from local dir:\n" + str(file_names - local_files) + "\n\n" +
                             "Extra files in local dir:\n" + str(local_files - file_names))
 
-        vault_files_post_irsync_source = set(os.listdir(os.path.join(get_vault_session_path(self.user0),
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                                      base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_irsync_source,
@@ -188,10 +187,10 @@ class Test_ICommands_File_Operations(ResourceBase, unittest.TestCase):
         base_name = 'test_cancel_large_put'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         file_size = pow(2, 30)
-        file_name = make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
+        file_name = lib.make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
         file_local_full_path = os.path.join(local_dir, file_name)
         iput_cmd = "iput '" + file_local_full_path + "'"
-        file_vault_full_path = os.path.join(get_vault_session_path(self.user0), file_name)
+        file_vault_full_path = os.path.join(lib.get_vault_session_path(self.user0), file_name)
         self.user0.interrupt_icommand(iput_cmd, file_vault_full_path, 10)
 
         # multiple threads could still be writing on the server side, so we need to wait for

@@ -13,7 +13,7 @@ import random
 import subprocess
 
 from resource_suite import ResourceBase
-import pydevtest_sessions
+import lib
 
 class ChunkyDevTest(ResourceBase):
 
@@ -123,8 +123,8 @@ class ChunkyDevTest(ResourceBase):
 
     def test_iput_ibun_gzip_bzip2_from_devtest(self):
         # build expected variables with similar devtest names
-        with pydevtest_sessions.make_session_for_existing_admin() as rods_admin:
-            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/tempZone'])
+        with lib.make_session_for_existing_admin() as rods_admin:
+            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -482,8 +482,8 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(myldir)
 
     def test_phybun_from_devtest(self):
-        with pydevtest_sessions.make_session_for_existing_admin() as rods_admin:
-            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/tempZone'])
+        with lib.make_session_for_existing_admin() as rods_admin:
+            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         # build expected variables with similar devtest names
         progname = __file__

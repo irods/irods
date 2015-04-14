@@ -10,7 +10,7 @@ else:
     import unittest2 as unittest
 
 from resource_suite import ResourceBase
-import pydevtest_sessions
+import lib
 
 
 class Test_CatalogSuite(ResourceBase, unittest.TestCase):

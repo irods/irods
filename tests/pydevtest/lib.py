@@ -1,5 +1,6 @@
 import commands
 import contextlib
+import itertools
 import json
 import mmap
 import os
@@ -11,6 +12,9 @@ import socket
 import subprocess
 import tempfile
 import time
+
+import configuration
+import irods_session
 
 
 def update_json_file_from_dict(filename, update_dict):
@@ -141,8 +145,9 @@ def count_occurrences_of_string_in_log(log_source, string, start_index=0):
         return n
 
 def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
-    if not use_unsafe_shell and isinstance(command_arg, str):
+    if not use_unsafe_shell and isinstance(command_arg, basestring):
         command_arg = shlex.split(command_arg)
+    print 'PRINTING COMMAND ARG'
     p = subprocess.Popen(command_arg, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=use_unsafe_shell, cwd=cwd)
     stdout, stderr = p.communicate(input=stdin_string)
     rc = p.returncode
@@ -154,11 +159,10 @@ def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=F
 def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
 
-    if isinstance(expected_results, str):
+    if isinstance(expected_results, basestring):
         expected_results = [expected_results]
 
     regex_msg = 'regex ' if use_regex else ''
-
 
     print 'Expecting {0}: {1}{2}'.format(check_type, regex_msg, expected_results)
     print '  stdout:'
@@ -226,10 +230,10 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
     _, stdout, stderr = run_command(command_arg, **run_command_arg_dict)
 
     fail_string = ' FAIL' if should_fail else ''
-    if isinstance(command_arg, list):
-        print 'Assert{0}Command: {1}'.format(fail_string, ' '.join(command_arg))
-    else:
+    if isinstance(command_arg, basestring):
         print 'Assert{0} Command: {1}'.format(fail_string, command_arg)
+    else:
+        print 'Assert{0} Command: {1}'.format(fail_string, ' '.join(command_arg))
 
     check_run_command_output_arg_dict = extract_function_kwargs(check_run_command_output, kwargs)
     result = should_fail != check_run_command_output(command_arg, stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
@@ -239,3 +243,82 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
 
 def restart_irods_server(env=None):
     assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'], env=env)
+
+def make_environment_dict(username, hostname, zone_name):
+    irods_home = os.path.join('/', zone_name, 'home', username)
+
+    environment = {
+        'irods_host': hostname,
+        'irods_port': 1247,
+        'irods_default_resource': 'demoResc',
+        'irods_home': irods_home,
+        'irods_cwd': irods_home,
+        'irods_user_name': username,
+        'irods_zone': 'tempZone',
+        'irods_client_server_negotiation': 'request_server_negotiation',
+        'irods_client_server_policy': 'CS_NEG_REFUSE',
+        'irods_encryption_key_size': 32,
+        'irods_encryption_salt_size': 8,
+        'irods_encryption_num_hash_rounds': 16,
+        'irods_encryption_algorithm': 'AES-256-CBC',
+        'irods_default_hash_scheme': 'SHA256',
+    }
+    if configuration.USE_SSL:
+        environment.update({
+            'irods_client_server_policy': 'CS_NEG_REQUIRE',
+            'irods_ssl_verify_server': 'cert',
+            'irods_ssl_ca_certificate_file': '/etc/irods/server.crt',
+        })
+    return environment
+
+def get_service_account_environment_file_contents():
+    with open(os.path.expanduser('~/.irods/irods_environment.json')) as f:
+        return json.load(f)
+
+def make_session_for_existing_admin():
+    service_env = get_service_account_environment_file_contents()
+    username = service_env['irods_user_name']
+    zone_name = service_env['irods_zone']
+    env_dict = make_environment_dict(username, configuration.ICAT_HOSTNAME, zone_name)
+    return irods_session.IrodsSession(env_dict, configuration.PREEXISTING_ADMIN_PASSWORD, False)
+
+def mkuser_and_return_session(user_type, username, password, hostname):
+    service_env = get_service_account_environment_file_contents()
+    zone_name = service_env['irods_zone']
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'mkuser', username, user_type])
+        admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])
+        env_dict = make_environment_dict(username, hostname, zone_name)
+        return irods_session.IrodsSession(env_dict, password, True)
+
+def mkgroup_and_add_users(group_name, usernames):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'mkgroup', group_name])
+        for username in usernames:
+            admin_session.assert_icommand(['iadmin', 'atg', group_name, username])
+
+def rmgroup(group_name):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'rmgroup', group_name])
+
+def rmuser(username):
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand(['iadmin', 'rmuser', username])
+
+def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
+    class SessionsMixin(object):
+        def setUp(self):
+            with make_session_for_existing_admin() as admin_session:
+                self.admin_sessions = [mkuser_and_return_session('rodsadmin', name, password, get_hostname())
+                                       for name, password in rodsadmin_name_password_list]
+                self.user_sessions = [mkuser_and_return_session('rodsuser', name, password, get_hostname())
+                                      for name, password in rodsuser_name_password_list]
+            super(SessionsMixin, self).setUp()
+
+        def tearDown(self):
+            with make_session_for_existing_admin() as admin_session:
+                for session in itertools.chain(self.admin_sessions, self.user_sessions):
+                    session.__exit__()
+                    admin_session.assert_icommand(['iadmin', 'rmuser', session.username])
+            super(SessionsMixin, self).tearDown()
+    return SessionsMixin

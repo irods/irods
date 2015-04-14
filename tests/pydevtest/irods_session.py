@@ -9,12 +9,11 @@ import sys
 import tempfile
 import time
 
-import pydevtest_common
+import lib
 
 
 class IrodsSession(object):
-    def __init__(self, icommands_binaries_dir, environment_file_contents, password, manage_irods_data):
-        self._icommands_binaries_dir = icommands_binaries_dir
+    def __init__(self, environment_file_contents, password, manage_irods_data):
         self._environment_file_contents = environment_file_contents
         self._password = password
         self._manage_irods_data = manage_irods_data
@@ -70,15 +69,15 @@ class IrodsSession(object):
 
     def run_icommand(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
-        return pydevtest_common.run_command(*args, **kwargs)
+        return lib.run_command(*args, **kwargs)
 
     def assert_icommand(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
-        pydevtest_common.assert_command(*args, **kwargs)
+        lib.assert_command(*args, **kwargs)
 
     def assert_icommand_fail(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
-        pydevtest_common.assert_command_fail(*args, **kwargs)
+        lib.assert_command_fail(*args, **kwargs)
 
     def _prepare_run_icommand(self, arg, kwargs):
         self._log_run_icommand(arg)
@@ -100,14 +99,14 @@ class IrodsSession(object):
                            'irule', 'iqdel', 'iticket', 'iapitest', 'iscan',
                            'isysmeta', 'iadmin',]
 
-        if isinstance(arg, list):
-            icommand = arg[0]
-            log_string = ' '.join(arg)
-        else:
+        if isinstance(arg, basestring):
             icommand = shlex.split(arg)[0]
             log_string = arg
+        else:
+            icommand = arg[0]
+            log_string = ' '.join(arg)
         assert icommand in valid_icommands, icommand
-        pydevtest_common.write_to_log('server', ' --- run_icommand by [{0}] [{1}] --- \n'.format(self.username, log_string))
+        lib.write_to_log('server', ' --- run_icommand by [{0}] [{1}] --- \n'.format(self.username, log_string))
 
     def _write_environment_file(self):
         if self._environment_file_invalid:
@@ -145,7 +144,7 @@ class IrodsSession(object):
         env['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
         env['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
 
-        pydevtest_common.write_to_log('server', ' --- interrupt icommand [{0}] --- \n'.format(fullcmd))
+        lib.write_to_log('server', ' --- interrupt icommand [{0}] --- \n'.format(fullcmd))
         p = subprocess.Popen(parameters, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
         timeout = 60
@@ -164,25 +163,3 @@ class IrodsSession(object):
             assert False
 
         return 0
-
-    def runAdminCmd(self, icommand, argList=[]):
-        '''Runs the iadmin icommand with optional argument list and
-        returns tuple (stdout, stderr) from subprocess execution.
-        '''
-
-        if icommand != 'iadmin':
-            # second value represents STDERR
-            return ("", "Invalid Admin Command - '" + icommand + "' not allowed")
-
-        myenv = os.environ.copy()
-        myenv['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
-        myenv['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
-
-        cmdStr = "%s/%s" % (self._icommands_binaries_dir, icommand)
-        argList = [cmdStr] + argList
-
-        pydevtest_common.write_to_log('server', ' --- iadmin [{0}] --- \n'.format(' '.join(argList)))
-
-        return subprocess.Popen(argList, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                env=myenv).communicate("yes\n")

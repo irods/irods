@@ -10,12 +10,9 @@ if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
-from resource_suite import ResourceBase
 
 import configuration
-from pydevtest_common import get_irods_top_level_dir, get_irods_config_dir
-import pydevtest_common
-import pydevtest_sessions
+import lib
 
 pydevtestdir = os.path.dirname(os.path.realpath(__file__))
 topdir = os.path.dirname(os.path.dirname(pydevtestdir))
@@ -25,10 +22,10 @@ imp.load_module('server_config', *module_tuple)
 from server_config import ServerConfig
 
 
-class Test_LoadBalanced_Resource(ResourceBase, unittest.TestCase):
+class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
-        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
-            context_prefix = pydevtest_common.get_hostname() + ':' + get_irods_top_level_dir()
+        with lib.make_session_for_existing_admin() as admin_session:
+            context_prefix = lib.get_hostname() + ':' + lib.get_irods_top_level_dir()
             admin_session.assert_icommand('iadmin modresc demoResc name origResc', 'STDOUT', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand('iadmin mkresc demoResc load_balanced', 'STDOUT', 'load_balanced')
             admin_session.assert_icommand('iadmin mkresc rescA "unixfilesystem" ' + context_prefix + '/rescAVault', 'STDOUT', 'unixfilesystem')
@@ -41,7 +38,7 @@ class Test_LoadBalanced_Resource(ResourceBase, unittest.TestCase):
 
     def tearDown(self):
         super(Test_LoadBalanced_Resource, self).tearDown()
-        with pydevtest_sessions.make_session_for_existing_admin() as admin_session:
+        with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescA")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescB")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescC")
@@ -50,9 +47,9 @@ class Test_LoadBalanced_Resource(ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc rescC")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
-        shutil.rmtree(get_irods_top_level_dir() + "/rescAVault", ignore_errors=True)
-        shutil.rmtree(get_irods_top_level_dir() + "/rescBVault", ignore_errors=True)
-        shutil.rmtree(get_irods_top_level_dir() + "/rescCVault", ignore_errors=True)
+        shutil.rmtree(lib.get_irods_top_level_dir() + "/rescAVault", ignore_errors=True)
+        shutil.rmtree(lib.get_irods_top_level_dir() + "/rescBVault", ignore_errors=True)
+        shutil.rmtree(lib.get_irods_top_level_dir() + "/rescCVault", ignore_errors=True)
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_load_balanced(self):
