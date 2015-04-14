@@ -84,6 +84,7 @@ static int parse_program_options(
     //if( global_prog_ops_var_map.count( "path_args" ) ) {
     //}
 
+    memset( &_rods_args, 0, sizeof( _rods_args ) );
     if( global_prog_ops_var_map.count( "help" ) ) {
         usage();
         return -1;
