@@ -41,10 +41,7 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
-        int retval;
-        retval = _rcRmColl( rodsServerHost->conn, rmCollInp, collOprStat );
-        status = svrSendZoneCollOprStat( rsComm, rodsServerHost->conn,
-                                         *collOprStat, retval );
+        status = rcRmColl( rodsServerHost->conn, rmCollInp, 0 );
         return status;
     }
 
