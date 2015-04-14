@@ -13,6 +13,7 @@ else:
 
 import configuration
 import lib
+import resource_suite
 
 pydevtestdir = os.path.dirname(os.path.realpath(__file__))
 topdir = os.path.dirname(os.path.dirname(pydevtestdir))
