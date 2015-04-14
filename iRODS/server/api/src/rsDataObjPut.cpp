@@ -48,7 +48,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                        REMOTE_CREATE );
 
 
-    if ( char* metadata_string = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
+    if ( const char* metadata_string = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
         try {
             irods::deserialize_metadata( metadata_string );
         }
