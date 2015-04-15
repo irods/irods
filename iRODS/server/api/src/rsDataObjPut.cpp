@@ -53,7 +53,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             irods::deserialize_metadata( metadata_string );
         }
         catch ( const irods::exception& e  ) {
-            rodsLog( LOG_ERROR, "%s", e.stack_trace().c_str() );
+            rodsLog( LOG_ERROR, "%s", e.what() );
             return e.code();
         }
     }

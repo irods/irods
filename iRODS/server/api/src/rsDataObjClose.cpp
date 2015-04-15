@@ -652,7 +652,7 @@ _rsDataObjClose(
                 deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
             }
             catch ( const irods::exception& e ) {
-                rodsLog( LOG_ERROR, "%s", e.stack_trace().c_str() );
+                rodsLog( LOG_ERROR, "%s", e.what() );
                 return e.code();
             }
             for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
