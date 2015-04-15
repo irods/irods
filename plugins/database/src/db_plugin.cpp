@@ -11660,6 +11660,7 @@ checkLevel:
 
 
         std::string pathStart = makeEscapedPath( _path_name ) + "/%";
+        int status;
 
 #if (defined ORA_ICAT || defined MY_ICAT)
 #else
@@ -11688,7 +11689,7 @@ checkLevel:
            called), but since the later postgres SQL depends on this table,
            we can be sure this is exercised if "chlModAccessControl SQL 8" is.
         */
-        int status =  cmlExecuteNoAnswerSql( "create temporary table R_MOD_ACCESS_TEMP1 (coll_id bigint not null, coll_name varchar(2700) not null) on commit drop",
+        status =  cmlExecuteNoAnswerSql( "create temporary table R_MOD_ACCESS_TEMP1 (coll_id bigint not null, coll_name varchar(2700) not null) on commit drop",
                                          &icss );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             status = 0;
