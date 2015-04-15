@@ -58,7 +58,7 @@ irodsGetattr( const char *path, struct stat *stbuf ) {
     }
     else {
         /* don't set file cache */
-        pathExist( pctable, ( char * ) path, NULL, stbuf, &tmpPathCache );
+        pathExist( pctable, ( char * ) path, tmpPathCache->fileCache, stbuf, &tmpPathCache );
     }
 #endif
 
