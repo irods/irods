@@ -89,10 +89,7 @@ int _rsFileGet(
     int len;
 
     len = _get_inp->dataSize;
-    if ( len <= 0 ) {
-        return 0;
-    }
-    fd = _rsFileOpen( _comm, _get_inp );
+    fd  = _rsFileOpen( _comm, _get_inp );
 
     if ( fd < 0 ) {
         rodsLog( LOG_NOTICE,

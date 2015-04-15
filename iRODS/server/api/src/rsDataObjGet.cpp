@@ -255,13 +255,8 @@ l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if ( dataObjInfo->dataSize > 0 ) {
-        dataObjOutBBuf->buf = malloc( dataObjInfo->dataSize );
-        bytesRead = l3FileGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf );
-    }
-    else {
-        bytesRead = 0;
-    }
+    dataObjOutBBuf->buf = malloc( dataObjInfo->dataSize );
+    bytesRead = l3FileGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf );
 
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
@@ -312,7 +307,6 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         memset( &subFile, 0, sizeof( subFile ) );
         rstrcpy( subFile.subFilePath, dataObjInfo->subPath,
                  MAX_NAME_LEN );
-        //rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
 
         subFile.specColl = dataObjInfo->specColl;
