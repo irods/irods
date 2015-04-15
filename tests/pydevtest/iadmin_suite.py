@@ -1036,3 +1036,9 @@ acSetNumThreads() {
 
     def test_storageadmin_role(self):
         self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
+    
+    def test_domainadmin_role(self):
+        self.admin.assert_icommand_fail("iadmin mkuser nopes domainadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
+    
+    def test_rodscurators_role(self):
+        self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT', "CAT_INVALID_USER_TYPE")
