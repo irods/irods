@@ -1,4 +1,3 @@
-
 #include "rodsClient.hpp"
 #include "irods_parse_command_line_options.hpp"
 #include "boost/program_options.hpp"
@@ -177,7 +176,7 @@ static int parse_program_options(
     if( global_prog_ops_var_map.count( "very_verbose" ) ) {
         _rods_args.verbose = 1;
         _rods_args.veryVerbose = 1;
-        rodsLogLevel( LOG_DEBUG );
+        rodsLogLevel( LOG_NOTICE );
     }
     if( global_prog_ops_var_map.count( "data_type" ) ) {
         _rods_args.dataType = 1;
