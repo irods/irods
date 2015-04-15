@@ -271,7 +271,7 @@ def make_environment_dict(username, hostname, zone_name):
         })
     return environment
 
-def json_object_hook_ascii_list(d):
+def json_object_hook_ascii_list(l):
     rv = []
     for i in l:
         if isinstance(i, unicode):
