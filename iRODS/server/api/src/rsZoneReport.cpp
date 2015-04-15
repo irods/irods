@@ -71,14 +71,14 @@ irods::error get_server_reports(
 
     std::map< rodsServerHost_t*, int > svr_reported;
     rodsServerHost_t* icat_host = 0;
-    char* zone_name = getLocalZoneName(); 
+    char* zone_name = getLocalZoneName();
     int status = getRcatHost( MASTER_RCAT, zone_name, &icat_host );
     if( status < 0 ) {
-        return ERROR( 
+        return ERROR(
                    status,
-                   "getRcatHost failed" ); 
+                   "getRcatHost failed" );
     }
-    
+
     for ( irods::resource_manager::iterator itr = resc_mgr.begin();
             itr != resc_mgr.end();
             ++itr ) {
@@ -94,19 +94,16 @@ irods::error get_server_reports(
             continue;
         }
 
-        if ( LOCAL_HOST == tmp_host->localFlag ) {
-            continue;
-        }
-
         // skip the icat server as that is done separately
         // also skip null tmp_hosts resources ( coordinating )
-        if( !tmp_host || tmp_host == icat_host ) {
+        // skip local host
+        if( !tmp_host || tmp_host == icat_host || LOCAL_HOST == tmp_host->localFlag ) {
             continue;
 
         }
 
         // skip previously reported servers
-        std::map< rodsServerHost_t*, int >::iterator svr_itr = 
+        std::map< rodsServerHost_t*, int >::iterator svr_itr =
             svr_reported.find( tmp_host );
         if( svr_itr != svr_reported.end() ) {
             continue;
@@ -134,7 +131,7 @@ irods::error get_server_reports(
                 "",
                 status );
         }
-        
+
         // possible null termination issues
         std::string tmp_str;
         tmp_str.assign( (char*)bbuf->buf, bbuf->len );
