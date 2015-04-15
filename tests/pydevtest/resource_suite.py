@@ -973,3 +973,26 @@ class ResourceSuite(ResourceBase):
             self.user0.username + "/" + self.user0._session_id
         self.user0.assert_icommand("irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
         self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT', "Number of files trimmed = 100.")
+
+    ###################
+    # iput with key-value passthrough
+    ###################
+
+    def test_key_value_passthru(self):
+        env = os.environ.copy() 
+        env = {'spLogLevel': '11'}
+        lib.restart_irods_server(env=env)       
+        
+        lib.make_file( "file.txt", 15)
+        self.user0.assert_icommand('iput --kv_pass="fancy_key1=val1" file.txt', 'EMPTY')
+        lib.assert_command('grep -r fancy_key1 /var/lib/irods/iRODS/server/log/', 'STDOUT', 'key [fancy_key1] - value [val1]')
+        
+        self.user0.assert_icommand('iget -f --kv_pass="fancy_key3=val3" file.txt other.txt', 'EMPTY')
+        lib.assert_command('grep -r fancy_key3 /var/lib/irods/iRODS/server/log/', 'STDOUT', 'key [fancy_key3] - value [val3]')        
+        
+        env = os.environ.copy() 
+        lib.restart_irods_server(env=env)       
+        
+        lib.assert_command('rm -f file.txt other.txt', 'EMPTY')
+
+
