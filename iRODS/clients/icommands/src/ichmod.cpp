@@ -22,6 +22,7 @@ main( int argc, char **argv ) {
     rodsArguments_t myRodsArgs;
     int status = parseCmdLineOpt( argc, argv, "RrhvVM", 0, &myRodsArgs );
     if ( status ) {
+        rodsLogError( LOG_ERROR, status, "main: parseCmdLineOpt error. " );
         printf( "Use -h for help\n" );
         return 1;
     }
@@ -30,17 +31,11 @@ main( int argc, char **argv ) {
         return 0;
     }
 
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status, "main: parseCmdLineOpt error. " );
-        printf( "Use -h for help\n" );
-        return 2;
-    }
-
     int nArgs = argc - myRodsArgs.optind;
 
     if ( nArgs < 2 ) {
         usage();
-        return 3;
+        return 2;
     }
 
     rodsEnv myEnv;
