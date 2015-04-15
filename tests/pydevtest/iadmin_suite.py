@@ -979,7 +979,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log")
     def test_rule_engine_2521(self):
-        with lib.core_re_backed_up():
+        with lib.file_backed_up('/etc/irods/core.re'):
             initial_size_of_re_log = lib.get_log_size('re')
             rules_to_prepend = '''
 first_rule_called_from_delay() {
@@ -997,7 +997,7 @@ acPostProcForPut() {
     }
 }
 '''
-            lib.prepend_string_to_core_re(rules_to_prepend)
+            lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
             trigger_file = 'file_to_trigger_acPostProcForPut'
             lib.make_file(trigger_file, 10)
             self.admin.assert_icommand('iput {0}'.format(trigger_file))
@@ -1005,40 +1005,49 @@ acPostProcForPut() {
             assert 1 == lib.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
+            os.unlink(trigger_file)
 
-    @unittest.skipIf(True, 'Enable once fix is committed; Skip for topology testing from resource server: reads re server log')
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        with lib.core_re_backed_up():
-            initial_size_of_server_log = lib.get_log_size('server')
-            rules_to_prepend = '''
-acSetNumThreads() {
-    writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
-}
-'''
-            lib.prepend_string_to_core_re(rules_to_prepend)
-            trigger_file = 'file_to_trigger_acPostProcForPut'
-            lib.make_file(trigger_file, 4*pow(10, 7))
-            self.admin.assert_icommand('iput {0}'.format(trigger_file))
-            assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
-            assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+        with lib.file_backed_up('/etc/irods/core.dvm'):
+            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', '/etc/irods/core.dvm')
+            with lib.file_backed_up('/etc/irods/core.re'):
+                initial_size_of_server_log = lib.get_log_size('server')
+                rules_to_prepend = '''
+ acSetNumThreads() {
+     writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
+ }
+ '''
+                time.sleep(1)  # remove once file hash fix is commited #2279
+                lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+                time.sleep(1)  # remove once file hash fix is commited #2279
+                trigger_file = 'file_to_trigger_acSetNumThreads'
+                lib.make_file(trigger_file, 4*pow(10, 7))
+                self.admin.assert_icommand('iput {0}'.format(trigger_file))
+                assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
+                assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                os.unlink(trigger_file)
 
-        with lib.core_re_backed_up():
-            initial_size_of_server_log = lib.get_log_size('server')
-            rules_to_prepend = '''
+            with lib.file_backed_up('/etc/irods/core.re'):
+                initial_size_of_server_log = lib.get_log_size('server')
+                rules_to_prepend = '''
 acSetNumThreads() {
     writeLine("serverLog","test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
 }
 '''
-            lib.prepend_string_to_core_re(rules_to_prepend)
-            self.admin.assert_icommand('iget {0} - > /dev/null'.format(trigger_file))
-            assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
-            assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                time.sleep(1)  # remove once file hash fix is commited #2279
+                lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+                time.sleep(1)  # remove once file hash fix is commited #2279
+                self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
+                assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
+                assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                os.unlink(trigger_file)
 
     def test_storageadmin_role(self):
         self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
-    
+
     def test_domainadmin_role(self):
         self.admin.assert_icommand_fail("iadmin mkuser nopes domainadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
-    
+
     def test_rodscurators_role(self):
         self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT', "CAT_INVALID_USER_TYPE")

@@ -97,16 +97,15 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
     return local_files
 
 @contextlib.contextmanager
-def core_re_backed_up():
-    with tempfile.NamedTemporaryFile(prefix='core.re_backup') as f:
-        shutil.copyfile('/etc/irods/core.re', f.name)
+def file_backed_up(filename):
+    with tempfile.NamedTemporaryFile(prefix=os.path.basename(filename)) as f:
+        shutil.copyfile(filename, f.name)
         yield
-        shutil.copyfile(f.name, '/etc/irods/core.re')
+        shutil.copyfile(f.name, filename)
 
-def prepend_string_to_core_re(string):
-    core_re_path = '/etc/irods/core.re'
-    with open(core_re_path, 'r') as f: contents = f.read()
-    with open(core_re_path, 'w') as f:
+def prepend_string_to_file(string, filename):
+    with open(filename, 'r') as f: contents = f.read()
+    with open(filename, 'w') as f:
         f.write(string)
         f.write(contents)
 
