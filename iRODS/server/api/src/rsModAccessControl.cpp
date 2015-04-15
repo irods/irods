@@ -58,9 +58,7 @@ _rsModAccessControl( rsComm_t *rsComm,
     int status, status2;
 
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int argc;
     ruleExecInfo_t rei2;
-    char rFlag[15];
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
     if ( rsComm != NULL ) {
@@ -68,13 +66,14 @@ _rsModAccessControl( rsComm_t *rsComm,
         rei2.uoip = &rsComm->proxyUser;
     }
 
-    sprintf( rFlag, "%d", modAccessControlInp->recursiveFlag );
+    char rFlag[15];
+    snprintf( rFlag, sizeof( rFlag ), "%d", modAccessControlInp->recursiveFlag );
     args[0] = rFlag;
     args[1] = modAccessControlInp->accessLevel;
     args[2] = modAccessControlInp->userName;
     args[3] = modAccessControlInp->zone;
     args[4] = modAccessControlInp->path;
-    argc = 5;
+    int argc = 5;
     status2 = applyRuleArg( "acPreProcForModifyAccessControl", args, argc, &rei2, NO_SAVE_REI );
     if ( status2 < 0 ) {
         if ( rei2.status < 0 ) {

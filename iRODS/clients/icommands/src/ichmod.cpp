@@ -18,68 +18,51 @@ main( int argc, char **argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    int status;
-    rodsEnv myEnv;
-    rErrMsg_t errMsg;
-    rcComm_t *conn;
+
     rodsArguments_t myRodsArgs;
-    char *optStr;
-    rodsPathInp_t rodsPathInp;
-    int i, nArgs;
-    modAccessControlInp_t modAccessControl;
-    char userName[NAME_LEN];
-    char zoneName[NAME_LEN];
-    int doingInherit;
-    char rescAccessLevel[LONG_NAME_LEN];
-    char adminModeAccessLevel[LONG_NAME_LEN];
-
-    optStr = "RrhvVM";
-
-    status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
+    int status = parseCmdLineOpt( argc, argv, "RrhvVM", 0, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: parseCmdLineOpt error. " );
         printf( "Use -h for help\n" );
-        exit( 2 );
+        return 2;
     }
 
-    nArgs = argc - myRodsArgs.optind;
+    int nArgs = argc - myRodsArgs.optind;
 
     if ( nArgs < 2 ) {
         usage();
-        exit( 3 );
+        return 3;
     }
 
+    rodsEnv myEnv;
     status = getRodsEnv( &myEnv );
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
-        exit( 3 );
+        return 3;
     }
 
-    optind = myRodsArgs.optind + 2;
-    doingInherit = 0;
-    if ( strcmp( argv[myRodsArgs.optind], ACCESS_INHERIT ) == 0 ||
-            strcmp( argv[myRodsArgs.optind], ACCESS_NO_INHERIT ) == 0 ) {
-        doingInherit = 1;
-        optind = myRodsArgs.optind + 1;
-    }
+    bool doingInherit = !strcmp( argv[myRodsArgs.optind], ACCESS_INHERIT ) ||
+            !strcmp( argv[myRodsArgs.optind], ACCESS_NO_INHERIT );
+    int optind = doingInherit ? myRodsArgs.optind + 1 : myRodsArgs.optind + 2;
 
+    rodsPathInp_t rodsPathInp;
     status = parseCmdLinePath( argc, argv, optind, &myEnv,
                                UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp );
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: parseCmdLinePath error. " );
         usage();
-        exit( 4 );
+        return 4;
     }
 
     // =-=-=-=-=-=-=-
@@ -88,22 +71,26 @@ main( int argc, char **argv ) {
     irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
     init_api_table( api_tbl, pk_tbl );
 
-    conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+    rErrMsg_t errMsg;
+    rcComm_t * conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( conn == NULL ) {
-        exit( 5 );
+        return 5;
     }
 
     status = clientLogin( conn );
     if ( status != 0 ) {
         rcDisconnect( conn );
-        exit( 6 );
+        return 6;
     }
 
+    modAccessControlInp_t modAccessControl;
     modAccessControl.recursiveFlag = myRodsArgs.recursive;
     modAccessControl.accessLevel = argv[myRodsArgs.optind];
 
+    char zoneName[NAME_LEN];
+    char userName[NAME_LEN];
     if ( doingInherit ) {
         modAccessControl.userName = "";
         modAccessControl.zone = "";
@@ -113,42 +100,37 @@ main( int argc, char **argv ) {
         if ( status != 0 ) {
             printf( "Invalid iRODS user name format: %s\n",
                     argv[myRodsArgs.optind + 1] );
-            exit( 7 );
+            rcDisconnect( conn );
+            return 7;
         }
+        modAccessControl.userName = userName;
+        modAccessControl.zone = zoneName;
     }
-    modAccessControl.userName = userName;
-    modAccessControl.zone = zoneName;
-    for ( i = 0; i < rodsPathInp.numSrc && status == 0; i++ ) {
+    for ( int i = 0; i < rodsPathInp.numSrc && status == 0; i++ ) {
         if ( rodsPathInp.numSrc > 1 && myRodsArgs.verbose != 0 ) {
             printf( "path %s\n", rodsPathInp.srcPath[i].outPath );
         }
         modAccessControl.path = rodsPathInp.srcPath[i].outPath;
 
+        char rescAccessLevel[LONG_NAME_LEN];
         if ( myRodsArgs.resource ) {
-            strncpy( rescAccessLevel, MOD_RESC_PREFIX, LONG_NAME_LEN );
-            strncat( rescAccessLevel, argv[myRodsArgs.optind], LONG_NAME_LEN - strlen( rescAccessLevel ) );
+            snprintf( rescAccessLevel, sizeof( rescAccessLevel ), "%s%s", MOD_RESC_PREFIX, argv[myRodsArgs.optind] );
             modAccessControl.accessLevel = rescAccessLevel; /* indicate resource*/
             modAccessControl.path = argv[optind]; /* just use the plain name */
         }
+        char adminModeAccessLevel[LONG_NAME_LEN];
         if ( myRodsArgs.admin && i == 0 ) {  /* admin mode, add indicator */
-            strncpy( adminModeAccessLevel, MOD_ADMIN_MODE_PREFIX, LONG_NAME_LEN );
-            strncat( adminModeAccessLevel, modAccessControl.accessLevel,
-                     LONG_NAME_LEN - strlen( adminModeAccessLevel ) );
+            snprintf( adminModeAccessLevel, sizeof( adminModeAccessLevel ), "%s%s", MOD_ADMIN_MODE_PREFIX, modAccessControl.accessLevel );
             modAccessControl.accessLevel = adminModeAccessLevel;
         }
         status = rcModAccessControl( conn, &modAccessControl );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status, "rcModAccessControl failure %s",
                           errMsg.msg );
-            if ( conn->rError ) {
-                rError_t *Err;
-                rErrMsg_t *ErrMsg;
-                int i, len;
-                Err = conn->rError;
-                len = Err->len;
-                for ( i = 0; i < len; i++ ) {
-                    ErrMsg = Err->errMsg[i];
-                    rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
+            if ( const rError_t *Err = conn->rError ) {
+                int len = Err->len;
+                for ( int j = 0; j < len; j++ ) {
+                    rodsLog( LOG_ERROR, "Level %d: %s", j, Err->errMsg[j]->msg );
                 }
             }
         }
@@ -158,11 +140,9 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
-        exit( 8 );
+        return 8;
     }
-    else {
-        exit( 0 );
-    }
+    return 0;
 
 }
 
