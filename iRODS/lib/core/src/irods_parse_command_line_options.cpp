@@ -116,15 +116,30 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "repl_num" ) ) {
         _rods_args.replNum = 1;
-        _rods_args.replNumValue = (char*)global_prog_ops_var_map[ "repl_num" ].as<std::string>().c_str();
+        try {
+            _rods_args.replNumValue = (char*)global_prog_ops_var_map[ "repl_num" ].as<std::string>().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "num_threads" ) ) {
         _rods_args.number = 1;
-        _rods_args.numberValue = global_prog_ops_var_map[ "num_threads" ].as<int>();
+        try {
+            _rods_args.numberValue = global_prog_ops_var_map[ "num_threads" ].as<int>();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "physical_path" ) ) {
         _rods_args.physicalPath = 1;
-        _rods_args.physicalPathString = (char*)global_prog_ops_var_map[ "physical_path" ].as< std::string >().c_str();
+        try {
+            _rods_args.physicalPathString = (char*)global_prog_ops_var_map[ "physical_path" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "progress" ) ) {
         _rods_args.progressFlag = 1;
@@ -137,11 +152,21 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "dest_resc" ) ) {
         _rods_args.resource = 1;
-        _rods_args.resourceString = (char*)global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str();
+        try {
+            _rods_args.resourceString = (char*)global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "ticket" ) ) {
         _rods_args.ticket = 1;
-        _rods_args.ticketString = (char*)global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str();
+        try {
+            _rods_args.ticketString = (char*)global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "renew_socket" ) ) {
         _rods_args.reconnect = 1;
@@ -156,22 +181,42 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "data_type" ) ) {
         _rods_args.dataType = 1;
-        _rods_args.dataTypeString = (char*)global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str();
+        try {
+            _rods_args.dataTypeString = (char*)global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "restart_file" ) ) {
         _rods_args.restart = 1;
-        _rods_args.restartFileString = (char*)global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str();
+        try {
+            _rods_args.restartFileString = (char*)global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "link" ) ) {
         _rods_args.link = 1;
     }
     if( global_prog_ops_var_map.count( "lfrestart" ) ) {
         _rods_args.lfrestart = 1;
-        _rods_args.lfrestartFileString = (char*)global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str();
+        try {
+            _rods_args.lfrestartFileString = (char*)global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "retries" ) ) {
         _rods_args.retries = 1;
-        _rods_args.retriesValue = global_prog_ops_var_map[ "retries" ].as< int >();
+        try {
+            _rods_args.retriesValue = global_prog_ops_var_map[ "retries" ].as< int >();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "wlock" ) ) {
         _rods_args.wlock = 1;
@@ -184,11 +229,21 @@ static int parse_program_options(
     }
     if( global_prog_ops_var_map.count( "kv_pass" ) ) {
         _rods_args.kv_pass = 1;
-        _rods_args.kv_pass_string = (char*)global_prog_ops_var_map[ "kv_pass" ].as< std::string >().c_str(); 
+        try {
+            _rods_args.kv_pass_string = (char*)global_prog_ops_var_map[ "kv_pass" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
     if( global_prog_ops_var_map.count( "metadata" ) ) {
         _rods_args.metadata = 1;
-        _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str(); 
+        try {
+            _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
     }
 
     return 0;
