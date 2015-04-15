@@ -1321,7 +1321,7 @@ Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
     else if ( TYPE( val ) == T_IRODS && strcmp( val->exprType->text, KeyValPair_MS_T ) == 0 ) {
         int size = 1024;
         char *buf = ( char * ) malloc( size );
-        char *p = buf;
+	buf[0] = '\0';
         keyValPair_t *kvp = ( keyValPair_t * ) RES_UNINTER_STRUCT( val );
         int i;
         int kl;
@@ -1329,11 +1329,12 @@ Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
         for ( i = 0; i < kvp->len; i++ ) {
             kl = strlen( kvp->keyWord[i] );
             vl = strlen( kvp->value[i] );
-            if ( p + kl + 1 + vl + ( i == 0 ? 0 : 4 ) >= buf + size ) {
+            int diff = strlen(buf);
+            if ( diff + kl + 1 + vl + ( i == 0 ? 0 : 4 ) >= size ) {
                 size *= 2;
                 buf = ( char * ) realloc( buf, size );
             }
-            snprintf( p, size - ( p - buf ), "%s%s=%s", i == 0 ? "" : "++++", kvp->keyWord[i], kvp->value[i] );
+            snprintf( buf + diff, size - diff, "%s%s=%s", i == 0 ? "" : "++++", kvp->keyWord[i], kvp->value[i] );
         }
         res = newStringRes( r, buf );
         free( buf );
