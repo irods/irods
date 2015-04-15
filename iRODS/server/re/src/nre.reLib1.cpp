@@ -189,6 +189,16 @@ applyRuleBase( char *inAction, msParamArray_t *inMsParamArray, int updateInMsPar
 
 
 
+/**
+ * \fn applyAllRules( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag )
+ *
+ * \brief  DEPRECATED - applyAllRules is too ad-hoc and non-deterministic.
+ *      If you need to apply multiple rules and catch the cases where one may fail,
+ *      the best practice is to use the errorcode() and test for the result.
+ *
+ * \deprecated Since 4.1.0.  Will be removed in 4.2.0
+ *
+ **/
 int
 applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
                ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag ) {
