@@ -149,6 +149,43 @@ namespace irods {
 
     } // get_server_property
 
+    template< typename T >
+    error get_advanced_setting(
+        const std::string& _prop,
+        T&                 _val ) {
+        typedef irods::configuration_parser::object_t object_t;
+        irods::server_properties& props =
+            irods::server_properties::getInstance();
+        irods::error ret = props.capture_if_needed();
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        object_t adv_set;
+        ret = props.get_property< object_t > (
+                  CFG_ADVANCED_SETTINGS_KW,
+                  adv_set );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+
+        }
+
+        if( !adv_set.has_entry( _prop ) ) {
+            std::string msg( "missing [" );
+            msg += _prop;
+            msg += "]";
+            return ERROR(
+                       KEY_NOT_FOUND,
+                       msg );
+
+        }
+
+        return adv_set.get<T>( 
+                   _prop,
+                   _val );
+
+    } // get_advanced_setting
+
 } // namespace irods
 
 #endif /* IRODS_SERVER_PROPERTIES_HPP_ */

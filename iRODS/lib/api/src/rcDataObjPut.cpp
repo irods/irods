@@ -199,11 +199,14 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                     portalOprOut->portList.portNum, portalOprOut->portList.cookie );
         }
         /* some sanity check */
-        if ( portalOprOut->numThreads >= 20 * DEF_NUM_TRAN_THR ) {
+        rodsEnv env;
+        getRodsEnv( &env );
+        if ( portalOprOut->numThreads >= 20 * env.irodsDefaultNumberTransferThreads ) {
             rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
             free( portalOprOut );
             return SYS_INVALID_PORTAL_OPR;
         }
+
         conn->transStat.numThreads = portalOprOut->numThreads;
         status = putFileToPortal( conn, portalOprOut, locFilePath,
                                   dataObjInp->objPath, dataObjInp->dataSize );

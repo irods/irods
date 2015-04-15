@@ -20,6 +20,7 @@
 //
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_table.hpp"
+#include "irods_server_properties.hpp"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -744,6 +745,16 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     maxNumThrStr = ( char * ) xmaxNumThrStr->inOutStruct;
     windowSizeStr = ( char * ) xwindowSizeStr->inOutStruct;
 
+
+    int def_num_thr = 0;
+    irods::error ret = irods::get_advanced_setting( 
+                           irods::CFG_DEF_NUMBER_TRANSFER_THREADS, 
+                           def_num_thr );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    } 
+
     if ( rei->rsComm != NULL ) {
         if ( strcmp( windowSizeStr, "null" ) == 0 ||
                 strcmp( windowSizeStr, "default" ) == 0 ) {
@@ -770,19 +781,19 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     if ( doinp == NULL ) {
         rodsLog( LOG_ERROR,
                  "msiSetNumThreads: doinp is NULL" );
-        rei->status = DEF_NUM_TRAN_THR;
-        return DEF_NUM_TRAN_THR;
+        rei->status = def_num_thr;
+        return def_num_thr;
     }
 
     if ( strcmp( maxNumThrStr, "default" ) == 0 ) {
-        maxNumThr = DEF_NUM_TRAN_THR;
+        maxNumThr = def_num_thr;
     }
     else {
         maxNumThr = atoi( maxNumThrStr );
         if ( maxNumThr < 0 ) {
             rodsLog( LOG_ERROR,
                      "msiSetNumThreads: Bad input maxNumThr %s", maxNumThrStr );
-            maxNumThr = DEF_NUM_TRAN_THR;
+            maxNumThr = def_num_thr;
         }
         else if ( maxNumThr == 0 ) {
             rei->status = 0;

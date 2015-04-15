@@ -423,6 +423,30 @@ extern "C" {
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
             _env->irodsCtrlPlanePort );
 
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
+            _env->irodsDefaultNumberTransferThreads );
+
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS,
+            _env->irodsMaximumNumberTransferThreads );
+
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS,
+            _env->irodsReadBufferSizeForParaTrans );
+
+        capture_integer_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS,
+            _env->irodsTransBufferSizeForParaTrans );
+
         return 0;
     }
 
@@ -692,6 +716,26 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->irodsSSLDHParamsFile );
+
+        env_var = irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
+        capture_integer_env_var(
+            env_var,
+            _env->irodsDefaultNumberTransferThreads );
+
+        env_var = irods::CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS;
+        capture_integer_env_var(
+            env_var,
+            _env->irodsMaximumNumberTransferThreads );
+
+        env_var = irods::CFG_IRODS_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS;
+        capture_integer_env_var(
+            env_var,
+            _env->irodsReadBufferSizeForParaTrans );
+
+        env_var = irods::CFG_IRODS_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS;
+        capture_integer_env_var(
+            env_var,
+            _env->irodsTransBufferSizeForParaTrans );
 
         return 0;
     }
