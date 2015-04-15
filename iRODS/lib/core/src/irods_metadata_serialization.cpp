@@ -1,19 +1,16 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <boost/algorithm/string/replace.hpp>
+#include <boost/regex.hpp>
 #include "irods_exception.hpp"
 #include "rodsError.hpp"
 
 namespace irods {
     std::string serialize_metadata( const std::vector<std::string>& metadata ) {
+        static const boost::regex special_character_set( "[;\\\\]" );
         std::stringstream serialized_metadata;
-        for ( std::vector<std::string>::const_iterator iter = metadata.begin(); iter != metadata.end(); ) {
-            serialized_metadata << boost::replace_all_copy( boost::replace_all_copy( *iter, "\\", "\\\\" ), ";", "\\;" );
-            ++iter;
-            if ( iter != metadata.end() ) {
-                serialized_metadata << ";";
-            }
+        for ( std::vector<std::string>::const_iterator iter = metadata.begin(); iter != metadata.end(); ++iter ) {
+            serialized_metadata << boost::regex_replace( *iter, special_character_set, "\\\\$&" ) << ";";
         }
         return serialized_metadata.str();
     }
