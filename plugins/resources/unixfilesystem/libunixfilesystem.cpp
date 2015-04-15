@@ -425,10 +425,10 @@ extern "C" {
             // get ref to fco
             irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-            char* kvp_str = getValByKey( 
+            char* kvp_str = getValByKey(
                                 &fco->cond_input(),
                                 KEY_VALUE_PASSTHROUGH_KW );
-            if( kvp_str ) { 
+            if( kvp_str ) {
                 irods::kvp_map_t kvp;
                 ret = irods::parse_kvp_string(
                           kvp_str,
@@ -439,18 +439,13 @@ extern "C" {
                 else {
                     irods::kvp_map_t::iterator itr = kvp.begin();
                     for( ; itr != kvp.end(); ++ itr ) {
-                        rodsLog( 
+                        rodsLog(
                             LOG_DEBUG,
                             "unix_file_create_plugin - kv_pass :: key [%s] - value [%s]",
                             itr->first.c_str(),
                             itr->second.c_str() );
                     } // for itr
                 }
-            } else {
-                rodsLog( 
-                    LOG_NOTICE,
-                    "unix_file_create_plugin - kvp string is null" );
-
             }
 
             ret = unix_file_get_fsfreespace_plugin( _ctx );
@@ -536,10 +531,10 @@ extern "C" {
             // get ref to fco
             irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-            char* kvp_str = getValByKey( 
+            char* kvp_str = getValByKey(
                                 &fco->cond_input(),
                                 KEY_VALUE_PASSTHROUGH_KW );
-            if( kvp_str ) { 
+            if( kvp_str ) {
                 irods::kvp_map_t kvp;
                 ret = irods::parse_kvp_string(
                           kvp_str,
@@ -550,20 +545,14 @@ extern "C" {
                 else {
                     irods::kvp_map_t::iterator itr = kvp.begin();
                     for( ; itr != kvp.end(); ++ itr ) {
-                        rodsLog( 
+                        rodsLog(
                             LOG_DEBUG,
                             "unix_file_open_plugin - kv_pass :: key [%s] - value [%s]",
                             itr->first.c_str(),
                             itr->second.c_str() );
                     } // for itr
                 }
-            } else {
-                rodsLog( 
-                    LOG_NOTICE,
-                    "unix_file_open_plugin - kvp string is null" );
-
             }
-
 
             // =-=-=-=-=-=-=-
             // handle OSX weirdness...
@@ -1072,7 +1061,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // cast down the hierarchy to the desired object
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-                
+
                 // =-=-=-=-=-=-=-
                 // get the default directory mode
                 mode_t mode = 0750;
@@ -1562,6 +1551,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
