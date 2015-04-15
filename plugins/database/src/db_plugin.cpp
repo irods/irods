@@ -11379,7 +11379,7 @@ checkLevel:
         }
         char collIdStr[MAX_NAME_LEN];
         if ( status1 >= 0 ) {
-            snprintf( collIdStr, MAX_NAME_LEN, "%lld", status1 );
+            snprintf( collIdStr, MAX_NAME_LEN, "%d", status1 );
         }
 
         if ( status1 < 0 && inheritFlag != 0 ) {
@@ -11457,7 +11457,7 @@ checkLevel:
                     if ( status < 0 ) {
                         return ERROR( status1, "cmlCheckDirOwn failed" );
                     }
-                    snprintf( collIdStr, MAX_NAME_LEN, "%lld", status );
+                    snprintf( collIdStr, MAX_NAME_LEN, "%d", status );
                 }
                 else {
                     if ( status2 == CAT_NO_ACCESS_PERMISSION ) {
