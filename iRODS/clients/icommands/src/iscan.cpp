@@ -98,7 +98,7 @@ usage() {
         "Full path must be used for local files and directories.",
         "If the input is an iRODS file or an iRODS collection, it checks if the physical files corresponding ",
         "to the iRODS object does exist on the data servers. Scanning data objects and collections may only be ",
-        "performed by a rodsadmin."
+        "performed by a rodsadmin.",
         "If the operation is successful, nothing will be output and 0 will be returned.",
         "Options are:",
         " -r  recursive - scan local subdirectories or subcollections",
