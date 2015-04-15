@@ -89,12 +89,16 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
                   rodsLong_t dataSize ) {
     int in_fd, status;
 
-    if ( dataSize > 10 * MAX_SZ_FOR_SINGLE_BUF ) {
+    rodsEnv env;
+    getRodsEnv( &env );
+    int single_buff_sz = env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
+
+    if ( dataSize > 10 * single_buff_sz ) {
         rodsLog( LOG_ERROR,
                  "fillBBufWithFile: dataSize %lld too large", dataSize );
         return USER_FILE_TOO_LARGE;
     }
-    else if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
+    else if ( dataSize > single_buff_sz ) {
         rodsLog( LOG_NOTICE,
                  "fillBBufWithFile: dataSize %lld too large", dataSize );
     }

@@ -17,6 +17,8 @@
 #include "irods_ms_home.hpp"
 #include "reFuncDefs.hpp"
 #include "sockComm.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_log.hpp"
 
 int
 fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
@@ -976,6 +978,15 @@ int
 msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     char *outStr;
     bytesBuf_t *inBuf;
+    int single_buff_sz = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                           single_buff_sz );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+    single_buff_sz *= 1024 * 1024;
 
     /*check buf_msp */
     if ( buf_msp == NULL || buf_msp->inOutStruct == NULL ) {
@@ -983,7 +994,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
         return USER__NULL_INPUT_ERR;
     }
     inBuf = buf_msp->inpOutBuf;
-    if ( inBuf->len < 0 || inBuf->len > ( MAX_SZ_FOR_SINGLE_BUF - 10 ) )  {
+    if ( inBuf->len < 0 || inBuf->len > ( single_buff_sz - 10 ) )  {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
         return USER_INPUT_FORMAT_ERR;
     }

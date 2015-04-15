@@ -33,6 +33,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 int
 rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
@@ -297,13 +298,23 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = 0;
     }
     else if ( phyOpenFlag == PHYOPEN_BY_SIZE ) {
+        int single_buff_sz = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                               single_buff_sz );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        single_buff_sz *= 1024 * 1024;
+
         /* open for put or get. May do "dataInclude" */
         if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL
-                && dataObjInfo->dataSize <= MAX_SZ_FOR_SINGLE_BUF ) {
+                && dataObjInfo->dataSize <= single_buff_sz ) {
             status = 0;
         }
         else if ( dataObjInfo->dataSize != UNKNOWN_FILE_SZ &&
-                  dataObjInfo->dataSize < MAX_SZ_FOR_SINGLE_BUF ) {
+                  dataObjInfo->dataSize < single_buff_sz ) {
             status = 0;
         }
         else {

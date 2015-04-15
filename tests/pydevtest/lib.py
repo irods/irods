@@ -261,6 +261,7 @@ def make_environment_dict(username, hostname, zone_name):
         'irods_encryption_num_hash_rounds': 16,
         'irods_encryption_algorithm': 'AES-256-CBC',
         'irods_default_hash_scheme': 'SHA256',
+        'irods_maximum_size_for_single_buffer_in_megabytes': 32,
         'irods_default_number_of_transfer_threads': 4,
         'irods_maximum_number_of_transfer_threads': 64,
         'irods_size_of_read_buffer_for_parallel_transfer_in_megabytes': 40,

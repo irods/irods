@@ -972,6 +972,7 @@ sub configureIrodsUser
         "    \"irods_server_control_plane_key\": \"TEMPORARY__32byte_ctrl_plane_key\",\n" .
         "    \"irods_server_control_plane_encryption_num_hash_rounds\": 16,\n" .
         "    \"irods_server_control_plane_encryption_algorithm\": \"AES-256-CBC\",\n" .
+        "    \"irods_maximum_size_for_single_buffer_in_megabytes\": 32,\n" .
         "    \"irods_default_number_of_transfer_threads\": 4,\n" .
         "    \"irods_maximum_number_of_transfer_threads\": 64,\n" .
         "    \"irods_size_of_read_buffer_for_parallel_transfer_in_megabytes\": 40,\n" .

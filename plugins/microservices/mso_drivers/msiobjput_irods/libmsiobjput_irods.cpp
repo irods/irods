@@ -8,7 +8,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <string>
-
+#include "irods_server_properties.hpp"
 
 extern "C" {
     static
@@ -197,8 +197,18 @@ extern "C" {
         dataObjWriteInp.l1descInx = outDesc;
         dataObjCloseInp.l1descInx = outDesc;
 
-        if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
-            writeBufLen = MAX_SZ_FOR_SINGLE_BUF;
+        int single_buff_sz = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                               single_buff_sz );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        single_buff_sz *= 1024 * 1024;
+
+        if ( dataSize > single_buff_sz ) {
+            writeBufLen = single_buff_sz;
         }
         else {
             writeBufLen = dataSize;

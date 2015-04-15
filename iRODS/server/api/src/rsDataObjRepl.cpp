@@ -33,6 +33,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -585,11 +586,22 @@ _rsDataObjReplS(
         return l1descInx;
     }
 
+    int single_buff_sz = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                           single_buff_sz );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+    single_buff_sz *= 1024 * 1024;
+
+
     if ( L1desc[l1descInx].stageFlag != NO_STAGING ) {
         status = l3DataStageSync( rsComm, l1descInx );
     }
     else if ( L1desc[l1descInx].dataObjInp->numThreads == 0 &&
-              L1desc[l1descInx].dataObjInfo->dataSize  <= MAX_SZ_FOR_SINGLE_BUF ) {
+              L1desc[l1descInx].dataObjInfo->dataSize  <= single_buff_sz ) {
         status = l3DataCopySingleBuf( rsComm, l1descInx );
     }
     else {
@@ -804,8 +816,19 @@ dataObjOpenForRepl(
     l1DataObjInp->numThreads = dataObjInp->numThreads =
                                    getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads,
                                            &dataObjInp->condInput, dst_hier_str, srcDataObjInfo->rescHier, dataObjInp->oprType );
+
+    int single_buff_sz = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                           single_buff_sz );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+    single_buff_sz *= 1024 * 1024;
+
     if ( ( l1DataObjInp->numThreads > 0 ||
-            l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
+            l1DataObjInp->dataSize > single_buff_sz ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
         int status = 0;
         if ( updateFlag > 0 ) {
@@ -855,10 +878,10 @@ dataObjOpenForRepl(
         new irods::file_object(
             rsComm,
             myDestDataObjInfo ) );
-    irods::error ret = fileNotify(
-                           rsComm,
-                           file_obj,
-                           irods::WRITE_OPERATION );
+    ret = fileNotify(
+            rsComm,
+            file_obj,
+            irods::WRITE_OPERATION );
     if ( !ret.ok() ) {
         std::stringstream msg;
         msg << "Failed to signal the resource that the data object \"";
@@ -893,7 +916,7 @@ dataObjOpenForRepl(
     }
 
     if ( ( l1DataObjInp->numThreads > 0 ||
-            l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) &&
+            l1DataObjInp->dataSize > single_buff_sz ) &&
             L1desc[destL1descInx].stageFlag == NO_STAGING ) {
         openedDataObjInp_t dataObjCloseInp;
 

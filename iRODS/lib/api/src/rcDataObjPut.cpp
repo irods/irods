@@ -109,8 +109,11 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     memset( &conn->transStat, 0, sizeof( transStat_t ) );
     memset( &dataObjInpBBuf, 0, sizeof( dataObjInpBBuf ) );
 
+    rodsEnv env;
+    getRodsEnv( &env );
+    int single_buff_sz = env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
     if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
-        if ( dataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
+        if ( dataObjInp->dataSize > single_buff_sz ) {
             rmKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW );
         }
         else {
@@ -123,7 +126,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             }
         }
     }
-    else if ( dataObjInp->dataSize < MAX_SZ_FOR_SINGLE_BUF ) {
+    else if ( dataObjInp->dataSize < single_buff_sz ) {
         addKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW, "" );
         status = fillBBufWithFile( conn, &dataObjInpBBuf, locFilePath,
                                    dataObjInp->dataSize );

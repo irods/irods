@@ -4,6 +4,7 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "reFuncDefs.hpp"
+#include "irods_server_properties.hpp"
 
 #include <strings.h>
 
@@ -146,7 +147,16 @@ extern "C" {
         dataObjReadInp.l1descInx = objFD;
         dataObjCloseInp.l1descInx = objFD;
 
-        readBuf.len = MAX_SZ_FOR_SINGLE_BUF;
+        int single_buff_sz = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                               single_buff_sz );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        single_buff_sz *= 1024 * 1024;
+        readBuf.len = single_buff_sz;
         readBuf.buf = ( char * )malloc( readBuf.len );
         dataObjReadInp.len = readBuf.len;
 

@@ -426,6 +426,12 @@ extern "C" {
         capture_integer_property(
             msg_lvl,
             props,
+            irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
+            _env->irodsMaxSizeForSingleBuffer );
+
+        capture_integer_property(
+            msg_lvl,
+            props,
             irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
             _env->irodsDefaultNumberTransferThreads );
 
@@ -716,6 +722,11 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->irodsSSLDHParamsFile );
+
+        env_var = irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER;
+        capture_integer_env_var(
+            env_var,
+            _env->irodsMaxSizeForSingleBuffer );
 
         env_var = irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS;
         capture_integer_env_var(

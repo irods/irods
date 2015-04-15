@@ -4,6 +4,7 @@
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
+#include "irods_server_properties.hpp"
 
 extern "C" {
 
@@ -98,9 +99,19 @@ extern "C" {
             return status;
         }
 
+        int single_buff_sz = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
+                               single_buff_sz );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+        single_buff_sz *= 1024 * 1024;
+
         size_t dataSize  = atol( ( char * ) inFileSize->inOutStruct );
-        if ( dataSize > MAX_SZ_FOR_SINGLE_BUF ) {
-            dataSize = MAX_SZ_FOR_SINGLE_BUF;
+        if ( dataSize > single_buff_sz ) {
+            dataSize = single_buff_sz;
         }
 
         openedDataObjInp_t dataObjWriteInp;
