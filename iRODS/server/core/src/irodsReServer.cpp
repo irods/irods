@@ -19,6 +19,7 @@
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
+#include "filesystem.hpp"
 
 
 //#include "irods_server_control_plane.hpp"
@@ -309,23 +310,34 @@ int
 chkAndResetRule() {
     int status = 0;
 
+    /* get max timestamp */
+    char fn[MAX_NAME_LEN];
+    char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
+    snprintf( r2, sizeof( r2 ), "%s", reRuleStr );
+    uint mtime = 0;
+
     std::string re_full_path;
-    irods::error ret = irods::get_full_path_for_config_file( "core.re", re_full_path );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
+    while ( strlen( r2 ) > 0 ) {
+        rSplitStr( r2, r1, NAME_LEN, r3, RULE_SET_DEF_LENGTH, ',' );
+        getRuleBasePath( r1, fn );
+        
+        re_full_path = fn;
+        path p( re_full_path );
+        if ( !exists( p ) ) {
+            status = UNIX_FILE_STAT_ERR - errno;
+            rodsLog( LOG_ERROR,
+                     "chkAndResetRule: unable to read rule config file %s, status = %d",
+                     re_full_path.c_str(), status );
+            return status;
+        }
 
-    path p( re_full_path );
-    if ( !exists( p ) ) {
-        status = UNIX_FILE_STAT_ERR - errno;
-        rodsLog( LOG_ERROR,
-                 "chkAndResetRule: unable to read rule config file %s, status = %d",
-                 re_full_path.c_str(), status );
-        return status;
-    }
+        const uint mt = ( uint ) last_write_time( p );
 
-    const uint mtime = ( uint ) last_write_time( p );
+        if ( mt > mtime ) {
+            mtime = mt;
+        }
+        snprintf( r2, sizeof( r2 ), "%s", r3 );
+    }
 
     if ( CoreIrbTimeStamp == 0 ) {
         /* first time */
