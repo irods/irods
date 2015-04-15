@@ -585,15 +585,17 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
 }
 
 /**
- * \cond oldruleengine
  * \fn msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei)
  *
- * \brief  This microservice executes all applicable rules for a given action name.
+ * \brief  DEPRECATED - msiApplyAllRules is too ad-hoc and non-deterministic.
+ *      If you need to apply multiple rules and catch the cases where one may fail,
+ *      the best practice is to use the errorcode() and test for the result.
  *
  * \module core
  *
  * \since pre-2.1
  *
+ * \deprecated Since 4.1.0.  Will be removed in 4.2.0
  *
  * \note Normal operations of the rule engine is to stop after a rule (one of the alternates)
  *   completes successfully. But in some cases, one may want the rule engine to try all
@@ -625,7 +627,6 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
  * \pre none
  * \post none
  * \sa none
- * \endcond
 **/
 int
 msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
