@@ -142,6 +142,7 @@ def count_occurrences_of_string_in_log(log_source, string, start_index=0):
         while i != -1:
             n += 1
             i = m.find(string, i+1)
+        m.close()
         return n
 
 def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
@@ -270,9 +271,31 @@ def make_environment_dict(username, hostname, zone_name):
         })
     return environment
 
+def json_object_hook_ascii_list(d):
+    rv = []
+    for i in l:
+        if isinstance(i, unicode):
+            i = i.encode('ascii')
+        elif isinstance(i, list):
+            i = _decode_list(i)
+        rv.append(i)
+    return rv
+
+def json_object_hook_ascii_dict(d):
+    rv = {}
+    for k, v in d.items():
+        if isinstance(k, unicode):
+            k = k.encode('ascii')
+        if isinstance(v, unicode):
+            v = v.encode('ascii')
+        elif isinstance(v, list):
+            v = _decode_list(v)
+        rv[k] = v
+    return rv
+
 def get_service_account_environment_file_contents():
     with open(os.path.expanduser('~/.irods/irods_environment.json')) as f:
-        return json.load(f)
+        return json.load(f, object_hook=json_object_hook_ascii_dict)
 
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()
