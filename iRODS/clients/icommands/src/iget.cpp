@@ -176,6 +176,8 @@ usage() {
         "      the restart info.",
         " -t  ticket - ticket (string) to use for ticket-based access.",
         " --rlock - use advisory read lock for the download",
+        " --kv_pass - pass quoted key-value strings throught to the resource hierarchy,",
+        "             of the form key1=value1;key2=value2",
         " -h  this help",
         ""
     };
