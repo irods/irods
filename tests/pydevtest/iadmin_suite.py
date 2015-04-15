@@ -1033,3 +1033,6 @@ acSetNumThreads() {
             self.admin.assert_icommand('iget {0} - > /dev/null'.format(trigger_file))
             assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
             assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+
+    def test_storageadmin_role(self):
+        self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
