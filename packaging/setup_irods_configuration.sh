@@ -72,6 +72,8 @@ fi
         MYLOCALZONEID=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_id']"`
         MYRESOURCEDIR=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
         MYNEGOTIATIONKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
+        MYCONTROLPLANEPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_port']"`
+        MYCONTROLPLANEKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_key']"`
         MYADMINNAME=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_user']"`
         STATUS="loop"
     else
@@ -269,6 +271,58 @@ fi
           fi
       done
 
+      # get control plane port
+      echo -n "Control Plane port"
+      if [ "$LASTMYCONTROLPLANEPORT" ] ; then
+        echo -n " [$LASTMYCONTROLPLANEPORT]"
+      else
+        echo -n " [1248]"
+      fi
+      echo -n ": "
+      read MYCONTROLPLANEPORT
+      if [ "$MYCONTROLPLANEPORT" == "" ] ; then
+        if [ "$LASTMYCONTROLPLANEPORT" ] ; then
+          MYCONTROLPLANEPORT=$LASTMYCONTROLPLANEPORT
+        else
+          MYCONTROLPLANEPORT="1248"
+        fi
+      fi
+      # strip all forward slashes
+      MYCONTROLPLANEPORT=`echo "${MYCONTROLPLANEPORT}" | sed -e "s/\///g"`
+      echo ""
+
+      # get control plane key
+      CONTROLPLANEKEYLENGTH=0
+      while [ $CONTROLPLANEKEYLENGTH -ne 32 ] ; do
+          echo -n "Control Plane's key"
+          if [ "$LASTMYCONTROLPLANEKEY" ] ; then
+            echo -n " [$LASTMYCONTROLPLANEKEY]"
+          else
+            echo -n " [TEMPORARY__32byte_ctrl_plane_key]"
+          fi
+          echo -n ": "
+          read MYCONTROLPLANEKEY
+          if [ "$MYCONTROLPLANEKEY" == "" ] ; then
+            if [ "$LASTMYCONTROLPLANEKEY" ] ; then
+              MYCONTROLPLANEKEY=$LASTMYCONTROLPLANEKEY
+            else
+              MYCONTROLPLANEKEY="TEMPORARY__32byte_ctrl_plane_key"
+            fi
+          fi
+          # strip all forward slashes
+          MYCONTROLPLANEKEY=`echo "${MYCONTROLPLANEKEY}" | sed -e "s/\///g"`
+          echo ""
+          # check length (must equal 32)
+          CONTROLPLANEKEYLENGTH=${#MYCONTROLPLANEKEY}
+          if [ $CONTROLPLANEKEYLENGTH -ne 32 ] ; then
+              echo "   *** control plane key must be exactly 32 bytes ***"
+              echo ""
+              echo "   $MYCONTROLPLANEKEY <- $CONTROLPLANEKEYLENGTH bytes"
+              echo "   ________________________________ <- 32 bytes"
+              echo ""
+          fi
+      done
+
       # get admin name
       echo -n "iRODS server's administrator username"
       if [ "$LASTMYADMINNAME" ] ; then
@@ -308,6 +362,8 @@ fi
       echo "Vault Directory:        $MYRESOURCEDIR"
       echo "zone_id:                $MYLOCALZONEID"
       echo "negotiation_key:        $MYNEGOTIATIONKEY"
+      echo "Control Plane Port:     $MYCONTROLPLANEPORT"
+      echo "Control Plane Key:      $MYCONTROLPLANEKEY"
       echo "Administrator Username: $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "Administrator Password: Not Shown"
@@ -340,6 +396,8 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_port $MYCONTROLPLANEPORT
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_key $MYCONTROLPLANEKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
     if [ $ICAT_SERVER -eq 1 ] ; then
         $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD
