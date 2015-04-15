@@ -147,7 +147,6 @@ def count_occurrences_of_string_in_log(log_source, string, start_index=0):
 def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
     if not use_unsafe_shell and isinstance(command_arg, basestring):
         command_arg = shlex.split(command_arg)
-    print 'PRINTING COMMAND ARG'
     p = subprocess.Popen(command_arg, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, shell=use_unsafe_shell, cwd=cwd)
     stdout, stderr = p.communicate(input=stdin_string)
     rc = p.returncode

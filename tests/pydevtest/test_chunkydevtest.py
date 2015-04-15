@@ -124,7 +124,7 @@ class ChunkyDevTest(ResourceBase):
     def test_iput_ibun_gzip_bzip2_from_devtest(self):
         # build expected variables with similar devtest names
         with lib.make_session_for_existing_admin() as rods_admin:
-            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
+            rods_admin.assert_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         progname = __file__
         myssize = str(os.stat(progname).st_size)
