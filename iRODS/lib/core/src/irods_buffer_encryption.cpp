@@ -262,7 +262,7 @@ namespace irods {
         if ( !algo ) {
             rodsLog(
                 LOG_DEBUG,
-                "buffer_crypt::encrypt - algorithm not supported [%s]",
+                "buffer_crypt::decrypt - algorithm not supported [%s]",
                 algorithm_.c_str() );
             // default to aes 256 cbc
             algo = EVP_aes_256_cbc();
@@ -340,6 +340,3 @@ namespace irods {
     } // decrypt
 
 }; // namespace irods
-
-
-
