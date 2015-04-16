@@ -253,7 +253,7 @@ def make_environment_dict(username, hostname, zone_name):
         'irods_home': irods_home,
         'irods_cwd': irods_home,
         'irods_user_name': username,
-        'irods_zone': 'tempZone',
+        'irods_zone': zone_name,
         'irods_client_server_negotiation': 'request_server_negotiation',
         'irods_client_server_policy': 'CS_NEG_REFUSE',
         'irods_encryption_key_size': 32,
