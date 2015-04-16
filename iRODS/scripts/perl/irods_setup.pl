@@ -975,8 +975,7 @@ sub configureIrodsUser
         "    \"irods_maximum_size_for_single_buffer_in_megabytes\": 32,\n" .
         "    \"irods_default_number_of_transfer_threads\": 4,\n" .
         "    \"irods_maximum_number_of_transfer_threads\": 64,\n" .
-        "    \"irods_size_of_read_buffer_for_parallel_transfer_in_megabytes\": 40,\n" .
-        "    \"irods_size_of_transfer_buffer_for_parallel_transfer_in_megabytes\": 4\n" .
+        "    \"irods_transfer_buffer_size_for_parallel_transfer_in_megabytes\": 4\n" .
         "}\n"
          );
 

@@ -40,10 +40,10 @@ namespace irods {
         "default_number_of_transfer_threads" );
     const std::string CFG_MAX_NUMBER_TRANSFER_THREADS( 
         "maximum_number_of_transfer_threads" );
-    const std::string CFG_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS( 
-        "size_of_read_buffer_for_parallel_transfer_in_megabytes" );
-    const std::string CFG_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS( 
-        "size_of_transfer_buffer_for_parallel_transfer_in_megabytes" ); 
+    const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS( 
+        "transfer_chunk_size_for_parallel_transfer_in_megabytes" );
+    const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS( 
+        "transfer_buffer_size_for_parallel_transfer_in_megabytes" ); 
     const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME( 
         "default_temporary_password_lifetime_in_seconds" );
     const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME( 
@@ -108,10 +108,8 @@ namespace irods {
         "irods_default_number_of_transfer_threads" );
     const std::string CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS( 
         "irods_maximum_number_of_transfer_threads" );
-    const std::string CFG_IRODS_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS( 
-        "irods_size_of_read_buffer_for_parallel_transfer_in_megabytes" );
-    const std::string CFG_IRODS_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS( 
-        "irods_size_of_transfer_buffer_for_parallel_transfer_in_megabytes" ); 
+    const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS( 
+        "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes" ); 
 
     // legacy ssl environment variables
     const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH(

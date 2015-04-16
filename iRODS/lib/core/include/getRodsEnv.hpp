@@ -59,7 +59,6 @@ typedef struct {
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
     int irodsMaximumNumberTransferThreads;
-    int irodsReadBufferSizeForParaTrans;
     int irodsTransBufferSizeForParaTrans;
     
 

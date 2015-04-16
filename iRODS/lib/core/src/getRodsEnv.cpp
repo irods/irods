@@ -444,13 +444,7 @@ extern "C" {
         capture_integer_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS,
-            _env->irodsReadBufferSizeForParaTrans );
-
-        capture_integer_property(
-            msg_lvl,
-            props,
-            irods::CFG_IRODS_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS,
+            irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
 
         return 0;
@@ -738,12 +732,7 @@ extern "C" {
             env_var,
             _env->irodsMaximumNumberTransferThreads );
 
-        env_var = irods::CFG_IRODS_SIZE_OF_READ_BUFFER_FOR_PARA_TRANS;
-        capture_integer_env_var(
-            env_var,
-            _env->irodsReadBufferSizeForParaTrans );
-
-        env_var = irods::CFG_IRODS_SIZE_OF_TRANS_BUFFER_FOR_PARA_TRANS;
+        env_var = irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
         capture_integer_env_var(
             env_var,
             _env->irodsTransBufferSizeForParaTrans );
