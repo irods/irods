@@ -922,35 +922,30 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_server_config_environment_variables(self):
         # set log level to get all the things
-        os.environ['spLogLevel'] = '11'
+        env = os.environ.copy()
+        env['spLogLevel'] = '11'
 
-        # set a random environment value to find in the log
-        svr_cfg_file = lib.get_irods_config_dir() + "/server_config.json"
-        os.system("cp %s %sOrig" % (svr_cfg_file, svr_cfg_file))
+        server_config_filename = lib.get_irods_config_dir() + "/server_config.json"
+        with lib.file_backed_up(server_config_filename):
 
-        with open(svr_cfg_file) as f:
-            svr_cfg = json.load(f)
-        the_value = 'THIS_IS_THE_VALUE'
-        svr_cfg['environment_variables']['foo_bar'] = the_value
-        lib.update_json_file_from_dict(svr_cfg_file, svr_cfg)
+            # set a random environment value to find in the log
+            with open(server_config_filename) as f:
+                server_config = json.load(f)
+            the_value = 'THIS_IS_THE_VALUE'
+            server_config['environment_variables']['foo_bar'] = the_value
+            lib.update_json_file_from_dict(server_config_filename, server_config)
 
-        # bounce the server to get the new env variable
-        lib.restart_irods_server()
+            # bounce the server to get the new env variable
+            lib.restart_irods_server(env=env)
 
-        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
+            self.admin.assert_icommand('ils', 'STDOUT', self.admin.zone_name)
 
-        # look for the error "unable to read session variable $userNameClient."
-        p = subprocess.Popen(
-            ['grep "' + the_value + '"  ../../iRODS/server/log/rodsLog.*'], shell=True, stdout=subprocess.PIPE)
-        result = p.communicate()[0]
-
-        del os.environ['spLogLevel']
-        os.system("mv %sOrig %s" % (svr_cfg_file, svr_cfg_file))
+            # look for the error "unable to read session variable $userNameClient."
+            _, out, _ = lib.run_command('grep "{0}" ../../iRODS/server/log/rodsLog.*'.format(the_value), use_unsafe_shell=True)
 
         lib.restart_irods_server()
 
-        # check the results for the error
-        assert(-1 != result.find(the_value))
+        assert the_value in out
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"
