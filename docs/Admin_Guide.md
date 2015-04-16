@@ -339,7 +339,16 @@ Do you really want to modify the local zone name? (enter y or yes to do so):y
 OK, performing the local zone rename
 ~~~
 
-Once the Zone has been renamed, you will need to update your irods_environment.json file to match (note the three places where the updated zone name is located):
+Once the Zone has been renamed, you will need to update two files, one for the 'server', and one for the 'client'.
+
+For the server, you will need to update your `server_config.json` file with the new zone name (a single key/value pair):
+
+~~~
+irods@hostname:~/ $ grep zone_name /etc/irods/server_config.json
+    "zone_name": "**<newzonename>**",
+~~~
+
+For the client, you will need to update your `irods_environment.json` file with the new zone name (three key/value pairs):
 
 ~~~
 irods@hostname:~/ $ cat .irods/irods_environment.json
