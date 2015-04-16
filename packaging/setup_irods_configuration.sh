@@ -347,7 +347,7 @@ fi
         ADMINPASSWORDLENGTH=0
         while [ $ADMINPASSWORDLENGTH -eq 0 ] ; do
           echo -n "iRODS server's administrator password: "
-          # get db password, without showing on screen
+          # get admin password, without showing on screen
           read -s MYADMINPASSWORD
           echo ""
           # check length (must be greater than zero)
