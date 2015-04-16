@@ -576,12 +576,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
         ( myInput->rsComm->negotiation_results ==
           irods::CS_NEG_USE_SSL );
 
-#ifdef PARA_TIMING
-    time_t startTime, afterSeek, afterTransfer,
-           endTime;
-    startTime = time( 0 );
-#endif
-
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcFd = myInput->srcFd;
@@ -601,10 +595,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
             return;
         }
     }
-
-#ifdef PARA_TIMING
-    afterSeek = time( 0 );
-#endif
 
     bytesToGet = myInput->size;
 
@@ -638,10 +628,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
         int toread0;
         int bytesRead;
 
-#ifdef PARA_TIMING
-        time_t tstart, tafterRead, tafterWrite;
-        tstart = time( 0 );
-#endif
         if ( myInput->flags & STREAMING_FLAG ) {
             toread0 = bytesToGet;
         }
@@ -699,10 +685,6 @@ partialDataPut( portalTransferInp_t *myInput ) {
                             buf,
                             new_size,
                             NULL, NULL );
-
-#ifdef PARA_TIMING
-            tafterRead = time( 0 );
-#endif
 
             if ( bytesRead == new_size ) {
                 // =-=-=-=-=-=-=-
@@ -768,21 +750,12 @@ partialDataPut( portalTransferInp_t *myInput ) {
                 myInput->status = SYS_COPY_LEN_ERR;
                 break;
             }
-#ifdef PARA_TIMING
-            tafterWrite = time( 0 );
-            rodsLog( LOG_NOTICE,
-                     "Thr %d: sz=%d netReadTm=%d diskWriteTm=%d",
-                     myInput->threadNum, bytesWritten, tafterRead - tstart,
-                     tafterWrite - tafterRead );
-#endif
+
         }	/* while loop toread0 */
         if ( myInput->status < 0 ) {
             break;
         }
     }           /* while loop bytesToGet */
-#ifdef PARA_TIMING
-    afterTransfer = time( 0 );
-#endif
 
     free( buf );
 
@@ -793,13 +766,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
         _l3Close( myInput->rsComm, destL3descInx );
     }
     mySockClose( srcFd );
-#ifdef PARA_TIMING
-    endTime = time( 0 );
-    rodsLog( LOG_NOTICE,
-             "Thr %d: seekTm=%d transTm=%d endTm=%d",
-             myInput->threadInx,
-             afterSeek - afterConn, afterTransfer - afterSeek, endTime - afterTransfer );
-#endif
+
     return;
 }
 
@@ -812,12 +779,6 @@ void partialDataGet(
     int bytesWritten = 0;
     rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
-
-#ifdef PARA_TIMING
-    time_t startTime, afterSeek, afterTransfer,
-           endTime;
-    startTime = time( 0 );
-#endif
 
     if ( myInput == NULL ) {
         rodsLog( LOG_SYS_FATAL, "partialDataGet: NULL myInput" );
@@ -875,20 +836,12 @@ void partialDataGet(
     size_t buf_size = ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char ) ;
     buf = ( unsigned char* )malloc( buf_size );
 
-#ifdef PARA_TIMING
-    afterSeek = time( 0 );
-#endif
-
     bytesToGet = myInput->size;
 
     while ( bytesToGet > 0 ) {
         int toread0;
         int bytesRead;
 
-#ifdef PARA_TIMING
-        time_t tstart, tafterRead, tafterWrite;
-        tstart = time( 0 );
-#endif
         if ( myInput->flags & STREAMING_FLAG ) {
             toread0 = bytesToGet;
         }
@@ -926,9 +879,7 @@ void partialDataGet(
 
             bytesRead = _l3Read( myInput->rsComm, srcL3descInx, buf, toread1 );
 
-#ifdef PARA_TIMING
-            tafterRead = time( 0 );
-#endif
+
             if ( bytesRead == toread1 ) {
                 // =-=-=-=-=-=-=-
                 // compute an iv for this particular transmission and use
@@ -1025,21 +976,12 @@ void partialDataGet(
                 myInput->status = SYS_COPY_LEN_ERR;
                 break;
             }
-#ifdef PARA_TIMING
-            tafterWrite = time( 0 );
-            rodsLog( LOG_NOTICE,
-                     "Thr %d: sz=%d netReadTm=%d diskWriteTm=%d",
-                     myInput->threadNum, bytesWritten, tafterRead - tstart,
-                     tafterWrite - tafterRead );
-#endif
         }       /* while loop toread0 */
         if ( myInput->status < 0 ) {
             break;
         }
     }           /* while loop bytesToGet */
-#ifdef PARA_TIMING
-    afterTransfer = time( 0 );
-#endif
+
     free( buf );
 
     applyRuleForSvrPortal( destFd, GET_OPR, 1, myOffset - myInput->offset, myInput->rsComm );
@@ -1049,13 +991,7 @@ void partialDataGet(
         _l3Close( myInput->rsComm, srcL3descInx );
     }
     CLOSE_SOCK( destFd );
-#ifdef PARA_TIMING
-    endTime = time( 0 );
-    rodsLog( LOG_NOTICE,
-             "Thr %d: seekTm=%d transTm=%d endTm=%d",
-             myInput->threadInx,
-             afterSeek - afterConn, afterTransfer - afterSeek, endTime - afterTransfer );
-#endif
+
     return;
 }
 
@@ -1073,9 +1009,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
                  "remToLocPartialCopy: NULL input" );
         return;
     }
-#ifdef PARA_DEBUG
-    printf( "remToLocPartialCopy: thread %d at start\n", myInput->threadNum );
-#endif
 
     myInput->status = 0;
     destL3descInx = myInput->destFd;
@@ -1118,14 +1051,6 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
         rodsLong_t toGet;
 
         myInput->status = rcvTranHeader( srcFd, &myHeader );
-
-#ifdef PARA_DEBUG
-        printf( "remToLocPartialCopy: thread %d after rcvTranHeader\n",
-                myInput->threadNum );
-        printf( "remToLocPartialCopy: thread %d header offset %lld, len %lld\n",
-                myInput->threadNum, myHeader.offset, myHeader.length );
-
-#endif
 
         if ( myInput->status < 0 ) {
             break;
@@ -1639,9 +1564,6 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
                  "onsameHostPartialCopy: NULL input" );
         return;
     }
-#ifdef PARA_DEBUG
-    printf( "onsameHostPartialCopy: thread %d at start\n", myInput->threadNum );
-#endif
 
     myInput->status = 0;
     destL3descInx = myInput->destFd;
@@ -1750,9 +1672,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
                  "locToRemPartialCopy: NULL input" );
         return;
     }
-#ifdef PARA_DEBUG
-    printf( "locToRemPartialCopy: thread %d at start\n", myInput->threadNum );
-#endif
 
     myInput->status = 0;
     srcL3descInx = myInput->srcFd;
@@ -1795,11 +1714,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 
         myInput->status = rcvTranHeader( destFd, &myHeader );
 
-#ifdef PARA_DEBUG
-        printf( "locToRemPartialCopy: thread %d after rcvTranHeader\n",
-                myInput->threadNum );
-#endif
-
         if ( myInput->status < 0 ) {
             break;
         }
@@ -1807,10 +1721,6 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
         if ( myHeader.oprType == DONE_OPR ) {
             break;
         }
-#ifdef PARA_DEBUG
-        printf( "locToRemPartialCopy:thread %d header offset %lld, len %lld",
-                myInput->threadNum, myHeader.offset, myHeader.length ); // JMC cppcheck - missing first parameter
-#endif
 
         if ( myHeader.offset != curOffset ) {
             curOffset = myHeader.offset;
@@ -3392,8 +3302,3 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
     return ret;
 
 } // add_global_re_params_to_kvp
-
-
-
-
-

@@ -243,84 +243,6 @@ int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
     return 0;
 }
 
-
-#ifdef  AAAAA
-int getIrodsXmsg( rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg ) {
-    int status, i ;
-    irodsXmsg_t *tmpIrodsXmsg, *prevIrodsXmsg;
-    ticketMsgStruct_t *ticketMsgStruct;
-    int rcvTicket;
-    char *msgCond;
-
-    rcvTicket = rcvXmsgInp->rcvTicket;
-    msgCond = rcvXmsgInp->msgCondition;
-
-    if ( outIrodsXmsg == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    /* locate the ticketMsgStruct_t */
-
-    status = getTicketMsgStructByTicket( rcvTicket, &ticketMsgStruct );
-
-    if ( status < 0 ) {
-        return status;
-    }
-
-    /* now locate the irodsXmsg_t */
-
-
-    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
-    prevIrodsXmsg = NULL;
-
-    while ( tmpIrodsXmsg != NULL ) {
-        if ( ( i = checkMsgCondition( tmpIrodsXmsg, msgCond ) ) == 0 ) {
-            /*** added to make it be part of a mutex ***/
-#ifndef windows_platform
-            pthread_mutex_lock( &MessQueCondMutex );
-#endif
-            if ( prevIrodsXmsg == NULL ) {
-                if ( ticketMsgStruct->xmsgQue.head == tmpIrodsXmsg ) { /* message still there */
-                    if ( ( i = checkMsgCondition( tmpIrodsXmsg, msgCond ) ) == 0 ) {
-                        break;
-                    }
-                }
-                else {
-                    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
-#ifndef windows_platform
-                    pthread_mutex_unlock( &MessQueCondMutex );
-#endif
-                    continue;
-                }
-            } /* end of then of prevIrodsXmsg == NULL if */
-            else if ( prevIrodsXmsg->tnext == tmpIrodsXmsg ) { /* message still there */
-                if ( ( i = checkMsgCondition( tmpIrodsXmsg, msgCond ) ) == 0 ) {
-                    break;
-                }
-            } /* end of else  of prevIrodsXmsg == NULL if */
-
-#ifndef windows_platform
-            pthread_mutex_unlock( &MessQueCondMutex );
-#endif
-
-        } /* end of main if */
-        prevIrodsXmsg = tmpIrodsXmsg;
-        tmpIrodsXmsg = prevIrodsXmsg->tnext;
-
-    } /* end of while */
-
-    *outIrodsXmsg = tmpIrodsXmsg;
-    if ( tmpIrodsXmsg == NULL ) {
-        return SYS_NO_XMSG_FOR_MSG_NUMBER;
-    }
-    else {
-        return 0;
-    }
-}
-#endif /*  AAAAA */
-
 int
 getIrodsXmsgByMsgNum( int rcvTicket, int msgNumber,
                       irodsXmsg_t **outIrodsXmsg ) {
@@ -835,4 +757,3 @@ clearAllXMessages( ticketMsgStruct_t *ticketMsgStruct ) {
     ticketMsgStruct->xmsgQue.tail = NULL;
     return 0;
 }
-

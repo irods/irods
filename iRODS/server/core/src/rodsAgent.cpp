@@ -91,11 +91,6 @@ main( int, char ** ) {
 #endif
 #endif
 
-#ifdef SYS_TIMING
-    rodsLogLevel( LOG_NOTICE );
-    printSysTiming( "irodsAgent", "exec", 1 );
-#endif
-
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 
@@ -190,12 +185,6 @@ main( int, char ** ) {
 
     status = initAgent( RULE_ENGINE_TRY_CACHE, &rsComm );
 
-
-
-#ifdef SYS_TIMING
-    printSysTiming( "irodsAgent", "initAgent", 0 );
-#endif
-
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: initAgent failed: %d", status );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
@@ -251,10 +240,6 @@ main( int, char ** ) {
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         cleanupAndExit( status );
     }
-
-#ifdef SYS_TIMING
-    printSysTiming( "irodsAgent", "sendVersion", 0 );
-#endif
 
     logAgentProc( &rsComm );
 
@@ -430,32 +415,3 @@ int agentMain(
 
     return status;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

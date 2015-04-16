@@ -51,27 +51,6 @@ static char prevChalSig[200]; /* a 'signature' of the previous
                           challenge.  This is used as a sessionSignature on the ICAT server
                           side.  Also see getSessionSignatureClientside function. */
 
-// =-=-=-=-=-=-=-
-// NOTE :: yanked directly from icatHighLevelRoutines
-/* In 2.3, the METADATA_CLEANUP logic (SQL) (via a
- * 'DISABLE_METADATA_CLEANUP' define) was on by default but it was
- * found to be too slow when moderate amounts of user-defined metadata
- * (AVUs) were defined.  Now, we've improved the SQL to be much faster
- * but also decided to have this off by default.  When AVUs are
- * deleted, the association between the object and the AVU is removed,
- * but the actual AVU triplet remains (and may be associated with
- * other objects).
- *
- * Admins can run the new 'iadmin rum' (remove unused metadata)
- * command if large numbers of rows accumulate (which can slow down
- * meta-data functions), which will remove any AVU triplets not
- * associated with any object.
- *
- * If you want, you can also define METADATA_CLEANUP so this will
- * run each time a user-defined metadata association is deleted.  It may,
- * however, be quite slow.
- #define METADATA_CLEANUP "EACH TIME"
-*/
 
 //   Legal values for accessLevel in  chlModAccessControl (Access Parameter).
 //   Defined here since other code does not need them (except for help messages)
@@ -358,11 +337,7 @@ void removeMetaMapAndAVU( char *dataObjNumber ) {
        there were no rows deleted from R_OBJT_METAMAP, in which case there
        is no need to do the SQL below.
     */
-    if ( status == 0 ) {
-#ifdef METADATA_CLEANUP
-        removeAVUs();
-#endif
-    }
+
     return;
 }
 
@@ -3068,7 +3043,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_src_data_obj_info ||
                 !_dst_data_obj_info ||
                 !_cond_input ) {
@@ -3299,7 +3274,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_data_obj_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -3575,7 +3550,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_re_sub_inp ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -3693,7 +3668,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_re_id  ||
                 !_reg_param ) {
             return ERROR(
@@ -3821,7 +3796,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_re_id ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -4783,7 +4758,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_user_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -4980,7 +4955,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5195,7 +5170,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5432,7 +5407,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -5584,7 +5559,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_zone_name ||
                 !_zone_type ||
                 !_zone_conn_info ||
@@ -5708,7 +5683,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_zone_name ||
                 !_option ||
                 !_option_value ) {
@@ -5881,7 +5856,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_old_coll ||
                 !_new_coll ) {
             return ERROR(
@@ -5947,7 +5922,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_access_level ||
                 !_user_name ||
                 !_path_name ) {
@@ -6006,7 +5981,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_old_zone ||
                 !_new_zone ) {
             return ERROR(
@@ -6218,7 +6193,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_zone_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -6630,7 +6605,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -6798,7 +6773,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_coll_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -7320,7 +7295,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_pw_value_to_hash ||
                 !_other_user ) {
             return ERROR(
@@ -7484,7 +7459,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_pw_value_to_hash ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -7657,7 +7632,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_user_name ||
                 !_irods_password ) {
             return ERROR(
@@ -7874,7 +7849,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_user_name ||
                 !_option    ||
                 !_new_value ) {
@@ -8242,7 +8217,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_group_name ||
                 !_option     ||
                 !_user_name ) {
@@ -8459,7 +8434,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_resc_name  ||
                 !_option     ||
                 !_option_value ) {
@@ -9029,7 +9004,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_resc_name ||
                 !_old_path  ||
                 !_new_path ) {
@@ -9203,7 +9178,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_resc_name ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -9302,7 +9277,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_user_info ) {
             return ERROR(
                        CAT_INVALID_ARGUMENT,
@@ -9564,7 +9539,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10473,7 +10448,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10598,7 +10573,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type   ||
                 !_name   ||
                 !_attribute ) {
@@ -10839,11 +10814,6 @@ checkLevel:
                 return ERROR( status, "delete failure" );
             }
 
-            /* Remove unused AVU rows, if any */
-#ifdef METADATA_CLEANUP
-            removeAVUs();
-#endif
-
             /* Audit */
             status = cmlAudit3( AU_DELETE_AVU_METADATA,
                                 objIdStr,
@@ -10933,11 +10903,6 @@ checkLevel:
             return ERROR( status, "delete failure" );
         }
 
-        /* Remove unused AVU rows, if any */
-#ifdef METADATA_CLEANUP
-        removeAVUs();
-#endif
-
         /* Audit */
         status = cmlAudit3( AU_DELETE_AVU_METADATA,
                             objIdStr,
@@ -10984,7 +10949,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // check the params
-        if ( 
+        if (
                 !_type1  ||
                 !_type2  ||
                 !_name1  ||
@@ -10993,19 +10958,6 @@ checkLevel:
 
         }
 
-        // =-=-=-=-=-=-=-
-        // get a postgres object from the context
-        /*irods::postgres_object_ptr pg;
-        ret = make_db_ptr( _ctx.fco(), pg );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }*/
-
-        // =-=-=-=-=-=-=-
-        // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         char myTime[50];
         int status;
         rodsLong_t objId1, objId2;
@@ -16106,7 +16058,7 @@ checkLevel:
 
         // =-=-=-=-=-=-=-
         // fill in the operation table mapping call
-        // names to function names
+        // names to function na,mes
         pg->add_operation( irods::DATABASE_OP_START,                    "db_start_op" );
         pg->add_operation( irods::DATABASE_OP_DEBUG,                    "db_debug_op" );
         pg->add_operation( irods::DATABASE_OP_OPEN,                     "db_open_op" );

@@ -296,9 +296,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
                  "rcPartialDataPut: NULL input" );
         return;
     }
-#ifdef PARA_DEBUG
-    printf( "rcPartialDataPut: thread %d at start\n", myInput->threadNum );
-#endif
+
     conn = myInput->conn;
     info = &conn->fileRestart.info;
     threadNum = myInput->threadNum;
@@ -361,11 +359,6 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
         rodsLong_t toPut;
 
         myInput->status = rcvTranHeader( destFd, &myHeader );
-
-#ifdef PARA_DEBUG
-        printf( "rcPartialDataPut: thread %d after rcvTranHeader\n",
-                myInput->threadNum );
-#endif
 
         if ( myInput->status < 0 ) {
             break;
@@ -970,9 +963,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
         return;
     }
 
-#ifdef PARA_DEBUG
-    printf( "rcPartialDataGet: thread %d at start\n", myInput->threadNum );
-#endif
     conn = myInput->conn;
     info = &conn->fileRestart.info;
     threadNum = myInput->threadNum;
@@ -1036,11 +1026,6 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
         rodsLong_t toGet;
 
         myInput->status = rcvTranHeader( srcFd, &myHeader );
-
-#ifdef PARA_DEBUG
-        printf( "rcPartialDataGet: thread %d after rcvTranHeader\n",
-                myInput->threadNum );
-#endif
 
         if ( myInput->status < 0 ) {
             break;

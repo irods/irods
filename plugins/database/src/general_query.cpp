@@ -27,9 +27,6 @@
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 #include "low_level.hpp"
-#define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
-access to the audit tables by
-non-privileged users */
 
 extern int logSQLGenQuery;
 
@@ -1746,14 +1743,14 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
                      genQueryInp.selectInp.inx[i] );
             return CAT_UNKNOWN_TABLE;
         }
-#ifdef LIMIT_AUDIT_ACCESS
+
         if ( genQueryInp.selectInp.inx[i] >= COL_AUDIT_RANGE_START &&
                 genQueryInp.selectInp.inx[i] <= COL_AUDIT_RANGE_END ) {
             if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
                 return CAT_NO_ACCESS_PERMISSION;
             }
         }
-#endif
+
         if ( Tables[table].cycler < 1 || startingTable == 0 ) {
             startingTable = table;  /* start with a non-cycler, if possible */
         }
@@ -1820,14 +1817,14 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
                 return status;
             }
         }
-#ifdef LIMIT_AUDIT_ACCESS
+
         if ( genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
                 genQueryInp.sqlCondInp.inx[i] <= COL_AUDIT_RANGE_END ) {
             if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
                 return CAT_NO_ACCESS_PERMISSION;
             }
         }
-#endif
+
     }
 
     keepVal = tScan( startingTable, -1 );

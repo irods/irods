@@ -481,77 +481,6 @@ printTime( char *objPath, struct timeval *startTime,
     return 0;
 }
 
-#ifdef SYS_TIMING
-int
-initSysTiming( char *procName, char *action, int envVarFlag ) {
-    char *tmpStr = 0;
-
-    ( void ) gettimeofday( &SysTimingVal, ( struct timezone * )0 );
-
-    if ( envVarFlag > 0 ) {
-        tmpStr = malloc( NAME_LEN );
-        snprintf( tmpStr, NAME_LEN, "%s=%u",
-                  SYS_TIMING_SEC, ( unsigned int ) SysTimingVal.tv_sec );
-        putenv( tmpStr );
-        free( tmpStr ); // JMC cppcheck - leak
-        tmpStr = malloc( NAME_LEN );
-        snprintf( tmpStr, NAME_LEN, "%s=%u",
-                  SYS_TIMING_USEC, ( unsigned int ) SysTimingVal.tv_usec );
-        putenv( tmpStr );
-    }
-    rodsLog( LOG_NOTICE,
-             "initSysTiming: %s at %s", procName, action );
-    free( tmpStr ); // JMC cppcheck - leak
-    return 0;
-}
-
-int
-printSysTiming( char *procName, char *action, int envVarFlag ) {
-    struct timeval curTime, diffTime;
-    float timeInSec;
-    char *tmpStr;
-
-    if ( envVarFlag > 0 ) {
-        if ( ( tmpStr = getenv( SYS_TIMING_SEC ) ) == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "printSysTiming: env var SYS_TIMING_SEC  not set" );
-            return -1;
-        }
-        SysTimingVal.tv_sec = atoi( tmpStr );
-        if ( ( tmpStr = getenv( SYS_TIMING_USEC ) ) == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "printSysTiming: env var SYS_TIMING_USEC  not set" );
-            return -1;
-        }
-        SysTimingVal.tv_usec = atoi( tmpStr );
-    }
-    else if ( SysTimingVal.tv_sec == 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "printSysTiming: SysTimingVal has not been initialized" );
-        return -1;
-    }
-    ( void ) gettimeofday( &curTime, ( struct timezone * )0 );
-
-    diffTime.tv_sec = curTime.tv_sec - SysTimingVal.tv_sec;
-    diffTime.tv_usec = curTime.tv_usec - SysTimingVal.tv_usec;
-
-    if ( diffTime.tv_usec < 0 ) {
-        diffTime.tv_sec --;
-        diffTime.tv_usec += 1000000;
-    }
-
-    timeInSec = ( float ) diffTime.tv_sec + ( ( float ) diffTime.tv_usec /
-                1000000.0 );
-
-    rodsLog( LOG_NOTICE,
-             "Time for %s to %s = %8.5f sec", procName, action, timeInSec );
-
-    SysTimingVal = curTime;
-
-    return 0;
-}
-#endif
-
 int
 printNoSync( char *objPath, rodsLong_t fileSize, char *reason ) {
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
@@ -2335,10 +2264,3 @@ matchPathname( pathnamePatterns_t *pp, char *name, char *dirname ) {
 
     return 0;
 }
-
-
-
-
-
-
-

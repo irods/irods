@@ -227,16 +227,7 @@ int fileChksum(
 
     // =-=-=-=-=-=-=-
     // loop and update while there are still bytes to be read
-#ifdef MD5_DEBUG
-    rodsLong_t total_bytes_read = 0;    /* XXXX debug */
-#endif
     while ( read_err.ok() && bytes_read > 0 ) {
-        // =-=-=-=-=-=-=-
-        // debug statistics
-#ifdef MD5_DEBUG
-        total_bytes_read += bytes_read;
-#endif
-
         // =-=-=-=-=-=-=-
         // update hasher
         hasher.update( std::string( buffer, bytes_read ) );
@@ -275,15 +266,6 @@ int fileChksum(
     hasher.digest( digest );
     strncpy( chksumStr, digest.c_str(), NAME_LEN );
 
-    // =-=-=-=-=-=-=-
-    // debug messaging
-#ifdef MD5_DEBUG
-    rodsLog( LOG_NOTICE,
-             "fileChksum: chksum = %s, total_bytes_read = %lld",
-             chksumStr, total_bytes_read );
-#endif
-
     return 0;
 
 }
-

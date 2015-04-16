@@ -1256,10 +1256,6 @@ initConnectControl() {
     FILE *file = fopen( conFile, "r" );
 
     if ( file == NULL ) {
-#ifdef DEBUG_CONNECT_CONTROL
-        fprintf( stderr, "Unable to open CONNECT_CONTROL_FILE file %s\n",
-                 conFile );
-#endif
         free( conFile );
         return 0;
     }

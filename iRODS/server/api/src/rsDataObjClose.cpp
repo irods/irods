@@ -29,12 +29,6 @@
 #include "dataObjLock.hpp" // JMC - backport 4604
 #include "getRescQuota.hpp"
 
-#ifdef LOG_TRANSFERS
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -193,79 +187,6 @@ irsDataObjClose(
     return status;
 }
 
-#ifdef LOG_TRANSFERS
-/* The log-transfers feature is manually enabled by editing
-   server/Makefile to include a 'CFLAGS += -DLOG_TRANSFERS'.  We do
-   not recommend enabling this as it will add a lot of entries to the
-   server log file and increase overhead, but when enabled file
-   transfers will be logged.  Currently, the operations logged are
-   get, put, replicate, and rsync.  The start time is when the
-   file is openned and the end time is when closed (but before the
-   post-processing rule is executed).
-
-   Each server will log it's transfers in it's own log file.
-
-   See the code for details of what is logged.  You may want to tailor
-   this code to your specific interests.
-*/
-int
-logTransfer( char *oprType, char *objPath, rodsLong_t fileSize,
-             struct timeval *startTime, char *rescName, char *userName,
-             char *hostName ) {
-    struct timeval diffTime;
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
-    float transRate, sizeInMb, timeInSec;
-    int status;
-    struct timeval endTime;
-
-    ( void )gettimeofday( &endTime, ( struct timezone * )0 );
-
-
-    if ( ( status = splitPathByKey( objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) ) < 0 ) {
-        rodsLogError( LOG_NOTICE, status,
-                      "printTiming: splitPathByKey for %s error, status = %d",
-                      objPath, status );
-        return status;
-    }
-
-    diffTime.tv_sec = endTime.tv_sec - startTime->tv_sec;
-    diffTime.tv_usec = endTime.tv_usec - startTime->tv_usec;
-
-    if ( diffTime.tv_usec < 0 ) {
-        diffTime.tv_sec --;
-        diffTime.tv_usec += 1000000;
-    }
-
-    timeInSec = ( float ) diffTime.tv_sec + ( ( float ) diffTime.tv_usec /
-                1000000.0 );
-
-    if ( fileSize <= 0 ) {
-        transRate = 0.0;
-        sizeInMb = 0.0;
-    }
-    else {
-        sizeInMb = ( float ) fileSize / 1048600.0;
-        if ( timeInSec == 0.0 ) {
-            transRate = 0.0;
-        }
-        else {
-            transRate = sizeInMb / timeInSec;
-        }
-    }
-
-    if ( fileSize < 0 ) {
-        rodsLog( LOG_NOTICE, "Transfer %.3f sec %s %s %s %s %s\n",
-                 timeInSec, oprType, rescName, objPath, hostName );
-    }
-    else {
-        rodsLog( LOG_NOTICE, "Transfer %10.3f MB | %.3f sec | %6.3f MB/s %s %s %s %s %s\n",
-                 sizeInMb, timeInSec, transRate, oprType, rescName,
-                 objPath, userName, hostName );
-    }
-    return 0;
-}
-#endif
-
 int _modDataObjSize(
     rsComm_t* _comm,
     dataObjInfo_t* _info ) {
@@ -367,17 +288,7 @@ _rsDataObjClose(
                               L1desc[l1descInx].dataObjInfo->objPath );
             }
         }
-        // =-=-=-=-=-=-=-
-#ifdef LOG_TRANSFERS
-        if ( L1desc[l1descInx].oprType == GET_OPR ) {
-            logTransfer( "get", L1desc[l1descInx].dataObjInfo->objPath,
-                         L1desc[l1descInx].dataObjInfo->dataSize,
-                         &L1desc[l1descInx].openStartTime,
-                         L1desc[l1descInx].dataObjInfo->rescName,
-                         rsComm->clientUser.userName,
-                         inet_ntoa( rsComm->remoteAddr.sin_addr ) );
-        }
-#endif
+
         return status;
     }
 
@@ -704,46 +615,6 @@ _rsDataObjClose(
     /* for post processing */
     L1desc[l1descInx].bytesWritten =
         L1desc[l1descInx].dataObjInfo->dataSize = newSize;
-
-#ifdef LOG_TRANSFERS
-    /* transfer logging */
-    if ( L1desc[l1descInx].oprType == PUT_OPR ||
-            L1desc[l1descInx].oprType == CREATE_OPR ) {
-        logTransfer( "put", L1desc[l1descInx].dataObjInfo->objPath,
-                     L1desc[l1descInx].dataObjInfo->dataSize,
-                     &L1desc[l1descInx].openStartTime,
-                     L1desc[l1descInx].dataObjInfo->rescName,
-                     rsComm->clientUser.userName,
-                     inet_ntoa( rsComm->remoteAddr.sin_addr ) );
-
-    }
-    if ( L1desc[l1descInx].oprType == GET_OPR ) {
-        logTransfer( "get", L1desc[l1descInx].dataObjInfo->objPath,
-                     L1desc[l1descInx].dataObjInfo->dataSize,
-                     &L1desc[l1descInx].openStartTime,
-                     L1desc[l1descInx].dataObjInfo->rescName,
-                     rsComm->clientUser.userName,
-                     inet_ntoa( rsComm->remoteAddr.sin_addr ) );
-    }
-    if ( L1desc[l1descInx].oprType == REPLICATE_OPR ||
-            L1desc[l1descInx].oprType == REPLICATE_DEST ) {
-        logTransfer( "replicate", L1desc[l1descInx].dataObjInfo->objPath,
-                     L1desc[l1descInx].dataObjInfo->dataSize,
-                     &L1desc[l1descInx].openStartTime,
-                     L1desc[l1descInx].dataObjInfo->rescName,
-                     rsComm->clientUser.userName,
-                     inet_ntoa( rsComm->remoteAddr.sin_addr ) );
-    }
-    /* Not sure if this happens, irsync might show up as 'put' */
-    if ( L1desc[l1descInx].oprType == RSYNC_OPR ) {
-        logTransfer( "rsync", L1desc[l1descInx].dataObjInfo->objPath,
-                     L1desc[l1descInx].dataObjInfo->dataSize,
-                     &L1desc[l1descInx].openStartTime,
-                     L1desc[l1descInx].dataObjInfo->rescName,
-                     rsComm->clientUser.userName,
-                     inet_ntoa( rsComm->remoteAddr.sin_addr ) );
-    }
-#endif
 
     return status;
 }

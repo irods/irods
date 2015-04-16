@@ -149,10 +149,6 @@
 #define BULK_OPR_BUF_SIZE	(8*MAX_BULK_OPR_FILE_SIZE)
 #define TAR_OVERHEAD		(MAX_NUM_BULK_OPR_FILES * MAX_NAME_LEN * 2)
 
-/* definition for SYS_TIMING */
-/* #define SYS_TIMING	1 */	/* switch on or offf SYS_TIMING */
-#define SYS_TIMING_SEC     "sysTimingSec"    /* timing env var in sec */
-#define SYS_TIMING_USEC    "sysTimingUSec"   /* timing env var in micro sec */
 
 /* generic return value for policy rules */
 #define POLICY_OFF	0
