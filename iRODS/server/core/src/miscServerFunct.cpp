@@ -622,6 +622,16 @@ partialDataPut( portalTransferInp_t *myInput ) {
             &myInput->shared_secret[iv_size] );
     }
 
+    int chunk_size = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
+                           chunk_size );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return; 
+    }
+    chunk_size *= 1024 * 1024;
+
     buf = ( unsigned char* )malloc( ( 2 * TRANS_BUF_SZ ) + sizeof( unsigned char ) );
 
     while ( bytesToGet > 0 ) {
@@ -631,8 +641,8 @@ partialDataPut( portalTransferInp_t *myInput ) {
         if ( myInput->flags & STREAMING_FLAG ) {
             toread0 = bytesToGet;
         }
-        else if ( bytesToGet > TRANS_SZ ) {
-            toread0 = TRANS_SZ;
+        else if ( bytesToGet > chunk_size ) {
+            toread0 = chunk_size;
         }
         else {
             toread0 = bytesToGet;
@@ -838,6 +848,16 @@ void partialDataGet(
 
     bytesToGet = myInput->size;
 
+    int chunk_size = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
+                           chunk_size );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return; 
+    }
+    chunk_size *= 1024 * 1024;
+
     while ( bytesToGet > 0 ) {
         int toread0;
         int bytesRead;
@@ -845,8 +865,8 @@ void partialDataGet(
         if ( myInput->flags & STREAMING_FLAG ) {
             toread0 = bytesToGet;
         }
-        else if ( bytesToGet > TRANS_SZ ) {
-            toread0 = TRANS_SZ;
+        else if ( bytesToGet > chunk_size ) {
+            toread0 = chunk_size;
         }
         else {
             toread0 = bytesToGet;
