@@ -18,6 +18,20 @@
 
 namespace irods {
 
+    class evp_lifetime_mgr {
+        public:
+        evp_lifetime_mgr() {
+            OpenSSL_add_all_algorithms();
+
+        }
+
+        ~evp_lifetime_mgr() {
+            EVP_cleanup();
+        }
+
+    }; // class evp_lifetime_mgr
+    static evp_lifetime_mgr global_evp_lifetime_mgr_;
+
     std::string buffer_crypt::gen_hash(
         unsigned char* _buf,
         int            _sz ) {
@@ -49,7 +63,9 @@ namespace irods {
             algorithm_.begin(), 
             ::tolower );
 
-    } buffer_crypt::buffer_crypt(
+    }
+
+    buffer_crypt::buffer_crypt(
         int         _key_sz,
         int         _salt_sz,
         int         _num_rnds,
@@ -89,8 +105,6 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - destructor
     buffer_crypt::~buffer_crypt() {
-        EVP_cleanup();
-
     } // dtor
 
 // =-=-=-=-=-=-=-
@@ -169,8 +183,6 @@ namespace irods {
         const array_t& _iv,
         const array_t& _in_buf,
         array_t&       _out_buf ) {
-        
-        OpenSSL_add_all_algorithms();
 
         // =-=-=-=-=-=-=-
         // create an encryption context
@@ -180,8 +192,8 @@ namespace irods {
         const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
         if ( !algo ) {
             rodsLog(
-                LOG_DEBUG,
-                "buffer_crypt::decrypt - algorithm not supported [%s]",
+                LOG_NOTICE,
+                "buffer_crypt::encrypt - algorithm not supported [%s]",
                 algorithm_.c_str() );
             // default to aes 256 cbc
             algo = EVP_aes_256_cbc();
@@ -264,8 +276,6 @@ namespace irods {
         const array_t& _iv,
         const array_t& _in_buf,
         array_t&       _out_buf ) {
-        OpenSSL_add_all_algorithms();
-
         // =-=-=-=-=-=-=-
         // create an decryption context
         EVP_CIPHER_CTX context;
@@ -274,7 +284,7 @@ namespace irods {
         const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
         if ( !algo ) {
             rodsLog(
-                LOG_DEBUG,
+                LOG_NOTICE,
                 "buffer_crypt::decrypt - algorithm not supported [%s]",
                 algorithm_.c_str() );
             // default to aes 256 cbc
@@ -353,3 +363,6 @@ namespace irods {
     } // decrypt
 
 }; // namespace irods
+
+
+

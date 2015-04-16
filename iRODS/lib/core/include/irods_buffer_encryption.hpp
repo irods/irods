@@ -23,6 +23,7 @@ namespace irods {
 ///        used for parallel transfers.  based on
 ///        SSL EVP library
     class buffer_crypt {
+
         public:
             // =-=-=-=-=-=-=-
             // typedef for bounded array
