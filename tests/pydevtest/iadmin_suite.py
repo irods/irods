@@ -57,20 +57,31 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
+    # PASSWORDS
+
+    def test_iadmin_scrambling_and_descrambling(self):
+        # spass
+        self.admin.assert_icommand("iadmin spass gibberish 456", 'STDOUT', 'Scrambled form is:VMd96$wwJ')
+        self.admin.assert_icommand("iadmin spass '-startswithhyphen' 123", 'STDERR', 'parseCmdLineOpt: Option not supported.')
+        self.admin.assert_icommand("iadmin -- spass '-startswithhyphen' 123", 'STDOUT', 'Scrambled form is:9u&sabM*+#ht+ahb!')
+        # dspass
+        self.admin.assert_icommand("iadmin dspass VMd96$wwJ 456", 'STDOUT', 'Unscrambled form is:gibberish')
+        self.admin.assert_icommand("iadmin dspass '-startswithhyphen' 123", 'STDERR', 'parseCmdLineOpt: Option not supported.')
+        self.admin.assert_icommand("iadmin -- dspass '-startswithhyphen' 123", 'STDOUT', 'Unscrambled form is:!qhI),9jGkhVm%hha')
+
     # LISTS
 
     def test_list_zones(self):
         self.admin.assert_icommand("iadmin lz", 'STDOUT', self.admin.zone_name)
-        self.admin.assert_icommand_fail("iadmin lz", 'STDOUT', "notazone")
+        self.admin.assert_icommand("iadmin lz notazone", 'STDOUT', "No rows found")
 
     def test_list_resources(self):
         self.admin.assert_icommand("iadmin lr", 'STDOUT', self.testresc)
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', "notaresource")
+        self.admin.assert_icommand("iadmin lr notaresource", 'STDOUT', "No rows found")
 
     def test_list_users(self):
-        self.admin.assert_icommand("iadmin lu", 'STDOUT', [
-                   self.admin.username + "#" + self.admin.zone_name])
-        self.admin.assert_icommand_fail("iadmin lu", 'STDOUT', "notauser")
+        self.admin.assert_icommand("iadmin lu", 'STDOUT', [self.admin.username + "#" + self.admin.zone_name])
+        self.admin.assert_icommand("iadmin lu notauser", 'STDOUT', "No rows found")
 
     def test_list_groups(self):
         group_name = 'test_group'
