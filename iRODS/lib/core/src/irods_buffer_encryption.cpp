@@ -42,9 +42,14 @@ namespace irods {
         salt_size_( 8 ),
         num_hash_rounds_( 16 ),
         algorithm_( "AES-256-CBC" ) {
-    }
 
-    buffer_crypt::buffer_crypt(
+        std::transform( 
+            algorithm_.begin(), 
+            algorithm_.end(), 
+            algorithm_.begin(), 
+            ::tolower );
+
+    } buffer_crypt::buffer_crypt(
         int         _key_sz,
         int         _salt_sz,
         int         _num_rnds,
@@ -53,6 +58,13 @@ namespace irods {
         salt_size_( _salt_sz ),
         num_hash_rounds_( _num_rnds ),
         algorithm_( _algo ) {
+
+        std::transform( 
+            algorithm_.begin(), 
+            algorithm_.end(), 
+            algorithm_.begin(), 
+            ::tolower );
+
         // =-=-=-=-=-=-=-
         // select some sane defaults
         if ( 0 == key_size_ ) {
@@ -68,12 +80,7 @@ namespace irods {
         }
 
         if ( algorithm_.empty() ) {
-            algorithm_ = "AES-256-CBC";
-
-        }
-
-        if ( !EVP_get_cipherbyname( algorithm_.c_str() ) ) {
-            algorithm_ = "AES-256-CBC";
+            algorithm_ = "aes-256-cbc";
 
         }
 
@@ -82,6 +89,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - destructor
     buffer_crypt::~buffer_crypt() {
+        EVP_cleanup();
 
     } // dtor
 
@@ -161,6 +169,9 @@ namespace irods {
         const array_t& _iv,
         const array_t& _in_buf,
         array_t&       _out_buf ) {
+        
+        OpenSSL_add_all_algorithms();
+
         // =-=-=-=-=-=-=-
         // create an encryption context
         EVP_CIPHER_CTX context;
@@ -170,7 +181,7 @@ namespace irods {
         if ( !algo ) {
             rodsLog(
                 LOG_DEBUG,
-                "buffer_crypt::encrypt - algorithm not supported [%s]",
+                "buffer_crypt::decrypt - algorithm not supported [%s]",
                 algorithm_.c_str() );
             // default to aes 256 cbc
             algo = EVP_aes_256_cbc();
@@ -253,6 +264,8 @@ namespace irods {
         const array_t& _iv,
         const array_t& _in_buf,
         array_t&       _out_buf ) {
+        OpenSSL_add_all_algorithms();
+
         // =-=-=-=-=-=-=-
         // create an decryption context
         EVP_CIPHER_CTX context;
