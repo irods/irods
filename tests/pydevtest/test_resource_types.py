@@ -2156,9 +2156,7 @@ class Test_Replication_to_two_Compound_Resources(ChunkyDevTest, ResourceSuite, u
                     print '.',
         print "----- confirmation done ----"
 
-        # get the file
-        self.admin.assert_icommand("iget -V -f %s %s" %
-                   (filename, retrievedfile), 'STDOUT', "NOTICE")  # get file from archive
+        self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])
 
         # confirm this is the new archive file
         with open(retrievedfile) as f:
