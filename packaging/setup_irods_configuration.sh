@@ -344,9 +344,20 @@ fi
       echo ""
 
       if [ $ICAT_SERVER -eq 1 ] ; then
-        echo -n "iRODS server's administrator password: "
-        # get db password, without showing on screen
-        read -s MYADMINPASSWORD
+        ADMINPASSWORDLENGTH=0
+        while [ $ADMINPASSWORDLENGTH -eq 0 ] ; do
+          echo -n "iRODS server's administrator password: "
+          # get db password, without showing on screen
+          read -s MYADMINPASSWORD
+          echo ""
+          # check length (must be greater than zero)
+          ADMINPASSWORDLENGTH=${#MYADMINPASSWORD}
+          if [ $ADMINPASSWORDLENGTH -eq 0 ] ; then
+              echo ""
+              echo "   *** administrator password cannot be empty ***"
+              echo ""
+          fi
+        done
         echo ""
         echo ""
       fi
