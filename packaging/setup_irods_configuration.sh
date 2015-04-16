@@ -396,7 +396,7 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
-    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_port $MYCONTROLPLANEPORT
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_control_plane_port $MYCONTROLPLANEPORT
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_key $MYCONTROLPLANEKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
     if [ $ICAT_SERVER -eq 1 ] ; then
