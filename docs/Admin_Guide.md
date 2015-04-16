@@ -104,7 +104,7 @@ The `setup_irods.sh` script below will prompt for, and then create, if necessary
 $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 ~~~
 
-The `setup_irods.sh` script will ask for the following sixteen pieces of information before starting the iRODS server:
+The `setup_irods.sh` script will ask for the following eighteen pieces of information before starting the iRODS server:
 
 1. Service Account Name
 2. Service Account Group
@@ -115,13 +115,15 @@ The `setup_irods.sh` script will ask for the following sixteen pieces of informa
 7. Vault Directory
 8. zone_id
 9. negotiation_key
-10. iRODS Administrator Username
-11. iRODS Administrator Password
-12. Database Server's Hostname or IP
-13. Database Port
-14. Database Name
-15. Database User
-16. Database Password
+10. Control Plane Port
+11. Control Plane Key
+12. iRODS Administrator Username
+13. iRODS Administrator Password
+14. Database Server's Hostname or IP
+15. Database Port
+16. Database Name
+17. Database User
+18. Database Password
 
 !!! Note
     A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 12) above.
@@ -155,7 +157,7 @@ Installation of the Resource RPM:
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 ~~~
 
-The `setup_irods.sh` script will ask for the following twelve pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+The `setup_irods.sh` script will ask for the following fourteen pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1. Service Account Name
 2. Service Account Group
@@ -165,10 +167,12 @@ The `setup_irods.sh` script will ask for the following twelve pieces of informat
 6. Vault Directory
 7. zone_id
 8. negotiation_key
-9. iRODS Administrator Username
-10. iCAT Host
-11. iCAT Zone
-12. iRODS Administrator Password
+9. Control Plane Port
+10. Control Plane Key
+11. iRODS Administrator Username
+12. iCAT Host
+13. iCAT Zone
+14. iRODS Administrator Password
 
 ### Default Environment
 
@@ -268,6 +272,10 @@ iRODS server's zone_id [TEMPORARY_zone_id]:
 
 iRODS server's negotiation_key [TEMPORARY_32byte_negotiation_key]:
 
+Control Plane port [1248]:
+
+Control Plane key [TEMPORARY__32byte_ctrl_plane_key]:
+
 iRODS server's administrator username [rods]:
 
 iRODS server's administrator password:
@@ -280,6 +288,8 @@ Range (End):            20199
 Vault Directory:        /full/path/to/Vault
 zone_id:                TEMPORARY_zone_id
 negotiation_key:        TEMPORARY_32byte_negotiation_key
+Control Plane Port:     1248
+Control Plane Key:      TEMPORARY__32byte_ctrl_plane_key
 Administrator Name:     rods
 Administrator Password: Not Shown
 -------------------------------------------

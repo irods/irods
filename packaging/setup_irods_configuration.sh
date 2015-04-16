@@ -294,7 +294,7 @@ fi
       # get control plane key
       CONTROLPLANEKEYLENGTH=0
       while [ $CONTROLPLANEKEYLENGTH -ne 32 ] ; do
-          echo -n "Control Plane's key"
+          echo -n "Control Plane key"
           if [ "$LASTMYCONTROLPLANEKEY" ] ; then
             echo -n " [$LASTMYCONTROLPLANEKEY]"
           else
