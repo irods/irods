@@ -15,9 +15,9 @@
 # Include the collection name, the pattern of the dataObject
 # names and b, e, or m on the command line, to avoid prompts for them.
 
-tmpFile1=`mktemp -t irods_tmp.XXXXXX`
-tmpFile2=`mktemp -t irods_tmp.XXXXXX`
-tmpFile3=`mktemp -t irods_tmp.XXXXXX`
+tmpFile1=`mktemp -t irods_tmp_igetwild1.XXXXXX`
+tmpFile2=`mktemp -t irods_tmp_igetwild2.XXXXXX`
+tmpFile3=`mktemp -t irods_tmp_igetwild3.XXXXXX`
 
 if [ $1 ]; then
   collName=$1

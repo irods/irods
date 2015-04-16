@@ -65,7 +65,7 @@ findPerl( )
         # in the file, we use it.  Otherwise the file is sorted
         # numerically and we use the entry with the highest
         # version number.
-        RESULTSFILE=`mktemp -t irods_tmp.XXXXXX`
+        RESULTSFILE=`mktemp -t irods_tmp_results.XXXXXX`
 
 
         # While "perl -v" reports version information for the program,
@@ -94,11 +94,11 @@ findPerl( )
         #               /cygwin/usr/local/bin /cygwin/usr/share/bin
         foundany="0"
 
-#
-# First, we include the user's prefered perl, in case it's the best.
-# This is needed at NMI B&T for example, where the path is adjusted to
-# select preferred versions of commands.
-#
+        #
+        # First, we include the user's prefered perl, in case it's the best.
+        # This is needed at NMI B&T for example, where the path is adjusted to
+        # select preferred versions of commands.
+        #
         foundWhich=`which perl`
         if [ $? -eq 0 ]; then
                 PERL_PATH="$foundWhich"
@@ -111,9 +111,9 @@ findPerl( )
                         foundany="1"
                 fi
         fi
-#
-# Now we check other locations for more recent Perl's.
-#
+        #
+        # Now we check other locations for more recent Perl's.
+        #
         for prefix in "/" "/opt" "/sw" "/cygwin"; do
 
                 if [ ! -d $prefix ]; then
@@ -201,7 +201,7 @@ findPerl( )
         # Were any found?
         if [ "$foundany" -ne "0" ]; then
                 # Sort the results numerically.
-                SORTEDRESULTSFILE=`mktemp -t irods_tmp.XXXXXX`
+                SORTEDRESULTSFILE=`mktemp -t irods_tmp_sorted_results.XXXXXX`
                 sort -rn $RESULTSFILE > $SORTEDRESULTSFILE
                 rm -f $RESULTSFILE
 
