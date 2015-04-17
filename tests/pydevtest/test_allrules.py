@@ -412,5 +412,5 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.run_icommand(['irm', '-rf', bundle_path])
         
     def test_str_2528(self):
-        self.rods_session.assert_icommand('''irule "*a.a = 'eii'; *a.b = 'bee'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT', "a=eii++++b=bee")
+        self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT', "a=A++++b=B")
 
