@@ -1332,7 +1332,12 @@ Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
             int diff = strlen(buf);
             if ( diff + kl + 1 + vl + ( i == 0 ? 0 : 4 ) >= size ) {
                 size *= 2;
-                buf = ( char * ) realloc( buf, size );
+                if ( char * tmp = ( char * ) realloc( buf, size ) ) {
+                    buf = tmp;
+                }
+                else {
+                    break;
+                }
             }
             snprintf( buf + diff, size - diff, "%s%s=%s", i == 0 ? "" : "++++", kvp->keyWord[i], kvp->value[i] );
         }
