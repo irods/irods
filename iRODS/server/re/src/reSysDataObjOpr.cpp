@@ -1421,8 +1421,17 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
     }
     else {
         numProc = atoi( numProcStr );
-        if ( numProc > MAX_RE_PROCS ) {
-            numProc = MAX_RE_PROCS;
+        int max_re_procs = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
+                               max_re_procs );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code(); 
+        }
+
+        if ( numProc > max_re_procs ) {
+            numProc = max_re_procs;
         }
         else if ( numProc < 0 ) {
             numProc = DEF_NUM_RE_PROCS;

@@ -559,7 +559,12 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    bzero( reExec, sizeof( reExec_t ) );
+    // JMC :: do not bzero std::vector -- bzero( reExec, sizeof( reExec_t ) );
+    // initialize 
+    reExec->runCnt = 0;
+    reExec->maxRunCnt = 0;
+    reExec->doFork = 0;
+
     bzero( &rei, sizeof( ruleExecInfo_t ) ); /*  June 17. 2009 */
 
     rei.rsComm = rsComm;
@@ -578,12 +583,24 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
             reExec->doFork = 0;
         }
         else {
-            if ( reExec->maxRunCnt > MAX_RE_PROCS ) {
-                reExec->maxRunCnt = MAX_RE_PROCS;
+            int max_re_procs = 0;
+            irods::error ret = irods::get_advanced_setting<int>(
+                                   irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
+                                   max_re_procs );
+            if( !ret.ok() ) {
+                irods::log( PASS( ret ) );
+                return ret.code(); 
+            }
+
+            if ( reExec->maxRunCnt > max_re_procs ) {
+                reExec->maxRunCnt = max_re_procs;
             }
             reExec->doFork = 1;
         }
     }
+
+    reExec->reExecProc.resize( reExec->maxRunCnt );
+
     for ( i = 0; i < reExec->maxRunCnt; i++ ) {
         reExec->reExecProc[i].procExecState = RE_PROC_IDLE;
         reExec->reExecProc[i].ruleExecSubmitInp.packedReiAndArgBBuf =

@@ -17,7 +17,6 @@
 #include "rsGlobalExtern.hpp"
 #include "reIn2p3SysRule.hpp"
 
-#define MAX_RE_PROCS	4
 #define DEF_NUM_RE_PROCS	1
 #define RESC_UPDATE_TIME        60
 #define RE_EXE	"irodsReServer"
@@ -40,7 +39,7 @@ typedef struct {
     int runCnt;
     int maxRunCnt;
     int doFork;
-    reExecProc_t reExecProc[MAX_RE_PROCS];
+    std::vector< reExecProc_t > reExecProc;
 } reExec_t;
 
 int
