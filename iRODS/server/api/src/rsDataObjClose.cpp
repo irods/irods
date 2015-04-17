@@ -35,7 +35,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_file_object.hpp"
-#include "irods_metadata_serialization.hpp"
+#include "irods_serialization.hpp"
 #include "irods_exception.hpp"
 
 
@@ -557,6 +557,8 @@ _rsDataObjClose(
             return status;
         }
 
+        if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
+        }
         if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
             std::vector<std::string> deserialized_metadata;
             try {

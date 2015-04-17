@@ -31,7 +31,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_exception.hpp"
-#include "irods_metadata_serialization.hpp"
+#include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
 
 int

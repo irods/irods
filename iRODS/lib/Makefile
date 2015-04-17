@@ -73,7 +73,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o \
-		$(libCoreObjDir)/irods_metadata_serialization.o \
+		$(libCoreObjDir)/irods_serialization.o \
 		$(libCoreObjDir)/irods_auth_factory.o \
 		$(libCoreObjDir)/irods_operation_wrapper.o \
 		$(libCoreObjDir)/irods_string_tokenize.o \

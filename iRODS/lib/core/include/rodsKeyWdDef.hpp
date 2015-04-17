@@ -32,6 +32,7 @@
 #define REPL_STATUS_KW	"replStatus"	/* status of the replica */
 #define ALL_REPL_STATUS_KW	"allReplStatus"	/* update all replStatus */
 #define METADATA_INCLUDED_KW "metadataIncluded" /* for atomic puts of data / metadata */
+#define ACL_INCLUDED_KW "metadataIncluded" /* for atomic puts of data / metadata */
 #define DATA_INCLUDED_KW "dataIncluded"	/* data included in the input buffer */
 #define DATA_OWNER_KW	"dataOwner"
 #define DATA_OWNER_ZONE_KW	"dataOwnerZone"

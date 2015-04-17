@@ -56,6 +56,7 @@ static int parse_program_options(
     ( "purgec", "Purge the staged cache copy after uploading an object to a" )
     ( "kv_pass", po::value<std::string>(), "pass key-value strings through to the plugin infrastructure" )
     ( "metadata", po::value<std::string>(), "atomically assign metadata after a data object is put" )
+    ( "acl", po::value<std::string>(), "atomically apply an access control list after a data object is put" )
     ( "path_args", po::value<path_list_t>(&_paths)->composing(), "some files and stuffs" );
 
     po::positional_options_description pos_desc;
@@ -236,9 +237,16 @@ static int parse_program_options(
         }
     }
     if( global_prog_ops_var_map.count( "metadata" ) ) {
-        _rods_args.metadata = 1;
         try {
             _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
+        }
+        catch ( const boost::bad_any_cast& ) {
+            return INVALID_ANY_CAST;
+        }
+    }
+    if( global_prog_ops_var_map.count( "acl" ) ) {
+        try {
+            _rods_args.acl_string = (char*)global_prog_ops_var_map[ "acl" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;

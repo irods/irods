@@ -141,10 +141,10 @@ typedef struct {
     char *excludeFileString;
 
     // =-=-=-=-=-=-=-
-    // atomic metadata put & 
+    // atomic metadata put &
     // kv pass through
-    int metadata;
     char* metadata_string;
+    char* acl_string;
     int kv_pass;
     char* kv_pass_string;
 

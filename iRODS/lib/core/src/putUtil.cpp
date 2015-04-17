@@ -529,6 +529,10 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjOprInp->condInput, METADATA_INCLUDED_KW, rodsArgs->metadata_string );
     }
 
+    if( rodsArgs->acl_string != NULL && strlen( rodsArgs->acl_string ) != 0 ) {
+        addKeyVal( &dataObjOprInp->condInput, ACL_INCLUDED_KW, rodsArgs->acl_string );
+    }
+
     return 0;
 }
 
