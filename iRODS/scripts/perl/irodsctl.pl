@@ -989,34 +989,6 @@ sub startIrods
 #
 sub stopIrods
 {
-        # Find and kill the server process IDs
-        my @pids = getOurIrodsServerPids();
-        my $found = 0;
-        $num = @pids;
-        print ( "Found $num processes:\n" );
-        foreach $pid (@pids)
-        {
-                $found = 1;
-                print( "\tStopping process id $pid\n" );
-                kill( 'SIGINT', $pid );
-        }
-        if ( ! $found )
-        {
-                system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
-                printStatus( "    There are no iRODS servers running.\n" );
-                return 1;
-        }
-
-        # Repeat to catch stragglers.  This time use kill -9.
-        my @pids = getOurIrodsServerPids();
-        my $found = 0;
-        foreach $pid (@pids)
-        {
-                $found = 1;
-                print( "\tKilling process id $pid\n" );
-                kill( 9, $pid );
-        }
-
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
         system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
@@ -1025,16 +997,6 @@ sub stopIrods
         system( "rm -f /var/run/shm/*re_cache_*iRODS*" ); # ubuntu
         system( "rm -f /dev/shm/*re_cache_*iRODS*" );     # centos, suse, arch
 
-        # Report if there are any left.
-        my $didNotDie = 0;
-        my @pids = getOurIrodsServerPids();
-
-        if ( $#pids >= 0 )
-        {
-                printError( "    Some servers could not be killed.  They may be owned\n" );
-                printError( "    by another user or there could be a problem.\n" );
-                return 0;
-        }
         return 1;
 }
 
