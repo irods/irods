@@ -17,7 +17,7 @@
 #include "md5.hpp"
 
 namespace irods {
-
+#if 0
     class evp_lifetime_mgr {
         public:
         evp_lifetime_mgr() {
@@ -31,7 +31,7 @@ namespace irods {
 
     }; // class evp_lifetime_mgr
     static evp_lifetime_mgr global_evp_lifetime_mgr_;
-
+#endif
     std::string buffer_crypt::gen_hash(
         unsigned char* _buf,
         int            _sz ) {
@@ -193,7 +193,7 @@ namespace irods {
         if ( !algo ) {
             rodsLog(
                 LOG_NOTICE,
-                "buffer_crypt::encrypt - algorithm not supported [%s]",
+                "buffer_crypt::encrypt - algorithm not supported [%s], default to aes-256-cbc",
                 algorithm_.c_str() );
             // default to aes 256 cbc
             algo = EVP_aes_256_cbc();
@@ -285,7 +285,7 @@ namespace irods {
         if ( !algo ) {
             rodsLog(
                 LOG_NOTICE,
-                "buffer_crypt::decrypt - algorithm not supported [%s]",
+                "buffer_crypt::decrypt - algorithm not supported [%s], default to aes-256-cbc",
                 algorithm_.c_str() );
             // default to aes 256 cbc
             algo = EVP_aes_256_cbc();
