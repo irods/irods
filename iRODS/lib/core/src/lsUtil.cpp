@@ -242,9 +242,10 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     }
 
     if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "printLsLong: getSqlResultByInx for COL_D_RESC_HIER failed" );
-        return UNMATCHED_KEY_OR_INDEX;
+    	// If the index is not found then COL_D_RESC_HIER was most likely stripped
+    	// from the query input to talk to an older zone.
+    	// use resource name instead
+    	rescHier = rescName;
     }
 
     if ( ( replStatus = getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) ==
