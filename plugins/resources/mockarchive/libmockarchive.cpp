@@ -14,6 +14,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -410,8 +411,18 @@ extern "C" {
         int         mode,
         const char* srcFileName,
         const char* destFileName ) {
+        
+        int trans_buff_size = 0;
+        irods::error ret = irods::get_advanced_setting<int>(
+                               irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+                               trans_buff_size );
+        if( !ret.ok() ) {
+            return ret.code();
+        }
+        trans_buff_size *= 1024 * 1024;
+
         int inFd, outFd;
-        char myBuf[TRANS_BUF_SZ];
+        std::vector<char> myBuf( trans_buff_size );
         rodsLong_t bytesCopied = 0;
         int bytesRead;
         int bytesWritten;
@@ -454,8 +465,8 @@ extern "C" {
             return status;
         }
 
-        while ( ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-            bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+        while ( ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
+            bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
             if ( bytesWritten <= 0 ) {
                 status = UNIX_FILE_WRITE_ERR - errno;
                 rodsLog( LOG_ERROR,

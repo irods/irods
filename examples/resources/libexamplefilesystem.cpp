@@ -77,10 +77,19 @@ static irods::error example_file_copy_plugin(
     const char* srcFileName,
     const char* destFileName ) {
 
+    int trans_buff_size = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+                           trans_buff_size );
+    if( !ret.ok() ) {
+        return PASS( ret ); 
+    }
+    trans_buff_size *= 1024 * 1024;
+
     irods::error result = SUCCESS();
 
     int inFd, outFd;
-    char myBuf[TRANS_BUF_SZ];
+    std::vector<char> myBuf( trans_buff_size );
     rodsLong_t bytesCopied = 0;
     int bytesRead;
     int bytesWritten;
@@ -106,8 +115,8 @@ static irods::error example_file_copy_plugin(
                 close( inFd );
             }
             else {
-                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                    bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
+                    bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
                     err_status = UNIX_FILE_WRITE_ERR - errno;
                     if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
                                                   destFileName, status ) ).ok() ) {

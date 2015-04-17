@@ -356,7 +356,8 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
     // =-=-=-=-=-=-=-
     // allocate a buffer for writing
-    size_t buf_size = 2 * TRANS_BUF_SZ * sizeof( unsigned char );
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
+    size_t buf_size = 2 * trans_buff_sz * sizeof( unsigned char );
     unsigned char* buf = ( unsigned char* )malloc( buf_size );
 
     while ( myInput->status >= 0 ) {
@@ -389,8 +390,8 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
         while ( toPut > 0 ) {
             int toRead, bytesRead, bytesWritten;
 
-            if ( toPut > TRANS_BUF_SZ ) {
-                toRead = TRANS_BUF_SZ;
+            if ( toPut > trans_buff_sz ) {
+                toRead = trans_buff_sz;
             }
             else {
                 toRead = toPut;
@@ -544,9 +545,13 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                       "cannot open file %s", locFilePath, status );
         return status;
     }
+   
+    rodsEnv rods_env;
+    getRodsEnv( &rods_env ); 
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-    dataObjWriteInpBBuf.buf = malloc( TRANS_BUF_SZ );
+    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
@@ -556,7 +561,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     }
 
     while ( ( dataObjWriteInpBBuf.len =
-                  myRead( in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ,
+                  myRead( in_fd, dataObjWriteInpBBuf.buf, trans_buff_sz,
                           &bytesRead, NULL ) ) > 0 ) {
         /* Write to the data object */
 
@@ -594,7 +599,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             if ( gGuiProgressCB != NULL ) {
                 if ( progressCnt >= ( MAX_PROGRESS_CNT - 1 ) ) {
                     conn->operProgress.curFileSizeDone +=
-                        ( ( MAX_PROGRESS_CNT - 1 ) * TRANS_BUF_SZ + bytesWritten );
+                        ( ( MAX_PROGRESS_CNT - 1 ) * trans_buff_sz + bytesWritten );
                     gGuiProgressCB( &conn->operProgress );
                     progressCnt = 0;
                 }
@@ -702,10 +707,14 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                       "cannot open file %s", locFilePath, status );
         return status;
     }
+    
+    rodsEnv rods_env;
+    getRodsEnv( &rods_env ); 
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
-    dataObjReadInpBBuf.buf = malloc( TRANS_BUF_SZ );
-    dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
+    dataObjReadInpBBuf.buf = malloc( trans_buff_sz );
+    dataObjReadInpBBuf.len = dataObjReadInp.len = trans_buff_sz;
     dataObjReadInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
 
@@ -763,7 +772,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
             if ( gGuiProgressCB != NULL ) {
                 if ( progressCnt >= ( MAX_PROGRESS_CNT - 1 ) ) {
                     conn->operProgress.curFileSizeDone +=
-                        ( ( MAX_PROGRESS_CNT - 1 ) * TRANS_BUF_SZ + bytesWritten );
+                        ( ( MAX_PROGRESS_CNT - 1 ) * trans_buff_sz + bytesWritten );
                     gGuiProgressCB( &conn->operProgress );
                     progressCnt = 0;
                 }
@@ -1022,8 +1031,9 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
             &myInput->shared_secret[0],
             &myInput->shared_secret[iv_size] );
     }
-
-    size_t buf_size = ( 2 * TRANS_BUF_SZ ) * sizeof( unsigned char );
+    
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
+    size_t buf_size = ( 2 * trans_buff_sz ) * sizeof( unsigned char );
     buf = ( unsigned char* )malloc( buf_size );
 
     while ( myInput->status >= 0 ) {
@@ -1056,8 +1066,8 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
         while ( toGet > 0 ) {
             int toRead, bytesRead, bytesWritten;
 
-            if ( toGet > TRANS_BUF_SZ ) {
-                toRead = TRANS_BUF_SZ;
+            if ( toGet > trans_buff_sz ) {
+                toRead = trans_buff_sz;
             }
             else {
                 toRead = toGet;
@@ -1555,9 +1565,13 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         close( localFd );
         return irodsFd;
     }
+    
+    rodsEnv rods_env;
+    getRodsEnv( &rods_env ); 
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-    dataObjWriteInpBBuf.buf = malloc( TRANS_BUF_SZ );
+    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = irodsFd;
 
@@ -1580,7 +1594,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
             }
 
             status = putSeg( conn, gap, localFd, &dataObjWriteInp,
-                             &dataObjWriteInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
+                             &dataObjWriteInpBBuf, trans_buff_sz, &writtenSinceUpdated,
                              info, lenToUpdate );
             if ( status < 0 ) {
                 break;
@@ -1616,7 +1630,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         gap = info->fileSize - curOffset;
         if ( gap > 0 ) {
             status = putSeg( conn, gap, localFd, &dataObjWriteInp,
-                             &dataObjWriteInpBBuf, TRANS_BUF_SZ,  &writtenSinceUpdated,
+                             &dataObjWriteInpBBuf, trans_buff_sz,  &writtenSinceUpdated,
                              info, &info->dataSeg[i - 1].len );
         }
     }
@@ -1713,9 +1727,13 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         close( localFd );
         return irodsFd;
     }
+    
+    rodsEnv rods_env;
+    getRodsEnv( &rods_env ); 
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
-    dataObjReadInpBBuf.buf = malloc( TRANS_BUF_SZ );
+    dataObjReadInpBBuf.buf = malloc( trans_buff_sz );
     dataObjReadInpBBuf.len = 0;
     dataObjReadInp.l1descInx = irodsFd;
 
@@ -1739,7 +1757,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
                 lenToUpdate = &info->dataSeg[i - 1].len;
             }
             status = getSeg( conn, gap, localFd, &dataObjReadInp,
-                             &dataObjReadInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
+                             &dataObjReadInpBBuf, trans_buff_sz, &writtenSinceUpdated,
                              info, lenToUpdate );
             if ( status < 0 ) {
                 break;
@@ -1774,7 +1792,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         gap = info->fileSize - curOffset;
         if ( gap > 0 ) {
             status = getSeg( conn, gap, localFd, &dataObjReadInp,
-                             &dataObjReadInpBBuf, TRANS_BUF_SZ,  &writtenSinceUpdated,
+                             &dataObjReadInpBBuf, trans_buff_sz,  &writtenSinceUpdated,
                              info, &info->dataSeg[i - 1].len );
         }
     }
@@ -1866,11 +1884,15 @@ catDataObj( rcComm_t *conn, char *objPath ) {
                       "catDataObj: rcDataObjOpen error for %s", objPath );
         return l1descInx;
     }
+    
+    rodsEnv rods_env;
+    getRodsEnv( &rods_env ); 
+    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
-    dataObjReadOutBBuf.buf = malloc( TRANS_BUF_SZ + 1 );
-    dataObjReadOutBBuf.len = TRANS_BUF_SZ + 1;
+    dataObjReadOutBBuf.buf = malloc( trans_buff_sz + 1 );
+    dataObjReadOutBBuf.len = trans_buff_sz + 1;
     dataObjReadInp.l1descInx = l1descInx;
-    dataObjReadInp.len = TRANS_BUF_SZ;
+    dataObjReadInp.len = trans_buff_sz;
 
     while ( ( bytesRead = rcDataObjRead( conn, &dataObjReadInp,
                                          &dataObjReadOutBBuf ) ) > 0 ) {

@@ -808,7 +808,18 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
 
 
     if ( doinp->numThreads > 0 ) {
-        numThr = doinp->dataSize / TRANS_BUF_SZ + 1;
+
+        int trans_buff_size = 0;
+        ret = irods::get_advanced_setting<int>(
+                  irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+                  trans_buff_size );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code(); 
+        }
+        trans_buff_size *= 1024 * 1024;
+
+        numThr = doinp->dataSize / trans_buff_size + 1;
         if ( numThr > doinp->numThreads ) {
             numThr = doinp->numThreads;
         }

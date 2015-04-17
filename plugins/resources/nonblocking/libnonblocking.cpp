@@ -1166,11 +1166,20 @@ extern "C" {
                 result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
             }
             else {
+                int trans_buff_size = 0;
+                irods::error ret = irods::get_advanced_setting<int>(
+                                       irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+                                       trans_buff_size );
+                if( !ret.ok() ) {
+                    return PASS( ret ); 
+                }
+                trans_buff_size *= 1024 * 1024;
+                std::vector<char> myBuf( trans_buff_size );
+
                 int bytesRead;
-                char myBuf[TRANS_BUF_SZ];
                 rodsLong_t bytesCopied = 0;
-                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf, TRANS_BUF_SZ ) ) > 0 ) {
-                    int bytesWritten = write( outFd, ( void * ) myBuf, bytesRead );
+                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
+                    int bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
                     err_status = UNIX_FILE_WRITE_ERR - errno;
                     if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
                                                   destFileName, status ) ).ok() ) {
