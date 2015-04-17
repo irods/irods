@@ -264,8 +264,8 @@ def make_environment_dict(username, hostname, zone_name):
         'irods_maximum_size_for_single_buffer_in_megabytes': 32,
         'irods_default_number_of_transfer_threads': 4,
         'irods_maximum_number_of_transfer_threads': 64,
-        'irods_size_of_read_buffer_for_parallel_transfer_in_megabytes': 40,
-        'irods_size_of_transfer_buffer_for_parallel_transfer_in_megabytes': 4
+        'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': 4
+
     }
     if configuration.USE_SSL:
         environment.update({
