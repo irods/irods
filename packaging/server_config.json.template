@@ -41,7 +41,6 @@
     "advanced_settings" : {
         "maximum_size_for_single_buffer_in_megabytes" : 32,
         "default_number_of_transfer_threads" : 4,
-        "maximum_number_of_transfer_threads" : 64,
         "transfer_chunk_size_for_parallel_transfer_in_megabytes" : 40,
         "transfer_buffer_size_for_parallel_transfer_in_megabytes" : 4,
         "default_temporary_password_lifetime_in_seconds" : 120,

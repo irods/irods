@@ -10,8 +10,6 @@ import pwd
 DEBUG = True
 DEBUG = False
 
-# ### TODO consider 0600 on new JSON files... ###
-
 legacy_key_map = {}
 should_be_integers = []
 
@@ -70,10 +68,16 @@ def convert_irodshost():
         new_file = get_install_dir() + '/iRODS/server/config/hosts_config.json'
     else:
         new_file = '/etc/irods/hosts_config.json'
-    container_name = {}
-    container_name['host_entries'] = []
+    #
+    # read the template
+    #
+    with open(get_install_dir() + '/packaging/hosts_config.json.template') as fh:
+        container_name = json.load(fh)
+
+    # convert if necessary
     if ( not already_converted(legacy_file, new_file) ):
         print_debug('reading [' + legacy_file + '] begin')
+        # read legacy file
         if os.path.isfile(legacy_file):
             with open(legacy_file, 'r') as f:
                 for i, row in enumerate(f):
@@ -109,15 +113,16 @@ def convert_hostaccesscontrol():
         new_file = get_install_dir() + '/iRODS/server/config/host_access_control_config.json'
     else:
         new_file = '/etc/irods/host_access_control_config.json'
-    container_name = {}
-    container_name['access_entries'] = []
+    #
+    # read the template
+    #
+    with open(get_install_dir() + '/packaging/host_access_control_config.json.template') as fh:
+        container_name = json.load(fh)
 
-    hac_len = 0
-    with open(new_file, 'r') as fh:
-        hac = json.load(fh)
-        hac_len = len(['access_entries'])
-    if hac_len != 0:
+    # convert if necessary
+    if ( not already_converted(legacy_file, new_file) ):
         print_debug('reading [' + legacy_file + '] begin')
+        # read legacy file
         if os.path.isfile(legacy_file):
             with open(legacy_file, 'r') as f:
                 for i, row in enumerate(f):
@@ -198,6 +203,9 @@ def convert_irodsenv():
         container_name['irods_server_control_plane_key'] = 'TEMPORARY__32byte_ctrl_plane_key'
         container_name['irods_server_control_plane_port'] = 1248
         container_name['irods_server_control_plane_timeout_milliseconds'] = 10000
+        container_name['irods_maximum_size_for_single_buffer_in_megabytes'] = 32
+        container_name['irods_default_number_of_transfer_threads'] = 4
+        container_name['irods_transfer_buffer_size_for_parallel_transfer_in_megabytes'] = 4
 
         #
         # load legacy file
@@ -309,9 +317,9 @@ def convert_serverconfig_and_irodsconfig():
         #
         # read the templates
         #
-        with open(get_install_dir() + '/packaging/server_config.json') as fh:
+        with open(get_install_dir() + '/packaging/server_config.json.template') as fh:
             server_config = json.load(fh)
-        with open(get_install_dir() + '/packaging/database_config.json') as fh:
+        with open(get_install_dir() + '/packaging/database_config.json.template') as fh:
             database_config = json.load(fh)
 
         #

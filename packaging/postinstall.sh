@@ -149,10 +149,10 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     chmod 4755 /usr/bin/genOSAuth
 
 
-    # convert the configuration files
+    # convert any legacy configuration files
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/convert_configuration_to_json.py"
     # update the configuration files
-#    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_configuration_schema.py"
+    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_configuration_schema.py"
 
     # stop server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl stop"
@@ -165,10 +165,18 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     # re-start server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl start"
 else
-    # copy packaged server_config.json into live config directory
-    cp /var/lib/irods/packaging/server_config.json /etc/irods/
+    # copy packaged template files into live config directory
+    cp /var/lib/irods/packaging/core.re.template /etc/irods/core.re
+    cp /var/lib/irods/packaging/core.dvm.template /etc/irods/core.dvm
+    cp /var/lib/irods/packaging/core.fnm.template /etc/irods/core.fnm
+    cp /var/lib/irods/packaging/server_config.json.template /etc/irods/server_config.json
+    cp /var/lib/irods/packaging/hosts_config.json.template /etc/irods/hosts_config.json
+    cp /var/lib/irods/packaging/host_access_control_config.json.template /etc/irods/host_access_control_config.json
+
     # =-=-=-=-=-=-=-
     if [ "$SERVER_TYPE" == "icat" ] ; then
+        # copy packaged template database file into live config directory
+        cp /var/lib/irods/packaging/database_config.json.template /etc/irods/database_config.json
         # give user some guidance regarding database selection and installation
         cat $IRODS_HOME_DIR/packaging/user_icat.txt
     elif [ "$SERVER_TYPE" == "resource" ] ; then

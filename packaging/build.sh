@@ -485,21 +485,22 @@ rename_generated_packages() {
 MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
+    cd $BUILDDIR
     # clean up any build-created files
     echo "${text_green}${text_bold}Clean...${text_reset}"
     echo "Cleaning $SCRIPTNAME residuals..."
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f examples/microservices/*.pdf
-    rm -f libirods_client.a
-    rm -f libirods_server.a
+    rm -f libirods_client*
+    rm -f libirods_server*
 
     make clean -C $BUILDDIR --no-print-directory
     set -e
     rm -rf $IRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
-    cd $BUILDDIR
+    rm -f VERSION.json
     rm -rf build
     rm -f packaging/irods-dev.list
     rm -f packaging/irods-runtime.list

@@ -10,27 +10,10 @@ import platform
 # get top level directory
 irodstoplevel = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-# get irods_version and catalog_schema_version
-versionfile = os.path.join(irodstoplevel, 'VERSION')
-jsonfile = versionfile + '.json'
-if os.path.isfile(jsonfile):
-    # VERSION.json already exists, use it
-    with open(jsonfile) as f:
-        data = json.load(f)
-    irods_version = data['irods_version']
-    catalog_schema_version = data['catalog_schema_version']
-else:
-    # only VERSION exists, read in legacy format
-    with open(versionfile) as f:
-        for line in f:
-            items = line.split('=')
-            if items[0].strip() == 'IRODSVERSION':
-                irods_version = items[1].strip()
-            if items[0].strip() == 'CATALOG_SCHEMA_VERSION':
-                catalog_schema_version = items[1].strip()
-outdata = {}
-outdata['irods_version'] = irods_version
-outdata['catalog_schema_version'] = int(catalog_schema_version)
+# load the template
+templatefile = os.path.join(irodstoplevel, 'VERSION.json.dist')
+with open(templatefile) as fh:
+    outdata = json.load(fh)
 
 # get commit_id
 p = subprocess.Popen("git log | head -n1 | awk '{print $2}'",
