@@ -1,5 +1,6 @@
 import base64
 import commands
+import copy
 import datetime
 import getpass
 import hashlib
@@ -230,55 +231,40 @@ class ResourceSuite(ResourceBase):
     ###################
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
-        # set up client and server side for ssl handshake
+        lib.run_command('openssl genrsa -out server.key')
+        lib.run_command('openssl req -batch -new -key server.key -out server.csr')
+        lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
+        lib.run_command('openssl dhparam -2 -out dhparams.pem 100') # normally 2048, but smaller size here for speed
 
-        # server side certificate setup
-        os.system("openssl genrsa -out server.key 2> /dev/null")
-        os.system("openssl req -batch -new -key server.key -out server.csr")
-        os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
-        os.system("mv server.crt chain.pem")
-        # normally 2048, but smaller size here for speed
-        os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null")
+        service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
+        with lib.file_backed_up(service_account_environment_file_path):
+            server_update = {
+                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+            }
+            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
 
-        # add client irodsEnv settings
-        clientEnvFile = self.admin.local_session_dir + "/irods_environment.json"
-        os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
+            client_update = {
+                'irods_client_server_policy': 'CS_NEG_REQUIRE',
+                'irods_ssl_verify_server': 'none',
+            }
 
-        env = {
-            'irods_client_server_policy': 'CS_NEG_REQUIRE',
-            'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-            'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-            'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
-            'irods_ssl_verify_server': 'none',
-        }
+            session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+            self.admin.environment_file_contents.update(client_update)
 
-        lib.update_json_file_from_dict(clientEnvFile, env)
+            filename = 'encryptedfile.txt'
+            filepath = lib.create_local_testfile(filename)
+            self.admin.assert_icommand(['iinit', self.admin.password])
+            self.admin.assert_icommand(['iput', filename])
+            self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT', filename)
 
-        # server needs the environment variable to
-        # read the correctly changed environment
+            self.admin.environment_file_contents = session_env_backup
 
-        # server reboot to pick up new irodsEnv settings
-        env_val = self.admin.local_session_dir + "/irods_environment.json"
-        sys_cmd = 'export IRODS_ENVIRONMENT_FILE={0};{1} restart'.format(env_val, os.path.join(lib.get_irods_top_level_dir(), 'iRODS/irodsctl'))
-        os.system(sys_cmd)
+            for f in ['server.key', 'server.csr', 'chain.pem', 'dhparams.pem']:
+                os.unlink(f)
 
-        # do the encrypted put
-        filename = "encryptedfile.txt"
-        filepath = lib.create_local_testfile(filename)
-        self.admin.assert_icommand(['iinit', self.admin.password])  # reinitialize
-        # small file
-        self.admin.assert_icommand("iput " + filename)  # encrypted put - small file
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT', filename)  # should be listed
-        # reset client environment to not require SSL
-        os.system("mv %sOrig %s" % (clientEnvFile, clientEnvFile))
-
-        # clean up
-        os.system("rm server.key server.csr chain.pem dhparams.pem")
-        os.remove(filename)
-
-        # restart iRODS server without altered environment
         lib.restart_irods_server()
-
 
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
@@ -967,29 +953,8 @@ class ResourceSuite(ResourceBase):
 
     def test_itrim_with_admin_mode(self):
         lib.touch("file.txt")
-        for i in range(0, 100):
+        for i in range(100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
-        homepath = "/" + self.admin.zone_name + "/home/" + \
-            self.user0.username + "/" + self.user0._session_id
+        homepath = self.user0.session_collection
         self.user0.assert_icommand("irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
         self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT', "Number of files trimmed = 100.")
-
-    ###################
-    # iput with key-value passthrough
-    ###################
-
-    def test_key_value_passthru(self):
-        env = os.environ.copy()
-        env['spLogLevel'] = '11'
-        lib.restart_irods_server(env=env)
-
-        lib.make_file( "file.txt", 15)
-        self.user0.assert_icommand('iput --kv_pass="fancy_key1=val1" file.txt', 'EMPTY')
-        lib.assert_command('grep -r fancy_key1 /var/lib/irods/iRODS/server/log/', 'STDOUT', 'key [fancy_key1] - value [val1]')
-
-        self.user0.assert_icommand('iget -f --kv_pass="fancy_key3=val3" file.txt other.txt', 'EMPTY')
-        lib.assert_command('grep -r fancy_key3 /var/lib/irods/iRODS/server/log/', 'STDOUT', 'key [fancy_key3] - value [val3]')
-
-        lib.restart_irods_server()
-
-        lib.assert_command('rm -f file.txt other.txt', 'EMPTY')

@@ -622,6 +622,22 @@ class Test_UnixFileSystem_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
         shutil.rmtree(lib.get_irods_top_level_dir() + "/demoRescVault", ignore_errors=True)
 
+    def test_key_value_passthru(self):
+        env = os.environ.copy()
+        env['spLogLevel'] = '11'
+        lib.restart_irods_server(env=env)
+
+        lib.make_file('file.txt', 15)
+        initial_log_size = lib.get_log_size('server')
+        self.user0.assert_icommand('iput --kv_pass="put_key=val1" file.txt')
+        assert lib.count_occurrences_of_string_in_log('server', 'key [put_key] - value [val1]', start_index=initial_log_size) in [1, 2] # double print if collection missing
+
+        initial_log_size = lib.get_log_size('server')
+        self.user0.assert_icommand('iget -f --kv_pass="get_key=val3" file.txt other.txt')
+        assert lib.count_occurrences_of_string_in_log('server', 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2] # double print if collection missing
+        lib.restart_irods_server()
+        lib.assert_command('rm -f file.txt other.txt')
+
 class Test_Passthru_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:

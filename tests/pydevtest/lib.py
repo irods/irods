@@ -100,8 +100,13 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
 def file_backed_up(filename):
     with tempfile.NamedTemporaryFile(prefix=os.path.basename(filename)) as f:
         shutil.copyfile(filename, f.name)
-        yield
-        shutil.copyfile(f.name, filename)
+        try:
+            yield
+        except:
+            shutil.copyfile(f.name, filename)
+            raise
+        else:
+            shutil.copyfile(f.name, filename)
 
 def prepend_string_to_file(string, filename):
     with open(filename, 'r') as f: contents = f.read()
@@ -170,7 +175,7 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
     print '    | ' + '\n    | '.join(stderr.splitlines())
 
     if check_type not in ['STDERR', 'STDERR_MULTILINE'] and stderr != '':
-        print 'FAILURE: Unexpected output on stderr\n'
+        print 'Unexpected output on stderr\n'
         return False
 
     if check_type in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
@@ -186,9 +191,9 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
                     print '    --> stopping search - expected result not found'
                     break
             else:
-                print 'SUCCESS\n'
+                print 'Output found\n'
                 return True
-            print 'FAILURE: Not found\n'
+            print 'Output not found\n'
             return False
         else:
             for line in lines:
@@ -198,15 +203,15 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
                     if re.search(regex_pattern, line.rstrip('\n')):
                         found_count += 1
                 if found_count == len(expected_results):
-                    print 'SUCCESS\n'
+                    print 'Output found\n'
                     return True
-            print 'FAILURE: Not found\n'
+            print 'Output not found\n'
             return False
     elif check_type == 'EMPTY':
         if stdout == '':
-            print 'SUCCESS\n'
+            print 'Output found\n'
             return True
-        print 'FAILURE: Unexpected output on stdout\n'
+        print 'Unexpected output on stdout\n'
         return False
     assert False
 
@@ -237,11 +242,15 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
     check_run_command_output_arg_dict = extract_function_kwargs(check_run_command_output, kwargs)
     result = should_fail != check_run_command_output(command_arg, stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
     if not result:
-        print 'ASSERT COMMAND FAILED'
+        print 'FAILED TESTING ASSERTION\n\n'
     assert result
 
 def restart_irods_server(env=None):
-    assert_command('{0} restart'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_MULTILINE', ['Stopping iRODS server', 'Starting iRODS server'], env=env)
+    hostname = get_hostname()
+    assert_command(['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT', hostname)
+    assert_command('{0} start'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT', 'Starting iRODS server', env=env)
+    with make_session_for_existing_admin() as admin_session:
+        admin_session.assert_icommand('ils', 'STDOUT', admin_session.zone_name)
 
 def make_environment_dict(username, hostname, zone_name):
     irods_home = os.path.join('/', zone_name, 'home', username)

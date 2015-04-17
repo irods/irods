@@ -1005,10 +1005,11 @@ acPostProcForPut() {
 '''
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+            time.sleep(2)  # remove once file hash fix is commited #2279
             trigger_file = 'file_to_trigger_acPostProcForPut'
             lib.make_file(trigger_file, 10)
             self.admin.assert_icommand(['iput', trigger_file])
-            time.sleep(35)
+            time.sleep(40)
             assert 1 == lib.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
