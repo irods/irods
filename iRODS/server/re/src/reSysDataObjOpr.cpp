@@ -765,15 +765,25 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
         }
     }
 
+    int size_per_tran_thr = 0;
+    ret = irods::get_advanced_setting<int>(
+              irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
+              size_per_tran_thr );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code(); 
+    }
+    size_per_tran_thr *= 1024 * 1024;
+
     if ( strcmp( sizePerThrInMbStr, "default" ) == 0 ) {
-        sizePerThr = SZ_PER_TRAN_THR;
+        sizePerThr = size_per_tran_thr;
     }
     else {
         sizePerThr = atoi( sizePerThrInMbStr ) * ( 1024 * 1024 );
         if ( sizePerThr <= 0 ) {
             rodsLog( LOG_ERROR,
                      "msiSetNumThreads: Bad input sizePerThrInMb %s", sizePerThrInMbStr );
-            sizePerThr = SZ_PER_TRAN_THR;
+            sizePerThr = size_per_tran_thr;
         }
     }
 

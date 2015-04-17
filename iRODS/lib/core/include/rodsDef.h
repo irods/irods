@@ -100,7 +100,6 @@
 #define RESTART_FILE_UPDATE_SIZE  (32*1024*1024)
 
 #define MAX_NUM_CONFIG_TRAN_THR        64
-#define SZ_PER_TRAN_THR         (32*1024*1024)
 
 /* definition for numThreads input */
 
