@@ -795,7 +795,6 @@ void partialDataGet(
     // =-=-=-=-=-=-=-
     //
     int srcL3descInx = 0, destFd = 0;
-    unsigned char *buf = 0;
     int bytesWritten = 0;
     rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
@@ -859,12 +858,12 @@ void partialDataGet(
                            trans_buff_size );
     if( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     trans_buff_size *= 1024 * 1024;
 
     size_t buf_size = ( 2 * trans_buff_size ) * sizeof( unsigned char ) ;
-    buf = ( unsigned char* )malloc( buf_size );
+    unsigned char * buf = ( unsigned char* )malloc( buf_size );
 
     bytesToGet = myInput->size;
 
@@ -874,7 +873,8 @@ void partialDataGet(
               chunk_size );
     if( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        free( buf );
+        return;
     }
     chunk_size *= 1024 * 1024;
 
