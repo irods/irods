@@ -68,8 +68,6 @@ static rodsLong_t MAX_PASSWORDS = 40;
    iDrop-lite applets enough time to download and go through their
    startup sequence.  iDrop and iDrop-lite disconnect when idle to
    reduce the number of open connections and active agents.  */
-#define TEMP_PASSWORD_TIME 120
-#define TEMP_PASSWORD_MAX_TIME 1000
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
@@ -6888,6 +6886,7 @@ extern "C" {
         snprintf( lastPwModTs, sizeof( lastPwModTs ), "0" );
         char *cPwTs = NULL;
         int iTs1 = 0, iTs2 = 0;
+        int temp_password_max_time = 0;
         std::vector<char> pwInfoArray( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
 
         if ( logSQL != 0 ) {
@@ -7112,8 +7111,21 @@ extern "C" {
             }
         }
 
+        ret = irods::get_advanced_setting<int>(
+                  irods::CFG_MAX_TEMP_PASSWORD_LIFETIME,
+                  temp_password_max_time );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
 
-        if ( expireTime < TEMP_PASSWORD_MAX_TIME ) {
+        if ( expireTime < temp_password_max_time ) {
+            int temp_password_time = 0;
+            ret = irods::get_advanced_setting<int>(
+                      irods::CFG_DEF_TEMP_PASSWORD_LIFETIME,
+                      temp_password_time );
+            if( !ret.ok() ) {
+                return PASS( ret );
+            }
 
             /* in the form used by temporary, one-time passwords */
 
@@ -7155,10 +7167,10 @@ extern "C" {
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlCheckAuth SQL 3" );
             }
-            snprintf( expireStr, sizeof expireStr, "%d", TEMP_PASSWORD_TIME );
+            snprintf( expireStr, sizeof expireStr, "%d", temp_password_time );
             cllBindVars[cllBindVarCount++] = expireStr;
 
-            pwExpireMaxCreateTime = nowTime - TEMP_PASSWORD_TIME;
+            pwExpireMaxCreateTime = nowTime - temp_password_time;
             /* Not sure if casting to int is correct but seems OK & avoids warning:*/
             snprintf( expireStrCreate, sizeof expireStrCreate, "%011d",
                       ( int )pwExpireMaxCreateTime );
@@ -7301,6 +7313,14 @@ checkLevel:
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
+        } 
+        
+        int temp_password_time = 0;
+        ret = irods::get_advanced_setting<int>(
+                  irods::CFG_DEF_TEMP_PASSWORD_LIFETIME,
+                  temp_password_time );
+        if( !ret.ok() ) {
+            return PASS( ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -7351,7 +7371,7 @@ checkLevel:
 
         snprintf( tSQL, MAX_SQL_SIZE,
                   "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and pass_expiry_ts != '%d'",
-                  TEMP_PASSWORD_TIME );
+                  temp_password_time );
 
         {
             std::vector<std::string> bindVars;
@@ -7404,7 +7424,7 @@ checkLevel:
         /* Insert the temporary, one-time password */
 
         getNowStr( myTime );
-        sprintf( myTimeExp, "%d", TEMP_PASSWORD_TIME );  /* seconds from create time
+        sprintf( myTimeExp, "%d", temp_password_time );  /* seconds from create time
                                                           when it will expire */
         if ( useOtherUser == 1 ) {
             cllBindVars[cllBindVarCount++] = _other_user;
@@ -7465,6 +7485,14 @@ checkLevel:
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
+        
+        int temp_password_time = 0;
+        ret = irods::get_advanced_setting<int>(
+                  irods::CFG_DEF_TEMP_PASSWORD_LIFETIME,
+                  temp_password_time );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
 
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
@@ -7505,7 +7533,7 @@ checkLevel:
 
         snprintf( tSQL, MAX_SQL_SIZE,
                   "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and pass_expiry_ts != '%d'",
-                  TEMP_PASSWORD_TIME );
+                  temp_password_time );
 
         {
             std::vector<std::string> bindVars;
