@@ -63,32 +63,32 @@ $LIBDIR=/usr/lib
 # Full File Listing
 # =-=-=-=-=-=-=-
 
-f 644 root root ${LIBDIR}/libirods_client.so.1.0.0 ./libirods_client.so.1.0.0
+f 755 root root ${LIBDIR}/libirods_client.so.1.0.0 ./libirods_client.so.1.0.0
 l 777 root root ${LIBDIR}/libirods_client.so libirods_client.so.1
-f 644 root root ${LIBDIR}/libirods_client_api.so.1.0.0 ./libirods_client_api.so.1.0.0
+f 755 root root ${LIBDIR}/libirods_client_api.so.1.0.0 ./libirods_client_api.so.1.0.0
 l 777 root root ${LIBDIR}/libirods_client_api.so libirods_client_api.so.1
-f 644 root root ${LIBDIR}/libirods_server.so.1.0.0 ./libirods_server.so.1.0.0
+f 755 root root ${LIBDIR}/libirods_server.so.1.0.0 ./libirods_server.so.1.0.0
 l 777 root root ${LIBDIR}/libirods_server.so libirods_server.so.1
 
 d 755 root root ${LIBDIR}/irods -
 d 755 root root ${LIBDIR}/irods/externals -
-f 644 root root ${LIBDIR}/irods/externals/libs3.so.2 ./external/libs3-2.0/build/lib/libs3.so.2
+f 755 root root ${LIBDIR}/irods/externals/libs3.so.2 ./external/libs3-2.0/build/lib/libs3.so.2
 l 777 root root ${LIBDIR}/irods/externals/libs3.so libs3.so.2
-f 644 root root ${LIBDIR}/irods/externals/libarchive.so.14 ./external/libarchive-3.1.2/libarchive/libarchive.so.14
+f 755 root root ${LIBDIR}/irods/externals/libarchive.so.14 ./external/libarchive-3.1.2/libarchive/libarchive.so.14
 l 777 root root ${LIBDIR}/irods/externals/libarchive.so libarchive.so.14
-f 644 root root ${LIBDIR}/irods/externals/libhdf5.so.9.0.0 ./external/hdf5-1.8.14/src/.libs/libhdf5.so.9.0.0
-l 644 root root ${LIBDIR}/irods/externals/libhdf5.so libhdf5.so.9.0.0
-f 644 root root ${LIBDIR}/irods/externals/libdynlib1.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib1.so.0.0.0
+f 755 root root ${LIBDIR}/irods/externals/libhdf5.so.9.0.0 ./external/hdf5-1.8.14/src/.libs/libhdf5.so.9.0.0
+l 755 root root ${LIBDIR}/irods/externals/libhdf5.so libhdf5.so.9.0.0
+f 755 root root ${LIBDIR}/irods/externals/libdynlib1.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib1.so.0.0.0
 l 777 root root ${LIBDIR}/irods/externals/libdynlib1.so libdynlib1.so.0.0.0
-f 644 root root ${LIBDIR}/irods/externals/libdynlib2.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib2.so.0.0.0
+f 755 root root ${LIBDIR}/irods/externals/libdynlib2.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib2.so.0.0.0
 l 777 root root ${LIBDIR}/irods/externals/libdynlib2.so libdynlib2.so.0.0.0
-f 644 root root ${LIBDIR}/irods/externals/libdynlib3.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib3.so.0.0.0
+f 755 root root ${LIBDIR}/irods/externals/libdynlib3.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib3.so.0.0.0
 l 777 root root ${LIBDIR}/irods/externals/libdynlib3.so libdynlib3.so.0.0.0
-f 644 root root ${LIBDIR}/irods/externals/libdynlibadd.so.0.0.0 ./external/hdf5-1.8.14/tools/h5repack/.libs/libdynlibadd.so.0.0.0
+f 755 root root ${LIBDIR}/irods/externals/libdynlibadd.so.0.0.0 ./external/hdf5-1.8.14/tools/h5repack/.libs/libdynlibadd.so.0.0.0
 l 777 root root ${LIBDIR}/irods/externals/libdynlibadd.so libdynlibadd.so.0.0.0
-f 644 root root ${LIBDIR}/irods/externals/libhdf5_hl.so.9.0.0 ./external/hdf5-1.8.14/hl/src/.libs/libhdf5_hl.so.9.0.0
+f 755 root root ${LIBDIR}/irods/externals/libhdf5_hl.so.9.0.0 ./external/hdf5-1.8.14/hl/src/.libs/libhdf5_hl.so.9.0.0
 l 777 root root ${LIBDIR}/irods/externals/libhdf5_hl.so libhdf5_hl.so.9.0.0
-f 644 root root ${LIBDIR}/irods/externals/libjansson.so.4.7.0 ./external/jansson-2.7/src/.libs/libjansson.so.4.7.0
+f 755 root root ${LIBDIR}/irods/externals/libjansson.so.4.7.0 ./external/jansson-2.7/src/.libs/libjansson.so.4.7.0
 l 777 root root ${LIBDIR}/irods/externals/libjansson.so libjansson.so.4.7.0
-f 644 root root ${LIBDIR}/irods/externals/libnetcdf.so.7.2.0 ./external/netcdf-4.3.2/liblib/.libs/libnetcdf.so.7.2.0
+f 755 root root ${LIBDIR}/irods/externals/libnetcdf.so.7.2.0 ./external/netcdf-4.3.2/liblib/.libs/libnetcdf.so.7.2.0
 l 777 root root ${LIBDIR}/irods/externals/libnetcdf.so libnetcdf.so.7.2.0

@@ -174,7 +174,7 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 root root ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
+f 755 root root ${IRODS_HOME_DIR}/plugins/database/libpostgres.so ./libpostgres.so
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
 f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./postgres/upgrade-3.3.xto4.0.0.sql
 f 644 root root ${IRODS_HOME_DIR}/tests/localhost_setup_postgres.input ./packaging/localhost_setup_postgres.input

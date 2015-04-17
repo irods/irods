@@ -151,7 +151,7 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 root root ${IRODS_HOME_DIR}/plugins/database/liboracle.so ./liboracle.so
+f 755 root root ${IRODS_HOME_DIR}/plugins/database/liboracle.so ./liboracle.so
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
 f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./oracle/upgrade-3.3.xto4.0.0.sql
 f 755 root root ${IRODS_HOME_DIR}/packaging/find_odbc_oracle.sh ./packaging/find_odbc_oracle.sh

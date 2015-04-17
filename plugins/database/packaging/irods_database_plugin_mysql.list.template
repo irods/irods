@@ -169,7 +169,7 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # Full File Listing
 # =-=-=-=-=-=-=-
-f 644 root root ${IRODS_HOME_DIR}/plugins/database/libmysql.so ./libmysql.so
+f 755 root root ${IRODS_HOME_DIR}/plugins/database/libmysql.so ./libmysql.so
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_database.sh ./packaging/setup_irods_database.sh
 f 644 root root ${IRODS_HOME_DIR}/packaging/upgrade-3.3.xto4.0.0.sql ./mysql/upgrade-3.3.xto4.0.0.sql
 f 644 root root ${IRODS_HOME_DIR}/tests/localhost_setup_mysql.input ./packaging/localhost_setup_mysql.input
