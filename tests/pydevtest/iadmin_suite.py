@@ -1009,6 +1009,7 @@ acPostProcForPut() {
             trigger_file = 'file_to_trigger_acPostProcForPut'
             lib.make_file(trigger_file, 10)
             self.admin.assert_icommand(['iput', trigger_file])
+            self.admin.assert_icommand('iqstat', 'STDOUT_MULTILINE', ['first_rule_called_from_delay', 'second_rule_called_from_delay'])
             time.sleep(40)
             assert 1 == lib.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
