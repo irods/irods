@@ -151,7 +151,7 @@ class IrodsSession(object):
         begin = time.time()
         # wait for filename to get big enough to terminate subprocess
         granularity = 0.01
-        while time.time() - begin < timeout and not os.path.exists(filename) or os.stat(filename).st_size < filesize:
+        while time.time() - begin < timeout and (not os.path.exists(filename) or os.stat(filename).st_size < filesize):
             time.sleep(granularity)
         # if timeout was reached, return -2
         if (time.time() - begin) >= timeout:
