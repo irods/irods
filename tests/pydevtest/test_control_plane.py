@@ -36,4 +36,4 @@ class TestControlPlane(unittest.TestCase):
         time.sleep( 2 )
         lib.assert_command('ils', 'STDERR', 'USER_SOCK_CONNECT_ERR')
 
-        lib.restart_irods_server()
+        lib.start_irods_server()

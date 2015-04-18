@@ -245,12 +245,18 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
         print 'FAILED TESTING ASSERTION\n\n'
     assert result
 
-def restart_irods_server(env=None):
+def stop_irods_server():
     hostname = get_hostname()
     assert_command(['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT', hostname)
+
+def start_irods_server(env=None):
     assert_command('{0} start'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT', 'Starting iRODS server', env=env)
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand('ils', 'STDOUT', admin_session.zone_name)
+
+def restart_irods_server(env=None):
+    stop_irods_server()
+    start_irods_server(env=env)
 
 def make_environment_dict(username, hostname, zone_name):
     irods_home = os.path.join('/', zone_name, 'home', username)
