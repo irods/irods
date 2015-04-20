@@ -424,15 +424,11 @@ class ResourceSuite(ResourceBase):
 
     def test_local_iput_interrupt_largefile(self):
         # local setup
-        datafilename = "bigfile"
-        print "-------------------"
-        print "creating " + datafilename + "..."
-        output = commands.getstatusoutput('dd if=/dev/zero of=' + datafilename + ' bs=1M count=150')
-        print output[1]
-        assert output[0] == 0, "dd did not successfully exit"
-        rf = "bigrestartfile"
-        # assertions
-        iputcmd = "iput --lfrestart " + rf + " " + datafilename
+        datafilename = 'bigfile'
+        file_size = int(4*pow(10, 8))
+        lib.make_file(datafilename, file_size)
+        rf = 'bigrestartfile'
+        iputcmd = 'iput --lfrestart {0} {1}'.format(rf, datafilename)
         if os.path.exists(rf):
             os.unlink(rf)
         self.admin.interrupt_icommand(iputcmd, rf, 10)  # once restartfile reaches 10 bytes

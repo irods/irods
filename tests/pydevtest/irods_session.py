@@ -133,6 +133,7 @@ class IrodsSession(object):
 
         Asserts that the icommand was successfully terminated early.
         '''
+        filename = os.path.abspath(filename)
         parameters = shlex.split(fullcmd)
         print "\n"
         print "INTERRUPTING iCMD"
@@ -140,23 +141,27 @@ class IrodsSession(object):
         print "  filename set to: [" + filename + "]"
         print "  filesize set to: [" + str(filesize) + "] bytes"
 
+        lib.write_to_log('server', ' --- interrupt icommand [{0}] --- \n'.format(fullcmd))
+
         env = os.environ.copy()
         env['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
         env['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
+        self._write_environment_file()
 
-        lib.write_to_log('server', ' --- interrupt icommand [{0}] --- \n'.format(fullcmd))
+        timeout = 30
+        begin = time.time()
+        granularity = 0.005
+
         p = subprocess.Popen(parameters, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
-        timeout = 60
-        begin = time.time()
-        # wait for filename to get big enough to terminate subprocess
-        granularity = 0.01
         while time.time() - begin < timeout and (not os.path.exists(filename) or os.stat(filename).st_size < filesize):
             time.sleep(granularity)
-        # if timeout was reached, return -2
         if (time.time() - begin) >= timeout:
+            print lib.run_command(['ls', '-l', os.path.dirname(filename)])[1]
+            out, err = p.communicate()
+            print out, err
+            print self.run_icommand(['ils', '-l'])[1]
             assert False
-        # else if subprocess did not complete by filesize threshold, we kill it
         elif p.poll() is None:
             p.terminate()
         else:
