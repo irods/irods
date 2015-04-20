@@ -519,7 +519,7 @@ irods::error convert_service_account(
 
     json_object_set( _svc_acct, "irods_user_name", json_string( my_env.rodsUserName ) );
 
-    json_object_set( _svc_acct, "irods_zone", json_string( my_env.rodsZone ) );
+    json_object_set( _svc_acct, "irods_zone_name", json_string( my_env.rodsZone ) );
 
     json_object_set( _svc_acct, "irods_client_server_negotiation", json_string( my_env.rodsClientServerNegotiation ) );
 

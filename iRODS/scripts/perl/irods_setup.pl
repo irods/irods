@@ -851,7 +851,7 @@ sub configureIrodsServer
                 $ENV{"IRODS_HOST"}=$thisHost;
                 $ENV{"IRODS_PORT"}=$IRODS_PORT;
                 $ENV{"IRODS_USER_NAME"}=$IRODS_ADMIN_NAME;
-                $ENV{"IRODS_ZONE"}=$ZONE_NAME;
+                $ENV{"IRODS_ZONE_NAME"}=$ZONE_NAME;
 
                 printStatus( "Running 'iinit' to enable server to server connections...\n" );
                 printLog( "Running 'iinit' to enable server to server connections...\n" );
@@ -864,7 +864,7 @@ sub configureIrodsServer
                 delete $ENV{"IRODS_HOST"};
                 delete $ENV{"IRODS_PORT"};
                 delete $ENV{"IRODS_USER_NAME"};
-                delete $ENV{"IRODS_ZONE"};
+                delete $ENV{"IRODS_ZONE_NAME"};
                 return;
         }
 
@@ -959,7 +959,7 @@ sub configureIrodsUser
         "    \"irods_home\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
         "    \"irods_cwd\": \"/$ZONE_NAME/home/$IRODS_ADMIN_NAME\",\n" .
         "    \"irods_user_name\": \"$IRODS_ADMIN_NAME\",\n" .
-        "    \"irods_zone\": \"$ZONE_NAME\",\n" .
+        "    \"irods_zone_name\": \"$ZONE_NAME\",\n" .
         "    \"irods_client_server_negotiation\": \"request_server_negotiation\",\n" .
         "    \"irods_client_server_policy\": \"CS_NEG_REFUSE\",\n" .
         "    \"irods_encryption_key_size\": 32,\n" .

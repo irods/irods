@@ -235,7 +235,7 @@ main( int argc, char **argv ) {
             response.c_str() );
         json_object_set(
             json_env,
-            "irods_zone",
+            "irods_zone_name",
             json_string( my_env.rodsZone ) );
     }
     if ( doingEnvFileUpdate ) {

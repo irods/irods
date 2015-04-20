@@ -63,7 +63,7 @@ namespace irods {
         "irods_authentication_scheme" );
     const std::string CFG_IRODS_DEFAULT_RESOURCE_KW(
         "irods_default_resource" );
-    const std::string CFG_IRODS_ZONE_KW( "irods_zone" );
+    const std::string CFG_IRODS_ZONE_KW( "irods_zone_name" );
     const std::string CFG_IRODS_GSI_SERVER_DN_KW( "irods_gsi_server_dn" );
     const std::string CFG_IRODS_LOG_LEVEL_KW( "irods_log_level" );
     const std::string CFG_IRODS_AUTHENTICATION_FILE_KW(

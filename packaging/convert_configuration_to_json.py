@@ -154,7 +154,7 @@ legacy_key_map["irodsHome"] = "irods_home"
 legacy_key_map["irodsCwd"] = "irods_cwd"
 legacy_key_map["irodsAuthScheme"] = "irods_authentication_scheme"
 legacy_key_map["irodsDefResource"] = "irods_default_resource"
-legacy_key_map["irodsZone"] = "irods_zone"
+legacy_key_map["irodsZone"] = "irods_zone_name"
 legacy_key_map["irodsServerDn"] = "irods_gsi_server_dn"
 legacy_key_map["irodsLogLevel"] = "irods_log_level"
 legacy_key_map["irodsAuthFileName"] = "irods_authentication_file"
@@ -421,7 +421,7 @@ def convert_serverconfig_and_irodsconfig():
         # inherit zone_name from irods_environment
         with open(get_install_dir() + '/.irods/irods_environment.json') as fh:
             irods_config = json.load(fh)
-            server_config['zone_name'] = irods_config['irods_zone']
+            server_config['zone_name'] = irods_config['irods_zone_name']
 
         # update database password from preinstall script result file
         with open(get_install_dir() + '/plaintext_database_password.txt', 'r') as f:

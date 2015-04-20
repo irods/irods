@@ -145,7 +145,7 @@ my $data = $json->decode($json_text);
 
 $username   = $data->{ "irods_user_name" };
 $irodshome = $data->{ "irods_home" };
-$irodszone = $data->{ "irods_zone" };
+$irodszone = $data->{ "irods_zone_name" };
 $irodshost = $data->{ "irods_host" };
 $irodsdefresource = $data->{ "irods_default_resource" };
 

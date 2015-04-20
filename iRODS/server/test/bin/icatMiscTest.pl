@@ -46,7 +46,7 @@ $logDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "log" );
 
 
 # get our zone name
-runCmd(0, "ienv | grep irods_zone | tail -1");
+runCmd(0, "ienv | grep irods_zone_name | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"-");
 $myZone=substr($cmdStdout, $ix+1);
