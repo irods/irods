@@ -469,14 +469,14 @@ initRcatServerHostByFile() {
     if ( ret.ok() ) {
         for ( size_t i = 0; i < fed_arr.size(); ++i ) {
             object_t& obj = fed_arr[ i ];
-            std::string fed_zone_id   = boost::any_cast< std::string >(
+            std::string fed_zone_key   = boost::any_cast< std::string >(
                                             obj[ irods::CFG_ZONE_KEY_KW ] );
             std::string fed_zone_name = boost::any_cast< std::string >(
                                             obj[irods::CFG_ZONE_NAME_KW ] );
-            std::string fed_zone_key = boost::any_cast< std::string >(
+            std::string fed_zone_negotiation_key = boost::any_cast< std::string >(
                                            obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
             // store in remote_SID_key_map
-            remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, fed_zone_key );
+            remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, fed_zone_negotiation_key );
         }
     }
     else {
@@ -496,9 +496,9 @@ initRcatServerHostByFile() {
                 else {
                     // store in remote_SID_key_map
                     std::string fed_zone_name = rem_sids[i].substr( 0, pos );
-                    std::string fed_zone_id = rem_sids[i].substr( pos + 1 );
+                    std::string fed_zone_key = rem_sids[i].substr( pos + 1 );
                     // use our negotiation key for the old configuration
-                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, neg_key );
+                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, neg_key );
                 }
             }
         }

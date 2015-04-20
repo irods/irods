@@ -69,7 +69,7 @@ fi
         MYPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_port']"`
         MYRANGESTART=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_start']"`
         MYRANGEEND=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_end']"`
-        MYLOCALZONEID=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_key']"`
+        MYLOCALZONEKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_key']"`
         MYRESOURCEDIR=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
         MYNEGOTIATIONKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
         MYCONTROLPLANEPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_port']"`
@@ -82,16 +82,16 @@ fi
     fi
 
     # strip cruft from zone_key
-    tmp=${MYLOCALZONEID#\"}
+    tmp=${MYLOCALZONEKEY#\"}
     tmp=${tmp%\,}
-    MYLOCALZONEID=${tmp%\"}
+    MYLOCALZONEKEY=${tmp%\"}
 
     # strip cruft from negotiation_key
     tmp=${MYNEGOTIATIONKEY#\"}
     tmp=${tmp%\,}
     MYNEGOTIATIONKEY=${tmp%\"}
 
-    PREVIOUSID=$MYLOCALZONEID
+    PREVIOUSID=$MYLOCALZONEKEY
     PREVIOUSKEY=$MYNEGOTIATIONKEY
 
     # ask human for irods environment
@@ -115,7 +115,7 @@ fi
         LASTMYRANGEEND=$MYRANGEEND
         LASTMYRESOURCEDIR=$MYRESOURCEDIR
         LASTMYADMINNAME=$MYADMINNAME
-        LASTMYLOCALZONEID=$MYLOCALZONEID
+        LASTMYLOCALZONEKEY=$MYLOCALZONEKEY
         LASTMYNEGOTIATIONKEY=$MYNEGOTIATIONKEY
       fi
 
@@ -221,22 +221,22 @@ fi
 
       # get zone_key
       echo -n "iRODS server's zone_key"
-      if [ "$LASTMYLOCALZONEID" ] ; then
-        echo -n " [$LASTMYLOCALZONEID]"
+      if [ "$LASTMYLOCALZONEKEY" ] ; then
+        echo -n " [$LASTMYLOCALZONEKEY]"
       else
-        echo -n " [TEMPORARY_zone_id]"
+        echo -n " [TEMPORARY_zone_key]"
       fi
       echo -n ": "
-      read MYLOCALZONEID
-      if [ "$MYLOCALZONEID" == "" ] ; then
-        if [ "$LASTMYLOCALZONEID" ] ; then
-          MYLOCALZONEID=$LASTMYLOCALZONEID
+      read MYLOCALZONEKEY
+      if [ "$MYLOCALZONEKEY" == "" ] ; then
+        if [ "$LASTMYLOCALZONEKEY" ] ; then
+          MYLOCALZONEKEY=$LASTMYLOCALZONEKEY
         else
-          MYLOCALZONEID="TEMPORARY_zone_id"
+          MYLOCALZONEKEY="TEMPORARY_zone_key"
         fi
       fi
       # strip all forward slashes
-      MYLOCALZONEID=`echo "${MYLOCALZONEID}" | sed -e "s/\///g"`
+      MYLOCALZONEKEY=`echo "${MYLOCALZONEKEY}" | sed -e "s/\///g"`
       echo ""
 
       # get negotiation_key
@@ -371,7 +371,7 @@ fi
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
-      echo "zone_key:               $MYLOCALZONEID"
+      echo "zone_key:               $MYLOCALZONEKEY"
       echo "negotiation_key:        $MYNEGOTIATIONKEY"
       echo "Control Plane Port:     $MYCONTROLPLANEPORT"
       echo "Control Plane Key:      $MYCONTROLPLANEKEY"
@@ -405,7 +405,7 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_start $MYRANGESTART
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_end $MYRANGEEND
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
-    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_key $MYLOCALZONEID
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_key $MYLOCALZONEKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_control_plane_port $MYCONTROLPLANEPORT
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_key $MYCONTROLPLANEKEY

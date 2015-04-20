@@ -143,7 +143,7 @@ irods::error make_federation_set(
 
         json_t* fed_obj = json_object();
         json_object_set( fed_obj, "zone_name",       json_string( zone_sid_vals[ 0 ].c_str() ) );
-        json_object_set( fed_obj, "zone_id",         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+        json_object_set( fed_obj, "zone_key",        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
         json_object_set( fed_obj, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
         json_array_append( _object, fed_obj );
@@ -306,7 +306,7 @@ irods::error convert_server_config(
 
     ret = props.get_property< std::string >( "LocalZoneSID", s_val );
     if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "zone_id", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+        json_object_set( _svr_cfg, "zone_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
     }
 
     ret = props.get_property< std::string >( "agent_key", s_val );
