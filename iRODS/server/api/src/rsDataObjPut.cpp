@@ -48,7 +48,15 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE );
 
-
+    if ( const char* acl_string = getValByKey( &dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
+        try {
+            irods::deserialize_acl( acl_string );
+        }
+        catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, "%s", e.what() );
+            return e.code();
+        }
+    }
     if ( const char* metadata_string = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
         try {
             irods::deserialize_metadata( metadata_string );

@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 void
+clearModAccessControlInp( void* );
+void
 clearModAVUMetadataInp( void* );
 void
 clearDataObjCopyInp( void* );

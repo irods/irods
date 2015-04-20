@@ -557,8 +557,38 @@ _rsDataObjClose(
             return status;
         }
 
-        if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
+        if ( const char* serialized_acl = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
+            std::vector<std::vector<std::string> > deserialized_acl;
+            try {
+                deserialized_acl = irods::deserialize_acl( serialized_acl );
+            }
+            catch ( const irods::exception& e ) {
+                rodsLog( LOG_ERROR, "%s", e.what() );
+                if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                    rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
+                }
+                return e.code();
+            }
+            for ( std::vector<std::vector<std::string> >::const_iterator iter = deserialized_acl.begin(); iter != deserialized_acl.end(); ++iter ) {
+                modAccessControlInp_t modAccessControlInp;
+                modAccessControlInp.recursiveFlag = 0;
+                modAccessControlInp.accessLevel = strdup ( ( *iter )[1].c_str() );
+                modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
+                modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
+                splitUserName( ( *iter )[0].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+                modAccessControlInp.path = strdup( L1desc[l1descInx].dataObjInfo->objPath );
+                int status = rsModAccessControl( rsComm, &modAccessControlInp );
+                clearModAccessControlInp( &modAccessControlInp );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "rsModAccessControl failed in _rsDataObjClose with status %d", status );
+                    if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                        rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
+                    }
+                    return status;
+                }
+            }
         }
+
         if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
             std::vector<std::string> deserialized_metadata;
             try {
@@ -566,6 +596,9 @@ _rsDataObjClose(
             }
             catch ( const irods::exception& e ) {
                 rodsLog( LOG_ERROR, "%s", e.what() );
+                if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                    rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
+                }
                 return e.code();
             }
             for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {

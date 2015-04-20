@@ -163,20 +163,32 @@ namespace irods {
         return escape_string( str, default_special_characters );
     }
 
+    std::string join( std::vector<std::string>& strs, const std::string& separator ) {
+        std::stringstream joined;
+        for ( std::vector<std::string>::const_iterator iter = strs.begin(); iter != strs.end(); ) {
+            joined << *iter;
+            ++iter;
+            if ( iter != strs.end() ) {
+                joined << separator;
+            }
+        }
+        return joined.str();
+    }
+
+    std::string join( std::vector<std::string>& strs, const char separator ) {
+        return join( strs, std::string( 1, separator ) );
+    }
+
     std::string serialize_list(
             const std::vector<std::string>& list,
             const boost::regex& special_character_set_regex,
             const char delimiter_char,
             const char escape_char ) {
-        std::stringstream serialized_list;
-        if ( !boost::regex_match( std::string( 1, delimiter_char ), special_character_set_regex ) ) {
+        if ( escape_char && !boost::regex_match( std::string( 1, delimiter_char ), special_character_set_regex ) ) {
             THROW( SYS_BAD_INPUT, "Regular expression passed to serialize_list must match against the delimiter character." );
         }
         std::vector<std::string> escaped_strings = escape_strings( list, special_character_set_regex, escape_char );
-        for ( std::vector<std::string>::const_iterator iter = escaped_strings.begin(); iter != escaped_strings.end(); ++iter ) {
-            serialized_list << *iter << delimiter_char;
-        }
-        return serialized_list.str();
+        return join( escaped_strings, delimiter_char );
     }
 
     std::string serialize_list(
@@ -313,6 +325,31 @@ namespace irods {
         }
         return serialize_list( metadata );
     }
+
+    std::vector<std::vector<std::string> > deserialize_acl( const std::string& acl ) {
+        std::vector<std::string> shallow_deserialized_acl = deserialize_list( acl, "; ", '\\' );
+        std::vector<std::vector<std::string> > deserialized_acl;
+        for ( std::vector<std::string>::const_iterator iter = shallow_deserialized_acl.begin(); iter != shallow_deserialized_acl.end(); ++iter ) {
+            std::vector<std::string> current_acl = deserialize_list( *iter, " ", '\\' );
+            if ( current_acl.size() != 2 ) {
+                THROW( SYS_BAD_INPUT, "ACLs must be a space-separated tuple of \"user permission\"" );
+            }
+            deserialized_acl.push_back( current_acl );
+        }
+
+        return deserialized_acl;
+    }
+
+    std::string serialize_acl( const std::vector<std::vector<std::string> >& acl ) {
+        std::vector<std::string> shallow_serialized_acl;
+        for ( std::vector<std::vector<std::string> >::const_iterator iter = acl.begin(); iter != acl.end(); ++iter ) {
+            if ( iter->size() != 2 ) {
+                THROW( SYS_BAD_INPUT, "ACLs must be a tuple of user and permission" );
+            }
+            shallow_serialized_acl.push_back( serialize_list( *iter, boost::regex( "[\\\\ ;]" ), ' ', '\\' ) );
+        }
+        return join( shallow_serialized_acl, ';' );
+    }
 }
 
 extern "C" {
@@ -331,6 +368,26 @@ extern "C" {
         }
         try {
             return strdup( irods::serialize_metadata( metadata_strings ).c_str() );
+        }
+        catch ( const irods::exception& ) {
+            return NULL;
+        }
+    }
+
+    char* serialize_acl_c( const char** acl, size_t acl_len ) {
+        std::vector<std::vector<std::string> > acl_strings;
+        for ( size_t i = 0; i < acl_len; i++ ) {
+            if ( !( i & 1 ) ) {
+                std::vector<std::string> v;
+                v.push_back( acl[i] );
+                acl_strings.push_back( v );
+            }
+            else {
+                acl_strings.back().push_back( acl[i] );
+            }
+        }
+        try {
+            return strdup( irods::serialize_acl( acl_strings ).c_str() );
         }
         catch ( const irods::exception& ) {
             return NULL;

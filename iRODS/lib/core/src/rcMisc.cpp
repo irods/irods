@@ -3738,6 +3738,17 @@ clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
 }
 
 void
+clearModAccessControlInp( void* voidInp ) {
+    modAccessControlInp_t * modAccessControlInp = ( modAccessControlInp_t* )voidInp;
+    free( modAccessControlInp->accessLevel );
+    free( modAccessControlInp->userName );
+    free( modAccessControlInp->zone );
+    free( modAccessControlInp->path );
+    memset( modAccessControlInp, 0, sizeof( modAccessControlInp_t ) );
+    return;
+}
+
+void
 clearModAVUMetadataInp( void* voidInp ) {
     modAVUMetadataInp_t * modAVUMetadataInp = ( modAVUMetadataInp_t* )voidInp;
     free( modAVUMetadataInp->arg0 );
