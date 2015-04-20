@@ -23,8 +23,9 @@ use File::Basename;
 use Cwd;
 use Cwd "abs_path";
 use Config;
+use IPC::Open3;
 
-$version{"irodsctl.pl"} = "Feb 2015";
+$version{"irodsctl.pl"} = "Apr 2015";
 
 
 $scriptfullpath = abs_path(__FILE__);
@@ -917,6 +918,58 @@ sub wait_for_server_to_start {
 
 } # wait_for_server_to_start
 
+#
+# @brief        Preflight Run - Run single command, capture stdout and stderr, print accordingly
+#
+# @return       0 = failed
+#               1 = success
+#
+sub preflight_run
+{
+    my ( $cmd ) = @_;
+    my $status;
+    my $stdout;
+
+    $stdout = `$cmd 2>&1`;
+    $status = $?;
+    print "$stdout";
+    if ( $status != 0 ) { return 0; }
+    return 1;
+}
+
+#
+# @brief        Preflight Check - Validate JSON Configuration Schema Files
+#
+# @return       0 = failed
+#               1 = success
+#
+sub preflight_check
+{
+    # local variables
+    my $VALIDATE = "python $scripttoplevel/iRODS/scripts/python/validate_json.py";
+    my $SCHEMA_ROOT_URL = "https://schemas.irods.org/configuration/v2";
+    my $retval;
+    my $HOME_DIR = $ENV{'HOME'};
+
+    # check each required JSON configuration file
+    $retval = preflight_run("$VALIDATE $HOME_DIR/.irods/irods_environment.json $SCHEMA_ROOT_URL/service_account_environment.json");
+    if ( $retval == 0 ){ return 0; }
+    $retval = preflight_run("$VALIDATE $configDir/server_config.json $SCHEMA_ROOT_URL/server_config.json");
+    if ( $retval == 0 ){ return 0; }
+    $retval = preflight_run("$VALIDATE $configDir/hosts_config.json $SCHEMA_ROOT_URL/hosts_config.json");
+    if ( $retval == 0 ){ return 0; }
+    $retval = preflight_run("$VALIDATE $configDir/host_access_control_config.json $SCHEMA_ROOT_URL/host_access_control_config.json");
+    if ( $retval == 0 ){ return 0; }
+    # iCAT server
+    if ( ! -e $irodsServer )
+    {
+        $retval = preflight_run("$VALIDATE $configDir/database_config.json $SCHEMA_ROOT_URL/database_config.json");
+        if ( $retval == 0 ){ return 0; }
+    }
+    # success
+    return 1;
+}
+
 
 #
 # @brief        Start iRODS server
@@ -947,6 +1000,12 @@ sub startIrods
                 printError( "Configuration problem:\n" );
                 printError( "    The server log directory, $irodsLogDir\n" );
                 printError( "    is not writable.  Please chmod it and retry.\n" );
+                exit( 1 );
+        }
+        if ( 0 == preflight_check( ) )
+        {
+                printError( "Preflight Check problem:\n" );
+                printError( "   JSON Configuration Validation failed.\n" );
                 exit( 1 );
         }
 

@@ -17,7 +17,7 @@
 use IO::File;
 use POSIX;
 
-$version{"utils_print.pl"} = "March 2010";
+$version{"utils_print.pl"} = "Apr 2015";
 
 
 
@@ -112,6 +112,7 @@ my $TITLE_COLOR    = "";
 my $SUBTITLE_COLOR = "";
 my $NOTICE_COLOR   = "";
 my $STATUS_COLOR   = "";
+my $WARNING_COLOR  = "";
 my $ERROR_COLOR    = "";
 my $QUESTION_COLOR = "";
 my $NORMAL_COLOR   = "";
@@ -150,7 +151,8 @@ sub enablePrintColors($)
 		$PRINT_COLOR = 1;
 		$TITLE_COLOR    = $BOLD_GREEN;
 		$SUBTITLE_COLOR = $BOLD_GREEN;
-		$NOTICE_COLOR   = $RESET;
+                $NOTICE_COLOR   = $RESET;
+                $WARNING_COLOR   = $BOLD_YELLOW;
 		$STATUS_COLOR   = $RESET;
 		$ERROR_COLOR    = $BOLD_RED;
 		$QUESTION_COLOR = $BOLD;
@@ -164,7 +166,8 @@ sub enablePrintColors($)
 		$TITLE_COLOR    = "";
 		$SUBTITLE_COLOR = "";
 		$NOTICE_COLOR   = "";
-		$STATUS_COLOR   = "";
+                $WARNING_COLOR   = "";
+                $STATUS_COLOR   = "";
 		$ERROR_COLOR    = "";
 		$QUESTION_COLOR = "";
 		$NORMAL_COLOR   = "";
@@ -379,15 +382,31 @@ sub printNotice
 
 
 #
-# @brief	Print a status message.
+# @brief        Print a status message.
 #
-# @param	@message
-# 	an array of message strings
+# @param        @message
+#       an array of message strings
 #
 sub printStatus
 {
-	return if !$PRINT_VERBOSE;
-	printMessage( $STATUS_COLOR, "    ", @_ );
+        return if !$PRINT_VERBOSE;
+        printMessage( $STATUS_COLOR, "    ", @_ );
+}
+
+
+
+
+
+#
+# @brief        Print a warning message.
+#
+# @param        @message
+#       an array of message strings
+#
+sub printWarning
+{
+        return if !$PRINT_VERBOSE;
+        printMessage( $WARNING_COLOR, "    ", @_ );
 }
 
 

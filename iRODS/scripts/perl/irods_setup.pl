@@ -785,13 +785,13 @@ sub configureIrodsServer
         "zone_port",        $IRODS_PORT + 0, # convert to integer
         "zone_user",        $IRODS_ADMIN_NAME,
         "zone_auth_scheme", "native" );
-        printStatus( "    Updating $serverConfigFile....\n" );
-        printLog( "    Updating $serverConfigFile....\n" );
-        printLog( "        icat_host        = $host\n" );
-        printLog( "        zone_name        = $ZONE_NAME\n" );
-        printLog( "        zone_port        = $IRODS_PORT\n" );
-        printLog( "        zone_user        = $IRODS_ADMIN_NAME\n" );
-        printLog( "        zone_auth_scheme = native\n" );
+        printStatus( "Updating $serverConfigFile...\n" );
+        printLog( "Updating $serverConfigFile...\n" );
+        printLog( "    icat_host        = $host\n" );
+        printLog( "    zone_name        = $ZONE_NAME\n" );
+        printLog( "    zone_port        = $IRODS_PORT\n" );
+        printLog( "    zone_user        = $IRODS_ADMIN_NAME\n" );
+        printLog( "    zone_auth_scheme = native\n" );
         $status = update_json_configuration_file(
                   $serverConfigFile,
                   %svr_variables );
@@ -812,11 +812,11 @@ sub configureIrodsServer
                     "catalog_database_type",  $DATABASE_TYPE,
                     "db_username",  $DATABASE_ADMIN_NAME,
                     "db_password",  $DATABASE_ADMIN_PASSWORD );
-            printStatus( "    Updating $databaseConfigFile....\n" );
-            printLog( "    Updating $databaseConfigFile....\n" );
-            printLog( "        catalog_database_type = $DATABASE_TYPE\n" );
-            printLog( "        db_username = $DATABASE_ADMIN_NAME\n" );
-            printLog( "        db_password = XXXXX\n" );
+            printStatus( "Updating $databaseConfigFile...\n" );
+            printLog( "Updating $databaseConfigFile...\n" );
+            printLog( "    catalog_database_type = $DATABASE_TYPE\n" );
+            printLog( "    db_username = $DATABASE_ADMIN_NAME\n" );
+            printLog( "    db_password = XXXXX\n" );
             $status = update_json_configuration_file(
                     $databaseConfigFile,
                     %db_variables );
@@ -1307,6 +1307,17 @@ sub startIrods()
                 printLog( "\nCould not start iRODS server.\n" );
                 printLog( "    $output\n" );
                 return 0;
+        }
+        $output =~ s/^(.*\n){1}//; # remove duplicate first line of output
+        chomp($output);
+        if ( $output =~ "Validation Failed" )
+        {
+                printWarning( "$output\n" );
+                printLog( "$output\n" );
+        }
+        else {
+                printStatus( "[$output][\n]" );
+                printLog( "$output\n" );
         }
         return 1;
 }

@@ -7,7 +7,7 @@ import sys
 import time
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 
 
 def print_debug(*args, **kwargs):
@@ -44,8 +44,9 @@ def get_target_schema_version():
     return target_schema_version
 
 
-def update_schema_version(version):
-    print_debug('Updating schema_version...')
+def update_configuration_files(version):
+    print('Updating to Configuration Schema... %d' % version)
+    # manipulate the configuration files
     print_debug('ALTERING (but not really) THE CONFIGURATION STUFF')
     # success
     print_debug('SUCCESS, updated configuration_schema_version to %d' % version)
@@ -66,7 +67,7 @@ def update_configuration_to_latest_version():
               target_schema_version)
         return
     # surgically alter existing version with any new information, with defaults
-    update_schema_version(target_schema_version)
+    update_configuration_files(target_schema_version)
     # done
     print('Done.')
 
