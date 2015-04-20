@@ -1344,7 +1344,7 @@ doCommand( char *cmdToken[] ) {
     }
 
     if ( *cmdToken[0] != '\0' ) {
-        printf( "unrecognized command, try 'help'\n" );
+        printf( "unrecognized subcommand '%s', try 'imeta help'\n", cmdToken[0] );
         return -2;
     }
     return -3;
