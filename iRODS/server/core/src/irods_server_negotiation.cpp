@@ -8,7 +8,7 @@
 #include "rodsDef.h"
 #include "index.hpp"
 #include "reFuncDefs.hpp"
-
+#include "rsGlobalExtern.hpp"
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -28,11 +28,12 @@ namespace irods {
         // get the agent key
         std::string encr_key;
         irods::error err = _props.get_property< std::string >(
-                               AGENT_KEY_KW,
+                               CFG_NEGOTIATION_KEY_KW,
                                encr_key );
         if ( !err.ok() ) {
             return PASS( err );
         }
+
         // =-=-=-=-=-=-=-
         // start with local SID
         std::string svr_sid;
@@ -56,41 +57,26 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
-        // basic string compare
+        // if it is a match, were good
         if ( _in_sid == signed_sid ) {
             return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
-        // get remote zone SIDs
-        std::vector< std::string > rem_sids;
-        err = _props.get_property <
-              std::vector< std::string > > (
-                  REMOTE_ZONE_SID_KW,
-                  rem_sids );
-        if ( !err.ok() ) {
-            return PASS( err );
-        }
-
-        std::vector< std::string >::iterator itr = rem_sids.begin();
-        for ( ; itr != rem_sids.end(); ++itr ) {
-            // =-=-=-=-=-=-=-
-            // extract SID from remote zone SID
-            std::string::size_type pos = itr->find( "-" );
-            if ( std::string::npos == pos ) {
-                rodsLog(
-                    LOG_DEBUG,
-                    "failed to find '-' in remote SID [%s]",
-                    itr->c_str() );
-            }
-            std::string sid = itr->substr( pos );
+        // if not, check against all remote zone SIDs and keys
+        irods::lookup_table<
+            std::pair<
+                std::string,
+                std::string > >::iterator itr = remote_SID_key_map.begin();
+        for ( ; itr != remote_SID_key_map.end(); ++itr ) {
+            const std::pair<std::string,std::string>& entry = itr->second;
 
             // =-=-=-=-=-=-=-
             // sign SID
             std::string signed_sid;
             err = sign_server_sid(
-                      sid,
-                      encr_key,
+                      entry.first,
+                      entry.second,
                       signed_sid );
             if ( !err.ok() ) {
                 return PASS( err );

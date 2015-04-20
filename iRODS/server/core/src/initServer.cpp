@@ -444,6 +444,16 @@ initRcatServerHostByFile() {
     }
 
     // try for new federation config
+    std::string neg_key;
+    ret = props.get_property <
+              std::string > (
+                  irods::CFG_NEGOTIATION_KEY_KW,
+                  neg_key );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     array_t fed_arr;
     ret = props.get_property <
           array_t > (
@@ -479,10 +489,12 @@ initRcatServerHostByFile() {
                     // store in remote_SID_key_map
                     std::string fed_zone_name = rem_sids[i].substr( 0, pos );
                     std::string fed_zone_id = rem_sids[i].substr( pos + 1 );
-                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, "" );
+                    // use our negotiation key for the old configuration
+                    remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_id, neg_key );
                 }
             }
         }
+        
     } // else
 
     return 0;
