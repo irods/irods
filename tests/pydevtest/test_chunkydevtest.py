@@ -735,6 +735,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
 
+    @unittest.skipIf(configuration.USE_SSL, 'RBUDP does not support encryption')
     def test_large_files_with_RBUDP_from_devtest(self):
         # build expected variables with similar devtest names
         progname = __file__
