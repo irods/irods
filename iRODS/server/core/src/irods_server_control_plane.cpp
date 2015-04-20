@@ -571,7 +571,9 @@ namespace irods {
             control_thread_.join();
         }
         catch ( const boost::thread_resource_error& ) {
-            rodsLog( LOG_ERROR, "boost encountered thread_resource_error on join in server_control_plane destructor." );
+            rodsLog(
+                LOG_ERROR,
+                "boost encountered thread_resource_error on join in server_control_plane destructor." );
         }
 
     } // dtor
@@ -766,6 +768,16 @@ namespace irods {
             irods::log( PASS( ret ) );
             return;
 
+        }
+
+        if( shared_secret.empty() ||
+            encryption_algorithm.empty() ||
+            0 == port ||
+            0 == num_hash_rounds ) {
+            rodsLog(
+                LOG_NOTICE,
+                "control plane is not configured properly" );
+            return;
         }
 
         zmq::context_t zmq_ctx( 1 );
