@@ -23,7 +23,6 @@ main( int argc, char **argv ) {
     rErrMsg_t errMsg;
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
-    char *optStr;
     rodsPathInp_t rodsPathInp;
     int reconnFlag;
 
@@ -35,10 +34,10 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    int p_err = parse_opts_and_paths( 
-                    argc, 
-                    argv, 
-                    myRodsArgs, 
+    int p_err = parse_opts_and_paths(
+                    argc,
+                    argv,
+                    myRodsArgs,
                     &myEnv,
                     UNKNOWN_OBJ_T,
                     UNKNOWN_FILE_T,
