@@ -69,7 +69,7 @@ fi
         MYPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_port']"`
         MYRANGESTART=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_start']"`
         MYRANGEEND=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_port_range_end']"`
-        MYLOCALZONEID=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_id']"`
+        MYLOCALZONEID=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_key']"`
         MYRESOURCEDIR=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['default_resource_directory']"`
         MYNEGOTIATIONKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
         MYCONTROLPLANEPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_port']"`
@@ -81,7 +81,7 @@ fi
         STATUS="firstpass"
     fi
 
-    # strip cruft from zone_id
+    # strip cruft from zone_key
     tmp=${MYLOCALZONEID#\"}
     tmp=${tmp%\,}
     MYLOCALZONEID=${tmp%\"}
@@ -219,8 +219,8 @@ fi
       fi
       echo ""
 
-      # get zone_id
-      echo -n "iRODS server's zone_id"
+      # get zone_key
+      echo -n "iRODS server's zone_key"
       if [ "$LASTMYLOCALZONEID" ] ; then
         echo -n " [$LASTMYLOCALZONEID]"
       else
@@ -371,7 +371,7 @@ fi
       echo "Range (Begin):          $MYRANGESTART"
       echo "Range (End):            $MYRANGEEND"
       echo "Vault Directory:        $MYRESOURCEDIR"
-      echo "zone_id:                $MYLOCALZONEID"
+      echo "zone_key:               $MYLOCALZONEID"
       echo "negotiation_key:        $MYNEGOTIATIONKEY"
       echo "Control Plane Port:     $MYCONTROLPLANEPORT"
       echo "Control Plane Key:      $MYCONTROLPLANEKEY"
@@ -405,7 +405,7 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_start $MYRANGESTART
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_port_range_end $MYRANGEEND
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_user $MYADMINNAME
-    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_id $MYLOCALZONEID
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string zone_key $MYLOCALZONEID
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_control_plane_port $MYCONTROLPLANEPORT
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_key $MYCONTROLPLANEKEY
