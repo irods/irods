@@ -34,7 +34,7 @@
     "server_port_range_start": 20000,
     "xmsg_port": 1279,
     "zone_auth_scheme": "native",
-    "zone_id": "TEMPORARY_zone_id",
+    "zone_key": "TEMPORARY_zone_key",
     "zone_name": "tempZone",
     "zone_port": 1247,
     "zone_user": "rods",

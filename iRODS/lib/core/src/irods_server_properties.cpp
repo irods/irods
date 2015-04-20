@@ -61,7 +61,6 @@ namespace irods {
         key_map_[ KERBEROS_KEYTAB_KW ]       = CFG_KERBEROS_KEYTAB_KW;
         key_map_[ DEFAULT_HASH_SCHEME_KW ]   = CFG_DEFAULT_HASH_SCHEME_KW;;
         key_map_[ MATCH_HASH_POLICY_KW ]     = CFG_MATCH_HASH_POLICY_KW;
-        key_map_[ LOCAL_ZONE_SID_KW ]        = CFG_ZONE_ID_KW;
         key_map_[ AGENT_KEY_KW ]             = CFG_NEGOTIATION_KEY_KW;
 
         key_map_[ CFG_ZONE_NAME ]             = CFG_ZONE_NAME;
