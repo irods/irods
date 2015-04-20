@@ -172,8 +172,9 @@ namespace irods {
         if ( !boost::regex_match( std::string( 1, delimiter_char ), special_character_set_regex ) ) {
             THROW( SYS_BAD_INPUT, "Regular expression passed to serialize_list must match against the delimiter character." );
         }
-        for ( std::vector<std::string>::const_iterator iter = list.begin(); iter != list.end(); ++iter ) {
-            serialized_list << escape_string( *iter, special_character_set_regex, escape_char ) << delimiter_char;
+        std::vector<std::string> escaped_strings = escape_strings( list, special_character_set_regex, escape_char );
+        for ( std::vector<std::string>::const_iterator iter = escaped_strings.begin(); iter != escaped_strings.end(); ++iter ) {
+            serialized_list << *iter << delimiter_char;
         }
         return serialized_list.str();
     }
