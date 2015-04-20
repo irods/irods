@@ -26,6 +26,12 @@
 #include <termios.h>
 #include <unistd.h>
 
+// =-=-=-=-=-=-=-
+// osx commoncrypto
+#ifdef osx_platform
+#include <CommonCrypto/CommonDigest.h>
+#endif
+
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
@@ -191,12 +197,17 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // create a md5 hash of the challenge
+	    char digest[ RESPONSE_LEN + 2 ];
+
+	    // on OS X builds use CC MD5!
+#ifdef osx_platform
+	    CC_MD5(md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN, (unsigned char*)digest);
+#else
             MD5_CTX context;
             MD5Init( &context );
             MD5Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-
-            char digest[ RESPONSE_LEN + 2 ];
             MD5Final( ( unsigned char* )digest, &context );
+#endif
 
             // =-=-=-=-=-=-=-
             // make sure 'string' doesn't end early -
