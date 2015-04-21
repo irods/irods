@@ -242,6 +242,14 @@ foreach $arg (@ARGV)
 
 
         # Commands
+        if ( $arg =~ /^-?-?(graceful_start)$/i )  
+        {
+                $numberCommands++;
+                printSubtitle( "Starting iRODS server...\n" );
+                $startVal = gracefulStartIrods( );
+                if ($startVal eq "0") {$doStartExitValue++;}
+                next;
+        }
         if ( $arg =~ /^-?-?(start)$/i )         # Start database and iRODS
         {
                 $numberCommands++;
@@ -266,6 +274,16 @@ foreach $arg (@ARGV)
                 startIrods( );
                 next;
         }
+        if ( $arg =~ /^-?-?(graceful_restart)$/i )
+        {
+                $numberCommands++;
+                printSubtitle( "Stopping iRODS server...\n" );
+                stopIrods( );   # OK to fail.  Server might not be started
+                printSubtitle( "Starting iRODS server...\n" );
+                gracefulStartIrods( );
+                next;
+        }
+
         if ( $arg =~ /^-?-?(stat(us)?)$/i )     # Status of iRODS and database
         {
                 $numberCommands++;
@@ -974,6 +992,99 @@ sub startIrods
                 return 0;
         }
 
+
+        sleep( $iRODSStartStopDelay );
+
+
+        chdir( $startingDir );
+
+
+        # Check that it actually started
+        my %serverPids = getIrodsProcessIds( );
+        if ( (scalar keys %serverPids) == 0 )
+        {
+                printError( "iRODS server failed to start.\n" );
+                return 0;
+        }
+
+        return 1;
+}
+
+
+#
+# @brief        Start iRODS server
+#
+# @return       0 = failed
+#               1 = started
+#
+sub gracefulStartIrods
+{
+        # Make sure the server is available
+        my $status;
+        if ( ! -e $irodsServer )
+        {
+                printError( "Configuration problem:\n" );
+                printError( "    The 'irodsServer' application could not be found.  Have the\n" );
+                printError( "    iRODS servers been compiled?\n" );
+                exit( 1 );
+        }
+        if ( ! -e $irodsLogDir )
+        {
+                printError( "Configuration problem:\n" );
+                printError( "    The server log directory, $irodsLogDir\n" );
+                printError( "    does not exist.  Please create it, make it writable, and retry.\n" );
+                exit( 1 );
+        }
+        if ( ! -w $irodsLogDir )
+        {
+                printError( "Configuration problem:\n" );
+                printError( "    The server log directory, $irodsLogDir\n" );
+                printError( "    is not writable.  Please chmod it and retry.\n" );
+                exit( 1 );
+        }
+
+        # Test for iRODS port in use
+        my $portTestLimit = 5;
+        my $waitSeconds = 1;
+        while ($waitSeconds < $portTestLimit){
+                my $porttest = `netstat -tlpen 2> /dev/null | grep ":$IRODS_PORT" | awk '{print \$9}'`;
+                chomp($porttest);
+                if ($porttest ne ""){
+                        print("($waitSeconds) Waiting for process bound to port $IRODS_PORT ... [$porttest]\n");
+                        sleep($waitSeconds);
+                        $waitSeconds = $waitSeconds * 2;
+                }
+                else{
+                        last;
+                }
+        }
+        if ($waitSeconds >= $portTestLimit){
+                printError("Port $IRODS_PORT In Use ... Not Starting iRODS Server\n");
+                exit( 1 );
+        }
+
+
+        # Prepare
+        my $startingDir = cwd( );
+        chdir( $serverBinDir );
+        umask( 077 );
+        # Start the server
+        my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk 2> /dev/null | grep -v \'#'`;
+        if ($syslogStat) {
+#           syslog enabled, need to start differently
+            my $status = system("$irodsServer&");
+        }
+        else {
+            my $output = `$irodsServer 2>&1`;
+            my $status = $?;
+        }
+        if ( $status )
+        {
+                printError( "iRODS server failed to start\n" );
+                printError( "    $output\n" );
+                return 0;
+        }
+
         chdir( $startingDir );
 
         wait_for_server_to_start();
@@ -988,7 +1099,6 @@ sub startIrods
 
         return 1;
 }
-
 
 
 
