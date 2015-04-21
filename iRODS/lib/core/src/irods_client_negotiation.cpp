@@ -285,15 +285,24 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // get our local zone SID
             std::string sid;
-            err = props.get_property <
-                  std::string > (
-                      LOCAL_ZONE_SID_KW,
+            err = props.get_property< std::string >(
+                      irods::CFG_ZONE_KEY_KW,
                       sid );
+            if ( !err.ok() ) {
+                 err = props.get_property <
+                      std::string > (
+                          LOCAL_ZONE_SID_KW,
+                          sid );
+                  if( !err.ok() ) {
+                      return PASS( err );
+                  }
+            }
+            
             if ( err.ok() ) {
                 std::string enc_key;
                 err = props.get_property <
                       std::string > (
-                          AGENT_KEY_KW,
+                          CFG_NEGOTIATION_KEY_KW,
                           enc_key );
                 if ( err.ok() ) {
                     // =-=-=-=-=-=-=-
@@ -313,20 +322,20 @@ namespace irods {
                     }
                     else {
                         rodsLog(
-                            LOG_DEBUG,
+                            LOG_WARNING,
                             "%s",
                             PASS( err ).result().c_str() );
                     }
                 }
                 else {
                     rodsLog(
-                        LOG_DEBUG,
+                        LOG_WARNING,
                         "failed to get agent key" );
                 }
             }
             else {
                 rodsLog(
-                    LOG_DEBUG,
+                    LOG_WARNING,
                     "failed to get local zone SID" );
             }
 

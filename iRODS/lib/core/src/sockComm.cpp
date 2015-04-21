@@ -860,7 +860,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
         // =-=-=-=-=-=-=-
         // enable SSL if requested
         // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
-        if ( irods::CS_NEG_USE_SSL == irods::CS_NEG_FAILURE ) {
+        if ( irods::CS_NEG_FAILURE == results ) {
             printf( "connectToRhost - failed in client-server negotiations\n" );
         }
 

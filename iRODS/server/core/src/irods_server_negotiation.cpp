@@ -226,7 +226,7 @@ namespace irods {
                     } // if sid is not empty
                     else {
                         rodsLog(
-                            LOG_DEBUG,
+                            LOG_WARNING,
                             "%s - sent SID is empty",
                             __FUNCTION__ );
                     }
@@ -260,7 +260,11 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // else, return a failure
-        return ERROR( -1, "failure detected from client" );
+        std::stringstream msg;
+        msg << "failure detected from client for result [" 
+            << read_cs_neg->status_ 
+            << "]";
+        return ERROR( -1, msg.str() );
 
     } // client_server_negotiation_for_server
 

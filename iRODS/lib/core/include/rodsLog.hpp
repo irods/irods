@@ -20,6 +20,8 @@
   via a command-line argument to adjust the rodsLog verbosity level.
 */
 
+#define LOG_WARNING 6
+
 #define LOG_NOTICE  5
 #define LOG_STATUS  5
 /* This is informational only, part of the normal operation but will

@@ -674,7 +674,7 @@ namespace irods {
                              NO_RECONN, 0 );
         if ( !comm ) {
             return ERROR(
-                       LOG_ERROR,
+                       NULL_VALUE_ERR,
                        "rcConnect failed" );
         }
 
