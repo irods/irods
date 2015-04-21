@@ -19,5 +19,5 @@ will produce configuration files so that iRODS can be run from the
 source directory.  This is not recommended as upgrades and support 
 will be more difficult.
 
-Please find more information in manual.rst.
+Please find more information in docs/Admin_Guide.md.
 
