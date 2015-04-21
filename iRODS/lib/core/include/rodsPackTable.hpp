@@ -135,6 +135,7 @@ const packInstructArray_t RodsPackTable[] = {
     {"DataSeg_PI", DataSeg_PI, NULL},
     {"FileRestartInfo_PI", FileRestartInfo_PI, NULL},
     {"CS_NEG_PI", CS_NEG_PI, NULL},
+    {"StrArray_PI", StrArray_PI, NULL},
     {PACK_TABLE_END_PI, ( char * ) NULL, NULL},
 };
 
