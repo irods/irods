@@ -1,3 +1,4 @@
+import sys
 import commands
 import contextlib
 import itertools
