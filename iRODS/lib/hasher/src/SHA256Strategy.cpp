@@ -1,5 +1,5 @@
 #include "SHA256Strategy.hpp"
-#include "md5Checksum.hpp"
+#include "checksum.hpp"
 
 #include <string>
 #include <sstream>
@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <string.h>
 #include <boost/algorithm/string/predicate.hpp>
+#include <openssl/sha.h>
 
 #include "base64.hpp"
 

@@ -33,17 +33,12 @@
 
 // =-=-=-=-=-=-=-
 // system includes
-#ifndef _WIN32
-#include <sys/file.h>
-#include <sys/param.h>
-#endif
 #include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
 #include <sys/types.h>
+#include <dirent.h>
+#include <openssl/md5.h>
 #if defined(osx_platform)
 #include <sys/malloc.h>
 #else
@@ -51,10 +46,10 @@
 #endif
 #include <fcntl.h>
 #ifndef _WIN32
+#include <sys/param.h>
 #include <sys/file.h>
 #include <unistd.h>
 #endif
-#include <dirent.h>
 
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
@@ -62,9 +57,6 @@
 #if defined(linux_platform)
 #include <sys/vfs.h>
 #endif
-#include <sys/stat.h>
-
-#include <string.h>
 
 
 // =-=-=-=-=-=-=-
@@ -197,9 +189,9 @@ irods::error make_hashed_path(
     unsigned char hash  [ MAX_NAME_LEN ];
 
     strncpy( md5Buf, _path.c_str(), _path.size() );
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char* )md5Buf, _path.size() );
-    MD5Final( ( unsigned char* )hash, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )md5Buf, _path.size() );
+    MD5_Final( ( unsigned char* )hash, &context );
 
     std::stringstream ins;
     for ( int i = 0; i < 16; ++i ) {

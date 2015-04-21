@@ -9,12 +9,13 @@
 #include "dataObjOpr.hpp"
 #include "rodsLog.hpp"
 #include "rcGlobalExtern.hpp"
-#include "md5.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_server_negotiation.hpp"
+
+#include <openssl/md5.h>
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -286,7 +287,6 @@ fillRcPortalTransferInp( rcComm_t *conn, rcPortalTransferInp_t *myInput,
 
 void
 rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
-    transferHeader_t myHeader;
     int destFd = 0;
     int srcFd = 0;
     transferStat_t *myTransStat = 0;
@@ -359,6 +359,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
     size_t buf_size = 2 * trans_buff_sz * sizeof( unsigned char );
     unsigned char* buf = ( unsigned char* )malloc( buf_size );
+    transferHeader_t myHeader;
 
     while ( myInput->status >= 0 ) {
         rodsLong_t toPut;

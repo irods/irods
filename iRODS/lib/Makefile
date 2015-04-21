@@ -29,10 +29,8 @@ LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 #
 # Source files
 #	core	utility functions
-#	md5	MD5 hash generation functions
-# sha1 SHA1 hash generation functions
-#	api	client API functions (LIB_API_OBJS is set by api.mk)
-#       hasher  Utility classes for generating hash digests
+#	api 	client API functions (LIB_API_OBJS is set by api.mk)
+#   hasher  Utility classes for generating hash digests
 #
 # Core
 LIB_CORE_OBJS =	\
@@ -116,7 +114,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/hashtable.o \
 		$(libCoreObjDir)/region.o \
 		$(libCoreObjDir)/irods_exception.o  \
-		$(libCoreObjDir)/apiHandler.o 
+		$(libCoreObjDir)/apiHandler.o
 
 INCLUDES +=	-I$(libCoreIncDir)
 
@@ -132,46 +130,30 @@ endif
 # Logging (automatically generated source)
 LOG_SRC =	$(libCoreSrcDir)/rodsLog.cpp
 
-
-# MD5
-LIB_MD5_OBJS =	\
-		$(libMd5ObjDir)/md5c.o \
-		$(libMd5ObjDir)/md5Checksum.o
-INCLUDES +=    -I$(libMd5IncDir) -I$(libSha1IncDir)
-
-# SHA1
-LIB_SHA1_OBJS =        \
-               $(libSha1ObjDir)/sha1.o
-INCLUDES +=    -I$(libSha1IncDir)
-
-
 # Hasher
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
+		$(libHasherObjDir)/checksum.o \
 		$(libHasherObjDir)/MD5Strategy.o \
 		$(libHasherObjDir)/SHA256Strategy.o \
-		$(libHasherObjDir)/irods_hasher_factory.o 
+		$(libHasherObjDir)/irods_hasher_factory.o
 INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp
 LIB_RBUDP_OBJS =  \
 		$(libRbudpObjDir)/QUANTAnet_rbudpBase_c.o \
-		$(libRbudpObjDir)/QUANTAnet_rbudpSender_c.o 	\
+		$(libRbudpObjDir)/QUANTAnet_rbudpSender_c.o \
 		$(libRbudpObjDir)/QUANTAnet_rbudpReceiver_c.o
 
 # API (see api.mk, which is automatically generated)
 include $(buildDir)/config/api.mk
 INCLUDES +=	-I$(libApiIncDir)
 
-SVR_API_OBJS += 
-
 # All objects
-OBJS =	$(LIB_CORE_OBJS) \
-        $(LIB_API_OBJS) \
-        $(LIB_MD5_OBJS)	\
-        $(LIB_SHA1_OBJS) \
-        $(LIB_RBUDP_OBJS) \
-        $(LIB_HASHER_OBJS) 
+OBJS =  $(LIB_CORE_OBJS) \
+		$(LIB_API_OBJS) \
+		$(LIB_RBUDP_OBJS) \
+		$(LIB_HASHER_OBJS)
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
@@ -187,8 +169,6 @@ CONFIG =	$(svrConfigDir)/irodsHost
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES)
 
-MD5_CFLAGS_OPTIONS := $(CFLAGS_OPTIONS)
-MD5_CFLAGS =	$(CFLAGS)
 ifdef IRODS_SYSLOG
 CFLAGS_OPTIONS += -D IRODS_SYSLOG
 endif
@@ -200,8 +180,8 @@ endif
 # Principal Targets
 #
 .PHONY:	all lib libs clean print_cflags
-vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
-		$(libSha1SrcDir) $(libRbudpSrcDir) $(libHasherSrcDir)
+vpath %c	$(libCoreSrcDir) $(libApiSrcDir) \
+		$(libRbudpSrcDir) $(libHasherSrcDir)
 
 # Build everything
 all:	libs
@@ -230,8 +210,6 @@ $(svrConfigDir)/irodsHost:
 print_cflags:
 	@echo "Compile flags:"
 	@echo "    $(CFLAGS_OPTIONS)"
-	@echo "MD5-only compile flags:"
-	@echo "    $(MD5_CFLAGS_OPTIONS)"
 
 # Clean
 clean:
@@ -251,16 +229,6 @@ $(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(DEPEND) $(BOOS
 # Build API
 $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
-
-# Build MD5
-$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.cpp $(configMk) $(platformMk)
-	@echo "Compile md5 `basename $@`..."
-	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
-
-# Build SHA1
-$(LIB_SHA1_OBJS):  $(libSha1ObjDir)/%.o: $(libSha1SrcDir)/%.cpp $(configMk) $(platformMk)
-	@echo "Compile sha1 `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build Hasher

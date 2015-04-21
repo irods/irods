@@ -7,14 +7,12 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 #include <openssl/aes.h>
+#include <openssl/md5.h>
 
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
-
-#include "global.hpp"
-#include "md5.hpp"
 
 namespace irods {
 
@@ -36,10 +34,10 @@ namespace irods {
         unsigned char* _buf,
         int            _sz ) {
         MD5_CTX ctx;
-        MD5Init( &ctx );
-        MD5Update( &ctx, _buf, _sz );
+        MD5_Init( &ctx );
+        MD5_Update( &ctx, _buf, _sz );
         unsigned char hash[16];
-        MD5Final( hash, &ctx );
+        MD5_Final( hash, &ctx );
 
         std::stringstream ss;
         for ( int i = 0; i < 16; ++i ) {

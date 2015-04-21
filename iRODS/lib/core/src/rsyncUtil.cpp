@@ -8,6 +8,7 @@
 #include "rodsLog.hpp"
 #include "rsyncUtil.hpp"
 #include "miscUtil.hpp"
+#include "checksum.hpp"
 
 #include <sstream>
 #include <boost/filesystem/operations.hpp>

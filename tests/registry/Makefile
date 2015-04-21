@@ -1,7 +1,7 @@
 include ../../iRODS/config/config.mk
 TOPDIR=../..
 GCC = g++ 
-INC=-I$(TOPDIR)/iRODS/lib/core/include/ -I$(TOPDIR)/iRODS/lib/api/include/ -I$(TOPDIR)/iRODS/lib/md5/include -I$(TOPDIR)/iRODS/server/core/include/ -I$(TOPDIR)/iRODS/server/icat/include/ -I$(TOPDIR)/iRODS/server/re/include/ -I$(TOPDIR)/iRODS/server/drivers/include/ -I$(TOPDIR)/iRODS/lib/hasher/include
+INC=-I$(TOPDIR)/iRODS/lib/core/include/ -I$(TOPDIR)/iRODS/lib/api/include/ -I$(TOPDIR)/iRODS/server/core/include/ -I$(TOPDIR)/iRODS/server/icat/include/ -I$(TOPDIR)/iRODS/server/re/include/ -I$(TOPDIR)/iRODS/server/drivers/include/ -I$(TOPDIR)/iRODS/lib/hasher/include
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \

@@ -5,6 +5,7 @@
 #include "rodsLog.hpp"
 #include "regUtil.hpp"
 #include "miscUtil.hpp"
+#include "checksum.hpp"
 
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

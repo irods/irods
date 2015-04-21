@@ -8,6 +8,7 @@
 #include "parseCommandLine.hpp"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
+#include "checksum.hpp"
 
 #include "rodsUser.hpp"
 

@@ -12,11 +12,10 @@ include ${IRODSDIR}/config/platform.mk
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../../packaging/compiler_check.sh 4 2`
 
-INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
+INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/hasher/include \
       -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
       -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I${IRODSDIR}/lib/sha1/include -I${IRODSDIR}/lib/rbudp/include \
-      -I../../../external/jansson-2.7/src/ 
+      -I${IRODSDIR}/lib/rbudp/include -I../../../external/jansson-2.7/src/ 
 LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
 
 MY_CFLAG += ${INC}

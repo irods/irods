@@ -15,7 +15,7 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 -I$(buildDir)/server/drivers/include \
 -I$(buildDir)/server/re/include \
 -I$(buildDir)/lib/core/include  \
--I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
+-I$(buildDir)/lib/api/include -I$(buildDir)/lib/hasher/include
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 

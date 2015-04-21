@@ -15,9 +15,9 @@ ifndef buildDir
 buildDir =	$(CURDIR)/../..
 endif
 
+include $(buildDir)/config/directories.mk
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
-include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
 #
@@ -59,7 +59,7 @@ LIB_OBJS =	\
 		$(objDir)/iFuseLib.PathCache.o \
 		$(objDir)/iFuseLib.Utils.o
 
-INCLUDES +=	-I$(incDir) -I$(reIncDir)
+INCLUDES +=	-I$(incDir) -I$(reIncDir) 
 
 
 

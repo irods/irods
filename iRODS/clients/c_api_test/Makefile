@@ -17,8 +17,7 @@ endif
 
 CFLAGS = -I../../lib/core/include/ \
 	-I../../lib/api/include/ \
-	-I../../lib/md5/include/ \
-	-I../../lib/sha1/include/ \
+	-I../../lib/hasher/include/ \
 	-I../../server/icat/include/ \
 	-I../../server/re/include/ \
 	-I../../server/core/include/

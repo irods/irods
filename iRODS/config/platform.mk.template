@@ -185,7 +185,7 @@ endif
 
 
 MY_CFLAG+= -I$(libCoreIncDir) -I$(libApiIncDir)        \
-		-I$(libMd5IncDir) -I$(libSha1IncDir) -I$(libRbudpIncDir)
+		-I$(libHasherIncDir) -I$(libRbudpIncDir)
 
 ifdef UNI_CODE
 MY_CFLAG+= -DUNI_CODE

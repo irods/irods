@@ -1,7 +1,8 @@
 #include "irods_hasher_factory.hpp"
-#include "md5Checksum.hpp"
+#include "checksum.hpp"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"
+#include "rodsErrorTable.hpp"
 #include <sstream>
 #include <boost/unordered_map.hpp>
 

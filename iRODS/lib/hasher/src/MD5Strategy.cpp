@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include <string.h>
+#include <openssl/md5.h>
 #include "irods_stacktrace.hpp"
 
 namespace irods {
@@ -13,20 +14,20 @@ namespace irods {
     error
     MD5Strategy::init( boost::any& _context ) const {
         _context = MD5_CTX();
-        MD5Init( boost::any_cast<MD5_CTX>( &_context ) );
+        MD5_Init( boost::any_cast<MD5_CTX>( &_context ) );
         return SUCCESS();
     }
 
     error
     MD5Strategy::update( const std::string& data, boost::any& _context ) const {
-        MD5Update( boost::any_cast<MD5_CTX>( &_context ), ( const unsigned char * )data.c_str(), data.size() );
+        MD5_Update( boost::any_cast<MD5_CTX>( &_context ), ( const unsigned char * )data.c_str(), data.size() );
         return SUCCESS();
     }
 
     error
     MD5Strategy::digest( std::string& messageDigest, boost::any& _context ) const {
         unsigned char buffer[17];
-        MD5Final( buffer, boost::any_cast<MD5_CTX>( &_context ) );
+        MD5_Final( buffer, boost::any_cast<MD5_CTX>( &_context ) );
         std::stringstream ins;
         for ( int i = 0; i < 16; ++i ) {
             ins << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )buffer[i];

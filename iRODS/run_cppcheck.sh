@@ -47,4 +47,4 @@ echo "-----------------------------------"
 sleep 1
 
 # run cppcheck
-cppcheck --language=c++ -j $CPUCOUNT -f -I/usr/include -I$H/lib/md5/include -I$H/lib/rbudp/include -I$H/lib/api/include -I$H/lib/core/include -I$H/lib/isio/include -I$H/server/re/include -I$H/server/drivers/include -I$H/server/core/include -I$H/server/icat/include -i clients/icommands/rulegen/ -i external .
+cppcheck --language=c++ -j $CPUCOUNT -f -I/usr/include -I$H/lib/hasher/include -I$H/lib/rbudp/include -I$H/lib/api/include -I$H/lib/core/include -I$H/lib/isio/include -I$H/server/re/include -I$H/server/drivers/include -I$H/server/core/include -I$H/server/icat/include -i clients/icommands/rulegen/ -i external .

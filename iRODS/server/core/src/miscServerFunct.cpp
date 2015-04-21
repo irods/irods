@@ -26,13 +26,13 @@
 #include "reFuncDefs.hpp"
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>
+#include <openssl/md5.h>
 #if !defined(solaris_platform)
 char *__loc1;
 #endif /* linux_platform */
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 
-#include "md5.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"

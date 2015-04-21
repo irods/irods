@@ -9,6 +9,7 @@
 #include "putUtil.hpp"
 #include "miscUtil.hpp"
 #include "rcPortalOpr.hpp"
+#include "checksum.hpp"
 #include <string>
 #include <boost/filesystem.hpp>
 #include "irods_server_properties.hpp"

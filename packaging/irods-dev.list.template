@@ -68,9 +68,8 @@ f 644 root root ${LIBDIR}/libirods_server.a ./libirods_server.a
 
 d 755 root root /usr/include/irods/ -
 f 644 root root /usr/include/irods/ ./iRODS/lib/core/include/*
+f 644 root root /usr/include/irods/ ./iRODS/lib/hasher/include/*
 f 644 root root /usr/include/irods/ ./iRODS/lib/api/include/*
-f 644 root root /usr/include/irods/ ./iRODS/lib/md5/include/*
-f 644 root root /usr/include/irods/ ./iRODS/lib/sha1/include/*
 f 644 root root /usr/include/irods/ ./iRODS/lib/rbudp/include/*
 f 644 root root /usr/include/irods/ ./iRODS/server/core/include/*
 f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*

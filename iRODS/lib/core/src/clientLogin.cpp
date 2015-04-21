@@ -22,7 +22,9 @@
 #include "authPluginRequest.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "checksum.hpp"
 
+#include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
@@ -374,9 +376,9 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     sprintf( md5Buf + CHALLENGE_LEN, "%s", password );
     md5Buf[CHALLENGE_LEN + len] = '\0'; /* remove trailing \n */
 
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-    MD5Final( ( unsigned char* )digest, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+    MD5_Final( ( unsigned char* )digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
         if ( digest[i] == '\0' ) {
             digest[i]++;

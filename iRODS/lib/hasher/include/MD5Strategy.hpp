@@ -2,8 +2,6 @@
 #define _MD5_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
-#include "global.hpp"             // cause md5.h needs it
-#include "md5.hpp"
 
 namespace irods {
     const std::string MD5_NAME( "md5" );

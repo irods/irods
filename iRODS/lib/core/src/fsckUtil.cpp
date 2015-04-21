@@ -7,6 +7,7 @@
 #include "rodsLog.hpp"
 #include "fsckUtil.hpp"
 #include "miscUtil.hpp"
+#include "checksum.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

@@ -35,6 +35,8 @@
 
 
 #include <stdio.h>
+#include <openssl/md5.h>
+#include <openssl/sha.h>
 #ifndef windows_platform
 #include <sys/types.h>
 #include <sys/time.h>
@@ -965,7 +967,7 @@ obfMakeOneWayHash( int hashType,
                    unsigned const char *inBuf, int inBufSize, unsigned char *outHash ) {
 
     MD5_CTX md5Context;
-    SHA1Context sha1Context;
+    SHA_CTX shaContext;
 
     static char outBuf[50];
 
@@ -974,18 +976,17 @@ obfMakeOneWayHash( int hashType,
         if ( obfDebug ) {
             printf( "obfMakeOneWayHash sha1\n" );
         }
-        SHA1Reset( &sha1Context );
-        SHA1Input( &sha1Context, inBuf, inBufSize );
-        SHA1Result( &sha1Context );
-        memcpy( ( void * )outHash, ( void * )&sha1Context.Message_Digest[0], 16 );
+        SHA1_Init( &shaContext );
+        SHA1_Update( &shaContext, inBuf, inBufSize );
+        SHA1_Final( outHash, &shaContext );
     }
     else {
         if ( obfDebug ) {
             printf( "obfMakeOneWayHash md5\n" );
         }
-        MD5Init( &md5Context );
-        MD5Update( &md5Context, inBuf, inBufSize );
-        MD5Final( outHash, &md5Context );
+        MD5_Init( &md5Context );
+        MD5_Update( &md5Context, inBuf, inBufSize );
+        MD5_Final( outHash, &md5Context );
     }
     sprintf( outBuf, "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
              outHash[0], outHash[1], outHash[2], outHash[3],

@@ -29,6 +29,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_virtual_path.hpp"
+#include "checksum.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes

@@ -19,6 +19,7 @@
 #include "irods_client_server_negotiation.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_stacktrace.hpp"
+#include "checksum.hpp"
 
 /**
  * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,

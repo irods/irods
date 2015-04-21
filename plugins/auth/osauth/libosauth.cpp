@@ -25,6 +25,7 @@
 #include <iostream>
 #include <termios.h>
 #include <unistd.h>
+#include <openssl/md5.h>
 
 // =-=-=-=-=-=-=-
 // local includes
@@ -212,14 +213,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // create a md5 hash of the challenge
         MD5_CTX context;
-        MD5Init( &context );
-        MD5Update(
+        MD5_Init( &context );
+        MD5_Update(
             &context,
             ( unsigned char* )md5_buf,
             CHALLENGE_LEN + MAX_PASSWORD_LEN );
 
         char digest[ RESPONSE_LEN + 2 ];
-        MD5Final( ( unsigned char* )digest, &context );
+        MD5_Final( ( unsigned char* )digest, &context );
 
         // =-=-=-=-=-=-=-
         // make sure 'string' doesn't end early -
@@ -508,10 +509,10 @@ extern "C" {
                     }
                     else {
                         strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
-                        MD5Init( &context );
-                        MD5Update( &context, ( unsigned char* )md5Buf,
+                        MD5_Init( &context );
+                        MD5_Update( &context, ( unsigned char* )md5Buf,
                                    CHALLENGE_LEN + MAX_PASSWORD_LEN );
-                        MD5Final( ( unsigned char* )digest, &context );
+                        MD5_Final( ( unsigned char* )digest, &context );
                         for ( i = 0; i < RESPONSE_LEN; i++ ) {
                             if ( digest[i] == '\0' ) {
                                 digest[i]++;

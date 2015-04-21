@@ -26,6 +26,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <openssl/md5.h>
+
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );
 void _rsSetAuthRequestGetChallenge( const char* _c );
@@ -192,11 +194,11 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // create a md5 hash of the challenge
             MD5_CTX context;
-            MD5Init( &context );
-            MD5Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+            MD5_Init( &context );
+            MD5_Update( &context, ( unsigned char* )md5_buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
 
             char digest[ RESPONSE_LEN + 2 ];
-            MD5Final( ( unsigned char* )digest, &context );
+            MD5_Final( ( unsigned char* )digest, &context );
 
             // =-=-=-=-=-=-=-
             // make sure 'string' doesn't end early -

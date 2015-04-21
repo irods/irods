@@ -1,45 +1,21 @@
 /* md5Checksum.c - checksumming routine on the client side
  */
 
-#include "md5Checksum.hpp"
-#include "rcMisc.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_hasher_factory.hpp"
-#include "MD5Strategy.hpp"
 #include "getRodsEnv.hpp"
 #include "irods_log.hpp"
+#include "objInfo.hpp"
+#include "MD5Strategy.hpp"
+#include "rodsKeyWdDef.hpp"
+#include "rcMisc.hpp"
+#include "checksum.hpp"
 
 #include <fstream>
 #include "irods_stacktrace.hpp"
 
 
-#define MD5_BUF_SZ      (4 * 1024)
-
-#ifdef MD5_TESTING
-
-int main( int argc, char *argv[] ) {
-    int i = 1; // JMC cppcheck - uninit var
-    char chksumStr[NAME_LEN];
-
-    if ( argc != 2 ) {
-        fprintf( stderr, "usage: md5checksum localFile\n" );
-        exit( 1 );
-    }
-
-    status = chksumLocFile( argv[i], chksumStr );
-
-    if ( status >= 0 ) {
-        printf( "chksumStr = %s\n", chksumStr );
-        exit( 0 );
-    }
-    else {
-        fprintf( stderr, "chksumFile error for %s, status = %d.\n",
-                 argv[i], status );
-        exit( 1 );
-    }
-}
-
-#endif 	/* MD5_TESTING */
+#define HASH_BUF_SZ      (4 * 1024)
 
 int chksumLocFile(
     char*       _file_name,
@@ -165,10 +141,10 @@ int chksumLocFile(
         return status;
     }
 
-    char buffer_read[ MD5_BUF_SZ ];
+    char buffer_read[ HASH_BUF_SZ ];
     std::streamsize bytes_read = in_file.readsome(
                                      buffer_read,
-                                     MD5_BUF_SZ );
+                                     HASH_BUF_SZ );
     while ( bytes_read > 0 ) {
         hasher.update(
             std::string(
@@ -176,7 +152,7 @@ int chksumLocFile(
                 bytes_read ) );
         bytes_read = in_file.readsome(
                          buffer_read,
-                         MD5_BUF_SZ );
+                         HASH_BUF_SZ );
     }
 
     // =-=-=-=-=-=-=-
@@ -216,20 +192,6 @@ int verifyChksumLocFile(
     if ( strcmp( myChksum, chksumStr ) != 0 ) {
         return USER_CHKSUM_MISMATCH;
     }
-    return 0;
-}
-
-
-int
-md5ToStr( unsigned char *digest, char *chksumStr ) {
-    int i;
-    char *outPtr = chksumStr;
-
-    for ( i = 0; i < 16; i++ ) {
-        sprintf( outPtr, "%02x", digest[i] );
-        outPtr += 2;
-    }
-
     return 0;
 }
 

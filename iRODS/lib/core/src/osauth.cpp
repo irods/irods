@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits>
+#include <openssl/md5.h>
 #ifndef windows_platform
 #include <unistd.h>
 #include <sys/types.h>
@@ -64,9 +65,9 @@ extern "C" {
         memset( md5digest, 0, sizeof( md5digest ) );
         memcpy( md5buffer, challenge, CHALLENGE_LEN );
         memcpy( md5buffer + CHALLENGE_LEN, authenticator, 16 );
-        MD5Init( &ctx );
-        MD5Update( &ctx, ( unsigned char* )md5buffer, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-        MD5Final( ( unsigned char* )md5digest, &ctx );
+        MD5_Init( &ctx );
+        MD5_Update( &ctx, ( unsigned char* )md5buffer, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+        MD5_Final( ( unsigned char* )md5digest, &ctx );
         for ( i = 0; i < RESPONSE_LEN; i++ ) {
             /* make sure 'string' doesn't end early
                (this matches client digest generation). */
@@ -151,9 +152,9 @@ extern "C" {
 
         /* generate an MD5 hash of the buffer, and copy it
            to the output parameter authenticator */
-        MD5Init( &ctx );
-        MD5Update( &ctx, ( unsigned char* )buffer, buflen );
-        MD5Final( ( unsigned char* )md5digest, &ctx );
+        MD5_Init( &ctx );
+        MD5_Update( &ctx, ( unsigned char* )buffer, buflen );
+        MD5_Final( ( unsigned char* )md5digest, &ctx );
         memcpy( authenticator, md5digest, 16 );
 
         free( buffer );

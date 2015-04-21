@@ -64,11 +64,11 @@ int doGetTempPw( rcComm_t *Conn, char *userPassword ) {
     strncpy( md5Buf, getTempPasswordOut->stringToHashWith, 100 );
     strncat( md5Buf, userPassword, 100 );
 
-    MD5Init( &context );
-    MD5Update( &context, md5Buf, 100 );
-    MD5Final( digest, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, md5Buf, 100 );
+    MD5_Final( digest, &context );
 
-    md5ToStr( digest, tempPw );
+    hashToStr( digest, tempPw );
     printf( "tempPw=%s\n", tempPw );
     return 0;
 }
@@ -91,23 +91,23 @@ int doCheck( char *buf ) {
     ints[0] = 12349994;
     ints[1] = count;
     ints[2] = tv.tv_usec;
-    MD5Init( &context );
-    MD5Update( &context, ( char* )&ints[0], 100 );
-    MD5Final( buffer, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( char* )&ints[0], 100 );
+    MD5_Final( buffer, &context );
 
     ints[0] = pid;
     ints[4] = ( int )buffer[10];
-    MD5Init( &context );
-    MD5Update( &context, ( char * )&ints[0], 100 );
-    MD5Final( buffer + 16, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( char * )&ints[0], 100 );
+    MD5_Final( buffer + 16, &context );
 
-    MD5Init( &context );
-    MD5Update( &context, ( char* )&ints[0], 100 );
-    MD5Final( buffer + 32, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( char* )&ints[0], 100 );
+    MD5_Final( buffer + 32, &context );
 
-    MD5Init( &context );
-    MD5Update( &context, buffer, 40 );
-    MD5Final( buffer + 48, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, buffer, 40 );
+    MD5_Final( buffer + 48, &context );
 
     for ( i = 0; i < 64; i++ ) {
         if ( buffer[i] == '\0' ) {
@@ -142,9 +142,9 @@ int doAuth2( rcComm_t *Conn, char *userName ) {
         len = strlen( md5Buf );
         md5Buf[len - 1] = '\0'; /* remove trailing \n */
     }
-    MD5Init( &context );
-    MD5Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-    MD5Final( digest, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+    MD5_Final( digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
         if ( digest[i] == '\0' ) {
             digest[i]++;
@@ -218,9 +218,9 @@ int doAuthT( rcComm_t *Conn, char *userName ) {
         len = strlen( md5Buf );
         md5Buf[len - 1] = '\0'; /* remove trailing \n */
     }
-    MD5Init( &context );
-    MD5Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
-    MD5Final( digest, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, md5Buf, CHALLENGE_LEN + MAX_PASSWORD_LEN );
+    MD5_Final( digest, &context );
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
         if ( digest[i] == '\0' ) {
             digest[i]++;

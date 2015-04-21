@@ -27,6 +27,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <openssl/md5.h>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
@@ -1449,23 +1450,23 @@ int get64RandomBytes( char *buf ) {
     ints[2] = tv.tv_usec;
     ints[5] = tv.tv_sec;
 #endif
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char* )&ints[0], 100 );
-    MD5Final( ( unsigned char* )buffer, &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )&ints[0], 100 );
+    MD5_Final( ( unsigned char* )buffer, &context );
 
     ints[0] = pid;
     ints[4] = ( int )buffer[10];
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char * )&ints[0], 100 );
-    MD5Final( ( unsigned char* )( buffer + 16 ), &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char * )&ints[0], 100 );
+    MD5_Final( ( unsigned char* )( buffer + 16 ), &context );
 
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char* )&ints[0], 100 );
-    MD5Final( ( unsigned char* )( buffer + 32 ), &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )&ints[0], 100 );
+    MD5_Final( ( unsigned char* )( buffer + 32 ), &context );
 
-    MD5Init( &context );
-    MD5Update( &context, ( unsigned char* )buffer, 40 );
-    MD5Final( ( unsigned char* )( buffer + 48 ), &context );
+    MD5_Init( &context );
+    MD5_Update( &context, ( unsigned char* )buffer, 40 );
+    MD5_Final( ( unsigned char* )( buffer + 48 ), &context );
 
     for ( i = 0; i < 64; i++ ) {
         if ( buffer[i] == '\0' ) {

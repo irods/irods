@@ -15,6 +15,7 @@
 #include "reGlobalsExtern.hpp"
 #include "rsApiHandler.hpp"
 #include "irods_stacktrace.hpp"
+#include "checksum.hpp"
 
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
