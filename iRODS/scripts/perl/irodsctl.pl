@@ -879,8 +879,25 @@ sub setupEnvironment
 
 }
 
+# loop until ils is happy, which tells us that
+# the server is live and well
+sub wait_for_server_to_start {
+    my $retry_count = 1000;
 
+    while( $retry_count > 0 ) {
+        my $output = `ils 2>&1`;
+        my $return_code = $? >> 8;
+        if( 0 == $return_code ) {
+            $retry_count = 0;
+        }
 
+        $retry_count = $retry_count - 1;
+
+        sleep( 1 );
+
+    } # while
+
+} # wait_for_server_to_start
 
 
 #
@@ -959,8 +976,7 @@ sub startIrods
 
         chdir( $startingDir );
 
-        # Sleep a bit to give the server time to start and possibly exit
-        sleep( $iRODSStartStopDelay );
+        wait_for_server_to_start();
 
         # Check that it actually started
         my %serverPids = getIrodsProcessIds( );
