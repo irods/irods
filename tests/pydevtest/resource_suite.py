@@ -422,6 +422,7 @@ class ResourceSuite(ResourceBase):
         output = commands.getstatusoutput('rm -rf ' + datadir)
         output = commands.getstatusoutput('rm ' + rf)
 
+    @unittest.skipIf(True, 'Enable once race conditions fixed, see #2634')
     def test_local_iput_interrupt_largefile(self):
         # local setup
         datafilename = 'bigfile'
