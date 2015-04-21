@@ -12,6 +12,7 @@ import shutil
 import random
 import subprocess
 
+import configuration
 from resource_suite import ResourceBase
 import lib
 
