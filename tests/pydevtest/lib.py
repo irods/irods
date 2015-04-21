@@ -65,6 +65,9 @@ def cat(fname, string, times=None):
         f.write(string)
 
 def make_file(f_name, f_size, source='/dev/zero'):
+    if f_size == 0:
+        touch(f_name)
+        return
     output = commands.getstatusoutput('dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
     if output[0] != 0:
         sys.stderr.write(output[1] + '\n')
