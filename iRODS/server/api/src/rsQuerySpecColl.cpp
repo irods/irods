@@ -72,6 +72,9 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // api calls, etc.
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
+    } else {
+        hier = hier_kw;
+
     }
 
     if ( ( specCollInx = dataObjInp->openFlags ) <= 0 ) {
