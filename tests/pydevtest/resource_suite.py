@@ -431,7 +431,7 @@ class ResourceSuite(ResourceBase):
         iputcmd = 'iput --lfrestart {0} {1}'.format(rf, datafilename)
         if os.path.exists(rf):
             os.unlink(rf)
-        self.admin.interrupt_icommand(iputcmd, rf, 255)  # once restartfile reaches 10 bytes
+        self.admin.interrupt_icommand(iputcmd, rf, 300)  # once restartfile reaches 300 bytes
         time.sleep(2)  # wait for all interrupted threads to exit
         assert os.path.exists(rf), rf + " should now exist, but did not"
         output = commands.getstatusoutput('cat ' + rf)
