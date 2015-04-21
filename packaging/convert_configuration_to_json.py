@@ -262,7 +262,7 @@ legacy_key_map["pam_password_max_time"] = "pam_password_max_time"
 legacy_key_map["default_dir_mode"] = "default_dir_mode"
 legacy_key_map["default_file_mode"] = "default_file_mode"
 legacy_key_map["default_hash_scheme"] = "default_hash_scheme"
-legacy_key_map["LocalZoneSID"] = "zone_id"
+legacy_key_map["LocalZoneSID"] = "zone_key"
 legacy_key_map["agent_key"] = "negotiation_key"
 legacy_key_map["match_hash_policy"] = "match_hash_policy"
 
