@@ -467,7 +467,7 @@ main( int argc, char **argv ) {
     }
 
     // tree view
-    if ( myRodsArgs.tree == True ) {
+    if ( myRodsArgs.longOption != True ) {
         if ( myRodsArgs.ascii == True ) { // character set for printing tree
             gfx_mode = 0;
         }
