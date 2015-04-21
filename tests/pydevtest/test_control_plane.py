@@ -22,7 +22,7 @@ class TestControlPlane(unittest.TestCase):
         lib.assert_command('irods-grid resume --all', 'STDOUT', 'resuming')
 
         # Make sure server is actually responding
-        lib.assert_command('ils', 'STDOUT', lib.get_service_account_environment_file_contents()['irods_zone'])
+        lib.assert_command('ils', 'STDOUT', lib.get_service_account_environment_file_contents()['irods_zone_name'])
         lib.assert_command('irods-grid status --all', 'STDOUT', 'hosts')
 
     def test_status(self):

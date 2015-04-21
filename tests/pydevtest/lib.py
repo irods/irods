@@ -272,7 +272,7 @@ def make_environment_dict(username, hostname, zone_name):
         'irods_home': irods_home,
         'irods_cwd': irods_home,
         'irods_user_name': username,
-        'irods_zone': zone_name,
+        'irods_zone_name': zone_name,
         'irods_client_server_negotiation': 'request_server_negotiation',
         'irods_client_server_policy': 'CS_NEG_REFUSE',
         'irods_encryption_key_size': 32,
@@ -323,13 +323,13 @@ def get_service_account_environment_file_contents():
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()
     username = service_env['irods_user_name']
-    zone_name = service_env['irods_zone']
+    zone_name = service_env['irods_zone_name']
     env_dict = make_environment_dict(username, configuration.ICAT_HOSTNAME, zone_name)
     return irods_session.IrodsSession(env_dict, configuration.PREEXISTING_ADMIN_PASSWORD, False)
 
 def mkuser_and_return_session(user_type, username, password, hostname):
     service_env = get_service_account_environment_file_contents()
-    zone_name = service_env['irods_zone']
+    zone_name = service_env['irods_zone_name']
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(['iadmin', 'mkuser', username, user_type])
         admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])

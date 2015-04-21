@@ -41,7 +41,7 @@ class IrodsSession(object):
 
     @property
     def zone_name(self):
-        return self._environment_file_contents['irods_zone']
+        return self._environment_file_contents['irods_zone_name']
 
     @property
     def username(self):

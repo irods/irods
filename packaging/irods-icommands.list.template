@@ -115,7 +115,7 @@ cat << EOF | cat
     "irods_home": "/tempZone/home/USERNAME",
     "irods_cwd": "/tempZone/home/USERNAME",
     "irods_user_name": "USERNAME",
-    "irods_zone": "tempZone",
+    "irods_zone_name": "tempZone",
     "irods_client_server_negotiation": "request_server_negotiation",
     "irods_client_server_policy": "CS_NEG_REFUSE",
     "irods_encryption_key_size": 32,

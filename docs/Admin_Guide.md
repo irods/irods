@@ -191,7 +191,7 @@ NOTICE: irods_authentication_scheme is not defined
 NOTICE: irods_port - 1247
 NOTICE: xmsg_port is not defined
 NOTICE: irods_default_resource - demoResc
-NOTICE: irods_zone - tempZone
+NOTICE: irods_zone_name - tempZone
 NOTICE: irods_client_server_policy - CS_NEG_REFUSE
 NOTICE: irods_client_server_negotiation - request_server_negotiation
 NOTICE: irods_encryption_key_size - 32
@@ -369,7 +369,7 @@ irods@hostname:~/ $ cat .irods/irods_environment.json
     "irods_home": "/**<newzonename>**/home/rods",
     "irods_cwd": "/**<newzonename>**/home/rods",
     "irods_user_name": "rods",
-    "irods_zone": "**<newzonename>**",
+    "irods_zone_name": "**<newzonename>**",
     "irods_client_server_negotiation": "request_server_negotiation",
     "irods_client_server_policy": "CS_NEG_REFUSE",
     "irods_encryption_key_size": 32,

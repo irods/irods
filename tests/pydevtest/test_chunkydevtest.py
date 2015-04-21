@@ -50,7 +50,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ilsresc -l", 'STDOUT', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT', ["relVersion"])
         self.admin.assert_icommand("iuserinfo", 'STDOUT', "name: " + username)
-        self.admin.assert_icommand("ienv", 'STDOUT', "irods_zone")
+        self.admin.assert_icommand("ienv", 'STDOUT', "irods_zone_name")
         self.admin.assert_icommand("ipwd", 'STDOUT', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT', "ils")
         self.admin.assert_icommand("ierror -14000", 'STDOUT', "SYS_API_INPUT_ERR")
