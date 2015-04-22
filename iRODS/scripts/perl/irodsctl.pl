@@ -1002,12 +1002,12 @@ sub startIrods
                 printError( "    is not writable.  Please chmod it and retry.\n" );
                 exit( 1 );
         }
-        if ( 0 == preflight_check( ) )
-        {
-                printError( "Preflight Check problem:\n" );
-                printError( "   JSON Configuration Validation failed.\n" );
-                exit( 1 );
-        }
+#        if ( 0 == preflight_check( ) )
+#        {
+#                printError( "Preflight Check problem:\n" );
+#                printError( "   JSON Configuration Validation failed.\n" );
+#                exit( 1 );
+#        }
 
         # Test for iRODS port in use
         my $portTestLimit = 5;
