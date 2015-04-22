@@ -15,7 +15,7 @@ PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
 IRODSPACKAGEDIR="./build"
-
+FAST="0"
 USAGE="
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
@@ -24,6 +24,7 @@ Usage: $SCRIPTNAME clean
 
 Options:
 -c      Build with coverage support (gcov)
+-f      fast build, skip dev and runtime packagages
 -h      Show this help
 -r      Build a release package (no debugging information, optimized)
 -s      Skip compilation of iRODS source
@@ -83,6 +84,7 @@ do
     case "$arg" in
         --coverage) args="${args}-c ";;
         --help) args="${args}-h ";;
+        --fast) args="${args}-f ";;
         --jobs) args="${args}-j ";;
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
@@ -96,7 +98,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chj:rspz" opt; do
+while getopts ":chfj:rspz" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -109,6 +111,10 @@ while getopts ":chj:rspz" opt; do
         ;;
         h)
         echo "$USAGE"
+        ;;
+        f)
+        FAST="1"
+        echo "-f detected -- skipping dev and runtime packages"
         ;;
         j)
         CPUJOBS="$OPTARG"
@@ -421,13 +427,13 @@ rename_generated_packages() {
         echo "         to [$RENAME_DESTINATION_DOCS]"
         mv $RENAME_SOURCE_DOCS $RENAME_DESTINATION_DOCS
     else
-        if [ "$RELEASE" == "1" -o "$TARGET" == "icommands" ] ; then
+        if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
             echo ""
             echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
             echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
             mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
         fi
-        if [ "$TARGET" == "icat" ] ; then
+        if [ "$TARGET" == "icat" -a "$FAST" == "0" ] ; then
             echo ""
             echo "renaming    [$RENAME_SOURCE_DEV]"
             echo "         to [$RENAME_DESTINATION_DEV]"
@@ -1391,7 +1397,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # generate development package archive file
-    if [ "$1" == "icat" ] ; then
+    if [ "$1" == "icat" -a "$FAST" == "0" ] ; then
         echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
         ./packaging/make_irods_dev_archive.sh
@@ -1508,12 +1514,14 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     fi
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icat $epmvar=true $epmosversion=true ./packaging/irods.list
-        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true $epmosversion=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true $epmosversion=true ./packaging/irods-runtime.list
+        if [ "$FAST" == "0" ] ; then
+            $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true $epmosversion=true ./packaging/irods-dev.list
+            $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true $epmosversion=true ./packaging/irods-runtime.list
+        fi
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-resource $epmvar=true $epmosversion=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true $epmosversion=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
@@ -1521,12 +1529,14 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     epmvar="SUSERPM$SERVER_TYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icat $epmvar=true ./packaging/irods.list
-        $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        if [ "$FAST" == "0" ] ; then
+            $EPMCMD $EPMOPTS -f rpm irods-dev $epmvar=true ./packaging/irods-dev.list
+            $EPMCMD $EPMOPTS -f rpm irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        fi
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f rpm irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
@@ -1534,12 +1544,14 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     epmvar="DEB$SERVER_TYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icat $epmvar=true ./packaging/irods.list
-        $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        if [ "$FAST" == "0" ] ; then
+            $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
+            $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        fi
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
       $EPMCMD $EPMOPTS -a $arch -f deb irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
@@ -1552,7 +1564,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f pkg irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
@@ -1569,7 +1581,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f osx irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f osx irods-icommands $epmvar=true ./packaging/irods-icommands.list
       fi
 elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
@@ -1577,12 +1589,14 @@ elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     epmvar="ARCH$SERVERTYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-icat $epmvar=true ./packaging/irods.list
-        $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        if [ "$FAST" == "0" ] ; then
+            $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+            $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        fi
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
@@ -1590,12 +1604,14 @@ elif [ "$DETECTEDOS" == "Portable" ] ; then  # Portable
     epmvar="PORTABLE$SERVER_TYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-icat $epmvar=true ./packaging/irods.list
-        $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
-        $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        if [ "$FAST" == "0" ] ; then
+            $EPMCMD $EPMOPTS -f portable irods-dev $epmvar=true ./packaging/irods-dev.list
+            $EPMCMD $EPMOPTS -f portable irods-runtime $epmvar=true ./packaging/irods-runtime.list
+        fi
     elif [ "$SERVER_TYPE" = "RESOURCE" ] ; then
         $EPMCMD $EPMOPTS -f portable irods-resource $epmvar=true ./packaging/irods.list
     fi
-    if [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
+    if [ "$FAST" == 0 -a [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ] ; then
         $EPMCMD $EPMOPTS -f portable irods-icommands $epmvar=true ./packaging/irods-icommands.list
     fi
 else
