@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <boost/regex.hpp>
+#include "irods_serialization.hpp"
 #include "irods_exception.hpp"
 #include "rodsError.hpp"
 
