@@ -340,11 +340,11 @@ Res* newDoubleRes( Region *r, double a );
 Res* newBoolRes( Region *r, int n );
 Res* newErrorRes( Region *r, int errcode );
 Res* newUnspecifiedRes( Region *r );
-Res* newStringRes( Region *r, char *s );
-Res* newPathRes( Region *r, char *s );
+Res* newStringRes( Region *r, const char *s );
+Res* newPathRes( Region *r, const char *s );
 Res* newDatetimeRes( Region *r, long dt );
 Res* newCollRes( int size, ExprType *elemType, Region *r );
-Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf );
+Res* newUninterpretedRes( Region *r, const char *typeName, void *ioStruct, bytesBuf_t *ioBuf );
 Res* newTupleRes( int arity, Res **compTypes, Region *r );
 msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r );
 

@@ -98,8 +98,13 @@ ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Regi
 
 ExprType *newIRODSType( const char *name, Region *r ) {
     ExprType *t = newExprType( T_IRODS, 0, NULL, r );
-    t->text = ( char * )region_alloc( r, ( strlen( name ) + 1 ) * sizeof( char ) );
-    strcpy( t->text, name );
+    if ( name ) {
+        t->text = ( char * )region_alloc( r, ( strlen( name ) + 1 ) * sizeof( char ) );
+        strcpy( t->text, name );
+    }
+    else {
+        t->text = NULL;
+    }
     return t;
 }
 ExprType *newCollType( ExprType *elemType, Region *r ) {
@@ -175,7 +180,7 @@ Res* newRes( Region *r ) {
     setIOType( res1, IO_TYPE_INPUT );
     return res1;
 }
-Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf ) {
+Res* newUninterpretedRes( Region *r, const char *typeName, void *ioStruct, bytesBuf_t *ioBuf ) {
     Res *res1 = newRes( r );
     res1->exprType = newIRODSType( typeName, r );
     res1->param = newMsParam( typeName, ioStruct, ioBuf, r );
@@ -184,7 +189,13 @@ Res* newUninterpretedRes( Region *r, char *typeName, void *ioStruct, bytesBuf_t 
 msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, Region *r ) {
     msParam_t *param = ( msParam_t * ) region_alloc( r, sizeof( msParam_t ) );
     memset( param, 0, sizeof( msParam_t ) );
-    param->type = typeName ? strdup( typeName ) : NULL;
+    if ( typeName ) {
+        param->type = ( char* ) region_alloc( r, sizeof( char ) * strlen( typeName ) );
+        strcpy( param->type, typeName );
+    }
+    else {
+        param->type = NULL;
+    }
     param->inOutStruct = ioStruct;
     param->inpOutBuf = ioBuf;
     return param;
@@ -208,21 +219,26 @@ Res* newBoolRes( Region *r, int n ) {
     RES_BOOL_VAL_LVAL( res1 ) = n;
     return res1;
 }
-Res* newStringBasedRes( Region *r, char *s ) {
+Res* newStringBasedRes( Region *r, const char *s ) {
     Res *res1 = newRes( r );
-    RES_STRING_STR_LEN( res1 ) = strlen( s );
-    int size = ( RES_STRING_STR_LEN( res1 ) + 1 ) * sizeof( char );
-    res1->text = ( char * )region_alloc( r, size );
-    memcpy( res1->text, s, size );
+    if ( s ) {
+        RES_STRING_STR_LEN( res1 ) = strlen( s );
+        int size = ( RES_STRING_STR_LEN( res1 ) + 1 ) * sizeof( char );
+        res1->text = ( char * )region_alloc( r, size );
+        memcpy( res1->text, s, size );
+    }
+    else {
+        res1->text = NULL;
+    }
     return res1;
 }
-Res *newStringRes( Region *r, char *s ) {
+Res *newStringRes( Region *r, const char *s ) {
     Res *res = newStringBasedRes( r, s );
     res->exprType = newSimpType( T_STRING, r );
     return res;
 
 }
-Res *newPathRes( Region *r, char *s ) {
+Res *newPathRes( Region *r, const char *s ) {
     Res *res = newStringBasedRes( r, s );
     res->exprType = newSimpType( T_PATH, r );
     return res;

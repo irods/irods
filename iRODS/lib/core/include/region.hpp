@@ -55,10 +55,10 @@ typedef struct region_desc {
     int del;
 } RegionDesc;
 
-#define IN_REGION(x,r) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->region == (r))
-#define SET_DELETE(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del=1)
-#define DELETED(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del)
-#define SIZE(x) (((RegionDesc *)(((unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->size)
+#define IN_REGION(x,r) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->region == (r))
+#define SET_DELETE(x) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del=1)
+#define DELETED(x) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del)
+#define SIZE(x) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->size)
 
 /* create a region with initial size is */
 /* if s == 0 then the initial size is DEFAULT_BLOCK_SIZE */
