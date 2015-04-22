@@ -316,9 +316,12 @@ def json_object_hook_ascii_dict(d):
         rv[k] = v
     return rv
 
-def get_service_account_environment_file_contents():
-    with open(os.path.expanduser('~/.irods/irods_environment.json')) as f:
+def open_and_load_json_ascii(filename):
+    with open(filename) as f:
         return json.load(f, object_hook=json_object_hook_ascii_dict)
+
+def get_service_account_environment_file_contents():
+    return open_and_load_json_ascii(os.path.expanduser('~/.irods/irods_environment.json'))
 
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()

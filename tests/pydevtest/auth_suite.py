@@ -151,3 +151,13 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
         os.system(lib.get_irods_top_level_dir() + '/iRODS/irodsctl stop')
         os.system(lib.get_irods_top_level_dir() + '/tests/zombiereaper.sh')
         os.system(lib.get_irods_top_level_dir() + '/iRODS/irodsctl start')
+
+    def test_iinit_repaving_2646(self):
+        initial_contents = copy.deepcopy(self.admin.environment_file_contents)
+        del self.admin.environment_file_contents['irods_zone_name']
+        self.admin.run_icommand('iinit', stdin_string='{0}\n{1}\n'.format(initial_contents['irods_zone_name'], self.admin.password))
+        final_contents = lib.open_and_load_json_ascii(os.path.join(self.admin.local_session_dir, 'irods_environment.json'))
+        self.admin.environment_file_contents = initial_contents
+        print initial_contents
+        print final_contents
+        assert initial_contents == final_contents
