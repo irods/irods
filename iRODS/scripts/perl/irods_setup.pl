@@ -1316,7 +1316,7 @@ sub startIrods()
                 printLog( "$output\n" );
         }
         else {
-                printStatus( "[$output][\n]" );
+                printStatus( "$output\n" );
                 printLog( "$output\n" );
         }
         return 1;
