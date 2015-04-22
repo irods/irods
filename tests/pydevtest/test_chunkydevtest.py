@@ -204,6 +204,20 @@ class ChunkyDevTest(ResourceBase):
         assert output[0] == 0
         assert output[1] == "", "diff output was not empty..."
 
+        # test ibun with zip
+        self.admin.assert_icommand("ibun -cDzip " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestx")
+        self.admin.assert_icommand("ibun -x " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestzip")
+        if os.path.isfile("icmdtestzip"):
+            os.unlink("icmdtestzip")
+        self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtestzip " + dir_w + "", 'STDOUT', "icmdtestzip")
+        output = commands.getstatusoutput("diff -r " + dir_w + "/testx " + dir_w + "/icmdtestzip/icmdtestx")
+        print "output is [" + str(output) + "]"
+        assert output[0] == 0
+        assert output[1] == "", "diff output was not empty..."
+        shutil.rmtree(dir_w + "/icmdtestzip")
+        self.admin.assert_icommand("ibun --add " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestzip")
+        self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestzip")
+
         # test ibun with gzip
         self.admin.assert_icommand("ibun -cDgzip " + irodshome + "/icmdtestx1.tar.gz " + irodshome + "/icmdtestx")
         self.admin.assert_icommand("ibun -x " + irodshome + "/icmdtestx1.tar.gz " + irodshome + "/icmdtestgz")
