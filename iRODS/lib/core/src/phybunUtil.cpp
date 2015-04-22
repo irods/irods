@@ -49,7 +49,7 @@ phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
 int
 initCondForPhybunOpr( rodsArguments_t *rodsArgs,
                       structFileExtAndRegInp_t *phyBundleCollInp ) {
-    char tmpStr[NAME_LEN], tmpStr1[NAME_LEN]; // JMC - backport 4771
+    char tmpStr[NAME_LEN]; // JMC - backport 4771
 
     if ( phyBundleCollInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -127,10 +127,10 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->sizeFlag == True ) {
-        snprintf( tmpStr1, NAME_LEN, "%Ld", rodsArgs->size );
+        char tmpStr1[NAME_LEN];
+        snprintf( tmpStr1, sizeof(tmpStr1), "%ji", (intmax_t)rodsArgs->size );
         addKeyVal( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW, tmpStr1 );
     }
 
     return 0;
 }
-

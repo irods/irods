@@ -424,7 +424,7 @@ main( int argc, char **argv ) {
             }
         }
         else {
-            printf( "failed to get environment file - %Ld\n", ret.code() );
+            printf( "failed to get environment file - %ji\n", (intmax_t)ret.code() );
         }
     } // if doingEnvFileUpdate
 
