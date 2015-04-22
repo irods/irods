@@ -356,8 +356,8 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
     // =-=-=-=-=-=-=-
     // allocate a buffer for writing
-    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
-    size_t buf_size = 2 * trans_buff_sz * sizeof( unsigned char );
+    rodsLong_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
+    rodsLong_t buf_size = 2 * trans_buff_sz * sizeof( unsigned char );
     unsigned char* buf = ( unsigned char* )malloc( buf_size );
     transferHeader_t myHeader;
 
@@ -389,7 +389,8 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
         toPut = myHeader.length;
         while ( toPut > 0 ) {
-            int toRead, bytesRead, bytesWritten;
+            rodsLong_t toRead;
+            int bytesRead, bytesWritten;
 
             if ( toPut > trans_buff_sz ) {
                 toRead = trans_buff_sz;
@@ -1033,12 +1034,11 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
             &myInput->shared_secret[iv_size] );
     }
     
-    size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
-    size_t buf_size = ( 2 * trans_buff_sz ) * sizeof( unsigned char );
+    rodsLong_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
+    rodsLong_t buf_size = ( 2 * trans_buff_sz ) * sizeof( unsigned char );
     buf = ( unsigned char* )malloc( buf_size );
 
     while ( myInput->status >= 0 ) {
-        rodsLong_t toGet;
 
         myInput->status = rcvTranHeader( srcFd, &myHeader );
 
@@ -1063,7 +1063,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
             }
         }
 
-        toGet = myHeader.length;
+        rodsLong_t toGet = myHeader.length;
         while ( toGet > 0 ) {
             int toRead, bytesRead, bytesWritten;
 

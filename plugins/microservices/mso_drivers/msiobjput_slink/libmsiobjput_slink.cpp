@@ -99,15 +99,15 @@ extern "C" {
             return status;
         }
 
-        int single_buff_sz = 0;
+        int single_buff_sz_in_mb = 0;
         irods::error ret = irods::get_advanced_setting<int>(
                                irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                               single_buff_sz );
+                               single_buff_sz_in_mb );
         if( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return ret.code();
         }
-        single_buff_sz *= 1024 * 1024;
+        size_t single_buff_sz = single_buff_sz_in_mb * 1024 * 1024;
 
         size_t dataSize  = atol( ( char * ) inFileSize->inOutStruct );
         if ( dataSize > single_buff_sz ) {
