@@ -82,8 +82,8 @@ f 755 root root ${LIBDIR}/irods/externals/libarchive.so.14 ./external/libarchive
 l 777 root root ${LIBDIR}/irods/externals/libarchive.so libarchive.so.14
 
 f 755 root root ${LIBDIR}/irods/externals/libhdf5.so.9.0.0 ./external/hdf5-1.8.14/src/.libs/libhdf5.so.9.0.0
-l 755 root root ${LIBDIR}/irods/externals/libhdf5.so.9 libhdf5.so.9.0.0
-l 755 root root ${LIBDIR}/irods/externals/libhdf5.so libhdf5.so.9
+l 777 root root ${LIBDIR}/irods/externals/libhdf5.so.9 libhdf5.so.9.0.0
+l 777 root root ${LIBDIR}/irods/externals/libhdf5.so libhdf5.so.9
 
 f 755 root root ${LIBDIR}/irods/externals/libdynlib1.so.0.0.0 ./external/hdf5-1.8.14/test/.libs/libdynlib1.so.0.0.0
 l 777 root root ${LIBDIR}/irods/externals/libdynlib1.so.0 libdynlib1.so.0.0.0
