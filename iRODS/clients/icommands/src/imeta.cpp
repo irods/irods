@@ -453,7 +453,7 @@ showUser( char *name, char *attrName, int wild ) {
     char userName[NAME_LEN];
     char userZone[NAME_LEN];
 
-    status = splitUserName( name, userName, userZone );
+    status = parseUserName( name, userName, userZone );
     if ( status ) {
         printf( "Invalid username format\n" );
         return 0;

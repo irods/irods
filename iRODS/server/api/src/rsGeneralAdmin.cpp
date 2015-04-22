@@ -633,7 +633,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             userInfo_t userInfoRei = userInfo;
             char userName[NAME_LEN];
             char zoneName[NAME_LEN];
-            status = splitUserName( userInfo.userName, userName, zoneName );
+            status = parseUserName( userInfo.userName, userName, zoneName );
             if ( status != 0 ) {
                 chlRollback( rsComm );
                 return status;

@@ -534,7 +534,7 @@ showGlobalQuotas( char *inputUserOrGroup ) {
         if ( status ) {
             return status;
         }
-        status = splitUserName( inputUserOrGroup, userName, zoneName );
+        status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( status ) {
             return status;
         }
@@ -578,7 +578,7 @@ showResourceQuotas( char *inputUserOrGroup ) {
         if ( status ) {
             return status;
         }
-        status = splitUserName( inputUserOrGroup, userName, zoneName );
+        status = parseUserName( inputUserOrGroup, userName, zoneName );
         if ( status ) {
             return status;
         }
@@ -784,7 +784,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "lu" ) == 0 ) {
         char userName[NAME_LEN] = "";
         char zoneName[NAME_LEN] = "";
-        int status = splitUserName( cmdToken[1], userName, zoneName );
+        int status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status < 0 ) {
             return status;
         }
@@ -849,7 +849,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
-        status = splitUserName( cmdToken[1], userName, zoneName );
+        status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status ) {
             fprintf( stderr, "Invalid username format\n" );
             return USER_INVALID_USERNAME_FORMAT;
@@ -950,7 +950,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
         int status;
-        status = splitUserName( cmdToken[1], userName, zoneName );
+        status = parseUserName( cmdToken[1], userName, zoneName );
         if ( status < 0 ) {
             return status;
         }
@@ -1217,7 +1217,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
-        status = splitUserName( cmdToken[1], userName, zoneName );
+        status = parseUserName( cmdToken[1], userName, zoneName );
         /* just check for format */
         if ( status ) {
             fprintf( stderr, "Invalid username format\n" );

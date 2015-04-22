@@ -165,9 +165,9 @@ showQuotas( char *userName, int userOrGroup, int rescOrGlobal ) {
     char userZone[NAME_LEN];
     genQueryInp.sqlCondInp.len = 0;
     if ( userName[0] != '\0' ) {
-        status = splitUserName( userName, userName2, userZone );
+        status = parseUserName( userName, userName2, userZone );
         if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "splitUserName error in showQuotas with status %d", status );
+            rodsLog( LOG_ERROR, "parseUserName error in showQuotas with status %d", status );
             return status;
         }
         if ( userZone[0] == '\0' ) {
@@ -435,7 +435,7 @@ showUserGroupMembership( char *userNameIn, char *usersZone ) {
     char zoneName[NAME_LEN];
     int showUserZone = 1;
 
-    status = splitUserName( userNameIn, userName, zoneName );
+    status = parseUserName( userNameIn, userName, zoneName );
     if ( status ) {
         return status;
     }

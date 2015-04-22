@@ -110,7 +110,7 @@ const std::string ZONE_PROP( "irods_zone_property" );
    and the input string is at most that long.
  */
 int
-parseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
+validateAndParseUserName( const char *fullUserNameIn, char *userName, char *userZone ) {
     const std::string input( fullUserNameIn );
     boost::smatch matches;
     // This regex matches usernames with no hashes and optionally one at symbol,
@@ -1423,7 +1423,7 @@ rodsLong_t checkAndGetObjectId(
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
 
-        status = parseUserName( name, userName, userZone );
+        status = validateAndParseUserName( name, userName, userZone );
         if ( status ) {
             return status;
         }
@@ -1852,7 +1852,7 @@ icatGetTicketUserId( irods::plugin_property_map& _prop_map, char *userName, char
     }
 
     snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
-    status = parseUserName( userName, userName2, userZone );
+    status = validateAndParseUserName( userName, userName2, userZone );
     if ( status ) {
         return status;
     }
@@ -1897,7 +1897,7 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
     }
 
     snprintf( zoneToUse, sizeof( zoneToUse ), "%s", zone.c_str() );
-    status = parseUserName( groupName, groupName2, groupZone );
+    status = validateAndParseUserName( groupName, groupName2, groupZone );
     if ( status ) {
         return status;
     }
@@ -4806,7 +4806,7 @@ extern "C" {
             snprintf( zoneToUse, sizeof( zoneToUse ), "%s", _user_info->rodsZone );
         }
 
-        status = parseUserName( _user_info->userName, userName2, zoneName );
+        status = validateAndParseUserName( _user_info->userName, userName2, zoneName );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -5066,7 +5066,7 @@ extern "C" {
         }
 
         /* Parse input name into user and zone */
-        status = parseUserName( _coll_info->collOwnerName, userName2, zoneName );
+        status = validateAndParseUserName( _coll_info->collOwnerName, userName2, zoneName );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -6923,7 +6923,7 @@ extern "C" {
                   ( unsigned char )md5Buf[10], ( unsigned char )md5Buf[11],
                   ( unsigned char )md5Buf[12], ( unsigned char )md5Buf[13],
                   ( unsigned char )md5Buf[14], ( unsigned char )md5Buf[15] );
-        status = parseUserName( _user_name, userName2, userZone );
+        status = validateAndParseUserName( _user_name, userName2, userZone );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -7980,7 +7980,7 @@ checkLevel:
         auditComment[0] = '\0';
         snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
 
-        status = parseUserName( _user_name, userName2, zoneName );
+        status = validateAndParseUserName( _user_name, userName2, zoneName );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -8326,7 +8326,7 @@ checkLevel:
             snprintf( zoneToUse, MAX_NAME_LEN, "%s", zone.c_str() );
         }
 
-        status = parseUserName( _user_name, userName2, zoneName );
+        status = validateAndParseUserName( _user_name, userName2, zoneName );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -9127,7 +9127,7 @@ checkLevel:
         snprintf( oldPath2, sizeof( oldPath2 ), "%s%%", _old_path );
 
         if ( _user_name != NULL && *_user_name != '\0' ) {
-            status = parseUserName( _user_name, userName2, userZone );
+            status = validateAndParseUserName( _user_name, userName2, userZone );
             if ( status ) {
                 return ERROR( status, "Invalid username format" );
             }
@@ -9415,7 +9415,7 @@ checkLevel:
             snprintf( userZone, sizeof( userZone ), "%s", zone.c_str() );
         }
 
-        status = parseUserName( _user_info->userName, userName2, zoneName );
+        status = validateAndParseUserName( _user_info->userName, userName2, zoneName );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }
@@ -10335,7 +10335,7 @@ checkLevel:
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
-            status = parseUserName( _name, userName, userZone );
+            status = validateAndParseUserName( _name, userName, userZone );
             if ( status ) {
                 return ERROR( status, "Invalid username format" );
             }
@@ -10751,7 +10751,7 @@ checkLevel:
                 return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
             }
 
-            status = parseUserName( _name, userName, userZone );
+            status = validateAndParseUserName( _name, userName, userZone );
             if ( status ) {
                 return ERROR( status, "Invalid username format" );
             }
@@ -13368,7 +13368,7 @@ checkLevel:
         }
 
 
-        status = parseUserName( _name, userName, userZone );
+        status = validateAndParseUserName( _name, userName, userZone );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
         }

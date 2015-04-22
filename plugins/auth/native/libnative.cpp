@@ -416,7 +416,7 @@ extern "C" {
                                     char userZone[NAME_LEN + 2];
                                     memset( md5Buf, 0, sizeof( md5Buf ) );
                                     strncpy( md5Buf, authCheckInp.challenge, CHALLENGE_LEN );
-                                    splitUserName( _resp->username, username2, userZone );
+                                    parseUserName( _resp->username, username2, userZone );
                                     getZoneServerId( userZone, serverId );
                                     len = strlen( serverId );
                                     if ( len <= 0 ) {

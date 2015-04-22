@@ -1622,10 +1622,10 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
 
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_USER_NAME ) {
-            int status = splitUserName( genQueryInp.sqlCondInp.value[i], userName,
+            int status = parseUserName( genQueryInp.sqlCondInp.value[i], userName,
                            userZone );
             if ( status ) {
-                rodsLog( LOG_ERROR, "splitUserName failed in generateSpecialQuery on %s with status %d.",
+                rodsLog( LOG_ERROR, "parseUserName failed in generateSpecialQuery on %s with status %d.",
                         genQueryInp.sqlCondInp.value[i], status );
                 return status;
             }

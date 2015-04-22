@@ -189,7 +189,7 @@ freeRErrorContent( rError_t *myError ) {
 //Only split the username from the zone name, based on the first occurence of '#'
 //Further parsing of the username is the responsibility of the database plugin.
 int
-splitUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
+parseUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
     const char * octothorpePointer = strchr( fullUserNameIn, '#' );
     const std::string userNameString = octothorpePointer ?
         std::string( fullUserNameIn, octothorpePointer - fullUserNameIn ) :

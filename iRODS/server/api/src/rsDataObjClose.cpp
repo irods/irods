@@ -575,7 +575,7 @@ _rsDataObjClose(
                 modAccessControlInp.accessLevel = strdup ( ( *iter )[1].c_str() );
                 modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
                 modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
-                splitUserName( ( *iter )[0].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+                parseUserName( ( *iter )[0].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
                 modAccessControlInp.path = strdup( L1desc[l1descInx].dataObjInfo->objPath );
                 int status = rsModAccessControl( rsComm, &modAccessControlInp );
                 clearModAccessControlInp( &modAccessControlInp );
