@@ -26,7 +26,7 @@ LIBARCHIVEVERSIONMAKE=$(LIBARCHIVEVERSION)/Makefile
 JANSSONVERSIONARCHIVE=$(JANSSONVERSION).tar.gz
 JANSSONVERSIONMAKE=$(JANSSONVERSION)/Makefile
 BOOSTVERSIONARCHIVE=$(BOOSTVERSION).tar.gz
-BOOSTVERSIONMAKE=$(BOOSTVERSION)/bjam
+BOOSTVERSIONMAKE=$(BOOSTVERSION)/b2
 HDF5VERSIONARCHIVE=$(HDF5VERSION).tar.gz
 HDF5VERSIONMAKE=$(HDF5VERSION)/Makefile
 NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
@@ -180,6 +180,9 @@ $(BOOSTVERSIONARCHIVE) :
 
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
+	@sed "s/\\(future_state::state get_state(boost::unique_lock<boost::mutex>&\\) lk\\() const\\)/\\1\\2/" $(BOOSTVERSION)/boost/thread/future.hpp > /tmp/future.hpp
+	@rsync -c /tmp/future.hpp $(BOOSTVERSION)/boost/thread/future.hpp
+	@rm /tmp/future.hpp
 	@cd $(BOOSTVERSION) ; \
 		./bootstrap.sh --with-libraries=program_options,filesystem,system,thread,regex,program_options,iostreams,chrono,date_time
 
