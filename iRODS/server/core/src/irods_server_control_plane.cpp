@@ -282,7 +282,7 @@ namespace irods {
         const size_t       _wait_seconds,
         std::string&       _output ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         _output += "[ shutting down ";
         _output += my_env.rodsHost;
         _output += " ]";
@@ -363,7 +363,7 @@ namespace irods {
         const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         _output += "[ shutting down ";
         _output += my_env.rodsHost;
         _output += " ]";
@@ -380,7 +380,7 @@ namespace irods {
         const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         _output += "[ pausing ";
         _output += my_env.rodsHost;
         _output += " ]";
@@ -398,7 +398,7 @@ namespace irods {
         const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         _output += "[ resuming ";
         _output += my_env.rodsHost;
         _output += " ]";
@@ -448,7 +448,7 @@ namespace irods {
         const size_t, //       _wait_seconds,
         std::string& _output ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
 
         int re_pid = 0;
         // no error case, resource servers have no re server
@@ -599,7 +599,7 @@ namespace irods {
 
         // get our hostname for ordering
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         my_host_name_ = my_env.rodsHost;
 
         // get the IES host for ordereing
@@ -665,7 +665,7 @@ namespace irods {
     error server_control_executor::get_resource_host_names(
         host_list_t& _host_names ) {
         rodsEnv my_env;
-        _getRodsEnv( my_env );
+        _reloadRodsEnv( my_env );
         rcComm_t* comm = rcConnect(
                              my_env.rodsHost,
                              my_env.rodsPort,

@@ -72,6 +72,7 @@ char *getRodsEnvAuthFileName();
 #ifdef __cplusplus
 
 void _getRodsEnv( rodsEnv &myRodsEnv );
+void _reloadRodsEnv( rodsEnv &myRodsEnv );
 
 }
 #endif

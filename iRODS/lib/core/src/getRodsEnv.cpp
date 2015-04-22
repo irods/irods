@@ -122,6 +122,21 @@ extern "C" {
         createRodsEnvDefaults( &rodsEnvArg );
     }
 
+    void _reloadRodsEnv( rodsEnv &rodsEnvArg ) {
+        irods::environment_properties& props =
+            irods::environment_properties::getInstance();
+        irods::error ret = props.capture();
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return;
+        }
+
+        memset( &rodsEnvArg, 0, sizeof( rodsEnv ) );
+        getRodsEnvFromFile( &rodsEnvArg );
+        getRodsEnvFromEnv( &rodsEnvArg );
+        createRodsEnvDefaults( &rodsEnvArg );
+    }
+
     static
     int capture_string_property(
         const int                      _msg_lvl,
