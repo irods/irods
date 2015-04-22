@@ -1,24 +1,24 @@
 #From caller
-IRODSDIR = ../${IRODSTOPDIR}
-SODIR = ../${SOTOPDIR}
+IRODSDIR = ../$(IRODSTOPDIR)
+SODIR = ../$(SOTOPDIR)
 
-FULLTARGET = ${SODIR}/${TARGET}
+FULLTARGET = $(SODIR)/$(TARGET)
 
-OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
+OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
-include ${IRODSDIR}/config/config.mk
-include ${IRODSDIR}/config/platform.mk
+include $(IRODSDIR)/config/config.mk
+include $(IRODSDIR)/config/platform.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../../packaging/compiler_check.sh 4 2`
 
-INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/hasher/include \
-      -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
-      -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I${IRODSDIR}/lib/rbudp/include -I../../../external/jansson-2.7/src/ 
+INC = -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
+      -I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
+      -I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
+      -I$(IRODSDIR)/lib/rbudp/include -I../../../external/jansson-2.7/src/ 
 LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
 
-MY_CFLAG += ${INC}
+MY_CFLAG += $(INC)
 
 ifeq ($(OS_platform), osx_platform)
 LDADD += "-Wl,-undefined,dynamic_lookup"
@@ -28,25 +28,25 @@ endif
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
-OBJS = $(patsubst %.cpp, %.o, ${SRCS})
+OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 
 %.o: %.cpp
-	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
+	$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
 endif
 
 .PHONY: clean
 
-default: ${FULLTARGET}
+default: $(FULLTARGET)
 
 clean:
-	@-rm -f ${FULLTARGET} > /dev/null 2>&1
-	@-rm -f ${OBJS} > /dev/null 2>&1
+	@-rm -f $(FULLTARGET) > /dev/null 2>&1
+	@-rm -f $(OBJS) > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
-${FULLTARGET}: ${OBJS}
+$(FULLTARGET): $(OBJS)
 	@echo "Building Auth Plugins"
-	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${MY_CFLAG} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS} ../../../iRODS/lib/api/obj/rcAuthCheck.o
+	@-mkdir -p $(SODIR) > /dev/null 2>&1
+	@$(GCC) $(MY_CFLAG) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
-${OBJDIR}/%.o: %.cpp
-	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $<
+$(OBJDIR)/%.o: %.cpp
+	@$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<

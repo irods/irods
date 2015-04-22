@@ -39,7 +39,7 @@ ${SUBS}:
 
 clean:
 	@-for dir in ${SUBS}; do \
-	echo "Cleaning $$dir"; \
+	@echo "Cleaning $$dir"; \
 	rm -f $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
 	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done

@@ -265,7 +265,7 @@ servers: server
 
 bin:	server
 
-server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
+server:	config $(OBJS) $(SERVER_BINS)
 
 
 # Server configuration
@@ -291,7 +291,7 @@ tests:	test
 
 retest:	test
 
-test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
+test:	$(TEST_OBJS) $(TEST_BINS)
 
 
 
@@ -410,7 +410,7 @@ $(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
@@ -423,7 +423,6 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp
 
 $(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
-	@echo "LDFLAGS $(LDFLAGS) $@"
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 

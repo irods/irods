@@ -8,16 +8,16 @@ INCDIR= include
 
 DEPDIR = .deps
 
-AGNOSTIC_OBJS = $(patsubst ${SRCDIR}/%.cpp, ${SODIR}/lib%.so, ${SRCS})
+AGNOSTIC_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(SODIR)/lib%.so, $(SRCS))
 
-SERVER_OBJS = $(patsubst ${SRCDIR}/%.cpp, ${SODIR}/lib%_server.so, ${SRCS})
-CLIENT_OBJS = $(patsubst ${SRCDIR}/%.cpp, ${SODIR}/lib%_client.so, ${SRCS})
+SERVER_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(SODIR)/lib%_server.so, $(SRCS))
+CLIENT_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(SODIR)/lib%_client.so, $(SRCS))
 
 DEPFILE = .depends
 
-DEPS = $(patsubst ${SRCDIR}/%.cpp, ${DEPDIR}/%.d, ${SRCS})
+DEPS = $(patsubst $(SRCDIR)/%.cpp, $(DEPDIR)/%.d, $(SRCS))
 
-ifndef ${GCC}
+ifndef $(GCC)
 GCC=g++
 endif
 
@@ -46,7 +46,7 @@ LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 
 
 
-INC = -I${INCDIR} ${EXTRAINCS}
+INC = -I$(INCDIR) $(EXTRAINCS)
 
 EXTRALIBS += ../../iRODS/lib/core/obj/irods_plugin_base.o
 
@@ -54,41 +54,41 @@ EXTRALIBS += ../../iRODS/lib/core/obj/irods_plugin_base.o
 
 default-base: default
 
-agnostic-base: ${AGNOSTIC_OBJS}
+agnostic-base: $(AGNOSTIC_OBJS)
 
 api-base: client-base server-base
 
-client-base: ${CLIENT_OBJS}
+client-base: $(CLIENT_OBJS)
 
-server-base: ${SERVER_OBJS}
+server-base: $(SERVER_OBJS)
 
 clean-base:
-	@-rm -f ${SODIR}/*.so > /dev/null 2>&1
-	@-rm -f ${DEPS} > /dev/null 2>&1
-	@-rm -f ${DEPFILE} > /dev/null 2>&1
+	@-rm -f $(SODIR)/*.so > /dev/null 2>&1
+	@-rm -f $(DEPS) > /dev/null 2>&1
+	@-rm -f $(DEPFILE) > /dev/null 2>&1
 
 
 $(AGNOSTIC_OBJS) : $(SODIR)/lib%.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(AGNOSTIC_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${AGNOSTIC_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${AGNOSTIC_LIBS}
+	@$(GCC) $(CFLAGS) $(AGNOSTIC_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(AGNOSTIC_LIBS)
 
 $(SERVER_OBJS) : $(SODIR)/lib%_server.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(SERVER_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${SERVER_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${SERVER_LIBS}
+	@$(GCC) $(CFLAGS) $(SERVER_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(SERVER_LIBS)
 
 $(CLIENT_OBJS) : $(SODIR)/lib%_client.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(CLIENT_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@${GCC} ${CFLAGS} ${CLIENT_CFLAGS} ${INC} -fPIC -shared -o $@ $< ${LDADD} ${EXTRALIBS} ${CLIENT_LIBS}
+	@$(GCC) $(CFLAGS) $(CLIENT_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(CLIENT_LIBS)
 
-${DEPFILE}: ${DEPS}
-	@-rm -f ${DEPFILE} > /dev/null 2>&1
-	@for dep in ${DEPS}; do \
-	cat $$dep >> ${DEPFILE}; \
+$(DEPFILE): $(DEPS)
+	@-rm -f $(DEPFILE) > /dev/null 2>&1
+	@for dep in $(DEPS); do \
+	cat $$dep >> $(DEPFILE); \
 	done
 
-${DEPS}: ${DEPDIR}/%.d : ${SRCDIR}/%.cpp ${HEADERS}
-	@-mkdir -p ${DEPDIR} > /dev/null 2>&1
-	@${GCC} ${CFLAGS} ${INC} -MM $< -MT $(patsubst ${DEPDIR}/%.d, ${SODIR}/lib%.so, $@) -MF $@
+$(DEPS): $(DEPDIR)/%.d : $(SRCDIR)/%.cpp $(HEADERS)
+	@-mkdir -p $(DEPDIR) > /dev/null 2>&1
+	@$(GCC) $(CFLAGS) $(INC) -MM $< -MT $(patsubst $(DEPDIR)/%.d, $(SODIR)/lib%.so, $@) -MF $@
 
--include ${DEPFILE}
+-include $(DEPFILE)
 

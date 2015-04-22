@@ -274,7 +274,7 @@ detect_number_of_cpus_and_set_makejcmd() {
     else
         CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
     fi
-    MAKEJCMD="make -j $CPUCOUNT"
+    MAKEJCMD="make --no-print-directory -j $CPUCOUNT"
 
     # print out CPU information
     echo "${text_cyan}${text_bold}-------------------------------------"
@@ -524,8 +524,6 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/irods_resources_home.hpp
     rm -f iRODS/server/core/include/irods_database_home.hpp
     rm -f iRODS/lib/core/include/irods_home_directory.hpp
-    set -e
-    echo "${text_green}${text_bold}Done.${text_reset}"
     # database plugin cleanup
     ./plugins/database/build.sh clean
     rm -f iRODS/config/platform.mk
@@ -533,6 +531,9 @@ if [ "$1" == "clean" ] ; then
 
     # avro generated header files
     rm -f iRODS/lib/core/include/server_control_plane_command.hpp
+
+    set -e
+    echo "${text_green}${text_bold}Done.${text_reset}"
 
     exit 0
 fi

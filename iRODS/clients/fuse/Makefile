@@ -131,7 +131,7 @@ all:	fuse
 clients: fuse
 	@true
 
-fuse:	print_cflags print_ldflags $(LIB_OBJS) $(OBJS) $(BINS)
+fuse:	$(LIB_OBJS) $(OBJS) $(BINS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)

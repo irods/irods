@@ -45,7 +45,7 @@ endif
 
 
 .PHONY:	print_cflags print_ldflags
-all:: print_cflags print_ldflags $(TARGETS)
+all: $(TARGETS)
 
 
 

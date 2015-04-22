@@ -191,7 +191,7 @@ all:	libs
 lib:	libs
 	@true
 
-libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
+libs:	$(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
 $(LIBRARY): $(OBJS) $(BOOST_LIBS)

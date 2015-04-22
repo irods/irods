@@ -191,7 +191,7 @@ all:	icommands
 clients: icommands
 	@true
 
-icommands:	print_cflags print_ldflags $(OBJS) $(BINS) $(BOOST_LIBS)
+icommands:	$(OBJS) $(BINS) $(BOOST_LIBS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY) $(BOOST_LIBS)
