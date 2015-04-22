@@ -181,7 +181,6 @@ namespace irods {
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
                     do_parse_legacy = true;
-
                 }
                 else {
                     config_props_.set< std::string >(
@@ -190,25 +189,18 @@ namespace irods {
                     ret = capture_json( json_session_file );
                     if ( !ret.ok() ) {
                         // debug - irods::log( PASS( ret ) );
-
-                    }
-
+                    } 
                     config_props_.set< std::string >(
                         CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
                         json_session_file );
-
                 }
-
             }
             else {
                 do_parse_legacy = true;
-
             }
-
         }
         else {
             do_parse_legacy = true;
-
         }
 
         if ( do_parse_legacy ) {
@@ -220,19 +212,19 @@ namespace irods {
                 ret = capture_legacy( legacy_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
-
+                } else {
+                    config_props_.set< std::string >(
+                        CFG_IRODS_ENVIRONMENT_FILE_KW,
+                        legacy_file );
                 }
-                config_props_.set< std::string >(
-                    CFG_IRODS_ENVIRONMENT_FILE_KW,
-                    legacy_file );
 
-                // session file ( written by icd ) already moved to json
+                // session file ( written by icd ) already moved 
+                // to json
                 ret = capture_json( legacy_session_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
-
-                }
-
+                } 
+                
                 config_props_.set< std::string >(
                     CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
                     legacy_session_file );
@@ -245,16 +237,16 @@ namespace irods {
 
         } // do parse legacy
 
-        // set the captured flag so we no its already been captured
+        // set the captured flag so we no its already 
+        // been captured
         captured_ = true;
-        return ret;
+        return SUCCESS();
 
     } // capture
 
     error environment_properties::capture_json(
         const std::string& _fn ) {
         error ret = config_props_.load( _fn );
-
         return ret;
 
     } // capture_json
