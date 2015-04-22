@@ -127,7 +127,7 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->sizeFlag == True ) {
-        snprintf( tmpStr1, NAME_LEN, "%Ld", rodsArgs->size );
+        snprintf( tmpStr1, NAME_LEN, "%lld", (long long) rodsArgs->size );
         addKeyVal( &phyBundleCollInp->condInput, MAX_BUNDLE_SIZE_KW, tmpStr1 );
     }
 
