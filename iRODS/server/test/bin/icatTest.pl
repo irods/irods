@@ -234,9 +234,9 @@ runCmd(2, "iadmin rmzone $Zone2");
 runCmd(0, "iadmin rmzone $Zone3");
 runCmd(2, "iadmin rmzone $myZone");
 runCmd(0, "echo yes | iadmin modzone $myZone name $Zone3");
-$ENV{'IRODS_ZONE'}=$Zone3;
+$ENV{'IRODS_ZONE_NAME'}=$Zone3;
 runCmd(0, "echo yes | iadmin modzone $Zone3 name $myZone");
-delete $ENV{'IRODS_ZONE'};
+delete $ENV{'IRODS_ZONE_NAME'};
 
 # Make another user to test making user and for other tests
 runCmd(1, "iadmin rmuser $U2");
