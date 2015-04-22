@@ -41,7 +41,8 @@ main( int argc, char **argv ) {
                     0,
                     &rodsPathInp );
     if( p_err < 0 ) {
-        return p_err;
+        usage();
+        return 1;
 
     }
 
@@ -62,13 +63,13 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, reconnFlag, &errMsg );
 
     if ( conn == NULL ) {
-        exit( 2 );
+        return 2;
     }
 
     status = clientLogin( conn );
     if ( status != 0 ) {
         rcDisconnect( conn );
-        exit( 7 );
+        return 7;
     }
 
     if ( myRodsArgs.progressFlag == True ) {
@@ -81,10 +82,10 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
-        exit( 3 );
+        return 3;
     }
     else {
-        exit( 0 );
+        return 0;
     }
 
 }

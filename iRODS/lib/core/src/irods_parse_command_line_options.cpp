@@ -9,9 +9,6 @@
 typedef std::vector< std::string > path_list_t;
 
 
-// assumes a function usage matches this siguature in the executable
-void usage();
-
 // this is global due to the fact that the storage of the
 // various strings used by _rods_args is managed by the
 // lifetime of this map - only used by icommand client execs
@@ -76,19 +73,13 @@ static int parse_program_options(
                   << _e.what()
                   << std::endl
                   << std::endl;
-        usage();
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
 
     }
 
-    // path args are passed out in a separate parameter
-    //if( global_prog_ops_var_map.count( "path_args" ) ) {
-    //}
-
     memset( &_rods_args, 0, sizeof( _rods_args ) );
     if( global_prog_ops_var_map.count( "help" ) ) {
-        usage();
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
     if( global_prog_ops_var_map.count( "all" ) ) {
         _rods_args.all = 1;

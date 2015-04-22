@@ -31,7 +31,7 @@ main( int argc, char **argv ) {
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
-        exit( 1 );
+        return 1;
     }
 
     int p_err = parse_opts_and_paths(
@@ -44,7 +44,8 @@ main( int argc, char **argv ) {
                     0,
                     &rodsPathInp );
     if( p_err < 0 ) {
-        return p_err;
+        usage();
+        return 1;
 
     }
     if ( myRodsArgs.reconnect == True ) {
@@ -64,14 +65,14 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, reconnFlag, &errMsg );
 
     if ( conn == NULL ) {
-        exit( 2 );
+        return 2;
     }
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
             rcDisconnect( conn );
-            exit( 7 );
+            return 7;
         }
     }
 
@@ -85,10 +86,10 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
-        exit( 3 );
+        return 3;
     }
     else {
-        exit( 0 );
+        return 0;
     }
 
 }
