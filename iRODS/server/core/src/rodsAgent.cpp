@@ -217,7 +217,7 @@ main( int, char ** ) {
             // send a 'we failed to negotiate' message here??
             // or use the error stack rule engine thingie
             irods::log( PASS( ret ) );
-            sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+            sendVersion( net_obj, SERVER_NEGOTIATION_ERROR, 0, NULL, 0 );
             cleanupAndExit( ret.code() );
 
         }
@@ -225,7 +225,6 @@ main( int, char ** ) {
             // =-=-=-=-=-=-=-
             // copy negotiation results to comm for action by network objects
             snprintf( rsComm.negotiation_results, sizeof( rsComm.negotiation_results ), "%s", neg_results.c_str() );
-            //rsComm.ssl_do_accept = 1;
 
         }
     }

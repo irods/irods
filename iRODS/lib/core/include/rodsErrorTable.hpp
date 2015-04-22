@@ -727,6 +727,8 @@
 #define REPLICA_NOT_IN_RESC                  -1821000
 #define INVALID_ANY_CAST                     -1822000
 #define BAD_FUNCTION_CALL                    -1823000
+#define CLIENT_NEGOTIATION_ERROR             -1824000
+#define SERVER_NEGOTIATION_ERROR             -1825000
 /** @} */
 
 

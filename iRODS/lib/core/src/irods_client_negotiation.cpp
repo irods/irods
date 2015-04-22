@@ -214,7 +214,9 @@ namespace irods {
         if ( svr_policy.empty() || cs_neg->status_ != CS_NEG_STATUS_SUCCESS ) {
             std::stringstream msg;
             msg << "invalid result [" << cs_neg->result_ << "]  or status: " << cs_neg->status_;
-            return ERROR( -1, msg.str() );
+            return ERROR( 
+                       CLIENT_NEGOTIATION_ERROR, 
+                       msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -266,7 +268,9 @@ namespace irods {
             std::stringstream msg;
             msg << "client-server negoations failed for server request [";
             msg << svr_policy << "] and client request [" << cli_policy << "]";
-            ret = PASSMSG( msg.str(), ret );
+            ret = ERROR( 
+                      CLIENT_NEGOTIATION_ERROR,
+                      msg.str() );
             return ret;
         }
 
@@ -322,20 +326,20 @@ namespace irods {
                     }
                     else {
                         rodsLog(
-                            LOG_WARNING,
+                            LOG_WARN,
                             "%s",
                             PASS( err ).result().c_str() );
                     }
                 }
                 else {
                     rodsLog(
-                        LOG_WARNING,
+                        LOG_WARN,
                         "failed to get agent key" );
                 }
             }
             else {
                 rodsLog(
-                    LOG_WARNING,
+                    LOG_WARN,
                     "failed to get local zone SID" );
             }
 
