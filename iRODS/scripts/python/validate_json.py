@@ -1,15 +1,10 @@
 from __future__ import print_function
 import json
 import sys
-try:
-    # python 3+
-    from urllib.request import urlopen
-except ImportError:
-    # python 2
-    from urllib2 import urlopen
+import requests
 
 if len(sys.argv) != 3:
-    sys.exit('Usage: {0} configuration_file schema_url'.format(sys.argv[0]))
+    sys.exit('Usage: {0} <configuration_file> <schema_url>'.format(sys.argv[0]))
 
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -25,8 +20,8 @@ try:
     with open(sys.argv[1], 'r+') as f:
         config = json.load(f)
     # load the schema url
-    response = urlopen(sys.argv[2])
-    schema = json.loads(response.read())
+    response = requests.get(sys.argv[2])
+    schema = json.loads(response.text)
     # validate
     jsonschema.validate( config, schema )
 except (jsonschema.exceptions.RefResolutionError) as e:
