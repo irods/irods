@@ -219,6 +219,7 @@ $(AVROVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(AVROVERSIONARCHIVE) 2>&1
 
 $(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
+	@tar zxf $(AVROVERSIONARCHIVE)
 	@cd $(AVROVERSION) ; \
 		mkdir -p build; cd build; \
 		BOOST_ROOT=../$(BOOSTVERSION) ../../$(CMAKEVERSION)/bin/cmake -G "Unix Makefiles" ..
@@ -237,7 +238,6 @@ $(ZEROMQVERSIONCONFIGURE) : $(ZEROMQVERSIONARCHIVE)
 		./autogen.sh
 
 $(ZEROMQVERSIONMAKE) : $(ZEROMQVERSIONCONFIGURE)
-	@tar zxf $(ZEROMQVERSIONARCHIVE)
 	@cd $(ZEROMQVERSION) ; \
 		env ac_cv_lib_sodium_sodium_init="no" ac_cv_lib_gssapi_krb5_gss_init_sec_context="no" ./configure
 
