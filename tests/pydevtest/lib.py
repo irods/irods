@@ -165,7 +165,7 @@ def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=F
     return rc, stdout, stderr
 
 def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
-    assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
+    assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_SINGLELINE', 'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
 
     if isinstance(expected_results, basestring):
         expected_results = [expected_results]
@@ -178,12 +178,19 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
     print '  stderr:'
     print '    | ' + '\n    | '.join(stderr.splitlines())
 
-    if check_type not in ['STDERR', 'STDERR_MULTILINE'] and stderr != '':
+    if check_type not in ['STDERR', 'STDERR_SINGLELINE', 'STDERR_MULTILINE'] and stderr != '':
         print 'Unexpected output on stderr\n'
         return False
 
-    if check_type in ['STDOUT', 'STDERR', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
-        lines = stdout.splitlines() if check_type in ['STDOUT', 'STDOUT_MULTILINE'] else stderr.splitlines()
+    if check_type in ['STDOUT', 'STDERR']:
+        output = stdout if check_type == 'STDOUT' else stderr
+        for er in expected_results:
+            regex_pattern = er if use_regex else re.escape(er)
+            if not re.search(regex_pattern, output):
+                print 'Outout not found\n'
+                return False
+    elif check_type in ['STDOUT_SINGLELINE', 'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
+        lines = stdout.splitlines() if check_type in ['STDOUT_SINGLELINE', 'STDOUT_MULTILINE'] else stderr.splitlines()
 
         if check_type in ['STDOUT_MULTILINE', 'STDERR_MULTILINE']:
             for er in expected_results:
@@ -251,12 +258,12 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
 
 def stop_irods_server():
     hostname = get_hostname()
-    assert_command(['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT', hostname)
+    assert_command(['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT_SINGLELINE', hostname)
 
 def start_irods_server(env=None):
-    assert_command('{0} graceful_start'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT', 'Starting iRODS server', env=env)
+    assert_command('{0} graceful_start'.format(os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')), 'STDOUT_SINGLELINE', 'Starting iRODS server', env=env)
     with make_session_for_existing_admin() as admin_session:
-        admin_session.assert_icommand('ils', 'STDOUT', admin_session.zone_name)
+        admin_session.assert_icommand('ils', 'STDOUT_SINGLELINE', admin_session.zone_name)
 
 def restart_irods_server(env=None):
     stop_irods_server()

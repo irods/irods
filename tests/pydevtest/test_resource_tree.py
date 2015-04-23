@@ -23,7 +23,7 @@ class Test_ilsresc(lib.make_sessions_mixin([('otherrods', 'pass')], []), unittes
         super(Test_ilsresc, self).tearDown()
 
     def test_ilsresc_tree(self):
-        self.admin_sessions[0].assert_icommand('ilsresc --tree', 'STDOUT', 'resc')
+        self.admin_sessions[0].assert_icommand('ilsresc --tree', 'STDOUT_SINGLELINE', 'resc')
 
     def test_ilsresc_tree_with_ascii_output(self):
-        self.admin_sessions[0].assert_icommand('ilsresc --tree --ascii', 'STDOUT', 'resc')
+        self.admin_sessions[0].assert_icommand('ilsresc --tree --ascii', 'STDOUT_SINGLELINE', 'resc')

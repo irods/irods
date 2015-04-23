@@ -24,10 +24,10 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_MSOSuite, self).setUp()
         hostname = lib.get_hostname()
-        self.admin.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT', 'rename', stdin_string='yes\n')
-        self.admin.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT', 'compound')
-        self.admin.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT', 'unixfilesystem')
-        self.admin.assert_icommand("iadmin mkresc archiveResc mso " + hostname + ":/fake/vault/", 'STDOUT', 'mso')
+        self.admin.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
+        self.admin.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
+        self.admin.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand("iadmin mkresc archiveResc mso " + hostname + ":/fake/vault/", 'STDOUT_SINGLELINE', 'mso')
         self.admin.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
         self.admin.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
 
@@ -39,7 +39,7 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc archiveResc")
             admin_session.assert_icommand("iadmin rmresc cacheResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
-            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
         shutil.rmtree(lib.get_irods_top_level_dir() + "/cacheRescVault")
 
     def test_mso_http(self):
@@ -47,11 +47,11 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('ireg -D mso -R archiveResc "//http://people.renci.org/~jasonc/irods/http_mso_test_file.txt" ' +
                    test_file_path + '/test_file.txt')
         self.admin.assert_icommand('iget -f ' + test_file_path + '/test_file.txt')
-        self.admin.assert_icommand_fail('ils -L ' + test_file_path + '/test_file.txt', 'STDOUT', ' -99 ')
+        self.admin.assert_icommand_fail('ils -L ' + test_file_path + '/test_file.txt', 'STDOUT_SINGLELINE', ' -99 ')
         os.remove('test_file.txt')
         # unregister the object
         self.admin.assert_icommand('irm -U ' + test_file_path + '/test_file.txt')
-        self.admin.assert_icommand('ils -L', 'STDOUT', self.admin.zone_name)
+        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', self.admin.zone_name)
 
     def test_mso_slink(self):
         test_file_path = self.admin.session_collection

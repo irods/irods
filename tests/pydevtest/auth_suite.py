@@ -39,7 +39,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
         self.auth_session.assert_icommand('icd')
-        self.auth_session.assert_icommand('ils -L', 'STDOUT', 'home')
+        self.auth_session.assert_icommand('ils -L', 'STDOUT_SINGLELINE', 'home')
 
         # reset client environment to original
         del self.auth_session.environment_file_contents['irods_authentication_scheme']
@@ -86,7 +86,7 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
         self.auth_session.assert_icommand('icd')
-        self.auth_session.assert_icommand('ils -L', 'STDOUT', 'home')
+        self.auth_session.assert_icommand('ils -L', 'STDOUT_SINGLELINE', 'home')
 
         # reset client environment to original
         del self.auth_session.environment_file_contents['irods_authentication_scheme']
@@ -134,7 +134,7 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
         self.auth_session.assert_icommand("icd")
-        self.auth_session.assert_icommand("ils -L", 'STDOUT', "home")
+        self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
 
         # reset client environment to original
         self.auth_session.environment_file_contents = backup_env_contents

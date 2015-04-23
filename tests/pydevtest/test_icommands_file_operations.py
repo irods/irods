@@ -46,7 +46,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.iput_r_large_collection(self.user0, base_name, file_count=1000, file_size=100)
 
         self.user0.assert_icommand("irm -r " + base_name, "EMPTY")
-        self.user0.assert_icommand("ils " + base_name, 'STDERR', "does not exist")
+        self.user0.assert_icommand("ils " + base_name, 'STDERR_SINGLELINE', "does not exist")
 
         vault_files_post_irm = os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
                                                        base_name))
@@ -60,8 +60,8 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         base_name_target = "test_imv_r_dir_target"
         self.user0.assert_icommand("imv " + base_name_source + " " + base_name_target, "EMPTY")
-        self.user0.assert_icommand("ils " + base_name_source, 'STDERR', "does not exist")
-        self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
+        self.user0.assert_icommand("ils " + base_name_source, 'STDERR_SINGLELINE', "does not exist")
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
         rods_files_post_imv = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_post_imv,
                         msg="Files missing:\n" + str(file_names - rods_files_post_imv) + "\n\n" +
@@ -84,7 +84,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         base_name_target = "test_icp_r_dir_target"
         self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_target, "EMPTY")
-        self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
         rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
@@ -114,7 +114,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         file_names = set(lib.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
 
         self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "EMPTY")
-        self.user0.assert_icommand("ils", 'STDOUT', base_name)
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name)
         rods_files = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name])[1]))
         self.assertTrue(file_names == rods_files,
                         msg="Files missing:\n" + str(file_names - rods_files) + "\n\n" +
@@ -133,8 +133,8 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0, base_name_source, file_count=1000, file_size=100)[1])
         base_name_target = "test_irsync_r_coll_to_coll_target"
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " i:" + base_name_target, "EMPTY")
-        self.user0.assert_icommand("ils", 'STDOUT', base_name_source)
-        self.user0.assert_icommand("ils", 'STDOUT', base_name_target)
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_source)
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
         rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
@@ -165,7 +165,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0, base_name_source, file_count=1000, file_size=100)[1])
         local_dir = os.path.join(self.testing_tmp_dir, "test_irsync_r_coll_to_dir_target")
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " " + local_dir, "EMPTY")
-        self.user0.assert_icommand("ils", 'STDOUT', base_name_source)
+        self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_source)
         rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
@@ -204,4 +204,4 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         # wait for select() call to timeout, set to "SELECT_TIMEOUT_FOR_CONN", which is 60 seconds
         time.sleep(63)
-        self.user0.assert_icommand('ils -l', 'STDOUT', [file_name, str(new_size)])
+        self.user0.assert_icommand('ils -l', 'STDOUT_SINGLELINE', [file_name, str(new_size)])

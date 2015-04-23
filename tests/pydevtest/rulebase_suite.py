@@ -20,8 +20,8 @@ class Test_RulebaseSuite(ResourceBase, unittest.TestCase):
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         # create new resources
         hostname = socket.gethostname()
-        self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", "STDOUT", "Creating")
-        self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", "STDOUT", "Creating")
+        self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
 
         # save original core.re
         os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
@@ -69,9 +69,9 @@ class Test_RulebaseSuite(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iput " + tfile)
 
         # check replicas
-        self.admin.assert_icommand("ils -L " + tfile, "STDOUT", " demoResc ")
-        self.admin.assert_icommand("ils -L " + tfile, "STDOUT", " r1 ")
-        self.admin.assert_icommand("ils -L " + tfile, "STDOUT", " r2 ")
+        self.admin.assert_icommand("ils -L " + tfile, 'STDOUT_SINGLELINE', " demoResc ")
+        self.admin.assert_icommand("ils -L " + tfile, 'STDOUT_SINGLELINE', " r1 ")
+        self.admin.assert_icommand("ils -L " + tfile, 'STDOUT_SINGLELINE', " r2 ")
 
         # clean up and remove new resources
         self.admin.assert_icommand("irm -rf " + tfile)
@@ -93,7 +93,7 @@ class Test_RulebaseSuite(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # check rei functioning
-        self.admin.assert_icommand("iget " + self.testfile + " - ", "STDOUT", self.testfile)
+        self.admin.assert_icommand("iget " + self.testfile + " - ", 'STDOUT_SINGLELINE', self.testfile)
 
         # restore core.re
         time.sleep(1)  # remove once file hash fix is commited #2279

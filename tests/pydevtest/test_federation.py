@@ -48,7 +48,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # list remote home collection
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}".format(**kwargs), 'STDOUT', kwargs['collection'])
+            "ils -L {collection}".format(**kwargs), 'STDOUT_SINGLELINE', kwargs['collection'])
 
         # put file in remote collection
         self.admin_sessions[0].assert_icommand(
@@ -56,13 +56,13 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # list file info
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', str(filesize))
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', str(filesize))
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', kwargs['remote_resc'])
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', kwargs['remote_resc'])
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', kwargs['remote_vault'])
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', kwargs['remote_vault'])
 
         # cleanup
         self.admin_sessions[0].assert_icommand(
@@ -85,9 +85,9 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # file should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', str(filesize))
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', str(filesize))
 
         # cleanup
         self.admin_sessions[0].assert_icommand(
@@ -106,13 +106,13 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # put file in remote collection, ask for 6 threads
         self.admin_sessions[0].assert_icommand(
-            "iput -v -N 6 {filename} {collection}/".format(**kwargs), 'STDOUT', '6 thr')
+            "iput -v -N 6 {filename} {collection}/".format(**kwargs), 'STDOUT_SINGLELINE', '6 thr')
 
         # file should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', str(filesize))
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', str(filesize))
 
         # cleanup
         self.admin_sessions[0].assert_icommand(
@@ -135,7 +135,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # new collection should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT', dir_name)
+            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
         rods_files = set(lib.ils_output_to_entries(
@@ -202,7 +202,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # get file back, ask for too many threads (should be capped)
         self.admin_sessions[0].assert_icommand(
-            "iget -v -N 600 {collection}/{filename}".format(**kwargs), 'STDOUT', '16 thr')
+            "iget -v -N 600 {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', '16 thr')
 
         # compare checksums
         new_md5 = commands.getoutput('md5sum ' + filepath)
@@ -259,7 +259,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # file should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
 
         # delete remote file
         self.admin_sessions[0].assert_icommand(
@@ -267,7 +267,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # file should be gone
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{filename}".format(**kwargs), 'STDERR', 'does not exist')
+            "ils -L {collection}/{filename}".format(**kwargs), 'STDERR_SINGLELINE', 'does not exist')
 
         # cleanup
         os.remove(filepath)
@@ -288,7 +288,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # new collection should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT', dir_name)
+            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
         rods_files = set(lib.ils_output_to_entries(
@@ -301,7 +301,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # coll should be gone
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDERR', 'does not exist')
+            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDERR_SINGLELINE', 'does not exist')
 
         # cleanup
         shutil.rmtree(dir_path)
@@ -334,9 +334,9 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # file should show up in remote zone
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDOUT', str(filesize))
+            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDOUT_SINGLELINE', str(filesize))
 
         # get file back from remote zone
         self.admin_sessions[0].assert_icommand(
@@ -377,7 +377,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # collection should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{dir_name}".format(**kwargs), 'STDOUT', dir_name)
+            "ils -L {remote_collection}/{dir_name}".format(**kwargs), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
         rods_files = set(lib.ils_output_to_entries(
@@ -425,11 +425,11 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # file should have been renamed
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDERR', 'does not exist')
+            "ils -L {remote_collection}/{filename}".format(**kwargs), 'STDERR_SINGLELINE', 'does not exist')
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{new_name}".format(**kwargs), 'STDOUT', filename)
+            "ils -L {remote_collection}/{new_name}".format(**kwargs), 'STDOUT_SINGLELINE', filename)
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{new_name}".format(**kwargs), 'STDOUT', str(filesize))
+            "ils -L {remote_collection}/{new_name}".format(**kwargs), 'STDOUT_SINGLELINE', str(filesize))
 
         # cleanup
         self.admin_sessions[0].assert_icommand(
@@ -452,7 +452,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # new collection should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT', dir_name)
+            "ils -L {collection}/{dir_name}".format(**kwargs), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
         rods_files = set(lib.ils_output_to_entries(
@@ -488,7 +488,7 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
 
         # collection should be there
         self.admin_sessions[0].assert_icommand(
-            "ils -L {remote_collection}/{dir_name}".format(**kwargs), 'STDOUT', dir_name)
+            "ils -L {remote_collection}/{dir_name}".format(**kwargs), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
         rods_files = set(lib.ils_output_to_entries(
@@ -543,5 +543,4 @@ class TestCrossZoneICommands(lib.make_sessions_mixin([(TEST_CFG['user_name'], TE
     def test_ilsresc_z(self):
         # list remote resources
         self.admin_sessions[0].assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT', self.config['remote_resc'])
-
+            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', self.config['remote_resc'])

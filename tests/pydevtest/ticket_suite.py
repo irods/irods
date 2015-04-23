@@ -17,4 +17,4 @@ class Test_TicketSuite(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iticket ls')
 
     def test_iticket_bad_subcommand(self):
-        self.admin.assert_icommand('iticket badsubcommand', 'STDOUT', 'unrecognized command')
+        self.admin.assert_icommand('iticket badsubcommand', 'STDOUT_SINGLELINE', 'unrecognized command')

@@ -25,10 +25,10 @@ class Test_ireg_Suite(resource_suite.ResourceBase, unittest.TestCase):
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg_suite.py', ABSPATHTESTDIR + '/file2')
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg_suite.py', ABSPATHTESTDIR + '/file3')
 
-        self.admin.assert_icommand('iadmin mkresc r_resc passthru', 'STDOUT', "Creating")
-        self.admin.assert_icommand('iadmin mkresc m_resc passthru', 'STDOUT', "Creating")
+        self.admin.assert_icommand('iadmin mkresc r_resc passthru', 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand('iadmin mkresc m_resc passthru', 'STDOUT_SINGLELINE', "Creating")
         hostname = socket.gethostname()
-        self.admin.assert_icommand('iadmin mkresc l_resc unixfilesystem ' + hostname + ':/tmp/l_resc', 'STDOUT', "Creating")
+        self.admin.assert_icommand('iadmin mkresc l_resc unixfilesystem ' + hostname + ':/tmp/l_resc', 'STDOUT_SINGLELINE', "Creating")
 
         self.admin.assert_icommand("iadmin addchildtoresc r_resc m_resc")
         self.admin.assert_icommand("iadmin addchildtoresc m_resc l_resc")
@@ -52,12 +52,12 @@ class Test_ireg_Suite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_ireg_files(self):
         self.admin.assert_icommand("ireg -R l_resc " + ABSPATHTESTDIR + '/file0 ' + self.admin.home_collection + 'file0')
-        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file0', 'STDOUT', "r_resc;m_resc;l_resc")
+        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file0', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
 
         self.admin.assert_icommand("ireg -R l_resc " + ABSPATHTESTDIR + '/file1 ' + self.admin.home_collection + 'file1')
-        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file1', 'STDOUT', "r_resc;m_resc;l_resc")
+        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file1', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
 
         self.admin.assert_icommand("ireg -R m_resc " + ABSPATHTESTDIR +
-                                   '/file2 ' + self.admin.home_collection + '/file2', 'STDERR', 'ERROR: regUtil: reg error for')
+                                   '/file2 ' + self.admin.home_collection + '/file2', 'STDERR_SINGLELINE', 'ERROR: regUtil: reg error for')
 
         self.admin.assert_icommand("ireg -R demoResc " + ABSPATHTESTDIR + '/file3 ' + self.admin.home_collection + '/file3')

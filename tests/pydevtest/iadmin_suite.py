@@ -50,7 +50,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_iAdminSuite, self).tearDown()
 
     def test_api_plugin(self):
-        self.admin.assert_icommand("iapitest", 'STDOUT', 'this')
+        self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
         assert 0 < lib.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
 
     ###################
@@ -61,35 +61,35 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_iadmin_scrambling_and_descrambling(self):
         # spass
-        self.admin.assert_icommand("iadmin spass gibberish 456", 'STDOUT', 'Scrambled form is:VMd96$wwJ')
-        self.admin.assert_icommand("iadmin spass '-startswithhyphen' 123", 'STDERR', 'parseCmdLineOpt: Option not supported.')
-        self.admin.assert_icommand("iadmin -- spass '-startswithhyphen' 123", 'STDOUT', 'Scrambled form is:9u&sabM*+#ht+ahb!')
+        self.admin.assert_icommand("iadmin spass gibberish 456", 'STDOUT_SINGLELINE', 'Scrambled form is:VMd96$wwJ')
+        self.admin.assert_icommand("iadmin spass '-startswithhyphen' 123", 'STDERR_SINGLELINE', 'parseCmdLineOpt: Option not supported.')
+        self.admin.assert_icommand("iadmin -- spass '-startswithhyphen' 123", 'STDOUT_SINGLELINE', 'Scrambled form is:9u&sabM*+#ht+ahb!')
         # dspass
-        self.admin.assert_icommand("iadmin dspass VMd96$wwJ 456", 'STDOUT', 'Unscrambled form is:gibberish')
-        self.admin.assert_icommand("iadmin dspass '-startswithhyphen' 123", 'STDERR', 'parseCmdLineOpt: Option not supported.')
-        self.admin.assert_icommand("iadmin -- dspass '-startswithhyphen' 123", 'STDOUT', 'Unscrambled form is:!qhI),9jGkhVm%hha')
+        self.admin.assert_icommand("iadmin dspass VMd96$wwJ 456", 'STDOUT_SINGLELINE', 'Unscrambled form is:gibberish')
+        self.admin.assert_icommand("iadmin dspass '-startswithhyphen' 123", 'STDERR_SINGLELINE', 'parseCmdLineOpt: Option not supported.')
+        self.admin.assert_icommand("iadmin -- dspass '-startswithhyphen' 123", 'STDOUT_SINGLELINE', 'Unscrambled form is:!qhI),9jGkhVm%hha')
 
     # LISTS
 
     def test_list_zones(self):
-        self.admin.assert_icommand("iadmin lz", 'STDOUT', self.admin.zone_name)
-        self.admin.assert_icommand("iadmin lz notazone", 'STDOUT', "No rows found")
+        self.admin.assert_icommand("iadmin lz", 'STDOUT_SINGLELINE', self.admin.zone_name)
+        self.admin.assert_icommand("iadmin lz notazone", 'STDOUT_SINGLELINE', "No rows found")
 
     def test_list_resources(self):
-        self.admin.assert_icommand("iadmin lr", 'STDOUT', self.testresc)
-        self.admin.assert_icommand("iadmin lr notaresource", 'STDOUT', "No rows found")
+        self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', self.testresc)
+        self.admin.assert_icommand("iadmin lr notaresource", 'STDOUT_SINGLELINE', "No rows found")
 
     def test_list_users(self):
-        self.admin.assert_icommand("iadmin lu", 'STDOUT', [self.admin.username + "#" + self.admin.zone_name])
-        self.admin.assert_icommand("iadmin lu notauser", 'STDOUT', "No rows found")
+        self.admin.assert_icommand("iadmin lu", 'STDOUT_SINGLELINE', [self.admin.username + "#" + self.admin.zone_name])
+        self.admin.assert_icommand("iadmin lu notauser", 'STDOUT_SINGLELINE', "No rows found")
 
     def test_list_groups(self):
         group_name = 'test_group'
         lib.mkgroup_and_add_users(group_name, [self.admin.username, self.user0.username])
-        self.admin.assert_icommand('iadmin lg', 'STDOUT', group_name)
-        self.admin.assert_icommand_fail('iadmin lg', 'STDOUT', 'notagroup')
-        self.admin.assert_icommand('iadmin lg ' + group_name, 'STDOUT', self.user0.username)
-        self.admin.assert_icommand_fail('iadmin lg ' + group_name, 'STDOUT', 'notauser')
+        self.admin.assert_icommand('iadmin lg', 'STDOUT_SINGLELINE', group_name)
+        self.admin.assert_icommand_fail('iadmin lg', 'STDOUT_SINGLELINE', 'notagroup')
+        self.admin.assert_icommand('iadmin lg ' + group_name, 'STDOUT_SINGLELINE', self.user0.username)
+        self.admin.assert_icommand_fail('iadmin lg ' + group_name, 'STDOUT_SINGLELINE', 'notauser')
         lib.rmgroup(group_name)
 
     # RESOURCES
@@ -98,27 +98,27 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  # longer than NAME_LEN
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("?/=*", h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                   ("?/=*", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("replication.B", h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                   ("replication.B", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("replication{", h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                   ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   (oversize_name, h, "junk"), 'STDERR', "SYS_INVALID_INPUT_PARAM")  # too long
+                   (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
 
     def test_modify_resource_name(self):
         h = lib.get_hostname()
         # tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt1", h, "pt1"), 'STDOUT', "Creating")  # passthru
+                   ("pt1", h, "pt1"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("repl", h, "repl"), 'STDOUT', "Creating")  # replication
+                   ("repl", h, "repl"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unix1", h, "unix1"), 'STDOUT', "Creating")  # unix
+                   ("unix1", h, "unix1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt2", h, "pt2"), 'STDOUT', "Creating")  # passthru
+                   ("pt2", h, "pt2"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unix2", h, "unix2"), 'STDOUT', "Creating")  # unix
+                   ("unix2", h, "unix2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt1",  "repl"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("repl", "unix1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("repl", "pt2"))
@@ -127,20 +127,20 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         # rename repl node
         newnodename = "replwithmoreletters"
         self.admin.assert_icommand("iadmin modresc %s name %s" %
-                   ("repl", newnodename), 'STDOUT', 'OK, performing the resource rename', stdin_string='yes\n')
+                   ("repl", newnodename), 'STDOUT_SINGLELINE', 'OK, performing the resource rename', stdin_string='yes\n')
 
         # confirm children of pt1 is newnodename
-        self.admin.assert_icommand("iadmin lr %s" % "pt1", 'STDOUT', "resc_children: %s" % newnodename + "{}")
+        self.admin.assert_icommand("iadmin lr %s" % "pt1", 'STDOUT_SINGLELINE', "resc_children: %s" % newnodename + "{}")
         # confirm parent of newnodename is still pt1
-        self.admin.assert_icommand("iadmin lr %s" % newnodename, 'STDOUT', "resc_parent: %s" % "pt1")
+        self.admin.assert_icommand("iadmin lr %s" % newnodename, 'STDOUT_SINGLELINE', "resc_parent: %s" % "pt1")
         # confirm children of newnodename is unix1 and pt2
-        self.admin.assert_icommand("iadmin lr %s" % newnodename, 'STDOUT', "resc_children: %s" % "unix1{};pt2{}")
+        self.admin.assert_icommand("iadmin lr %s" % newnodename, 'STDOUT_SINGLELINE', "resc_children: %s" % "unix1{};pt2{}")
         # confirm parent of pt2 is newnodename
-        self.admin.assert_icommand("iadmin lr %s" % "pt2", 'STDOUT', "resc_parent: %s" % newnodename)
+        self.admin.assert_icommand("iadmin lr %s" % "pt2", 'STDOUT_SINGLELINE', "resc_parent: %s" % newnodename)
         # confirm parent of unix2 is pt2
-        self.admin.assert_icommand("iadmin lr %s" % "unix2", 'STDOUT', "resc_parent: %s" % "pt2")
+        self.admin.assert_icommand("iadmin lr %s" % "unix2", 'STDOUT_SINGLELINE', "resc_parent: %s" % "pt2")
         # confirm parent of unix1 is newnodename
-        self.admin.assert_icommand("iadmin lr %s" % "unix1", 'STDOUT', "resc_parent: %s" % newnodename)
+        self.admin.assert_icommand("iadmin lr %s" % "unix1", 'STDOUT_SINGLELINE', "resc_parent: %s" % newnodename)
 
         # tree teardown
         self.admin.assert_icommand("iadmin rmchildfromresc %s %s" % ("pt2", "unix2"))
@@ -156,18 +156,18 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
     def test_resource_hierarchy_errors(self):
         # prep
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("pt"), 'STDOUT', "Creating")
+                   ("pt"), 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("the_child"), 'STDOUT', "Creating")
+                   ("the_child"), 'STDOUT_SINGLELINE', "Creating")
         # bad parent
         self.admin.assert_icommand("iadmin addchildtoresc non_existent_resource %s" %
-                   ("pt"), 'STDERR', "CAT_INVALID_RESOURCE")
+                   ("pt"), 'STDERR_SINGLELINE', "CAT_INVALID_RESOURCE")
         # bad child
         self.admin.assert_icommand("iadmin addchildtoresc %s non_existent_resource" %
-                   ("pt"), 'STDERR', "CHILD_NOT_FOUND")
+                   ("pt"), 'STDERR_SINGLELINE', "CHILD_NOT_FOUND")
         # duplicate parent
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child")
-        self.admin.assert_icommand("iadmin addchildtoresc pt the_child", 'STDERR', "CHILD_HAS_PARENT")
+        self.admin.assert_icommand("iadmin addchildtoresc pt the_child", 'STDERR_SINGLELINE', "CHILD_HAS_PARENT")
         # cleanup
         self.admin.assert_icommand("iadmin rmchildfromresc pt the_child")
         self.admin.assert_icommand("iadmin rmresc the_child")
@@ -177,23 +177,23 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("pt"), 'STDOUT', "Creating")  # passthru
+                   ("pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication" %
-                   ("replA"), 'STDOUT', "Creating")  # replication
+                   ("replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA1", h, "unixA1"), 'STDOUT', "Creating")  # unix
+                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA2", h, "unixA2"), 'STDOUT', "Creating")  # unix
+                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt", "replA"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
         self.admin.assert_icommand("iadmin mkresc %s replication" %
-                   ("replB"), 'STDOUT', "Creating")  # replication
+                   ("replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB1", h, "unixB1"), 'STDOUT', "Creating")  # unix
+                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB2", h, "unixB2"), 'STDOUT', "Creating")  # unix
+                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
@@ -213,69 +213,69 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iput -R %s -r %s" % ("replB", dir2))
 
         # debugging
-        self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT', dir1)
-        self.admin.assert_icommand("ils -L %s" % dir2, 'STDOUT', dir2)
+        self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT_SINGLELINE', dir1)
+        self.admin.assert_icommand("ils -L %s" % dir2, 'STDOUT_SINGLELINE', dir2)
 
         # add tree2 to tree1
         # add replB to replA
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "replB"))
 
         # debugging
-        self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT', dir1)
-        self.admin.assert_icommand("ils -L %s" % dir2, 'STDOUT', dir2)
+        self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT_SINGLELINE', dir1)
+        self.admin.assert_icommand("ils -L %s" % dir2, 'STDOUT_SINGLELINE', dir2)
 
         # check object_count on pt
-        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT', "resc_objcount: %d" % totaltree)
+        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT_SINGLELINE', "resc_objcount: %d" % totaltree)
         # check object_count and children on replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT', "resc_objcount: %d" % totaltree)
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT', "resc_children: %s" % "unixA1{};unixA2{};replB{}")
+        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_objcount: %d" % totaltree)
+        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_children: %s" % "unixA1{};unixA2{};replB{}")
         # check object_count on unixA1
-        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT', "resc_objcount: %d" % tree1)
+        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
         # check object_count on unixA2
-        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT', "resc_objcount: %d" % tree1)
+        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
         # check object_count and parent on replB
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT', "resc_objcount: %d" % doubletree2)
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT', "resc_parent: %s" % "replA")
+        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree2)
+        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_parent: %s" % "replA")
         # check object_count on unixB1
-        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT', "resc_objcount: %d" % tree2)
+        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check object_count on unixB2
-        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT', "resc_objcount: %d" % tree2)
+        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "pt;replA;replB", 'STDOUT', "pt")
+                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT', "CAT_NO_ROWS_FOUND")
+                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
         # check resc_name on replB files
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "pt;replA;replB", 'STDOUT', "pt")
+                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT', "CAT_NO_ROWS_FOUND")
+                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
 
         # remove child
         # rm replB from replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT', "replB")  # debugging
+        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "replB")  # debugging
         self.admin.assert_icommand("iadmin rmchildfromresc %s %s" % ("replA", "replB"))
 
         # check object_count on pt
-        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT', "resc_objcount: %d" % doubletree1)
+        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree1)
         # check object_count on replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT', "resc_objcount: %d" % doubletree1)
+        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree1)
         # check object_count on unixA1
-        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT', "resc_objcount: %d" % tree1)
+        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
         # check object_count on unixA2
-        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT', "resc_objcount: %d" % tree1)
+        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
         # check object_count on replB
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT', "resc_objcount: %d" % doubletree2)
+        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree2)
         # check object_count on unixB1
-        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT', "resc_objcount: %d" % tree2)
+        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check object_count on unixB2
-        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT', "resc_objcount: %d" % tree2)
+        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should start with replB and not have pt anymore
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT', "replB")
+                   "replB", 'STDOUT_SINGLELINE', "replB")
         # check resc_name on replB files
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT', "replB")
+                   "replB", 'STDOUT_SINGLELINE', "replB")
 
         # delete files
         self.admin.assert_icommand("irm -rf %s" % dir1)
@@ -302,77 +302,77 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_create_and_remove_unixfilesystem_resource(self):
         testresc1 = "testResc1"
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should not be listed
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 + " unixfilesystem " +
-                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT', "Creating")  # unix
-        self.admin.assert_icommand("iadmin lr", 'STDOUT', testresc1)  # should be listed
+                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         self.admin.assert_icommand_fail("iadmin rmresc notaresource")  # bad remove
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should be gone
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be gone
 
     def test_create_and_remove_unixfilesystem_resource_without_spaces(self):
         testresc1 = "testResc1"
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should not be listed
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 + " unixfilesystem " +
-                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT', "Creating")  # unix
-        self.admin.assert_icommand("iadmin lr", 'STDOUT', testresc1)  # should be listed
+                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should be gone
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be gone
 
     def test_create_and_remove_coordinating_resource(self):
         testresc1 = "testResc1"
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should not be listed
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        self.admin.assert_icommand("iadmin mkresc " + testresc1 + " replication", 'STDOUT', "Creating")  # replication
-        self.admin.assert_icommand("iadmin lr", 'STDOUT', testresc1)  # should be listed
+        self.admin.assert_icommand("iadmin mkresc " + testresc1 + " replication", 'STDOUT_SINGLELINE', "Creating")  # replication
+        self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         # should have empty host
-        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT', ["resc_net", "EMPTY_RESC_HOST"])
+        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_net", "EMPTY_RESC_HOST"])
         # should have empty path
-        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT', ["resc_def_path", "EMPTY_RESC_PATH"])
+        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_def_path", "EMPTY_RESC_PATH"])
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should be gone
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be gone
 
     def test_create_and_remove_coordinating_resource_with_explicit_contextstring(self):
         testresc1 = "testResc1"
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should not be listed
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 +
-                   " replication '' Context:String", 'STDOUT', "Creating")  # replication
-        self.admin.assert_icommand("iadmin lr", 'STDOUT', testresc1)  # should be listed
+                   " replication '' Context:String", 'STDOUT_SINGLELINE', "Creating")  # replication
+        self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         # should have empty host
-        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT', ["resc_net", "EMPTY_RESC_HOST"])
+        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_net", "EMPTY_RESC_HOST"])
         # should have empty path
-        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT', ["resc_def_path", "EMPTY_RESC_PATH"])
+        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_def_path", "EMPTY_RESC_PATH"])
         # should have contextstring
-        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT', ["resc_context", "Context:String"])
+        self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_context", "Context:String"])
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
-        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT', testresc1)  # should be gone
+        self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be gone
 
     def test_modify_resource_comment(self):
         mycomment = "thisisacomment with some spaces"
-        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
         self.admin.assert_icommand("iadmin modresc " + self.testresc + " comment '" + mycomment + "'")
-        self.admin.assert_icommand("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
         self.admin.assert_icommand("iadmin modresc " + self.testresc + " comment 'none'")
-        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
 
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
         # should not be listed
-        self.admin.assert_icommand_fail("iadmin lu", 'STDOUT', [testuser1 + "#" + self.admin.zone_name])
+        self.admin.assert_icommand_fail("iadmin lu", 'STDOUT_SINGLELINE', [testuser1 + "#" + self.admin.zone_name])
         self.admin.assert_icommand("iadmin mkuser " + testuser1 + " rodsuser")  # add rodsuser
         # should be listed
-        self.admin.assert_icommand("iadmin lu", 'STDOUT', [testuser1 + "#" + self.admin.zone_name])
+        self.admin.assert_icommand("iadmin lu", 'STDOUT_SINGLELINE', [testuser1 + "#" + self.admin.zone_name])
         self.admin.assert_icommand_fail("iadmin rmuser notauser")  # bad remove
         self.admin.assert_icommand("iadmin rmuser " + testuser1)  # good remove
         # should be gone
-        self.admin.assert_icommand_fail("iadmin lu", 'STDOUT', [testuser1 + "#" + self.admin.zone_name])
+        self.admin.assert_icommand_fail("iadmin lu", 'STDOUT_SINGLELINE', [testuser1 + "#" + self.admin.zone_name])
 
     def test_iadmin_mkuser(self):
 
@@ -397,21 +397,21 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         for name in valid:
             self.admin.assert_icommand("iadmin mkuser " + name + " rodsuser")  # should be accepted
             # should be listed
-            self.admin.assert_icommand("iadmin lu", 'STDOUT', [name + "#" + self.admin.zone_name])
+            self.admin.assert_icommand("iadmin lu", 'STDOUT_SINGLELINE', [name + "#" + self.admin.zone_name])
             self.admin.assert_icommand("iadmin rmuser " + name)  # remove user
             # should be gone
-            self.admin.assert_icommand_fail("iadmin lu", 'STDOUT', [name + "#" + self.admin.zone_name])
+            self.admin.assert_icommand_fail("iadmin lu", 'STDOUT_SINGLELINE', [name + "#" + self.admin.zone_name])
 
         # Test invalid names
         for name in invalid:
             self.admin.assert_icommand("iadmin mkuser " + name + " rodsuser",
-                       'STDERR', "Invalid username format")  # should be rejected
+                       'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
 
         # Invalid names with special characters
         self.admin.assert_icommand(r"iadmin mkuser hawai\'i rodsuser",
-                   'STDERR', "Invalid username format")  # should be rejected
+                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
         self.admin.assert_icommand(r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser",
-                   'STDERR', "Invalid username format")  # should be rejected
+                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
 
     # =-=-=-=-=-=-=-
     # REBALANCE
@@ -452,7 +452,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         expected_objcount = initial_objcount + 19
         # 19 = 30 initial - 11 (1 and 10 through 19) deleted files
         print "expected: " + str(expected_objcount)
-        self.admin.assert_icommand("iadmin lr demoResc", 'STDOUT', "resc_objcount: " + str(expected_objcount))
+        self.admin.assert_icommand("iadmin lr demoResc", 'STDOUT_SINGLELINE', "resc_objcount: " + str(expected_objcount))
 
     def test_rebalance_for_repl_node(self):
         output = commands.getstatusoutput("hostname")
@@ -460,18 +460,18 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # STANDUP
-        self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT', "Creating")
-        self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT', "Creating")
-        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
 
         self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT', "Creating")  # unix
+                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT', "Creating")  # unix
+                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT', "Creating")  # unix
+                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
 
         self.admin.assert_icommand("iadmin addchildtoresc pt repl")
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
@@ -495,7 +495,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our pruning
-        self.admin.assert_icommand("ils -AL", 'STDOUT', "foo")
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
         # =-=-=-=-=-=-=-
         # call rebalance function - the thing were actually testing... finally.
@@ -503,49 +503,49 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 1 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 2 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 3 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 0 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 2 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 3 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 0 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 3 ", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 1 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 2 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 2 ", " foo2"])
 
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 2 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 3 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 4 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 2 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 3 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 4 ", " foo3"])
 
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 0 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 1 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 2 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 0 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 1 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 2 ", " foo4"])
 
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 1 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 2 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 3 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 1 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 2 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 3 ", " foo5"])
 
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 1 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 2 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 3 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
 
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 1 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 2 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 3 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
 
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 1 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 2 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 3 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
 
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 0 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 2 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 3 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 0 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
 
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 0 ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 1 ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 2 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 0 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 2 ", " foo10"])
 
         # =-=-=-=-=-=-=-
         # TEARDOWN
@@ -576,23 +576,23 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt", h, "pt"), 'STDOUT', "Creating")  # passthru
+                   ("pt", h, "pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replA", h, "replA"), 'STDOUT', "Creating")  # replication
+                   ("replA", h, "replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA1", h, "unixA1"), 'STDOUT', "Creating")  # unix
+                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA2", h, "unixA2"), 'STDOUT', "Creating")  # unix
+                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt", "replA"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replB", h, "replB"), 'STDOUT', "Creating")  # replication
+                   ("replB", h, "replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB1", h, "unixB1"), 'STDOUT', "Creating")  # unix
+                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB2", h, "unixB2"), 'STDOUT', "Creating")  # unix
+                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
@@ -607,7 +607,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our replication
-        self.admin.assert_icommand("ils -AL", 'STDOUT', "foo")
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
@@ -623,7 +623,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our pruning
-        self.admin.assert_icommand("ils -AL", 'STDOUT', "foo")
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
         # =-=-=-=-=-=-=-
         # call rebalance function - the thing were actually testing... finally.
@@ -631,64 +631,64 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our rebalance
-        self.admin.assert_icommand("ils -AL", 'STDOUT', "foo")
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 1 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 2 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 3 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 4 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 4 ", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 0 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 2 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 3 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 4 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 0 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 3 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 4 ", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 1 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 3 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 4 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 3 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 4 ", " foo2"])
 
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 2 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 3 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 4 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT', [" 5 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 2 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 3 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 4 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 5 ", " foo3"])
 
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 0 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 3 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 4 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT', [" 5 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 0 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 3 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 4 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 5 ", " foo4"])
 
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 1 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 3 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 4 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT', [" 5 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 1 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 3 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 4 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 5 ", " foo5"])
 
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 1 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 2 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 3 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT', [" 4 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 4 ", " foo6"])
 
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 1 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 2 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 3 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT', [" 4 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 4 ", " foo7"])
 
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 1 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 2 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 3 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT', [" 4 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 4 ", " foo8"])
 
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 0 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 2 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 3 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT', [" 4 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 0 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 4 ", " foo9"])
 
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 0 ", " & ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 1 ", " & ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 2 ", " & ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT', [" 3 ", " & ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 0 ", " & ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " & ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 2 ", " & ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 3 ", " & ", " foo10"])
 
         # =-=-=-=-=-=-=-
         # TEARDOWN
@@ -715,7 +715,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_iexecmd(self):
         self.admin.assert_icommand("iput README foo")
-        self.admin.assert_icommand(['iexecmd', '-p', self.admin.session_collection + '/foo', 'hello'], 'STDOUT', "Hello world  from irods")
+        self.admin.assert_icommand(['iexecmd', '-p', self.admin.session_collection + '/foo', 'hello'], 'STDOUT_SINGLELINE', "Hello world  from irods")
         self.admin.assert_icommand("irm -f foo")
 
     def test_ibun(self):
@@ -731,7 +731,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iput README " + dir_path + "/foo1")
 
         self.admin.assert_icommand("ibun -cD tar " + tar_path + " " +
-                   dir_path, 'STDERR', "OVERWRITE_WITHOUT_FORCE_FLAG")
+                   dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
 
         self.admin.assert_icommand("irm -rf " + dir_path)
         self.admin.assert_icommand("irm -rf " + tar_path)
@@ -742,11 +742,11 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # STANDUP
-        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT', "Creating")
+        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT', "Creating")  # unix
+                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT', "Creating")  # unix
+                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
 
@@ -770,7 +770,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our pruning and dirtying
-        self.admin.assert_icommand("ils -ALr /", 'STDOUT', self.admin.username)
+        self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
 
         # =-=-=-=-=-=-=-
         # call rebalance function - the thing were actually testing... finally.
@@ -778,27 +778,27 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # visualize our rebalance
-        self.admin.assert_icommand("ils -ALr /", 'STDOUT', self.admin.username)
+        self.admin.assert_icommand("ils -ALr /", 'STDOUT_SINGLELINE', self.admin.username)
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 0 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT', [" 1 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 0 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 1 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT', [" 2 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 1 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT', [" 1 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
 
-        self.user0.assert_icommand("ils -AL bar0", 'STDOUT', [" 1 ", " bar0"])
-        self.user0.assert_icommand("ils -AL bar0", 'STDOUT', [" 2 ", " bar0"])
+        self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 1 ", " bar0"])
+        self.user0.assert_icommand("ils -AL bar0", 'STDOUT_SINGLELINE', [" 2 ", " bar0"])
 
-        self.user0.assert_icommand("ils -AL bar1", 'STDOUT', [" 0 ", " bar1"])
-        self.user0.assert_icommand("ils -AL bar1", 'STDOUT', [" 1 ", " bar1"])
+        self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 0 ", " bar1"])
+        self.user0.assert_icommand("ils -AL bar1", 'STDOUT_SINGLELINE', [" 1 ", " bar1"])
 
-        self.user0.assert_icommand("ils -AL bar2", 'STDOUT', [" 0 ", " bar2"])
-        self.user0.assert_icommand("ils -AL bar2", 'STDOUT', [" 1 ", " bar2"])
+        self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 0 ", " bar2"])
+        self.user0.assert_icommand("ils -AL bar2", 'STDOUT_SINGLELINE', [" 1 ", " bar2"])
 
         # =-=-=-=-=-=-=-
         # TEARDOWN
@@ -813,7 +813,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc repl")
 
     def test_rule_engine_2242(self):
-        self.admin.assert_icommand_fail("irule -F rule1_2242.r", 'STDOUT', "failmsg")
+        self.admin.assert_icommand_fail("irule -F rule1_2242.r", 'STDOUT_SINGLELINE', "failmsg")
         self.admin.assert_icommand("irule -F rule2_2242.r", "EMPTY")
 
     def test_hosts_config(self):
@@ -853,7 +853,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         hostuser = getpass.getuser()
         self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
-                   hostuser, 'STDOUT', "jimbo")
+                   hostuser, 'STDOUT_SINGLELINE', "jimbo")
         self.admin.assert_icommand("iput -R jimboResc README jimbofile")
         self.admin.assert_icommand("irm -f jimbofile")
         self.admin.assert_icommand("iadmin rmresc jimboResc")
@@ -890,11 +890,11 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
         write_host_access_control(host_access_control, 'nope', 'nope', '', '')
 
-        self.admin.assert_icommand_fail("ils", 'STDERR', "SYS_AGENT_INIT_ERR")
+        self.admin.assert_icommand_fail("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
 
         write_host_access_control(host_access_control, 'all', 'all', my_ip, '255.255.255.255')
 
-        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
+        self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
         # restore the original host_access_control.json
         os.system('mv %s %s' % (orig_file, host_access_control))
@@ -917,7 +917,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         # restart the server to reread the new core.re
         lib.restart_irods_server()
 
-        self.admin.assert_icommand("ils", 'STDOUT', self.admin.zone_name)
+        self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
         # look for the error "unable to read session variable $userNameClient."
         p = subprocess.Popen(
@@ -949,7 +949,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
             # bounce the server to get the new env variable
             lib.restart_irods_server(env=env)
 
-            self.admin.assert_icommand('ils', 'STDOUT', self.admin.zone_name)
+            self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', self.admin.zone_name)
 
             # look for the error "unable to read session variable $userNameClient."
             _, out, _ = lib.run_command('grep "{0}" ../../iRODS/server/log/rodsLog.*'.format(the_value), use_unsafe_shell=True)
@@ -960,11 +960,11 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"
-        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
         self.admin.assert_icommand("iadmin modresc " + self.testresc + " comment '" + mycomment + "'")
-        self.admin.assert_icommand("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
         self.admin.assert_icommand("iadmin modresc " + self.testresc + " comment ''")
-        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT', mycomment)
+        self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
 
     def test_irmtrash_admin_2461(self):
         # 'irmtrash -M' was not deleting the r_objt_metamap entries for  collections it was deleting
@@ -981,7 +981,7 @@ class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('irm -r {collection_basename}'.format(**vars()))
         self.admin.assert_icommand('irmtrash -M')
         self.admin.assert_icommand('iadmin rum')
-        self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT', a)
+        self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT_SINGLELINE', a)
 
     @unittest.skipIf(True, 'Enable once #2631 is fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log"')
     def test_rule_engine_2521(self):
@@ -1053,10 +1053,10 @@ acSetNumThreads() {
                 os.unlink(trigger_file)
 
     def test_storageadmin_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_domainadmin_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes domainadmin", 'STDOUT', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand_fail("iadmin mkuser nopes domainadmin", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_rodscurators_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")

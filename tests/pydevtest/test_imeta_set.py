@@ -17,7 +17,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin lu', 'STDOUT_MULTILINE', usernames)
 
         for u in usernames:
-            self.admin.assert_icommand('imeta ls -u ' + u, 'STDOUT', 'None')
+            self.admin.assert_icommand('imeta ls -u ' + u, 'STDOUT_SINGLELINE', 'None')
 
     def tearDown(self):
         usernames = [s.username for s in itertools.chain(self.admin_sessions, self.user_sessions)]
@@ -83,7 +83,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
         self.set_and_check_avu(user, 'att0', 'val1', '')
 
-        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
+        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT_SINGLELINE', 'units: unt0')
 
     def test_imeta_set_single_object_triple_to_double_empty_unit(self, user=None):
         if user is None:
@@ -92,7 +92,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
         self.set_and_check_avu(user, 'att0', 'val1', '""')
 
-        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
+        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT_SINGLELINE', 'units: unt0')
 
     def test_imeta_set_multi_object_triple(self):
         user1 = self.user0.username
@@ -135,7 +135,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
         self.admin.assert_icommand('imeta rm -u %s %s %s %s' % (user, 'att0', 'val0', 'unt0'))
         self.set_and_check_avu(user, 'att0', 'val0', '')
-        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
+        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT_SINGLELINE', 'units: unt0')
 
     def test_imeta_set_single_object_abandoned_avu_triple_to_double_empty_unit(self):
         user = self.user0.username
@@ -143,7 +143,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
         self.admin.assert_icommand('imeta rm -u %s %s %s %s' % (user, 'att0', 'val0', 'unt0'))
         self.set_and_check_avu(user, 'att0', 'val0', '""')
-        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT', 'units: unt0')
+        self.admin.assert_icommand_fail('imeta ls -u ' + user + ' att0', 'STDOUT_SINGLELINE', 'units: unt0')
 
     def test_imeta_set_single_object_multi_avu_removal(self):
         user = self.user0.username
@@ -156,6 +156,6 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         self.set_and_check_avu(user, 'att_new', 'val_new', 'unt_new')
 
         for a, v, u in original_avus:
-            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT', ['attribute: ' + a + '$'])
-            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT', ['value: ' + v + '$'])
-            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT', ['units:' + u + '$'])
+            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['attribute: ' + a + '$'])
+            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['value: ' + v + '$'])
+            self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['units:' + u + '$'])

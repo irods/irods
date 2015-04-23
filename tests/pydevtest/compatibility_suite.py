@@ -17,17 +17,17 @@ class Test_CompatibilitySuite(ResourceBase, unittest.TestCase):
         super(Test_CompatibilitySuite, self).tearDown()
 
     def test_imeta_set(self):
-        self.admin.assert_icommand('iadmin lu', 'STDOUT', self.admin.username)
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'None')
+        self.admin.assert_icommand('iadmin lu', 'STDOUT_SINGLELINE', self.admin.username)
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'None')
         self.admin.assert_icommand('imeta add -u ' + self.user0.username + ' att val')
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'attribute: att')
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'attribute: att')
         self.admin.assert_icommand('imeta set -u ' + self.user0.username + ' att newval')
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'value: newval')
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'value: newval')
         self.admin.assert_icommand('imeta set -u ' + self.user0.username + ' att newval someunit')
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'units: someunit')
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'units: someunit')
         self.admin.assert_icommand('imeta set -u ' + self.user0.username + ' att verynewval')
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'value: verynewval')
-        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT', 'units: someunit')
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'value: verynewval')
+        self.admin.assert_icommand('imeta ls -u ' + self.user0.username + ' att', 'STDOUT_SINGLELINE', 'units: someunit')
 
     def test_iphybun_n(self):
         self.admin.assert_icommand('imkdir testColl')
