@@ -107,7 +107,7 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
     int objSize, srcSize, status;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
-    char condStr[MAX_NAME_LEN], locChksum[NAME_LEN], *objChksum, *objName, *objPath;
+    char condStr[MAX_NAME_LEN], *objChksum, *objName, *objPath;
     /* retrieve the local file size */
     path p( inpPath );
     /* don't do anything if it is symlink */
@@ -139,25 +139,17 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
             if ( myRodsArgs->verifyChecksum == True ) {
                 if ( strcmp( objChksum, "" ) != 0 ) {
                     status = verifyChksumLocFile( inpPath, objChksum, NULL );
-                    if ( status == 0 ) {
-                        if ( strcmp( locChksum, objChksum ) != 0 ) {
-                            printf( "CORRUPTION: local file %s checksum not consistent with \
-                                    iRODS object %s/%s checksum.\n", inpPath, objPath, objName );
-                        }
-                    }
-                    else {
-                        printf( "ERROR: unable to compute checksum for local file %s.\n", inpPath );
+                    if ( status == USER_CHKSUM_MISMATCH ) {
+                        printf( "CORRUPTION: local file %s checksum not consistent with iRODS object %s/%s checksum.\n", inpPath, objPath, objName );
                     }
                 }
                 else {
-                    printf( "WARNING: checksum not available for iRODS object %s/%s, no checksum comparison \
-                            possible with local file %s .\n", objPath, objName, inpPath );
+                    printf( "WARNING: checksum not available for iRODS object %s/%s, no checksum comparison possible with local file %s .\n", objPath, objName, inpPath );
                 }
             }
         }
         else {
-            printf( "CORRUPTION: local file %s size not consistent with iRODS object %s/%s size.\n", \
-                    inpPath, objPath, objName );
+            printf( "CORRUPTION: local file %s size not consistent with iRODS object %s/%s size.\n", inpPath, objPath, objName );
         }
     }
 
