@@ -24,7 +24,8 @@ namespace irods {
             case '?':
             case ':':
             case '\\':
-                str << '\\';
+                str << '\\' << escape_char;
+                break;
             default:
                 str << escape_char;
         }
@@ -42,7 +43,8 @@ namespace irods {
                 case '^':
                 case '-':
                 case '\\':
-                    str << '\\';
+                    str << '\\' << *iter;
+                    break;
                 default:
                     str << *iter;
             }
