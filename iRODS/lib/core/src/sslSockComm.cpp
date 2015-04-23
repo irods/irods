@@ -140,18 +140,26 @@ sslEnd( rcComm_t *rcComm ) {
 
 int
 sslAccept( rsComm_t *rsComm ) {
-    int status;
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "sslAccept - failed in getRodsEnv : %d",
+            status );
+        return status;
+    }
 
     /* set up the context using a certificate file and separate
        keyfile passed through environment variables */
-    rsComm->ssl_ctx = sslInit( getenv( "irodsSSLCertificateChainFile" ),
-                               getenv( "irodsSSLCertificateKeyFile" ) );
+    rsComm->ssl_ctx = sslInit( env.irodsSSLCertificateChainFile,
+                               env.irodsSSLCertificateKeyFile );
     if ( rsComm->ssl_ctx == NULL ) {
         rodsLog( LOG_ERROR, "sslAccept: couldn't initialize SSL context" );
         return SSL_INIT_ERROR;
     }
 
-    status = sslLoadDHParams( rsComm->ssl_ctx, getenv( "irodsSSLDHParamsFile" ) );
+    status = sslLoadDHParams( rsComm->ssl_ctx, env.irodsSSLDHParamsFile );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "sslAccept: error setting Diffie-Hellman parameters" );
         SSL_CTX_free( rsComm->ssl_ctx );
@@ -591,21 +599,29 @@ sslWrite( void *buf, int len,
 static SSL_CTX*
 sslInit( char *certfile, char *keyfile ) {
     static int init_done = 0;
-    SSL_CTX *ctx;
-    char *ca_path;
-    char *ca_file;
-    char *verify_server;
+
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "sslInit - failed in getRodsEnv : %d",
+            status );
+        return NULL;
+
+    }
 
     if ( !init_done ) {
         SSL_library_init();
         SSL_load_error_strings();
         init_done = 1;
     }
+
     /* in our test programs we set up a null signal
        handler for SIGPIPE */
     /* signal(SIGPIPE, sslSigpipeHandler); */
 
-    ctx = SSL_CTX_new( SSLv23_method() );
+    SSL_CTX* ctx = SSL_CTX_new( SSLv23_method() );
 
     SSL_CTX_set_options( ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_SINGLE_DH_USE );
 
@@ -626,8 +642,8 @@ sslInit( char *certfile, char *keyfile ) {
     }
 
     /* set up CA paths and files here */
-    ca_path = getenv( "irodsSSLCACertificatePath" );
-    ca_file = getenv( "irodsSSLCACertificateFile" );
+    const char *ca_path = strcmp(env.irodsSSLCACertificatePath, "") ? env.irodsSSLCACertificatePath : NULL;
+    const char *ca_file = strcmp(env.irodsSSLCACertificateFile, "") ? env.irodsSSLCACertificateFile : NULL;
     if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             sslLogError( "sslInit: error loading CA certificate locations" );
@@ -641,7 +657,7 @@ sslInit( char *certfile, char *keyfile ) {
     /* if "none" is specified, we won't stop the SSL handshake
        due to certificate error, but will log messages from
        the verification callback */
-    verify_server = getenv( "irodsSSLVerifyServer" );
+    const char* verify_server = env.irodsSSLVerifyServer;
     if ( verify_server && !strcmp( verify_server, "none" ) ) {
         SSL_CTX_set_verify( ctx, SSL_VERIFY_NONE, sslVerifyCallback );
     }
@@ -799,7 +815,17 @@ sslVerifyCallback( int ok, X509_STORE_CTX *store ) {
 
 static int
 sslPostConnectionCheck( SSL *ssl, char *peer ) {
-    char *verify_server;
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "sslPostConnectionCheck - failed in getRodsEnv : %d",
+            status );
+        return status;
+
+    }
+
     X509 *cert;
     int match = 0;
     STACK_OF( GENERAL_NAMES ) *names;
@@ -808,7 +834,7 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
     char *namestr;
     char cn[256];
 
-    verify_server = getenv( "irodsSSLVerifyServer" );
+    const char* verify_server = env.irodsSSLVerifyServer;
     if ( verify_server && strcmp( verify_server, "hostname" ) ) {
         /* not being asked to verify that the peer hostname
            is in the certificate. */
