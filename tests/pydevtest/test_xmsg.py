@@ -1,3 +1,4 @@
+import shutil
 import sys
 import os
 import subprocess
@@ -12,35 +13,30 @@ import lib
 
 
 class Test_ixmsg(unittest.TestCase):
-    serverConfigFile = lib.get_irods_config_dir() + "/server_config.json"
+    serverConfigFile = lib.get_irods_config_dir() + '/server_config.json'
+    serverConfigFileBackup = serverConfigFile + '_orig'
     xmsgHost = 'localhost'
     xmsgPort = 1279
 
     def setUp(self):
         # add Xmsg settings to server_config.json
-        with open(self.serverConfigFile) as f:
-            contents = json.load(f)
-        os.system('cp {0} {0}_orig'.format(self.serverConfigFile))
-        contents["xmsg_host"] = self.xmsgHost
-        contents["xmsg_port"] = self.xmsgPort
-        with open(self.serverConfigFile, 'w') as f:
-            json.dump(contents, f)
+        shutil.copyfile(self.serverConfigFile, self.serverConfigFileBackup)
+        contents = lib.open_and_load_json_ascii(self.serverConfigFile)
+        update = {
+            'xmsg_host': self.xmsgHost,
+            'xmsg_port': self.xmsgPort,
+        }
+        lib.update_json_file_from_dict(self.serverConfigFile, update)
 
         # apparently needed by the server too...
         my_env = os.environ.copy()
         my_env['XMSG_HOST'] = self.xmsgHost
         my_env['XMSG_PORT'] = str(self.xmsgPort)
-
-        # restart server with Xmsg
         lib.restart_irods_server(env=my_env)
 
     def tearDown(self):
-        # revert to original server_config.json
-        os.system("mv -f %s_orig %s" % (self.serverConfigFile, self.serverConfigFile))
-
-        # restart server
-        my_env = os.environ.copy()
-        lib.restart_irods_server(env=my_env)
+        os.rename(self.serverConfigFileBackup, self.serverConfigFile)
+        lib.restart_irods_server()
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_send_and_receive_one_xmsg(self):

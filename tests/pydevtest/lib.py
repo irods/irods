@@ -300,7 +300,7 @@ def json_object_hook_ascii_list(l):
         if isinstance(i, unicode):
             i = i.encode('ascii')
         elif isinstance(i, list):
-            i = _decode_list(i)
+            i = json_object_hook_ascii_list(i)
         rv.append(i)
     return rv
 
@@ -312,7 +312,7 @@ def json_object_hook_ascii_dict(d):
         if isinstance(v, unicode):
             v = v.encode('ascii')
         elif isinstance(v, list):
-            v = _decode_list(v)
+            v = json_object_hook_ascii_list(v)
         rv[k] = v
     return rv
 
