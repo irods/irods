@@ -187,8 +187,9 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
         for er in expected_results:
             regex_pattern = er if use_regex else re.escape(er)
             if not re.search(regex_pattern, output):
-                print 'Outout not found\n'
+                print 'Output not found\n'
                 return False
+        return True
     elif check_type in ['STDOUT_SINGLELINE', 'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
         lines = stdout.splitlines() if check_type in ['STDOUT_SINGLELINE', 'STDOUT_MULTILINE'] else stderr.splitlines()
 
