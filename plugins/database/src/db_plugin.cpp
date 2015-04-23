@@ -345,7 +345,6 @@ void removeMetaMapAndAVU( char *dataObjNumber ) {
  */
 static int removeAVUs() {
     char tSQL[MAX_SQL_SIZE];
-    int status;
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "removeAVUs SQL 1 " );
@@ -365,8 +364,8 @@ static int removeAVUs() {
     snprintf( tSQL, MAX_SQL_SIZE,
               "delete from R_META_MAIN where meta_id in (select meta_id from R_META_MAIN except select meta_id from R_OBJT_METAMAP)" );
 #endif
-    status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-    rodsLog( LOG_NOTICE, "removeAVUs status=%d\n", status );
+    const int status =  cmlExecuteNoAnswerSql( tSQL, &icss );
+    rodsLog( LOG_DEBUG, "removeAVUs status=%d\n", status );
 
     return status;
 }
@@ -7314,8 +7313,8 @@ checkLevel:
             return ERROR(
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
-        } 
-        
+        }
+
         int temp_password_time = 0;
         ret = irods::get_advanced_setting<int>(
                   irods::CFG_DEF_TEMP_PASSWORD_LIFETIME,
@@ -7486,7 +7485,7 @@ checkLevel:
                        CAT_INVALID_ARGUMENT,
                        "null parameter" );
         }
-        
+
         int temp_password_time = 0;
         ret = irods::get_advanced_setting<int>(
                   irods::CFG_DEF_TEMP_PASSWORD_LIFETIME,
@@ -13566,43 +13565,32 @@ checkLevel:
 
     irods::error db_del_unused_avus_op(
         irods::plugin_context& _ctx ) {
-        // =-=-=-=-=-=-=-
-        // check the context
         irods::error ret = _ctx.valid();
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        // =-=-=-=-=-=-=-
-        // get a postgres object from the context
-        /*irods::postgres_object_ptr pg;
-        ret = make_db_ptr( _ctx.fco(), pg );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }*/
-
-        // =-=-=-=-=-=-=-
-        // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
         /*
            Remove any AVUs that are currently not associated with any object.
            This is done as a separate operation for efficiency.  See
            'iadmin h rum'.
         */
-        int status;
-        status = removeAVUs();
-        if ( status < 0 ) {
-            return ERROR( status, "removeAVUs failed" );
-        }
+        const int remove_status = removeAVUs();
+        int commit_status = 0;
 
-        if ( status == 0 ) {
-            status =  cmlExecuteNoAnswerSql( "commit", &icss );
-            return SUCCESS();
+        if (   remove_status == CAT_SUCCESS_BUT_WITH_NO_INFO
+            || remove_status == 0 ) {
+            commit_status = cmlExecuteNoAnswerSql( "commit", &icss );
         }
         else {
-            return ERROR( status, "commit failed" );
+            return ERROR( remove_status, "removeAVUs failed" );
+        }
+
+        if (   commit_status == CAT_SUCCESS_BUT_WITH_NO_INFO
+            || commit_status == 0 ) {
+            return SUCCESS();
+        } else {
+            return ERROR( commit_status, "commit failed" );
         }
 
     } // db_del_unused_avus_op
