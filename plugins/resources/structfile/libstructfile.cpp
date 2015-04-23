@@ -2256,9 +2256,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // set the compression flags given data_type
         if ( _data_type == ZIP_DT_STR ) {
-            if ( archive_write_add_filter_lzip( arch ) != ARCHIVE_OK ) {
+            if ( archive_write_set_format_zip( arch ) != ARCHIVE_OK ) {
                 std::stringstream msg;
-                msg << "bundle_cache_dir - failed to set compression to lzip for archive [";
+                msg << "bundle_cache_dir - failed to set format to zip for archive [";
                 msg << spec_coll->phyPath;
                 msg << "] with error string [";
                 msg << archive_error_string( arch );
@@ -2280,6 +2280,10 @@ extern "C" {
 
             }
 
+            // =-=-=-=-=-=-=-
+            // set the format of the tar archive
+            archive_write_set_format_ustar( arch );
+
         }
         else if ( _data_type == BZIP2_TAR_DT_STR ) {
             if ( archive_write_add_filter_bzip2( arch ) != ARCHIVE_OK ) {
@@ -2292,6 +2296,10 @@ extern "C" {
                 return ERROR( -1, msg.str() );
 
             }
+
+            // =-=-=-=-=-=-=-
+            // set the format of the tar archive
+            archive_write_set_format_ustar( arch );
 
         }
         else {
@@ -2306,11 +2314,11 @@ extern "C" {
 
             }
 
-        }
+            // =-=-=-=-=-=-=-
+            // set the format of the tar archive
+            archive_write_set_format_ustar( arch );
 
-        // =-=-=-=-=-=-=-
-        // set the format of the tar archive
-        archive_write_set_format_ustar( arch );
+        }
 
         // =-=-=-=-=-=-=-
         // extract the host location from the resource hierarchy
