@@ -56,14 +56,14 @@ rmPathFromCache( char *inPath, Hashtable *pathQueArray, pthread_mutex_t *lock ) 
 
 int updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache ) {
 
-    /* LOCK_STRUCT( *tmpPathCache ); */
+    LOCK_STRUCT( *tmpPathCache );
     tmpPathCache->stbuf.st_size = tmpPathCache->fileCache->fileSize;
     if ( tmpPathCache->fileCache->state != NO_FILE_CACHE ) {
         struct stat stbuf;
         if ( stat( tmpPathCache->fileCache->fileCachePath, &stbuf ) < 0 ) {
             int errsav = errno;
-            /* UNLOCK_STRUCT( *( tmpPathCache->fileCache ) ); */
-            /* UNLOCK_STRUCT( *tmpPathCache ); */
+            UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
+            UNLOCK_STRUCT( *tmpPathCache );
             return errsav ? ( -1 * errsav ) : -1;
         }
         /* update the size */
@@ -73,9 +73,9 @@ int updatePathCacheStatFromFileCache( pathCache_t *tmpPathCache ) {
         tmpPathCache->stbuf.st_ctim = stbuf.st_ctime; */
         tmpPathCache->stbuf.st_mtime = stbuf.st_mtime;
         tmpPathCache->stbuf.st_nlink = stbuf.st_nlink;
-        /* UNLOCK_STRUCT( *( tmpPathCache->fileCache ) ); */
+        UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
     }
-    /* UNLOCK_STRUCT( *tmpPathCache ); */
+    UNLOCK_STRUCT( *tmpPathCache );
     return 0;
 }
 
@@ -90,12 +90,9 @@ int pathNotExist( PathCacheTable *pctable, char *path ) {
 }
 
 int pathExist( PathCacheTable *pctable, char *inPath, fileCache_t *fileCache, struct stat *stbuf, pathCache_t **outPathCache ) {
-    fileCache_t *hdlr;
-    REF(hdlr, fileCache);
     rmPathFromCache( ( char * ) inPath, pctable->PathArrayTable, pctable->PathCacheLock );
     rmPathFromCache( ( char * ) inPath, pctable->NonExistPathTable, pctable->PathCacheLock );
     addPathToCache( inPath, fileCache, pctable->PathArrayTable, stbuf, outPathCache );
-    UNREF(hdlr, FileCache);
     return 0;
 }
 
@@ -135,13 +132,11 @@ int clearPathFromCache( PathCacheTable *pctable, char *inPath ) {
 }
 
 int addFileCacheForPath( pathCache_t *pathCache, fileCache_t *fileCache ) {
-    if(pathCache->fileCache != fileCache) {
-        if ( pathCache->fileCache != NULL ) {
-            /* todo close fileCache if necessary */
-            UNREF( pathCache->fileCache, FileCache );
-        }
-        REF( pathCache->fileCache, fileCache );
+    if ( pathCache->fileCache != NULL ) {
+        /* todo close fileCache if necessary */
+        UNREF( pathCache->fileCache, FileCache );
     }
+    REF( pathCache->fileCache, fileCache );
     return 0;
 }
 
