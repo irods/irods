@@ -638,6 +638,46 @@ class Test_UnixFileSystem_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCa
         lib.restart_irods_server()
         lib.assert_command('rm -f file.txt other.txt')
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
+    def test_ifsck__2650(self):
+        # local setup
+        filename = 'fsckfile.txt'
+        filepath = lib.create_local_testfile(filename)
+        full_logical_path = '/' + self.admin.zone_name + '/home/' + self.admin.username + '/' + self.admin._session_id + '/' + filename
+        # assertions
+        self.admin.assert_icommand('ils -L ' + filename, 'STDERR_SINGLELINE', 'does not exist')  # should not be listed
+        self.admin.assert_icommand('iput -K ' + filepath)  # iput
+        file_vault_full_path = os.path.join(lib.get_vault_session_path(self.admin), filename)
+        # method 1
+        self.admin.assert_icommand('ichksum -K ' + full_logical_path, 'STDOUT_MULTILINE',
+                            ['Total checksum performed = 1, Failed checksum = 0',
+                            'sha2:ED5ZjdVDhtL8Th/rYtIraU1m3qMYzT0wNGy53FDrFR4='])  # ichksum
+        # method 2
+        self.admin.assert_icommand("iquest \"select DATA_CHECKSUM where DATA_NAME = '%s'\"" % filename,
+                            'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:ED5ZjdVDhtL8Th/rYtIraU1m3qMYzT0wNGy53FDrFR4='])  # iquest
+        # method 3
+        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', filename)  # ils
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
+        # change content in vault
+        filename2 = 'samesize.txt'
+        filepath2 = lib.create_local_testfile(filename2)
+        output = commands.getstatusoutput('cp ' + filename2 + ' ' + file_vault_full_path)
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','checksum not consistent with iRODS object'])  # ifsck
+        # change size in vault
+        lib.cat(file_vault_full_path, 'extra letters')
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','size not consistent with iRODS object'])  # ifsck
+        ## unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
+        self.admin.assert_icommand('irm -U ' + full_logical_path)
+        self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['WARNING: checksum not available'])  # ifsck
+        self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT_MULTILINE',
+                            ['Total checksum performed = 1, Failed checksum = 0',
+                            'sha2:o4aFNLNuhWfF1AWiZrZUftnvV84e4hYEfToF5H0uiHI='])
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
+        # local cleanup
+        os.remove(filepath)
+        os.remove(filepath2)
+
 class Test_Passthru_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
