@@ -233,7 +233,10 @@ fi
 # =-=-=-=-=-=-=-
 # determine appropriate architecture
 unamem=`uname -m`
-if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
+if [[ "$unamem" == "ppc64le" ]] ; then
+    # need to investigate reason behind reversal -- 'le' to 'el'
+    arch="ppc64el"
+elif [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
     arch="amd64"
 else
     arch="i386"
