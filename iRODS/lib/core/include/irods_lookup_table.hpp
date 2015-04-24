@@ -131,7 +131,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // get a property from the table if it exists.  catch the exception in the case where
-            // the template types may not match and return sucess/fail
+            // the template types may not match and return success/fail
             template< typename T >
             error get( const std::string& _key, T& _val ) {
                 // =-=-=-=-=-=-=-
@@ -164,7 +164,7 @@ namespace irods {
                 }
 
                 // =-=-=-=-=-=-=-
-                // invalid locaiton in the code
+                // invalid location in the code
                 return ERROR( INVALID_LOCATION, "shouldn't get here." );
 
             } // get_property
