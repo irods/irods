@@ -173,6 +173,28 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
         /* dataObj exist */
         if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+            // if the resource hierarchy does not match the dest resc hier then this is an
+            // error as we cannot force a new copy of data over top of the old copy on a
+            // different resource
+            char* dst_resc_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+            if( dst_resc_kw ) {
+                std::string top_resc;
+                irods::hierarchy_parser parser;
+                parser.set_string( rodsObjStatOut->rescHier );
+                parser.first_resc( top_resc );
+                if( top_resc != dst_resc_kw ) {
+                    rodsLogAndErrorMsg(
+                        LOG_ERROR,
+                        &rsComm->rError,
+                        HIERARCHY_ERROR,
+                        "cannot force put [%s] to a different resource [%s] vs original [%s]",
+                        dataObjInp->objPath,
+                        dst_resc_kw,
+                        top_resc.c_str() );
+                    return HIERARCHY_ERROR;
+                }
+            }
+
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
 
             // =-=-=-=-=-=-=-
