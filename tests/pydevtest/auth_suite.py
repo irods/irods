@@ -161,11 +161,11 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
             self.auth_session.assert_icommand("icd")
             self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
 
-	    # reset server_config.json to original
-	    os.system('mv %sOrig %s' % (serverConfigFile, serverConfigFile))
+            # reset server_config.json to original
+            os.system('mv %sOrig %s' % (serverConfigFile, serverConfigFile))
 
-	    # reset client environment to original
-	    self.auth_session.environment_file_contents = auth_session_env_backup
+            # reset client environment to original
+            self.auth_session.environment_file_contents = auth_session_env_backup
 
             # clean up
             for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
@@ -173,7 +173,6 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
 
     # server reboot to pick up new irodsEnv and server settings
     lib.restart_irods_server()
->>>>>>> [#2614] use irods_environment.json values
 
     def test_iinit_repaving_2646(self):
         initial_contents = copy.deepcopy(self.admin.environment_file_contents)
