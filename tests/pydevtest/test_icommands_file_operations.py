@@ -38,6 +38,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                             "Extra files in vault:\n" + str(vault_files - set(local_files)))
         return (local_dir, local_files)
 
+    def test_iget_with_verify_to_stdout(self):
+        self.admin.assert_icommand("iget -K nopes -", 'STDERR_SINGLELINE', 'Cannot verify checksum if data is piped to stdout' )
+
     def test_iput_r(self):
         self.iput_r_large_collection(self.user0, "test_iput_r_dir", file_count=1000, file_size=100)
 
