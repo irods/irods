@@ -210,9 +210,18 @@ initRcatServerHostByFile() {
         for ( itr = env_obj.begin();
                 itr != env_obj.end();
                 ++itr ) {
-            std::string val = boost::any_cast <
-                              std::string > (
-                                  itr->second );
+            std::string val;
+            try {
+                val = boost::any_cast <
+                          std::string > (
+                          itr->second );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "initRcatServerHostByFile - failed to cast env var entry to string" );
+                continue;
+            }
+
             setenv(
                 itr->first.c_str(), // variable
                 val.c_str(),        // value
@@ -245,8 +254,15 @@ initRcatServerHostByFile() {
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
-            rule_arr += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            try {
+                rule_arr += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "initRcatServerHostByFile - failed to cast rule base file name entry to string" );
+                continue;
+            }
             rule_arr += prop_str + ",";
         }
 
@@ -288,8 +304,15 @@ initRcatServerHostByFile() {
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
-            rule_arr += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            try {
+                rule_arr += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "initRcatServerHostByFile - failed to cast rule function file name entry to string" );
+                continue;
+            }
             rule_arr += prop_str + ",";
         }
 
@@ -329,8 +352,15 @@ initRcatServerHostByFile() {
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
-            rule_arr += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            try {
+                rule_arr += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "initRcatServerHostByFile - failed to cast rule data variable file name entry to string" );
+                continue;
+            }
             rule_arr += prop_str + ",";
         }
 
@@ -469,15 +499,25 @@ initRcatServerHostByFile() {
     if ( ret.ok() ) {
         for ( size_t i = 0; i < fed_arr.size(); ++i ) {
             object_t& obj = fed_arr[ i ];
-            std::string fed_zone_key   = boost::any_cast< std::string >(
-                                            obj[ irods::CFG_ZONE_KEY_KW ] );
-            std::string fed_zone_name = boost::any_cast< std::string >(
-                                            obj[irods::CFG_ZONE_NAME_KW ] );
-            std::string fed_zone_negotiation_key = boost::any_cast< std::string >(
-                                           obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
+            std::string fed_zone_key, fed_zone_name, fed_zone_negotiation_key;
+            try {
+                fed_zone_key = boost::any_cast< std::string >(
+                                   obj[ irods::CFG_ZONE_KEY_KW ] );
+                fed_zone_name = boost::any_cast< std::string >(
+                                    obj[irods::CFG_ZONE_NAME_KW ] );
+                fed_zone_negotiation_key = boost::any_cast< std::string >(
+                                               obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "initRcatServerHostByFile - failed to cast federation entry to string" );
+                continue;
+            }
+
             // store in remote_SID_key_map
             remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, fed_zone_negotiation_key );
-        }
+
+        } // for i
     }
     else {
         // try the old remote sid config
