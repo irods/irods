@@ -12,11 +12,35 @@
 #include <string>
 #include <iostream>
 
+
+void usage() {
+    const char *msgs[] = {
+        "Usage: izonereport",
+        "izonereport queries the entire iRODS Zone for configuration information.",
+        "This configuration information be in the form of a json documentw which",
+        "will validate against a particular version as found on http://schemas.irods.org.",
+        " -h  this help",
+        ""
+    };
+    int i;
+    for ( i = 0;; i++ ) {
+        if ( strlen( msgs[i] ) == 0 ) {
+            break;
+        }
+        printf( "%s\n", msgs[i] );
+    }
+    printReleaseInfo( "iput" );
+}
+
 int
-main( int, char** ) {
+main( int _argc, char** _argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
+    if( _argc > 1 ) {
+        usage();
+        return 0;
+    }
 
     rodsEnv myEnv;
     int status = getRodsEnv( &myEnv );
