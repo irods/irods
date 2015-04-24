@@ -59,7 +59,7 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.__exit__()
         lib.rmuser(self.auth_session.username)
 
-    @unittest.skipIf(True, '''Renable after #2614 fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server"''')
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server')
     def test_authentication_PAM_without_negotiation(self):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
@@ -107,7 +107,7 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
         # server reboot to pick up new irodsEnv and server settings
         lib.restart_irods_server()
 
-    @unittest.skipIf(True, '''Renable after #2614 fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server"''')
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server')
     def test_authentication_PAM_with_server_params(self):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
@@ -171,8 +171,8 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
             for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
                 os.unlink(os.path.join(lib.get_irods_top_level_dir(),file))
 
-    # server reboot to pick up new irodsEnv and server settings
-    lib.restart_irods_server()
+        # server reboot to pick up new irodsEnv and server settings
+        lib.restart_irods_server()
 
     def test_iinit_repaving_2646(self):
         initial_contents = copy.deepcopy(self.admin.environment_file_contents)
