@@ -29,11 +29,11 @@ void usage() {
         }
         printf( "%s\n", msgs[i] );
     }
-    printReleaseInfo( "iput" );
+    printReleaseInfo( "izonereport" );
 }
 
 int
-main( int _argc, char** _argv ) {
+main( int _argc, char** ) {
 
     signal( SIGPIPE, SIG_IGN );
 
