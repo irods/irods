@@ -218,8 +218,10 @@ BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 EPMCMD="external/epm/epm"
 cd $BUILDDIR/iRODS
 echo "Build Directory set to [$BUILDDIR]"
-# read iRODS Version from file
-source ../VERSION
+# read iRODS Version from JSON
+IRODSVERSION=`python -c "import json; d = json.loads(open('../VERSION.json.dist').read()); print d['irods_version']"`
+echo "IRODSVERSION=$IRODSVERSION" > ../VERSION.tmp # needed for Makefiles
+IRODSVERSIONINT=${IRODSVERSION//\./0}0
 echo "Detected iRODS Version to Build [$IRODSVERSION]"
 echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
 # detect operating system
@@ -506,6 +508,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf $IRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
+    rm -f VERSION.tmp
     rm -f VERSION.json
     rm -rf build
     rm -f packaging/irods-dev.list

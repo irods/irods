@@ -4,6 +4,7 @@ doxygen/html
 mkdocs/html
 docs/icommands
 irods_external.tar.gz
+VERSION.tmp
 VERSION.json
 *.pyc
 *.so

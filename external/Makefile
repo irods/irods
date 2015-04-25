@@ -1,4 +1,4 @@
-include ../VERSION
+include ../VERSION.tmp
 
 include ../iRODS/config/config.mk
 
