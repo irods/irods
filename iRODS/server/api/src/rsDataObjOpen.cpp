@@ -65,8 +65,11 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         // determine the resource hierarchy if one is not provided
         if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
-                               rsComm, dataObjInp, hier );
+            irods::error ret = irods::resolve_resource_hierarchy( 
+                                   irods::OPEN_OPERATION,
+                                   rsComm, 
+                                   dataObjInp, 
+                                   hier );
             if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "failed in irods::resolve_resource_hierarchy for [";

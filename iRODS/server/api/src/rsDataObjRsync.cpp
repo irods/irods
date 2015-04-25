@@ -71,6 +71,31 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                            remoteZoneOpr );
     }
 
+    // =-=-=-=-=-=-=-
+    // determine the resource hierarchy if one is not provided
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        std::string       hier;
+        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
+                           rsComm, dataObjInp, hier );
+        if ( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in irods::resolve_resource_hierarchy for [";
+            msg << dataObjInp->objPath << "]";
+            irods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+
+
+
     if ( remoteFlag < 0 ) {
         return remoteFlag;
     }

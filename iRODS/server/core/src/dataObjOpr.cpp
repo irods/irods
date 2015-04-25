@@ -493,6 +493,9 @@ sortObjInfo(
     return 0;
 }
 
+// determine if a forced open is done to a resource which does not have
+// an original copy of the data object
+
 /* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
  * If RESC_HIER_STR_KW is set matching resc obj is first.
  * If it is for read (writeFlag == 0), discard old copies, then cache first,
@@ -504,9 +507,11 @@ int sortObjInfoForOpen(
     dataObjInfo_t** dataObjInfoHead,
     keyValPair_t*   condInput,
     int             writeFlag ) {
+
     int result = 0;
     char* resc_hier = getValByKey( condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
+irods::stacktrace st; st.trace(); st.dump();
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No resource hierarchy specified in keywords.";
