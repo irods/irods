@@ -17,8 +17,8 @@ void usage() {
     const char *msgs[] = {
         "Usage: izonereport",
         "izonereport queries the entire iRODS Zone for configuration information.",
-        "This configuration information be in the form of a json documentw which",
-        "will validate against a particular version as found on http://schemas.irods.org.",
+        "This configuration information will be generated in the form of a JSON",
+        "document which will validate using schemas found at http://schemas.irods.org.",
         " -h  this help",
         ""
     };
