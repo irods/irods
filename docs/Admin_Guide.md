@@ -113,7 +113,7 @@ The `setup_irods.sh` script will ask for the following eighteen pieces of inform
 5. Parallel Port Range (Begin)
 6. Parallel Port Range (End)
 7. Vault Directory
-8. zone_id
+8. zone_key
 9. negotiation_key
 10. Control Plane Port
 11. Control Plane Key
@@ -165,7 +165,7 @@ The `setup_irods.sh` script will ask for the following fourteen pieces of inform
 4. Parallel Port Range (Begin)
 5. Parallel Port Range (End)
 6. Vault Directory
-7. zone_id
+7. zone_key
 8. negotiation_key
 9. Control Plane Port
 10. Control Plane Key
@@ -268,7 +268,7 @@ iRODS port range (end) [20199]:
 
 iRODS Vault directory [/full/path/to/Vault]:
 
-iRODS server's zone_id [TEMPORARY_zone_id]:
+iRODS server's zone_key [TEMPORARY_zone_key]:
 
 iRODS server's negotiation_key [TEMPORARY_32byte_negotiation_key]:
 
@@ -286,7 +286,7 @@ iRODS Zone:             tempZone
 Range (Begin):          20000
 Range (End):            20199
 Vault Directory:        /full/path/to/Vault
-zone_id:                TEMPORARY_zone_id
+zone_key:               TEMPORARY_zone_key
 negotiation_key:        TEMPORARY_32byte_negotiation_key
 Control Plane Port:     1248
 Control Plane Key:      TEMPORARY__32byte_ctrl_plane_key
@@ -394,16 +394,16 @@ irods@hostname:~/ $ ils
 /<newzonename>/home/rods:
 ~~~
 
-### Changing the zone_id and negotiation_key
+### Changing the zone_key and negotiation_key
 
-iRODS 4.1+ servers use the `zone_id` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`:
+iRODS 4.1+ servers use the `zone_key` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`:
 
 ~~~
-"zone_id": "TEMPORARY_zone_id",
+"zone_key": "TEMPORARY_zone_key",
 "negotiation_key":   "TEMPORARY_32byte_negotiation_key",
 ~~~
 
-The `zone_id` can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see [Server Authentication](#server-authentication) for more information).
+The `zone_key` can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see [Server Authentication](#server-authentication) for more information).
 
 The following error will be logged if a negotiation_key is missing:
 
@@ -473,7 +473,7 @@ It is best to change your Zone name before adding new users as any existing user
 
 ## Upgrading
 
-Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see [Changing the zone_id and negotiation_key](#changing-the-zone_id-and-negotiation_key) for information on server-server authentication.
+Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see [Changing the zone_key and negotiation_key](#changing-the-zone_key-and-negotiation_key) for information on server-server authentication.
 
 ### RPM based systems
 
@@ -528,7 +528,7 @@ Primary reasons for using Zone Federation include:
 
 To federate Zone A and Zone B, administrators in each zone must:
 
-1. Share and properly define their `zone_id` values [Between Two Zones](#between-two-zones)
+1. Share and properly define their `zone_key` values [Between Two Zones](#between-two-zones)
 2. Define remote zones in their respective iCAT, and
 3. Define remote users in their respective iCAT before any access permissions can be granted.
 
@@ -570,10 +570,10 @@ ZoneB $ iget /ZoneA/home/rods/myFile
 
 ### Within A Zone
 
-When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure the `zone_id` to cause the iRODS system to authenticate the servers themselves. This `zone_id` should be a unique and arbitrary string (maximum alphanumeric length of 50), one for your whole zone:
+When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure the `zone_key` to cause the iRODS system to authenticate the servers themselves. This `zone_key` should be a unique and arbitrary string (maximum alphanumeric length of 50), one for your whole zone:
 
 ~~~
-"zone_id": "SomeChosenIDString",
+"zone_key": "SomeChosenKeyString",
 ~~~
 
 This allows the resource servers to verify the identity of the iCAT server beyond just relying on DNS.
@@ -586,14 +586,14 @@ For GSI, users can set the `irodsServerDn` variable to do mutual authentication.
 
 When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password).  Passwords are never sent across federated zones, they always remain in their home zone.
 
-To make this more secure, the iRODS system uses a `zone_id` to authenticate the servers in `server_config.json`, via a similar method as iRODS passwords. This `zone_id` should be a unique and arbitrary string, one for each zone.
+To make this more secure, the iRODS system uses a `zone_key` to authenticate the servers in `server_config.json`, via a similar method as iRODS passwords. This `zone_key` should be a unique and arbitrary string, one for each zone.
 
 To configure this, add items to the `/etc/irods/server_config.json` file.
 
-`zone_id` is for the servers [Within A Zone](#within-a-zone), for example:
+`zone_key` is for the servers [Within A Zone](#within-a-zone), for example:
 
 ~~~
-"zone_id": "asdf1234",
+"zone_key": "asdf1234",
 ~~~
 
 Add an object to the "federation" array for each remote zone, for example:
@@ -602,13 +602,13 @@ Add an object to the "federation" array for each remote zone, for example:
 "federation": [
     {
         "zone_name": "anotherZone",
-        "zone_id": "ghjk6789",
+        "zone_key": "ghjk6789",
         "negotiation_key": "abcdefghijklmnopqrstuvwxyzabcdef"
     }
 ]
 ~~~
 
-When anotherZone users connect, the system will then confirm that anotherZone's `zone_id` is 'ghjk6789'.
+When anotherZone users connect, the system will then confirm that anotherZone's `zone_key` is 'ghjk6789'.
 
 Mutual authentication between servers is always on across Federations.
 
