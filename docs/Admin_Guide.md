@@ -504,7 +504,7 @@ Upgrading from iRODS 3.3.x to iRODS 4.0+ is not supported with an automatic scri
 9. Patch database with provided upgrade SQL file ( psql ICAT < `packaging/upgrade-3.3.xto4.0.0.sql` )
 10. If necessary, migrate 3.3.x in-place iCAT database to the system database installation.  It is recommended to dump and restore your database into the system installation.  This will allow the original database to be uninstalled completely, once the iRODS upgrade is confirmed.
 11. Provide a database user 'irods', database password, and owner permissions for that database user to the new system-installed iCAT.
-12. Manually update any changes to 'core.re' and 'server.config'.  Keep in mind immediate replication rules (`acPostProcForPut`, etc.) may be superceded by your new resource composition.
+12. Manually update any changes to 'core.re' and 'server_config.json'.  Keep in mind immediate replication rules (`acPostProcForPut`, etc.) may be superceded by your new resource composition.
 13. Run `./packaging/setup_irods.sh` (recommended) OR Manually update all 4.0+ configuration files given previous 3.3.x configuration (.irodsEnv, .odbc.ini DSN needs to be set to either 'postgres', 'mysql', or 'oracle').  The automatic ``./packaging/setup_irods.sh`` script will work only with the system-installed database server.
 14. Confirm all local at-rest data (any local iRODS Vault paths) has read and write permissions for the new (default) 'irods' unix service account.
 15. Start new 4.0+ iCAT server

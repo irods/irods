@@ -292,7 +292,7 @@ usage() {
         "The -H and -R option can be used to specify other servers for the",
         "info display. The -z option can be used to specify a remote zone for",
         "the info display. If the -a option is used, agent info for all servers",
-        "in the iRods federation will be displayed.",
+        "in the iRODS federation will be displayed.",
         " ",
         "By default, a line is output for each connection. Each line contains",
         "items given in the following order:",
