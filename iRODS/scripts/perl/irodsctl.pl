@@ -961,7 +961,7 @@ sub preflight_check
     $retval = preflight_run("$VALIDATE $configDir/host_access_control_config.json $SCHEMA_ROOT_URL/host_access_control_config.json");
     if ( $retval == 0 ){ return 0; }
     # iCAT server
-    if ( -e $configDir/database_config.json )
+    if ( -e "$configDir/database_config.json" )
     {
         $retval = preflight_run("$VALIDATE $configDir/database_config.json $SCHEMA_ROOT_URL/database_config.json");
         if ( $retval == 0 ){ return 0; }
