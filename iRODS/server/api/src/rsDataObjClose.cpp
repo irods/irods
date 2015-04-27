@@ -37,6 +37,7 @@
 #include "irods_file_object.hpp"
 #include "irods_serialization.hpp"
 #include "irods_exception.hpp"
+#include "irods_server_api_call.hpp"
 
 
 int
@@ -84,7 +85,14 @@ irsDataObjClose(
             char fd_string[NAME_LEN];
             snprintf( fd_string, sizeof( fd_string ), "%-d", L1desc[l1descInx].lockFd );
             addKeyVal( &L1desc[l1descInx].dataObjInp->condInput, LOCK_FD_KW, fd_string );
-            rsDataObjUnlock( rsComm, L1desc[l1descInx].dataObjInp );
+            irods::server_api_call(
+                DATA_OBJ_UNLOCK_AN,
+                rsComm,
+                L1desc[l1descInx].dataObjInp,
+                NULL,
+                ( void** ) NULL,
+                NULL );
+
             L1desc[l1descInx].lockFd = -1;
         }
         // =-=-=-=-=-=-=-

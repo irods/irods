@@ -34,6 +34,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_server_api_call.hpp"
 
 int
 rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
@@ -111,14 +112,20 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     char * lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
     int lockFd = -1; // JMC - backport 4604
     if ( lockType != NULL ) {
-        lockFd = rsDataObjLock( rsComm, dataObjInp );
+        lockFd = irods::server_api_call(
+                         DATA_OBJ_LOCK_AN,
+                         rsComm,
+                         dataObjInp,
+                         NULL,
+                         ( void** ) NULL,
+                         NULL );
         if ( lockFd > 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
         }
         else {
             rodsLogError( LOG_ERROR, lockFd,
-                          "_rsDataObjOpen: rsDataObjLock error for %s. lockType = %s",
+                          "_rsDataObjOpen: lock error for %s. lockType = %s",
                           dataObjInp->objPath, lockType );
             return lockFd;
         }
@@ -147,7 +154,14 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 char fd_string[NAME_LEN];
                 snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
                 addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
-                rsDataObjUnlock( rsComm, dataObjInp );
+                irods::server_api_call(
+                    DATA_OBJ_UNLOCK_AN,
+                    rsComm,
+                    dataObjInp,
+                    NULL,
+                    ( void** ) NULL,
+                    NULL );
+
             }
         }
         return status;
@@ -160,7 +174,15 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 char fd_string[NAME_LEN];
                 snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
                 addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
-                rsDataObjUnlock( rsComm, dataObjInp );
+                irods::server_api_call(
+                    DATA_OBJ_UNLOCK_AN,
+                    rsComm,
+                    dataObjInp,
+                    NULL,
+                    ( void** ) NULL,
+                    NULL );
+
+
             }
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -175,7 +197,14 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 char fd_string[NAME_LEN];
                 snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
                 addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
-                rsDataObjUnlock( rsComm, dataObjInp );
+                irods::server_api_call(
+                    DATA_OBJ_UNLOCK_AN,
+                    rsComm,
+                    dataObjInp,
+                    NULL,
+                    ( void** ) NULL,
+                    NULL );
+
             }
             return status;
         }
@@ -196,7 +225,13 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             char fd_string[NAME_LEN];
             snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
             addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
-            rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
+            irods::server_api_call(
+                DATA_OBJ_UNLOCK_AN,
+                rsComm,
+                dataObjInp,
+                NULL,
+                ( void** ) NULL,
+                NULL );
         }
         freeAllDataObjInfo( dataObjInfoHead );
         return status;
@@ -217,7 +252,13 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                     char fd_string[NAME_LEN];
                     snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
                     addKeyVal( &dataObjInp->condInput, LOCK_FD_KW, fd_string );
-                    rsDataObjUnlock( rsComm, dataObjInp );    // JMC - backport 4604
+                    irods::server_api_call(
+                        DATA_OBJ_UNLOCK_AN,
+                        rsComm,
+                        dataObjInp,
+                        NULL,
+                        ( void** ) NULL,
+                        NULL );
                 }
                 return status;
             }
