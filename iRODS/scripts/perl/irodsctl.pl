@@ -961,7 +961,7 @@ sub preflight_check
     $retval = preflight_run("$VALIDATE $configDir/host_access_control_config.json $SCHEMA_ROOT_URL/host_access_control_config.json");
     if ( $retval == 0 ){ return 0; }
     # iCAT server
-    if ( ! -e $irodsServer )
+    if ( -e $configDir/database_config.json )
     {
         $retval = preflight_run("$VALIDATE $configDir/database_config.json $SCHEMA_ROOT_URL/database_config.json");
         if ( $retval == 0 ){ return 0; }
@@ -1002,12 +1002,12 @@ sub startIrods
                 printError( "    is not writable.  Please chmod it and retry.\n" );
                 exit( 1 );
         }
-#        if ( 0 == preflight_check( ) )
-#        {
-#                printError( "Preflight Check problem:\n" );
-#                printError( "   JSON Configuration Validation failed.\n" );
-#                exit( 1 );
-#        }
+        if ( 0 == preflight_check( ) )
+        {
+                printError( "Preflight Check problem:\n" );
+                printError( "   JSON Configuration Validation failed.\n" );
+                exit( 1 );
+        }
 
         # Test for iRODS port in use
         my $portTestLimit = 5;
