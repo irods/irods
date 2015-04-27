@@ -7,7 +7,7 @@
     "environment_variables": {},
     "federation": [],
     "icat_host": null,
-    "match_hash_policy": "not_strict",
+    "match_hash_policy": "compatible",
     "negotiation_key": "TEMPORARY_32byte_negotiation_key",
     "re_data_variable_mapping_set": [
         {
