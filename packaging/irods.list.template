@@ -106,6 +106,7 @@ $RESOURCE=true
 %requires python
 %requires openssl
 %requires python-psutil
+%requires python-requests
 
 %endif
 
