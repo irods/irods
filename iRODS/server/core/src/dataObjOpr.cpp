@@ -511,7 +511,6 @@ int sortObjInfoForOpen(
     int result = 0;
     char* resc_hier = getValByKey( condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
-irods::stacktrace st; st.trace(); st.dump();
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No resource hierarchy specified in keywords.";
