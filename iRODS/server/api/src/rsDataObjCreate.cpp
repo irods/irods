@@ -193,7 +193,6 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         /* dataObj exist */
         if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
-
             // =-=-=-=-=-=-=-
             // re-determine the resource hierarchy since this is an open instead of a create
             std::string       hier;
@@ -207,7 +206,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                         &rsComm->rError,
                         status,
                         "Cannot overwrite replica of [%s] to resource [%s] as no prior replica exists on that resource",
-                        dataObjInp->condInput,
+                        dataObjInp->objPath,
                         dst_resc_kw );
                 } else {
                     std::stringstream msg;
