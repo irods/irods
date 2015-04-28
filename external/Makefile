@@ -9,7 +9,7 @@ MAKEFLAGS += --no-print-directory
 RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
 RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 
-.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
+.PHONY : default fetch build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
@@ -45,7 +45,6 @@ ZEROMQVERSIONMAKE=$(ZEROMQVERSION)/Makefile
 CPPZMQVERSIONARCHIVE=$(CPPZMQVERSION).tar.gz
 CPPZMQVERSIONMAKE=$(CPPZMQVERSION)/Makefile
 
-FAKETARGETFORMAKE=FakeTargetForMake
 
 LIBARCHIVESEDCMD="/^\#ifdef HAVE_LINUX_FIEMAP_H/i \#ifdef HAVE_LINUX_TYPES_H\x0a\#include \<linux/types.h\>\x0a\#endif"
 
@@ -54,10 +53,16 @@ PG_VERSION=9.3.4
 UNIXODBC_VERSION=2.2.12
 PGUNIXODBCARCHIVE=postgresql-$(PG_VERSION)_unixODBC-$(UNIXODBC_VERSION)-$(OSNAME).tar.gz
 
-default :
+default : fetch
+
+fetch :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
-	@curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
-	@$(MAKE) $(FAKETARGETFORMAKE)
+	@filemtime=`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`; \
+		curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
+		if [ "$$filemtime" != "`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`" ] ; then \
+			echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
+			tar zxf $(IRODSEXTERNALLOCAL); \
+		fi
 
 $(PGUNIXODBCARCHIVE) :
 	echo "Getting PostgreSQL and unixODBC source for MacOSX..."; \
@@ -80,11 +85,6 @@ build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
 		cd ../../../../; \
 		$(MAKE) distclean;
 
-$(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
-	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
-	@tar zxf $(IRODSEXTERNALLOCAL)
-	@touch $(FAKETARGETFORMAKE)
-
 ifeq ($(OS_platform), osx_platform)
 build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
 else
@@ -93,9 +93,8 @@ endif
 
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
-	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
+	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" *
 	@cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
-	@touch $(FAKETARGETFORMAKE)
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -321,4 +320,3 @@ clean :
 	@echo "Cleaning $(IRODSEXTERNALARCHIVE)"
 	@rm -f $(IRODSEXTERNALARCHIVE)
 	@rm -f $(IRODSEXTERNALLOCAL)
-	@rm -f ${FAKETARGETFORMAKE}
