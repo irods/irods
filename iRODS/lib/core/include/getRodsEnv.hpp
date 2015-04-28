@@ -58,9 +58,7 @@ typedef struct {
     // advanced settings
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
-    int irodsMaximumNumberTransferThreads;
     int irodsTransBufferSizeForParaTrans;
-    
 
 } rodsEnv;
 

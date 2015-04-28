@@ -38,8 +38,6 @@ namespace irods {
         "maximum_size_for_single_buffer_in_megabytes" );
     const std::string CFG_DEF_NUMBER_TRANSFER_THREADS( 
         "default_number_of_transfer_threads" );
-    const std::string CFG_MAX_NUMBER_TRANSFER_THREADS( 
-        "maximum_number_of_transfer_threads" );
     const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS( 
         "transfer_chunk_size_for_parallel_transfer_in_megabytes" );
     const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS( 

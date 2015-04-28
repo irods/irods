@@ -974,7 +974,6 @@ sub configureIrodsUser
         "    \"irods_server_control_plane_encryption_algorithm\": \"AES-256-CBC\",\n" .
         "    \"irods_maximum_size_for_single_buffer_in_megabytes\": 32,\n" .
         "    \"irods_default_number_of_transfer_threads\": 4,\n" .
-        "    \"irods_maximum_number_of_transfer_threads\": 64,\n" .
         "    \"irods_transfer_buffer_size_for_parallel_transfer_in_megabytes\": 4\n" .
         "}\n"
          );

@@ -204,6 +204,11 @@ extern "C" {
             return SYS_INVALID_INPUT_PARAM;
         }
 
+        // defaults for advanced settings
+        _env->irodsMaxSizeForSingleBuffer       = 32;
+        _env->irodsDefaultNumberTransferThreads = 4;
+        _env->irodsTransBufferSizeForParaTrans  = 4;
+
         irods::environment_properties& props =
             irods::environment_properties::getInstance();
         irods::error ret = props.capture_if_needed();
@@ -449,12 +454,6 @@ extern "C" {
             props,
             irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
             _env->irodsDefaultNumberTransferThreads );
-
-        capture_integer_property(
-            msg_lvl,
-            props,
-            irods::CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS,
-            _env->irodsMaximumNumberTransferThreads );
 
         capture_integer_property(
             msg_lvl,
@@ -741,11 +740,6 @@ extern "C" {
         capture_integer_env_var(
             env_var,
             _env->irodsDefaultNumberTransferThreads );
-
-        env_var = irods::CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS;
-        capture_integer_env_var(
-            env_var,
-            _env->irodsMaximumNumberTransferThreads );
 
         env_var = irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS;
         capture_integer_env_var(
