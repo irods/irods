@@ -109,9 +109,12 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     memset( &conn->transStat, 0, sizeof( transStat_t ) );
     memset( &dataObjInpBBuf, 0, sizeof( dataObjInpBBuf ) );
 
-    rodsEnv env;
-    getRodsEnv( &env );
-    int single_buff_sz = env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
+    rodsEnv rods_env;
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
+    int single_buff_sz = rods_env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
     if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
         if ( dataObjInp->dataSize > single_buff_sz ) {
             rmKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW );
@@ -202,9 +205,12 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                     portalOprOut->portList.portNum, portalOprOut->portList.cookie );
         }
         /* some sanity check */
-        rodsEnv env;
-        getRodsEnv( &env );
-        if ( portalOprOut->numThreads >= 20 * env.irodsDefaultNumberTransferThreads ) {
+        rodsEnv rods_env;
+        if ( int status = getRodsEnv( &rods_env ) ) {
+            rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+            return status;
+        }
+        if ( portalOprOut->numThreads >= 20 * rods_env.irodsDefaultNumberTransferThreads ) {
             rcOprComplete( conn, SYS_INVALID_PORTAL_OPR );
             free( portalOprOut );
             return SYS_INVALID_PORTAL_OPR;
