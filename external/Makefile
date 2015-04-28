@@ -58,15 +58,15 @@ default : fetch
 fetch :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
 	@filemtime=`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`; \
-		curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
+		$(V_at)curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
 		if [ "$$filemtime" != "`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`" ] ; then \
-			echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
-			tar zxf $(IRODSEXTERNALLOCAL); \
+			@echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
+			$(V_at)tar zxf $(IRODSEXTERNALLOCAL); \
 		fi
 
 $(PGUNIXODBCARCHIVE) :
 	echo "Getting PostgreSQL and unixODBC source for MacOSX..."; \
-		curl -o $(PGUNIXODBCARCHIVE) -z $(PGUNIXODBCARCHIVE) $(RENCI_FTP_EXTERNAL)/$(PGUNIXODBCARCHIVE) > /dev/null 2>&1;
+		$(V_at)curl -o $(PGUNIXODBCARCHIVE) -z $(PGUNIXODBCARCHIVE) $(RENCI_FTP_EXTERNAL)/$(PGUNIXODBCARCHIVE) > /dev/null 2>&1;
 
 postgresql-$(PG_VERSION)/Makefile : $(PGUNIXODBCARCHIVE)
 	tar zxf $(PGUNIXODBCARCHIVE); \
@@ -93,8 +93,8 @@ endif
 
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
-	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" *
-	@cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
+	$(V_at)tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" *
+	$(V_at)cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1

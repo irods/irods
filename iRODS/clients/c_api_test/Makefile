@@ -57,7 +57,7 @@ LDFLAGS += -lstdc++
 LDFLAGS += -rdynamic
 
 default:
-	@$(GCC) $(CFLAGS) -o mytest test.c $(LDFLAGS)
+	$(V_at)$(GCC) $(CFLAGS) -o mytest test.c $(LDFLAGS)
 
 clean:
 	@echo "Cleaning C API test..."

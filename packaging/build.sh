@@ -10,6 +10,7 @@ CPUJOBS=""
 RELEASE="0"
 BUILDIRODS="1"
 PORTABLE="0"
+VERBOSE="0"
 COVERAGEBUILDDIR="/var/lib/irods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
@@ -29,9 +30,11 @@ Options:
 -r      Build a release package (no debugging information, optimized)
 -s      Skip compilation of iRODS source
 -p      Portable option, ignores OS and builds a tar.gz
+-v      Show the actual compilation commands executed
 
 Long Options:
 --run-in-place    Build server for in-place execution (not recommended)
+--verbose         Show the actual compilation commands executed
 
 Examples:
 $SCRIPTNAME icat postgres
@@ -89,6 +92,7 @@ do
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
         --portable) args="${args}-p ";;
+        --verbose) args="${args}-v ";;
         --run-in-place) args="${args}-z ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
@@ -98,7 +102,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chfj:rspz" opt; do
+while getopts ":chfj:rspvz" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -131,6 +135,10 @@ while getopts ":chfj:rspz" opt; do
         p)
         PORTABLE="1"
         echo "-p detected -- Building portable package"
+        ;;
+        v)
+        VERBOSE="1"
+        echo "-v/--verbose detected -- Showing compilation commands"
         ;;
         z)
         RUNINPLACE="1"
@@ -276,7 +284,12 @@ detect_number_of_cpus_and_set_makejcmd() {
     else
         CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
     fi
-    MAKEJCMD="make --no-print-directory -j $CPUCOUNT"
+    if [ "$VERBOSE" == "1" ] ; then
+        VERBOSITYOPTION="VERBOSE=1"
+    else
+        VERBOSITYOPTION="--no-print-directory"
+    fi
+    MAKEJCMD="make $VERBOSITYOPTION -j $CPUCOUNT"
 
     # print out CPU information
     echo "${text_cyan}${text_bold}-------------------------------------"

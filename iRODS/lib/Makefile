@@ -199,8 +199,8 @@ $(LIBRARY): $(OBJS) $(BOOST_LIBS)
 #	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
 	@echo "Building lib$(LIBRARY_NAME).a"
 	@rm -f $(LIBRARY)
-	@$(AR) $(AROPT) $(LIBRARY) $^
-	@$(RANLIB) $(LIBRARY)
+	$(V_at)$(AR) $(AROPT) $(LIBRARY) $^
+	$(V_at)$(RANLIB) $(LIBRARY)
 
 # Server configuration
 $(svrConfigDir)/irodsHost:
@@ -224,21 +224,21 @@ clean:
 # Build core
 $(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build API
 $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build Hasher
 $(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile Hasher `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build logging source
 rodslog:  $(LOG_SRC)

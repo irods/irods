@@ -81,11 +81,11 @@ rulegen: $(OBJS) $(BINS)
 
 $(objDir)/%.o: $(srcDir)/%.c 
 	@echo "Compile rulegen `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 
 
 $(binDir)/%:    $(objDir)/%.o 
 	@echo "Link `basename $@`..."
-	@$(LDR) -g -o $@  $< $(LDFLAGS)
+	$(V_at)$(LDR) -g -o $@  $< $(LDFLAGS)
 

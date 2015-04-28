@@ -69,23 +69,23 @@ clean:
 $(FULLTARGET): $(OBJS)
 	@echo "Building Database Plugins"
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	@$(GCC) $(INC) -D$(OS_platform) $(CFLAGS) $(LDRFLAGS) -fPIC $(LDADD)  -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) $(EXTRA_LDRFLAGS) $(DBMS_LIB)
+	$(V_at)$(GCC) $(INC) -D$(OS_platform) $(CFLAGS) $(LDRFLAGS) -fPIC $(LDADD)  -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) $(EXTRA_LDRFLAGS) $(DBMS_LIB)
 
 $(OBJDIR)/%.o: ../src/%.cpp
-	@$(GCC) $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	$(V_at)$(GCC) $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
 
 $(DB_PLUGIN_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
 	@echo "Compile Without RE `basename $@`..."
-	@$(CC) -DLINK_NO_OP_RE_MGR $(EXTRA_CFLAGS) $(INC) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
+	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(EXTRA_CFLAGS) $(INC) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
 
 $(SODIR)/test_cll: $(OBJDIR)/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 $(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 $(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto

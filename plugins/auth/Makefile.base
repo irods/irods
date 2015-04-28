@@ -46,7 +46,7 @@ clean:
 $(FULLTARGET): $(OBJS)
 	@echo "Building Auth Plugins"
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	@$(GCC) $(MY_CFLAG) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) ../../../iRODS/lib/api/obj/rcAuthCheck.o
+	$(V_at)$(GCC) $(MY_CFLAG) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
 $(OBJDIR)/%.o: %.cpp
-	@$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	$(V_at)$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
