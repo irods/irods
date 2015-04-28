@@ -1171,7 +1171,9 @@ extern "C" {
                                        irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                                        trans_buff_size );
                 if( !ret.ok() ) {
-                    return PASS( ret ); 
+                    close( outFd );
+                    close( inFd );
+                    return PASS( ret );
                 }
                 trans_buff_size *= 1024 * 1024;
                 std::vector<char> myBuf( trans_buff_size );
