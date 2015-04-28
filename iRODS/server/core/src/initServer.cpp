@@ -1008,7 +1008,10 @@ int
 initRsComm( rsComm_t *rsComm ) {
     memset( rsComm, 0, sizeof( rsComm_t ) );
 
-    getRodsEnv( &rsComm->myEnv );
+    if ( int status = getRodsEnv( &rsComm->myEnv ) ) {
+        irods::log( ERROR( status, "getRodsEnv failed in initRsComm" ) );
+        return status;
+    }
 
     irods::server_properties& props = irods::server_properties::getInstance();
     irods::error ret = props.capture_if_needed();
