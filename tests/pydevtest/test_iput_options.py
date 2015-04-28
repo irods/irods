@@ -22,8 +22,8 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
     def test_iput_options(self):
         filepath = os.path.join( self.admin.local_session_dir, 'file' )
         lib.make_file( filepath, 1 )
-        self.admin.assert_icommand('iput --metadata "a;v;u;a2;v2" --acl "' + self.user0.username + ' read;' + '" ' + filepath )
-                #+ self.user1.username + ' write;" -- ' + filepath )
+        self.admin.assert_icommand('iput --metadata "a;v;u;a2;v2" --acl "read ' + self.user0.username + ';" ' + filepath )
+                #+ 'write ' + self.user1.username + ';" -- ' + filepath )
         self.admin.assert_icommand('ichmod read ' + self.user0.username + ' ' + self.admin.session_collection )
         self.admin.assert_icommand('ichmod read ' + self.user1.username + ' ' + self.admin.session_collection )
         self.admin.assert_icommand('imeta ls -d file', 'STDOUT',

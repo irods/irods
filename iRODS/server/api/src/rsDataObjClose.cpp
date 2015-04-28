@@ -580,10 +580,10 @@ _rsDataObjClose(
             for ( std::vector<std::vector<std::string> >::const_iterator iter = deserialized_acl.begin(); iter != deserialized_acl.end(); ++iter ) {
                 modAccessControlInp_t modAccessControlInp;
                 modAccessControlInp.recursiveFlag = 0;
-                modAccessControlInp.accessLevel = strdup ( ( *iter )[1].c_str() );
+                modAccessControlInp.accessLevel = strdup ( ( *iter )[0].c_str() );
                 modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
                 modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
-                parseUserName( ( *iter )[0].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+                parseUserName( ( *iter )[1].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
                 modAccessControlInp.path = strdup( L1desc[l1descInx].dataObjInfo->objPath );
                 int status = rsModAccessControl( rsComm, &modAccessControlInp );
                 clearModAccessControlInp( &modAccessControlInp );
