@@ -104,7 +104,7 @@ class ResourceSuite(ResourceBase):
         # assertions
         self.admin.assert_icommand_fail("iget -z")  # run iget with bad option
 
-    def test_iget_with_dirty_replica(self):
+    def test_iget_with_stale_replica(self): # formerly known as 'dirty'
         # local setup
         filename = "original.txt"
         filepath = lib.create_local_testfile(filename)
