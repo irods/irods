@@ -444,7 +444,6 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // if this is a put operation then we do not have a first class object
-        resource_ptr resc;
         file_object_ptr file_obj(
             new file_object( ) );
         // =-=-=-=-=-=-=-
@@ -483,6 +482,17 @@ namespace irods {
         }
         else if ( back_up_resc_name ) {
             key_word = back_up_resc_name;
+        }
+
+        // =-=-=-=-=-=-=-
+        // reality check: if the key_word is set, verify that the resource
+        // actually exists before moving forward.
+        if( key_word ) {
+            resource_ptr resc;
+            error ret = resc_mgr.resolve( key_word, resc );
+            if( !ret.ok() ) {
+                return PASS( ret );
+            }
         }
 
         // =-=-=-=-=-=-=-
