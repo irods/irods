@@ -52,7 +52,7 @@ clean:
 
 $(FULLTARGET): $(OBJS)
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	@$(GCC) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) ../../../iRODS/lib/core/obj/irods_plugin_base.o $(EXTRALIBS)
+	$(V_at)$(GCC) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) ../../../iRODS/lib/core/obj/irods_plugin_base.o $(EXTRALIBS)
 
 $(OBJDIR)/%.o: %.cpp
-	@$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	$(V_at)$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<

@@ -196,11 +196,11 @@ icommands:	$(OBJS) $(BINS) $(BOOST_LIBS)
 
 $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY) $(BOOST_LIBS)
 	@echo "Compile icommand `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS)
+	$(V_at)$(LDR) -o $@ $< $(LDFLAGS)
 
 # Show compile flags
 print_cflags:

@@ -215,6 +215,16 @@ CCMALLOC_DIR=/data/mwan/rods/ccmalloc/ccmalloc-0.4.0
 endif
 
 
+# VERBOSE - specify whether to show compilation commands
+ifndef VERBOSE
+V_at = @
+else ifeq ($(VERBOSE),0)
+V_at = @
+else
+V_at =
+endif
+
+
 # IRODS_FS - specify that irodsFuse should be built
 # The latest version is 26 for release 2.7. It default to 21 if not defined
 IRODS_FS = 1

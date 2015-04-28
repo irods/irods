@@ -136,15 +136,15 @@ fuse:	$(LIB_OBJS) $(OBJS) $(BINS)
 
 $(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(reObjDir)/%.o:	$(reSrcDir)/%.c $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) $(LDRTFLAGS) -lcrypto -lssl
+	$(V_at)$(LDR) -o $@ $< $(LIB_OBJS) $(SVR_OBJS) $(LDFLAGS) $(BOOST_LIBS) $(LDRTFLAGS) -lcrypto -lssl
 
 
 

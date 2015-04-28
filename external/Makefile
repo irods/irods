@@ -56,7 +56,7 @@ PGUNIXODBCARCHIVE=postgresql-$(PG_VERSION)_unixODBC-$(UNIXODBC_VERSION)-$(OSNAME
 
 default :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
-	@curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
+	$(V_at)curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
 	@$(MAKE) $(FAKETARGETFORMAKE)
 
 $(PGUNIXODBCARCHIVE) :
@@ -82,7 +82,7 @@ build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
 
 $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
-	@tar zxf $(IRODSEXTERNALLOCAL)
+	$(V_at)tar zxf $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 ifeq ($(OS_platform), osx_platform)
@@ -93,8 +93,8 @@ endif
 
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
-	@tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
-	@cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
+	$(V_at)tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
+	$(V_at)cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
 	@touch $(FAKETARGETFORMAKE)
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :

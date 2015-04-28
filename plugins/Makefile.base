@@ -70,15 +70,15 @@ clean-base:
 
 $(AGNOSTIC_OBJS) : $(SODIR)/lib%.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(AGNOSTIC_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@$(GCC) $(CFLAGS) $(AGNOSTIC_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(AGNOSTIC_LIBS)
+	$(V_at)$(GCC) $(CFLAGS) $(AGNOSTIC_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(AGNOSTIC_LIBS)
 
 $(SERVER_OBJS) : $(SODIR)/lib%_server.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(SERVER_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@$(GCC) $(CFLAGS) $(SERVER_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(SERVER_LIBS)
+	$(V_at)$(GCC) $(CFLAGS) $(SERVER_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(SERVER_LIBS)
 
 $(CLIENT_OBJS) : $(SODIR)/lib%_client.so : $(SRCDIR)/%.cpp $(DEPDIR)/%.d $(DEPFILE) $(CLIENT_DEPS)
 	@echo "Compile plugin `basename $@`..."
-	@$(GCC) $(CFLAGS) $(CLIENT_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(CLIENT_LIBS)
+	$(V_at)$(GCC) $(CFLAGS) $(CLIENT_CFLAGS) $(INC) -fPIC -shared -o $@ $< $(LDADD) $(EXTRALIBS) $(CLIENT_LIBS)
 
 $(DEPFILE): $(DEPS)
 	@-rm -f $(DEPFILE) > /dev/null 2>&1
@@ -88,7 +88,7 @@ $(DEPFILE): $(DEPS)
 
 $(DEPS): $(DEPDIR)/%.d : $(SRCDIR)/%.cpp $(HEADERS)
 	@-mkdir -p $(DEPDIR) > /dev/null 2>&1
-	@$(GCC) $(CFLAGS) $(INC) -MM $< -MT $(patsubst $(DEPDIR)/%.d, $(SODIR)/lib%.so, $@) -MF $@
+	$(V_at)$(GCC) $(CFLAGS) $(INC) -MM $< -MT $(patsubst $(DEPDIR)/%.d, $(SODIR)/lib%.so, $@) -MF $@
 
 -include $(DEPFILE)
 
