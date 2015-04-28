@@ -90,9 +90,12 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
                   rodsLong_t dataSize ) {
     int in_fd, status;
 
-    rodsEnv env;
-    getRodsEnv( &env );
-    int single_buff_sz = env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
+    rodsEnv rods_env;
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
+    int single_buff_sz = rods_env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
 
     if ( dataSize > 10 * single_buff_sz ) {
         rodsLog( LOG_ERROR,
@@ -547,9 +550,12 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                       "cannot open file %s", locFilePath, status );
         return status;
     }
-   
+
     rodsEnv rods_env;
-    getRodsEnv( &rods_env ); 
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
@@ -709,9 +715,12 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                       "cannot open file %s", locFilePath, status );
         return status;
     }
-    
+
     rodsEnv rods_env;
-    getRodsEnv( &rods_env ); 
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
@@ -1566,9 +1575,12 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         close( localFd );
         return irodsFd;
     }
-    
+
     rodsEnv rods_env;
-    getRodsEnv( &rods_env ); 
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
@@ -1728,9 +1740,12 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
         close( localFd );
         return irodsFd;
     }
-    
+
     rodsEnv rods_env;
-    getRodsEnv( &rods_env ); 
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
@@ -1885,9 +1900,12 @@ catDataObj( rcComm_t *conn, char *objPath ) {
                       "catDataObj: rcDataObjOpen error for %s", objPath );
         return l1descInx;
     }
-    
+
     rodsEnv rods_env;
-    getRodsEnv( &rods_env ); 
+    if ( int status = getRodsEnv( &rods_env ) ) {
+        rodsLog( LOG_ERROR, "getRodsEnv failed in %s with status %s", __FUNCTION__, status );
+        return status;
+    }
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
     dataObjReadOutBBuf.buf = malloc( trans_buff_sz + 1 );
