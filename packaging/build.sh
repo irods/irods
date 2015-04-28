@@ -219,7 +219,7 @@ EPMCMD="external/epm/epm"
 cd $BUILDDIR/iRODS
 echo "Build Directory set to [$BUILDDIR]"
 # read iRODS Version from JSON
-IRODSVERSION=`python -c "import json; d = json.loads(open('../VERSION.json.dist').read()); print d['irods_version']"`
+IRODSVERSION=`python -c "from __future__ import print_function; import json; d = json.loads(open('../VERSION.json.dist').read()); print(d['irods_version'])"`
 echo "IRODSVERSION=$IRODSVERSION" > ../VERSION.tmp # needed for Makefiles
 IRODSVERSIONINT=${IRODSVERSION//\./0}0
 echo "Detected iRODS Version to Build [$IRODSVERSION]"
