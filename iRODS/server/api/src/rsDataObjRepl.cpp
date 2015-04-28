@@ -836,6 +836,7 @@ dataObjOpenForRepl(
                            single_buff_sz );
     if( !ret.ok() ) {
         irods::log( PASS( ret ) );
+        freeDataObjInfo( srcDataObjInfo );
         return ret.code();
     }
     single_buff_sz *= 1024 * 1024;
