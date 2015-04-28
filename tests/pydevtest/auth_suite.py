@@ -133,45 +133,30 @@ class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
                 'irods_client_server_policy': 'CS_NEG_REQUIRE',
             }
 
-            #session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
-            #self.admin.environment_file_contents.update(client_update)
-
-            # now the actual test
             auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
             self.auth_session.environment_file_contents.update(client_update)
 
-            # add server_config.json settings
-            serverConfigFile = lib.get_irods_config_dir() + "/server_config.json"
-            with open(serverConfigFile) as f:
-                contents = json.load(f)
-            os.system("cp %s %sOrig" % (serverConfigFile, serverConfigFile))
-            contents['pam_password_length'] = 20
-            contents['pam_no_extend'] = False
-            contents['pam_password_min_time'] = 121
-            contents['pam_password_max_time'] = 1209600
-            with open(serverConfigFile, 'w') as f:
-                json.dump(contents, f)
+            server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+            with lib.file_backed_up(server_config_filename):
+                server_config_update = {
+                    'pam_password_length': 20,
+                    'pam_no_extend': False,
+                    'pam_password_min_time': 121,
+                    'pam_password_max_time': 1209600,
+                }
+                lib.update_json_file_from_dict(server_config_filename, server_config_update)
 
-            # server reboot to pick up new irodsEnv and server settings
-            lib.restart_irods_server()
+                lib.restart_irods_server()
 
-            # do the reauth
-            self.auth_session.assert_icommand(['iinit', self.auth_session.password])
-            # connect and list some files
-            self.auth_session.assert_icommand("icd")
-            self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
+                # the test
+                self.auth_session.assert_icommand(['iinit', self.auth_session.password])
+                self.auth_session.assert_icommand("icd")
+                self.auth_session.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "home")
 
-            # reset server_config.json to original
-            os.system('mv %sOrig %s' % (serverConfigFile, serverConfigFile))
+        self.auth_session.environment_file_contents = auth_session_env_backup
+        for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
+            os.unlink(os.path.join(lib.get_irods_top_level_dir(),file))
 
-            # reset client environment to original
-            self.auth_session.environment_file_contents = auth_session_env_backup
-
-            # clean up
-            for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
-                os.unlink(os.path.join(lib.get_irods_top_level_dir(),file))
-
-        # server reboot to pick up new irodsEnv and server settings
         lib.restart_irods_server()
 
     def test_iinit_repaving_2646(self):
