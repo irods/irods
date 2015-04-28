@@ -105,6 +105,7 @@ extern "C" {
                                single_buff_sz_in_mb );
         if( !ret.ok() ) {
             irods::log( PASS( ret ) );
+            close( srcFd );
             return ret.code();
         }
         size_t single_buff_sz = single_buff_sz_in_mb * 1024 * 1024;
