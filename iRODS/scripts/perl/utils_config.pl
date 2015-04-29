@@ -62,6 +62,7 @@ sub load_server_config {
     $RESOURCE_DIR  = undef;
     $IRODS_ADMIN_PASSWORD = undef;
     $IRODS_ICAT_HOST = undef;
+    $SCHEMA_VALIDATION_BASE_URI = undef;
     # load specific variables
     $data = load_json_file($filename);
     $IRODS_ADMIN_NAME = $data->{'zone_user'};
@@ -74,6 +75,7 @@ sub load_server_config {
     $RESOURCE_DIR = $data->{'default_resource_directory'};
     $IRODS_ADMIN_PASSWORD = $data->{'admin_password'};
     $IRODS_ICAT_HOST = $data->{'icat_host'};
+    $SCHEMA_VALIDATION_BASE_URI = $data->{'schema_validation_base_uri'};
     # return
     return 1;
 }
@@ -85,7 +87,7 @@ sub load_database_config {
     $DATABASE_ODBC_TYPE          = undef;
     $DATABASE_HOST               = undef;
     $DATABASE_PORT               = undef;
-    $DB_NAME       = undef;
+    $DB_NAME                     = undef;
     $DATABASE_ADMIN_NAME         = undef;
     $DATABASE_ADMIN_PASSWORD     = undef;
     # load specific variables
@@ -97,6 +99,17 @@ sub load_database_config {
     $DATABASE_PORT = $data->{'db_port'};
     $DATABASE_ADMIN_NAME = $data->{'db_user'};
     $DATABASE_ADMIN_PASSWORD = $data->{'db_password'};
+    # return
+    return 1;
+}
+
+sub load_irods_version_file {
+    my ($filename) = @_;
+    # from VERSION.json
+    $CONFIGURATION_SCHEMA_VERSION = undef;
+    # load specific variables
+    $data = load_json_file($filename);
+    $CONFIGURATION_SCHEMA_VERSION = $data->{'configuration_schema_version'};
     # return
     return 1;
 }

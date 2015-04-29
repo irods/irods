@@ -74,6 +74,7 @@ fi
         MYNEGOTIATIONKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['negotiation_key']"`
         MYCONTROLPLANEPORT=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_port']"`
         MYCONTROLPLANEKEY=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['server_control_plane_key']"`
+        MYVALIDATIONBASEURI=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['schema_validation_base_uri']"`
         MYADMINNAME=`$PYTHON -c "import json; print json.load(open('$MYSERVERCONFIGJSON'))['zone_user']"`
         STATUS="loop"
     else
@@ -117,6 +118,9 @@ fi
         LASTMYADMINNAME=$MYADMINNAME
         LASTMYLOCALZONEKEY=$MYLOCALZONEKEY
         LASTMYNEGOTIATIONKEY=$MYNEGOTIATIONKEY
+        LASTMYCONTROLPLANEPORT=$MYCONTROLPLANEPORT
+        LASTMYCONTROLPLANEKEY=$MYCONTROLPLANEKEY
+        LASTMYVALIDATIONBASEURI=$MYVALIDATIONBASEURI
       fi
 
       if [ $ICAT_SERVER -eq 1 ] ; then
@@ -323,6 +327,24 @@ fi
           fi
       done
 
+      # get schema validation base uri
+      echo -n "Schema Validation Base URI (or 'off')"
+      if [ "$LASTMYVALIDATIONBASEURI" ] ; then
+        echo -n " [$LASTMYVALIDATIONBASEURI]"
+      else
+        echo -n " [https://schemas.irods.org/configuration]"
+      fi
+      echo -n ": "
+      read MYVALIDATIONBASEURI
+      if [ "$MYVALIDATIONBASEURI" == "" ] ; then
+        if [ "$LASTMYVALIDATIONBASEURI" ] ; then
+          MYVALIDATIONBASEURI=$LASTMYVALIDATIONBASEURI
+        else
+          MYVALIDATIONBASEURI="https://schemas.irods.org/configuration"
+        fi
+      fi
+      echo ""
+
       # get admin name
       echo -n "iRODS server's administrator username"
       if [ "$LASTMYADMINNAME" ] ; then
@@ -365,17 +387,18 @@ fi
       # confirm
       echo "-------------------------------------------"
       if [ $ICAT_SERVER -eq 1 ] ; then
-        echo "iRODS Zone:             $MYZONE"
+        echo "iRODS Zone:                 $MYZONE"
       fi
-      echo "iRODS Port:             $MYPORT"
-      echo "Range (Begin):          $MYRANGESTART"
-      echo "Range (End):            $MYRANGEEND"
-      echo "Vault Directory:        $MYRESOURCEDIR"
-      echo "zone_key:               $MYLOCALZONEKEY"
-      echo "negotiation_key:        $MYNEGOTIATIONKEY"
-      echo "Control Plane Port:     $MYCONTROLPLANEPORT"
-      echo "Control Plane Key:      $MYCONTROLPLANEKEY"
-      echo "Administrator Username: $MYADMINNAME"
+      echo "iRODS Port:                 $MYPORT"
+      echo "Range (Begin):              $MYRANGESTART"
+      echo "Range (End):                $MYRANGEEND"
+      echo "Vault Directory:            $MYRESOURCEDIR"
+      echo "zone_key:                   $MYLOCALZONEKEY"
+      echo "negotiation_key:            $MYNEGOTIATIONKEY"
+      echo "Control Plane Port:         $MYCONTROLPLANEPORT"
+      echo "Control Plane Key:          $MYCONTROLPLANEKEY"
+      echo "Schema Validation Base URI: $MYVALIDATIONBASEURI"
+      echo "Administrator Username:     $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
         echo "Administrator Password: Not Shown"
       fi
@@ -409,6 +432,7 @@ fi
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string negotiation_key $MYNEGOTIATIONKEY
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON integer server_control_plane_port $MYCONTROLPLANEPORT
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string server_control_plane_key $MYCONTROLPLANEKEY
+    $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string schema_validation_base_uri $MYVALIDATIONBASEURI
     $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string icat_host `hostname`
     if [ $ICAT_SERVER -eq 1 ] ; then
         $PYTHON $DETECTEDDIR/update_json.py $MYSERVERCONFIGJSON string admin_password $MYADMINPASSWORD

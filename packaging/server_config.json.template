@@ -38,6 +38,7 @@
     "zone_name": "tempZone",
     "zone_port": 1247,
     "zone_user": "rods",
+    "schema_validation_base_uri": "https://schemas.irods.org/configuration",
     "advanced_settings" : {
         "maximum_size_for_single_buffer_in_megabytes" : 32,
         "default_number_of_transfer_threads" : 4,
@@ -45,6 +46,6 @@
         "transfer_buffer_size_for_parallel_transfer_in_megabytes" : 4,
         "default_temporary_password_lifetime_in_seconds" : 120,
         "maximum_temporary_password_lifetime_in_seconds" : 1000,
-        "maximum_number_of_concurrent_rule_engine_server_processes" : 4 
+        "maximum_number_of_concurrent_rule_engine_server_processes" : 4
     }
 }

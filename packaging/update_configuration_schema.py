@@ -47,7 +47,7 @@ def get_target_schema_version():
 def update_configuration_files(version):
     print('Updating to Configuration Schema... %d' % version)
     # manipulate the configuration files
-    print_debug('ALTERING (but not really) THE CONFIGURATION STUFF')
+    print_debug('PLACEHOLDER')
     # success
     print_debug('SUCCESS, updated configuration_schema_version to %d' % version)
 
@@ -63,8 +63,7 @@ def update_configuration_to_latest_version():
             current_schema_version, target_schema_version))
         return
     if current_schema_version == target_schema_version:
-        print('Configuration Schema Version is already up to date (version=%d).' %
-              target_schema_version)
+        print('Configuration Schema Version is already up to date (version=%d).' % target_schema_version)
         return
     # surgically alter existing version with any new information, with defaults
     update_configuration_files(target_schema_version)

@@ -290,6 +290,9 @@ MYSETUPVALUESSQL=`find $TOPLEVELDIR -name icatSetupValues.sql`
 rm -f $MYSETUPVALUESSQL
 # server config
 $PYTHON $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
+TMPFILE=`mktemp -t irods_tmp_server_config.XXXXXX`
+sed -e '/admin_password/d' $server_config > $TMPFILE
+mv $TMPFILE $server_config
 
 # =-=-=-=-=-=-=-
 # run update_catalog_schema.py

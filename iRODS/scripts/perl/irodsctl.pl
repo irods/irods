@@ -132,6 +132,9 @@ else
     }
 }
 
+# load version information
+load_irods_version_file("$scripttoplevel/VERSION.json");
+
 
 ########################################################################
 #
@@ -178,24 +181,24 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # using this script.
 #
 
-$ENV{'irodsHomeDir'}      = $IRODS_HOME;
+$ENV{'irodsHomeDir'}        = $IRODS_HOME;
 $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
-if ($irodsEnvFile)              { $ENV{'IRODS_ENVIRNOMENT_FILE'} = $irodsEnvFile; }
-if ($irodsPort)                 { $ENV{'IRODS_PORT'}          = $irodsPort; }
-if ($spLogLevel)                { $ENV{'spLogLevel'}          = $spLogLevel; }
-if ($spLogSql)                  { $ENV{'spLogSql'}            = $spLogSql; }
-if ($SVR_PORT_RANGE_START)      { $ENV{'svrPortRangeStart'}   = $SVR_PORT_RANGE_START; }
-if ($SVR_PORT_RANGE_END)        { $ENV{'svrPortRangeEnd'}     = $SVR_PORT_RANGE_END; }
-if ($svrPortRangeStart)         { $ENV{'svrPortRangeStart'}   = $svrPortRangeStart; }
-if ($svrPortRangeEnd)           { $ENV{'svrPortRangeEnd'}     = $svrPortRangeEnd; }
-if ($reServerOption)            { $ENV{'reServerOption'}      = $reServerOption; }
-if ($irodsReconnect)            { $ENV{'irodsReconnect'}    = $irodsReconnect; }
-if ($RETESTFLAG)                { $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
-if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEEXECFLAG; }
-if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
-if ($GLOBALREAUDITFLAG)         { $ENV{'GLOBALREAUDITFLAG'}   = $GLOBALREAUDITFLAG; }
-if ($GLOBALREDEBUGFLAG)         { $ENV{'GLOBALREDEBUGFLAG'}   = $GLOBALREDEBUGFLAG; }
-if ($LOGFILE_INT)               { $ENV{'logfileInt'}          = $LOGFILE_INT; }
+if ($irodsEnvFile)               { $ENV{'IRODS_ENVIRNOMENT_FILE'}     = $irodsEnvFile; }
+if ($irodsPort)                  { $ENV{'IRODS_PORT'}                 = $irodsPort; }
+if ($spLogLevel)                 { $ENV{'spLogLevel'}                 = $spLogLevel; }
+if ($spLogSql)                   { $ENV{'spLogSql'}                   = $spLogSql; }
+if ($SVR_PORT_RANGE_START)       { $ENV{'svrPortRangeStart'}          = $SVR_PORT_RANGE_START; }
+if ($SVR_PORT_RANGE_END)         { $ENV{'svrPortRangeEnd'}            = $SVR_PORT_RANGE_END; }
+if ($svrPortRangeStart)          { $ENV{'svrPortRangeStart'}          = $svrPortRangeStart; }
+if ($svrPortRangeEnd)            { $ENV{'svrPortRangeEnd'}            = $svrPortRangeEnd; }
+if ($reServerOption)             { $ENV{'reServerOption'}             = $reServerOption; }
+if ($irodsReconnect)             { $ENV{'irodsReconnect'}             = $irodsReconnect; }
+if ($RETESTFLAG)                 { $ENV{'RETESTFLAG'}                 = $RETESTFLAG; }
+if ($GLOBALALLRULEEXECFLAG)      { $ENV{'GLOBALALLRULEEXECFLAG'}      = $GLOBALALLRULEEXECFLAG; }
+if ($PREPOSTPROCFORGENQUERYFLAG) { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
+if ($GLOBALREAUDITFLAG)          { $ENV{'GLOBALREAUDITFLAG'}          = $GLOBALREAUDITFLAG; }
+if ($GLOBALREDEBUGFLAG)          { $ENV{'GLOBALREDEBUGFLAG'}          = $GLOBALREDEBUGFLAG; }
+if ($LOGFILE_INT)                { $ENV{'logfileInt'}                 = $LOGFILE_INT; }
 
 
 
@@ -947,7 +950,7 @@ sub preflight_check
 {
     # local variables
     my $VALIDATE = "python $scripttoplevel/iRODS/scripts/python/validate_json.py";
-    my $SCHEMA_ROOT_URL = "https://schemas.irods.org/configuration/v2";
+    my $SCHEMA_ROOT_URL = "$SCHEMA_VALIDATION_BASE_URI/v$CONFIGURATION_SCHEMA_VERSION";
     my $retval;
     my $HOME_DIR = $ENV{'HOME'};
 
@@ -1002,11 +1005,20 @@ sub startIrods
                 printError( "    is not writable.  Please chmod it and retry.\n" );
                 exit( 1 );
         }
-        if ( 0 == preflight_check( ) )
+
+        # Make sure the configurations are validated
+        if ( $SCHEMA_VALIDATION_BASE_URI =~ /^https?:\/\// )
         {
-                printError( "Preflight Check problem:\n" );
-                printError( "   JSON Configuration Validation failed.\n" );
-                exit( 1 );
+            if ( 0 == preflight_check( ) )
+            {
+                    printError( "Preflight Check problem:\n" );
+                    printError( "   JSON Configuration Validation failed.\n" );
+                    exit( 1 );
+            }
+        }
+        else
+        {
+            printStatus( "Skipped JSON Configuration Validation [$SCHEMA_VALIDATION_BASE_URI]\n" );
         }
 
         # Test for iRODS port in use
