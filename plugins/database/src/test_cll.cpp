@@ -6,7 +6,6 @@
 
 #include "rods.hpp"
 #include "readServerConfig.hpp"
-#include "irods_database_home.hpp"
 #include "irods_plugin_name_generator.hpp"
 
 // =-=-=-=-=-=-=-
