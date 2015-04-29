@@ -38,7 +38,7 @@ class Test_ixmsg(unittest.TestCase):
         os.rename(self.serverConfigFileBackup, self.serverConfigFile)
         lib.restart_irods_server()
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, "Skip for topology testing from resource server or SSL")
     def test_send_and_receive_one_xmsg(self):
         message = 'Hello World!'
 
