@@ -130,7 +130,7 @@ class ServerConfig(object):
         db_host = self.get('Server')
         db_port = self.get('Port')
         db_name = self.get('Database')
-        db_user = self.get('DBUsername')
+        db_user = self.get('db_username')
         db_pass = self.get_db_password()
 
         with tempfile.NamedTemporaryFile() as f:
@@ -175,8 +175,8 @@ port={db_port}
             raise RuntimeError('Failed to find oracle binary. stdout[{0}] stderr[{1}]'.format(stdout, stderr))
         sqlclient = stdout.strip().decode('utf-8').rstrip()
         db_port = self.get('Port')
-        db_user = self.get('DBUsername').split('@')[0]
-        db_host = self.get('DBUsername').split('@')[1]
+        db_user = self.get('db_username').split('@')[0]
+        db_host = self.get('db_username').split('@')[1]
         db_pass = self.get_db_password()
         run_str = '{sqlclient} {db_user}/{db_pass}@{db_host} < {sql_filename}'.format(**vars())
         p = subprocess.Popen(run_str, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
