@@ -618,7 +618,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # dirty up a foo10 repl to ensure that code path is tested also
         self.admin.assert_icommand("iadmin modresc unixA2 status down")
-        self.admin.assert_icommand("iput -fR pt test_allrules.py foo10")
+        self.admin.assert_icommand("iput -fR pt test_all_rules.py foo10")
         self.admin.assert_icommand("iadmin modresc unixA2 status up")
 
         # =-=-=-=-=-=-=-
@@ -765,7 +765,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # dirty up a foo10 repl to ensure that code path is tested also
         self.admin.assert_icommand("iadmin modresc leaf_a status down")
-        self.user0.assert_icommand("iput -fR repl test_allrules.py bar2")
+        self.user0.assert_icommand("iput -fR repl test_all_rules.py bar2")
         self.admin.assert_icommand("iadmin modresc leaf_a status up")
 
         # =-=-=-=-=-=-=-
