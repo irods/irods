@@ -466,7 +466,7 @@ irods::error convert_service_account(
             // sanitize the keys
             json_object_set(
                 _svc_acct,
-                "rods_server_control_plane_key",
+                "irods_server_control_plane_key",
                 json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
             return SUCCESS();
@@ -532,7 +532,9 @@ irods::error convert_service_account(
     json_object_set( _svc_acct, "irods_encryption_num_hash_rounds", json_integer( my_env.rodsEncryptionNumHashRounds ) );
 
     json_object_set( _svc_acct, "irods_encryption_algorithm", json_string( my_env.rodsEncryptionAlgorithm ) );
+
     json_object_set( _svc_acct, "irods_default_hash_scheme", json_string( my_env.rodsDefaultHashScheme ) );
+
     json_object_set( _svc_acct, "irods_match_hash_policy", json_string( my_env.rodsMatchHashPolicy ) );
 
     return SUCCESS();
