@@ -21,6 +21,32 @@ class Test_CatalogSuite(ResourceBase, unittest.TestCase):
         super(Test_CatalogSuite, self).tearDown()
 
     ###################
+    # izonereport
+    ###################
+
+    def test_izonereport_and_validate(self):
+        # bad URL
+        self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
+        rc, out, err = lib.run_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl')
+        print "izonereport stdout: "+out
+        print "izonereport stderr: "+err
+        assert "WARNING: Validation Failed" in err, err
+        assert "ValueError: No JSON object could be decoded" in err, err
+        assert rc == 0, rc
+
+        # good URL
+        self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
+        rc, out, err = lib.run_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json')
+        print "izonereport stdout: "+out
+        print "izonereport stderr: "+err
+        assert "Validating" in out, out
+        assert "... Success" in out, out
+        assert rc == 0, rc
+
+        # cleanup
+        os.remove('out.txt')
+
+    ###################
     # icd
     ###################
 
