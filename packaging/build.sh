@@ -1314,11 +1314,14 @@ if [ "$BUILDIRODS" == "1" ] ; then
         # build designated database plugin
         echo ""
         echo "${text_green}${text_bold}Building [$DATABASE_PLUGIN_TYPE] database plugin...${text_reset}"
-        if [ "$RUNINPLACE" == "1" ] ; then
-            $BUILDDIR/plugins/database/build.sh --run-in-place $DATABASE_PLUGIN_TYPE
-        else
-            $BUILDDIR/plugins/database/build.sh $DATABASE_PLUGIN_TYPE
+        DB_BUILD_CMD="$BUILDDIR/plugins/database/build.sh"
+        if [ "$VERBOSE" == "1" ] ; then
+            DB_BUILD_CMD="$DB_BUILD_CMD --verbose"
         fi
+        if [ "$RUNINPLACE" == "1" ] ; then
+            DB_BUILD_CMD="$DB_BUILD_CMD --run-in-place"
+        fi
+        $DB_BUILD_CMD $DATABASE_PLUGIN_TYPE
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
         # build resource package
         $MAKEJCMD -C $BUILDDIR resource-package

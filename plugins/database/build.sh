@@ -18,12 +18,11 @@ Usage:
   $SCRIPTNAME oracle
 
 Options:
--c      Build with coverage support (gcov)
--h      Show this help
--r      Build a release package (no debugging information, optimized)
-
-Long Options:
---run-in-place    Build for in-place execution (not recommended)
+-c, --coverage        Build with coverage support (gcov)
+-h, --help            Show this help
+-r, --release         Build a release package (no debugging information, optimized)
+    --run-in-place    Build for in-place execution (not recommended)
+-v, --verbose         Show the actual compilation commands executed
 "
 
 # translate long options to short
@@ -34,6 +33,7 @@ do
         --coverage) args="${args}-c ";;
         --help) args="${args}-h ";;
         --release) args="${args}-r ";;
+        --verbose) args="${args}-v ";;
         --run-in-place) args="${args}-z ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
@@ -43,22 +43,26 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chrz" opt; do
+while getopts ":chrvz" opt; do
     case $opt in
         c)
         COVERAGE="1"
-        echo "-c detected -- Building iRODS with coverage support (gcov)"
+        echo "-c, --coverage detected -- Building iRODS with coverage support (gcov)"
         ;;
         h)
         echo "$USAGE"
         ;;
         r)
         RELEASE="1"
-        echo "-r detected -- Building a RELEASE package"
+        echo "-r, --release detected -- Building a RELEASE package"
         ;;
         z)
         RUNINPLACE="1"
         echo "--run-in-place detected -- Building for in-place execution"
+        ;;
+        v)
+        VERBOSE="1"
+        echo "-v, --verbose detected -- Showing compilation commands"
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -211,8 +215,13 @@ chmod +x $SETUP_FILE
 
 # =-=-=-=-=-=-=-
 # build the particular flavor of DB plugin
+if [ "$VERBOSE" == "1" ] ; then
+    VERBOSITYOPTION="VERBOSE=1"
+else
+    VERBOSITYOPTION="--no-print-directory"
+fi
 cd $SCRIPTPATH
-make ${DB_TYPE}
+make ${VERBOSITYOPTION} ${DB_TYPE}
 
 # =-=-=-=-=-=-=-
 # package the plugin and associated files
