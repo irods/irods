@@ -57,11 +57,11 @@ default : fetch
 
 fetch :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
-	@filemtime=`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`; \
-		$(V_at)curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
+	$(V_at)filemtime=`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`; \
+		curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
 		if [ "$$filemtime" != "`stat -c %Y $(IRODSEXTERNALLOCAL) 2> /dev/null`" ] ; then \
-			@echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
-			$(V_at)tar zxf $(IRODSEXTERNALLOCAL); \
+			echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
+			tar zxf $(IRODSEXTERNALLOCAL); \
 		fi
 
 $(PGUNIXODBCARCHIVE) :
