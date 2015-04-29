@@ -239,14 +239,27 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // preserve the collection path?
     collEnt_t* collEnt = NULL;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
-        if ( NULL == collEnt ) { // JMC cppcheck - nullptr
-            rodsLog( LOG_ERROR, "rsStructFileBundle: collEnt is NULL" );
+        if ( NULL == collEnt ) {
+            rodsLog(
+                LOG_ERROR,
+                "rsStructFileBundle: collEnt is NULL" );
             continue;
         }
 
         // =-=-=-=-=-=-=-
         // entry is a data object
         if ( collEnt->objType == DATA_OBJ_T ) {
+            // =-=-=-=-=-=-=-
+            // filter out any possible replicas that are not on this resource
+            if ( resc_hier != collEnt->resc_hier ) {
+                rodsLog(
+                    LOG_DEBUG,
+                    "_rsStructFileBundle - skipping [%s] on resc [%s]",
+                    collEnt->phyPath,
+                    collEnt->resc_hier );
+                continue;
+            }
+
             if ( collEnt->collName[collLen] == '\0' ) {
                 snprintf(
                     tmpPath,
@@ -269,32 +282,36 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     collEnt->resc_hier,
                     getDefDirMode() );
                 if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "mkDirForFilePath failed in _rsStructFileBundle with status %d", status );
+                    rodsLog(
+                        LOG_ERROR,
+                        "mkDirForFilePath failed in _rsStructFileBundle with status %d",
+                        status );
                     free( collEnt );
                     return status;
                 }
             }
 
             // =-=-=-=-=-=-=-
-            // filter out any possible replicas that are not on this resource
-            if ( resc_hier == collEnt->resc_hier ) {
-                // =-=-=-=-=-=-=-
-                // add a link
-                status = link( collEnt->phyPath, tmpPath );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "rsStructFileBundle: link error %s to %s. errno = %d",
-                             collEnt->phyPath, tmpPath, errno );
-                    rmLinkedFilesInUnixDir( phyBunDir );
-                    rmdir( phyBunDir );
-                    free( collEnt );
-                    return UNIX_FILE_LINK_ERR - errno;
-                }
-                else {
-                    //rodsLog( LOG_NOTICE, "_rsStructFileBundle - LINK  [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
-                }
+            // add a link
+            status = link( collEnt->phyPath, tmpPath );
+            if ( status < 0 ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "rsStructFileBundle: link error %s to %s. errno = %d",
+                    collEnt->phyPath,
+                    tmpPath,
+                    errno );
+                rmLinkedFilesInUnixDir( phyBunDir );
+                rmdir( phyBunDir );
+                free( collEnt );
+                return UNIX_FILE_LINK_ERR - errno;
             }
             else {
-                //rodsLog( LOG_NOTICE, "_rsStructFileBundle - skipping [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
+                rodsLog(
+                    LOG_DEBUG,
+                    "_rsStructFileBundle - LINK  [%s] on resc [%s]",
+                    collEnt->phyPath,
+                    collEnt->resc_hier );
             }
         }
         else {
