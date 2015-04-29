@@ -24,25 +24,15 @@ Usage: $SCRIPTNAME docs
 Usage: $SCRIPTNAME clean
 
 Options:
--c      Build with coverage support (gcov)
--f      Fast build, skip dev, runtime, and icommands packages
--h      Show this help
--j NUM  Run NUM make jobs simultaneously (instead of using all cores)
--r      Build a release package (no debugging information, optimized)
--s      Skip compilation of iRODS source
--p      Portable option, ignores OS and builds a tar.gz
--v      Show the actual compilation commands executed
-
-Long Options:
---coverage        Build with coverage support (gcov)
---fast            Fast build, skip dev, runtime, and icommands packages
---help            Show this help
---jobs NUM        Run NUM make jobs simultaneously (instead of using all cores)
---portable        Portable option, ignores OS and builds a tar.gz
---release         Build a release package (no debugging information, optimized)
---run-in-place    Build server for in-place execution (not recommended)
---skip            Skip compilation of iRODS source
---verbose         Show the actual compilation commands executed
+-c, --coverage       Build with coverage support (gcov)
+-f, --fast           Fast build, skip dev, runtime, and icommands packages
+-h, --help           Show this help
+-j, --jobs NUM       Run NUM make jobs simultaneously (instead of using all cores)
+-p, --portable       Portable option, ignores OS and builds a tar.gz
+-r, --release        Build a release package (no debugging symbols, optimized)
+    --run-in-place   Build server for in-place execution (not recommended)
+-s, --skip           Skip compilation of iRODS source
+-v, --verbose        Show the actual compilation commands executed
 
 Examples:
 $SCRIPTNAME icat postgres
@@ -115,7 +105,7 @@ while getopts ":chfj:rspvz" opt; do
         c)
         COVERAGE="1"
         TARGET=$2
-        echo "-c detected -- Building iRODS with coverage support (gcov)"
+        echo "-c, --coverage detected -- Building iRODS with coverage support (gcov)"
         echo "${text_green}${text_bold}TARGET=[$TARGET]${text_reset}"
         if [ "$TARGET" == "icat" ] ; then
             echo "${text_green}${text_bold}TARGET is ICAT${text_reset}"
@@ -126,27 +116,27 @@ while getopts ":chfj:rspvz" opt; do
         ;;
         f)
         FAST="1"
-        echo "-f detected -- Skipping dev, runtime, and icommands packages"
+        echo "-f, --fast detected -- Skipping dev, runtime, and icommands packages"
         ;;
         j)
         CPUJOBS="$OPTARG"
-        echo "-j detected -- Building with $CPUJOBS make jobs"
-        ;;
-        r)
-        RELEASE="1"
-        echo "-r detected -- Building a RELEASE package of iRODS"
-        ;;
-        s)
-        BUILDIRODS="0"
-        echo "-s detected -- Skipping iRODS compilation"
+        echo "-j, --jobs detected -- Building with $CPUJOBS make jobs"
         ;;
         p)
         PORTABLE="1"
-        echo "-p detected -- Building portable package"
+        echo "-p, --portable detected -- Building portable package"
+        ;;
+        r)
+        RELEASE="1"
+        echo "-r, --release detected -- Building a RELEASE package of iRODS"
+        ;;
+        s)
+        BUILDIRODS="0"
+        echo "-s, --skip detected -- Skipping iRODS compilation"
         ;;
         v)
         VERBOSE="1"
-        echo "-v/--verbose detected -- Showing compilation commands"
+        echo "-v, --verbose detected -- Showing compilation commands"
         ;;
         z)
         RUNINPLACE="1"
