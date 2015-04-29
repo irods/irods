@@ -27,13 +27,21 @@ Options:
 -c      Build with coverage support (gcov)
 -f      Fast build, skip dev, runtime, and icommands packages
 -h      Show this help
+-j NUM  Run NUM make jobs simultaneously (instead of using all cores)
 -r      Build a release package (no debugging information, optimized)
 -s      Skip compilation of iRODS source
 -p      Portable option, ignores OS and builds a tar.gz
 -v      Show the actual compilation commands executed
 
 Long Options:
+--coverage        Build with coverage support (gcov)
+--fast            Fast build, skip dev, runtime, and icommands packages
+--help            Show this help
+--jobs NUM        Run NUM make jobs simultaneously (instead of using all cores)
+--portable        Portable option, ignores OS and builds a tar.gz
+--release         Build a release package (no debugging information, optimized)
 --run-in-place    Build server for in-place execution (not recommended)
+--skip            Skip compilation of iRODS source
 --verbose         Show the actual compilation commands executed
 
 Examples:
