@@ -18,7 +18,7 @@ void usage() {
         "Usage: izonereport",
         "izonereport queries the entire iRODS Zone for configuration information.",
         "This configuration information will be generated in the form of a JSON",
-        "document which will validate using schemas found at http://schemas.irods.org.",
+        "document which will validate using schemas found at https://schemas.irods.org.",
         " -h  this help",
         ""
     };
