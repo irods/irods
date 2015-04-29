@@ -11,6 +11,7 @@
 #include "getHostForGet.hpp"
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "rcConnect.hpp"
+#include "rodsConnect.h"
 
 #ifdef windows_platform
 #include "irodsntutil.hpp"

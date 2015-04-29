@@ -108,6 +108,10 @@ typedef struct zoneInfo {
 #define REMOTE_ZONE_SID_KW      "RemoteZoneSID"
 #define SID_KEY_KW              "SIDKey"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int
@@ -187,5 +191,9 @@ int
 printZoneInfo();
 char *
 getConfigDir();
+
+#ifdef __cplusplus
+} //extern C
+#endif
 
 #endif	/* RODS_CONNECT_H */

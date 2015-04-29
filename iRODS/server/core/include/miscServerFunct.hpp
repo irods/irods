@@ -25,8 +25,6 @@
 
 #include "structFileSync.hpp" /* JMC */
 
-#include "irods_network_object.hpp"
-
 #define MAX_RECON_ERROR_CNT	10
 
 typedef struct PortalTransferInp {
@@ -126,9 +124,6 @@ int
 setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut );
 int
-readStartupPack( irods::network_object_ptr, startupPack_t **startupPack, struct timeval *tv );
-
-int
 initServiceUser();
 int
 isServiceUserSet();
@@ -143,9 +138,19 @@ dropRootPrivilege();
 int
 checkModArgType( char *arg );
 
+#ifdef __cplusplus
+#include "irods_error.hpp"
+#include "irods_plugin_base.hpp"
+#include "irods_network_object.hpp"
+
+irods::error readStartupPack(
+        irods::network_object_ptr,
+        startupPack_t **startupPack,
+        struct timeval *tv );
+
 irods::error get_current_resource_object_count(
     rsComm_t*,          // comm handle
-    const std::string&, // resourc name
+    const std::string&, // resource name
     int& );             // out var - count
 
 irods::error update_resource_object_count(
@@ -162,6 +167,7 @@ irods::error get_script_output_single_line(
 
 irods::error add_global_re_params_to_kvp_for_dynpep(
     keyValPair_t& _kvp );
+#endif // __cplusplus
 
 
 #endif	/* MISC_SERVER_FUNCT_H */

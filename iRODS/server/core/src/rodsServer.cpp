@@ -1169,11 +1169,11 @@ readWorkerTask() {
         struct timeval tv;
         tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
         tv.tv_usec = 0;
-        int status = readStartupPack( net_obj, &startupPack, &tv );
+        irods::error ret = readStartupPack( net_obj, &startupPack, &tv );
 
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", status );
-            sendVersion( net_obj, status, 0, NULL, 0 );
+        if ( !ret.ok() ) {
+            rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", ret.code() );
+            sendVersion( net_obj, ret.code(), 0, NULL, 0 );
 
             boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
 
@@ -1190,7 +1190,7 @@ readWorkerTask() {
         }
         else {
             if ( startupPack->clientUser[0] == '\0' ) {
-                status = chkAllowedUser( startupPack->clientUser,
+                int status = chkAllowedUser( startupPack->clientUser,
                                          startupPack->clientRodsZone );
                 if ( status < 0 ) {
                     sendVersion( net_obj, status, 0, NULL, 0 );
@@ -1269,15 +1269,11 @@ spawnManagerTask() {
 
 int
 procSingleConnReq( agentProc_t *connReq ) {
-    startupPack_t *startupPack;
-    int newSock;
-    int status;
-
     if ( connReq == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    newSock = connReq->sock;
+    int newSock = connReq->sock;
 
     // =-=-=-=-=-=-=-
     // artificially create a conn object in order to
@@ -1295,14 +1291,15 @@ procSingleConnReq( agentProc_t *connReq ) {
 
     net_obj->socket_handle( newSock );
 
-    status = readStartupPack( net_obj, &startupPack, NULL );
+    startupPack_t *startupPack;
+    ret = readStartupPack( net_obj, &startupPack, NULL );
 
-    if ( status < 0 ) {
+    if ( !ret.ok() ) {
         rodsLog( LOG_NOTICE, "readStartupPack error from %s, status = %d",
-                 inet_ntoa( connReq->remoteAddr.sin_addr ), status );
-        sendVersion( net_obj, status, 0, NULL, 0 );
+                 inet_ntoa( connReq->remoteAddr.sin_addr ), ret.code() );
+        sendVersion( net_obj, ret.code(), 0, NULL, 0 );
         mySockClose( newSock );
-        return status;
+        return ret.code();
     }
 
     if ( startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT ) {
@@ -1313,7 +1310,7 @@ procSingleConnReq( agentProc_t *connReq ) {
 
     connReq->startupPack = *startupPack;
     free( startupPack );
-    status = spawnAgent( connReq, &ConnectedAgentHead );
+    int status = spawnAgent( connReq, &ConnectedAgentHead );
 
 #ifndef windows_platform
     close( newSock );

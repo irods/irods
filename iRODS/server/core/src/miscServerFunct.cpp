@@ -2705,13 +2705,11 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
 }
 
-
-
 /* readStartupPack - Read the startup packet from client.
  * Note: initServerInfo must be called first because it calls getLocalZoneInfo.
  */
 
-int
+irods::error
 readStartupPack(
     irods::network_object_ptr _ptr,
     startupPack_t**     startupPack,
@@ -2721,16 +2719,14 @@ readStartupPack(
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     irods::error ret = readMsgHeader( _ptr, &myHeader, tv );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+        return PASS( ret );
     }
 
     if ( myHeader.msgLen > ( int ) sizeof( startupPack_t ) * 2 ||
             myHeader.msgLen <= 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "readStartupPack: problem with myHeader.msgLen = %d",
-                 myHeader.msgLen );
-        return SYS_HEADER_READ_LEN_ERR;
+        std::stringstream msg;
+        msg << "readStartupPack: problem with myHeader.msgLen = " << myHeader.msgLen;
+        return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
     }
 
     memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
@@ -2743,8 +2739,7 @@ readStartupPack(
               XML_PROT,
               tv );
     if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+        return PASS( ret );
     }
 
     /* some sanity check */
@@ -2759,10 +2754,9 @@ readStartupPack(
         if ( errorBBuf.buf != NULL ) {
             clearBBuf( &errorBBuf );
         }
-        rodsLog( LOG_NOTICE,
-                 "readStartupPack: wrong mag type - %s, expect %s",
-                 myHeader.type, RODS_CONNECT_T );
-        return SYS_HEADER_TYPE_LEN_ERR;
+        std::stringstream msg;
+        msg << "readStartupPack: wrong mag type - " << myHeader.type << ", expect " << RODS_CONNECT_T;
+        return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
     }
 
     if ( myHeader.bsLen != 0 ) {
@@ -2788,34 +2782,27 @@ readStartupPack(
 
     clearBBuf( &inputStructBBuf );
 
-    if ( status >= 0 ) {
-        if ( ( *startupPack )->clientUser[0] != '\0'  &&
-                ( *startupPack )->clientRodsZone[0] == '\0' ) {
-            char *zoneName;
-            /* clientRodsZone is not defined */
-            if ( ( zoneName = getLocalZoneName() ) != NULL ) {
-                rstrcpy( ( *startupPack )->clientRodsZone, zoneName, NAME_LEN );
-            }
-        }
-        if ( ( *startupPack )->proxyUser[0] != '\0'  &&
-                ( *startupPack )->proxyRodsZone[0] == '\0' ) {
-            char *zoneName;
-            /* proxyRodsZone is not defined */
-            if ( ( zoneName = getLocalZoneName() ) != NULL ) {
-                rstrcpy( ( *startupPack )->proxyRodsZone, zoneName, NAME_LEN );
-            }
-        }
-    }
-    else {
-        rodsLogError( LOG_NOTICE,  status,
-                      "readStartupPack:unpackStruct error. status = %d",
-                      status );
+    if ( status < 0 ) {
+        return ERROR( status, "readStartupPack:unpackStruct error." );
     }
 
-    return status;
+    if ( ( *startupPack )->clientUser[0] != '\0'  &&
+            ( *startupPack )->clientRodsZone[0] == '\0' ) {
+        /* clientRodsZone is not defined */
+        if ( const char* zoneName = getLocalZoneName() ) {
+            rstrcpy( ( *startupPack )->clientRodsZone, zoneName, NAME_LEN );
+        }
+    }
+    if ( ( *startupPack )->proxyUser[0] != '\0'  &&
+            ( *startupPack )->proxyRodsZone[0] == '\0' ) {
+        /* proxyRodsZone is not defined */
+        if ( const char* zoneName = getLocalZoneName() ) {
+            rstrcpy( ( *startupPack )->proxyRodsZone, zoneName, NAME_LEN );
+        }
+    }
+
+    return CODE( status );
 }
-
-
 
 /* initServiceUser - set the username/uid of the unix user to
  *      run the iRODS daemons as if configured using the

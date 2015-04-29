@@ -47,12 +47,11 @@ initThreadEnv() {
 int
 addXmsgToQues( irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct ) {
 
-    int status;
 
     MessQueCondMutex.lock();
 
     addXmsgToXmsgQue( irodsXmsg, &XmsgQue );
-    status = addXmsgToTicketMsgStruct( irodsXmsg, ticketMsgStruct );
+    int status = addXmsgToTicketMsgStruct( irodsXmsg, ticketMsgStruct );
 
     MessQueCondMutex.unlock();
 
@@ -505,10 +504,10 @@ procReqRoutine() {
         }
 
         startupPack_t *startupPack;
-        int status = readStartupPack( net_obj, &startupPack, NULL );
-        if ( status < 0 ) {
+        ret = readStartupPack( net_obj, &startupPack, NULL );
+        if ( !ret.ok() ) {
             rodsLog( LOG_ERROR,
-                     "procReqRoutine: readStartupPack error, status = %d", status );
+                     "procReqRoutine: readStartupPack error, status = %d", ret.code() );
             free( myXmsgReq );
             continue;
         }
@@ -542,8 +541,7 @@ procReqRoutine() {
             if ( numSock < 0 ) {
                 break;
             }
-            status = readAndProcClientMsg( &rsComm, 0 );
-            if ( status < 0 ) {
+            if ( readAndProcClientMsg( &rsComm, 0 ) < 0 ) {
                 break;
             }
         }
