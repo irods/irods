@@ -11,49 +11,42 @@ import time
 def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
+def is_binary_installation():
+    return os.path.isfile(os.path.join(get_install_dir(), 'packaging', 'binary_installation.flag'))
 
-class CompatibilityDict(dict):
+def get_config_dir():
+    if is_binary_installation():
+        return '/etc/irods'
+    return os.path.join(get_install_dir(), 'iRODS', 'server', 'config')
 
-    def __init__(self, compatibility_listing, *args, **kwargs):
-        super(CompatibilityDict, self).__init__(*args, **kwargs)
-        key_dict = {}
-        for old, new in compatibility_listing:
-            key_dict[old] = new
-            key_dict[new] = old
-        self.key_dict = key_dict
-
-    def __missing__(self, key):
-        compat_key = self.key_dict[key]
-        if compat_key in self.keys():
-            return self[compat_key]
-        else:
-            raise KeyError(key)
-
+def load_odbc_ini(filename):
+    rv = {}
+    with open(filename, 'r') as f:
+        for line in f:
+            if len(line) < 1:
+                continue
+            if line[0] in [';', '#']:
+                continue
+            if line[0] == '[':
+                continue
+            columns = line.split('=')
+            if len(columns) != 2:
+                continue
+            key = columns[0].strip()
+            value = columns[1].strip()
+            rv[key] = value
+    return rv
 
 class ServerConfig(object):
-
     def __init__(self):
-        self.combined_config_dict = CompatibilityDict(compatibility_listing=[('DBPassword', 'db_password'),
-                                                                             ('DBUsername', 'db_username')])
+        self.combined_config_dict = {}
 
-        # Binary installation
-        if os.path.isfile('/var/lib/irods/packaging/binary_installation.flag'):
-            self.capture('/etc/irods/server_config.json')
-            self.capture('/etc/irods/database_config.json')
-        # Run in place
-        elif os.path.isfile(get_install_dir() + '/iRODS/server/config/server_config.json'):
-            self.capture(get_install_dir() + '/iRODS/server/config/server_config.json')
-            self.capture(get_install_dir() + '/iRODS/server/config/database_config.json')
-        # Support deprecated pre-json config files through 4.1.x
-        else:
-            thefile = '/etc/irods/server.config'
-            # binary
-            if os.path.isfile(thefile):
-                cfg_file = thefile
-            # run-in-place
-            else:
-                cfg_file = get_install_dir() + '/iRODS/server/config/server.config'
-            self.capture(cfg_file, ' ')
+        config_files = ['server_config.json', 'database_config.json']
+        for file_ in config_files:
+            fullpath = os.path.join(get_config_dir(), file_)
+            if not os.path.isfile(fullpath):
+                raise RuntimeError('Missing {0}\n{1}'.format(fullpath, os.listdir(get_config_dir())))
+            self.capture(fullpath)
 
         self.capture(os.path.join(os.environ['HOME'], '.odbc.ini'), '=')
 
@@ -61,34 +54,16 @@ class ServerConfig(object):
         return self.combined_config_dict[key]
 
     def capture(self, cfg_file, sep=None):
-        # NOTE:: we want to make this programmatically detected
-        cfg_file = os.path.abspath(cfg_file)
-        name, ext = os.path.splitext(cfg_file)
-        with open(cfg_file, 'r') as f:
-            if '.json' == ext:
-                self.combined_config_dict.update(json.load(f))
-            else:
-                for i, row in enumerate(f):
-                    columns = row.split(sep)
-                    # print columns
-                    if columns[0] == '#':
-                        continue
-                    elif len(columns) > 1:
-                        self.combined_config_dict[columns[0].rstrip()] = columns[1].rstrip()
+        _, ext = os.path.splitext(cfg_file)
+        if ext == '.json':
+            with open(cfg_file, 'r') as f:
+                update = json.load(f)
+        else:
+            update = load_odbc_ini(cfg_file)
+        self.combined_config_dict.update(update)
 
     def get_db_password(self):
-        try:
-            db_key = self.get('DBKey')
-        except KeyError:
-            return self.get('db_password')
-
-        obfuscated_password = self.get('db_password')
-        p = subprocess.Popen(['iadmin', obfuscated_password, db_key],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        db_pass, db_err = p.communicate()
-        if p.returncode != 0:
-            raise RuntimeError('Failed to decode db password. stdout[{0}], stderr[{1}]'.format(stdout, stderr))
-        return db_pass.split(':')[1].rstrip()
+        return self.get('db_password')
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-
     # POSTGRES
@@ -99,7 +74,7 @@ class ServerConfig(object):
             sql += ';'
 
         sqlfile = 'tmpsqlfile'
-        with open(sqlfile, 'w+') as f:
+        with open(sqlfile, 'w') as f:
             f.write(sql)
         returncode, myout, myerr = self.exec_pgsql_file(sqlfile)
         os.unlink(sqlfile)
