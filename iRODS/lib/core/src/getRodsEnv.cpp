@@ -106,8 +106,6 @@ extern "C" {
 
     int getRodsEnv( rodsEnv *rodsEnvArg ) {
         if ( !rodsEnvArg ) {
-            printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
-            fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
         _getRodsEnv( *rodsEnvArg );
@@ -199,8 +197,6 @@ extern "C" {
     int getRodsEnvFromFile(
         rodsEnv* _env ) {
         if ( !_env ) {
-            printf( "ERROR - getRodsEnv :: null rodsEnv\n" );
-            fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -577,8 +573,6 @@ extern "C" {
     getRodsEnvFromEnv(
         rodsEnv* _env ) {
         if ( !_env ) {
-            printf( "ERROR - getRodsEnvFromEnv :: null rodsEnv\n" );
-            fflush( stdout );
             return SYS_INVALID_INPUT_PARAM;
         }
 
