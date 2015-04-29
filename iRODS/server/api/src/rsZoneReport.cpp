@@ -9,7 +9,7 @@
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
 
-#include <jansson.h>
+#include "jansson.h"
 
 
 

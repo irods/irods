@@ -7,7 +7,7 @@
 #include "irods_lookup_table.hpp"
 #include <vector>
 #include <string>
-#include <jansson.h>
+#include "jansson.h"
 
 namespace irods {
 

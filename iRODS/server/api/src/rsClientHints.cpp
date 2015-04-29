@@ -12,7 +12,7 @@
 #include "ies_client_hints.hpp"
 #include "readServerConfig.hpp"
 
-#include <jansson.h>
+#include "jansson.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>

@@ -607,7 +607,7 @@ irods::error get_plugin_array(
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_MICROSERVICE, "microservices", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_MICROSERVICE, "microservice", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
