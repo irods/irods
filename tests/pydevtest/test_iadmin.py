@@ -42,12 +42,12 @@ def write_host_access_control(filename, username, group, address, mask):
     with open(filename, 'w') as f:
         json.dump(hac, f, sort_keys=True, indent=4, ensure_ascii=False)
 
-class Test_iAdminSuite(resource_suite.ResourceBase, unittest.TestCase):
+class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_iAdminSuite, self).setUp()
+        super(Test_Iadmin, self).setUp()
 
     def tearDown(self):
-        super(Test_iAdminSuite, self).tearDown()
+        super(Test_Iadmin, self).tearDown()
 
     def test_api_plugin(self):
         self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')

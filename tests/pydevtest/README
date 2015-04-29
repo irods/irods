@@ -44,7 +44,7 @@ Run the test suite as irods
 
 The following command will run the entire test suite and take a few seconds for each test.  This could take a couple hours to run on a relatively modern machine:
 
-  python run_tests.py --run_python_suite --include_auth_suite_tests --include_fuse_suite_tests --run_devtesty
+  python run_tests.py --run_python_suite --include_auth_tests --include_fuse_tests --run_devtesty
 
 The following command will run specific tests
 

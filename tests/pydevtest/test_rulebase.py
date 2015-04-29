@@ -10,12 +10,12 @@ import time  # remove once file hash fix is commited #2279
 from resource_suite import ResourceBase
 
 
-class Test_RulebaseSuite(ResourceBase, unittest.TestCase):
+class Test_Rulebase(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_RulebaseSuite, self).setUp()
+        super(Test_Rulebase, self).setUp()
 
     def tearDown(self):
-        super(Test_RulebaseSuite, self).tearDown()
+        super(Test_Rulebase, self).tearDown()
 
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         # create new resources

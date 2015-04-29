@@ -12,12 +12,12 @@ import stat
 import socket
 
 
-class Test_FuseSuite(ResourceBase, unittest.TestCase):
+class Test_Fuse(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_FuseSuite, self).setUp()
+        super(Test_Fuse, self).setUp()
 
     def tearDown(self):
-        super(Test_FuseSuite, self).tearDown()
+        super(Test_Fuse, self).tearDown()
 
     def test_irodsFs_issue_2252(self):
         # =-=-=-=-=-=-=-

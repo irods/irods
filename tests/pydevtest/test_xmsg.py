@@ -12,7 +12,7 @@ import configuration
 import lib
 
 
-class Test_ixmsg(unittest.TestCase):
+class Test_Xmsg(unittest.TestCase):
     serverConfigFile = lib.get_irods_config_dir() + '/server_config.json'
     serverConfigFileBackup = serverConfigFile + '_orig'
     xmsgHost = 'localhost'

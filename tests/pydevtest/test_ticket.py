@@ -6,12 +6,12 @@ else:
 from resource_suite import ResourceBase
 
 
-class Test_TicketSuite(ResourceBase, unittest.TestCase):
+class Test_Ticket(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_TicketSuite, self).setUp()
+        super(Test_Ticket, self).setUp()
 
     def tearDown(self):
-        super(Test_TicketSuite, self).tearDown()
+        super(Test_Ticket, self).tearDown()
 
     def test_list_no_tickets(self):
         self.admin.assert_icommand('iticket ls')

@@ -13,12 +13,12 @@ from resource_suite import ResourceBase
 import lib
 
 
-class Test_CatalogSuite(ResourceBase, unittest.TestCase):
+class Test_Catalog(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_CatalogSuite, self).setUp()
+        super(Test_Catalog, self).setUp()
 
     def tearDown(self):
-        super(Test_CatalogSuite, self).tearDown()
+        super(Test_Catalog, self).tearDown()
 
     ###################
     # izonereport
@@ -223,12 +223,12 @@ class Test_CatalogSuite(ResourceBase, unittest.TestCase):
 
 
 
-class Test_CatalogSuitePermissions(ResourceBase, unittest.TestCase):
+class Test_CatalogPermissions(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_CatalogSuitePermissions, self).setUp()
+        super(Test_CatalogPermissions, self).setUp()
 
     def tearDown(self):
-        super(Test_CatalogSuitePermissions, self).tearDown()
+        super(Test_CatalogPermissions, self).tearDown()
 
     def test_isysmeta_no_permission(self):
         self.user0.assert_icommand('icd /' + self.user0.zone_name + '/home/public')  # get into public/

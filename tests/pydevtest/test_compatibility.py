@@ -9,12 +9,12 @@ from resource_suite import ResourceBase
 import lib
 
 
-class Test_CompatibilitySuite(ResourceBase, unittest.TestCase):
+class Test_Compatibility(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_CompatibilitySuite, self).setUp()
+        super(Test_Compatibility, self).setUp()
 
     def tearDown(self):
-        super(Test_CompatibilitySuite, self).tearDown()
+        super(Test_Compatibility, self).tearDown()
 
     def test_imeta_set(self):
         self.admin.assert_icommand('iadmin lu', 'STDOUT_SINGLELINE', self.admin.username)

@@ -48,14 +48,14 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         os.unlink(keyfile_path)
 
 # Requires existence of OS account 'irodsauthuser' with password 'iamnotasecret'
-class Test_Auth_Suite(resource_suite.ResourceBase, unittest.TestCase):
+class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_Auth_Suite, self).setUp()
+        super(Test_Auth, self).setUp()
         self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irodsauthuser', 'iamnotasecret',
                                                                          lib.get_hostname())
 
     def tearDown(self):
-        super(Test_Auth_Suite, self).tearDown()
+        super(Test_Auth, self).tearDown()
         self.auth_session.__exit__()
         lib.rmuser(self.auth_session.username)
 

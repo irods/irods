@@ -17,7 +17,7 @@ from resource_suite import ResourceSuite, ResourceBase
 from test_chunkydevtest import ChunkyDevTest
 
 
-class Test_Random_within_Replication_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCase):
+class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -30,10 +30,10 @@ class Test_Random_within_Replication_Resource(ResourceSuite, ChunkyDevTest, unit
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB2")
-        super(Test_Random_within_Replication_Resource, self).setUp()
+        super(Test_Resource_RandomWithinReplication, self).setUp()
 
     def tearDown(self):
-        super(Test_Random_within_Replication_Resource, self).tearDown()
+        super(Test_Resource_RandomWithinReplication, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB2")
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB1")
@@ -312,7 +312,7 @@ class Test_Random_within_Replication_Resource(ResourceSuite, ChunkyDevTest, unit
         os.remove(doublefile)
 
 
-class Test_RoundRobin_within_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -325,10 +325,10 @@ class Test_RoundRobin_within_Replication_Resource(ChunkyDevTest, ResourceSuite, 
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB2")
-        super(Test_RoundRobin_within_Replication_Resource, self).setUp()
+        super(Test_Resource_RoundRobinWithinReplication, self).setUp()
 
     def tearDown(self):
-        super(Test_RoundRobin_within_Replication_Resource, self).tearDown()
+        super(Test_Resource_RoundRobinWithinReplication, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB2")
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unixB1")
@@ -607,16 +607,16 @@ class Test_RoundRobin_within_Replication_Resource(ChunkyDevTest, ResourceSuite, 
         os.remove(doublefile)
 
 
-class Test_UnixFileSystem_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCase):
+class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCase):
     def setUp(self):
         hostname = lib.get_hostname()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/demoRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-        super(Test_UnixFileSystem_Resource, self).setUp()
+        super(Test_Resource_Unixfilesystem, self).setUp()
 
     def tearDown(self):
-        super(Test_UnixFileSystem_Resource, self).tearDown()
+        super(Test_Resource_Unixfilesystem, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -678,17 +678,17 @@ class Test_UnixFileSystem_Resource(ResourceSuite, ChunkyDevTest, unittest.TestCa
         os.remove(filepath)
         os.remove(filepath2)
 
-class Test_Passthru_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
-        super(Test_Passthru_Resource, self).setUp()
+        super(Test_Resource_Passthru, self).setUp()
 
     def tearDown(self):
-        super(Test_Passthru_Resource, self).tearDown()
+        super(Test_Resource_Passthru, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
@@ -700,7 +700,7 @@ class Test_Passthru_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_WeightedPassthru_Resource(ResourceBase, unittest.TestCase):
+class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
     def setUp(self):
         hostname = lib.get_hostname()
         with lib.make_session_for_existing_admin() as admin_session:
@@ -712,10 +712,10 @@ class Test_WeightedPassthru_Resource(ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc w_pt")
             admin_session.assert_icommand("iadmin addchildtoresc w_pt unixB")
-        super(Test_WeightedPassthru_Resource, self).setUp()
+        super(Test_Resource_WeightedPassthru, self).setUp()
 
     def tearDown(self):
-        super(Test_WeightedPassthru_Resource, self).tearDown()
+        super(Test_Resource_WeightedPassthru, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc w_pt unixB")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc w_pt")
@@ -745,17 +745,17 @@ class Test_WeightedPassthru_Resource(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
         self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE" )
 
-class Test_Deferred_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc deferred", 'STDOUT_SINGLELINE', 'deferred')
             admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
-        super(Test_Deferred_Resource, self).setUp()
+        super(Test_Resource_Deferred, self).setUp()
 
     def tearDown(self):
-        super(Test_Deferred_Resource, self).tearDown()
+        super(Test_Resource_Deferred, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin rmresc unix1Resc")
@@ -767,7 +767,7 @@ class Test_Deferred_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_Random_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -778,10 +778,10 @@ class Test_Random_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
-        super(Test_Random_Resource, self).setUp()
+        super(Test_Resource_Random, self).setUp()
 
     def tearDown(self):
-        super(Test_Random_Resource, self).tearDown()
+        super(Test_Resource_Random, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix3Resc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
@@ -800,21 +800,21 @@ class Test_Random_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         pass
 
 
-class Test_NonBlocking_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/nbVault", 'STDOUT_SINGLELINE', 'nonblocking')
-        super(Test_NonBlocking_Resource, self).setUp()
+        super(Test_Resource_NonBlocking, self).setUp()
 
     def tearDown(self):
-        super(Test_NonBlocking_Resource, self).tearDown()
+        super(Test_Resource_NonBlocking, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
 
 
-class Test_Compound_with_MockArchive_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -823,10 +823,10 @@ class Test_Compound_with_MockArchive_Resource(ChunkyDevTest, ResourceSuite, unit
             admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'mockarchive')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
-        super(Test_Compound_with_MockArchive_Resource, self).setUp()
+        super(Test_Resource_CompoundWithMockarchive, self).setUp()
 
     def tearDown(self):
-        super(Test_Compound_with_MockArchive_Resource, self).tearDown()
+        super(Test_Resource_CompoundWithMockarchive, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
@@ -1114,7 +1114,7 @@ class Test_Compound_with_MockArchive_Resource(ChunkyDevTest, ResourceSuite, unit
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Compound_with_UniversalMSS_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -1123,10 +1123,10 @@ class Test_Compound_with_UniversalMSS_Resource(ChunkyDevTest, ResourceSuite, uni
             admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'univmss')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
-        super(Test_Compound_with_UniversalMSS_Resource, self).setUp()
+        super(Test_Resource_CompoundWithUnivmss, self).setUp()
 
     def tearDown(self):
-        super(Test_Compound_with_UniversalMSS_Resource, self).tearDown()
+        super(Test_Resource_CompoundWithUnivmss, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
@@ -1410,7 +1410,7 @@ class Test_Compound_with_UniversalMSS_Resource(ChunkyDevTest, ResourceSuite, uni
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Compound_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -1419,10 +1419,10 @@ class Test_Compound_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
-        super(Test_Compound_Resource, self).setUp()
+        super(Test_Resource_Compound, self).setUp()
 
     def tearDown(self):
-        super(Test_Compound_Resource, self).tearDown()
+        super(Test_Resource_Compound, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc archiveResc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc cacheResc")
@@ -1770,7 +1770,7 @@ class Test_Compound_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Replication_within_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -1783,10 +1783,10 @@ class Test_Replication_within_Replication_Resource(ChunkyDevTest, ResourceSuite,
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc replResc unixB1")
             admin_session.assert_icommand("iadmin addchildtoresc replResc unixB2")
-        super(Test_Replication_within_Replication_Resource, self).setUp()
+        super(Test_Resource_ReplicationWithinReplication, self).setUp()
 
     def tearDown(self):
-        super(Test_Replication_within_Replication_Resource, self).tearDown()
+        super(Test_Resource_ReplicationWithinReplication, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc replResc unixB2")
             admin_session.assert_icommand("iadmin rmchildfromresc replResc unixB1")
@@ -2078,7 +2078,7 @@ class Test_Replication_within_Replication_Resource(ChunkyDevTest, ResourceSuite,
         os.remove(doublefile)
 
 
-class Test_Replication_to_two_Compound_Resources(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -2095,10 +2095,10 @@ class Test_Replication_to_two_Compound_Resources(ChunkyDevTest, ResourceSuite, u
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 archiveResc1 archive")
             admin_session.assert_icommand("iadmin addchildtoresc compResc2 cacheResc2 cache")
             admin_session.assert_icommand("iadmin addchildtoresc compResc2 archiveResc2 archive")
-        super(Test_Replication_to_two_Compound_Resources, self).setUp()
+        super(Test_Resource_ReplicationToTwoCompound, self).setUp()
 
     def tearDown(self):
-        super(Test_Replication_to_two_Compound_Resources, self).tearDown()
+        super(Test_Resource_ReplicationToTwoCompound, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc compResc2 archiveResc2")
             admin_session.assert_icommand("iadmin rmchildfromresc compResc2 cacheResc2")
@@ -2518,7 +2518,7 @@ class Test_Replication_to_two_Compound_Resources(ChunkyDevTest, ResourceSuite, u
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
-class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         # back up core file
         corefile = lib.get_irods_config_dir() + "/core.re"
@@ -2544,10 +2544,10 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(ChunkyDevTe
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 archiveResc1 archive")
             admin_session.assert_icommand("iadmin addchildtoresc compResc2 cacheResc2 cache")
             admin_session.assert_icommand("iadmin addchildtoresc compResc2 archiveResc2 archive")
-        super(Test_Replication_to_two_Compound_Resources_with_Prefer_Archive, self).setUp()
+        super(Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive, self).setUp()
 
     def tearDown(self):
-        super(Test_Replication_to_two_Compound_Resources_with_Prefer_Archive, self).tearDown()
+        super(Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc compResc2 archiveResc2")
             admin_session.assert_icommand("iadmin rmchildfromresc compResc2 cacheResc2")
@@ -2889,7 +2889,7 @@ class Test_Replication_to_two_Compound_Resources_with_Prefer_Archive(ChunkyDevTe
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_RoundRobin_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -2898,10 +2898,10 @@ class Test_RoundRobin_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
-        super(Test_RoundRobin_Resource, self).setUp()
+        super(Test_Resource_RoundRobin, self).setUp()
 
     def tearDown(self):
-        super(Test_RoundRobin_Resource, self).tearDown()
+        super(Test_Resource_RoundRobin, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix1Resc")
@@ -2933,7 +2933,7 @@ class Test_RoundRobin_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -2944,10 +2944,10 @@ class Test_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase)
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
-        super(Test_Replication_Resource, self).setUp()
+        super(Test_Resource_Replication, self).setUp()
 
     def tearDown(self):
-        super(Test_Replication_Resource, self).tearDown()
+        super(Test_Resource_Replication, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix3Resc")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc unix2Resc")
@@ -3267,7 +3267,7 @@ class Test_Replication_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         output = commands.getstatusoutput('rm ' + filepath)
 
 
-class Test_MultiLayered_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
@@ -3282,10 +3282,10 @@ class Test_MultiLayered_Resource(ChunkyDevTest, ResourceSuite, unittest.TestCase
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unix3Resc")
-        super(Test_MultiLayered_Resource, self).setUp()
+        super(Test_Resource_MultiLayered, self).setUp()
 
     def tearDown(self):
-        super(Test_MultiLayered_Resource, self).tearDown()
+        super(Test_Resource_MultiLayered, self).tearDown()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unix3Resc")
             admin_session.assert_icommand("iadmin rmchildfromresc rrResc unix2Resc")
