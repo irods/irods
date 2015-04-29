@@ -1,7 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "apiHandler.hpp"
-#include "irods_api_home.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_pack_table.hpp"
@@ -147,10 +146,17 @@ namespace irods {
         api_entry_table&  _api_tbl,
         pack_entry_table& _pack_tbl,
         bool              _cli_flg ) {
+        // =-=-=-=-=-=-=-
+        // resolve plugin directory
+        std::string plugin_home;
+        error ret = resolve_plugin_path( irods::PLUGIN_TYPE_API, plugin_home );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
 
         // =-=-=-=-=-=-=-
         // iterate over the API_HOME directory entries
-        boost::filesystem::path so_dir( irods::API_HOME );
+        boost::filesystem::path so_dir( plugin_home );
         if ( boost::filesystem::exists( so_dir ) ) {
             for ( boost::filesystem::directory_iterator it( so_dir );
                     it != boost::filesystem::directory_iterator();
@@ -191,7 +197,7 @@ namespace irods {
                 error ret = load_plugin< api_entry >(
                                 entry,
                                 name,
-                                API_HOME,
+                                plugin_home,
                                 "inst", "ctx" );
                 if ( ret.ok() && entry ) {
                     // =-=-=-=-=-=-=-

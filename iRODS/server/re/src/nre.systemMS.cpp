@@ -14,7 +14,7 @@
 #include "rules.hpp"
 #include "conversion.hpp"
 #include "irods_plugin_name_generator.hpp"
-#include "irods_ms_home.hpp"
+#include "irods_load_plugin.hpp"
 #include "reFuncDefs.hpp"
 #include "sockComm.hpp"
 #include "irods_server_properties.hpp"
@@ -1077,9 +1077,16 @@ msiListEnabledMS(
 
     // =-=-=-=-=-=-=-
     // scan plugin directory for additional plugins
+    std::string plugin_home;
+    irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_MICROSERVICE, plugin_home );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     irods::plugin_name_generator name_gen;
     irods::plugin_name_generator::plugin_list_t plugin_list;
-    irods::error ret = name_gen.list_plugins( irods::MS_HOME, plugin_list );
+    ret = name_gen.list_plugins( plugin_home, plugin_list );
     if ( ret.ok() ) {
         irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
         for ( ; it != plugin_list.end(); ++it ) {

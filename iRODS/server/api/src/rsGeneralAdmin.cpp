@@ -20,10 +20,11 @@
 #include "irods_children_parser.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_plugin_name_generator.hpp"
-#include "irods_resources_home.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_file_object.hpp"
 #include "irods_resource_constants.hpp"
+#include "irods_load_plugin.hpp"
+
 extern irods::resource_manager resc_mgr;
 
 
@@ -213,7 +214,16 @@ _addResource(
     // =-=-=-=-=-=-=-
     // Check that there is a plugin matching the resource type
     irods::plugin_name_generator name_gen;
-    if ( !name_gen.exists( resc_input[irods::RESOURCE_TYPE], irods::RESOURCES_HOME ) ) {
+    // =-=-=-=-=-=-=-
+    // resolve plugin directory
+    std::string plugin_home;
+    irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    if ( !name_gen.exists( resc_input[irods::RESOURCE_TYPE], plugin_home ) ) {
         rodsLog(
             LOG_DEBUG,
             "No plugin exists to provide resource [%s] of type [%s]",
@@ -252,10 +262,19 @@ _addResource(
 
 int
 _listRescTypes( rsComm_t* _rsComm ) {
+    // =-=-=-=-=-=-=-
+    // resolve plugin directory
+    std::string plugin_home;
+    irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     int result = 0;
     irods::plugin_name_generator name_gen;
     irods::plugin_name_generator::plugin_list_t plugin_list;
-    irods::error ret = name_gen.list_plugins( irods::RESOURCES_HOME, plugin_list );
+    ret = name_gen.list_plugins( plugin_home, plugin_list );
     if ( ret.ok() ) {
         std::stringstream msg;
         for ( irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();

@@ -145,6 +145,17 @@ namespace irods {
     const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW(
         "server_control_plane_encryption_algorithm" );
 
+    const std::string CFG_IRODS_PLUGIN_HOME_KW( "irods_plugin_home" );
+
+    // plugin types
+    const std::string PLUGIN_TYPE_API( "api" );
+    const std::string PLUGIN_TYPE_AUTHENTICATION( "auth" );
+    const std::string PLUGIN_TYPE_NETWORK( "network" );
+    const std::string PLUGIN_TYPE_DATABASE( "database" );
+    const std::string PLUGIN_TYPE_RESOURCE( "resources" );
+    const std::string PLUGIN_TYPE_MICROSERVICE( "microservices" );
+
+
 }; // namespace irods
 
 #endif // CONFIGURATION_KEYWORDS_HPP

@@ -1,0 +1,15 @@
+
+#ifndef IRODS_PLUGIN_HOME_HPP
+#define IRODS_PLUGIN_HOME_HPP
+
+#include <string>
+
+namespace irods {
+
+	const std::string PLUGIN_HOME( "IRODSPLUGINHOMEPATH" );
+
+}; // namespace irods
+
+#endif // IRODS_PLUGIN_HOME_HPP
+
+

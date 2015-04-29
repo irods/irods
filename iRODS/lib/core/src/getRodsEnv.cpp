@@ -461,6 +461,12 @@ extern "C" {
             irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
 
+        capture_string_property(
+            msg_lvl,
+            props,
+            irods::CFG_IRODS_PLUGIN_HOME_KW,
+            _env->irodsPluginHome );
+
         return 0;
     }
 
@@ -745,6 +751,11 @@ extern "C" {
         capture_integer_env_var(
             env_var,
             _env->irodsTransBufferSizeForParaTrans );
+
+        env_var = irods::CFG_IRODS_PLUGIN_HOME_KW;
+        capture_string_env_var(
+            env_var,
+            _env->irodsPluginHome );
 
         return 0;
     }

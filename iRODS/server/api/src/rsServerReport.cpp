@@ -3,24 +3,20 @@
 #include "miscServerFunct.hpp"
 
 #include "reIn2p3SysRule.hpp"
-#include "irods_ms_home.hpp"
-#include "irods_network_home.hpp"
-#include "irods_auth_home.hpp"
-#include "irods_resources_home.hpp"
-#include "irods_api_home.hpp"
-#include "irods_database_home.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_home_directory.hpp"
+#include "irods_plugin_home_directory.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "server_report.hpp"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_environment_properties.hpp"
+#include "irods_load_plugin.hpp"
 
-#include <jansson.h>
+#include "jansson.h"
 
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -543,13 +539,19 @@ irods::error convert_service_account(
 
 
 irods::error add_plugin_type_to_json_array(
-    const std::string& dir_name,
-    const char* plugin_type,
-    json_t*& json_array ) {
+    const std::string& _plugin_type,
+    const char*        _type_name,
+    json_t*&           _json_array ) {
+
+    std::string plugin_home;
+    irods::error ret = irods::resolve_plugin_path( _plugin_type, plugin_home );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
 
     irods::plugin_name_generator name_gen;
     irods::plugin_name_generator::plugin_list_t plugin_list;
-    irods::error ret = name_gen.list_plugins( dir_name, plugin_list );
+    ret = name_gen.list_plugins( plugin_home, plugin_list );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -560,11 +562,11 @@ irods::error add_plugin_type_to_json_array(
 
         json_t* plug = json_object();
         json_object_set( plug, "name",     json_string( itr->c_str() ) );
-        json_object_set( plug, "type",     json_string( plugin_type ) );
+        json_object_set( plug, "type",     json_string( _type_name ) );
         json_object_set( plug, "version",  json_string( "" ) );
         json_object_set( plug, "checksum_sha256", json_string( "" ) );
 
-        json_array_append( json_array, plug );
+        json_array_append( _json_array, plug );
     }
 
     return SUCCESS();
@@ -580,32 +582,32 @@ irods::error get_plugin_array(
                    "json_object() failed" );
     }
 
-    irods::error ret = add_plugin_type_to_json_array( irods::RESOURCES_HOME, "resource", _plugins );
+    irods::error ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_RESOURCE, "resource", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::IRODS_DATABASE_HOME, "database", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::AUTH_HOME, "auth", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::NETWORK_HOME, "network", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_NETWORK, "network", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::API_HOME, "api", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_API, "api", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
 
-    ret = add_plugin_type_to_json_array( irods::MS_HOME, "microservice", _plugins );
+    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_MICROSERVICE, "microservices", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }

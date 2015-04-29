@@ -59,6 +59,10 @@ typedef struct {
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
     int irodsTransBufferSizeForParaTrans;
+    
+    // =-=-=-=-=-=-=-
+    // override of plugin installation directory
+    char irodsPluginHome[MAX_NAME_LEN];
 
 } rodsEnv;
 

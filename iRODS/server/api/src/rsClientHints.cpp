@@ -2,12 +2,6 @@
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
 
-#include "irods_ms_home.hpp"
-#include "irods_network_home.hpp"
-#include "irods_auth_home.hpp"
-#include "irods_resources_home.hpp"
-#include "irods_api_home.hpp"
-#include "irods_database_home.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"

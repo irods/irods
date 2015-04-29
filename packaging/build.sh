@@ -531,12 +531,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf macosx-10.*
     rm -f iRODS/server/config/scriptMonPerf.config
     rm -f iRODS/lib/core/include/rodsVersion.hpp
-    rm -f iRODS/lib/core/include/irods_ms_home.hpp
-    rm -f iRODS/lib/core/include/irods_network_home.hpp
-    rm -f iRODS/lib/core/include/irods_auth_home.hpp
-    rm -f iRODS/lib/core/include/irods_api_home.hpp
-    rm -f iRODS/lib/core/include/irods_resources_home.hpp
-    rm -f iRODS/server/core/include/irods_database_home.hpp
+    rm -f iRODS/server/core/include/irods_plugin_home_directory.hpp
     rm -f iRODS/lib/core/include/irods_home_directory.hpp
     # database plugin cleanup
     ./plugins/database/build.sh clean
@@ -1237,52 +1232,19 @@ if [ "$BUILDIRODS" == "1" ] ; then
         detected_irods_home=`./scripts/find_irods_home.sh`
     fi
     detected_irods_home=`dirname $detected_irods_home`
-    irods_msvc_home="$detected_irods_home/plugins/microservices/"
-    set_tmpfile
-    sed -e s,IRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/irods_ms_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_ms_home.hpp
-    rm -f $TMPFILE
-    # =-=-=-=-=-=-=-
-    # modify the irods_network_home.hpp file with the proper path to the binary directory
-    irods_network_home="$detected_irods_home/plugins/network/"
-    set_tmpfile
-    sed -e s,IRODSNETWORKPATH,$irods_network_home, ./lib/core/include/irods_network_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_network_home.hpp
-    rm -f $TMPFILE
-    # =-=-=-=-=-=-=-
-    # modify the irods_auth_home.hpp file with the proper path to the binary directory
-    irods_auth_home="$detected_irods_home/plugins/auth/"
-    set_tmpfile
-    sed -e s,IRODSAUTHPATH,$irods_auth_home, ./lib/core/include/irods_auth_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_auth_home.hpp
-    rm -f $TMPFILE
-    # =-=-=-=-=-=-=-
-    # modify the irods_resources_home.hpp file with the proper path to the binary directory
-    irods_resources_home="$detected_irods_home/plugins/resources/"
-    set_tmpfile
-    sed -e s,IRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/irods_resources_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_resources_home.hpp
-    rm -f $TMPFILE
-    # =-=-=-=-=-=-=-
-    # modify the irods_database_home.hpp file with the proper path to the binary directory
-    irods_database_home="$detected_irods_home/plugins/database/"
-    set_tmpfile
-    sed -e s,IRODSDATABASEPATH,$irods_database_home, ./server/core/include/irods_database_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./server/core/include/irods_database_home.hpp
-    rm -f $TMPFILE
-    # =-=-=-=-=-=-=-
-    # modify the irods_api_home.hpp file with the proper path to the binary directory
-    irods_api_home="$detected_irods_home/plugins/api/"
-    set_tmpfile
-    sed -e s,IRODSAPIPATH,$irods_api_home, ./lib/core/include/irods_api_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_api_home.hpp
-    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_home_directory.hpp file with the proper path to the home directory
     irods_home_directory="$detected_irods_home/"
     set_tmpfile
     sed -e s,IRODSHOMEDIRECTORY,$irods_home_directory, ./lib/core/include/irods_home_directory.hpp.src > $TMPFILE
     rsync -c $TMPFILE ./lib/core/include/irods_home_directory.hpp
+    rm -f $TMPFILE
+    # =-=-=-=-=-=-=-
+    # modify the irods_plugin_home.hpp file with the proper path to the pluginhome directory
+    irods_plugin_home_directory="$detected_irods_home/plugins/"
+    set_tmpfile
+    sed -e s,IRODSPLUGINHOMEPATH,$irods_plugin_home_directory, ./lib/core/include/irods_plugin_home_directory.hpp.src > $TMPFILE
+    rsync -c $TMPFILE ./lib/core/include/irods_plugin_home_directory.hpp
     rm -f $TMPFILE
 
     ###########################################

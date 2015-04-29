@@ -1,6 +1,5 @@
 #include "irods_auth_plugin.hpp"
 #include "irods_load_plugin.hpp"
-#include "irods_auth_home.hpp"
 
 namespace irods {
 
@@ -131,11 +130,18 @@ namespace irods {
         const std::string& _inst_name,
         const std::string& _context ) {
         error result = SUCCESS();
+        // =-=-=-=-=-=-=-
+        // resolve plugin directory
+        std::string plugin_home;
+        error ret = resolve_plugin_path( PLUGIN_TYPE_AUTHENTICATION, plugin_home );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
 
         // =-=-=-=-=-=-=-
         // call generic plugin loader
         auth* ath = 0;
-        error ret = load_plugin< auth >( ath, _plugin_name, AUTH_HOME, _inst_name, _context );
+        ret = load_plugin< auth >( ath, _plugin_name, plugin_home, _inst_name, _context );
         if ( ( result = ASSERT_PASS( ret, "Failed to load plugin: \"%s\".", _plugin_name.c_str() ) ).ok() ) {
             if ( ( result = ASSERT_ERROR( ath, SYS_INVALID_INPUT_PARAM, "Invalid auth plugin." ) ).ok() ) {
                 _plugin.reset( ath );
