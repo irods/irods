@@ -3,8 +3,8 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"
-#include "rodsLog.hpp"
-#include "stringOpr.hpp"
+#include "rodsLog.h"
+#include "stringOpr.h"
 
 // =-=-=-=-=-=-=-
 // stl includes

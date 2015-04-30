@@ -36,6 +36,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 
 #include "readServerConfig.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "sslSockComm.h"
 
 int getAgentProcCnt() {
     return 0;

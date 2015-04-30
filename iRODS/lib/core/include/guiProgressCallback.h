@@ -1,5 +1,5 @@
-#ifndef _GUI_PROGRESS_CALLBACK_HPP_
-#define _GUI_PROGRESS_CALLBACK_HPP_
+#ifndef _GUI_PROGRESS_CALLBACK_H__
+#define _GUI_PROGRESS_CALLBACK_H__
 
 #ifdef __cplusplus
 extern "C" {

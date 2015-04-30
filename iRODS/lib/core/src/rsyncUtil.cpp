@@ -3,9 +3,9 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include "rsyncUtil.hpp"
 #include "miscUtil.hpp"
 #include "checksum.hpp"

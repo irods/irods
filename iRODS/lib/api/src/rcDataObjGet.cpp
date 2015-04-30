@@ -13,7 +13,7 @@
 #include "dataObjGet.hpp"
 #include "rcPortalOpr.hpp"
 #include "apiHeaderAll.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"

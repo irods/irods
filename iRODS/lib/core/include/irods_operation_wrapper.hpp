@@ -22,7 +22,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "reGlobalsExtern.hpp"
-#include "dataObjInpOut.hpp"
+#include "dataObjInpOut.h"
 
 #include <iostream>
 

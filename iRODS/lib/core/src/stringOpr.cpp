@@ -4,9 +4,9 @@
  * copying.
  */
 
-#include "stringOpr.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "stringOpr.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include <string>
 #include "boost/regex.hpp"
 

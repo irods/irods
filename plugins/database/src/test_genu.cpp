@@ -4,7 +4,7 @@
   ICAT test program for the GeneralUpdate.
 */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 

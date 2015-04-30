@@ -5,7 +5,7 @@
 
 #include "dataObjOpen.hpp"
 #include "dataObjOpenAndStat.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "resource.hpp"

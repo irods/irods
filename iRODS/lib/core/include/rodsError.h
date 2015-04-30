@@ -6,11 +6,10 @@
 
 
 
-#ifndef RODS_ERROR_HPP
-#define RODS_ERROR_HPP
+#ifndef RODS_ERROR_H__
+#define RODS_ERROR_H__
 
 #define USE_EXTERN_TABLE
-#include "rodsErrorTable.hpp"
 
 /* The error struct */
 

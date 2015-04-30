@@ -1,13 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsVersion.hpp - defines the release version and API version
+/* rodsVersion.h - defines the release version and API version
  */
 
 
 
-#ifndef RODS_VERSION_HPP
-#define RODS_VERSION_HPP
+#ifndef RODS_VERSION_H__
+#define RODS_VERSION_H__
 
 #define RODS_REL_VERSION	"rodsTEMPLATE_RODS_RELEASE_VERSION"
 #define RODS_API_VERSION	"d"

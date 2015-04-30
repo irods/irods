@@ -9,13 +9,13 @@
 #ifndef RODS_AGENT_HPP
 #define RODS_AGENT_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcGlobalExtern.hpp"     /* client global */
 #include "rsLog.hpp"
-#include "rodsLog.hpp"
-#include "sockComm.hpp"
-#include "getRodsEnv.hpp"
-#include "rcConnect.hpp"
+#include "rodsLog.h"
+#include "sockComm.h"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
 
 #define MAX_MSG_READ_RETRY	1
 #define READ_RETRY_SLEEP_TIME	1

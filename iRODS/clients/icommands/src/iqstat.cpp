@@ -5,8 +5,8 @@
   This is an interface to the Attribute-Value-Units type of metadata.
 */
 
-#include "rods.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 

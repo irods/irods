@@ -13,10 +13,10 @@
 #include <string>
 #endif
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "structFileExtAndReg.hpp"
 #include "miscUtil.hpp"
 

@@ -4,7 +4,7 @@
  */
 
 #include "getRemoteZoneResc.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"

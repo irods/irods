@@ -4,7 +4,7 @@
 /* See dataObjTruncate.h for a description of this API call.*/
 
 #include "dataObjTruncate.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "icatDefines.hpp"
 #include "fileTruncate.hpp"
 #include "unregDataObj.hpp"

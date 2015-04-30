@@ -13,7 +13,7 @@
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscServerFunct.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 

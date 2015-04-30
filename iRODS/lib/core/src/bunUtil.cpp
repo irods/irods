@@ -1,8 +1,8 @@
 /*** Copyright (c), The BunOprents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include "bunUtil.hpp"
 #include "miscUtil.hpp"
 

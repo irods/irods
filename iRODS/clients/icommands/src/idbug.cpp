@@ -3,7 +3,7 @@
 /* idbug.c - debug rule execution with single stepping across micro-services */
 
 #include <errno.h>
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include <signal.h>
 
 

@@ -2,9 +2,9 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include "fsckUtil.hpp"
 #include "miscUtil.hpp"
 #include "checksum.hpp"

@@ -1,7 +1,7 @@
 // =-=-=-=-=-=-=
 // irods includes
 #include "miscServerFunct.hpp"
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "dataObjCreate.hpp"
 #include "specColl.hpp"
 #include "collection.hpp"

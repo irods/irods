@@ -7,7 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "rodsXmsg.hpp"
+#include "rodsXmsg.h"
 #include "getXmsgTicket.hpp"
 #include "sendXmsg.hpp"
 #include "rcvXmsg.hpp"

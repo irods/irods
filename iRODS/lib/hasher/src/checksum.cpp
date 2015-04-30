@@ -3,11 +3,11 @@
 
 #include "irods_stacktrace.hpp"
 #include "irods_hasher_factory.hpp"
-#include "getRodsEnv.hpp"
+#include "getRodsEnv.h"
 #include "irods_log.hpp"
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "MD5Strategy.hpp"
-#include "rodsKeyWdDef.hpp"
+#include "rodsKeyWdDef.h"
 #include "rcMisc.hpp"
 #include "checksum.hpp"
 

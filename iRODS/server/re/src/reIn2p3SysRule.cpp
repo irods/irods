@@ -21,7 +21,7 @@ static pthread_mutex_t my_mutex;
 
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_configuration_parser.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include <boost/system/error_code.hpp>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>

@@ -6,8 +6,8 @@
 
 
 
-#ifndef PACK_INSTRUCT_HPP
-#define PACK_INSTRUCT_HPP
+#ifndef PACK_INSTRUCT_H__
+#define PACK_INSTRUCT_H__
 
 #define IRODS_STR_PI "str myStr[MAX_NAME_LEN];"
 #define STR_PI "str myStr;"
@@ -105,23 +105,14 @@
 
 #define TagStruct_PI "int ssLen; str *preTag[ssLen]; str *postTag[ssLen]; str *keyWord[ssLen];"
 
-
-
-
 #define RodsObjStat_PI "double objSize; int objType; int dataMode; str dataId[NAME_LEN]; str chksum[NAME_LEN]; str ownerName[NAME_LEN]; str ownerZone[NAME_LEN]; str createTime[TIME_LEN]; str modifyTime[TIME_LEN]; struct *SpecColl_PI;"
-
-
-
-
 
 #define ReconnMsg_PI "int status; int cookie; int procState; int flag;"
 #define VaultPathPolicy_PI "int scheme; int addUserName; int trimDirCnt;"
 #define StrArray_PI "int len; int size; str *value(len)(size);"
 #define IntArray_PI "int len; int *value(len);"
 
-
 #define SpecColl_PI "int collClass; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str rescHier[MAX_NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int replNum;"
-
 
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; int mode; int flags; double offset; struct *SpecColl_PI;"
 #define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"
@@ -151,4 +142,4 @@
 #define MsrvcStruct_PI "int maxNumOfMsrvcs; double msrvcId[maxNumOfMsrvcs]; str moduleName[maxNumOfMsrvcs]; str msrvcName[maxNumOfMsrvcs];  str msrvcSiganture[maxNumOfMsrvcs];  str msrvcVersion[maxNumOfMsrvcs];  str msrvcHost[maxNumOfMsrvcs];  str msrvcLocation[maxNumOfMsrvcs];  str msrvcLanguage[maxNumOfMsrvcs];  str msrvcTypeName[maxNumOfMsrvcs];  double msrvcStatus[maxNumOfMsrvcs];"
 #define DataSeg_PI "double len; double offset;"
 #define FileRestartInfo_PI "str fileName[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int numSeg; int flags; double fileSize; struct DataSeg_PI[numSeg];"
-#endif	/* PACK_INSTRUCT_H */
+#endif	/* PACK_INSTRUCT_H__ */

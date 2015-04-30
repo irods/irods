@@ -5,7 +5,7 @@
 
 
 #include "dataObjClose.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "reFuncDefs.hpp"
 #include "regReplica.hpp"
 #include "modDataObjMeta.hpp"

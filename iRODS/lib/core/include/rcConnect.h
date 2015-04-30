@@ -6,20 +6,19 @@
 
 
 
-#ifndef RC_CONNECT_HPP
-#define RC_CONNECT_HPP
+#ifndef RC_CONNECT_H__
+#define RC_CONNECT_H__
 
 #include "rodsDef.h"
-#include "rodsVersion.hpp"
-#include "rodsError.hpp"
-#include "rodsLog.hpp"
-#include "stringOpr.hpp"
-#include "rodsType.hpp"
-#include "rodsUser.hpp"
-#include "getRodsEnv.hpp"
-#include "objInfo.hpp"
-#include "dataObjInpOut.hpp"
-#include "guiProgressCallback.hpp"
+#include "rodsError.h"
+#include "rodsLog.h"
+#include "stringOpr.h"
+#include "rodsType.h"
+#include "rodsUser.h"
+#include "getRodsEnv.h"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
+#include "guiProgressCallback.h"
 
 // =-=-=-=-=-=-=-
 // forard del of thread context
@@ -39,9 +38,6 @@ struct thread_context;
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 typedef enum {
     PROCESSING_STATE,	 /* the process is not sending nor receiving */
     RECEIVING_STATE,
@@ -196,6 +192,10 @@ typedef struct {
 
 } rsComm_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
            int reconnFlag, rErrMsg_t *errMsg );
@@ -263,4 +263,4 @@ isLoopbackAddress( const char* ip_address );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* RC_CONNECT_H */
+#endif	// RC_CONNECT_H__

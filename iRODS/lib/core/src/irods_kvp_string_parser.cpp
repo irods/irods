@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // rods includes
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include <sstream>
 #include <set>
 #include <boost/algorithm/string/predicate.hpp>

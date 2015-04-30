@@ -4,8 +4,8 @@
  A simple program to provide intro help to the icommands
 */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 #include <string>
 
 const char * const icmds[] = {

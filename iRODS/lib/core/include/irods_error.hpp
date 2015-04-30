@@ -10,7 +10,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsType.hpp"
+#include "rodsType.h"
 
 // =-=-=-=-=-=-=-
 // boost assertion handling macro, needed everywhere

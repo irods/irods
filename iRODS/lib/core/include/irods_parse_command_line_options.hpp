@@ -4,7 +4,7 @@
 #ifndef PARSE_COMMAND_LINE_OPTIONS
 #define PARSE_COMMAND_LINE_OPTIONS
 
-#include "parseCommandLine.hpp"
+#include "parseCommandLine.h"
 
 extern "C"
 int parse_opts_and_paths( 

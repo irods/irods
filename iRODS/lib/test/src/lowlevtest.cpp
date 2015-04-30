@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* lowlevtest.cpp - test the low level api */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 /* NOTE : You have to change FILE_NAME, PAR_DIR_NAME, DIR_NAME and ADDR
  * for your own env */

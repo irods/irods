@@ -6,11 +6,12 @@
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
+#include "rodsErrorTable.h"
 #include "irods_hash.hpp"
 #include "irods_error.hpp"
 #include "irods_stacktrace.hpp"
 
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 
 namespace irods {
 

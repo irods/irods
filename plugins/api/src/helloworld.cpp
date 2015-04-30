@@ -4,7 +4,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_api_call.hpp"
 
-#include "objStat.hpp"
+#include "objStat.h"
 
 // =-=-=-=-=-=-=-
 // stl includes

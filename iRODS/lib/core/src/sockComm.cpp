@@ -3,14 +3,14 @@
 /* sockComm.c - sock communication routines
  */
 
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "rcMisc.hpp"
 #include "rcGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "getHostForPut.hpp"
 #include "getHostForGet.hpp"
 #include "QUANTAnet_rbudpBase_c.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "rodsConnect.h"
 
 #ifdef windows_platform

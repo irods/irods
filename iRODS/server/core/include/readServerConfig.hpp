@@ -14,7 +14,7 @@
 #ifndef READ_SERVER_CONFIG_HPP
 #define READ_SERVER_CONFIG_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "authenticate.hpp"
 
 /* server host configuration */

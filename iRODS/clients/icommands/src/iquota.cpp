@@ -5,8 +5,8 @@
   User interface to display quota information.
 */
 
-#include "rods.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 

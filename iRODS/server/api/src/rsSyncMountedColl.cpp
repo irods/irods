@@ -4,7 +4,7 @@
 /* See syncMountedColl.h for a description of this API call.*/
 
 #include "syncMountedColl.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "icatDefines.hpp"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"

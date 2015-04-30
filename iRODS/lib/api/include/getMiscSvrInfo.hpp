@@ -4,10 +4,10 @@
 #ifndef GET_MISC_SVR_INFO_HPP
 #define GET_MISC_SVR_INFO_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /* there is no input struct. Therefore, the inPackInstruct is NULL */
 

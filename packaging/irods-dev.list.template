@@ -76,6 +76,36 @@ f 644 root root /usr/include/irods/ ./iRODS/server/icat/include/*
 f 644 root root /usr/include/irods/ ./iRODS/server/re/include/*
 f 644 root root /usr/include/irods/ ./iRODS/server/drivers/include/*
 
+# These links are to support old header locations
+l 644 root root /usr/include/irods/dataObjInpOut.hpp /usr/include/irods/dataObjInpOut.h
+l 644 root root /usr/include/irods/getRodsEnv.hpp /usr/include/irods/getRodsEnv.h
+l 644 root root /usr/include/irods/guiProgressCallback.hpp /usr/include/irods/guiProgressCallback.h
+l 644 root root /usr/include/irods/obf.hpp /usr/include/irods/obf.h
+l 644 root root /usr/include/irods/objInfo.hpp /usr/include/irods/objInfo.h
+l 644 root root /usr/include/irods/osauth.hpp /usr/include/irods/osauth.h
+l 644 root root /usr/include/irods/parseCommandLine.hpp /usr/include/irods/parseCommandLine.h
+l 644 root root /usr/include/irods/rcConnect.hpp /usr/include/irods/rcConnect.h
+l 644 root root /usr/include/irods/rods.hpp /usr/include/irods/rods.h
+l 644 root root /usr/include/irods/rodsClient.hpp /usr/include/irods/rodsClient.h
+l 644 root root /usr/include/irods/rodsError.hpp /usr/include/irods/rodsError.h
+l 644 root root /usr/include/irods/rodsErrorTable.hpp /usr/include/irods/rodsErrorTable.h
+l 644 root root /usr/include/irods/rodsGenQuery.hpp /usr/include/irods/rodsGenQuery.h
+l 644 root root /usr/include/irods/rodsKeyWdDef.hpp /usr/include/irods/rodsKeyWdDef.h
+l 644 root root /usr/include/irods/rodsLog.hpp /usr/include/irods/rodsLog.h
+l 644 root root /usr/include/irods/rodsQuota.hpp /usr/include/irods/rodsQuota.h
+l 644 root root /usr/include/irods/rodsType.hpp /usr/include/irods/rodsType.h
+l 644 root root /usr/include/irods/rodsUser.hpp /usr/include/irods/rodsUser.h
+l 644 root root /usr/include/irods/rodsVersion.hpp /usr/include/irods/rodsVersion.h
+l 644 root root /usr/include/irods/rodsXmsg.hpp /usr/include/irods/rodsXmsg.h
+l 644 root root /usr/include/irods/sslSockComm.hpp /usr/include/irods/sslSockComm.h
+l 644 root root /usr/include/irods/stringOpr.hpp /usr/include/irods/stringOpr.h
+l 644 root root /usr/include/irods/apiNumber.hpp /usr/include/irods/apiNumber.hpp
+l 644 root root /usr/include/irods/objStat.hpp /usr/include/irods/objStat.hpp
+l 644 root root /usr/include/irods/procApiRequest.hpp /usr/include/irods/procApiRequest.hpp
+l 644 root root /usr/include/irods/rodsPackInstruct.hpp /usr/include/irods/rodsPackInstruct.hpp
+l 644 root root /usr/include/irods/rodsPath.hpp /usr/include/irods/rodsPath.hpp
+l 644 root root /usr/include/irods/sockComm.hpp /usr/include/irods/sockComm.hpp
+
 d 755 root root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples
 d 755 root root /usr/share/irods/examples/microservices

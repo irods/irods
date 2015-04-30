@@ -5,9 +5,9 @@
 #ifndef TRIMUTIL_HPP
 #define TRIMUTIL_HPP
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 
 #ifdef __cplusplus
 extern "C" {

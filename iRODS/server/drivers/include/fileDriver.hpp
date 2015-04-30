@@ -13,9 +13,9 @@
 #include <dirent.h>
 #endif
 
-#include "rods.hpp"
-#include "rcConnect.hpp"
-#include "objInfo.hpp"
+#include "rods.h"
+#include "rcConnect.h"
+#include "objInfo.h"
 #include "msParam.hpp"
 
 // =-=-=-=-=-=-=-

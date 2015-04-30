@@ -8,9 +8,9 @@
 
 /* This is a Object File I/O API call */
 
-#include "rods.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "rods.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 typedef struct specCollDesc {
     int l3descInx;

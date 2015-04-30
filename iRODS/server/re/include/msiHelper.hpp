@@ -9,7 +9,7 @@
 #ifndef MSI_HELPER_HPP
 #define MSI_HELPER_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.hpp"
 #include "reGlobalsExtern.hpp"

@@ -8,10 +8,10 @@
 
 /* This is Object File I/O type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "subStructFileRead.hpp"
 
 #if defined(RODS_SERVER)

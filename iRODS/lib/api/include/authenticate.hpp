@@ -8,9 +8,9 @@
 
 /* This is a high level file type API call */
 
-#include "rods.hpp"
-//#include "procApiRequest.hpp"
-//#include "apiNumber.hpp"
+#include "rods.h"
+//#include "procApiRequest.h"
+//#include "apiNumber.h"
 //#include "icatDefines.hpp"
 
 #define AUTH_SUBOP_REQ_AUTH "request challenge"

@@ -3,16 +3,16 @@
 /* sslSockComm.h - header file for sslSockComm.c
  */
 
-#ifndef SSL_SOCK_COMM_HPP
-#define SSL_SOCK_COMM_HPP
+#ifndef SSL_SOCK_COMM_H__
+#define SSL_SOCK_COMM_H__
 
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 
 #include "rodsDef.h"
-#include "rcConnect.hpp"
-#include "rodsPackInstruct.hpp"
+#include "rcConnect.h"
+#include "rodsPackInstruct.h"
 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
@@ -51,4 +51,4 @@ sslWrite( void *buf, int len,
 }
 #endif
 
-#endif	/* SSL_SOCK_COMM_H */
+#endif	/* SSL_SOCK_COMM_H__ */

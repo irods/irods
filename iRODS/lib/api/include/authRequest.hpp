@@ -8,10 +8,10 @@
 
 /* This is a Metadata API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */

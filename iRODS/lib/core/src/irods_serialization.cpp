@@ -5,7 +5,7 @@
 #include <boost/regex.hpp>
 #include "irods_serialization.hpp"
 #include "irods_exception.hpp"
-#include "rodsError.hpp"
+#include "rodsErrorTable.h"
 
 namespace irods {
     const char default_escape_char = '\\';

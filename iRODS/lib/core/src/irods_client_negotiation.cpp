@@ -6,7 +6,7 @@
 #include "irods_buffer_encryption.hpp"
 #include "irods_hasher_factory.hpp"
 #include "MD5Strategy.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-

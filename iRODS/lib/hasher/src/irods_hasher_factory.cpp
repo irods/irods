@@ -2,7 +2,7 @@
 #include "checksum.hpp"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include <sstream>
 #include <boost/unordered_map.hpp>
 

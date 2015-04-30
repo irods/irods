@@ -21,8 +21,8 @@
  *****************************************************************************/
 
 #include "QUANTAnet_rbudpSender_c.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 
 #include <stdarg.h>
 #include <string>

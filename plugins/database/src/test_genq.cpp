@@ -7,7 +7,7 @@
 #include <limits>
 #include <boost/lexical_cast.hpp>
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 

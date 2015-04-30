@@ -9,12 +9,12 @@
 
 /* This is a high level file type API call */
 
-#include "rods.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "rods.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
-#include "rodsGenQuery.hpp"  /* for input/output structs, etc */
+#include "rodsGenQuery.h"  /* for input/output structs, etc */
 
 #if defined(RODS_SERVER)
 #define RS_GEN_QUERY rsGenQuery

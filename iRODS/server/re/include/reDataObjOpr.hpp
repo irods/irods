@@ -5,7 +5,7 @@
 #ifndef RE_DATA_OBJ_OPR_HPP
 #define RE_DATA_OBJ_OPR_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.hpp"
 #include "reGlobalsExtern.hpp"

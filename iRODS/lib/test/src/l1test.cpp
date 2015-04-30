@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* l1test.c - test the high level api */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 #define USER_NAME	"rods"
 #define RODS_ZONE	"tempZone"

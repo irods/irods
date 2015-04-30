@@ -10,7 +10,7 @@
 #include <string.h>
 #include "reGlobalsExtern.hpp"
 #ifndef DEBUG
-#include "rodsType.hpp"
+#include "rodsType.h"
 #include "msParam.hpp"
 #endif
 

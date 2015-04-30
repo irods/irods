@@ -4,7 +4,7 @@
 /* See dataObjLock.h for a description of this API call.*/
 
 #include "dataObjLock.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"

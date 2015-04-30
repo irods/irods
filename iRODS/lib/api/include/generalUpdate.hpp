@@ -4,10 +4,10 @@
 #ifndef GENERAL_UPDATE_HPP
 #define GENERAL_UPDATE_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
 #include "rodsGeneralUpdate.hpp"  /* for input/output structs, etc */

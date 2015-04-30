@@ -1,15 +1,17 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for obf routines */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef OBF_H__
+#define OBF_H__
 
 #define HASH_TYPE_MD5     1
 #define HASH_TYPE_SHA1    2
 #define HASH_TYPE_DEFAULT 3
 #define SHA1_FLAG_STRING ":::sha1"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void obfDecodeByKey( const char *in, const char *key, char *out );
 int obfRmPw( int opt );
@@ -30,10 +32,10 @@ void obfMakeOneWayHash( int hashType, unsigned const char *inBuf,
                         int inBufSize, unsigned char *outHash );
 void obfSetDefaultHashType( int type );
 int obfGetDefaultHashType();
-
-
 char *obfGetMD5Hash( const char *stringToHash );
+
 #ifdef __cplusplus
 }
 #endif
 
+#endif // OBF_H__

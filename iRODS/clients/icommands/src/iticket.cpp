@@ -7,8 +7,8 @@
 
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
-#include "rods.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsClient.h"
 
 #define MAX_SQL 300
 #define BIG_STR 3000

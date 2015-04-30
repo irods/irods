@@ -4,7 +4,7 @@
 /* See getHostForPut.h for a description of this API call.*/
 
 #include "getHostForPut.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "getRemoteZoneResc.hpp"

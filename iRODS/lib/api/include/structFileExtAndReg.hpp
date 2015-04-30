@@ -9,10 +9,10 @@
 
 /* This is a Object File I/O call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 typedef struct StructFileExtAndRegInp {
     char objPath[MAX_NAME_LEN];		/* the obj path of the struct file */

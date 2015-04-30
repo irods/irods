@@ -6,10 +6,10 @@
 
 
 
-#ifndef PROC_API_REQUEST_HPP
-#define PROC_API_REQUEST_HPP
+#ifndef PROC_API_REQUEST_H__
+#define PROC_API_REQUEST_H__
 
-#include "rods.hpp"
+#include "rods.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,4 +42,4 @@ _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat );
 }
 #endif
 
-#endif	/* PROC_API_REQUEST_H */
+#endif	// PROC_API_REQUEST_H__

@@ -6,7 +6,7 @@
 #ifndef RS_LOG_HPP
 #define RS_LOG_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 
 #define RODS_LOGFILE     "rodsLog"
 #define RULE_EXEC_LOGFILE     "reLog"

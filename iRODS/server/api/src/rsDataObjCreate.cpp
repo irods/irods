@@ -8,7 +8,7 @@
 #include "dataObjOpen.hpp"
 #include "fileCreate.hpp"
 #include "subStructFileCreate.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "specColl.hpp"

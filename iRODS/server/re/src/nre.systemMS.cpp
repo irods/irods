@@ -16,7 +16,7 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_load_plugin.hpp"
 #include "reFuncDefs.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 

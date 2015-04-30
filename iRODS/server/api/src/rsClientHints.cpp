@@ -1,5 +1,5 @@
 #include "rsGlobalExtern.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 
 #include "irods_lookup_table.hpp"
 #include "irods_server_properties.hpp"

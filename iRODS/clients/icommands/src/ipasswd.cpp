@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /* User command to change their password. */
-#include "rods.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsClient.h"
 #include <unistd.h>
 #include <termios.h>
 #include "irods_client_api_table.hpp"

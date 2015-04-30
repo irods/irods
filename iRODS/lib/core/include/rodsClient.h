@@ -6,10 +6,10 @@
 
 
 
-#ifndef RODS_CLIENT_HPP
-#define RODS_CLIENT_HPP
+#ifndef RODS_CLIENT_H__
+#define RODS_CLIENT_H__
 
-#include "rods.hpp"
+#include "rods.h"
 #include "apiHeaderAll.hpp"
 
 /* Struct used to monitor transfer progress in getUtil and putUtil functions.*/
@@ -27,4 +27,4 @@ void init_client_api_table();
 }
 #endif
 
-#endif	/* RODS_CLIENT_H */
+#endif	/* RODS_CLIENT_H__ */

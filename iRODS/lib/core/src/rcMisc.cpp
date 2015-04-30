@@ -14,14 +14,14 @@
 #include "modDataObjMeta.hpp"
 #include "rcGlobalExtern.hpp"
 #include "rodsGenQueryNames.hpp"
-#include "rodsType.hpp"
+#include "rodsType.h"
 #include "rsApiHandler.hpp"
 #include "dataObjPut.hpp"
 #include "reFuncDefs.hpp"
 
 #include "bulkDataObjPut.hpp"
 #include "putUtil.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 
 #include <cstdlib>
 #include <iostream>

@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 // boost includes

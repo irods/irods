@@ -4,7 +4,7 @@
 /* See dataPut.h for a description of this API call.*/
 
 #include "dataPut.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"

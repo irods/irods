@@ -4,10 +4,10 @@
 #ifndef MOD_AVU_METADATA_HPP
 #define MOD_AVU_METADATA_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
 typedef struct {

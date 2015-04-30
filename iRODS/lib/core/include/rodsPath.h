@@ -1,24 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#ifndef RODS_PATH_HPP
-#define RODS_PATH_HPP
+#ifndef RODS_PATH_H__
+#define RODS_PATH_H__
 
 #include "rodsDef.h"
-#include "rods.hpp"
-#include "getRodsEnv.hpp"
-#include "rodsType.hpp"
-#include "objStat.hpp"
-
-#if 0
-#include <iostream>
-#include <iterator>
-#include <vector>
-#include <algorithm>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/convenience.hpp>
-using namespace std;
-using namespace boost::filesystem;
-#endif
+#include "rods.h"
+#include "getRodsEnv.h"
+#include "rodsType.h"
+#include "objStat.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,4 +68,4 @@ clearRodsPath( rodsPath_t *rodsPath );
 }
 #endif
 
-#endif	/* RODS_PATH_H*/
+#endif	// RODS_PATH_H__

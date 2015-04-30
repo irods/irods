@@ -5,8 +5,8 @@
   This is a regular-user level utility to list the resources.
 */
 
-#include "rods.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsClient.h"
 #include "irods_children_parser.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"

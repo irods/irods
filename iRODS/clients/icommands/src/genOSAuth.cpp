@@ -8,7 +8,8 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
+#include "osauth.h"
 
 
 int

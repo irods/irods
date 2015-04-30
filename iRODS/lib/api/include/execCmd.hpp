@@ -7,9 +7,9 @@
 /* This is Object File I/O type API call */
 
 #include "rodsConnect.h"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "dataObjInpOut.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "dataObjInpOut.h"
 
 #define CMD_DIR		"cmd"
 

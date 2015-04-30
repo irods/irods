@@ -3,7 +3,7 @@
 /* rsObjStat.c
  */
 
-#include "objStat.hpp"
+#include "objStat.h"
 #include "rcMisc.hpp"
 #include "genQuery.hpp"
 #include "querySpecColl.hpp"

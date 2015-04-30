@@ -6,8 +6,8 @@
 
 
 
-#ifndef API_NUMBER_HPP
-#define API_NUMBER_HPP
+#ifndef API_NUMBER_H__
+#define API_NUMBER_H__
 
 /* 500 - 599 - Internal File I/O API calls */
 #define FILE_CREATE_AN			500
@@ -159,4 +159,4 @@
 #define AUTH_PLUG_RESP_AN	    1202
 #define GET_HIER_FOR_RESC_AN	1203
 
-#endif	/* API_NUMBER_H */
+#endif	// API_NUMBER_H__

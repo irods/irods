@@ -7,7 +7,7 @@
 #ifndef RS_GLOBAL_EXTERN_HPP
 #define RS_GLOBAL_EXTERN_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "apiHandler.hpp"
 #include "fileOpr.hpp"
 #include "objDesc.hpp"

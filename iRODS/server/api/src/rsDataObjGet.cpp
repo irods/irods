@@ -5,7 +5,7 @@
 
 #include "reFuncDefs.hpp"
 #include "dataObjGet.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "dataGet.hpp"
 #include "fileGet.hpp"
 #include "dataObjOpen.hpp"

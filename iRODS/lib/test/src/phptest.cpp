@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* phpTest.c - test the high level api */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include <php_embed.h>
 #include <php.h>
 #include <SAPI.h>

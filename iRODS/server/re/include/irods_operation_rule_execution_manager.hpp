@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_operation_rule_execution_manager_base.hpp"

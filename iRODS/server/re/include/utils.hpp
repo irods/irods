@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #ifndef DEBUG
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "reHelpers1.hpp"
-#include "rodsType.hpp"
+#include "rodsType.h"
 #endif
 #include "restructs.hpp"
 #include "region.hpp"

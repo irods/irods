@@ -4,13 +4,13 @@
    ICAT test program.
 */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 #include "checksum.hpp"
 
-#include "rodsUser.hpp"
+#include "rodsUser.h"
 
 #include "icatHighLevelRoutines.hpp"
 //#include "icatMidLevelRoutines.hpp"

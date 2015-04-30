@@ -2,7 +2,7 @@
  * SiFang
  */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "base64.hpp"
 #define OK 0
 

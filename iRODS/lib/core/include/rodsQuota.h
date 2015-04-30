@@ -6,11 +6,11 @@
 
 
 
-#ifndef RODS_QUOTA_HPP
-#define RODS_QUOTA_HPP
+#ifndef RODS_QUOTA_H__
+#define RODS_QUOTA_H__
 
 #define QUOTA_UNRESTRICTED	0	/* no restrictions on this user&resc */
 #define QUOTA_RESOURCE	        1	/* resource specific quota */
 #define QUOTA_GLOBAL 	        2	/* global (total usage) type quota */
 
-#endif	/* RODS_QUOTA_H */
+#endif	/* RODS_QUOTA_H__ */

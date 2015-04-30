@@ -4,7 +4,7 @@
 #include "irods_error.hpp"
 #include "irods_first_class_object.hpp"
 
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // boost includes
 #include <boost/shared_ptr.hpp>

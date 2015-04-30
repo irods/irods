@@ -4,11 +4,11 @@
  * copying.
  */
 
-#include "rodsPath.hpp"
+#include "rodsPath.h"
 #include "miscUtil.hpp"
 #include "rcMisc.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #ifdef windows_platform
 #include "irodsntutil.hpp"
 #endif

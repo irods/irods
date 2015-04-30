@@ -2,7 +2,7 @@
 // irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-

@@ -24,10 +24,10 @@
   the env file, either creating it or appending to it.
 */
 
-#include "rods.hpp"
-#include "rodsErrorTable.hpp"
-#include "getRodsEnv.hpp"
-#include "rodsLog.hpp"
+#include "rods.h"
+#include "rodsErrorTable.h"
+#include "getRodsEnv.h"
+#include "rodsLog.h"
 #include "irods_log.hpp"
 #include "irods_environment_properties.hpp"
 #include "irods_configuration_keywords.hpp"

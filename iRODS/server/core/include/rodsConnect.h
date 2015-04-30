@@ -2,7 +2,7 @@
 #define RODS_CONNECT_H
 
 #include "rodsDef.h"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 #ifndef windows_platform
 #define HOST_CONFIG_FILE  "hosts_config.json"

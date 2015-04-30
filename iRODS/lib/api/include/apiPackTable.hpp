@@ -6,9 +6,9 @@
 #ifndef API_PACK_TABLE_HPP
 #define API_PACK_TABLE_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "packStruct.hpp"
-#include "rodsPackInstruct.hpp"
+#include "rodsPackInstruct.h"
 
 /* need to include a header for for each API */
 #include "apiHeaderAll.hpp"

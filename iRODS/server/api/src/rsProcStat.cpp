@@ -9,7 +9,7 @@
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "miscServerFunct.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "procLog.h"

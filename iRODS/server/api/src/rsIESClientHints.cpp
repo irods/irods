@@ -1,6 +1,6 @@
 
 #include "rsGlobalExtern.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"
 #include "specificQuery.hpp"
 

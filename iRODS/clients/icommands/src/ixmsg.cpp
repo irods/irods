@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* ixmsg.c - Xmessage communicator */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_configuration_keywords.hpp"

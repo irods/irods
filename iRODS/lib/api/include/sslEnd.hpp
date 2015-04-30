@@ -6,15 +6,15 @@
 /* This call is used to ask the agent to turn SSL off for the
    communication socket. */
 
-#ifndef SSL_END_HPP
-#define SSL_END_HPP
+#ifndef SSL_END_H__
+#define SSL_END_H__
 
 /* This is a SSL type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
 typedef struct {
@@ -43,4 +43,4 @@ rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* SSL_END_H */
+#endif	/* SSL_END_H__ */

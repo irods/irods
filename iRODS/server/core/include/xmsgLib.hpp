@@ -9,15 +9,15 @@
 #ifndef XMSG_LIB_HPP
 #define XMSG_LIB_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rsGlobalExtern.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"     /* client global */
 #include "rsLog.hpp"
-#include "rodsLog.hpp"
-#include "sockComm.hpp"
-#include "getRodsEnv.hpp"
-#include "rcConnect.hpp"
-#include "rodsXmsg.hpp"
+#include "rodsLog.h"
+#include "sockComm.h"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
+#include "rodsXmsg.h"
 
 #define REQ_MSG_TIMEOUT_TIME	5	/* 5 sec timeout for req msg */
 

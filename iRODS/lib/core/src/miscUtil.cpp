@@ -5,8 +5,8 @@
 #include <sys/time.h>
 #endif
 #include <fnmatch.h>
-#include "rodsClient.hpp"
-#include "rodsLog.hpp"
+#include "rodsClient.h"
+#include "rodsLog.h"
 #include "miscUtil.hpp"
 
 #include "irods_stacktrace.hpp"

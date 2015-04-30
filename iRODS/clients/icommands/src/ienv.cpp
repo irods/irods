@@ -4,8 +4,8 @@
  * ienv - The irods print environment utility
  */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 
 void usage();
 

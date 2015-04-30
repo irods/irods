@@ -67,7 +67,7 @@
 #include "phyPathReg.hpp"
 #include "dataObjPhymv.hpp"
 #include "dataObjTrim.hpp"
-#include "objStat.hpp"
+#include "objStat.h"
 #include "execCmd.hpp"
 #include "subStructFileCreate.hpp"
 #include "subStructFileOpen.hpp"

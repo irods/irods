@@ -8,11 +8,11 @@
 
 /* This is a Object File I/O API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "dataObjInpOut.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "dataObjInpOut.h"
 
 /* definition for opreration type */
 #define OPR_TYPE_INX    999999

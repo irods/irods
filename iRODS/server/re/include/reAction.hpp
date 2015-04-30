@@ -4,11 +4,11 @@
 #ifndef _RE_ACTION_HPP_
 #define _RE_ACTION_HPP_
 
-#include "rodsUser.hpp"
-#include "rods.hpp"
+#include "rodsUser.h"
+#include "rods.h"
 #include "rcGlobalExtern.hpp"
 #include "reDefines.hpp"
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "regExpMatch.hpp"
 #include "reSysDataObjOpr.hpp"
 #include "msiHelper.hpp"

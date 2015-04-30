@@ -2,10 +2,10 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.hpp"
-#include "parseCommandLine.hpp"
+#include "rods.h"
+#include "parseCommandLine.h"
 #include "rcMisc.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"

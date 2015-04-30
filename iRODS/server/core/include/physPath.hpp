@@ -9,9 +9,9 @@
 #ifndef PHYS_PATH_HPP
 #define PHYS_PATH_HPP
 
-#include "rods.hpp"
-#include "objInfo.hpp"
-#include "dataObjInpOut.hpp"
+#include "rods.h"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
 #include "fileRename.hpp"
 #include "miscUtil.hpp"
 #include "structFileSync.hpp"

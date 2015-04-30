@@ -3,10 +3,10 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
 #include "miscUtil.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "chksumUtil.hpp"
 
 static int ChksumCnt = 0;

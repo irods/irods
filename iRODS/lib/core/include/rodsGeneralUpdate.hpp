@@ -9,9 +9,9 @@
 #ifndef RODS_GENERAL_UPDATE_HPP
 #define RODS_GENERAL_UPDATE_HPP
 
-#include "objInfo.hpp"
+#include "objInfo.h"
 
-#include "rodsGenQuery.hpp"
+#include "rodsGenQuery.h"
 
 /* Unusual values since don't want caller to accidentally select wrong call: */
 #define GENERAL_UPDATE_INSERT 23451

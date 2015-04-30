@@ -7,7 +7,7 @@
 // irods includes
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "icatHighLevelRoutines.hpp"
 #include "dataObjRepl.hpp"
 

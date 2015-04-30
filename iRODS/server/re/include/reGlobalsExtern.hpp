@@ -19,16 +19,16 @@ extern void myfree(char* file, int line, void *x);
 #endif
 ***/
 
-#include "rodsUser.hpp"
-#include "rods.hpp"
+#include "rodsUser.h"
+#include "rods.h"
 #include "rcGlobalExtern.hpp"
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "fileOpen.hpp"
 #include "regExpMatch.hpp"
 #include "reDefines.hpp"
 #include "ruleExecSubmit.hpp"
 #include "ruleExecDel.hpp"
-#include "dataObjInpOut.hpp"
+#include "dataObjInpOut.h"
 #include "msParam.hpp"
 #include "modAccessControl.hpp"
 

@@ -8,8 +8,8 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsClient.hpp"
-#include "sslSockComm.hpp"
+#include "rodsClient.h"
+#include "sslSockComm.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_auth_object.hpp"

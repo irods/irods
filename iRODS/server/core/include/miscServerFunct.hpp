@@ -17,10 +17,10 @@
 #include <arpa/inet.h>
 #endif
 
-#include "rods.hpp"
-#include "rcConnect.hpp"
+#include "rods.h"
+#include "rcConnect.h"
 #include "fileOpen.hpp"
-#include "dataObjInpOut.hpp"
+#include "dataObjInpOut.h"
 #include "dataCopy.hpp"
 
 #include "structFileSync.hpp" /* JMC */

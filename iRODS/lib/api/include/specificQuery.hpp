@@ -8,13 +8,13 @@
 
 /* This is a metadata type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
-#include "rodsGenQuery.hpp"  /* for output struct, etc */
+#include "rodsGenQuery.h"  /* for output struct, etc */
 
 typedef struct {
     char *sql;

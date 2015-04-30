@@ -14,7 +14,7 @@
 #include "irodsFs.hpp"
 #include "iFuseOper.hpp"
 #include "iFuseLib.hpp"
-#include "rodsVersion.hpp"
+#include "rodsVersion.h"
 
 /* some global variables */
 

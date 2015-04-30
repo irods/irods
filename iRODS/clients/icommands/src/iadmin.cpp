@@ -5,8 +5,8 @@
    Initial version of an administrator interface
 */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 #include "irods_string_tokenize.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"

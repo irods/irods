@@ -9,10 +9,9 @@
 #ifndef RC_PORTAL_OPR_HPP
 #define RC_PORTAL_OPR_HPP
 
-#include "rods.hpp"
-#include "rodsError.hpp"
-#include "objInfo.hpp"
-#include "dataObjInpOut.hpp"
+#include "rods.h"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"

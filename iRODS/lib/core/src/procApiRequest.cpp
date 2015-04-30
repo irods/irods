@@ -10,10 +10,10 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "procApiRequest.hpp"
+#include "procApiRequest.h"
 #include "rcGlobalExtern.hpp"
 #include "rcMisc.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-

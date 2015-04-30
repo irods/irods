@@ -4,8 +4,8 @@
  */
 
 
-#include "rodsClient.hpp"
-#include "sslSockComm.hpp"
+#include "rodsClient.h"
+#include "sslSockComm.h"
 #include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-

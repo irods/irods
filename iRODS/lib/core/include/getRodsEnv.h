@@ -1,13 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#ifndef GET_RODS_ENV
-#define GET_RODS_ENV
+#ifndef GET_RODS_ENV_H__
+#define GET_RODS_ENV_H__
 
 #define PRINT_RODS_ENV_STR "PRINT_IRODS_ENV"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 typedef struct {
     char rodsUserName[NAME_LEN];
     char rodsHost[NAME_LEN];
@@ -53,18 +50,22 @@ typedef struct {
     int  irodsCtrlPlanePort;
     int  irodsCtrlPlaneEncryptionNumHashRounds;
     char irodsCtrlPlaneEncryptionAlgorithm[ HEADER_TYPE_LEN ];
-    
+
     // =-=-=-=-=-=-=-
     // advanced settings
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
     int irodsTransBufferSizeForParaTrans;
-    
+
     // =-=-=-=-=-=-=-
     // override of plugin installation directory
     char irodsPluginHome[MAX_NAME_LEN];
 
 } rodsEnv;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int getRodsEnv( rodsEnv *myRodsEnv );
 
@@ -78,4 +79,4 @@ void _reloadRodsEnv( rodsEnv &myRodsEnv );
 
 }
 #endif
-#endif	/* GET_RODS_ENV */
+#endif	// GET_RODS_ENV_H__

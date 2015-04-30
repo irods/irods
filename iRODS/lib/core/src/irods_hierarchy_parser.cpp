@@ -1,6 +1,6 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_string_tokenize.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "irods_log.hpp"
 
 #include <iostream>

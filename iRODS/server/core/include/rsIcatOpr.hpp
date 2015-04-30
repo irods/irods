@@ -9,8 +9,8 @@
 #ifndef RS_ICAT_OPR_HPP
 #define RS_ICAT_OPR_HPP
 
-#include "rods.hpp"
-#include "getRodsEnv.hpp"
+#include "rods.h"
+#include "getRodsEnv.h"
 
 int
 connectRcat();

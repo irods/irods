@@ -29,7 +29,7 @@ also need to be modified in the file reVariableMap.cpp
 IMPORTANT, this applies to any sub or sub-sub... structure
 that is changed underneath :-(
 
-For example assume that the collInfo_t struct is modified (objInfo.hpp)
+For example assume that the collInfo_t struct is modified (objInfo.h)
 Then the following related functions need to be changed also to reflect
 those changes:
 

@@ -6,10 +6,10 @@
 
 /* This is a low level file type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 
 #include "fileOpen.hpp"

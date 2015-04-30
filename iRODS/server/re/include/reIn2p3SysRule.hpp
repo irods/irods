@@ -7,15 +7,15 @@
 
 #include "msParam.hpp"
 #include "reDataObjOpr.hpp"
-#include "rods.hpp"
+#include "rods.h"
 #include "rsGlobalExtern.hpp"   /* server global */
 #include "rcGlobalExtern.hpp"   /* client global */
 #include "reGlobalsExtern.hpp"
 #include "rsLog.hpp"
-#include "rodsLog.hpp"
-#include "sockComm.hpp"
-#include "getRodsEnv.hpp"
-#include "rcConnect.hpp"
+#include "rodsLog.h"
+#include "sockComm.h"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
 #include "generalRowInsert.hpp"
 #include "generalRowPurge.hpp"
 #include "generalAdmin.hpp"

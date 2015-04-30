@@ -11,7 +11,7 @@
 #include "resource.hpp"
 #include "specColl.hpp"
 #include "physPath.hpp"
-#include "objStat.hpp"
+#include "objStat.h"
 #include "miscServerFunct.hpp"
 #include "fileOpr.hpp"
 #include "rcGlobalExtern.hpp"

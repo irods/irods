@@ -6,8 +6,8 @@
 
 
 
-#ifndef RODS_TYPE_HPP
-#define RODS_TYPE_HPP
+#ifndef RODS_TYPE_H__
+#define RODS_TYPE_H__
 
 #include <sys/types.h>
 #if defined(solaris_platform) || defined(aix_platform)
@@ -81,4 +81,4 @@ typedef struct rodsDirent {
     char            d_name[DIR_LEN];
 } rodsDirent_t;
 
-#endif	/* RODS_TYPE_H */
+#endif	/* RODS_TYPE_H__ */

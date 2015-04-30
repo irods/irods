@@ -3,18 +3,8 @@
 
 /* definitions for parseCommandLine routine */
 
-#ifndef RODS_PARSE_COMMAND_LINE
-#define RODS_PARSE_COMMAND_LINE
-
-#if _WIN32
-#include "irodsntutil.hpp"
-#include "IRodsLib3.hpp"
-#include "rodsType.hpp"
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef RODS_PARSE_COMMAND_LINE_H__
+#define RODS_PARSE_COMMAND_LINE_H__
 
 #define True 1
 #define False 0
@@ -150,6 +140,10 @@ typedef struct {
 
 } rodsArguments_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int
 parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
                  rodsArguments_t *rodsArgs );
@@ -157,4 +151,4 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
 #ifdef __cplusplus
 }
 #endif
-#endif /* RODS_PARSE_COMMAND_LINE */
+#endif // RODS_PARSE_COMMAND_LINE_H__

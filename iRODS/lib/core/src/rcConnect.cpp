@@ -5,7 +5,7 @@
  *
  */
 
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "rcGlobal.hpp"
 
 #ifdef windows_platform
@@ -21,10 +21,10 @@
 #include "irods_stacktrace.hpp"
 #include "irods_network_factory.hpp"
 
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
-#include "rodsError.hpp"
+#include "rodsError.h"
 
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,

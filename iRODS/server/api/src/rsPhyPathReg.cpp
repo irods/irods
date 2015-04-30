@@ -6,7 +6,7 @@
 #include "reFuncDefs.hpp"
 #include "fileStat.hpp"
 #include "phyPathReg.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "icatDefines.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"

@@ -5,8 +5,8 @@
   A user interface for deleting delayed execution rules
 */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 

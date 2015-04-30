@@ -8,9 +8,9 @@
 
 /* This is a high level type API call */
 
-#include "rods.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "rods.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "fileClose.hpp"
 #include "fileStat.hpp"
 

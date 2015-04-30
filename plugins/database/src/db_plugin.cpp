@@ -1,10 +1,11 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.h"
+#include "rodsQuota.h"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "readServerConfig.hpp"
 #include "icatStructs.hpp"
 #include "icatHighLevelRoutines.hpp"
@@ -33,7 +34,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
 #include "miscServerFunct.hpp"
 

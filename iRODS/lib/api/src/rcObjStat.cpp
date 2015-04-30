@@ -8,7 +8,7 @@
 /* This is script-generated code.  */
 /* See objStat.h for a description of this API call.*/
 
-#include "objStat.hpp"
+#include "objStat.h"
 
 /**
  * \fn rcObjStat (rcComm_t *conn, dataObjInp_t *dataObjInp,

@@ -4,7 +4,7 @@
 /* See dataObjUnlink.h for a description of this API call.*/
 
 #include "dataObjUnlink.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rodsConnect.h"
 #include "icatDefines.hpp"
 #include "fileUnlink.hpp"

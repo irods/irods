@@ -9,9 +9,9 @@
 #ifndef OBJ_META_OPR_HPP
 #define OBJ_META_OPR_HPP
 
-#include "rods.hpp"
-#include "objInfo.hpp"
-#include "dataObjInpOut.hpp"
+#include "rods.h"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
 #include "rcGlobalExtern.hpp"
 #include "rsGlobalExtern.hpp"
 

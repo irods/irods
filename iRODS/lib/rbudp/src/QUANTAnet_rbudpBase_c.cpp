@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 #include "QUANTAnet_rbudpBase_c.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include <stdarg.h>
 
 // inline void TRACE_DEBUG( char *format, ...)

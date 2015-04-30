@@ -18,7 +18,8 @@
 #include <sys/stat.h>
 #endif
 
-#include "rods.hpp"
+#include "rods.h"
+#include "osauth.h"
 #include "rcGlobalExtern.hpp"
 #include "authenticate.hpp"
 extern "C" {

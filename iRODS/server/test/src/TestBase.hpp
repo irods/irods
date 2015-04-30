@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gtest/gtest.h"
-#include "rods.hpp"
+#include "rods.h"
 #include "icatLowLevelOdbc.hpp"
 
 class TestBase : public ::testing::Test {

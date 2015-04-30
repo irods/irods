@@ -3,12 +3,12 @@
 // This test keeps C++ out
 // Or it breaks the build
 
-#include "rodsType.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsClient.hpp"
+#include "rods.h"
+#include "rodsType.h"
+#include "rodsClient.h"
 #include "miscUtil.hpp"
-#include "rodsPath.hpp"
-#include "rcConnect.hpp"
+#include "rodsPath.h"
+#include "rcConnect.h"
 #include "dataObjOpen.hpp"
 #include "dataObjRead.hpp"
 #include "dataObjChksum.hpp"

@@ -4,7 +4,7 @@
 #include "index.hpp"
 #include "datetime.hpp"
 #ifndef DEBUG
-#include "rodsType.hpp"
+#include "rodsType.h"
 #endif
 
 

@@ -2,13 +2,17 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for osauth routines */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef OS_AUTH_H__
+#define OS_AUTH_H__
+
 
 #define OS_AUTH_FLAG     "##OS_AUTH"
 #define OS_AUTH_CMD      "genOSAuth"
 #define OS_AUTH_ENV_USER "OSAUTH_USERNAME"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int osauthGetAuth( char *challenge, char *username, char *authenticator, int authenticator_buflen );
 int osauthVerifyResponse( char *challenge, char *username, char *response );
@@ -21,3 +25,4 @@ int osauthGenerateAuthenticator( char *username, int uid, char *challenge, char 
 }
 #endif
 
+#endif // OS_AUTH_H__

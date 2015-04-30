@@ -9,13 +9,13 @@
 #ifndef RE_SERVER_HPP
 #define RE_SERVER_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcGlobalExtern.hpp"     /* client global */
 #include "rsLog.hpp"
-#include "rodsLog.hpp"
-#include "sockComm.hpp"
-#include "getRodsEnv.hpp"
-#include "rcConnect.hpp"
+#include "rodsLog.h"
+#include "sockComm.h"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
 
 #define RE_SERVER_SLEEP_TIME    30
 #define RE_SERVER_EXEC_TIME     120

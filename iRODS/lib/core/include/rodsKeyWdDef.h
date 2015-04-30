@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rodsKeyWdDef.h - global definition for client API */
 
-#ifndef RODS_KEYWD_DEF
-#define RODS_KEYWD_DEF
+#ifndef RODS_KEYWD_DEF_H__
+#define RODS_KEYWD_DEF_H__
 
 /* The following are the keyWord definition for the condInput key/value pair */
 
@@ -97,14 +97,14 @@
 #define NON_BULK_OPR_KW		"nonBulkOpr"  /* non bulk operation */
 #define EXEC_CMD_RULE_KW	"execCmdRule" /* the rule that invoke execCmd */
 #define EXEC_MY_RULE_KW	"execMyRule" /* the rule is invoked by rsExecMyRule */
-#define STREAM_STDOUT_KW	"streamStdout"   /* the stream stdout for 
+#define STREAM_STDOUT_KW	"streamStdout"   /* the stream stdout for
 * execCmd */
 #define REG_REPL_KW		"regRepl"  /* register replica */
 #define AGE_KW			"age"  /* age of the file for itrim */
 #define DRYRUN_KW		"dryrun"  /* do a dry run */
-#define ACL_COLLECTION_KW	"aclCollection"  /* the collection from which 
+#define ACL_COLLECTION_KW	"aclCollection"  /* the collection from which
 * the ACL should be used */
-#define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
+#define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len
 * when transfering  */
 #define TICKET_KW               "ticket"        /* for ticket-based-access */
 #define PURGE_CACHE_KW         "purgeCache"    /* purge the cache copy right JMC - backport 4537
@@ -284,4 +284,4 @@
 #define KEY_VALUE_PASSTHROUGH_KW "key_value_passthrough"
 #define DISABLE_STRICT_ACL_KW "disable_strict_acls"
 
-#endif	/* RODS_KEYWD_DEF */
+#endif	// RODS_KEYWD_DEF_H__

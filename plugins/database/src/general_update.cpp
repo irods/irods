@@ -14,7 +14,7 @@
 */
 #include "rodsGeneralUpdate.hpp"
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 #include "low_level.hpp"

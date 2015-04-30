@@ -12,7 +12,7 @@
 #include "regReplica.hpp"
 #include "unregDataObj.hpp"
 #include "modAVUMetadata.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>

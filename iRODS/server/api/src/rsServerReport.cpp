@@ -1,5 +1,5 @@
 #include "rsGlobalExtern.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"
 
 #include "reIn2p3SysRule.hpp"

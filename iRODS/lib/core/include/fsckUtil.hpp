@@ -5,9 +5,9 @@
 #ifndef FSCK_UTIL_HPP
 #define FSCK_UTIL_HPP
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 #include "scanUtil.hpp"
 
 #ifdef __cplusplus

@@ -14,7 +14,7 @@
 #include "genQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-

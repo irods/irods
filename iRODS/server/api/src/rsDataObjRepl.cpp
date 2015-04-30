@@ -10,7 +10,7 @@
 #include "dataObjOpen.hpp"
 #include "dataObjPut.hpp"
 #include "dataObjGet.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "specColl.hpp"

@@ -1,18 +1,18 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* rodsErrorTable.hpp - common header file for rods server and agents
+/* rodsErrorTable.h - common header file for rods server and agents
  */
 
 /**
- * @file  rodsErrorTable.hpp
+ * @file  rodsErrorTable.h
  *
  * @brief Defines ERRORS for iRODS server and agents
  */
 
 
-#ifndef RODS_ERROR_TABLE_HPP
-#define RODS_ERROR_TABLE_HPP
+#ifndef RODS_ERROR_TABLE_H__
+#define RODS_ERROR_TABLE_H__
 
 /**
  * @defgroup error_codes iRODS ERROR Codes
@@ -823,5 +823,5 @@
 #define SYS_NO_HANDLER_REPLY_MSG                    -99999999
 /** @} */
 
-#endif                            /* RODS_ERROR_TABLE_HPP */
+#endif /* RODS_ERROR_TABLE_H__ */
 

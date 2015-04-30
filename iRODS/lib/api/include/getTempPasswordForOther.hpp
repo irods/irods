@@ -15,10 +15,10 @@
 
 /* This is a high level Metadata type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "authenticate.hpp"
 
 typedef struct {

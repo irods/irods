@@ -1,9 +1,10 @@
 #include "Hasher.hpp"
+
 #include <iostream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
-#include <rodsErrorTable.hpp>
 
+#include "rodsErrorTable.h"
 #include "irods_stacktrace.hpp"
 
 namespace irods {

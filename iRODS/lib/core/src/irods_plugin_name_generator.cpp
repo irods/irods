@@ -1,7 +1,7 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_log.hpp"
 
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 
 #ifndef BOOST_ASSERT_MSG
 #define BOOST_ASSERT_MSG( cond, msg ) do \

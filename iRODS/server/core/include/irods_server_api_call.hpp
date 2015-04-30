@@ -1,7 +1,7 @@
 #ifndef IRODS_SERVER_API_CALL_HPP__
 #define IRODS_SERVER_API_CALL_HPP__
 #include "irods_server_api_table.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "rodsDef.h"
 
 

@@ -7,7 +7,7 @@
 #include "collection.hpp"
 #include "resource.hpp"
 #include "genQuery.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

@@ -11,7 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"

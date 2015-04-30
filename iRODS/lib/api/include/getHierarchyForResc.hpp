@@ -3,10 +3,10 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 typedef struct GetHierarchyForRescInp {
     char resc_name_[ MAX_NAME_LEN ];

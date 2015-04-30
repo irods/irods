@@ -28,7 +28,7 @@
   be related together via the sql text string.  This creates a tree
   structure describing the ICAT schema.
 */
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "icatHighLevelRoutines.hpp"
 
 void

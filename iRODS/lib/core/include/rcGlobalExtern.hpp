@@ -5,11 +5,11 @@
 #ifndef RC_GLOBAL_EXTERN_HPP
 #define RC_GLOBAL_EXTERN_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "packStruct.hpp"
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "msParam.hpp"
-#include "guiProgressCallback.hpp"
+#include "guiProgressCallback.h"
 
 extern packConstantArray_t PackConstantTable[];
 extern const packInstructArray_t RodsPackTable[];

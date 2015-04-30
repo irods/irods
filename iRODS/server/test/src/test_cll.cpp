@@ -4,7 +4,7 @@
  Simple program to test the Rcat Low Level routines to Postgres or Oracle.
  */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "readServerConfig.hpp"
 #include "irods_plugin_name_generator.hpp"
 

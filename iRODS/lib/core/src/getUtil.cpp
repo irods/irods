@@ -3,14 +3,14 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include "lsUtil.hpp"
 #include "getUtil.hpp"
 #include "miscUtil.hpp"
 #include "rcPortalOpr.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {

@@ -4,7 +4,7 @@
 /* See l3FileGetSingleBuf.h for a description of this API call.*/
 
 #include "l3FileGetSingleBuf.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "dataGet.hpp"
 #include "fileGet.hpp"
 #include "dataObjOpen.hpp"

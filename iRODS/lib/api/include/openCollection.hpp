@@ -8,11 +8,11 @@
 
 /* This is a high level type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "dataObjInpOut.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "dataObjInpOut.h"
 
 #define NUM_COLL_HANDLE	40
 

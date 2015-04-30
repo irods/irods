@@ -6,10 +6,10 @@
 #ifndef RODS_PACK_TABLE_HPP
 #define RODS_PACK_TABLE_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "packStruct.hpp"
-#include "rodsPackInstruct.hpp"
-#include "rodsGenQuery.hpp"
+#include "rodsPackInstruct.h"
+#include "rodsGenQuery.h"
 #include "reGlobalsExtern.hpp"
 #include "apiHeaderAll.hpp"
 

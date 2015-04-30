@@ -4,7 +4,7 @@
 #include "irods_error.hpp"
 #include "irods_auth_object.hpp"
 
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 // boost includes

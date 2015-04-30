@@ -4,7 +4,7 @@
 /* See l3FilePutSingleBuf.h for a description of this API call.*/
 
 #include "l3FilePutSingleBuf.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "dataPut.hpp"
 #include "filePut.hpp"
 #include "dataObjOpen.hpp"

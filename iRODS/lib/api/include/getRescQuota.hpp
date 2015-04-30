@@ -6,13 +6,13 @@
 
 /* This is a Object File I/O call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
-#include "rodsGenQuery.hpp"  /* for input/output structs, etc */
+#include "rodsGenQuery.h"  /* for input/output structs, etc */
 
 /* definition for RescQuotaPolicy and GlobalQuotaLimit */
 #define RESC_QUOTA_UNINIT	-1	/* RescQuotaPolicy not initialized */

@@ -1,12 +1,12 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #define USE_SSL 1
-#include "sslSockComm.hpp"
+#include "sslSockComm.h"
 
 #include "rodsDef.h"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "authRequest.hpp"
 #include "authResponse.hpp"
 #include "authCheck.hpp"

@@ -1,5 +1,5 @@
-#include "rodsClient.hpp"
-#include "rods.hpp"
+#include "rodsClient.h"
+#include "rods.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"

@@ -12,7 +12,7 @@
 
 
 #ifndef DEBUG
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "reHelpers1.hpp"
 #endif
 

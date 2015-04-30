@@ -5,9 +5,9 @@
 #ifndef REG_UTIL_HPP
 #define REG_UTIL_HPP
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -7,7 +7,7 @@
 #define RS_GLOBAL_HPP
 
 //#include "apiTable.hpp"   /* contains global RsApiTable */
-#include "rods.hpp"
+#include "rods.h"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscUtil.hpp"

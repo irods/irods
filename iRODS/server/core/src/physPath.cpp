@@ -23,7 +23,7 @@
 #include "reDefines.hpp"
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "readServerConfig.hpp"
 #include "reFuncDefs.hpp"
 

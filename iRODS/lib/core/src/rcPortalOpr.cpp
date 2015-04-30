@@ -7,7 +7,7 @@
 #include "dataObjLseek.hpp"
 #include "fileLseek.hpp"
 #include "dataObjOpr.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rcGlobalExtern.hpp"
 
 // =-=-=-=-=-=-=-

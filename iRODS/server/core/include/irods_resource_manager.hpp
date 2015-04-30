@@ -2,7 +2,7 @@
 #define __IRODS_RESOURCE_MANAGER_HPP__
 
 // =-=-=-=-=-=-=-
-#include "rods.hpp"
+#include "rods.h"
 #include "irods_resource_plugin.hpp"
 #include "irods_first_class_object.hpp"
 

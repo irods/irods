@@ -9,9 +9,9 @@
 #ifndef SPEC_COLL_HPP
 #define SPEC_COLL_HPP
 
-#include "rods.hpp"
-#include "objInfo.hpp"
-#include "dataObjInpOut.hpp"
+#include "rods.h"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
 #include "ruleExecSubmit.hpp"
 #include "rcGlobalExtern.hpp"
 #include "rsGlobalExtern.hpp"

@@ -3,14 +3,14 @@
 /* sockComm.h - header file for sockComm.c
  */
 
-#ifndef SOCK_COMM_HPP
-#define SOCK_COMM_HPP
+#ifndef SOCK_COMM_H__
+#define SOCK_COMM_H__
 
 // =-=-=-=-=-=-=
 // irods includes
 #include "rodsDef.h"
-#include "rcConnect.hpp"
-#include "rodsPackInstruct.hpp"
+#include "rcConnect.h"
+#include "rodsPackInstruct.h"
 
 #define MAX_LISTEN_QUE	50
 #define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */
@@ -80,4 +80,4 @@ int mySockClose( int sock ); // server stop fcn <==> rsAccept?
 }
 #endif
 
-#endif	/* SOCK_COMM_H */
+#endif	/* SOCK_COMM_H__ */

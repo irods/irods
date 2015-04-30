@@ -5,9 +5,9 @@
 #ifndef MISC_UTIL_HPP
 #define MISC_UTIL_HPP
 
-#include "rodsPath.hpp"
-#include "parseCommandLine.hpp"
-#include "guiProgressCallback.hpp"
+#include "rodsPath.h"
+#include "parseCommandLine.h"
+#include "guiProgressCallback.h"
 
 #define	INIT_UMASK_VAL	99999999
 typedef struct CollSqlResult {

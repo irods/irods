@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 
 namespace irods {
 

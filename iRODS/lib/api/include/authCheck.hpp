@@ -11,10 +11,10 @@
 /* This is used by one server to connect to the ICAT-enabled server to
    verify a user's login */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "icatDefines.hpp"
 
 typedef struct {

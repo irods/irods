@@ -6,9 +6,9 @@
 #define CP_UTIL_HPP
 
 #include <stdio.h>
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 
 #ifdef __cplusplus
 extern "C" {

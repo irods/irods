@@ -1,8 +1,10 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* definitions for rodsLog routines */
+#ifndef RODS_LOG_H__
+#define RODS_LOG_H__
 
-#include "rodsError.hpp"
+#include "rodsError.h"
 
 #define LOG_SQL 11
 /* This is for logging SQL statements.  These are only logged when
@@ -62,3 +64,5 @@ void generateLogTimestamp( char *ts, int tsLen );
 #ifdef __cplusplus
 }
 #endif
+
+#endif // RODS_LOG_H__

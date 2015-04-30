@@ -10,10 +10,10 @@
 #define API_TABLE_HPP
 
 #include "rcMisc.hpp"
-#include "rods.hpp"
+#include "rods.h"
 #include "apiHandler.hpp"
-#include "apiNumber.hpp"
-#include "rodsUser.hpp"
+#include "apiNumber.h"
+#include "rodsUser.h"
 
 
 

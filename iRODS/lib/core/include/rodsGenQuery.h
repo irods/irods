@@ -7,10 +7,10 @@
 
 
 
-#ifndef RODS_GEN_QUERY_HPP
-#define RODS_GEN_QUERY_HPP
+#ifndef RODS_GEN_QUERY_H__
+#define RODS_GEN_QUERY_H__
 
-#include "objInfo.hpp"
+#include "objInfo.h"
 
 #define MAX_SQL_ATTR    50
 #define MAX_SQL_ROWS   256
@@ -537,4 +537,4 @@ primary ordering column.
 #define COL_TICKET_OWNER_NAME 2229
 #define COL_TICKET_OWNER_ZONE 2230
 
-#endif /* RODS_GEN_QUERY_H */
+#endif /* RODS_GEN_QUERY_H__ */

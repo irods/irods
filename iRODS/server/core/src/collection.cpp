@@ -5,7 +5,7 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "genQuery.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 #include "irods_virtual_path.hpp"
 

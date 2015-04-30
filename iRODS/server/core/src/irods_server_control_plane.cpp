@@ -9,7 +9,7 @@
 
 #include "genQuery.hpp"
 #include "rcMisc.hpp"
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"

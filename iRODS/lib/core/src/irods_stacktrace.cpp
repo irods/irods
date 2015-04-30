@@ -1,5 +1,5 @@
 #include "irods_stacktrace.hpp"
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "irods_log.hpp"
 
 #include <iostream>

@@ -4,7 +4,7 @@
 /* See dataObjWrite.h for a description of this API call.*/
 
 #include "dataObjWrite.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "subStructFileWrite.hpp"
 #include "rsGlobalExtern.hpp"

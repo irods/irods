@@ -1,13 +1,13 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <fcntl.h>
-#include "rods.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rods.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 #include "miscUtil.hpp"
 #include "rcMisc.hpp"
 #include "genQuery.hpp"
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 

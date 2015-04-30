@@ -9,11 +9,11 @@
 #ifndef RC_MISC_HPP
 #define RC_MISC_HPP
 
-#include "rods.hpp"
-#include "rodsError.hpp"
-#include "objInfo.hpp"
+#include "rods.h"
+#include "rodsError.h"
+#include "objInfo.h"
 #include "dataObjCopy.hpp"
-#include "rodsPath.hpp"
+#include "rodsPath.h"
 #include "bulkDataObjPut.hpp"
 
 #ifdef __cplusplus

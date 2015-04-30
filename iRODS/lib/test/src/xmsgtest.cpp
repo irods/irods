@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* xmsgTest.c - test the high level api */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 
 int
 main( int argc, char **argv ) {

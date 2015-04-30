@@ -8,7 +8,7 @@
 #ifndef GEN_QUERY_NAMES_HPP
 #define GEN_QUERY_NAMES_HPP
 
-#include "rodsGenQuery.hpp"
+#include "rodsGenQuery.h"
 
 typedef struct {
     int columnId;

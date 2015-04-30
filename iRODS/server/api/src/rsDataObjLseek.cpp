@@ -4,7 +4,7 @@
 /* See dataObjLseek.h for a description of this API call.*/
 
 #include "dataObjLseek.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "subStructFileLseek.hpp"

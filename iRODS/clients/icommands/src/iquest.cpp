@@ -2,9 +2,9 @@
  * iquest - The irods iquest (question (query)) utility
 */
 
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 #include "rcMisc.hpp"
 #include "lsUtil.hpp"
 #include <iostream>

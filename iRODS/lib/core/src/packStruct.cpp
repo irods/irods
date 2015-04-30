@@ -6,7 +6,7 @@
 
 
 #include "packStruct.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rcGlobalExtern.hpp"
 #include "base64.hpp"
 #include "rcMisc.hpp"

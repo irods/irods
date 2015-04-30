@@ -3,9 +3,9 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
-#include "rodsPath.hpp"
-#include "rodsErrorTable.hpp"
-#include "rodsLog.hpp"
+#include "rodsPath.h"
+#include "rodsErrorTable.h"
+#include "rodsLog.h"
 #include "putUtil.hpp"
 #include "miscUtil.hpp"
 #include "rcPortalOpr.hpp"
@@ -15,7 +15,7 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 
-#include "sockComm.hpp"
+#include "sockComm.h"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 

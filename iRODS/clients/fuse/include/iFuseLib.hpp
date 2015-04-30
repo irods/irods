@@ -5,8 +5,8 @@
 #ifndef I_FUSE_LIB_HPP_
 #define I_FUSE_LIB_HPP_
 
-#include "rodsClient.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "rodsPath.h"
 #include "reFuncDefs.hpp"
 
 #define CACHE_FUSE_PATH         1

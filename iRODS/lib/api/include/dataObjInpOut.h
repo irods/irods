@@ -1,5 +1,5 @@
 /**
- * @file  dataObjInpOut.hpp
+ * @file  dataObjInpOut.h
  *
  */
 
@@ -7,8 +7,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 
-#ifndef DATA_OBJ_INP_OUT_HPP
-#define DATA_OBJ_INP_OUT_HPP
+#ifndef DATA_OBJ_INP_OUT_H__
+#define DATA_OBJ_INP_OUT_H__
 
 
 #include "rodsDef.h"
@@ -211,4 +211,4 @@ typedef struct TransferHeader {
     rodsLong_t length;
 } transferHeader_t;
 
-#endif  /* DATA_OBJ_INP_OUT_H */
+#endif  /* DATA_OBJ_INP_OUT_H__ */

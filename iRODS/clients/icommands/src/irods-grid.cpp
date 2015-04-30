@@ -14,7 +14,7 @@
 
 #include "jansson.h"
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "irods_server_control_plane.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "server_control_plane_command.hpp"

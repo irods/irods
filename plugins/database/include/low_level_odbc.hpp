@@ -11,7 +11,7 @@
 #include "sql.h"
 #include "sqlext.h"
 
-#include "rods.hpp"
+#include "rods.h"
 #include "mid_level.hpp"
 
 #include <vector>

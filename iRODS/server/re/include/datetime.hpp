@@ -6,7 +6,7 @@
 #include <time.h>
 #include "debug.hpp"
 #ifndef DEBUG
-#include "rodsType.hpp"
+#include "rodsType.h"
 #endif
 #include <boost/interprocess/detail/os_file_functions.hpp>
 #include <boost/filesystem/operations.hpp>

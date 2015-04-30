@@ -244,5 +244,5 @@ $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $
 rodslog:  $(LOG_SRC)
 	@true
 
-$(LOG_SRC):  $(libCoreIncDir)/rodsErrorTable.hpp
+$(LOG_SRC):  $(libCoreIncDir)/rodsErrorTable.h
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl

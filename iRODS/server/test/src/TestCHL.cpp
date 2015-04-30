@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "TestBase.hpp"
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
 #include "readServerConfig.hpp"
-#include "rodsUser.hpp"
+#include "rodsUser.h"
 #include "icatHighLevelRoutines.hpp"
 #include "icatMidLevelRoutines.hpp"
 

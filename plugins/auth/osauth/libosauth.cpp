@@ -1,9 +1,10 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.h"
+#include "osauth.h"
 #include "msParam.hpp"
 #include "reGlobalsExtern.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "authRequest.hpp"
 #include "authResponse.hpp"
 #include "authCheck.hpp"
@@ -30,7 +31,7 @@
 // =-=-=-=-=-=-=-
 // local includes
 #define OS_AUTH 1
-#include "osauth.hpp"
+#include "osauth.h"
 
 int get64RandomBytes( char *buf );
 void setSessionSignatureClientside( char* _sig );

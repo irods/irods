@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include "objInfo.hpp"
+#include "objInfo.h"
 
 #ifdef __cplusplus
 extern "C" {

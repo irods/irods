@@ -5,14 +5,14 @@
 #ifndef RC_GLOBAL_HPP
 #define RC_GLOBAL_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rodsPackTable.hpp"		/* globally declare RodsPackTable */
 //#include "apiPackTable.hpp"		/* globally declare apiPackTable */
 //#include "apiTable.hpp"   /* contains global RsApiTable */
-#include "objInfo.hpp"
-#include "rodsGenQuery.hpp"
+#include "objInfo.h"
+#include "rodsGenQuery.h"
 #include "rodsGeneralUpdate.hpp"
-#include "guiProgressCallback.hpp"
+#include "guiProgressCallback.h"
 
 int ProcessType = CLIENT_PT;
 

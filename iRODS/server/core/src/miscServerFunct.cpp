@@ -21,7 +21,7 @@
 #include "dataObjWrite.hpp"
 #include "dataObjRead.hpp"
 #include "rcPortalOpr.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "rodsConnect.h"
 #include "reFuncDefs.hpp"
 #include <boost/thread/thread.hpp>

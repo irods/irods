@@ -8,7 +8,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 // boost includs

@@ -3,9 +3,9 @@
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 #include "fsckUtil.hpp"
 void usage();
 

@@ -14,18 +14,14 @@
    value string based on a keyword.
 */
 
-#ifndef OBJ_INFO_HPP
-#define OBJ_INFO_HPP
+#ifndef OBJ_INFO_H__
+#define OBJ_INFO_H__
 
-#include "rodsType.hpp"
-#include "rodsUser.hpp"
+#include "rodsType.h"
+#include "rodsUser.h"
 
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* defines some commonly used dataTypes */
 #define GENERIC_DT_STR    "generic"
@@ -331,9 +327,5 @@ typedef struct StructFileTypeDef {
     structFileType_t type;
 } structFileTypeDef_t;
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif  /* OBJ_INFO_H */
+#endif  // OBJ_INFO_H__
 

@@ -5,7 +5,7 @@
 
 #include "dataObjOpen.hpp"
 #include "dataObjOpenAndStat.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"

@@ -4,7 +4,7 @@
 /* See dataObjPut.hpp for a description of this API call.*/
 
 #include "dataObjPut.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "dataPut.hpp"
 #include "reFuncDefs.hpp"
 #include "filePut.hpp"

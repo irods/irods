@@ -5,9 +5,9 @@
 #ifndef ICAT_HIGHLEVEL_ROUTINES_HPP
 #define ICAT_HIGHLEVEL_ROUTINES_HPP
 
-#include "objInfo.hpp"
+#include "objInfo.h"
 #include "ruleExecSubmit.hpp"
-#include "rcConnect.hpp"
+#include "rcConnect.h"
 #include "icatStructs.hpp"
 #include "rodsGeneralUpdate.hpp"
 #include "specificQuery.hpp"

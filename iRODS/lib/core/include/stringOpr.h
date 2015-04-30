@@ -6,8 +6,8 @@
 
 
 
-#ifndef STRING_OPR_HPP
-#define STRING_OPR_HPP
+#ifndef STRING_OPR_H__
+#define STRING_OPR_H__
 
 #include "rodsDef.h"
 
@@ -39,4 +39,4 @@ checkStringForEmailAddress( const char *inString );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* STRING_OPR_H */
+#endif	/* STRING_OPR_H__ */

@@ -6,8 +6,8 @@
 #define I_FUSE_OPER_HPP_
 
 #include <sys/statvfs.h>
-#include "rodsClient.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "rodsPath.h"
 #include "iFuseLib.hpp"
 #include "iFuseLib.Lock.hpp"
 

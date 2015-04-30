@@ -6,7 +6,7 @@
 #include "reFuncDefs.hpp"
 #include "collCreate.hpp"
 #include "rodsConnect.h"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "regColl.hpp"
 #include "icatDefines.hpp"
 #include "fileMkdir.hpp"

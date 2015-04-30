@@ -4,7 +4,7 @@
   RDA test program.
 */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "rdaHighLevelRoutines.hpp"
 
 /*

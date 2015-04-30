@@ -46,8 +46,8 @@
 #endif
 #include <stdlib.h>
 
-#include "rods.hpp"
-#include "rodsPath.hpp"
+#include "rods.h"
+#include "rodsPath.h"
 #include "authenticate.hpp"
 
 #ifdef _WIN32

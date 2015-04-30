@@ -4,7 +4,7 @@
 /* See dataObjCopy.h for a description of this API call.*/
 
 #include "dataObjCopy.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
 #include "specColl.hpp"

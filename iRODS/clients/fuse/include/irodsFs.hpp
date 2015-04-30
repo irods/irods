@@ -18,9 +18,9 @@
 #define FUSE_USE_VERSION 26
 
 #include <fuse.h>
-#include "rodsClient.hpp"
-#include "parseCommandLine.hpp"
-#include "rodsPath.hpp"
+#include "rodsClient.h"
+#include "parseCommandLine.h"
+#include "rodsPath.h"
 
 #define FILE_BLOCK_SZ	512
 #define DIR_SZ    4096

@@ -19,14 +19,14 @@
 #include <sys/wait.h>
 #endif
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcGlobalExtern.hpp"	/* client global */
 #include "rsLog.hpp"
-#include "rodsLog.hpp"
-#include "sockComm.hpp"
+#include "rodsLog.h"
+#include "sockComm.h"
 #include "rsIcatOpr.hpp"
-#include "getRodsEnv.hpp"
-#include "rcConnect.hpp"
+#include "getRodsEnv.h"
+#include "rcConnect.h"
 
 
 extern char *optarg;

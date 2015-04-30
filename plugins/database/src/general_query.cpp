@@ -23,7 +23,7 @@
  be called when the tables change to make sure there are no cycles.
 
  */
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 #include "low_level.hpp"

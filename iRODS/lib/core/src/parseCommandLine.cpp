@@ -13,10 +13,10 @@ If you need additional options, please update this routine and the
 CommandLineOptions document so we can keep it all consistent.
 */
 
-#include "rods.hpp"
-#include "parseCommandLine.hpp"
-#include "getRodsEnv.hpp"
-#include "rodsLog.hpp"
+#include "rods.h"
+#include "parseCommandLine.h"
+#include "getRodsEnv.h"
+#include "rodsLog.h"
 #include "rcMisc.hpp"
 #ifdef windows_platform
 #include "irodsntutil.hpp"

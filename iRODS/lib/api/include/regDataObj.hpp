@@ -8,11 +8,11 @@
 
 /* This is Object File I/O type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "dataObjInpOut.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "dataObjInpOut.h"
 
 #if defined(RODS_SERVER)
 #define RS_REG_DATA_OBJ rsRegDataObj

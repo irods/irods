@@ -5,7 +5,7 @@
  * 1)
  */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "miscUtil.hpp"
 
 int

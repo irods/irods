@@ -11,7 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
-#include "rods.hpp"
+#include "rods.h"
 #include "packStruct.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"

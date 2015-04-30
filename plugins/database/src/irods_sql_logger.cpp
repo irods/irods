@@ -2,7 +2,7 @@
 #include "irods_error.hpp"
 #include "irods_log.hpp"
 
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 
 #include <sstream>
 

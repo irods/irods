@@ -9,13 +9,12 @@
 #ifndef MS_PARAM_HPP
 #define MS_PARAM_HPP
 
-#include "rods.hpp"
-#include "rodsError.hpp"
-#include "objInfo.hpp"
+#include "rods.h"
+#include "objInfo.h"
 #include "dataObjCopy.hpp"
 #include "structFileExtAndReg.hpp"
 #include "execCmd.hpp"
-#include "rodsPath.hpp"
+#include "rodsPath.h"
 
 
 #ifdef __cplusplus

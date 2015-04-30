@@ -8,11 +8,11 @@
 
 /* This is Object File I/O type API call */
 
-#include "rods.hpp"
+#include "rods.h"
 #include "rcMisc.hpp"
-#include "procApiRequest.hpp"
-#include "apiNumber.hpp"
-#include "dataObjInpOut.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "dataObjInpOut.h"
 
 /* definition for flags */
 #define CHK_COLL_FOR_BUNDLE_OPR		0x1

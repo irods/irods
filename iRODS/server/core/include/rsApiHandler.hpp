@@ -9,7 +9,7 @@
 #ifndef RS_API_HANDLER_HPP
 #define RS_API_HANDLER_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "apiHandler.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"

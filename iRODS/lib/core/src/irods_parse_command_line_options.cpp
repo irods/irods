@@ -1,4 +1,4 @@
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 #include "irods_parse_command_line_options.hpp"
 #include "boost/program_options.hpp"
 

@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* packtest.c - test the basic packing routines */
 
-#include "rodsClient.hpp"
+#include "rodsClient.h"
 struct myTest {
     char c1[17];
     char c2[18];

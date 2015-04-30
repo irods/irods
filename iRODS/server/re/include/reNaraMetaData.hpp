@@ -9,7 +9,7 @@
 #ifndef RE_NARA_META_DATA_HPP
 #define RE_NARA_META_DATA_HPP
 
-#include "rods.hpp"
+#include "rods.h"
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.hpp"
 #include "reGlobalsExtern.hpp"

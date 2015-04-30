@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "rods.hpp"
+#include "rods.h"
 
 #ifdef SYSLOG
 #ifndef windows_platform
@@ -9,7 +9,8 @@
 #endif
 #endif
 
-#include "rodsLog.hpp"
+#include "rodsLog.h"
+#include "rodsErrorTable.h"
 #include "rcGlobalExtern.hpp"
 #include "rcMisc.hpp"
 #include <time.h>

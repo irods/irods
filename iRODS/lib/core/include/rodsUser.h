@@ -6,8 +6,8 @@
 
 
 
-#ifndef RODS_USER_HPP
-#define RODS_USER_HPP
+#ifndef RODS_USER_H__
+#define RODS_USER_H__
 
 #include "rodsDef.h"
 
@@ -73,4 +73,4 @@ typedef struct {
 } userInfo_t;
 
 
-#endif	/* RODS_USER_H */
+#endif	/* RODS_USER_H__ */

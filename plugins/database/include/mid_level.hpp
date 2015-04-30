@@ -9,7 +9,7 @@
 #ifndef ICAT_MIDLEVEL_ROUTINES_HPP
 #define ICAT_MIDLEVEL_ROUTINES_HPP
 
-#include "rodsType.hpp"
+#include "rodsType.h"
 #include "icatStructs.hpp"
 
 #include <vector>

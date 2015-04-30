@@ -5,7 +5,7 @@
 #include "reFuncDefs.hpp"
 #include "dataObjRepl.hpp"
 #include "dataObjOpr.hpp"
-#include "rodsLog.hpp"
+#include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "reGlobalsExtern.hpp"

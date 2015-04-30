@@ -1,6 +1,6 @@
 
 
-#include "rodsErrorTable.hpp"
+#include "rodsErrorTable.h"
 #include "irods_server_state.hpp"
 
 namespace irods {
