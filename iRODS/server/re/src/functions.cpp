@@ -23,7 +23,6 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #include "execMyRule.hpp"
 #include "msParam.hpp"
 #include "reFuncDefs.hpp"
-#include "rsMisc.hpp"
 #include "stringOpr.hpp"
 #include "miscServerFunct.hpp"
 #endif

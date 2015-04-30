@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*-------------------------------------------------------------------------
  *
- * rodsServer.h-- Header file for rodsServer.c
+ * rodsServer.hpp-- Header file for rodsServer.cpp
  *
  *
  *
@@ -24,7 +24,6 @@
 #include "rsLog.hpp"
 #include "rodsLog.hpp"
 #include "sockComm.hpp"
-#include "rsMisc.hpp"
 #include "rsIcatOpr.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"

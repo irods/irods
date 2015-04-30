@@ -14,7 +14,6 @@
 #include "rsLog.hpp"
 #include "rodsLog.hpp"
 #include "sockComm.hpp"
-#include "rsMisc.hpp"
 #include "getRodsEnv.hpp"
 #include "rcConnect.hpp"
 #include "generalRowInsert.hpp"
