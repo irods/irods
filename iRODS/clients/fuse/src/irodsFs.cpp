@@ -110,11 +110,6 @@ main( int argc, char **argv ) {
     irodsOper.fsync = irodsFsync;
     irodsOper.flush = irodsFlush;
 
-
-    int status;
-    rodsArguments_t myRodsArgs;
-    char *optStr;
-
 #ifdef  __cplusplus
     bzero( &irodsOper, sizeof( irodsOper ) );
     irodsOper.getattr = irodsGetattr;
@@ -139,9 +134,9 @@ main( int argc, char **argv ) {
     irodsOper.fsync = irodsFsync;
     irodsOper.flush = irodsFlush;
 #endif
-    optStr = "Zhdo:";
 
-    status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
+    rodsArguments_t myRodsArgs;
+    int status = parseCmdLineOpt( argc, argv, "Zhdo:", 1, &myRodsArgs );
 
     if ( status < 0 ) {
         printf( "Use -h for help.\n" );

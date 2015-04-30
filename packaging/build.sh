@@ -530,7 +530,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf linux-3.*
     rm -rf macosx-10.*
     rm -f iRODS/server/config/scriptMonPerf.config
-    rm -f iRODS/lib/core/include/rodsVersion.hpp
+    rm -f iRODS/lib/core/include/rodsVersion.h
     rm -f iRODS/server/core/include/irods_plugin_home_directory.hpp
     rm -f iRODS/lib/core/include/irods_home_directory.hpp
     # database plugin cleanup
@@ -1070,11 +1070,11 @@ mv $TMPFILE VERSION.json
 cd $BUILDDIR
 TEMPLATE_RODS_RELEASE_VERSION=`python packaging/get_irods_version.py`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
-sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.hpp.template > /tmp/rodsVersion.hpp
-sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.hpp > /tmp/rodsVersion.hpp.2
-rsync -c /tmp/rodsVersion.hpp.2 ./iRODS/lib/core/include/rodsVersion.hpp
-rm -f /tmp/rodsVersion.hpp
-rm -f /tmp/rodsVersion.hpp.2
+sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.h.template > /tmp/rodsVersion.h
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.h > /tmp/rodsVersion.h.2
+rsync -c /tmp/rodsVersion.h.2 ./iRODS/lib/core/include/rodsVersion.h
+rm -f /tmp/rodsVersion.h
+rm -f /tmp/rodsVersion.h.2
 
 cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then

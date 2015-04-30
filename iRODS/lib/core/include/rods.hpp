@@ -20,7 +20,6 @@
 #include "getRodsEnv.hpp"
 #include "dataObjInpOut.hpp"
 #include "rodsGenQuery.hpp"
-//#include "authenticate.hpp"
 #include "parseCommandLine.hpp"
 #include "obf.hpp"
 #include "rodsXmsg.hpp"

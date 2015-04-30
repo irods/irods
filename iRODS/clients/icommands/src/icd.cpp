@@ -7,7 +7,6 @@
 #include "miscUtil.hpp"
 #include "rcMisc.hpp"
 #include "genQuery.hpp"
-#include "apiHandler.hpp"
 #include "rodsClient.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
