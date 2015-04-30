@@ -1,4 +1,3 @@
-
 #include "zmq.hpp"
 #include "avro/Encoder.hh"
 #include "avro/Decoder.hh"
@@ -267,13 +266,13 @@ std::string format_grid_status(
     } else {
         // possible error message
         return _status;
-    
+
     }
 
     json_error_t j_err;
     json_t* obj = json_loads(
                       ( char* )status.data(),
-                      status.size(),
+                      JSON_REJECT_DUPLICATES,
                       &j_err );
     if ( !obj ) {
         if ( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
@@ -401,5 +400,3 @@ int main(
     return 0;
 
 } // main
-
-

@@ -1,4 +1,3 @@
-
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
 #include "miscServerFunct.hpp"
@@ -139,7 +138,7 @@ irods::error get_server_reports(
         json_error_t j_err;
         json_t* j_resc = json_loads(
                              tmp_str.data(),
-                             tmp_str.size(),
+                             JSON_REJECT_DUPLICATES,
                              &j_err );
 
         freeBBuf( bbuf );
@@ -180,7 +179,7 @@ int _rsZoneReport(
     }
 
     json_error_t j_err;
-    json_t* cat_svr = json_loads( ( char* )bbuf->buf, bbuf->len, &j_err );
+    json_t* cat_svr = json_loads( ( char* )bbuf->buf, JSON_REJECT_DUPLICATES, &j_err );
     freeBBuf( bbuf );
     if ( !cat_svr ) {
         rodsLog(
@@ -259,4 +258,3 @@ int _rsZoneReport(
 } // _rsZoneReport
 
 #endif // RODS_CAT
-

@@ -1,4 +1,3 @@
-
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.hpp"
 
@@ -120,7 +119,7 @@ int _rsClientHints(
     json_error_t j_err;
     json_t* client_hints = json_loads(
                                ( char* )ies_buf->buf,
-                               ies_buf->len, &j_err );
+                               JSON_REJECT_DUPLICATES, &j_err );
     freeBBuf( ies_buf );
     if ( !client_hints ) {
         rodsLog(
@@ -159,7 +158,3 @@ int _rsClientHints(
     return 0;
 
 } // _rsClientHints
-
-
-
-
