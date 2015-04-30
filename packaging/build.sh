@@ -1525,14 +1525,19 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        if [ "12" == `python -c 'import platform; print platform.linux_distribution()[1].split(".")[0]'` ] ; then
+            UBUNTU12=true
+        fi
+    fi
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
-        $EPMCMD $EPMOPTS -a $arch -f deb irods-icat $epmvar=true ./packaging/irods.list
+        $EPMCMD $EPMOPTS -a $arch -f deb irods-icat $epmvar=true UBUNTU12=$UBUNTU12 ./packaging/irods.list
         if [ "$FAST" == "0" ] ; then
             $EPMCMD $EPMOPTS -a $arch -f deb irods-dev $epmvar=true ./packaging/irods-dev.list
             $EPMCMD $EPMOPTS -a $arch -f deb irods-runtime $epmvar=true ./packaging/irods-runtime.list
         fi
     elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
-      $EPMCMD $EPMOPTS -a $arch -f deb irods-resource $epmvar=true ./packaging/irods.list
+        $EPMCMD $EPMOPTS -a $arch -f deb irods-resource $epmvar=true UBUNTU12=$UBUNTU12 ./packaging/irods.list
     fi
     if [ "$FAST" == "0" ] && [ "$SERVER_TYPE" == "ICOMMANDS" -o "$RELEASE" == "1" ] ; then
         $EPMCMD $EPMOPTS -a $arch -f deb irods-icommands $epmvar=true ./packaging/irods-icommands.list

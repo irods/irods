@@ -107,14 +107,15 @@ $RESOURCE=true
 %requires openssl
 %requires python-psutil
 %requires python-requests
-%requires python-jsonschema
 
 %endif
 
 %format all
 
-
-
+%if UBUNTU12
+%else
+%requires python-jsonschema
+%endif
 
 
 
