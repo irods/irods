@@ -1563,10 +1563,13 @@ void usageMain() {
         " -h This help",
         "Commands are:",
         " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triple)",
+        " adda -d|C|R|u Name AttName AttValue [AttUnits] (Add as administrator)",
+        "                                     (same as 'add' but bypasses ACLs)",
         " addw -d Name AttName AttValue [AttUnits] (Add new AVU triple",
         "                                           using Wildcards in Name)",
         " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)",
         " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)",
+        " rmi -d|C|R|u Name MetadataID (Remove AVU by MetadataID)",
         " mod -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]",
         "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
         " set -d|C|R|u Name AttName newValue [newUnits] (Assign a single value)", // JMC - backport 4836
@@ -1655,6 +1658,23 @@ usage( char *subOpt ) {
                 printf( "%s\n", msgs[i] );
             }
         }
+        if ( strcmp( subOpt, "adda" ) == 0 ) {
+            char *msgs[] = {
+                " adda -d|C|R|u Name AttName AttValue [AttUnits]  (Add as administrator)",
+                "                                     (same as 'add' but bypasses ACLs)",
+                " ",
+                "Administrators (rodsadmin users) may use this command to add AVUs",
+                "to any dataobj, collection, resource, or user.  The syntax is the same",
+                "as 'imeta add'.",
+                ""
+            };
+            for ( i = 0;; i++ ) {
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return 0;
+                }
+                printf( "%s\n", msgs[i] );
+            }
+        }
         if ( strcmp( subOpt, "addw" ) == 0 ) {
             char *msgs[] = {
                 " addw -d Name AttName AttValue [AttUnits]  (Add new AVU triple)",
@@ -1714,6 +1734,22 @@ usage( char *subOpt ) {
                 "the rmw command still do matching using them as wildcards, so you may",
                 "need to use rm instead.",
                 "Also see lsw.",
+                ""
+            };
+            for ( i = 0;; i++ ) {
+                if ( strlen( msgs[i] ) == 0 ) {
+                    return 0;
+                }
+                printf( "%s\n", msgs[i] );
+            }
+        }
+        if ( strcmp( subOpt, "rmi" ) == 0 ) {
+            char *msgs[] = {
+                " rmi -d|C|R|u Name MetadataID (Remove AVU by MetadataID)",
+                "Remove an AVU from a dataobj (-d), collection(-C), resource(-R),",
+                "or user(-u) by name and metadataID from the catalog.  Intended for",
+                "expert use.  There is no matching done to confirm correctness of",
+                "a request (but permissions are still checked).  Use with caution.",
                 ""
             };
             for ( i = 0;; i++ ) {
