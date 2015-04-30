@@ -234,7 +234,7 @@ int _rsZoneReport(
         zone,
         "schema_version",
         json_string(
-            "http://schemas.irods.org/v1/zone_bundle.json" ) );
+            "https://schemas.irods.org/configuration/v2/zone_bundle.json" ) );
     json_object_set( zone, "zones", zone_arr );
 
     char* tmp_buf = json_dumps( zone, JSON_INDENT( 4 ) );
