@@ -19,6 +19,13 @@ except ImportError:
     sys.exit(0)
 
 try:
+    e = jsonschema.exceptions
+except AttributeError:
+    print_error('WARNING: Validation Failed for [%s] -- jsonschema too old v[%s]' %
+                (config_file, jsonschema.__version__) )
+    sys.exit(0)
+
+try:
     # load configuration file
     with open(config_file, 'r') as f:
         config = json.load(f)
