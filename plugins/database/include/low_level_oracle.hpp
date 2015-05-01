@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "mid_level.hpp"
 
-#define MAX_BIND_VARS 120 // JMC - backport 4848 ( 40->120 )
+#define MAX_BIND_VARS 64000
 
 extern int cllBindVarCount;
 extern const char *cllBindVars[MAX_BIND_VARS];

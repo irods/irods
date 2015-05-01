@@ -17,7 +17,7 @@
 #include <vector>
 #include <string>
 
-#define MAX_BIND_VARS  120 // JMC - backport 4848 ( 40->120 )
+#define MAX_BIND_VARS 32000
 
 extern int cllBindVarCount;
 extern const char *cllBindVars[MAX_BIND_VARS];
