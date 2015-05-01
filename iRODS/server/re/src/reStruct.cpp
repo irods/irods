@@ -3,7 +3,7 @@
 
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 

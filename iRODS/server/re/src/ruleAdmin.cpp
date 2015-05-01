@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rodsServer.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include <sys/time.h>
 
 

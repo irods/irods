@@ -12,7 +12,7 @@
    verify a user's login */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "icatDefines.hpp"

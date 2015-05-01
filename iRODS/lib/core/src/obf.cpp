@@ -48,7 +48,7 @@
 
 #include "rods.h"
 #include "rodsPath.h"
-#include "authenticate.hpp"
+#include "authenticate.h"
 
 #ifdef _WIN32
 #include "Unix2Nt.hpp"  /* May need something like this for Windows */

@@ -6,13 +6,12 @@
 
 
 
-#ifndef RC_MISC_HPP
-#define RC_MISC_HPP
+#ifndef RC_MISC_H__
+#define RC_MISC_H__
 
 #include "rods.h"
 #include "rodsError.h"
 #include "objInfo.h"
-#include "dataObjCopy.hpp"
 #include "rodsPath.h"
 #include "bulkDataObjPut.hpp"
 
@@ -322,4 +321,4 @@ getPathStMode( const char* p );
 #ifdef __cplusplus
 }
 #endif
-#endif  /* RC_MISC_H */
+#endif  // RC_MISC_H__

@@ -9,7 +9,7 @@
 #include "ruleExecSubmit.hpp"
 #include "rcConnect.h"
 #include "icatStructs.hpp"
-#include "rodsGeneralUpdate.hpp"
+#include "rodsGeneralUpdate.h"
 #include "specificQuery.hpp"
 #include "phyBundleColl.hpp"
 #include "readServerConfig.hpp"

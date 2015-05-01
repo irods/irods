@@ -16,7 +16,7 @@
 #include "specColl.hpp"
 #include "resource.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.hpp"
 #include "l3FileGetSingleBuf.hpp"

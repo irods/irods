@@ -7,7 +7,7 @@
 /* This is a Object File I/O API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 

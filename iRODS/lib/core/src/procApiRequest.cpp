@@ -12,7 +12,7 @@
 // irods includes
 #include "procApiRequest.h"
 #include "rcGlobalExtern.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
 

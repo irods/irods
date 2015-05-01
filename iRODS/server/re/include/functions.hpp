@@ -4,8 +4,8 @@
 #ifndef FUNCTIONS_HPP
 #define	FUNCTIONS_HPP
 
-#include "hashtable.hpp"
-#include "region.hpp"
+#include "irods_hashtable.h"
+#include "region.h"
 #include "parser.hpp"
 #include "debug.hpp"
 

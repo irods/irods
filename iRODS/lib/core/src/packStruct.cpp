@@ -5,11 +5,11 @@
  */
 
 
-#include "packStruct.hpp"
+#include "packStruct.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.hpp"
-#include "base64.hpp"
-#include "rcMisc.hpp"
+#include "base64.h"
+#include "rcMisc.h"
 
 #include "irods_pack_table.hpp"
 #include <iostream>

@@ -8,7 +8,7 @@
 #include "objInfo.h"
 #include "MD5Strategy.hpp"
 #include "rodsKeyWdDef.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "checksum.hpp"
 
 #include <fstream>

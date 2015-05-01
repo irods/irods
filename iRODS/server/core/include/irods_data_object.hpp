@@ -7,7 +7,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 
 namespace irods {

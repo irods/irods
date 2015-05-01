@@ -19,8 +19,8 @@
 #include "reconstants.hpp"
 #include "restructs.hpp"
 #include "utils.hpp"
-#include "region.hpp"
-#include "hashtable.hpp"
+#include "region.h"
+#include "irods_hashtable.h"
 
 
 typedef struct op {

@@ -25,11 +25,11 @@ extern void myfree(char* file, int line, void *x);
 #include "objInfo.h"
 #include "fileOpen.hpp"
 #include "regExpMatch.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "ruleExecSubmit.hpp"
 #include "ruleExecDel.hpp"
 #include "dataObjInpOut.h"
-#include "msParam.hpp"
+#include "msParam.h"
 #include "modAccessControl.hpp"
 
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/

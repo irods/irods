@@ -9,7 +9,7 @@
 #include "irods_server_properties.hpp"
 
 #include "icatHighLevelRoutines.hpp"
-#include "rodsGeneralUpdate.hpp"
+#include "rodsGeneralUpdate.h"
 
 int sTest( int i1, int i2 );
 int sTest2( int i1, int i2, int i3 );

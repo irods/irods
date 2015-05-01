@@ -99,12 +99,26 @@ l 644 root root /usr/include/irods/rodsVersion.hpp /usr/include/irods/rodsVersio
 l 644 root root /usr/include/irods/rodsXmsg.hpp /usr/include/irods/rodsXmsg.h
 l 644 root root /usr/include/irods/sslSockComm.hpp /usr/include/irods/sslSockComm.h
 l 644 root root /usr/include/irods/stringOpr.hpp /usr/include/irods/stringOpr.h
-l 644 root root /usr/include/irods/apiNumber.hpp /usr/include/irods/apiNumber.hpp
-l 644 root root /usr/include/irods/objStat.hpp /usr/include/irods/objStat.hpp
-l 644 root root /usr/include/irods/procApiRequest.hpp /usr/include/irods/procApiRequest.hpp
-l 644 root root /usr/include/irods/rodsPackInstruct.hpp /usr/include/irods/rodsPackInstruct.hpp
-l 644 root root /usr/include/irods/rodsPath.hpp /usr/include/irods/rodsPath.hpp
-l 644 root root /usr/include/irods/sockComm.hpp /usr/include/irods/sockComm.hpp
+l 644 root root /usr/include/irods/apiNumber.hpp /usr/include/irods/apiNumber.h
+l 644 root root /usr/include/irods/objStat.hpp /usr/include/irods/objStat.h
+l 644 root root /usr/include/irods/procApiRequest.hpp /usr/include/irods/procApiRequest.h
+l 644 root root /usr/include/irods/rodsPackInstruct.hpp /usr/include/irods/rodsPackInstruct.h
+l 644 root root /usr/include/irods/rodsPath.hpp /usr/include/irods/rodsPath.h
+l 644 root root /usr/include/irods/sockComm.hpp /usr/include/irods/sockComm.h
+l 644 root root /usr/include/irods/list.hpp /usr/include/irods/irods_list.h
+l 644 root root /usr/include/irods/hashtable.hpp /usr/include/irods/irods_hashtable.h
+l 644 root root /usr/include/irods/authRequest.hpp /usr/include/irods/authRequest.h
+l 644 root root /usr/include/irods/authenticate.hpp /usr/include/irods/authenticate.h
+l 644 root root /usr/include/irods/execCmd.hpp /usr/include/irods/execCmd.h
+l 644 root root /usr/include/irods/base64.hpp /usr/include/irods/base64.h
+l 644 root root /usr/include/irods/msParam.hpp /usr/include/irods/msParam.h
+l 644 root root /usr/include/irods/packStruct.hpp /usr/include/irods/packStruct.h
+l 644 root root /usr/include/irods/rcMisc.hpp /usr/include/irods/rcMisc.h
+l 644 root root /usr/include/irods/rcPortalOpr.hpp /usr/include/irods/rcPortalOpr.h
+l 644 root root /usr/include/irods/region.hpp /usr/include/irods/region.h
+l 644 root root /usr/include/irods/reDefines.hpp /usr/include/irods/reDefines.h
+l 644 root root /usr/include/irods/rodsGenQueryNames.hpp /usr/include/irods/rodsGenQueryNames.h
+l 644 root root /usr/include/irods/rodsGeneralUpdate.hpp /usr/include/irods/rodsGeneralUpdate.h
 
 d 755 root root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples

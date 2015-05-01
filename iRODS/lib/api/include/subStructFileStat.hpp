@@ -9,13 +9,14 @@
 /* This is Object File I/O type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_STAT rsSubStructFileStat
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsSubStructFileStat( rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **subStructFileStatOut );
 int

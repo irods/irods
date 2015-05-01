@@ -1,6 +1,6 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "hashtable.hpp"
+#include "irods_hashtable.h"
 #include "utils.hpp"
 /**
  * Allocated dynamically

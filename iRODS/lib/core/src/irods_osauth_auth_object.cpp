@@ -5,7 +5,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 namespace irods {
 

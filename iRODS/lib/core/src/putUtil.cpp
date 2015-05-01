@@ -8,7 +8,7 @@
 #include "rodsLog.h"
 #include "putUtil.hpp"
 #include "miscUtil.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "checksum.hpp"
 #include <string>
 #include <boost/filesystem.hpp>

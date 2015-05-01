@@ -20,7 +20,7 @@
 #include "dataObjClose.hpp"
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.hpp"
 #include "rodsClient.h"

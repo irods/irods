@@ -7,11 +7,11 @@
 #define RODS_PACK_TABLE_HPP
 
 #include "rods.h"
-#include "packStruct.hpp"
+#include "packStruct.h"
 #include "rodsPackInstruct.h"
-#include "rodsGenQuery.h"
-#include "reGlobalsExtern.hpp"
-#include "apiHeaderAll.hpp"
+#include "reDefines.h"
+#include "authenticate.h"
+#include "rcGlobalExtern.hpp"
 
 #define UNKNOWN_SIZE	-1
 

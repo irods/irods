@@ -4,7 +4,7 @@
  */
 
 #include "querySpecColl.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "fileOpendir.hpp"
 #include "fileReaddir.hpp"
 #include "fileClosedir.hpp"

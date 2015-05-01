@@ -14,8 +14,8 @@
 #include "rodsType.h"
 #endif
 #include "restructs.hpp"
-#include "region.hpp"
-#include "hashtable.hpp"
+#include "region.h"
+#include "irods_hashtable.h"
 
 
 #define CASCASE_NON_ZERO(x) {int ret = x; if(ret != 0) { return ret;} }

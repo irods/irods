@@ -9,7 +9,7 @@
 #ifndef API_TABLE_HPP
 #define API_TABLE_HPP
 
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "rods.h"
 #include "apiHandler.hpp"
 #include "apiNumber.h"

@@ -5,7 +5,7 @@
 #define MOD_AVU_METADATA_HPP
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "icatDefines.hpp"

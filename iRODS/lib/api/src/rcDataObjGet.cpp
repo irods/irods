@@ -11,7 +11,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "dataObjGet.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "apiHeaderAll.hpp"
 #include "sockComm.h"
 

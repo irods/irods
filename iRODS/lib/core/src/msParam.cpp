@@ -4,7 +4,7 @@
 /* msParam.cpp - function for handling msParam_t.
  */
 
-#include "msParam.hpp"
+#include "msParam.h"
 #include "apiHeaderAll.hpp"
 #include "modDataObjMeta.hpp"
 #include "rcGlobalExtern.hpp"

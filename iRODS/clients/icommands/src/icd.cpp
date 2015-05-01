@@ -5,7 +5,7 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "miscUtil.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "genQuery.hpp"
 #include "rodsClient.h"
 #include "irods_client_api_table.hpp"

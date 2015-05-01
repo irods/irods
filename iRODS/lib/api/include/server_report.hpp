@@ -4,7 +4,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 

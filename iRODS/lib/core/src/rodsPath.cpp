@@ -6,7 +6,7 @@
 
 #include "rodsPath.h"
 #include "miscUtil.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 #ifdef windows_platform

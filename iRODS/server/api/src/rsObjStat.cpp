@@ -4,7 +4,7 @@
  */
 
 #include "objStat.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "genQuery.hpp"
 #include "querySpecColl.hpp"
 #include "objMetaOpr.hpp"

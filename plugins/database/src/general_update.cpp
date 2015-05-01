@@ -12,7 +12,7 @@
  Initially, this was developed for use with a notification service which
  was postponed and now may be used with rule tables.
 */
-#include "rodsGeneralUpdate.hpp"
+#include "rodsGeneralUpdate.h"
 
 #include "rodsClient.h"
 #include "icatHighLevelRoutines.hpp"

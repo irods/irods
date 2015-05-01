@@ -9,10 +9,10 @@
 /* This is a high level Metadata type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "authenticate.hpp"
+#include "authenticate.h"
 
 typedef struct {
     char stringToHashWith[MAX_PASSWORD_LEN];

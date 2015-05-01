@@ -9,7 +9,7 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -21,6 +21,7 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CLOSEDIR rsFileClosedir
+#include "rodsConnect.h"
 /* prototype for the server handler */
 int
 rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp );

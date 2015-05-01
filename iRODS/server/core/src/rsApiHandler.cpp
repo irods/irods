@@ -7,7 +7,7 @@
 
 #include "rsApiHandler.hpp"
 #include "modDataObjMeta.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "miscServerFunct.hpp"
 #include "regReplica.hpp"
 #include "unregDataObj.hpp"

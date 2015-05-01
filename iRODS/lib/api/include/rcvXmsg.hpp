@@ -7,11 +7,11 @@
 /* This is Object File I/O type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "dataObjInpOut.h"
-#include "msParam.hpp"
+#include "msParam.h"
 
 #if defined(RODS_SERVER)
 #define RS_RCV_XMSG rsRcvXmsg

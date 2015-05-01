@@ -3,8 +3,8 @@
 /* Authenticate.h
  */
 
-#ifndef AUTHENTICATE_HPP
-#define AUTHENTICATE_HPP
+#ifndef AUTHENTICATE_H__
+#define AUTHENTICATE_H__
 
 /* This is a high level file type API call */
 
@@ -61,4 +61,4 @@ rcAuthenticate( rcComm_t *conn, AuthenticateInp_t *authenticateInp,
 }
 #endif
 
-#endif	/* AUTHENTICATE_H */
+#endif	// AUTHENTICATE_H__

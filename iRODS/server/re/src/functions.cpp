@@ -21,7 +21,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
 #ifndef DEBUG
 #include "execMyRule.hpp"
-#include "msParam.hpp"
+#include "msParam.h"
 #include "reFuncDefs.hpp"
 #include "stringOpr.h"
 #include "miscServerFunct.hpp"

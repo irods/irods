@@ -10,7 +10,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "execMyRule.hpp"
-#include "region.hpp"
+#include "region.h"
 #include "rules.hpp"
 #include "conversion.hpp"
 #include "irods_plugin_name_generator.hpp"

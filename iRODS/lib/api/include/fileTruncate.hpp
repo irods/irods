@@ -9,7 +9,7 @@
 /* This is a Internal I/O API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "fileOpen.hpp"

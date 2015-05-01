@@ -9,7 +9,7 @@
 #include "lsUtil.hpp"
 #include "getUtil.hpp"
 #include "miscUtil.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "sockComm.h"
 
 int

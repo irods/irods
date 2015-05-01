@@ -20,7 +20,7 @@
 #include "dataObjClose.hpp"
 #include "dataObjWrite.hpp"
 #include "dataObjRead.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"
 #include "reFuncDefs.hpp"

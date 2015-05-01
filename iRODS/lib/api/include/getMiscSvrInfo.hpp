@@ -5,7 +5,7 @@
 #define GET_MISC_SVR_INFO_HPP
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 

@@ -9,7 +9,7 @@
 /* This is Object File I/O type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -25,6 +25,7 @@ typedef struct SubStructFileFdOpr {
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_READ rsSubStructFileRead
+#include "rodsConnect.h"
 /* prototype for the server handler */
 int
 rsSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,

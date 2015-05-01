@@ -6,7 +6,7 @@
 #include "conversion.hpp"
 #include "reVariableMap.gen.hpp"
 #include "reVariables.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #ifdef DEBUG
 #include "re.hpp"
 #endif

@@ -9,11 +9,11 @@
 #else
 #include "Unix2Nt.hpp"
 #endif
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "apiHeaderAll.hpp"
 #include "modDataObjMeta.hpp"
 #include "rcGlobalExtern.hpp"
-#include "rodsGenQueryNames.hpp"
+#include "rodsGenQueryNames.h"
 #include "rodsType.h"
 #include "rsApiHandler.hpp"
 #include "dataObjPut.hpp"

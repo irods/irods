@@ -5,7 +5,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "msParam.hpp"
+#include "msParam.h"
 #include "reGlobalsExtern.hpp"
 #include "rodsLog.h"
 #include "icatHighLevelRoutines.hpp"

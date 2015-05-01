@@ -7,7 +7,7 @@
 #define API_PACK_TABLE_HPP
 
 #include "rods.h"
-#include "packStruct.hpp"
+#include "packStruct.h"
 #include "rodsPackInstruct.h"
 
 /* need to include a header for for each API */

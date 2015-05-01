@@ -9,7 +9,7 @@
 /* See dataObjPut.h for a description of this API call.*/
 
 #include "dataObjPut.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "oprComplete.hpp"
 #include "sockComm.h"
 

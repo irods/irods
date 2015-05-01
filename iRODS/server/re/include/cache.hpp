@@ -5,7 +5,7 @@
 #include "rules.hpp"
 #include "index.hpp"
 #include "configuration.hpp"
-#include "region.hpp"
+#include "region.h"
 
 #include "cache.proto.hpp"
 #include "proto.hpp"

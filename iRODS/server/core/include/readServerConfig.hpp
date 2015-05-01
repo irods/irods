@@ -15,7 +15,7 @@
 #define READ_SERVER_CONFIG_HPP
 
 #include "rods.h"
-#include "authenticate.hpp"
+#include "authenticate.h"
 
 /* server host configuration */
 

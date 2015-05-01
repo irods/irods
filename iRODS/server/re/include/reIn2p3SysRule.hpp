@@ -5,7 +5,7 @@
 #ifndef RE_IN2P3_SYS_RULE_HPP
 #define RE_IN2P3_SYS_RULE_HPP
 
-#include "msParam.hpp"
+#include "msParam.h"
 #include "reDataObjOpr.hpp"
 #include "rods.h"
 #include "rsGlobalExtern.hpp"   /* server global */

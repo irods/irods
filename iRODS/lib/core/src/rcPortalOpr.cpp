@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "dataObjOpen.hpp"
 #include "dataObjWrite.hpp"
 #include "dataObjRead.hpp"

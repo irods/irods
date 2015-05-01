@@ -9,11 +9,9 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-
-
 
 /* definition for flags of fileRmdirInp_t */
 #define RMDIR_RECUR	0x1
@@ -29,6 +27,7 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_FILE_RMDIR rsFileRmdir
+#include "rodsConnect.h"
 /* prototype for the server handler */
 int
 rsFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp );

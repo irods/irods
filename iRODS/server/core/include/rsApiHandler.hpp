@@ -13,7 +13,7 @@
 #include "apiHandler.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 #define	DISCONN_STATUS	-1
 #define SEND_RCV_RETRY_CNT	1

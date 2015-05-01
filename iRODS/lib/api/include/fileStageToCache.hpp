@@ -9,7 +9,7 @@
 /* This is a Object File I/O call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -39,6 +39,7 @@ typedef struct {
 #if defined(RODS_SERVER)
 #define RS_FILE_STAGE_TO_CACHE rsFileStageToCache
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileStageToCache( rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp );
 int

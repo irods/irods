@@ -4,7 +4,7 @@
 #define _CONFIGURATION_HPP
 
 #include "rules.hpp"
-#include "hashtable.hpp"
+#include "irods_hashtable.h"
 #include "parser.hpp"
 #include "datetime.hpp"
 

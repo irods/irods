@@ -9,11 +9,9 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-
-
 
 typedef struct {
     rodsHostAddr_t addr;
@@ -28,6 +26,7 @@ typedef struct {
 #if defined(RODS_SERVER)
 #define RS_FILE_MKDIR rsFileMkdir
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp );
 int

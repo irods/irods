@@ -7,7 +7,6 @@
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 
-
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"

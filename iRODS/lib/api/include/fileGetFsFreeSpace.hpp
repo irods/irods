@@ -9,7 +9,7 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -32,6 +32,7 @@ typedef struct {
 #if defined(RODS_SERVER)
 #define RS_FILE_GET_FS_FREE_SPACE rsFileGetFsFreeSpace
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileGetFsFreeSpace( rsComm_t *rsComm,
                       fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,

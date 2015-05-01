@@ -9,7 +9,7 @@
 #else
 #include "Unix2Nt.hpp"
 #endif
-#include "execCmd.hpp"
+#include "execCmd.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscServerFunct.hpp"

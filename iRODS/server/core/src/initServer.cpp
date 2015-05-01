@@ -15,7 +15,7 @@
 #include "rsIcatOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "getRemoteZoneResc.hpp"
 #include "getRescQuota.hpp"
 #include "physPath.hpp"

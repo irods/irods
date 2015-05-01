@@ -11,13 +11,13 @@
 #include "reGlobalsExtern.hpp"
 #ifndef DEBUG
 #include "rodsType.h"
-#include "msParam.hpp"
+#include "msParam.h"
 #endif
 
 #include "reconstants.hpp"
-#include "region.hpp"
-#include "hashtable.hpp"
-#include "list.hpp"
+#include "region.h"
+#include "irods_hashtable.h"
+#include "irods_list.h"
 
 #define TYPE(x) ((x)->exprType->nodeType)
 

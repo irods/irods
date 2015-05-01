@@ -11,12 +11,12 @@
 #include <time.h>
 #include "conversion.hpp"
 #include "parser.hpp"
-#include "hashtable.hpp"
+#include "irods_hashtable.h"
 #define POSIX_REGEXP
 
 #ifndef DEBUG
 
-#include "msParam.hpp"
+#include "msParam.h"
 #include "rodsDef.h"
 
 #endif

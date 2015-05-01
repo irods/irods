@@ -17,7 +17,7 @@ CommandLineOptions document so we can keep it all consistent.
 #include "parseCommandLine.h"
 #include "getRodsEnv.h"
 #include "rodsLog.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #ifdef windows_platform
 #include "irodsntutil.hpp"
 #endif

@@ -9,11 +9,9 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-
-
 
 typedef struct {
     char resc_name_[MAX_NAME_LEN];
@@ -29,6 +27,7 @@ typedef struct {
 #if defined(RODS_SERVER)
 #define RS_FILE_OPENDIR rsFileOpendir
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp );
 int

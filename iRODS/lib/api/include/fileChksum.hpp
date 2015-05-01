@@ -9,7 +9,7 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -30,6 +30,7 @@ typedef struct FileChksumInp {
 #if defined(RODS_SERVER)
 #define RS_FILE_CHKSUM rsFileChksum
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
               char **chksumStr );

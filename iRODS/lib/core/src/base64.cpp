@@ -3,7 +3,7 @@
  */
 
 #include "rodsClient.h"
-#include "base64.hpp"
+#include "base64.h"
 #define OK 0
 
 static const char *codes =

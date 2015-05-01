@@ -6,9 +6,9 @@
 #define RC_GLOBAL_EXTERN_HPP
 
 #include "rods.h"
-#include "packStruct.hpp"
+#include "packStruct.h"
 #include "objInfo.h"
-#include "msParam.hpp"
+#include "msParam.h"
 #include "guiProgressCallback.h"
 
 extern packConstantArray_t PackConstantTable[];

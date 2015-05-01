@@ -4,7 +4,7 @@
 #define RE_VARIABLE_MAP_GEN
 #include "reGlobalsExtern.hpp"
 #include "reVariables.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "restructs.hpp"
 
 #if 0	// #1472

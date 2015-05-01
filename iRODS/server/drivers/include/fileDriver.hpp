@@ -16,7 +16,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "objInfo.h"
-#include "msParam.hpp"
+#include "msParam.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"

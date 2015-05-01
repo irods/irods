@@ -5,8 +5,8 @@
  * Maps the user specified strings to the corresponding #define values.
  */
 
-#ifndef GEN_QUERY_NAMES_HPP
-#define GEN_QUERY_NAMES_HPP
+#ifndef GEN_QUERY_NAMES_H__
+#define GEN_QUERY_NAMES_H__
 
 #include "rodsGenQuery.h"
 
@@ -377,4 +377,4 @@ columnName_t columnNames[] = {
 
 int NumOfColumnNames = sizeof( columnNames ) / sizeof( columnName_t );
 
-#endif	/* GEN_QUERY_NAMES_H */
+#endif	/* GEN_QUERY_NAMES_H__ */

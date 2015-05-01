@@ -7,8 +7,8 @@
 #include "irodsFs.hpp"
 #include "iFuseLib.hpp"
 #include "iFuseOper.hpp"
-#include "hashtable.hpp"
-#include "list.hpp"
+#include "irods_hashtable.h"
+#include "irods_list.h"
 #include "iFuseLib.Lock.hpp"
 
 fileCache_t *newFileCache( int iFd, char *objPath, char *localPath, char *cacheFilePath, time_t cachedTime, int mode, rodsLong_t fileSize, cacheState_t state ) {

@@ -8,7 +8,7 @@
 #include "irodsFs.hpp"
 #include "iFuseLib.hpp"
 #include "iFuseOper.hpp"
-#include "hashtable.hpp"
+#include "irods_hashtable.h"
 #include "restructs.hpp"
 #include "iFuseLib.Lock.hpp"
 

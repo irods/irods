@@ -12,7 +12,7 @@
 // =-=-=-=-=-=-=-
 // boost includes
 #include "rods.h"
-#include "packStruct.hpp"
+#include "packStruct.h"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"
 #include "boost/shared_ptr.hpp"

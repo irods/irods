@@ -1,15 +1,15 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.h"
-#include "msParam.hpp"
+#include "msParam.h"
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
-#include "authRequest.hpp"
+#include "authRequest.h"
 #include "authResponse.hpp"
 #include "authCheck.hpp"
 #include "miscServerFunct.hpp"
 #include "authPluginRequest.hpp"
-#include "authenticate.hpp"
+#include "authenticate.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_auth_plugin.hpp"

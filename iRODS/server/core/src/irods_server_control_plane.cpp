@@ -8,7 +8,7 @@
 //#include <sysinfo.h>
 
 #include "genQuery.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "sockComm.h"
 #include "miscServerFunct.hpp"
 

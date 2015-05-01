@@ -6,8 +6,8 @@
 
 
 
-#ifndef RC_PORTAL_OPR_HPP
-#define RC_PORTAL_OPR_HPP
+#ifndef RC_PORTAL_OPR_H__
+#define RC_PORTAL_OPR_H__
 
 #include "rods.h"
 #include "objInfo.h"
@@ -15,10 +15,6 @@
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define MAX_PROGRESS_CNT	8
 
@@ -36,6 +32,10 @@ typedef enum {
     RBUDP_CLIENT,
     RBUDP_SERVER
 } rbudpProcType_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int
 fillRcPortalTransferInp( rcComm_t *conn, rcPortalTransferInp_t *myInput,
@@ -105,4 +105,4 @@ catDataObj( rcComm_t *conn, char *objPath );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* RC_PORTAL_OPR_H */
+#endif	// RC_PORTAL_OPR_H__

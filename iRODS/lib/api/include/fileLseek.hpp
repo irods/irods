@@ -14,7 +14,7 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -73,6 +73,7 @@ typedef struct FileLseekOut {
 
 #if defined(RODS_SERVER)
 #define RS_FILE_LSEEK rsFileLseek
+#include "rodsConnect.h"
 /* prototype for the server handler */
 int
 rsFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,

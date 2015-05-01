@@ -15,7 +15,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "authRequest.hpp"
+#include "authRequest.h"
 #include "authResponse.hpp"
 #include "authCheck.hpp"
 #include "miscServerFunct.hpp"

@@ -21,7 +21,7 @@
 #include "rods.h"
 #include "osauth.h"
 #include "rcGlobalExtern.hpp"
-#include "authenticate.hpp"
+#include "authenticate.h"
 extern "C" {
 
     int

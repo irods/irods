@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef _REGION_HPP
-#define _REGION_HPP
+#ifndef _REGION_H__
+#define _REGION_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,6 +60,10 @@ typedef struct region_desc {
 #define DELETED(x) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->del)
 #define SIZE(x) (((RegionDesc *)(((const unsigned char*)(x))-CACHE_SIZE(RegionDesc, 1)))->size)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* create a region with initial size is */
 /* if s == 0 then the initial size is DEFAULT_BLOCK_SIZE */
 /* returns NULL if it runs out of memory */
@@ -70,4 +74,9 @@ void *region_alloc( Region *r, size_t s );
 /* free region r */
 void region_free( Region *r );
 size_t region_size( Region *r );
+
+#ifdef __cplusplus
+}
 #endif
+
+#endif // REGION_H__

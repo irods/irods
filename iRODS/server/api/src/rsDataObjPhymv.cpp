@@ -9,7 +9,7 @@
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "dataObjCreate.hpp"
 #include "getRemoteZoneResc.hpp"

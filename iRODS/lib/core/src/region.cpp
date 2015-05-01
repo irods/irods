@@ -1,6 +1,6 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#include "region.hpp"
+#include "region.h"
 #include <string.h>
 #ifdef REGION_MALLOC
 

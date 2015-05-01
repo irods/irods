@@ -9,11 +9,9 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-
-
 
 typedef struct FileReadInp {
     int fileInx;
@@ -25,6 +23,7 @@ typedef struct FileReadInp {
 #if defined(RODS_SERVER)
 #define RS_FILE_READ rsFileRead
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
             bytesBuf_t *fileReadOutBBuf );

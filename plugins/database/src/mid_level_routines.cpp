@@ -19,7 +19,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
 
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 #include <vector>
 #include <string>

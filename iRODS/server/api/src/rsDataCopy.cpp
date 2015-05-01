@@ -4,7 +4,7 @@
 /* See dataCopy.h for a description of this API call.*/
 
 #include "dataCopy.hpp"
-#include "rcPortalOpr.hpp"
+#include "rcPortalOpr.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"

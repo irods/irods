@@ -14,7 +14,7 @@
 #endif
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "structFileExtAndReg.hpp"
@@ -56,6 +56,7 @@ typedef struct CurSubFileCond {
 #if defined(RODS_SERVER)
 #define RS_PHY_BUNDLE_COLL rsPhyBundleColl
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsPhyBundleColl( rsComm_t *rsComm,
                  structFileExtAndRegInp_t *phyBundleCollInp );

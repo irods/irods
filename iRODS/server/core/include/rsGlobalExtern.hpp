@@ -13,7 +13,7 @@
 #include "objDesc.hpp"
 #include "querySpecColl.hpp"
 #include "miscUtil.hpp"
-#include "authenticate.hpp"
+#include "authenticate.h"
 #include "openCollection.hpp"
 
 // =-=-=-=-=-=-=-

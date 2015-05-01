@@ -6,20 +6,17 @@
 
 
 
-#ifndef MS_PARAM_HPP
-#define MS_PARAM_HPP
+#ifndef MS_PARAM_H__
+#define MS_PARAM_H__
 
 #include "rods.h"
 #include "objInfo.h"
 #include "dataObjCopy.hpp"
 #include "structFileExtAndReg.hpp"
-#include "execCmd.hpp"
+#include "execCmd.h"
 #include "rodsPath.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /* some commonly used MS (micro service) type */
 #define STR_MS_T                "STR_PI"
 #define INT_MS_T                "INT_PI"
@@ -141,6 +138,9 @@ typedef struct ValidKeyWd {
 #define BULK_OPR_FLAG           0x10000000
 #define UNREG_FLAG              0x20000000
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int
 resetMsParam( msParam_t *msParam );

@@ -3,8 +3,8 @@
 /* packStruct.h - header file for packStruct.c
  */
 
-#ifndef PACK_STRUCT_HPP
-#define PACK_STRUCT_HPP
+#ifndef PACK_STRUCT_H__
+#define PACK_STRUCT_H__
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -23,9 +23,6 @@ struct */
 #define END_TAG_FL	1
 #define LF_FL		2	/* line feed */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 typedef const char* packInstruct_t;
 
 /* indicate the end of packing table */
@@ -110,6 +107,10 @@ typedef struct {
     int bufSize;
     bytesBufArray_t nopackBufArray;	/* bBuf for non packed buffer */
 } packedOutput_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int
 packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
@@ -304,4 +305,4 @@ ovStrcpy( char *outStr, char *inStr );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* PACK_STRUCT_H */
+#endif	// PACK_STRUCT_H__

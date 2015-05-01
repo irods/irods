@@ -6,8 +6,8 @@
 
 
 
-#ifndef BASE64_HPP
-#define BASE64_HPP
+#ifndef BASE64_H__
+#define BASE64_H__
 
 #include "rodsDef.h"
 
@@ -24,4 +24,4 @@ int base64_decode( const unsigned char *in,  unsigned long inlen,
 }
 #endif
 
-#endif	/* BASE64_H */
+#endif	// BASE64_H__

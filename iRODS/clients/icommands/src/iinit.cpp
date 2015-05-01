@@ -4,7 +4,7 @@
 // irods includes
 #include "rods.h"
 #include "parseCommandLine.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "rodsClient.h"
 
 // =-=-=-=-=-=-=-

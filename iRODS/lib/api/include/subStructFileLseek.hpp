@@ -9,7 +9,7 @@
 /* This is Object File I/O type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "fileLseek.hpp"

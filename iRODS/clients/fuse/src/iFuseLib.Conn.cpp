@@ -8,8 +8,8 @@
 #include "irodsFs.hpp"
 #include "iFuseLib.hpp"
 #include "iFuseOper.hpp"
-#include "hashtable.hpp"
-#include "list.hpp"
+#include "irods_hashtable.h"
+#include "irods_list.h"
 #include "iFuseLib.Lock.hpp"
 
 #undef USE_BOOST

@@ -9,7 +9,7 @@
 /* This is a low level file type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -22,6 +22,7 @@ typedef struct {
 
 #if defined(RODS_SERVER)
 #define RS_FILE_WRITE rsFileWrite
+#include "rodsConnect.h"
 /* prototype for the server handler */
 int
 rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,

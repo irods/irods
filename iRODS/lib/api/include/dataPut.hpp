@@ -7,7 +7,7 @@
 /* This is a high level type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "fileOpen.hpp"

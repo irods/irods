@@ -9,7 +9,7 @@
 /* This is a Object File I/O call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "fileStageToCache.hpp"
@@ -17,6 +17,7 @@
 #if defined(RODS_SERVER)
 #define RS_FILE_SYNC_TO_ARCH rsFileSyncToArch
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** );
 int

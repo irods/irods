@@ -5,12 +5,12 @@
 #define GENERAL_UPDATE_HPP
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "icatDefines.hpp"
 
-#include "rodsGeneralUpdate.hpp"  /* for input/output structs, etc */
+#include "rodsGeneralUpdate.h"  /* for input/output structs, etc */
 
 #if defined(RODS_SERVER)
 #define RS_GENERAL_UPDATE rsGeneralUpdate

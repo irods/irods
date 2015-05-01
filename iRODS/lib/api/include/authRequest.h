@@ -3,15 +3,16 @@
 /* authRequest.h
  */
 
-#ifndef AUTH_REQUEST_HPP
-#define AUTH_REQUEST_HPP
+#ifndef AUTH_REQUEST_H__
+#define AUTH_REQUEST_H__
 
 /* This is a Metadata API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
+#include "authenticate.h"
 #include "icatDefines.hpp"
 
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */

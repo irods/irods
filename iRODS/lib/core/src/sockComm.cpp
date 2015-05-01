@@ -4,7 +4,7 @@
  */
 
 #include "sockComm.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "rcGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "getHostForPut.hpp"

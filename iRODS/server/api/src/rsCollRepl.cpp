@@ -8,7 +8,7 @@
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "openCollection.hpp"
 #include "readCollection.hpp"
 #include "closeCollection.hpp"

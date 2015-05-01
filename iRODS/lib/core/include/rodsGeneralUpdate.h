@@ -6,8 +6,8 @@
  */
 
 
-#ifndef RODS_GENERAL_UPDATE_HPP
-#define RODS_GENERAL_UPDATE_HPP
+#ifndef RODS_GENERAL_UPDATE_H__
+#define RODS_GENERAL_UPDATE_H__
 
 #include "objInfo.h"
 
@@ -30,4 +30,4 @@ typedef struct GeneralUpdateInp {
 } generalUpdateInp_t;
 
 
-#endif	/* RODS_GENERAL_UPDATE_H */
+#endif	// RODS_GENERAL_UPDATE_H__

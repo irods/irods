@@ -9,7 +9,7 @@
 /* This is Object File I/O type API call */
 
 #include "rods.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
@@ -23,6 +23,7 @@ typedef struct SubStructFileRenameInp {
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_RENAME rsSubStructFileRename
 /* prototype for the server handler */
+#include "rodsConnect.h"
 int
 rsSubStructFileRename( rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp );
 int

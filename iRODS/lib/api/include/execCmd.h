@@ -1,8 +1,8 @@
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#ifndef EXEC_CMD_HPP
-#define EXEC_CMD_HPP
+#ifndef EXEC_CMD_H__
+#define EXEC_CMD_H__
 
 /* This is Object File I/O type API call */
 
@@ -66,4 +66,4 @@ rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut );
 }
 #endif
 
-#endif	/* EXEC_CMD_H */
+#endif	// EXEC_CMD_H__

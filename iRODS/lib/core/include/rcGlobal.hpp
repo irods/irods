@@ -6,12 +6,13 @@
 #define RC_GLOBAL_HPP
 
 #include "rods.h"
+#include "msParam.h"
 #include "rodsPackTable.hpp"		/* globally declare RodsPackTable */
 //#include "apiPackTable.hpp"		/* globally declare apiPackTable */
 //#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "objInfo.h"
 #include "rodsGenQuery.h"
-#include "rodsGeneralUpdate.hpp"
+#include "rodsGeneralUpdate.h"
 #include "guiProgressCallback.h"
 
 int ProcessType = CLIENT_PT;

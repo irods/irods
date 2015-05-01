@@ -5,8 +5,8 @@
 #define TYPING_HPP
 
 #include "utils.hpp"
-#include "hashtable.hpp"
-#include "region.hpp"
+#include "irods_hashtable.h"
+#include "region.h"
 #include "parser.hpp"
 
 typedef enum satisfiability {

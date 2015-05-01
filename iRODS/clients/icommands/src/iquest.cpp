@@ -5,7 +5,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 #include "lsUtil.hpp"
 #include <iostream>
 #include <string>

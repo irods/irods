@@ -18,7 +18,7 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "ruleExecSubmit.hpp"
 #include "subStructFileRead.hpp"
 #include "subStructFileStat.hpp"

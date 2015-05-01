@@ -11,7 +11,7 @@
 #include "reFuncDefs.hpp"
 #include "genQuery.hpp"
 #include "reHelpers1.hpp"
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 int _makeQuery( char *sel, char *cond, char **sql );
 

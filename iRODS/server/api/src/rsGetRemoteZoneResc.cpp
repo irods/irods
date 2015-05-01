@@ -11,7 +11,7 @@
 #include "regDataObj.hpp"
 #include "rcGlobalExtern.hpp"
 #include "reGlobalsExtern.hpp"
-#include "reDefines.hpp"
+#include "reDefines.h"
 #include "dataObjCreate.hpp"
 #include "dataObjOpen.hpp"
 

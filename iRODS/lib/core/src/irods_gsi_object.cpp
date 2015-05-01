@@ -1,4 +1,4 @@
-#include "rcMisc.hpp"
+#include "rcMisc.h"
 
 #include "irods_gsi_object.hpp"
 #include "irods_auth_manager.hpp"

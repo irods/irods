@@ -1,11 +1,11 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
-#ifndef HASHTABLE_HPP
-#define HASHTABLE_HPP
+#ifndef HASHTABLE_H__
+#define HASHTABLE_H__
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "region.hpp"
+#include "region.h"
 #define HASH_BASE 5381
 #define myhash(x) B_hash((unsigned char*)(x))
 
@@ -22,6 +22,10 @@ typedef struct hashtable {
     Region *bucketRegion;
 } Hashtable;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct bucket *newBucket( const char* key, const void* value );
 unsigned long B_hash( unsigned char* string );
 Hashtable *newHashTable( int size );
@@ -36,4 +40,9 @@ struct bucket* lookupBucketFromHashTable( Hashtable *h, const char* key );
 struct bucket* nextBucket( struct bucket *h, const char* key );
 void nop( const void *a );
 void free_const( const void *a );
+
+#ifdef __cplusplus
+}
 #endif
+
+#endif // HASHTABLE_H__
