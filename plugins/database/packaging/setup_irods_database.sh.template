@@ -276,7 +276,7 @@ cd iRODS
 echo ""
 echo "-----------------------------"
 echo "Running irods_setup.pl..."
-perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER $DATABASEPASSWORD
+perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER "$DATABASEPASSWORD"
 
 # =-=-=-=-=-=-=-
 # sanitize irods admin password
