@@ -7,6 +7,7 @@ import itertools
 import json
 import mmap
 import os
+import platform
 import psutil
 import re
 import shlex
@@ -371,6 +372,12 @@ def rmgroup(group_name):
 def rmuser(username):
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(['iadmin', 'rmuser', username])
+
+def get_os_distribution():
+    return platform.linux_distribution()[0]
+
+def get_os_distribution_version_major():
+    return platform.linux_distribution()[1].split('.')[0]
 
 def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
     class SessionsMixin(object):
