@@ -443,6 +443,7 @@ class IrodsSession(object):
         return run_command(*args, **kwargs)
 
     def assert_icommand(self, *args, **kwargs):
+        print self.username
         self._prepare_run_icommand(args[0], kwargs)
         assert_command(*args, **kwargs)
 
