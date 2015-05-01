@@ -1,5 +1,5 @@
 #include "procLog.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsConnect.h"
 #include "rsLog.hpp"

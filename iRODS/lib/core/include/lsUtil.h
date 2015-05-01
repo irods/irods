@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef LS_UTIL_HPP
-#define LS_UTIL_HPP
+#ifndef LS_UTIL_H__
+#define LS_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -63,4 +63,4 @@ setSessionTicket( rcComm_t *myConn, char *ticket );
 }
 #endif
 
-#endif	/* LS_UTIL_H */
+#endif	// LS_UTIL_H__

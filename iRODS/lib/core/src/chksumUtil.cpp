@@ -5,9 +5,9 @@
 #endif
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rodsLog.h"
-#include "chksumUtil.hpp"
+#include "chksumUtil.h"
 
 static int ChksumCnt = 0;
 static int FailedChksumCnt = 0;

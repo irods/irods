@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* scanUtil.h - Header for scanUtil.c */
 
-#ifndef SCAN_UTIL_HPP
-#define SCAN_UTIL_HPP
+#ifndef SCAN_UTIL_H__
+#define SCAN_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -30,4 +30,4 @@ checkIsMount( rcComm_t *conn, const char *inpPath );
 }
 #endif
 
-#endif  /* SCAN_UTIL_H */
+#endif  // SCAN_UTIL_H__

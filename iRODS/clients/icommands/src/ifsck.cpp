@@ -6,7 +6,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "fsckUtil.hpp"
+#include "fsckUtil.h"
 void usage();
 
 int

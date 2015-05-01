@@ -6,7 +6,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "lsUtil.hpp"
+#include "lsUtil.h"
 #include "irods_buffer_encryption.hpp"
 #include "zone_report.hpp"
 #include <string>

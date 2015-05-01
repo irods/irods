@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "putUtil.hpp"
-#include "miscUtil.hpp"
+#include "putUtil.h"
+#include "miscUtil.h"
 #include "rcPortalOpr.h"
 #include "checksum.hpp"
 #include <string>

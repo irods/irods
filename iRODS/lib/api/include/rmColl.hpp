@@ -13,7 +13,7 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "dataObjInpOut.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 
 #if defined(RODS_SERVER)
 #define RS_RM_COLL rsRmColl

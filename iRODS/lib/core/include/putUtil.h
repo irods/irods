@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* putUtil.h - Header for for putUtil.c */
 
-#ifndef PUT_UTIL_HPP
-#define PUT_UTIL_HPP
+#ifndef PUT_UTIL_H__
+#define PUT_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -13,12 +13,12 @@
 extern "C" {
 #endif
 
-/* definition for flags in bulkOprInfo_t */
-#define NON_BULK_OPR		0x0
-#define BULK_OPR_SMALL_FILES	0x1	/* bulk opr for small files */
-#define BULK_OPR_LARGE_FILES	0x2	/* bulk opr for large files */
+// definition for flags in bulkOprInfo_t
+#define NON_BULK_OPR         0x0
+#define BULK_OPR_SMALL_FILES 0x1 // bulk opr for small files
+#define BULK_OPR_LARGE_FILES 0x2 // bulk opr for large files
 
-#define DEF_PHY_BUN_ROOT_DIR	"/tmp"
+#define DEF_PHY_BUN_ROOT_DIR "/tmp"
 
 typedef struct {
     int flags;
@@ -72,4 +72,4 @@ setForceFlagForRestart( bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* PUT_UTIL_H */
+#endif	// PUT_UTIL_H__

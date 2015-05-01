@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* trimUtil.h - Header for for trimUtil.c */
 
-#ifndef TRIMUTIL_HPP
-#define TRIMUTIL_HPP
+#ifndef TRIMUTIL_H__
+#define TRIMUTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -29,4 +29,4 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 }
 #endif
 
-#endif	/* TRIMUTIL_H */
+#endif	// TRIMUTIL_H__

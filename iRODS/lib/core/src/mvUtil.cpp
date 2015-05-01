@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "miscUtil.hpp"
-#include "mvUtil.hpp"
+#include "miscUtil.h"
+#include "mvUtil.h"
 
 int
 mvUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp ) {

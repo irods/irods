@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef RMTRASH_UTIL_HPP
-#define RMTRASH_UTIL_HPP
+#ifndef RMTRASH_UTIL_H__
+#define RMTRASH_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -29,4 +29,4 @@ rmtrashCollUtil( rcComm_t *conn, char *srcColl,
 }
 #endif
 
-#endif	/* RMTRASH_UTIL_H */
+#endif	// RMTRASH_UTIL_H__

@@ -2,10 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef MV_UTIL_HPP
-#define MV_UTIL_HPP
+#ifndef MV_UTIL_H__
+#define MV_UTIL_H__
 
-#include <stdio.h>
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
@@ -26,4 +25,4 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
 }
 #endif
 
-#endif	/* MV_UTIL_H */
+#endif	// MV_UTIL_H__

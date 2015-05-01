@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* phymvUtil.h - Header for for phymvUtil.c */
 
-#ifndef PHYMVUTIL_HPP
-#define PHYMVUTIL_HPP
+#ifndef PHYMVUTIL_H__
+#define PHYMVUTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -31,4 +31,4 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 }
 #endif
 
-#endif	/* PHYMVUTIL_H */
+#endif	// PHYMVUTIL_H__

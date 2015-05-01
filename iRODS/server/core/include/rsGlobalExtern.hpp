@@ -12,7 +12,7 @@
 #include "fileOpr.hpp"
 #include "objDesc.hpp"
 #include "querySpecColl.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "authenticate.h"
 #include "openCollection.hpp"
 

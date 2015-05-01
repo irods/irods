@@ -1,8 +1,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "lsUtil.hpp"
-#include "miscUtil.hpp"
+#include "lsUtil.h"
+#include "miscUtil.h"
 
 char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
 

@@ -20,7 +20,7 @@
 #include "reFuncDefs.hpp"
 
 #include "bulkDataObjPut.hpp"
-#include "putUtil.hpp"
+#include "putUtil.h"
 #include "sockComm.h"
 
 #include <cstdlib>

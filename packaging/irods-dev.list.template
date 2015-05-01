@@ -119,6 +119,26 @@ l 644 root root /usr/include/irods/region.hpp /usr/include/irods/region.h
 l 644 root root /usr/include/irods/reDefines.hpp /usr/include/irods/reDefines.h
 l 644 root root /usr/include/irods/rodsGenQueryNames.hpp /usr/include/irods/rodsGenQueryNames.h
 l 644 root root /usr/include/irods/rodsGeneralUpdate.hpp /usr/include/irods/rodsGeneralUpdate.h
+l 644 root root /usr/include/irods/bunUtil.h /usr/include/irods/bunUtil.hpp
+l 644 root root /usr/include/irods/chksumUtil.h /usr/include/irods/chksumUtil.hpp
+l 644 root root /usr/include/irods/cpUtil.h /usr/include/irods/cpUtil.hpp
+l 644 root root /usr/include/irods/fsckUtil.h /usr/include/irods/fsckUtil.hpp
+l 644 root root /usr/include/irods/getUtil.h /usr/include/irods/getUtil.hpp
+l 644 root root /usr/include/irods/lsUtil.h /usr/include/irods/lsUtil.hpp
+l 644 root root /usr/include/irods/mcollUtil.h /usr/include/irods/mcollUtil.hpp
+l 644 root root /usr/include/irods/miscUtil.h /usr/include/irods/miscUtil.hpp
+l 644 root root /usr/include/irods/mkdirUtil.h /usr/include/irods/mkdirUtil.hpp
+l 644 root root /usr/include/irods/mvUtil.h /usr/include/irods/mvUtil.hpp
+l 644 root root /usr/include/irods/phybunUtil.h /usr/include/irods/phybunUtil.hpp
+l 644 root root /usr/include/irods/phymvUtil.h /usr/include/irods/phymvUtil.hpp
+l 644 root root /usr/include/irods/putUtil.h /usr/include/irods/putUtil.hpp
+l 644 root root /usr/include/irods/regUtil.h /usr/include/irods/regUtil.hpp
+l 644 root root /usr/include/irods/replUtil.h /usr/include/irods/replUtil.hpp
+l 644 root root /usr/include/irods/rmtrashUtil.h /usr/include/irods/rmtrashUtil.hpp
+l 644 root root /usr/include/irods/rmUtil.h /usr/include/irods/rmUtil.hpp
+l 644 root root /usr/include/irods/rsyncUtil.h /usr/include/irods/rsyncUtil.hpp
+l 644 root root /usr/include/irods/scanUtil.h /usr/include/irods/scanUtil.hpp
+l 644 root root /usr/include/irods/trimUtil.h /usr/include/irods/trimUtil.hpp
 
 d 755 root root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples

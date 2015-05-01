@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* regUtil.h - Header for for regUtil.c */
 
-#ifndef REG_UTIL_HPP
-#define REG_UTIL_HPP
+#ifndef REG_UTIL_H__
+#define REG_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -22,4 +22,4 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 }
 #endif
 
-#endif	/* REG_UTIL_H */
+#endif	// REG_UTIL_H__

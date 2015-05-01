@@ -8,7 +8,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "phybunUtil.hpp"
+#include "phybunUtil.h"
 void usage();
 
 int

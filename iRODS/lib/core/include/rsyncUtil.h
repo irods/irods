@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsyncUtil.h - Header for for rsyncUtil.c */
 
-#ifndef RSYNC_UTIL_HPP
-#define RSYNC_UTIL_HPP
+#ifndef RSYNC_UTIL_H__
+#define RSYNC_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -52,4 +52,4 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 }
 #endif
 
-#endif	/* RSYNC_UTIL_H */
+#endif	// RSYNC_UTIL_H__

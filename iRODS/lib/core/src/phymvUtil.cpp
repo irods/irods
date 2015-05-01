@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "miscUtil.hpp"
-#include "phymvUtil.hpp"
+#include "miscUtil.h"
+#include "phymvUtil.h"
 
 int
 phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

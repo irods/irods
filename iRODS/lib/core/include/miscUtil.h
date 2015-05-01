@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* miscUtil.h - Header file for miscUtil.c */
 
-#ifndef MISC_UTIL_HPP
-#define MISC_UTIL_HPP
+#ifndef MISC_UTIL_H__
+#define MISC_UTIL_H__
 
 #include "rodsPath.h"
 #include "parseCommandLine.h"
@@ -41,8 +41,7 @@ typedef struct DataObjSqlResult {
     sqlResult_t dataSize;
     sqlResult_t createTime;
     sqlResult_t modifyTime;
-    sqlResult_t chksum;		/* chksum, replStatus and dataId are used only
-				 * for rsync */
+    sqlResult_t chksum;	// chksum, replStatus and dataId are used only for rsync
     sqlResult_t replStatus;
     sqlResult_t dataId;
     sqlResult_t resource;
@@ -64,7 +63,7 @@ typedef struct DataObjMetaInfo {
     char *dataId;
 } dataObjMetaInfo_t;
 
-/* definition for state in collHandle_t */
+// definition for state in collHandle_t
 typedef enum {
     COLL_CLOSED,
     COLL_OPENED,
@@ -77,22 +76,21 @@ typedef enum {
     RS_COMM
 } connType_t;
 
-/* struct for query by both client and server */
+// struct for query by both client and server
 typedef struct QueryHandle {
-    void *conn;         /* either rsComm or rcComm */
+    void *conn;            // either rsComm or rcComm
     connType_t connType;
-    funcPtr querySpecColl;      /* rcQuerySpecColl or rsQuerySpecColl */
-    funcPtr genQuery;           /* rcGenQuery or rsGenQuery */
+    funcPtr querySpecColl; // rcQuerySpecColl or rsQuerySpecColl
+    funcPtr genQuery;      // rcGenQuery or rsGenQuery
 } queryHandle_t;
 
-/* definition for flag in rclOpenCollection and collHandle_t */
-#define LONG_METADATA_FG     0x1     /* get verbose metadata */
-#define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
-#define RECUR_QUERY_FG       0x4     /* get recursive query */
-#define DATA_QUERY_FIRST_FG       0x8     /* get data res first */
-#define NO_TRIM_REPL_FG       0x10     /* don't trim the replica */
-#define INCLUDE_CONDINPUT_IN_QUERY       0x20  /* include the cond in condInput
-* in the query */
+// definition for flag in rclOpenCollection and collHandle_t
+#define LONG_METADATA_FG           0x1  // get verbose metadata
+#define VERY_LONG_METADATA_FG      0x2  // get verbose metadata
+#define RECUR_QUERY_FG             0x4  // get recursive query
+#define DATA_QUERY_FIRST_FG        0x8  // get data res first
+#define NO_TRIM_REPL_FG            0x10 // don't trim the replica
+#define INCLUDE_CONDINPUT_IN_QUERY 0x20 // include the cond in condInput in the query
 
 typedef struct CollHandle {
     collState_t state;
@@ -109,14 +107,14 @@ typedef struct CollHandle {
     char prevdataId[NAME_LEN];
 } collHandle_t;
 
-/* the output of rclReadCollection */
+// the output of rclReadCollection
 typedef struct CollEnt {
     objType_t objType;
     int replNum;
     int replStatus;
     uint dataMode;
     rodsLong_t dataSize;
-    char *collName;		/* valid for dataObj and collection */
+    char *collName;      // valid for dataObj and collection */
     char *dataName;
     char *dataId;
     char *createTime;
@@ -125,12 +123,12 @@ typedef struct CollEnt {
     char *resource;
     char *resc_hier;
     char *phyPath;
-    char *ownerName;    	 /* valid for dataObj and collection */
-    char *dataType;		 // JMC - backport 4636
-    specColl_t specColl;	 /* valid only for collection */
+    char *ownerName;     // valid for dataObj and collection
+    char *dataType;      // JMC - backport 4636
+    specColl_t specColl; // valid only for collection
 } collEnt_t;
 
-/* used to store regex patterns used to match pathnames */
+// used to store regex patterns used to match pathnames
 typedef struct {
     char *pattern_buf;
     char **patterns;
@@ -270,4 +268,4 @@ matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
 #ifdef __cplusplus
 }
 #endif
-#endif	/* MISC_UTIL_H */
+#endif	// MISC_UTIL_H__

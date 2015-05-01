@@ -7,7 +7,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "getUtil.hpp"
+#include "getUtil.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_parse_command_line_options.hpp"

@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "miscUtil.hpp"
-#include "trimUtil.hpp"
+#include "miscUtil.h"
+#include "trimUtil.h"
 
 rodsLong_t TotalSizeTrimmed = 0;
 int TotalTrimmed = 0;

@@ -3,8 +3,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "bunUtil.hpp"
-#include "miscUtil.hpp"
+#include "bunUtil.h"
+#include "miscUtil.h"
 
 int
 bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

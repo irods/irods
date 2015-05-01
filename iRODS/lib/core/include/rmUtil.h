@@ -2,16 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef RM_UTIL_HPP
-#define RM_UTIL_HPP
+#ifndef RM_UTIL_H__
+#define RM_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-
-#ifdef _WIN32
-#include "sys/timeb.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,4 +36,4 @@ mvCollToTrash( rcComm_t *conn, dataObjInp_t *dataObjInp );
 }
 #endif
 
-#endif	/* RM_UTIL_H */
+#endif	// RM_UTIL_H__

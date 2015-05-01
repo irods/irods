@@ -2,16 +2,12 @@
  *** For more infophybunation please refer to files in the COPYRIGHT directory ***/
 /* phybunUtil.h - Header for for phybunUtil.c */
 
-#ifndef PHYBUN_UTIL_HPP
-#define PHYBUN_UTIL_HPP
+#ifndef PHYBUN_UTIL_H__
+#define PHYBUN_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-
-#ifdef _WIN32
-#include "sys/timeb.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,4 +23,4 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
 }
 #endif
 
-#endif	/* PHYBUN_UTIL_H */
+#endif	// PHYBUN_UTIL_H__

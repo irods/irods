@@ -6,9 +6,9 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "lsUtil.hpp"
-#include "getUtil.hpp"
-#include "miscUtil.hpp"
+#include "lsUtil.h"
+#include "getUtil.h"
+#include "miscUtil.h"
 #include "rcPortalOpr.h"
 #include "sockComm.h"
 

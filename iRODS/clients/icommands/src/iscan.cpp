@@ -6,7 +6,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "scanUtil.hpp"
+#include "scanUtil.h"
 void usage();
 
 int

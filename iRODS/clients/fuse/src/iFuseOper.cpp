@@ -8,7 +8,7 @@
 #include <assert.h>
 #include "irodsFs.hpp"
 #include "iFuseOper.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "sockComm.h"
 
 PathCacheTable *pctable = initPathCache();

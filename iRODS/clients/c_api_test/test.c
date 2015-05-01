@@ -6,7 +6,7 @@
 #include "rods.h"
 #include "rodsType.h"
 #include "rodsClient.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rodsPath.h"
 #include "rcConnect.h"
 #include "dataObjOpen.hpp"

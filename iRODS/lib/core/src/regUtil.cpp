@@ -3,8 +3,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "regUtil.hpp"
-#include "miscUtil.hpp"
+#include "regUtil.h"
+#include "miscUtil.h"
 #include "checksum.hpp"
 
 int

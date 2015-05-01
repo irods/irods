@@ -10,7 +10,7 @@
 #include "rods.h"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "openCollection.hpp"
 
 // =-=-=-=-=-=-=-

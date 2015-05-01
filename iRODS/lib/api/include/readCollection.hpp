@@ -14,7 +14,7 @@
 #include "apiNumber.h"
 #include "dataObjInpOut.h"
 #include "dataObjRead.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 
 #if defined(RODS_SERVER)
 #define RS_READ_COLLECTION rsReadCollection

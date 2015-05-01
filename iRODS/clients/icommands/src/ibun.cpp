@@ -8,7 +8,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "bunUtil.hpp"
+#include "bunUtil.h"
 void usage();
 
 int

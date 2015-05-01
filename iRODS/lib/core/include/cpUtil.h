@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef CP_UTIL_HPP
-#define CP_UTIL_HPP
+#ifndef CP_UTIL_H__
+#define CP_UTIL_H__
 
 #include <stdio.h>
 #include "rodsClient.h"
@@ -31,4 +31,4 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
 #ifdef __cplusplus
 }
 #endif
-#endif	/* CP_UTIL_H */
+#endif	// CP_UTIL_H__

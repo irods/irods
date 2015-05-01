@@ -6,7 +6,7 @@
 #include "reFuncDefs.hpp"
 #include "genQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "cache.hpp"
 #include "rsGlobalExtern.hpp"
 #include "irods_server_properties.hpp"

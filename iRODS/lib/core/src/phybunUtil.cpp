@@ -3,8 +3,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "phybunUtil.hpp"
-#include "miscUtil.hpp"
+#include "phybunUtil.h"
+#include "miscUtil.h"
 
 int
 phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

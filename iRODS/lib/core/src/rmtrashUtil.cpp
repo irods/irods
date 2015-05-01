@@ -5,9 +5,9 @@
 #endif
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rodsLog.h"
-#include "rmtrashUtil.hpp"
+#include "rmtrashUtil.h"
 
 int
 rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

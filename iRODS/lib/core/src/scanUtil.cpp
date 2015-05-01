@@ -5,8 +5,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "scanUtil.hpp"
-#include "miscUtil.hpp"
+#include "scanUtil.h"
+#include "miscUtil.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

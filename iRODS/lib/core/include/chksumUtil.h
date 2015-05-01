@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef CHKSUM_UTIL_HPP
-#define CHKSUM_UTIL_HPP
+#ifndef CHKSUM_UTIL_H__
+#define CHKSUM_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -29,4 +29,4 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 }
 #endif
 
-#endif	/* CHKSUM_UTIL_H */
+#endif	// CHKSUM_UTIL_H__

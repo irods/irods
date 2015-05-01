@@ -4,7 +4,7 @@
 #include "rods.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rcMisc.h"
 #include "genQuery.hpp"
 #include "rodsClient.h"

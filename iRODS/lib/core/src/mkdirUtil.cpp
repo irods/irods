@@ -3,8 +3,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "mkdirUtil.hpp"
-#include "miscUtil.hpp"
+#include "mkdirUtil.h"
+#include "miscUtil.h"
 
 int
 mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

@@ -6,7 +6,7 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "rcMisc.h"
-#include "lsUtil.hpp"
+#include "lsUtil.h"
 #include <iostream>
 #include <string>
 #include "irods_client_api_table.hpp"

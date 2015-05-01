@@ -19,7 +19,7 @@
 #include "genQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "reSysDataObjOpr.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rodsClient.h"
 #include "rsIcatOpr.hpp"
 

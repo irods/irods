@@ -18,7 +18,7 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "structFileExtAndReg.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 
 #define BUNDLE_RESC	"bundleResc"
 #define TAR_BUNDLE_TYPE	"tar bundle"

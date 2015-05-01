@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "miscUtil.hpp"
-#include "replUtil.hpp"
+#include "miscUtil.h"
+#include "replUtil.h"
 
 int
 replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

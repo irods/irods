@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "miscUtil.hpp"
-#include "cpUtil.hpp"
+#include "miscUtil.h"
+#include "cpUtil.h"
 
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

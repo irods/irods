@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* replUtil.h - Header for for replUtil.c */
 
-#ifndef REPL_UTIL_HPP
-#define REPL_UTIL_HPP
+#ifndef REPL_UTIL_H__
+#define REPL_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -30,4 +30,4 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
 }
 #endif
 
-#endif	/* REPL_UTIL_H */
+#endif	// REPL_UTIL_H__

@@ -3,8 +3,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "mcollUtil.hpp"
-#include "miscUtil.hpp"
+#include "mcollUtil.h"
+#include "miscUtil.h"
 
 /* redefine of some input option */
 #define syncCacheDir	sizeFlag

@@ -6,8 +6,8 @@
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "rsyncUtil.hpp"
-#include "miscUtil.hpp"
+#include "rsyncUtil.h"
+#include "miscUtil.h"
 #include "checksum.hpp"
 
 #include <sstream>

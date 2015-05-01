@@ -13,7 +13,7 @@
 #include "specColl.hpp"
 #include "genQuery.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rodsClient.h"
 #include "rsIcatOpr.hpp"
 

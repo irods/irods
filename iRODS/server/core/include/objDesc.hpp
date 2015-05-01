@@ -13,7 +13,7 @@
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "fileRename.hpp"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "structFileSync.hpp"
 #include "structFileExtAndReg.hpp"
 #include "dataObjOpenAndStat.hpp"

@@ -5,7 +5,7 @@
  */
 
 #include "rodsPath.h"
-#include "miscUtil.hpp"
+#include "miscUtil.h"
 #include "rcMisc.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"

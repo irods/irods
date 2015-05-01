@@ -2,8 +2,8 @@
  *** For more infobunation please refer to files in the COPYRIGHT directory ***/
 /* bunUtil.h - Header for for bunUtil.c */
 
-#ifndef BUN_UTIL_HPP
-#define BUN_UTIL_HPP
+#ifndef BUN_UTIL_H__
+#define BUN_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -21,4 +21,4 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 #ifdef __cplusplus
 }
 #endif
-#endif	/* BUN_UTIL_H */
+#endif	// BUN_UTIL_H__

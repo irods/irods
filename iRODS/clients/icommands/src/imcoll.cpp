@@ -10,7 +10,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
-#include "mcollUtil.hpp"
+#include "mcollUtil.h"
 void usage();
 
 int

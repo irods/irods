@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* getUtil.h - Header for for getUtil.c */
 
-#ifndef GET_UTIL_HPP
-#define GET_UTIL_HPP
+#ifndef GET_UTIL_H__
+#define GET_UTIL_H__
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -32,4 +32,4 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
 #ifdef __cplusplus
 }
 #endif
-#endif	/* GET_UTIL_H */
+#endif	// GET_UTIL_H__
