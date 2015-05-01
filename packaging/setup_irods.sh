@@ -35,7 +35,7 @@ fi
 source $SERVICE_ACCOUNT_CONFIG_FILE
 
 # configure irods
-sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_irods_configuration.sh"
+sudo su - $IRODS_SERVICE_ACCOUNT_NAME -s "/bin/bash" -c "$DETECTEDDIR/setup_irods_configuration.sh"
 
 # if default vault path does not exist, create it with proper permissions
 MYSERVERCONFIGJSON=/etc/irods/server_config.json
@@ -48,10 +48,10 @@ fi
 
 # setup database script or resource server script
 if [ -e "$DETECTEDDIR/setup_irods_database.sh" ] ; then
-  sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "ORACLE_HOME=$ORACLE_HOME; $DETECTEDDIR/setup_irods_database.sh"
+  sudo su - $IRODS_SERVICE_ACCOUNT_NAME -s "/bin/bash" -c "ORACLE_HOME=$ORACLE_HOME; $DETECTEDDIR/setup_irods_database.sh"
 else
   if [ -e "$DETECTEDDIR/setup_resource.sh" ] ; then
-    sudo su - $IRODS_SERVICE_ACCOUNT_NAME -c "$DETECTEDDIR/setup_resource.sh"
+    sudo su - $IRODS_SERVICE_ACCOUNT_NAME -s "/bin/bash" -c "$DETECTEDDIR/setup_resource.sh"
   else
     echo "" 1>&2
     echo "ERROR:" 1>&2
