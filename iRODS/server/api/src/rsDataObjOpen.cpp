@@ -3,29 +3,29 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjOpen.h for a description of this API call.*/
 
-#include "dataObjOpen.hpp"
-#include "dataObjOpenAndStat.hpp"
+#include "dataObjOpen.h"
+#include "dataObjOpenAndStat.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "resource.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
-#include "dataObjCreate.hpp"
-#include "dataObjLock.hpp"
+#include "dataObjCreate.h"
+#include "dataObjLock.h"
 
 #include "fileOpen.hpp"
 #include "subStructFileOpen.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.hpp"
 #include "regReplica.hpp"
 #include "regDataObj.hpp"
-#include "dataObjClose.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjClose.h"
+#include "dataObjRepl.h"
 #include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-

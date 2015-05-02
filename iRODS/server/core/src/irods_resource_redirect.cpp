@@ -2,7 +2,7 @@
 // irods includes
 #include "miscServerFunct.hpp"
 #include "objInfo.h"
-#include "dataObjCreate.hpp"
+#include "dataObjCreate.h"
 #include "specColl.hpp"
 #include "collection.hpp"
 

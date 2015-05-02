@@ -4,12 +4,12 @@
 /* See dataObjRepl.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
-#include "dataObjCreate.hpp"
-#include "dataObjOpen.hpp"
-#include "dataObjPut.hpp"
-#include "dataObjGet.hpp"
+#include "dataObjCreate.h"
+#include "dataObjOpen.h"
+#include "dataObjPut.h"
+#include "dataObjGet.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
@@ -24,8 +24,8 @@
 #include "fileSyncToArch.hpp"
 #include "fileStageToCache.hpp"
 #include "unbunAndRegPhyBunfile.hpp"
-#include "dataObjTrim.hpp" // JMC - backport 4550
-#include "dataObjLock.hpp" // JMC - backport 4609
+#include "dataObjTrim.h" // JMC - backport 4550
+#include "dataObjLock.h" // JMC - backport 4609
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

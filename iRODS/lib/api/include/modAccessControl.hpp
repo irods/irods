@@ -11,7 +11,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 #define MOD_RESC_PREFIX "resource:"  /* Used to indicate a resource
 * instead of requiring a change

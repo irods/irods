@@ -7,7 +7,7 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
-#include "client_hints.hpp"
+#include "client_hints.h"
 #include "ies_client_hints.hpp"
 #include "readServerConfig.hpp"
 

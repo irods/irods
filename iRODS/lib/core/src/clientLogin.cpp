@@ -19,7 +19,7 @@
 #include "irods_auth_constants.hpp"
 #include "irods_native_auth_object.hpp"
 #include "irods_pam_auth_object.hpp"
-#include "authPluginRequest.hpp"
+#include "authPluginRequest.h"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "checksum.hpp"

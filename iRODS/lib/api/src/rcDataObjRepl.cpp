@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjRepl.h for a description of this API call.*/
 
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)

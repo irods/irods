@@ -10,8 +10,8 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "dataObjWrite.hpp"
-#include "dataObjClose.hpp"
+#include "dataObjWrite.h"
+#include "dataObjClose.h"
 
 #define MAX_HOST_TO_SEARCH	10
 

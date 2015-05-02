@@ -8,7 +8,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 typedef struct {
     char *arg0; // option add, adda, rm, rmw, rmi, cp, mod, or set

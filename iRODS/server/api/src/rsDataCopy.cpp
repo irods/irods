@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See dataCopy.h for a description of this API call.*/
 
-#include "dataCopy.hpp"
+#include "dataCopy.h"
 #include "rcPortalOpr.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 /* rsDataCopy - Do the copy data transfer.
  * Input -

@@ -3,7 +3,7 @@
 #include "reFuncDefs.hpp"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 #include <curl/curl.h>
 #include "microservice.hpp"

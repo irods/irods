@@ -10,8 +10,9 @@
 #ifndef DATA_OBJ_INP_OUT_H__
 #define DATA_OBJ_INP_OUT_H__
 
-
 #include "rodsDef.h"
+#include "rodsType.h"
+#include "objInfo.h"
 
 #if defined(aix_platform)
 #ifndef _AIX_PTHREADS_D7
@@ -211,4 +212,4 @@ typedef struct TransferHeader {
     rodsLong_t length;
 } transferHeader_t;
 
-#endif  /* DATA_OBJ_INP_OUT_H__ */
+#endif  // DATA_OBJ_INP_OUT_H__

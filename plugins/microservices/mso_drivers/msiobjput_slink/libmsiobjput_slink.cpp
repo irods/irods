@@ -3,7 +3,7 @@
 #include "rods.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "irods_server_properties.hpp"
 
 extern "C" {

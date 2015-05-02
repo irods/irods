@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjClose.h for a description of this API call.*/
 
-#include "dataObjClose.hpp"
+#include "dataObjClose.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjClose (rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp)

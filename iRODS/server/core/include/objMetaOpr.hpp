@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 
 extern "C" {

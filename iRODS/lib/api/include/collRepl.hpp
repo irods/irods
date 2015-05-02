@@ -3,18 +3,14 @@
 /* collRepl.h - recursively replicate a collection
  */
 
-#ifndef COLL_REPL_HPP
-#define COLL_REPL_HPP
+#ifndef COLL_REPL_H__
+#define COLL_REPL_H__
 
 /* This is a Object File I/O API call */
 
-#include "rods.h"
-#include "rcMisc.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "dataObjWrite.hpp"
-#include "dataObjClose.hpp"
-#include "dataCopy.hpp"
+#include "objInfo.h"
+#include "dataObjInpOut.h"
+#include "rcConnect.h"
 
 #if defined(RODS_SERVER)
 #define RS_COLL_REPL rsCollRepl
@@ -39,4 +35,4 @@ _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,
 #ifdef __cplusplus
 }
 #endif
-#endif	/* COLL_REPL_H */
+#endif	// COLL_REPL_H__

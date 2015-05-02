@@ -9,10 +9,10 @@
 #include "miscUtil.h"
 #include "rodsPath.h"
 #include "rcConnect.h"
-#include "dataObjOpen.hpp"
-#include "dataObjRead.hpp"
-#include "dataObjChksum.hpp"
-#include "dataObjClose.hpp"
+#include "dataObjOpen.h"
+#include "dataObjRead.h"
+#include "dataObjChksum.h"
+#include "dataObjClose.h"
 
 int main () {
     rodsEnv myEnv;

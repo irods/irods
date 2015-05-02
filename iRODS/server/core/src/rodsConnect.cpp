@@ -6,7 +6,7 @@
 
 #include "rodsConnect.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "miscServerFunct.hpp"
 #include "getRemoteZoneResc.hpp"
 #include "irods_resource_backport.hpp"

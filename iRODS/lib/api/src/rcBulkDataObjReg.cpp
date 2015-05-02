@@ -1,4 +1,6 @@
-#include "bulkDataObjReg.hpp"
+#include "bulkDataObjReg.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp, genQueryOut_t **bulkDataObjRegOut )

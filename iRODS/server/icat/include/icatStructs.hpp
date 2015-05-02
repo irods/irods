@@ -9,7 +9,7 @@
 #ifndef ICAT_STRUCTS_HPP
 #define ICAT_STRUCTS_HPP
 
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 typedef struct {
     int status;

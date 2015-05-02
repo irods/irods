@@ -6,9 +6,12 @@
 /* This is script-generated code.  */
 /* See dataObjRsync.h for a description of this API call.*/
 
-#include "dataObjRsync.hpp"
-#include "dataObjPut.hpp"
-#include "dataObjGet.hpp"
+#include "dataObjRsync.h"
+#include "dataObjPut.h"
+#include "dataObjGet.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "oprComplete.hpp"
 
 /**
  * \fn rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)

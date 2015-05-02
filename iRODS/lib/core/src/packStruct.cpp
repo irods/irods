@@ -7,7 +7,7 @@
 
 #include "packStruct.h"
 #include "rodsLog.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "base64.h"
 #include "rcMisc.h"
 

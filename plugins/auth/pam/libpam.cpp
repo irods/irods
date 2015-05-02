@@ -8,10 +8,10 @@
 #include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
 #include "authRequest.h"
-#include "authResponse.hpp"
-#include "authCheck.hpp"
+#include "authResponse.h"
+#include "authCheck.h"
 #include "miscServerFunct.hpp"
-#include "authPluginRequest.hpp"
+#include "authPluginRequest.h"
 #include "icatHighLevelRoutines.hpp"
 
 // =-=-=-=-=-=-=-

@@ -1,6 +1,6 @@
 #include "irods_unlink_replicator.hpp"
 
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
 
 namespace irods {
 

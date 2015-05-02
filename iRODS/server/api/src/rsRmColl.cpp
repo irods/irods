@@ -10,13 +10,14 @@
 #include "icatHighLevelRoutines.hpp"
 #include "openCollection.hpp"
 #include "readCollection.hpp"
-#include "closeCollection.hpp"
-#include "dataObjUnlink.hpp"
+#include "closeCollection.h"
+#include "dataObjUnlink.h"
 #include "rsApiHandler.hpp"
 #include "fileRmdir.hpp"
 #include "collection.hpp"
 #include "subStructFileRmdir.hpp"
-#include "dataObjRename.hpp"
+#include "dataObjRename.h"
+#include "genQuery.hpp"
 
 #include "irods_resource_backport.hpp"
 

@@ -3,7 +3,7 @@
 #include "rods.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>

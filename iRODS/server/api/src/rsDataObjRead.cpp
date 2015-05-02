@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjRead.h for a description of this API call.*/
 
-#include "dataObjRead.hpp"
+#include "dataObjRead.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"

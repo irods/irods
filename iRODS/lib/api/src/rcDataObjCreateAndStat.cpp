@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See dataObjCreateAndStat.h for a description of this API call.*/
 
-#include "dataObjCreateAndStat.hpp"
+#include "dataObjCreateAndStat.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjCreateAndStat (rcComm_t *conn, dataObjInp_t *dataObjInp,

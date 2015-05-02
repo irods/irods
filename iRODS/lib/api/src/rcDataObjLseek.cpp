@@ -8,7 +8,7 @@
 /* This is script-generated code.  */
 /* See dataObjLseek.h for a description of this API call.*/
 
-#include "dataObjLseek.hpp"
+#include "dataObjLseek.h"
 
 /**
  * \fn rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,

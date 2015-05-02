@@ -1,4 +1,6 @@
-#include "chkObjPermAndStat.hpp"
+#include "chkObjPermAndStat.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp )

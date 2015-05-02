@@ -13,7 +13,7 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "dataObjInpOut.h"
-#include "dataObjRead.hpp"
+#include "dataObjRead.h"
 #include "miscUtil.h"
 
 #if defined(RODS_SERVER)

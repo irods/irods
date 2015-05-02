@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjRename.h for a description of this API call.*/
 
-#include "dataObjRename.hpp"
+#include "dataObjRename.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjRename (rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp)

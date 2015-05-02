@@ -1,6 +1,6 @@
 #include "reGlobalsExtern.hpp"
-#include "dataObjChksum.hpp"
-#include "dataObjRsync.hpp"
+#include "dataObjChksum.h"
+#include "dataObjRsync.h"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "dataObjOpr.hpp"

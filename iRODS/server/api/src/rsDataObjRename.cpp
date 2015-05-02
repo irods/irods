@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsDataObjRename.c - rename a data object.
  */
-#include "dataObjRename.hpp"
+#include "dataObjRename.h"
 #include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
@@ -12,7 +12,8 @@
 #include "physPath.hpp"
 #include "subStructFileRename.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
+#include "dataObjClose.h"
 #include "phyBundleColl.hpp"
 #include "regDataObj.hpp"
 #include "fileOpendir.hpp"

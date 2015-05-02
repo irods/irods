@@ -7,9 +7,9 @@
 #include "getHostForPut.hpp"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "getRemoteZoneResc.hpp"
-#include "dataObjCreate.hpp"
+#include "dataObjCreate.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "collection.hpp"
@@ -17,7 +17,7 @@
 #include "miscServerFunct.hpp"
 #include "openCollection.hpp"
 #include "readCollection.hpp"
-#include "closeCollection.hpp"
+#include "closeCollection.h"
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-

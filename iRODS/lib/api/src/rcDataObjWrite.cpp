@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjWrite.h for a description of this API call.*/
 
-#include "dataObjWrite.hpp"
+#include "dataObjWrite.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,

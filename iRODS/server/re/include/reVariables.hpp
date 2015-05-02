@@ -8,7 +8,7 @@
 
 #include "rodsUser.h"
 #include "rods.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reDefines.h"
 #include "objInfo.h"
 #include "regExpMatch.hpp"

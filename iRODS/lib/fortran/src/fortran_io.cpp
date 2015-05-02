@@ -15,7 +15,7 @@
 
 #include <stdio.h>
 #include "rodsClient.h"
-#include "dataObjRead.hpp"
+#include "dataObjRead.h"
 
 int debug = 0;
 

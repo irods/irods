@@ -13,6 +13,7 @@
 #include "sharedmemory.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "modAVUMetadata.hpp"
+#include "genQuery.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_log.hpp"

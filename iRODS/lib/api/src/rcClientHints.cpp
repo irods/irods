@@ -1,5 +1,7 @@
 
-#include "client_hints.hpp"
+#include "client_hints.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcClientHints( rcComm_t *conn, bytesBuf_t** _bbuf ) {

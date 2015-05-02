@@ -10,7 +10,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "dataObjGet.hpp"
+#include "dataObjGet.h"
 
 #if defined(RODS_SERVER)
 #define RS_L3_FILE_GET_SINGLE_BUF rsL3FileGetSingleBuf

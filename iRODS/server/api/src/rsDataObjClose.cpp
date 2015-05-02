@@ -4,7 +4,7 @@
 /* See dataObjClose.h for a description of this API call.*/
 
 
-#include "dataObjClose.hpp"
+#include "dataObjClose.h"
 #include "rodsLog.h"
 #include "reFuncDefs.hpp"
 #include "regReplica.hpp"
@@ -14,9 +14,9 @@
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "resource.hpp"
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "ruleExecSubmit.hpp"
@@ -24,9 +24,11 @@
 #include "subStructFileStat.hpp"
 #include "subStructFileClose.hpp"
 #include "regDataObj.hpp"
-#include "dataObjRepl.hpp"
-#include "dataObjTrim.hpp" // JMC - backport 4537
-#include "dataObjLock.hpp" // JMC - backport 4604
+#include "dataObjRepl.h"
+#include "dataObjTrim.h" // JMC - backport 4537
+#include "dataObjLock.h" // JMC - backport 4604
+#include "fileClose.hpp"
+#include "fileStat.hpp"
 #include "getRescQuota.hpp"
 
 

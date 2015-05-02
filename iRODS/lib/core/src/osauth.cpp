@@ -20,7 +20,7 @@
 
 #include "rods.h"
 #include "osauth.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "authenticate.h"
 extern "C" {
 

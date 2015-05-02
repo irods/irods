@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 #include "rodsGenQuery.h"  /* for input/output structs, etc */
 

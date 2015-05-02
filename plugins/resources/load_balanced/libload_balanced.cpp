@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
+#include "genQuery.hpp"
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.hpp"
 #include "miscServerFunct.hpp"

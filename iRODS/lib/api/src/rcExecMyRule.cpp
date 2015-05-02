@@ -1,7 +1,7 @@
 #include "execMyRule.hpp"
 #include "oprComplete.hpp"
-#include "dataObjPut.hpp"
-#include "dataObjGet.hpp"
+#include "dataObjPut.h"
+#include "dataObjGet.h"
 
 
 /**

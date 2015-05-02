@@ -6,7 +6,7 @@
 #include "openCollection.hpp"
 #include "readCollection.hpp"
 #include "objMetaOpr.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 
 int

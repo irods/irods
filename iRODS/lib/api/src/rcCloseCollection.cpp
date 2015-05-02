@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See closeCollection.h for a description of this API call.*/
 
-#include "closeCollection.hpp"
+#include "closeCollection.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcCloseCollection (rcComm_t *conn, int handleInxInp)

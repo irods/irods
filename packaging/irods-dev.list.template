@@ -139,8 +139,46 @@ l 644 root root /usr/include/irods/rmUtil.h /usr/include/irods/rmUtil.hpp
 l 644 root root /usr/include/irods/rsyncUtil.h /usr/include/irods/rsyncUtil.hpp
 l 644 root root /usr/include/irods/scanUtil.h /usr/include/irods/scanUtil.hpp
 l 644 root root /usr/include/irods/trimUtil.h /usr/include/irods/trimUtil.hpp
+l 644 root root /usr/include/irods/apiPackTable.hpp /usr/include/irods/apiPackTable.h
+l 644 root root /usr/include/irods/authCheck.hpp /usr/include/irods/authCheck.h
+l 644 root root /usr/include/irods/authPluginRequest.hpp /usr/include/irods/authPluginRequest.h
+l 644 root root /usr/include/irods/authResponse.hpp /usr/include/irods/authResponse.h
+l 644 root root /usr/include/irods/bulkDataObjPut.hpp /usr/include/irods/bulkDataObjPut.h
+l 644 root root /usr/include/irods/bulkDataObjReg.hpp /usr/include/irods/bulkDataObjReg.h
+l 644 root root /usr/include/irods/chkNVPathPerm.hpp /usr/include/irods/chkNVPathPerm.h
+l 644 root root /usr/include/irods/chkObjPermAndStat.hpp /usr/include/irods/chkObjPermAndStat.h
+l 644 root root /usr/include/irods/client_hints.hpp /usr/include/irods/client_hints.h
+l 644 root root /usr/include/irods/closeCollection.hpp /usr/include/irods/closeCollection.h
+l 644 root root /usr/include/irods/dataCopy.hpp /usr/include/irods/dataCopy.h
+l 644 root root /usr/include/irods/dataGet.hpp /usr/include/irods/dataGet.h
+l 644 root root /usr/include/irods/dataObjChksum.hpp /usr/include/irods/dataObjChksum.h
+l 644 root root /usr/include/irods/dataObjClose.hpp /usr/include/irods/dataObjClose.h
+l 644 root root /usr/include/irods/dataObjCopy.hpp /usr/include/irods/dataObjCopy.h
+l 644 root root /usr/include/irods/dataObjCreate.hpp /usr/include/irods/dataObjCreate.h
+l 644 root root /usr/include/irods/dataObjCreateAndStat.hpp /usr/include/irods/dataObjCreateAndStat.h
+l 644 root root /usr/include/irods/dataObjGet.hpp /usr/include/irods/dataObjGet.h
+l 644 root root /usr/include/irods/dataObjLock.hpp /usr/include/irods/dataObjLock.h
+l 644 root root /usr/include/irods/dataObjLseek.hpp /usr/include/irods/dataObjLseek.h
+l 644 root root /usr/include/irods/dataObjOpen.hpp /usr/include/irods/dataObjOpen.h
+l 644 root root /usr/include/irods/dataObjOpenAndStat.hpp /usr/include/irods/dataObjOpenAndStat.h
+l 644 root root /usr/include/irods/dataObjPhymv.hpp /usr/include/irods/dataObjPhymv.h
+l 644 root root /usr/include/irods/dataObjPut.hpp /usr/include/irods/dataObjPut.h
+l 644 root root /usr/include/irods/dataObjRead.hpp /usr/include/irods/dataObjRead.h
+l 644 root root /usr/include/irods/dataObjRename.hpp /usr/include/irods/dataObjRename.h
+l 644 root root /usr/include/irods/dataObjRepl.hpp /usr/include/irods/dataObjRepl.h
+l 644 root root /usr/include/irods/dataObjRsync.hpp /usr/include/irods/dataObjRsync.h
+l 644 root root /usr/include/irods/dataObjTrim.hpp /usr/include/irods/dataObjTrim.h
+l 644 root root /usr/include/irods/dataObjTruncate.hpp /usr/include/irods/dataObjTruncate.h
+l 644 root root /usr/include/irods/dataObjUnlink.hpp /usr/include/irods/dataObjUnlink.h
+l 644 root root /usr/include/irods/dataObjWrite.hpp /usr/include/irods/dataObjWrite.h
+l 644 root root /usr/include/irods/dataPut.hpp /usr/include/irods/dataPut.h
+l 644 root root /usr/include/irods/rcGlobal.hpp /usr/include/irods/rcGlobal.h
+l 644 root root /usr/include/irods/rcGlobalExtern.hpp /usr/include/irods/rcGlobalExtern.h
+l 644 root root /usr/include/irods/rodsPackTable.hpp /usr/include/irods/rodsPackTable.h
+l 644 root root /usr/include/irods/icatDefines.hpp /usr/include/irods/icatDefines.h
 
-d 755 root root /usr/share/irods/ -
+
+d 755 eoot root /usr/share/irods/ -
 d 755 root root /usr/share/irods/examples
 d 755 root root /usr/share/irods/examples/microservices
 d 755 root root /usr/share/irods/examples/resources

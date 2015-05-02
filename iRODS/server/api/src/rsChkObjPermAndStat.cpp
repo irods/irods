@@ -3,7 +3,7 @@
 /* rsChkObjPermAndStat.c
  */
 
-#include "chkObjPermAndStat.hpp"
+#include "chkObjPermAndStat.h"
 #include "apiHeaderAll.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "icatHighLevelRoutines.hpp"

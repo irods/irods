@@ -2,6 +2,8 @@
 /* See collRepl.h for a description of this API call.*/
 
 #include "collRepl.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,

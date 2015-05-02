@@ -3,15 +3,15 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjTruncate.h for a description of this API call.*/
 
-#include "dataObjTruncate.hpp"
+#include "dataObjTruncate.h"
 #include "rodsLog.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 #include "fileTruncate.hpp"
 #include "unregDataObj.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "rmColl.hpp"

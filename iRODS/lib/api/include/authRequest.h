@@ -13,7 +13,7 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "authenticate.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 #define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */
 #define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */

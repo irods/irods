@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "apiHandler.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rcMisc.h"
 
 #define	DISCONN_STATUS	-1

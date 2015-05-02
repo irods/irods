@@ -7,10 +7,10 @@
 
 #include "rods.h"
 #include "objMetaOpr.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 /* the following are data object operation rule handler */
 

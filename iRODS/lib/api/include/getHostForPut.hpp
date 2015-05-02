@@ -10,8 +10,8 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "dataObjWrite.hpp"
-#include "dataObjClose.hpp"
+#include "dataObjWrite.h"
+#include "dataObjClose.h"
 
 #define THIS_ADDRESS	"thisAddress"	/* a returned value for outHost.
 * Just use the address of this conn */

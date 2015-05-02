@@ -10,7 +10,7 @@
 #define RE_SERVER_HPP
 
 #include "rods.h"
-#include "rcGlobalExtern.hpp"     /* client global */
+#include "rcGlobalExtern.h"     /* client global */
 #include "rsLog.hpp"
 #include "rodsLog.h"
 #include "sockComm.h"

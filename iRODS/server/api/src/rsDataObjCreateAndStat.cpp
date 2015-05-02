@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjCreate.h for a description of this API call.*/
 
-#include "dataObjCreate.hpp"
-#include "dataObjCreateAndStat.hpp"
+#include "dataObjCreate.h"
+#include "dataObjCreateAndStat.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 
 int

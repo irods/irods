@@ -4,13 +4,14 @@
 /* See dataObjGet.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "dataObjGet.hpp"
+#include "dataObjGet.h"
 #include "rodsLog.h"
-#include "dataGet.hpp"
+#include "dataGet.h"
 #include "fileGet.hpp"
-#include "dataObjOpen.hpp"
+#include "dataObjOpen.h"
+#include "dataObjClose.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsApiHandler.hpp"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"

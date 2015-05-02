@@ -11,7 +11,7 @@
 #include "miscServerFunct.hpp"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "procLog.h"
 
 // =-=-=-=-=-=-=-

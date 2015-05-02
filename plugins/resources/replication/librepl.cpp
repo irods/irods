@@ -9,7 +9,7 @@
 #include "reGlobalsExtern.hpp"
 #include "rodsLog.h"
 #include "icatHighLevelRoutines.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

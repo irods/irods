@@ -11,9 +11,9 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "resource.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
-#include "dataObjClose.hpp"
+#include "dataObjClose.h"
 
 int
 rsObjStat(

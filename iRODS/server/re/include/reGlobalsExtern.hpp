@@ -21,7 +21,7 @@ extern void myfree(char* file, int line, void *x);
 
 #include "rodsUser.h"
 #include "rods.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "objInfo.h"
 #include "fileOpen.hpp"
 #include "regExpMatch.hpp"

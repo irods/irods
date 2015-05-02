@@ -23,7 +23,7 @@
 
 #include "server_report.hpp"
 #include "zone_report.hpp"
-#include "client_hints.hpp"
+#include "client_hints.h"
 #include "ies_client_hints.hpp"
 
 

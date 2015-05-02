@@ -10,14 +10,14 @@
 #include "fileClosedir.hpp"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
-#include "dataObjClose.hpp"
+#include "dataObjClose.h"
 #include "subStructFileOpendir.hpp"
 #include "subStructFileReaddir.hpp"
 #include "subStructFileClosedir.hpp"
 #include "fileStat.hpp"
 #include "genQuery.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

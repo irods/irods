@@ -11,7 +11,7 @@
 
 #include "rods.h"
 #include "rsGlobalExtern.hpp"   /* server global */
-#include "rcGlobalExtern.hpp"     /* client global */
+#include "rcGlobalExtern.h"     /* client global */
 #include "rsLog.hpp"
 #include "rodsLog.h"
 #include "sockComm.h"

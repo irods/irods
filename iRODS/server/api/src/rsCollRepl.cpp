@@ -11,8 +11,8 @@
 #include "reDefines.h"
 #include "openCollection.hpp"
 #include "readCollection.hpp"
-#include "closeCollection.hpp"
-#include "dataObjRepl.hpp"
+#include "closeCollection.h"
+#include "dataObjRepl.h"
 #include "rsApiHandler.hpp"
 #include "getRemoteZoneResc.hpp"
 

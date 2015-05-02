@@ -12,14 +12,14 @@
 #include "rcMisc.h"
 #include "apiHeaderAll.hpp"
 #include "modDataObjMeta.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
 #include "rsApiHandler.hpp"
-#include "dataObjPut.hpp"
+#include "dataObjPut.h"
 #include "reFuncDefs.hpp"
 
-#include "bulkDataObjPut.hpp"
+#include "bulkDataObjPut.h"
 #include "putUtil.h"
 #include "sockComm.h"
 

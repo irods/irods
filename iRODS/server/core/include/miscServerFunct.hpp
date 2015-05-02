@@ -21,7 +21,7 @@
 #include "rcConnect.h"
 #include "fileOpen.hpp"
 #include "dataObjInpOut.h"
-#include "dataCopy.hpp"
+#include "dataCopy.h"
 
 #include "structFileSync.hpp" /* JMC */
 

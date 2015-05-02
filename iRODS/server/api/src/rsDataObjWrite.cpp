@@ -3,12 +3,13 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjWrite.h for a description of this API call.*/
 
-#include "dataObjWrite.hpp"
+#include "dataObjWrite.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "subStructFileWrite.hpp"
+#include "fileWrite.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"

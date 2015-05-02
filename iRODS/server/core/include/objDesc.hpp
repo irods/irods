@@ -16,7 +16,7 @@
 #include "miscUtil.h"
 #include "structFileSync.hpp"
 #include "structFileExtAndReg.hpp"
-#include "dataObjOpenAndStat.hpp"
+#include "dataObjOpenAndStat.h"
 
 #include "boost/any.hpp"
 

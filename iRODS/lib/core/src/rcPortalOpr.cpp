@@ -1,14 +1,15 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rcPortalOpr.h"
-#include "dataObjOpen.hpp"
-#include "dataObjWrite.hpp"
-#include "dataObjRead.hpp"
-#include "dataObjLseek.hpp"
+#include "dataObjClose.h"
+#include "dataObjOpen.h"
+#include "dataObjWrite.h"
+#include "dataObjRead.h"
+#include "dataObjLseek.h"
 #include "fileLseek.hpp"
 #include "dataObjOpr.hpp"
 #include "rodsLog.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_stacktrace.hpp"

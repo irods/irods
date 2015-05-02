@@ -8,7 +8,10 @@
 /* This is script-generated code.  */
 /* See dataObjOpen.h for a description of this API call.*/
 
-#include "dataObjOpen.hpp"
+#include "dataObjOpen.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+
 
 /**
  * \fn rcDataObjOpen (rcComm_t *conn, dataObjInp_t *dataObjInp)

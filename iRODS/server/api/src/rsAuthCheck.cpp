@@ -4,7 +4,7 @@
 /* See authCheck.h for a description of this API call.*/
 
 #include "authRequest.h"
-#include "authCheck.hpp"
+#include "authCheck.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 

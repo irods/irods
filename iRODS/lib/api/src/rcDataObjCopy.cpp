@@ -7,7 +7,9 @@
 /* This is script-generated code.  */
 /* See dataObjCopy.h for a description of this API call.*/
 
-#include "dataObjCopy.hpp"
+#include "dataObjCopy.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)

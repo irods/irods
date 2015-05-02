@@ -1,7 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "dataPut.hpp"
+#include "dataPut.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp, portalOprOut_t **portalOprOut )

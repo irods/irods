@@ -1,5 +1,7 @@
 // =-=-=-=-=-=-=-
-#include "authPluginRequest.hpp"
+#include "authPluginRequest.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int rcAuthPluginRequest(
     rcComm_t*             _comm,

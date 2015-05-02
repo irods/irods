@@ -3,10 +3,10 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjUnlink.h for a description of this API call.*/
 
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
 #include "rodsLog.h"
 #include "rodsConnect.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 #include "fileUnlink.hpp"
 #include "reFuncDefs.hpp"
 #include "unregDataObj.hpp"
@@ -15,15 +15,15 @@
 #include "specColl.hpp"
 #include "resource.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "rmColl.hpp"
-#include "dataObjRename.hpp"
+#include "dataObjRename.h"
 #include "subStructFileUnlink.hpp"
 #include "modDataObjMeta.hpp"
 #include "phyBundleColl.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
 #include "regDataObj.hpp"
 #include "physPath.hpp"
 

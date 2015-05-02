@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See bulkDataObjPut.h for a description of this API call.*/
 
-#include "bulkDataObjPut.hpp"
+#include "bulkDataObjPut.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcBulkDataObjPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,

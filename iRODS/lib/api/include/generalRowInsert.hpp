@@ -9,7 +9,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "icatDefines.hpp"
+#include "icatDefines.h"
 
 typedef struct {
     const char *tableName;

@@ -3,14 +3,14 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjLock.h for a description of this API call.*/
 
-#include "dataObjLock.hpp"
+#include "dataObjLock.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
 #include "specColl.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reDefines.h"

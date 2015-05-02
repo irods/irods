@@ -9,6 +9,8 @@
 /* See collCreate.h for a description of this API call.*/
 
 #include "collCreate.hpp"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp)

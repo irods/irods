@@ -53,7 +53,7 @@
 #ifdef _WIN32
 #include "Unix2Nt.hpp"  /* May need something like this for Windows */
 #include "iRODSNtUtil.hpp"    /* May need something like this for Windows */
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #endif
 
 #include <boost/filesystem.hpp>

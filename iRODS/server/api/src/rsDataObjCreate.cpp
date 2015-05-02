@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjCreate.h for a description of this API call.*/
 
-#include "dataObjCreate.hpp"
-#include "dataObjCreateAndStat.hpp"
-#include "dataObjOpen.hpp"
+#include "dataObjCreate.h"
+#include "dataObjCreateAndStat.h"
+#include "dataObjOpen.h"
 #include "fileCreate.hpp"
 #include "subStructFileCreate.hpp"
 #include "rodsLog.h"
@@ -14,10 +14,10 @@
 #include "specColl.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
-#include "dataObjUnlink.hpp"
-#include "dataObjLock.hpp" // JMC - backport 4604
+#include "dataObjUnlink.h"
+#include "dataObjLock.h" // JMC - backport 4604
 #include "regDataObj.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "getRemoteZoneResc.hpp"

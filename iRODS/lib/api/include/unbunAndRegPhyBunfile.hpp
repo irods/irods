@@ -12,9 +12,9 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "dataObjWrite.hpp"
-#include "dataObjClose.hpp"
-#include "dataCopy.hpp"
+#include "dataObjWrite.h"
+#include "dataObjClose.h"
+#include "dataCopy.h"
 
 #define UNLINK_FILE_AGE                7200    /* delete files younger than this */ // JMC - backport 4666
 #if defined(RODS_SERVER)

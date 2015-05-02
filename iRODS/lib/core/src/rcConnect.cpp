@@ -6,7 +6,7 @@
  */
 
 #include "rcConnect.h"
-#include "rcGlobal.hpp"
+#include "rcGlobal.h"
 
 #ifdef windows_platform
 #include "startsock.hpp"

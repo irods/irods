@@ -10,7 +10,9 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "dataObjGet.hpp"
+#include "dataObjGet.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 #include "rcPortalOpr.h"
 #include "apiHeaderAll.hpp"
 #include "sockComm.h"

@@ -10,7 +10,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "dataObjPut.hpp"
+#include "dataObjPut.h"
 
 #if defined(RODS_SERVER)
 #define RS_L3_FILE_PUT_SINGLE_BUF rsL3FilePutSingleBuf

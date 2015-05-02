@@ -13,7 +13,7 @@
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "ruleExecSubmit.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 #include "reIn2p3SysRule.hpp"
 

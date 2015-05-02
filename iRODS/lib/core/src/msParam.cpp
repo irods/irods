@@ -7,7 +7,7 @@
 #include "msParam.h"
 #include "apiHeaderAll.hpp"
 #include "modDataObjMeta.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 /* addMsParam - This is for backward compatibility only.
  *  addMsParamToArray should be used for all new functions

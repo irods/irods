@@ -13,6 +13,7 @@
 #include "generalAdmin.hpp"
 #include "phyBundleColl.hpp"
 #include "miscServerFunct.hpp"
+#include "genQuery.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

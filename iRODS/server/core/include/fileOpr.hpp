@@ -11,7 +11,7 @@
 
 #include "rodsConnect.h"
 #include "fileDriver.hpp"
-#include "chkNVPathPerm.hpp"
+#include "chkNVPathPerm.h"
 
 #define NUM_FILE_DESC   1026    /* number of FileDesc */
 

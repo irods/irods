@@ -1,25 +1,26 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */
-/* See dataObjPut.hpp for a description of this API call.*/
+/* See dataObjPut.h for a description of this API call.*/
 
-#include "dataObjPut.hpp"
+#include "dataObjPut.h"
 #include "rodsLog.h"
-#include "dataPut.hpp"
+#include "dataPut.h"
 #include "reFuncDefs.hpp"
 #include "filePut.hpp"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "specColl.hpp"
-#include "dataObjOpen.hpp"
-#include "dataObjCreate.hpp"
+#include "dataObjOpen.h"
+#include "dataObjCreate.h"
+#include "dataObjClose.h"
 #include "regDataObj.hpp"
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rsApiHandler.hpp"
 #include "subStructFilePut.hpp"
-#include "dataObjRepl.hpp"
+#include "dataObjRepl.h"
 #include "getRemoteZoneResc.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "modDataObjMeta.hpp"

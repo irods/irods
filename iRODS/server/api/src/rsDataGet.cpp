@@ -3,10 +3,10 @@
 /* This is script-generated code (for the most part).  */
 /* See dataGet.h for a description of this API call.*/
 
-#include "dataGet.hpp"
+#include "dataGet.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 /* rsDataGet - this routine setup portalOprOut with the resource server
  * for parallel get operation.

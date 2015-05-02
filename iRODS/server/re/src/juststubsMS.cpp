@@ -3,7 +3,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rsGlobalExtern.hpp"
-#include "dataObjCreate.hpp"
+#include "dataObjCreate.h"
 #include "objMetaOpr.hpp"
 #include "regDataObj.hpp"
 /* #include "reAction.hpp" */

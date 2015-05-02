@@ -10,7 +10,7 @@
 #include "resource.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 
 #include "irods_stacktrace.hpp"

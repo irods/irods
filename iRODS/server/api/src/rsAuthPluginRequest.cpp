@@ -1,5 +1,5 @@
 // =-=-=-=-=-=-=-
-#include "authPluginRequest.hpp"
+#include "authPluginRequest.h"
 #include "irods_native_auth_object.hpp"
 #include "irods_auth_object.hpp"
 #include "irods_auth_factory.hpp"

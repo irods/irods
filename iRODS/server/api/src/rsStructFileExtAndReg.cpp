@@ -14,7 +14,7 @@
 #include "objStat.h"
 #include "miscServerFunct.hpp"
 #include "fileOpr.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "structFileExtAndReg.hpp"
 

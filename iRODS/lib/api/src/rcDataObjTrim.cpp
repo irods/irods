@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjTrim.h for a description of this API call.*/
 
-#include "dataObjTrim.hpp"
+#include "dataObjTrim.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjTrim (rcComm_t *conn, dataObjInp_t *dataObjInp)

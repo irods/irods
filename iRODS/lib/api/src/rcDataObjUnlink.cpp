@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjUnlink.h for a description of this API call.*/
 
-#include "dataObjUnlink.hpp"
+#include "dataObjUnlink.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjUnlink (rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp)

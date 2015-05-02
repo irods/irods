@@ -1,5 +1,5 @@
 #include "reGlobalsExtern.hpp"
-#include "dataObjChksum.hpp"
+#include "dataObjChksum.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "specColl.hpp"

@@ -11,7 +11,7 @@
 
 #include "rodsLog.h"
 #include "rodsErrorTable.h"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "rcMisc.h"
 #include <time.h>
 #include <sys/time.h>

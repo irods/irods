@@ -7,7 +7,7 @@
 #include "fileOpr.hpp"
 #include "fileStat.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "collection.hpp"
 
 // =-=-=-=-=-=-=-

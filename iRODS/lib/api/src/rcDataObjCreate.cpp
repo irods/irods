@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See dataObjCreate.h for a description of this API call.*/
 
-#include "dataObjCreate.hpp"
+#include "dataObjCreate.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcDataObjCreate (rcComm_t *conn, dataObjInp_t *dataObjInp)

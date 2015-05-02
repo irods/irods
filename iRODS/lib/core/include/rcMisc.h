@@ -13,7 +13,7 @@
 #include "rodsError.h"
 #include "objInfo.h"
 #include "rodsPath.h"
-#include "bulkDataObjPut.hpp"
+#include "bulkDataObjPut.h"
 
 #ifdef __cplusplus
 extern "C" {

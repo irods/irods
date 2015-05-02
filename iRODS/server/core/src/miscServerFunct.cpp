@@ -14,12 +14,13 @@
 #include "QUANTAnet_rbudpBase_c.hpp"
 #include "QUANTAnet_rbudpSender_c.hpp"
 #include "QUANTAnet_rbudpReceiver_c.hpp"
-#include "dataObjOpen.hpp"
-#include "dataObjLseek.hpp"
+#include "dataObjOpen.h"
+#include "dataObjLseek.h"
 #include "dataObjOpr.hpp"
-#include "dataObjClose.hpp"
-#include "dataObjWrite.hpp"
-#include "dataObjRead.hpp"
+#include "dataObjClose.h"
+#include "dataObjWrite.h"
+#include "dataObjRead.h"
+#include "genQuery.hpp"
 #include "rcPortalOpr.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"
@@ -31,7 +32,7 @@
 char *__loc1;
 #endif /* linux_platform */
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 
 
 // =-=-=-=-=-=-=-

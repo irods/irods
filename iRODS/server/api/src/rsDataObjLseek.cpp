@@ -3,10 +3,10 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjLseek.h for a description of this API call.*/
 
-#include "dataObjLseek.hpp"
+#include "dataObjLseek.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "subStructFileLseek.hpp"
 #include "objMetaOpr.hpp"
 #include "subStructFileUnlink.hpp"

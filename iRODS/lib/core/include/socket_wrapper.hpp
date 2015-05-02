@@ -1,5 +1,5 @@
-#ifndef __SOCKET_WRAPPER_HPP__
-#define __SOCKET_WRAPPER_HPP__
+#ifndef SOCKET_WRAPPER_HPP__
+#define SOCKET_WRAPPER_HPP__
 
 // =-=-=-=-=-=-=-
 // Boost Includes
@@ -55,7 +55,4 @@ namespace irods {
 }; // namespace irods
 
 
-#endif //  __SOCKET_WRAPPER_HPP__
-
-
-
+#endif //  SOCKET_WRAPPER_HPP__

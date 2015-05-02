@@ -10,7 +10,7 @@
 #include "procLog.h"
 #include "resource.hpp"
 #include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.hpp"
+#include "rcGlobalExtern.h"
 #include "genQuery.hpp"
 #include "rsIcatOpr.hpp"
 #include "miscServerFunct.hpp"
