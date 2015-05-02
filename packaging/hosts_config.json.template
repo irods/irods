@@ -1,26 +1,3 @@
 {
-    "host_entries": [
-        {
-            "address_type": "local", 
-            "addresses": [
-                {
-                    "address": "local_address_1"
-                }, 
-                {
-                    "address": "local_address_2"
-                }
-            ]
-        }, 
-        {
-            "address_type": "remote", 
-            "addresses": [
-                {
-                    "address": "remote_address_1"
-                }, 
-                {
-                    "address": "remote_address_2"
-                }
-            ]
-        }
-    ]
+    "host_entries": []
 }
