@@ -147,7 +147,7 @@ $serverBinDir = File::Spec->catdir( $IRODS_HOME, "server", "bin" );
 $irodsServer  = File::Spec->catfile( $serverBinDir, "irodsServer" );
 
 # Directory containing server configuration 'server_config.json'.
-$irodsServerConfigDir = File::Spec->catdir( $IRODS_HOME, "server", "config" );
+$irodsServerConfigDir = `perl $perlScriptsDir/irods_get_server_config_dir.pl`;
 
 # Directory for the server log.
 $irodsLogDir    = File::Spec->catdir( $IRODS_HOME, "server", "log" );
@@ -957,16 +957,16 @@ sub preflight_check
     # check each required JSON configuration file
     $retval = preflight_run("$VALIDATE $HOME_DIR/.irods/irods_environment.json $SCHEMA_ROOT_URL/service_account_environment.json");
     if ( $retval == 0 ){ return 0; }
-    $retval = preflight_run("$VALIDATE $configDir/server_config.json $SCHEMA_ROOT_URL/server_config.json");
+    $retval = preflight_run("$VALIDATE $irodsServerConfigDir/server_config.json $SCHEMA_ROOT_URL/server_config.json");
     if ( $retval == 0 ){ return 0; }
-    $retval = preflight_run("$VALIDATE $configDir/hosts_config.json $SCHEMA_ROOT_URL/hosts_config.json");
+    $retval = preflight_run("$VALIDATE $irodsServerConfigDir/hosts_config.json $SCHEMA_ROOT_URL/hosts_config.json");
     if ( $retval == 0 ){ return 0; }
-    $retval = preflight_run("$VALIDATE $configDir/host_access_control_config.json $SCHEMA_ROOT_URL/host_access_control_config.json");
+    $retval = preflight_run("$VALIDATE $irodsServerConfigDir/host_access_control_config.json $SCHEMA_ROOT_URL/host_access_control_config.json");
     if ( $retval == 0 ){ return 0; }
     # iCAT server
-    if ( -e "$configDir/database_config.json" )
+    if ( -e "$irodsServerConfigDir/database_config.json" )
     {
-        $retval = preflight_run("$VALIDATE $configDir/database_config.json $SCHEMA_ROOT_URL/database_config.json");
+        $retval = preflight_run("$VALIDATE $irodsServerConfigDir/database_config.json $SCHEMA_ROOT_URL/database_config.json");
         if ( $retval == 0 ){ return 0; }
     }
     # success

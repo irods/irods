@@ -404,6 +404,7 @@ f 644 root root ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irod
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_prompt.pl ./iRODS/scripts/perl/utils_prompt.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/irods_get_config_dir.pl ./iRODS/scripts/perl/irods_get_config_dir.pl
+f 644 root root ${IRODS_HOME}/scripts/perl/irods_get_server_config_dir.pl ./iRODS/scripts/perl/irods_get_server_config_dir.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/utils_print.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
 f 755 root root ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl

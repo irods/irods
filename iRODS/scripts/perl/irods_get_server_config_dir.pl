@@ -11,7 +11,7 @@ if ( -e "$scripttoplevel/packaging/binary_installation.flag" )
 }
 else
 {
-        $configDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
+        $configDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "config" );
 }
 
 print "$configDir";

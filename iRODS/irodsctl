@@ -9,20 +9,25 @@
 #
 # This shell script runs the 'irodsctl' Perl script.
 #
-IRODS_HOME=/var/lib/irods/iRODS
+SCRIPTTOPLEVEL=$( dirname $( cd $( dirname $0) ; pwd -P ) )
+if [ -f $SCRIPTTOPLEVEL/packaging/binary_installation.flag ] ; then
+    IRODS_HOME=/var/lib/irods/iRODS
+else
+    IRODS_HOME=$SCRIPTTOPLEVEL/iRODS
+fi
 
 if [ ! -s $IRODS_HOME ]; then
-	# If configured but not correct now, try logic below
-	IRODS_HOME=""
+    # If configured but not correct now, try logic below
+    IRODS_HOME=""
 fi
 
 if [ "$IRODS_HOME" = "" ]; then
-	# Try using the current directory
-	IRODS_HOME=`pwd`
-	if [ ! -d $IRODS_HOME/scripts ]; then
-		echo "Please run 'irodssetup' first to configure and build iRODS."
-		exit 1
-	fi
+    # Try using the current directory
+    IRODS_HOME=`pwd`
+    if [ ! -d $IRODS_HOME/scripts ]; then
+        echo "Please run 'irodssetup' first to configure and build iRODS."
+        exit 1
+    fi
 fi
 $IRODS_HOME/scripts/runperl --dir $IRODS_HOME --script $IRODS_HOME/scripts/perl/irodsctl.pl $*
 ExitCode="$?"

@@ -47,8 +47,8 @@ fi
 if [ "$RUNINPLACE" == "1" ] ;  then
     db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
     if [ ! -f $db_config ]; then
-        echo ">>> Copying new database_config.json to [$(dirname db_config)]"
-        cp $DETECTEDDIR/database_config.json $db_config
+        echo ">>> Copying new database_config.json to [$(dirname $db_config)]"
+        cp $DETECTEDDIR/database_config.json.template $db_config
     fi
 
 else
@@ -280,15 +280,11 @@ perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT
 
 # =-=-=-=-=-=-=-
 # sanitize irods admin password
-if [ "$RUNINPLACE" == "1" ] ; then
-    TOPLEVELDIR=$DETECTEDDIR/../../../
-else
-    TOPLEVELDIR=$DETECTEDDIR/../
-fi
-# templated sql setup file
+#   templated sql setup file
+TOPLEVELDIR=$DETECTEDDIR/../
 MYSETUPVALUESSQL=`find $TOPLEVELDIR -name icatSetupValues.sql`
 rm -f $MYSETUPVALUESSQL
-# server config
+#   server config
 $PYTHON $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
 TMPFILE=`mktemp -t irods_tmp_server_config.XXXXXX`
 sed -e '/admin_password/d' $server_config > $TMPFILE

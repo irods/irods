@@ -26,8 +26,8 @@ if [ $RUNINPLACE -eq 1 ] ; then
     # clean full paths
     MYSERVERCONFIGJSON="$(cd "$( dirname $MYSERVERCONFIGJSON )" && pwd)"/"$( basename $MYSERVERCONFIGJSON )"
     if [ ! -f $MYSERVERCONFIGJSON ]; then
-        echo ">>> Copying new server_config.json to $MYSERVERCONFIGJSON"
-        cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
+        echo ">>> Copying new server_config.json to [$( dirname $MYSERVERCONFIGJSON )]"
+        cp $DETECTEDDIR/server_config.json.template $MYSERVERCONFIGJSON
     fi
 
     MYICATSETUPVALUES="$(cd "$( dirname $MYICATSETUPVALUES )" && pwd)"/"$( basename $MYICATSETUPVALUES )"
@@ -35,11 +35,37 @@ if [ $RUNINPLACE -eq 1 ] ; then
 else
     MYSERVERCONFIGJSON=/etc/irods/server_config.json
     if [ ! -f $MYSERVERCONFIGJSON ]; then
-        echo ">>> Copying new server_config.json to /etc/irods"
+        echo ">>> Copying new server_config.json to [/etc/irods]"
         cp $DETECTEDDIR/server_config.json $MYSERVERCONFIGJSON
     fi
     MYICATSETUPVALUES=/var/lib/irods/iRODS/server/icat/src/icatSetupValues.sql
     DEFAULTRESOURCEDIR=/var/lib/irods/iRODS/Vault
+fi
+
+# create default configs from templates for run-in-place
+if [ $RUNINPLACE -eq 1 ] ; then
+    MYSERVERCONFIGDIR=`dirname $MYSERVERCONFIGJSON`
+    if [ ! -f $MYSERVERCONFIGDIR/hosts_config.json ] ; then
+        echo ">>> Copying new hosts_config.json to [$MYSERVERCONFIGDIR]"
+        cp $DETECTEDDIR/hosts_config.json.template $MYSERVERCONFIGDIR/hosts_config.json
+    fi
+    if [ ! -f $MYSERVERCONFIGDIR/host_access_control_config.json ] ; then
+        echo ">>> Copying new host_access_control_config.json to [$MYSERVERCONFIGDIR]"
+        cp $DETECTEDDIR/host_access_control_config.json.template $MYSERVERCONFIGDIR/host_access_control_config.json
+    fi
+    mkdir -p $MYSERVERCONFIGDIR/reConfigs
+    if [ ! -f $MYSERVERCONFIGDIR/reConfigs/core.re ] ; then
+        echo ">>> Copying new core.re to [$MYSERVERCONFIGDIR/reConfigs]"
+        cp $DETECTEDDIR/core.re.template $MYSERVERCONFIGDIR/reConfigs/core.re
+    fi
+    if [ ! -f $MYSERVERCONFIGDIR/reConfigs/core.fnm ] ; then
+        echo ">>> Copying new core.fnm to [$MYSERVERCONFIGDIR/reConfigs]"
+        cp $DETECTEDDIR/core.fnm.template $MYSERVERCONFIGDIR/reConfigs/core.fnm
+    fi
+    if [ ! -f $MYSERVERCONFIGDIR/reConfigs/core.dvm ] ; then
+        echo ">>> Copying new core.dvm to [$MYSERVERCONFIGDIR/reConfigs]"
+        cp $DETECTEDDIR/core.dvm.template $MYSERVERCONFIGDIR/reConfigs/core.dvm
+    fi
 fi
 
 # detect server type being installed
