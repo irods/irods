@@ -1,4 +1,6 @@
-#include "fileSyncToArch.hpp"
+#include "fileSyncToArch.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** _fn )

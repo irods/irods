@@ -1,4 +1,6 @@
-#include "fileStat.hpp"
+#include "fileStat.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileStat( rcComm_t *conn, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut )

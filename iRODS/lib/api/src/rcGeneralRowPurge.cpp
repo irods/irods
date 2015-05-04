@@ -1,4 +1,6 @@
-#include "generalRowPurge.hpp"
+#include "generalRowPurge.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp )

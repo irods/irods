@@ -6,7 +6,7 @@
 #include "rodsPath.h"
 #include "miscUtil.h"
 #include "rcMisc.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"

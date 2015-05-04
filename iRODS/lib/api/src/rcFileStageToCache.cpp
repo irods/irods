@@ -1,4 +1,6 @@
-#include "fileStageToCache.hpp"
+#include "fileStageToCache.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp )

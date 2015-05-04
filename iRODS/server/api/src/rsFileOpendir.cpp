@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileOpendir.hpp"
+#include "fileOpendir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

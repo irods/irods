@@ -8,10 +8,7 @@
 
 /* This is a high level file type API call */
 
-#include "rods.h"
-//#include "procApiRequest.h"
-//#include "apiNumber.h"
-//#include "icatDefines.h"
+#include "rcConnect.h"
 
 #define AUTH_SUBOP_REQ_AUTH "request challenge"
 #define AUTH_SUBOP_RESP "challenge response"

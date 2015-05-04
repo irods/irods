@@ -62,7 +62,7 @@ typedef struct tarSubFileDesc {
 #include "resource.hpp"
 #include "miscServerFunct.hpp"
 #include "physPath.hpp"
-#include "fileOpen.hpp"
+#include "fileOpen.h"
 
 
 // =-=-=-=-=-=-=-=-

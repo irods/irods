@@ -3,11 +3,11 @@
 /* This is script-generated code (for the most part).  */
 /* See getHostForPut.h for a description of this API call.*/
 
-#include "getHostForPut.hpp"
+#include "getHostForPut.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "dataObjCreate.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"

@@ -8,7 +8,7 @@
 
 /* This is a low level file type API call */
 
-#include "fileOpen.hpp"
+#include "fileOpen.h"
 #include "rodsConnect.h"
 #include "rcConnect.h"
 

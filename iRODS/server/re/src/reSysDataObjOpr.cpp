@@ -9,8 +9,8 @@
 /* reSysDataObjOpr.c */
 
 #include "reSysDataObjOpr.hpp"
-#include "genQuery.hpp"
-#include "getRescQuota.hpp"
+#include "genQuery.h"
+#include "getRescQuota.h"
 #include "reServerLib.hpp"
 #include "dataObjOpr.hpp"
 #include "resource.hpp"

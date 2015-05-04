@@ -1,4 +1,6 @@
-#include "getXmsgTicket.hpp"
+#include "getXmsgTicket.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp, xmsgTicketInfo_t **outXmsgTicketInfo )

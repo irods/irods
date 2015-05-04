@@ -3,7 +3,7 @@
 
 /* See getTempPassword.h for a description of this API call.*/
 
-#include "getTempPassword.hpp"
+#include "getTempPassword.h"
 #include "icatHighLevelRoutines.hpp"
 
 int

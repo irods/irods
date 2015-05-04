@@ -14,7 +14,7 @@
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reDefines.h"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {

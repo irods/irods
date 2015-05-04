@@ -4,7 +4,7 @@
  */
 
 #include "icatHighLevelRoutines.hpp"
-#include "getHierarchyForResc.hpp"
+#include "getHierarchyForResc.h"
 #include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-

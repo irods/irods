@@ -12,7 +12,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "fileRead.hpp"
+#include "fileRead.h"
 
 #if defined(RODS_SERVER)
 #define RS_STREAM_READ rsStreamRead

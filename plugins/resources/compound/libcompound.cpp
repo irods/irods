@@ -2,7 +2,7 @@
 // irods includes
 #include "msParam.h"
 #include "reGlobalsExtern.hpp"
-#include "generalAdmin.hpp"
+#include "generalAdmin.h"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"

@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileGetFsFreeSpace.h for a description of this API call.*/
 
-#include "fileGetFsFreeSpace.hpp"
+#include "fileGetFsFreeSpace.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

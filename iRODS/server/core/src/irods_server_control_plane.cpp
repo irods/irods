@@ -7,7 +7,7 @@
 //#include <readproc.h>
 //#include <sysinfo.h>
 
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "rcMisc.h"
 #include "sockComm.h"
 #include "miscServerFunct.hpp"

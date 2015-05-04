@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileSyncToArch.hpp"
+#include "fileSyncToArch.h"
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"

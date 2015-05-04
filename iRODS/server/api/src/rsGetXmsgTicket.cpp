@@ -3,7 +3,7 @@
 /* getXmsgTicket.c
  */
 
-#include "getXmsgTicket.hpp"
+#include "getXmsgTicket.h"
 #include "xmsgLib.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];

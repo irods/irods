@@ -4,12 +4,12 @@
 /* See collCreate.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "collCreate.hpp"
+#include "collCreate.h"
 #include "rodsConnect.h"
 #include "rodsLog.h"
 #include "regColl.hpp"
 #include "icatDefines.h"
-#include "fileMkdir.hpp"
+#include "fileMkdir.h"
 #include "subStructFileMkdir.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"

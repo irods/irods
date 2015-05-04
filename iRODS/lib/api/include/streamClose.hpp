@@ -12,7 +12,7 @@
 #include "apiNumber.h"
 
 
-#include "fileClose.hpp"
+#include "fileClose.h"
 
 #if defined(RODS_SERVER)
 #define RS_STREAM_CLOSE rsStreamClose

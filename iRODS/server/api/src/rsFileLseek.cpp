@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileLseek.h for a description of this API call.*/
 
-#include "fileLseek.hpp"
+#include "fileLseek.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

@@ -6,13 +6,13 @@
 #include "l3FileGetSingleBuf.hpp"
 #include "rodsLog.h"
 #include "dataGet.h"
-#include "fileGet.hpp"
+#include "fileGet.h"
 #include "dataObjOpen.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.hpp"
 #include "objMetaOpr.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 int
 rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,

@@ -3,7 +3,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "fileCreate.hpp"
+#include "fileCreate.h"
 #include "rodsConnect.h"
 
 // =-=-=-=-=-=-=-

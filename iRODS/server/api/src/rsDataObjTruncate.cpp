@@ -6,7 +6,7 @@
 #include "dataObjTruncate.h"
 #include "rodsLog.h"
 #include "icatDefines.h"
-#include "fileTruncate.hpp"
+#include "fileTruncate.h"
 #include "unregDataObj.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
@@ -17,7 +17,7 @@
 #include "rmColl.hpp"
 #include "modDataObjMeta.hpp"
 #include "subStructFileTruncate.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "phyBundleColl.hpp"
 
 // =-=-=-=-=-=-=-

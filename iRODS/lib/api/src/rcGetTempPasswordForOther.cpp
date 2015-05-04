@@ -1,7 +1,9 @@
 /* This is script-generated code.  */
 /* See getTempPasswordForOther.h for a description of this API call.*/
 
-#include "getTempPasswordForOther.hpp"
+#include "getTempPasswordForOther.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcGetTempPasswordForOther( rcComm_t *conn,

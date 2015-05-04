@@ -1,4 +1,6 @@
-#include "generalRowInsert.hpp"
+#include "generalRowInsert.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGeneralRowInsert( rcComm_t *conn, generalRowInsertInp_t *generalRowInsertInp )

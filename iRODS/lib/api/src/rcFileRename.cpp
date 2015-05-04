@@ -1,4 +1,6 @@
-#include "fileRename.hpp"
+#include "fileRename.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileRename( rcComm_t *conn, fileRenameInp_t *fileRenameInp, fileRenameOut_t** _out )

@@ -9,7 +9,7 @@
 #include "dataObjOpr.hpp"
 #include "rodsDef.h"
 #include "rsGlobalExtern.hpp"
-#include "fileChksum.hpp"
+#include "fileChksum.h"
 #include "modDataObjMeta.hpp"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -19,7 +19,7 @@
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "rodsClient.h"
 #include "reFuncDefs.hpp"
 

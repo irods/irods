@@ -4,7 +4,7 @@
 /* See phyPathReg.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "fileStat.hpp"
+#include "fileStat.h"
 #include "phyPathReg.hpp"
 #include "rodsLog.h"
 #include "icatDefines.h"

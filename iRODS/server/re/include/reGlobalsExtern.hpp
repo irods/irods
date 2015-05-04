@@ -23,7 +23,7 @@ extern void myfree(char* file, int line, void *x);
 #include "rods.h"
 #include "rcGlobalExtern.h"
 #include "objInfo.h"
-#include "fileOpen.hpp"
+#include "fileOpen.h"
 #include "regExpMatch.hpp"
 #include "reDefines.h"
 #include "ruleExecSubmit.hpp"

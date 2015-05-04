@@ -1,4 +1,6 @@
-#include "fileMkdir.hpp"
+#include "fileMkdir.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp )

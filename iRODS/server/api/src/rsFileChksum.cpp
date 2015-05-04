@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileChksum.h for a description of this API call.*/
 
-#include "fileChksum.hpp"
+#include "fileChksum.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

@@ -11,7 +11,7 @@
 #include "rodsConnect.h"
 #include "ruleExecSubmit.hpp"
 #include "ruleExecDel.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "reSysDataObjOpr.hpp"
 #include "miscUtil.h"

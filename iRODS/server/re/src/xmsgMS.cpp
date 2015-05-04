@@ -8,7 +8,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rodsXmsg.h"
-#include "getXmsgTicket.hpp"
+#include "getXmsgTicket.h"
 #include "sendXmsg.hpp"
 #include "rcvXmsg.hpp"
 

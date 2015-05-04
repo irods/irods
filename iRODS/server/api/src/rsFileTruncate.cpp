@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileTruncate.h for a description of this API call.*/
 
-#include "fileTruncate.hpp"
+#include "fileTruncate.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

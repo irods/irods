@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileMkdir.h for a description of this API call.*/
 
-#include "fileMkdir.hpp"
+#include "fileMkdir.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

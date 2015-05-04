@@ -20,7 +20,7 @@
 #include "dataObjClose.h"
 #include "dataObjWrite.h"
 #include "dataObjRead.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "rcPortalOpr.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"

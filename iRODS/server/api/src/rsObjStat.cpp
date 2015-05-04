@@ -5,7 +5,7 @@
 
 #include "objStat.h"
 #include "rcMisc.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "querySpecColl.hpp"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"

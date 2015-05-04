@@ -16,9 +16,9 @@
 #include "sockComm.h"
 #include "getRodsEnv.h"
 #include "rcConnect.h"
-#include "generalRowInsert.hpp"
-#include "generalRowPurge.hpp"
-#include "generalAdmin.hpp"
+#include "generalRowInsert.h"
+#include "generalRowPurge.h"
+#include "generalAdmin.h"
 
 #define NFIELDS 4 /* number of fields in HostControlAccess file: 
 <user> <group> <IP address> <subnet mask> */

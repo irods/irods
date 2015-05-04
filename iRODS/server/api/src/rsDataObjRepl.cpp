@@ -18,11 +18,11 @@
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "l3FileGetSingleBuf.hpp"
 #include "l3FilePutSingleBuf.hpp"
-#include "fileSyncToArch.hpp"
-#include "fileStageToCache.hpp"
+#include "fileSyncToArch.h"
+#include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.hpp"
 #include "dataObjTrim.h" // JMC - backport 4550
 #include "dataObjLock.h" // JMC - backport 4609

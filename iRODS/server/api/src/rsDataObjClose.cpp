@@ -27,9 +27,9 @@
 #include "dataObjRepl.h"
 #include "dataObjTrim.h" // JMC - backport 4537
 #include "dataObjLock.h" // JMC - backport 4604
-#include "fileClose.hpp"
-#include "fileStat.hpp"
-#include "getRescQuota.hpp"
+#include "fileClose.h"
+#include "fileStat.h"
+#include "getRescQuota.h"
 
 
 // =-=-=-=-=-=-=-

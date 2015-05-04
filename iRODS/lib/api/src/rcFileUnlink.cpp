@@ -1,4 +1,6 @@
-#include "fileUnlink.hpp"
+#include "fileUnlink.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp )

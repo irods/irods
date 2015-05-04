@@ -1,4 +1,6 @@
-#include "fileChksum.hpp"
+#include "fileChksum.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp, char **chksumStr )

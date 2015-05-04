@@ -12,7 +12,7 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "dataObjCreate.h"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

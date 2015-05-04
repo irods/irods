@@ -4,7 +4,7 @@
 /* See chkNVPathPerm.h for a description of this API call.*/
 
 #include "chkNVPathPerm.h"
-#include "fileStat.hpp"
+#include "fileStat.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 

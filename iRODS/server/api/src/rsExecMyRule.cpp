@@ -1,5 +1,5 @@
 #include "reGlobalsExtern.hpp"
-#include "execMyRule.hpp"
+#include "execMyRule.h"
 #include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
 

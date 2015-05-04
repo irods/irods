@@ -3,9 +3,9 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "getRescQuota.hpp"
+#include "getRescQuota.h"
 #include "miscUtil.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "reFuncDefs.hpp"

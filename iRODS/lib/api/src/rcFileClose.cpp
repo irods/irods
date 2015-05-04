@@ -1,4 +1,6 @@
-#include "fileClose.hpp"
+#include "fileClose.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp )

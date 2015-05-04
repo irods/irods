@@ -1,4 +1,6 @@
-#include "fileTruncate.hpp"
+#include "fileTruncate.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp )

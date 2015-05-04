@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-#include "fileRename.hpp"
+#include "fileRename.h"
 #include "miscUtil.h"
 #include "structFileSync.hpp"
 #include "structFileExtAndReg.hpp"

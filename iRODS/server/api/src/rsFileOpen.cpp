@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileOpen.hpp"
+#include "fileOpen.h"
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"

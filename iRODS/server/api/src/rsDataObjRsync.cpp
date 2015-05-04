@@ -6,7 +6,7 @@
 #include "dataObjOpr.hpp"
 #include "rsApiHandler.hpp"
 #include "modDataObjMeta.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 #include "irods_resource_redirect.hpp"
 

@@ -1,4 +1,6 @@
-#include "fileOpen.hpp"
+#include "fileOpen.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp )

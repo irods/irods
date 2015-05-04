@@ -6,13 +6,13 @@
 #include "l3FilePutSingleBuf.hpp"
 #include "rodsLog.h"
 #include "dataPut.h"
-#include "filePut.hpp"
+#include "filePut.h"
 #include "dataObjOpen.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.hpp"
 #include "objMetaOpr.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 int
 rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,

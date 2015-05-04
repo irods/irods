@@ -4,7 +4,7 @@
 /* See genQuery.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
 #include "cache.hpp"

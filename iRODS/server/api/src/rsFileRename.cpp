@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileRename.hpp"
+#include "fileRename.h"
 #include "miscServerFunct.hpp"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"

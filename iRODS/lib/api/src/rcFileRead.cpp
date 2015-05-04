@@ -1,4 +1,6 @@
-#include "fileRead.hpp"
+#include "fileRead.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp, bytesBuf_t *fileReadOutBBuf )

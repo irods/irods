@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileClose.h for a description of this API call.*/
 
-#include "fileClose.hpp"
+#include "fileClose.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

@@ -9,7 +9,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "dataObjRepl.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 
 namespace irods {
 /// =-=-=-=-=-=-=-

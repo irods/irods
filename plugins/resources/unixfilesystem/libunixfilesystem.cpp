@@ -5,7 +5,7 @@
 #include "rcConnect.h"
 #include "readServerConfig.hpp"
 #include "miscServerFunct.hpp"
-#include "generalAdmin.hpp"
+#include "generalAdmin.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

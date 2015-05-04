@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileStageToCache.hpp"
+#include "fileStageToCache.h"
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"

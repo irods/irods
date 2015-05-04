@@ -1,4 +1,6 @@
-#include "fileLseek.hpp"
+#include "fileLseek.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut )

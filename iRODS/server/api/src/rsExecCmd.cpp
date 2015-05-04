@@ -12,7 +12,7 @@
 #include "execCmd.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
-#include "fileClose.hpp"
+#include "fileClose.h"
 #include "miscServerFunct.hpp"
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"

@@ -7,7 +7,9 @@
 
 /* See genQuery.h for a description of this API call.*/
 
-#include "genQuery.hpp"
+#include "genQuery.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /* this is a debug routine; it just prints the genQueryInp
    structure */

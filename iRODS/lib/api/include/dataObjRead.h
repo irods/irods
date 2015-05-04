@@ -12,7 +12,7 @@
 #include "dataObjInpOut.h"
 #include "rcConnect.h"
 #include "apiNumber.h"
-#include "fileRead.hpp"
+#include "fileRead.h"
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_READ rsDataObjRead

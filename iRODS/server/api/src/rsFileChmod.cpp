@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileChmod.h for a description of this API call.*/
 
-#include "fileChmod.hpp"
+#include "fileChmod.h"
 #include "miscServerFunct.hpp"
 
 

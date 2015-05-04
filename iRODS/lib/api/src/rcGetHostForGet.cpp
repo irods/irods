@@ -1,7 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "getHostForGet.hpp"
+#include "getHostForGet.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGetHostForGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char **outHost )

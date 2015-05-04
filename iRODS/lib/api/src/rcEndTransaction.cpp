@@ -1,5 +1,6 @@
-
-#include "endTransaction.hpp"
+#include "endTransaction.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp )

@@ -3,7 +3,7 @@
 
 /* See generalUpdate.h for a description of this API call.*/
 
-#include "generalUpdate.hpp"
+#include "generalUpdate.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 

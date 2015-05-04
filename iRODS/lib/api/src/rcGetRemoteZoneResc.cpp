@@ -1,4 +1,6 @@
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGetRemoteZoneResc( rcComm_t *conn, dataObjInp_t *dataObjInp, rodsHostAddr_t **rescAddr )

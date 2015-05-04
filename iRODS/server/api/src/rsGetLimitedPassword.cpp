@@ -3,7 +3,7 @@
 
 /* See getLimitedPassword.h for a description of this API call.*/
 
-#include "getLimitedPassword.hpp"
+#include "getLimitedPassword.h"
 #include "icatHighLevelRoutines.hpp"
 
 int

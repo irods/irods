@@ -1,5 +1,7 @@
 // =-=-=-=-=-=-=-
-#include "getHierarchyForResc.hpp"
+#include "getHierarchyForResc.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int rcGetHierarchyForResc(
     rcComm_t*                   _comm,

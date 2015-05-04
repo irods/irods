@@ -12,7 +12,7 @@
 #include "dataObjInpOut.h"
 #include "rodsType.h"
 
-#include "fileLseek.hpp"
+#include "fileLseek.h"
 
 /* This is a high level type API call */
 

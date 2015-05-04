@@ -11,7 +11,7 @@
 #include "resource.hpp"
 #include "collection.hpp"
 #include "specColl.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
 #include "rodsClient.h"

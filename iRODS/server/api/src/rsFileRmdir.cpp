@@ -3,10 +3,10 @@
 /* This is script-generated code (for the most part).  */
 /* See fileRmdir.h for a description of this API call.*/
 
-#include "fileRmdir.hpp"
-#include "fileOpendir.hpp"
-#include "fileReaddir.hpp"
-#include "fileClosedir.hpp"
+#include "fileRmdir.h"
+#include "fileOpendir.h"
+#include "fileReaddir.h"
+#include "fileClosedir.h"
 #include "miscServerFunct.hpp"
 #include "fileDriver.hpp"
 

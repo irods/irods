@@ -15,7 +15,7 @@
 #include "regDataObj.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

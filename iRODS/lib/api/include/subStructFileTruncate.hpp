@@ -12,7 +12,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "fileTruncate.hpp"
+#include "fileTruncate.h"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_TRUNCATE rsSubStructFileTruncate

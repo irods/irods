@@ -1,4 +1,6 @@
-#include "getRescQuota.hpp"
+#include "getRescQuota.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcGetRescQuota( rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp, rescQuota_t **rescQuota )

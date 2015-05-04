@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileGet.h for a description of this API call.*/
 
-#include "fileGet.hpp"
+#include "fileGet.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "fileWrite.hpp"
+#include "fileWrite.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

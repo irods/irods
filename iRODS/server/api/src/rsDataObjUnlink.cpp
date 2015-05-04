@@ -7,7 +7,7 @@
 #include "rodsLog.h"
 #include "rodsConnect.h"
 #include "icatDefines.h"
-#include "fileUnlink.hpp"
+#include "fileUnlink.h"
 #include "reFuncDefs.hpp"
 #include "unregDataObj.hpp"
 #include "objMetaOpr.hpp"

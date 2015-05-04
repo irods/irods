@@ -1,4 +1,6 @@
-#include "fileChmod.hpp"
+#include "fileChmod.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileChmod( rcComm_t *conn, fileChmodInp_t *fileChmodInp )

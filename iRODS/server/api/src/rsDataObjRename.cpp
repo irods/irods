@@ -16,9 +16,9 @@
 #include "dataObjClose.h"
 #include "phyBundleColl.hpp"
 #include "regDataObj.hpp"
-#include "fileOpendir.hpp"
-#include "fileReaddir.hpp"
-#include "fileClosedir.hpp"
+#include "fileOpendir.h"
+#include "fileReaddir.h"
+#include "fileClosedir.h"
 #include "rmColl.hpp"
 
 // =-=-=-=-=-=-=-

@@ -3,7 +3,7 @@
 /* rsGetRemoteZoneResc.c
  */
 
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"

@@ -3,9 +3,9 @@
 /* This is script-generated code (for the most part).  */
 /* See filePut.h for a description of this API call.*/
 
-#include "filePut.hpp"
+#include "filePut.h"
 #include "miscServerFunct.hpp"
-#include "fileCreate.hpp"
+#include "fileCreate.h"
 #include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-

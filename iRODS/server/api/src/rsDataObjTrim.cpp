@@ -11,7 +11,7 @@
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

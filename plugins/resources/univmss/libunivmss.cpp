@@ -3,7 +3,7 @@
 #include "msParam.h"
 #include "rules.hpp"
 #include "reGlobalsExtern.hpp"
-#include "generalAdmin.hpp"
+#include "generalAdmin.h"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"

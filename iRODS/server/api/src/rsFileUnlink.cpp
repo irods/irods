@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileUnlink.h for a description of this API call.*/
 
-#include "fileUnlink.hpp"
+#include "fileUnlink.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileClosedir.h for a description of this API call.*/
 
-#include "fileClosedir.hpp"
+#include "fileClosedir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

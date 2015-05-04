@@ -7,7 +7,7 @@
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "subStructFileWrite.hpp"
-#include "fileWrite.hpp"
+#include "fileWrite.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */

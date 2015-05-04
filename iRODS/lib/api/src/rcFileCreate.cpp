@@ -1,5 +1,6 @@
-
-#include "fileCreate.hpp"
+#include "fileCreate.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** _out )

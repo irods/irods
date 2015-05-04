@@ -12,7 +12,7 @@
 #include "rcMisc.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "fileLseek.hpp"
+#include "fileLseek.h"
 
 typedef struct SubStructFileLseekInp {
     rodsHostAddr_t addr;

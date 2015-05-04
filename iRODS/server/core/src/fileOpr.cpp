@@ -5,7 +5,7 @@
  */
 
 #include "fileOpr.hpp"
-#include "fileStat.hpp"
+#include "fileStat.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "collection.hpp"

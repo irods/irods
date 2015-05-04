@@ -7,7 +7,7 @@
 #include "dataObjGet.h"
 #include "rodsLog.h"
 #include "dataGet.h"
-#include "fileGet.hpp"
+#include "fileGet.h"
 #include "dataObjOpen.h"
 #include "dataObjClose.h"
 #include "rsGlobalExtern.hpp"
@@ -17,7 +17,7 @@
 #include "physPath.hpp"
 #include "specColl.hpp"
 #include "subStructFileGet.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

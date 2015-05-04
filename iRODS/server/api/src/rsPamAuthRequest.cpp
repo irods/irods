@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 
 #include "pamAuthRequest.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"

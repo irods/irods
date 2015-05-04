@@ -20,7 +20,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #include <boost/regex.h>
 
 #ifndef DEBUG
-#include "execMyRule.hpp"
+#include "execMyRule.h"
 #include "msParam.h"
 #include "reFuncDefs.hpp"
 #include "stringOpr.h"

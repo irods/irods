@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileReaddir.h for a description of this API call.*/
 
-#include "fileReaddir.hpp"
+#include "fileReaddir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

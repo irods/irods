@@ -19,7 +19,7 @@
 
 #include "rods.h"
 #include "rcConnect.h"
-#include "fileOpen.hpp"
+#include "fileOpen.h"
 #include "dataObjInpOut.h"
 #include "dataCopy.h"
 

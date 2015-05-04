@@ -1,7 +1,7 @@
 /* This is script-generated code.  */
 /* See collRepl.h for a description of this API call.*/
 
-#include "collRepl.hpp"
+#include "collRepl.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
 

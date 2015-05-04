@@ -1,4 +1,6 @@
-#include "fileWrite.hpp"
+#include "fileWrite.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf )

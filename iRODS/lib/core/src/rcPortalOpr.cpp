@@ -6,7 +6,7 @@
 #include "dataObjWrite.h"
 #include "dataObjRead.h"
 #include "dataObjLseek.h"
-#include "fileLseek.hpp"
+#include "fileLseek.h"
 #include "dataObjOpr.hpp"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"

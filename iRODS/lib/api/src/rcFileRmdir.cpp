@@ -1,4 +1,6 @@
-#include "fileRmdir.hpp"
+#include "fileRmdir.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp )

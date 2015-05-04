@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See endTransaction.h for a description of this API call.*/
 
-#include "endTransaction.hpp"
+#include "endTransaction.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 

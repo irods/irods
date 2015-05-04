@@ -8,7 +8,7 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "miscServerFunct.hpp"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "irods_resource_backport.hpp"
 #include "rsLog.hpp"
 

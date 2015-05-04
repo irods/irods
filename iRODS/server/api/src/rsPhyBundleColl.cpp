@@ -20,7 +20,7 @@
 #include "syncMountedColl.hpp"
 #include "regReplica.hpp"
 #include "unbunAndRegPhyBunfile.hpp"
-#include "fileChksum.hpp"
+#include "fileChksum.h"
 #include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-

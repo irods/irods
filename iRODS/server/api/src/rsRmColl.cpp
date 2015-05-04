@@ -13,11 +13,11 @@
 #include "closeCollection.h"
 #include "dataObjUnlink.h"
 #include "rsApiHandler.hpp"
-#include "fileRmdir.hpp"
+#include "fileRmdir.h"
 #include "collection.hpp"
 #include "subStructFileRmdir.hpp"
 #include "dataObjRename.h"
-#include "genQuery.hpp"
+#include "genQuery.h"
 
 #include "irods_resource_backport.hpp"
 

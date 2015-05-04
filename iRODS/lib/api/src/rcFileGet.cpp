@@ -1,4 +1,6 @@
-#include "fileGet.hpp"
+#include "fileGet.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcFileGet( rcComm_t *conn, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf )

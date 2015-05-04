@@ -9,6 +9,7 @@
 /* See dataObjRead.h for a description of this API call.*/
 
 #include "dataObjRead.h"
+#include "procApiRequest.h"
 /**
  * \fn rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
  * bytesBuf_t *dataObjReadOutBBuf)

@@ -6,7 +6,7 @@
 #include "specColl.hpp"
 #include "collection.hpp"
 #include "resource.hpp"
-#include "genQuery.hpp"
+#include "genQuery.h"
 #include "rodsClient.h"
 
 // =-=-=-=-=-=-=-

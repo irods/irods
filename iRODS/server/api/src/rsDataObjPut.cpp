@@ -7,7 +7,7 @@
 #include "rodsLog.h"
 #include "dataPut.h"
 #include "reFuncDefs.hpp"
-#include "filePut.hpp"
+#include "filePut.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "specColl.hpp"
@@ -21,7 +21,7 @@
 #include "rsApiHandler.hpp"
 #include "subStructFilePut.hpp"
 #include "dataObjRepl.h"
-#include "getRemoteZoneResc.hpp"
+#include "getRemoteZoneResc.h"
 #include "icatHighLevelRoutines.hpp"
 #include "modDataObjMeta.hpp"
 

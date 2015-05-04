@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See fileStat.h for a description of this API call.*/
 
-#include "fileStat.hpp"
+#include "fileStat.h"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
