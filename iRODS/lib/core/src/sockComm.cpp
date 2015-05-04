@@ -38,6 +38,7 @@ jmp_buf Jcenv;
 #include "irods_network_factory.hpp"
 #include "irods_network_constants.hpp"
 #include "irods_environment_properties.hpp"
+#include "irods_server_properties.hpp"
 #include "sockCommNetworkInterface.hpp"
 
 // =-=-=-=-=-=-=-
@@ -284,7 +285,6 @@ irods::error readMsgBody(
 int
 sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     int status = 0;
-    char *tmpPtr;
 
     if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
         rodsLog( LOG_ERROR,
@@ -311,46 +311,50 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
 
     mySockAddr.sin_family = AF_INET;
 
-    /* if portNum is <= 0 and env svrPortRangeStart is set, pick a port
-     * in the range.
+    /* if portNum is <= 0 and server_port_range_start is set in 
+     * server_config.json pick a port in the range.
      */
 
-    if ( *portNum <= 0 && ( tmpPtr = getenv( "svrPortRangeStart" ) ) != NULL ) {
-
-        const int svrPortRangeStart = atoi( tmpPtr );
-        if ( svrPortRangeStart < 1 || svrPortRangeStart > 65535 ) {
-            rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svrPortRangeStart );
+    int svr_port_range_start = 0;
+    irods::error ret = irods::get_server_property<int>(
+                           irods::CFG_SERVER_PORT_RANGE_START_KW,
+                           svr_port_range_start );
+    if ( *portNum <= 0 && ret.ok() ) {
+        if ( svr_port_range_start < 1 || svr_port_range_start > 65535 ) {
+            rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svr_port_range_start );
             close( sock );
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        int svrPortRangeEnd = 0;
-        if ( ( tmpPtr = getenv( "svrPortRangeEnd" ) ) != NULL ) {
-            svrPortRangeEnd = atoi( tmpPtr );
-            if ( svrPortRangeEnd < svrPortRangeStart ) {
+        int svr_port_range_end = 0;
+        irods::error ret = irods::get_server_property<int>(
+                               irods::CFG_SERVER_PORT_RANGE_END_KW,
+                               svr_port_range_start );
+        if ( ret.ok() ) {
+            if ( svr_port_range_end < svr_port_range_start ) {
                 rodsLog( LOG_ERROR,
                          "sockOpenForInConn: PortRangeStart %d > PortRangeEnd %d",
-                         svrPortRangeStart, svrPortRangeEnd );
-                svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
+                         svr_port_range_start, svr_port_range_end );
+                svr_port_range_end = svr_port_range_start + DEF_NUMBER_SVR_PORT - 1;
             }
-            if ( svrPortRangeEnd > 65535 ) {
+            if ( svr_port_range_end > 65535 ) {
                 rodsLog( LOG_ERROR,
                          "sockOpenForInConn: PortRangeEnd %d > 65535",
-                         svrPortRangeStart, svrPortRangeEnd );
-                svrPortRangeEnd = 65535;
+                         svr_port_range_start, svr_port_range_end );
+                svr_port_range_end = 65535;
             }
         }
         else {
-            svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
+            svr_port_range_end = svr_port_range_start + DEF_NUMBER_SVR_PORT - 1;
         }
-        svrPortRangeEnd = svrPortRangeEnd < 65535 ? svrPortRangeEnd : 65535;
-        int portRangeCount = svrPortRangeEnd - svrPortRangeStart + 1;
+        svr_port_range_end = svr_port_range_end < 65535 ? svr_port_range_end : 65535;
+        int portRangeCount = svr_port_range_end - svr_port_range_start + 1;
 
-        int myPortNum = svrPortRangeStart + random() % portRangeCount;
+        int myPortNum = svr_port_range_start + random() % portRangeCount;
         int bindCnt = 0;
         while ( bindCnt < portRangeCount ) {
-            if ( myPortNum > svrPortRangeEnd ) {
-                myPortNum = svrPortRangeStart;
+            if ( myPortNum > svr_port_range_end ) {
+                myPortNum = svr_port_range_start;
             }
             mySockAddr.sin_port = htons( myPortNum );
 

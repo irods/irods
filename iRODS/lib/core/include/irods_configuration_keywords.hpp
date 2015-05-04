@@ -32,6 +32,9 @@ namespace irods {
     const std::string CFG_FEDERATION_KW( "federation" );
     const std::string CFG_ENVIRONMENT_VARIABLES_KW( "environment_variables" );
     const std::string CFG_ADVANCED_SETTINGS_KW( "advanced_settings" );
+    
+    const std::string CFG_SERVER_PORT_RANGE_START_KW( "server_port_range_start" );
+    const std::string CFG_SERVER_PORT_RANGE_END_KW( "server_port_range_end" );
 
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER( 
