@@ -213,9 +213,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                     msg << "failed in irods::resolve_resource_hierarchy for [";
                     msg << dataObjInp->objPath << "]";
                     irods::log( PASSMSG( msg.str(), ret ) );
-                    freeRodsObjStat( rodsObjStatOut );
                 }
-                
+                freeRodsObjStat( rodsObjStatOut );
+
                 return ret.code();
             }
 
