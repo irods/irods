@@ -25,14 +25,6 @@ char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] ) {
 
 }
 
-void getResourceName( std::string &_out_str, const char *rname ) {
-    std::stringstream ss;
-    ss << getConfigDir() << "_" << rname;
-    _out_str = ss.str();
-    std::replace( _out_str.begin(), _out_str.end(), '\\', '_' );
-    std::replace( _out_str.begin(), _out_str.end(), '/', '_' );
-}
-
 int getModifiedTime( char *fn, time_type *timestamp ) {
 #ifdef osx_platform
     boost::filesystem::path path( fn );

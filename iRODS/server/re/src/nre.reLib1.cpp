@@ -16,6 +16,7 @@
 #include "functions.hpp"
 #include "configuration.hpp"
 
+#include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 
 #ifdef MYMALLOC
@@ -936,7 +937,6 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
     char mymsrvcFileName[MAX_NAME_LEN];
     FILE *file;
     char buf[MAX_RULE_LENGTH];
-    char *configDir;
 
 
     i = inMsrvcStruct->MaxNumOfMsrvcs;
@@ -946,8 +946,16 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
         snprintf( mymsrvcFileName, MAX_NAME_LEN, "%s", msrvcFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( mymsrvcFileName, MAX_NAME_LEN, "%s/reConfigs/%s.msi", configDir, msrvcFileName );
+        std::string re_dir;
+        irods::error ret = irods::get_full_path_for_config_file(
+                               "reConfigs",
+                               re_dir );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+
+        snprintf( mymsrvcFileName, MAX_NAME_LEN, "%s/%s.msi", re_dir.c_str(), msrvcFileName );
     }
     file = fopen( mymsrvcFileName, "r" );
     if ( file == NULL ) {
@@ -1500,15 +1508,22 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
     int i;
     FILE *file;
     char fileName[MAX_NAME_LEN];
-    char *configDir;
 
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
     }
     else {
-        configDir = getConfigDir();
-        snprintf( fileName, MAX_NAME_LEN, "%s/reConfigs/%s.msi", configDir, inFileName );
+        std::string re_dir;
+        irods::error ret = irods::get_full_path_for_config_file(
+                               "reConfigs",
+                               re_dir );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+
+        snprintf( fileName, MAX_NAME_LEN, "%s/%s.msi", re_dir.c_str(), inFileName );
     }
 
     file = fopen( fileName, "w" );

@@ -189,8 +189,6 @@ int
 printServerHost( rodsServerHost_t *myServerHost );
 int
 printZoneInfo();
-char *
-getConfigDir();
 
 #ifdef __cplusplus
 } //extern C

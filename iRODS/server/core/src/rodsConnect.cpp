@@ -1097,16 +1097,3 @@ getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost ) {
     }
 }
 
-char *
-getConfigDir() {
-#ifndef windows_platform
-    char *myDir;
-
-    if ( ( myDir = ( char * ) getenv( "irodsConfigDir" ) ) != ( char * ) NULL ) {
-        return myDir;
-    }
-    return DEF_CONFIG_DIR;
-#else
-    return iRODSNtGetServerConfigPath();
-#endif
-}

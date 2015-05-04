@@ -1313,19 +1313,20 @@ initConnectControl() {
     std::vector<std::string> tmpAllowedUser;
     int allowUserFlag = 0;
     int disallowUserFlag = 0;
-    char *configDir = getConfigDir();
-    int len = strlen( configDir ) + strlen( CONNECT_CONTROL_FILE ) + 2;
-    char *conFile = ( char * ) malloc( len );
 
-    snprintf( conFile, len, "%s/%s", configDir, CONNECT_CONTROL_FILE );
-    FILE *file = fopen( conFile, "r" );
-
-    if ( file == NULL ) {
-        free( conFile );
-        return 0;
+    std::string ctrl_file;
+    irods::error ret = irods::get_full_path_for_config_file(
+                           CONNECT_CONTROL_FILE,
+                           ctrl_file );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    free( conFile );
+    FILE *file = fopen( ctrl_file.c_str(), "r" );
+    if ( file == NULL ) {
+        return 0;
+    }
 
     MaxConnections = DEF_MAX_CONNECTION;        /* no limit */
     allowedUsers.clear();
@@ -1517,7 +1518,6 @@ queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
 // JMC - backport 4612
 int
 purgeLockFileDir( int chkLockFlag ) {
-    char lockFileDir[MAX_NAME_LEN];
     char lockFilePath[MAX_NAME_LEN * 2];
     struct dirent *myDirent;
     struct stat statbuf;
@@ -1526,13 +1526,20 @@ purgeLockFileDir( int chkLockFlag ) {
     struct flock myflock;
     uint purgeTime;
 
-    snprintf( lockFileDir, MAX_NAME_LEN, "%-s/%-s", getConfigDir(), LOCK_FILE_DIR );
+    std::string lock_dir;
+    irods::error ret = irods::get_full_path_for_config_file(
+                           LOCK_FILE_DIR,
+                           lock_dir );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
 
-    DIR *dirPtr = opendir( lockFileDir );
+    DIR *dirPtr = opendir( lock_dir.c_str() );
     if ( dirPtr == NULL ) {
         rodsLog( LOG_ERROR,
                  "purgeLockFileDir: opendir error for %s, errno = %d",
-                 lockFileDir, errno );
+                 lock_dir.c_str(), errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &myflock, sizeof( myflock ) );
@@ -1544,7 +1551,7 @@ purgeLockFileDir( int chkLockFlag ) {
             continue;
         }
         snprintf( lockFilePath, MAX_NAME_LEN, "%-s/%-s",
-                  lockFileDir, myDirent->d_name );
+                  lock_dir.c_str(), myDirent->d_name );
         if ( chkLockFlag ) {
             int myFd;
             myFd = open( lockFilePath, O_RDWR | O_CREAT, 0644 );

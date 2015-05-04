@@ -34,6 +34,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_log.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 
 int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
@@ -1187,12 +1189,27 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
         objPathPtr++;
     }
 
-    len = strlen( getConfigDir() ) + strlen( LOCK_FILE_DIR ) +
-          strlen( tmpPath ) + strlen( LOCK_FILE_TRAILER ) + 10; // JMC - backport 6404
+    std::string lock_path;
+    irods::error ret = irods::get_full_path_for_config_file(
+                           LOCK_FILE_DIR,
+                           lock_path );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    len = lock_path.size() +
+          strlen( tmpPath ) + 
+          strlen( LOCK_FILE_TRAILER ) + 10;
     *outLockPath = ( char * ) malloc( len );
 
-    snprintf( *outLockPath, len, "%-s/%-s/%-s.%-s", getConfigDir(),  // JMC - backport 6404
-              LOCK_FILE_DIR, tmpPath, LOCK_FILE_TRAILER );
+    snprintf( 
+        *outLockPath, 
+        len, 
+        "%-s/%-s.%-s", 
+        lock_path.c_str(), 
+        tmpPath, 
+        LOCK_FILE_TRAILER );
 
     return 0;
 }
@@ -1216,7 +1233,7 @@ executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
 #endif
 }
 
-/* fsDataObjLock - lock the data object using the local file system
+/* fsDataObjLock - lock the data object using the local file system  :(
  * Input:
  *    char *objPath - The full Object path
  *    int cmd - the fcntl cmd - valid values are F_SETLK, F_SETLKW and F_GETLK

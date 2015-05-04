@@ -10,6 +10,5 @@
 
 int getModifiedTime( char *fn, time_type *timestamp );
 char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] );
-void getResourceName( std::string &_out_str, const char *rname );
 
 #endif /* FILESYSTEM_H_ */

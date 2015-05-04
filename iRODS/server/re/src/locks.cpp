@@ -62,8 +62,7 @@ irods::error getMutexName( std::string &mutex_name ) {
         return PASS( ret );
     }
 
-    getResourceName( mutex_name, mutex_name_salt.c_str() );
-    mutex_name = "re_cache_mutex_" + mutex_name;
+    mutex_name = "irods_re_cache_mutex_" + mutex_name_salt;
 
     return SUCCESS();
 }

@@ -83,8 +83,7 @@ irods::error getSharedMemoryName( std::string &shared_memory_name ) {
         return PASS( ret );
     }
 
-    getResourceName( shared_memory_name, shared_memory_name_salt.c_str() );
-    shared_memory_name = "re_cache_shared_memory_" + shared_memory_name;
+    shared_memory_name = "irods_re_cache_shared_memory_" + shared_memory_name_salt;
 
     return SUCCESS();
 }
