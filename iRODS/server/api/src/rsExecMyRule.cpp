@@ -2,6 +2,7 @@
 #include "execMyRule.h"
 #include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
+#include "rcMisc.h"
 
 int
 rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,

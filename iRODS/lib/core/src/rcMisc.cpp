@@ -10,8 +10,8 @@
 #include "Unix2Nt.hpp"
 #endif
 #include "rcMisc.h"
-#include "apiHeaderAll.hpp"
-#include "modDataObjMeta.hpp"
+#include "apiHeaderAll.h"
+#include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"

@@ -9,6 +9,7 @@
 #include "miscUtil.h"
 #include "scanUtil.h"
 #include "checksum.hpp"
+#include "rcGlobalExtern.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

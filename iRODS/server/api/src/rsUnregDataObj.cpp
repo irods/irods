@@ -3,7 +3,7 @@
 /* unregDataObj.c
  */
 
-#include "unregDataObj.hpp"
+#include "unregDataObj.h"
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
 

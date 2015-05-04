@@ -3,19 +3,19 @@
 /* rsRmColl.c
  */
 
-#include "rmColl.hpp"
+#include "rmColl.h"
 #include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "openCollection.hpp"
-#include "readCollection.hpp"
+#include "openCollection.h"
+#include "readCollection.h"
 #include "closeCollection.h"
 #include "dataObjUnlink.h"
 #include "rsApiHandler.hpp"
 #include "fileRmdir.h"
 #include "collection.hpp"
-#include "subStructFileRmdir.hpp"
+#include "subStructFileRmdir.h"
 #include "dataObjRename.h"
 #include "genQuery.h"
 

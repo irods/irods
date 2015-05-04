@@ -3,7 +3,7 @@
 /* rsBulkDataObjPut.c. See bulkDataObjReg.h for a description of
  * this API call.*/
 
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "collection.hpp"

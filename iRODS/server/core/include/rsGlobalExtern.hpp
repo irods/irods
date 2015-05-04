@@ -11,10 +11,10 @@
 #include "apiHandler.hpp"
 #include "fileOpr.hpp"
 #include "objDesc.hpp"
-#include "querySpecColl.hpp"
+#include "querySpecColl.h"
 #include "miscUtil.h"
 #include "authenticate.h"
-#include "openCollection.hpp"
+#include "openCollection.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_manager.hpp"

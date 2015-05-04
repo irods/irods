@@ -11,6 +11,7 @@
 #include "miscUtil.h"
 #include "rcPortalOpr.h"
 #include "sockComm.h"
+#include "rcGlobalExtern.h"
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {

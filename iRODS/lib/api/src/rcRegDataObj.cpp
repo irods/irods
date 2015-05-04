@@ -1,4 +1,6 @@
-#include "regDataObj.hpp"
+#include "regDataObj.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo, dataObjInfo_t **outDataObjInfo )

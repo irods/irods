@@ -9,7 +9,7 @@
 #include "miscServerFunct.hpp"
 #include "getHostForPut.h"
 #include "getHostForGet.h"
-#include "QUANTAnet_rbudpBase_c.hpp"
+#include "QUANTAnet_rbudpBase_c.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"
 

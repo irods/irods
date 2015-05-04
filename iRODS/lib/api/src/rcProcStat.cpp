@@ -1,4 +1,6 @@
-#include "procStat.hpp"
+#include "procStat.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcProcStat( rcComm_t *conn, procStatInp_t *procStatInp, genQueryOut_t **procStatOut )

@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "replUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

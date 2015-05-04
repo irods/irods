@@ -1,4 +1,6 @@
-#include "unregDataObj.hpp"
+#include "unregDataObj.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp )

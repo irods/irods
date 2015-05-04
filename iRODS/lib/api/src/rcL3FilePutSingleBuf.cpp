@@ -1,4 +1,6 @@
-#include "l3FilePutSingleBuf.hpp"
+#include "l3FilePutSingleBuf.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx, bytesBuf_t *dataObjInBBuf)

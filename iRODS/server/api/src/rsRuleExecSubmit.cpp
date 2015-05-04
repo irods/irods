@@ -1,6 +1,7 @@
 #include "rodsConnect.h"
-#include "ruleExecSubmit.hpp"
+#include "ruleExecSubmit.h"
 #include "icatHighLevelRoutines.hpp"
+#include "rcMisc.h"
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"

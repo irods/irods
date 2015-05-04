@@ -1,5 +1,6 @@
-
-#include "ies_client_hints.hpp"
+#include "ies_client_hints.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcIESClientHints( rcComm_t *conn, bytesBuf_t** _bbuf ) {

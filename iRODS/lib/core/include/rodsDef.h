@@ -1,5 +1,5 @@
 /**
- * @file  rodsDef.hpp
+ * @file  rodsDef.h
  *
  */
 
@@ -11,8 +11,8 @@
 
 
 
-#ifndef RODS_DEF_HPP
-#define RODS_DEF_HPP
+#ifndef RODS_DEF_H__
+#define RODS_DEF_H__
 
 #include <stdio.h>
 #include <errno.h>
@@ -33,11 +33,6 @@
 
 #if defined(solaris_platform)
 #include <arpa/inet.h>
-#endif
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include "dirent.hpp"
 #endif
 
 #ifndef _WIN32
@@ -375,4 +370,4 @@ typedef struct {
     char progName[NAME_LEN];
 } procLog_t;
 
-#endif	/* RODS_DEF_H */
+#endif	// RODS_DEF_H__

@@ -5,7 +5,7 @@
 
 #include "reFuncDefs.hpp"
 #include "fileStat.h"
-#include "phyPathReg.hpp"
+#include "phyPathReg.h"
 #include "rodsLog.h"
 #include "icatDefines.h"
 #include "objMetaOpr.hpp"
@@ -18,7 +18,7 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

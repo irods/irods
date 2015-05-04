@@ -3,7 +3,7 @@
 /* unregDataObj.c
  */
 
-#include "regReplica.hpp"
+#include "regReplica.h"
 #include "objMetaOpr.hpp" // JMC - backport 4497
 #include "icatHighLevelRoutines.hpp"
 

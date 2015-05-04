@@ -3,8 +3,8 @@
 #include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"
-#include "zone_report.hpp"
-#include "server_report.hpp"
+#include "zone_report.h"
+#include "server_report.h"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
 

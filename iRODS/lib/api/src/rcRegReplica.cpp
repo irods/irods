@@ -1,4 +1,6 @@
-#include "regReplica.hpp"
+#include "regReplica.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp )

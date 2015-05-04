@@ -8,6 +8,7 @@
 #include "miscUtil.h"
 #include "rodsLog.h"
 #include "chksumUtil.h"
+#include "rcGlobalExtern.h"
 
 static int ChksumCnt = 0;
 static int FailedChksumCnt = 0;

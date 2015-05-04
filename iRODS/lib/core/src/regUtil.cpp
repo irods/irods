@@ -6,6 +6,7 @@
 #include "regUtil.h"
 #include "miscUtil.h"
 #include "checksum.hpp"
+#include "rcGlobalExtern.h"
 
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

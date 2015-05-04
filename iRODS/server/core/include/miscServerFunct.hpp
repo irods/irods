@@ -23,7 +23,7 @@
 #include "dataObjInpOut.h"
 #include "dataCopy.h"
 
-#include "structFileSync.hpp" /* JMC */
+#include "structFileSync.h" /* JMC */
 
 #define MAX_RECON_ERROR_CNT	10
 

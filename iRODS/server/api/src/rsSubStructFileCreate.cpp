@@ -2,7 +2,7 @@
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
-#include "subStructFileCreate.hpp"
+#include "subStructFileCreate.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"

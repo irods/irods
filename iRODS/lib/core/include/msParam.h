@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "objInfo.h"
 #include "dataObjCopy.h"
-#include "structFileExtAndReg.hpp"
+#include "structFileExtAndReg.h"
 #include "execCmd.h"
 #include "rodsPath.h"
 

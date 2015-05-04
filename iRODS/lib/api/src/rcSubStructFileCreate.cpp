@@ -1,4 +1,6 @@
-#include "subStructFileCreate.hpp"
+#include "subStructFileCreate.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileCreate( rcComm_t *conn, subFile_t *subFile )

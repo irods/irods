@@ -1,4 +1,6 @@
-#include "subStructFileWrite.hpp"
+#include "subStructFileWrite.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileWrite( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileWriteInp, bytesBuf_t *subStructFileWriteOutBBuf )

@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "streamClose.hpp"
+#include "streamClose.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 

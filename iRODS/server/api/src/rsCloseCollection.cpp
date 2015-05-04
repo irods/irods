@@ -3,7 +3,7 @@
 /* rsCloseCollection.c
  */
 
-#include "openCollection.hpp"
+#include "openCollection.h"
 #include "closeCollection.h"
 #include "objMetaOpr.hpp"
 #include "rcGlobalExtern.h"

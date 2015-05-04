@@ -12,8 +12,9 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "rcPortalOpr.h"
-#include "oprComplete.hpp"
+#include "oprComplete.h"
 #include "sockComm.h"
+#include "rcMisc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"

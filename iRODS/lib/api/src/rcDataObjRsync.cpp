@@ -11,7 +11,8 @@
 #include "dataObjGet.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
-#include "oprComplete.hpp"
+#include "oprComplete.h"
+#include "rcMisc.h"
 
 /**
  * \fn rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)

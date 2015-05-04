@@ -4,7 +4,7 @@
  */
 
 #include "chkObjPermAndStat.h"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "icatHighLevelRoutines.hpp"
 #include "icatHighLevelRoutines.hpp"
 int

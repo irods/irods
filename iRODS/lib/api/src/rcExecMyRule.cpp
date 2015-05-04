@@ -1,7 +1,8 @@
 #include "execMyRule.h"
-#include "oprComplete.hpp"
+#include "oprComplete.h"
 #include "dataObjPut.h"
 #include "dataObjGet.h"
+#include "rcMisc.h"
 
 
 /**

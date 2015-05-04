@@ -4,7 +4,7 @@
 /* See userAdmin.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "userAdmin.hpp"
+#include "userAdmin.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 

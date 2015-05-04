@@ -11,10 +11,10 @@
 #include "rsGlobalExtern.hpp"
 #include "dataObjCreate.h"
 #include "objMetaOpr.hpp"
-#include "regDataObj.hpp"
+#include "regDataObj.h"
 /* #include "reAction.hpp" */
 #include "miscServerFunct.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "miscUtil.h"
 
 

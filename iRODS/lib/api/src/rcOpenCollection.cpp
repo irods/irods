@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See openCollection.h for a description of this API call.*/
 
-#include "openCollection.hpp"
+#include "openCollection.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcOpenCollection (rcComm_t *conn, collInp_t *openCollInp)

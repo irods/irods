@@ -7,7 +7,7 @@
 #include "irods_resource_manager.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -53,8 +53,8 @@ typedef struct tarSubFileDesc {
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rsGlobalExtern.hpp"
-#include "modColl.hpp"
-#include "apiHeaderAll.hpp"
+#include "modColl.h"
+#include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "collection.hpp"

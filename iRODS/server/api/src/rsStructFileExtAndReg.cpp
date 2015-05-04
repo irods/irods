@@ -4,7 +4,7 @@
  * this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
 #include "dataObjOpr.hpp"
@@ -16,7 +16,7 @@
 #include "fileOpr.hpp"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
-#include "structFileExtAndReg.hpp"
+#include "structFileExtAndReg.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

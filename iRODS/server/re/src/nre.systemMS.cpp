@@ -9,6 +9,7 @@
 #include <time.h>
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "rcMisc.h"
 #include "execMyRule.h"
 #include "region.h"
 #include "rules.hpp"

@@ -10,6 +10,7 @@
 #include "miscUtil.h"
 #include "rcPortalOpr.h"
 #include "checksum.hpp"
+#include "rcGlobalExtern.h"
 #include <string>
 #include <boost/filesystem.hpp>
 #include "irods_server_properties.hpp"

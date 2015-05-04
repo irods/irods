@@ -20,7 +20,7 @@
  * Direct questions, comments etc about Quanta to cavern@evl.uic.edu
  *****************************************************************************/
 
-#include "QUANTAnet_rbudpBase_c.hpp"
+#include "QUANTAnet_rbudpBase_c.h"
 #include "rodsLog.h"
 #include <stdarg.h>
 

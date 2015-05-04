@@ -1,7 +1,9 @@
 /* This is script-generated code.  */
 /* See sslStart.h for a description of this API call.*/
 
-#include "sslStart.hpp"
+#include "sslStart.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp ) {

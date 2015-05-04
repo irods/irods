@@ -8,6 +8,7 @@
 #include "miscUtil.h"
 #include "rodsLog.h"
 #include "rmUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

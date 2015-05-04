@@ -8,6 +8,7 @@
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "rcMisc.h"
 
 
 /**

@@ -1,4 +1,6 @@
-#include "streamClose.hpp"
+#include "streamClose.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp )

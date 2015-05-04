@@ -4,7 +4,7 @@
 /* See modAccessControl.h for a description of this API call.*/
 
 #include "reFuncDefs.hpp"
-#include "modAccessControl.hpp"
+#include "modAccessControl.h"
 #include "specColl.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"

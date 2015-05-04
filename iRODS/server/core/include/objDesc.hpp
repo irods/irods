@@ -14,8 +14,8 @@
 #include "dataObjInpOut.h"
 #include "fileRename.h"
 #include "miscUtil.h"
-#include "structFileSync.hpp"
-#include "structFileExtAndReg.hpp"
+#include "structFileSync.h"
+#include "structFileExtAndReg.h"
 #include "dataObjOpenAndStat.h"
 
 #include "boost/any.hpp"

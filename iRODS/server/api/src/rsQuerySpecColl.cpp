@@ -3,7 +3,7 @@
 /* rsQuerySpecColl.c
  */
 
-#include "querySpecColl.hpp"
+#include "querySpecColl.h"
 #include "rcMisc.h"
 #include "fileOpendir.h"
 #include "fileReaddir.h"
@@ -11,9 +11,9 @@
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "dataObjClose.h"
-#include "subStructFileOpendir.hpp"
-#include "subStructFileReaddir.hpp"
-#include "subStructFileClosedir.hpp"
+#include "subStructFileOpendir.h"
+#include "subStructFileReaddir.h"
+#include "subStructFileClosedir.h"
 #include "fileStat.h"
 #include "genQuery.h"
 #include "rsGlobalExtern.hpp"

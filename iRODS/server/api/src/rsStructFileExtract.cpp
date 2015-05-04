@@ -1,8 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "structFileExtract.hpp"
+#include "structFileExtract.h"
 #include "miscServerFunct.hpp"
-#include "syncMountedColl.hpp"
+#include "syncMountedColl.h"
 
 #include "dataObjOpr.hpp"
 #include "rsGlobalExtern.hpp"

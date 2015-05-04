@@ -14,8 +14,8 @@
 #include "dataObjInpOut.h"
 #include "fileRename.h"
 #include "miscUtil.h"
-#include "structFileSync.hpp"
-#include "structFileExtAndReg.hpp"
+#include "structFileSync.h"
+#include "structFileExtAndReg.h"
 #include "dataObjOpenAndStat.h"
 
 #define ORPHAN_DIR      "orphan"

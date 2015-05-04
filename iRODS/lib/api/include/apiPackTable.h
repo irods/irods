@@ -11,7 +11,7 @@
 #include "rodsPackInstruct.h"
 
 /* need to include a header for for each API */
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 
 packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 

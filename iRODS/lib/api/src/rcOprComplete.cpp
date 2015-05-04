@@ -1,4 +1,6 @@
-#include "oprComplete.hpp"
+#include "oprComplete.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcOprComplete( rcComm_t *conn, int retval )

@@ -28,7 +28,6 @@
 
 #ifdef _WIN32
 #include <stdio.h>
-#include "winsock2.hpp"
 
 #ifndef snprintf
 #define snprintf _snprintf

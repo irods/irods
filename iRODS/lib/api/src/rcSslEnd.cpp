@@ -1,7 +1,9 @@
 /* This is script-generated code.  */
 /* See sslEnd.h for a description of this API call.*/
 
-#include "sslEnd.hpp"
+#include "sslEnd.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp ) {

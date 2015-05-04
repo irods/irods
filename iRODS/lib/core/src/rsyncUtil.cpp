@@ -9,6 +9,7 @@
 #include "rsyncUtil.h"
 #include "miscUtil.h"
 #include "checksum.hpp"
+#include "rcGlobalExtern.h"
 
 #include <sstream>
 #include <boost/filesystem/operations.hpp>

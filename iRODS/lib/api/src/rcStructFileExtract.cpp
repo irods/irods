@@ -1,4 +1,6 @@
-#include "structFileExtract.hpp"
+#include "structFileExtract.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp )

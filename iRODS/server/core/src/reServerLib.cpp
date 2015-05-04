@@ -9,8 +9,8 @@
 #endif
 #include "reServerLib.hpp"
 #include "rodsConnect.h"
-#include "ruleExecSubmit.hpp"
-#include "ruleExecDel.hpp"
+#include "ruleExecSubmit.h"
+#include "ruleExecDel.h"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "reSysDataObjOpr.hpp"

@@ -8,7 +8,9 @@
 /* This is script-generated code.  */
 /* See phyPathReg.h for a description of this API call.*/
 
-#include "phyPathReg.hpp"
+#include "phyPathReg.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcPhyPathReg (rcComm_t *conn, dataObjInp_t *phyPathRegInp)

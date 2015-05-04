@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "cpUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

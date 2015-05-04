@@ -8,7 +8,7 @@
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
-#include "regDataObj.hpp"
+#include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"

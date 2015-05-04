@@ -1,4 +1,6 @@
-#include "subStructFileRead.hpp"
+#include "subStructFileRead.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileRead( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadInp, bytesBuf_t *subStructFileReadOutBBuf )

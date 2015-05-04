@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See ruleExecMod.h for a description of this API call.*/
 
-#include "ruleExecMod.hpp"
+#include "ruleExecMod.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 

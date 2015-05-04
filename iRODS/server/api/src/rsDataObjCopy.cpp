@@ -12,7 +12,7 @@
 #include "dataObjClose.h"
 #include "dataObjCreate.h"
 #include "dataObjRepl.h"
-#include "regDataObj.hpp"
+#include "regDataObj.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "getRemoteZoneResc.h"

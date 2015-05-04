@@ -1,4 +1,6 @@
-#include "structFileBundle.hpp"
+#include "structFileBundle.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcStructFileBundle( rcComm_t *conn, structFileExtAndRegInp_t *structFileBundleInp )

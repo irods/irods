@@ -1,7 +1,6 @@
-/* This is script-generated code.  */
-/* See getTempPassword.h for a description of this API call.*/
-
-#include "server_report.hpp"
+#include "server_report.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcServerReport( rcComm_t *conn, bytesBuf_t** _bbuf ) {

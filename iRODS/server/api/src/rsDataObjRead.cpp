@@ -8,7 +8,7 @@
 #include "objMetaOpr.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "subStructFileRead.hpp"  /* XXXXX can be taken out when structFile api done */
+#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.hpp"
 #include "reFuncDefs.hpp"
 

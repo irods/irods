@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See rmColl.h for a description of this API call.*/
 
-#include "rmColl.hpp"
+#include "rmColl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,

@@ -8,6 +8,7 @@
 #include "miscUtil.h"
 #include "rodsLog.h"
 #include "rmtrashUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

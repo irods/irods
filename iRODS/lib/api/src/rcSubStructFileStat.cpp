@@ -1,4 +1,6 @@
-#include "subStructFileStat.hpp"
+#include "subStructFileStat.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileStat( rcComm_t *conn, subFile_t *subFile, rodsStat_t **subStructFileStatOut )

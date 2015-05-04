@@ -6,12 +6,12 @@
  */
 
 #include "rsApiHandler.hpp"
-#include "modDataObjMeta.hpp"
+#include "modDataObjMeta.h"
 #include "rcMisc.h"
 #include "miscServerFunct.hpp"
-#include "regReplica.hpp"
-#include "unregDataObj.hpp"
-#include "modAVUMetadata.hpp"
+#include "regReplica.h"
+#include "unregDataObj.h"
+#include "modAVUMetadata.h"
 #include "sockComm.h"
 
 #include <boost/thread.hpp>

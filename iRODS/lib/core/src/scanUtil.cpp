@@ -7,6 +7,7 @@
 #include "rodsLog.h"
 #include "scanUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

@@ -1,4 +1,6 @@
-#include "subStructFileRmdir.hpp"
+#include "subStructFileRmdir.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileRmdir( rcComm_t *conn, subFile_t *subFile )

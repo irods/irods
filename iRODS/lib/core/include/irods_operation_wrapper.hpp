@@ -18,6 +18,7 @@
 #include "irods_error.hpp"
 #include "irods_operation_rule_execution_manager.hpp"
 #include "irods_operation_rule_execution_manager_no_op.hpp"
+#include "rcMisc.h"
 
 // =-=-=-=-=-=-=-
 // irods includes

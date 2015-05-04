@@ -1,5 +1,7 @@
 
-#include "modAccessControl.hpp"
+#include "modAccessControl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp )

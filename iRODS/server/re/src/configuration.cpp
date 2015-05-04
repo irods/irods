@@ -12,7 +12,8 @@
 #include "filesystem.hpp"
 #include "sharedmemory.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "modAVUMetadata.hpp"
+#include "rcMisc.h"
+#include "modAVUMetadata.h"
 #include "genQuery.h"
 
 #include "irods_get_full_path_for_config_file.hpp"

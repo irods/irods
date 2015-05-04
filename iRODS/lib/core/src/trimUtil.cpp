@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "trimUtil.h"
+#include "rcGlobalExtern.h"
 
 rodsLong_t TotalSizeTrimmed = 0;
 int TotalTrimmed = 0;

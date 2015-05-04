@@ -18,13 +18,13 @@
 
 
 /* need to include a header for for each API */
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 
 
-#include "server_report.hpp"
-#include "zone_report.hpp"
+#include "server_report.h"
+#include "zone_report.h"
 #include "client_hints.h"
-#include "ies_client_hints.hpp"
+#include "ies_client_hints.h"
 
 
 

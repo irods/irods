@@ -3,9 +3,10 @@
 
 /* See specificQuery.h for a description of this API call.*/
 
-#include "specificQuery.hpp"
+#include "specificQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
+#include "rcMisc.h"
 #include "irods_log.hpp"
 
 /* can be used for debug: */

@@ -3,7 +3,8 @@
 /* This is script-generated code (for the most part).  */
 /* See l3FileGetSingleBuf.h for a description of this API call.*/
 
-#include "l3FileGetSingleBuf.hpp"
+#include "l3FileGetSingleBuf.h"
+#include "dataObjGet.h"
 #include "rodsLog.h"
 #include "dataGet.h"
 #include "fileGet.h"

@@ -8,6 +8,7 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "cpUtil.h"
+#include "rcGlobalExtern.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 

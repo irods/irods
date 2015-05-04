@@ -1,4 +1,6 @@
-#include "subStructFileClose.hpp"
+#include "subStructFileClose.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileClose( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileCloseInp )

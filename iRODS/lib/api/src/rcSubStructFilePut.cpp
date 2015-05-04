@@ -1,4 +1,6 @@
-#include "subStructFilePut.hpp"
+#include "subStructFilePut.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFilePut( rcComm_t *conn, subFile_t *subFile, bytesBuf_t *subFilePutOutBBuf )

@@ -1,4 +1,6 @@
-#include "modDataObjMeta.hpp"
+#include "modDataObjMeta.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp )

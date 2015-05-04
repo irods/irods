@@ -7,7 +7,9 @@
 /* This is script-generated code.  */
 /* See simpleQuery.h for a description of this API call.*/
 
-#include "simpleQuery.hpp"
+#include "simpleQuery.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 /**
 * \fn rcSimpleQuery (rcComm_t *conn, simpleQueryInp_t *simpleQueryInp, simpleQueryOut_t **simpleQueryOut)
 *

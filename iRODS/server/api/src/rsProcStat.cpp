@@ -5,7 +5,7 @@
  */
 
 /* script generated code */
-#include "procStat.hpp"
+#include "procStat.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "miscServerFunct.hpp"

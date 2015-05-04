@@ -10,6 +10,7 @@
 #include "specColl.hpp"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"
+#include "icatDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
 

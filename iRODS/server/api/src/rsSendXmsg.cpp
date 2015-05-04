@@ -3,7 +3,7 @@
 /* rsSendXmsg.cpp
  */
 
-#include "sendXmsg.hpp"
+#include "sendXmsg.h"
 #include "xmsgLib.hpp"
 
 

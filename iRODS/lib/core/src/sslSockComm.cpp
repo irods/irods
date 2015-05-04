@@ -7,6 +7,8 @@
 #include "rodsClient.h"
 #include "sslSockComm.h"
 #include "irods_client_server_negotiation.hpp"
+#include "rcGlobalExtern.h"
+#include "packStruct.h"
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues

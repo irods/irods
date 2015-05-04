@@ -1,4 +1,6 @@
-#include "subStructFileLseek.hpp"
+#include "subStructFileLseek.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp, fileLseekOut_t **subStructFileLseekOut )

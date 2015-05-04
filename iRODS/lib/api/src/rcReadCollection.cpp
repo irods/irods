@@ -6,7 +6,9 @@
 /* This is script-generated code.  */
 /* See readCollection.h for a description of this API call.*/
 
-#include "readCollection.hpp"
+#include "readCollection.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcReadCollection (rcComm_t *conn, int handleInxInp, collEnt_t **collEnt)

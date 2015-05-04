@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See simpleQuery.h for a description of this API call.*/
 
-#include "simpleQuery.hpp"
+#include "simpleQuery.h"
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 

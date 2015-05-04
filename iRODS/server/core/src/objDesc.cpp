@@ -10,7 +10,7 @@
 #include "rodsDef.h"
 #include "rsGlobalExtern.hpp"
 #include "fileChksum.h"
-#include "modDataObjMeta.hpp"
+#include "modDataObjMeta.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
 #include "resource.hpp"

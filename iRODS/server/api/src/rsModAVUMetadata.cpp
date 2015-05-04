@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See modAVUMetadata.h for a description of this API call.*/
 
-#include "modAVUMetadata.hpp"
+#include "modAVUMetadata.h"
 #include "reFuncDefs.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"

@@ -6,7 +6,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "userAdmin.hpp"
+#include "userAdmin.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcUserAdmin (rcComm_t *conn, userAdminInp_t *userAdminInp)

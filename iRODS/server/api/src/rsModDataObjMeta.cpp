@@ -4,7 +4,7 @@
  */
 
 #include "reFuncDefs.hpp"
-#include "modDataObjMeta.hpp"
+#include "modDataObjMeta.h"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"

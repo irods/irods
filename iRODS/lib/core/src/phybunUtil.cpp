@@ -5,6 +5,7 @@
 #include "rodsLog.h"
 #include "phybunUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

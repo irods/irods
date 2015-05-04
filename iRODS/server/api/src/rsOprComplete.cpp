@@ -1,5 +1,5 @@
 /* rsOprComplete.c */
-#include "oprComplete.hpp"
+#include "oprComplete.h"
 #include "dataObjClose.h"
 #include "rsGlobalExtern.hpp"
 

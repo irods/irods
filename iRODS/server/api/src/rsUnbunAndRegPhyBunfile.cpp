@@ -3,8 +3,8 @@
 /* rsStructFileExtAndReg.c. See unbunAndRegPhyBunfile.h for a description of
  * this API call.*/
 
-#include "unbunAndRegPhyBunfile.hpp"
-#include "apiHeaderAll.hpp"
+#include "unbunAndRegPhyBunfile.h"
+#include "apiHeaderAll.h"
 #include "miscServerFunct.hpp"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"

@@ -13,6 +13,7 @@
 // irods includes
 #include "rodsDef.h"
 #include "rodsConnect.h"
+#include "rcMisc.h"
 #include "index.hpp"
 #include "reFuncDefs.hpp"
 

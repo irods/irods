@@ -11,7 +11,7 @@
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "miscUtil.h"
-#include "openCollection.hpp"
+#include "openCollection.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_manager.hpp"

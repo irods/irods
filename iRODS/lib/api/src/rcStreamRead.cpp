@@ -1,4 +1,6 @@
-#include "streamRead.hpp"
+#include "streamRead.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp, bytesBuf_t *streamReadOutBBuf )

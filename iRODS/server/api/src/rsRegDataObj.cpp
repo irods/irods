@@ -3,7 +3,7 @@
 /* regDataObj.c
  */
 
-#include "regDataObj.hpp"
+#include "regDataObj.h"
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
 

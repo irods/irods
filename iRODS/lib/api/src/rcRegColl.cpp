@@ -1,4 +1,6 @@
-#include "regColl.hpp"
+#include "regColl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcRegColl( rcComm_t *conn, collInp_t *regCollInp )

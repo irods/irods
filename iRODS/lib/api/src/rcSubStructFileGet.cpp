@@ -1,4 +1,6 @@
-#include "subStructFileGet.hpp"
+#include "subStructFileGet.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileGet( rcComm_t *conn, subFile_t *subFile, bytesBuf_t *subFileGetOutBBuf )

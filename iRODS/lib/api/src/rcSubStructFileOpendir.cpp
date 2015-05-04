@@ -1,4 +1,6 @@
-#include "subStructFileOpendir.hpp"
+#include "subStructFileOpendir.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileOpendir( rcComm_t *conn, subFile_t *subFile )

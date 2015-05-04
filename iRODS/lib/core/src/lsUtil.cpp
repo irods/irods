@@ -3,6 +3,7 @@
 #include "rodsLog.h"
 #include "lsUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
 

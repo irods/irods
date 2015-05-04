@@ -5,6 +5,7 @@
 #include "rodsLog.h"
 #include "mcollUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 /* redefine of some input option */
 #define syncCacheDir	sizeFlag

@@ -5,6 +5,7 @@
 #include "rodsLog.h"
 #include "mkdirUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,

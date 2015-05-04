@@ -7,9 +7,9 @@
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "subStructFileLseek.hpp"
+#include "subStructFileLseek.h"
 #include "objMetaOpr.hpp"
-#include "subStructFileUnlink.hpp"
+#include "subStructFileUnlink.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

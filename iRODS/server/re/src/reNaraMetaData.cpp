@@ -4,7 +4,7 @@
  */
 
 #include "reNaraMetaData.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "irods_stacktrace.hpp"
 #include "rodsConnect.h"
 

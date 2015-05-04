@@ -8,6 +8,7 @@
 #include "rodsClient.h"
 #include "rodsLog.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 #include "irods_stacktrace.hpp"
 

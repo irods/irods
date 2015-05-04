@@ -1,4 +1,6 @@
-#include "subStructFileTruncate.hpp"
+#include "subStructFileTruncate.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileTruncate( rcComm_t *conn, subFile_t *bunSubTruncateInp )

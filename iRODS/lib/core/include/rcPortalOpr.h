@@ -12,9 +12,9 @@
 #include "rods.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-#include "QUANTAnet_rbudpBase_c.hpp"
-#include "QUANTAnet_rbudpSender_c.hpp"
-#include "QUANTAnet_rbudpReceiver_c.hpp"
+#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpSender_c.h"
+#include "QUANTAnet_rbudpReceiver_c.h"
 
 #define MAX_PROGRESS_CNT	8
 

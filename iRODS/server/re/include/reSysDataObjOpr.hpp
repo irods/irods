@@ -12,7 +12,7 @@
 #include "rods.h"
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.h"
-#include "modDataObjMeta.hpp"
+#include "modDataObjMeta.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 

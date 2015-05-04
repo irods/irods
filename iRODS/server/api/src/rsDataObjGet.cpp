@@ -16,7 +16,7 @@
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
 #include "specColl.hpp"
-#include "subStructFileGet.hpp"
+#include "subStructFileGet.h"
 #include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-

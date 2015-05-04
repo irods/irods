@@ -7,7 +7,7 @@
 #include "dataObjCreateAndStat.h"
 #include "dataObjOpen.h"
 #include "fileCreate.h"
-#include "subStructFileCreate.hpp"
+#include "subStructFileCreate.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
@@ -16,7 +16,7 @@
 #include "physPath.hpp"
 #include "dataObjUnlink.h"
 #include "dataObjLock.h" // JMC - backport 4604
-#include "regDataObj.hpp"
+#include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.hpp"
 #include "reDefines.h"

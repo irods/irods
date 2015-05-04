@@ -4,7 +4,8 @@
  */
 
 #include "reFuncDefs.hpp"
-#include "modColl.hpp"
+#include "modColl.h"
+#include "rcMisc.h"
 #include "icatHighLevelRoutines.hpp"
 
 int

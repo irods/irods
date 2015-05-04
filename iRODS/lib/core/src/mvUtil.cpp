@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "mvUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 mvUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp ) {

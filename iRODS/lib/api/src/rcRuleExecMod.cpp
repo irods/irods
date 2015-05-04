@@ -1,4 +1,6 @@
-#include "ruleExecMod.hpp"
+#include "ruleExecMod.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp )

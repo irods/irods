@@ -1,4 +1,6 @@
-#include "phyBundleColl.hpp"
+#include "phyBundleColl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcPhyBundleColl( rcComm_t *conn, structFileExtAndRegInp_t *phyBundleCollInp )

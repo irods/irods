@@ -8,8 +8,6 @@
 #include "rods.h"
 #include "msParam.h"
 #include "rodsPackTable.h"		/* globally declare RodsPackTable */
-//#include "apiPackTable.h"		/* globally declare apiPackTable */
-//#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "objInfo.h"
 #include "rodsGenQuery.h"
 #include "rodsGeneralUpdate.h"

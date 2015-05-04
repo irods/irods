@@ -8,7 +8,7 @@
 #include "rodsPath.h"
 #include "lsUtil.h"
 #include "irods_buffer_encryption.hpp"
-#include "zone_report.hpp"
+#include "zone_report.h"
 #include <string>
 #include <iostream>
 

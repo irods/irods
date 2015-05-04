@@ -9,7 +9,7 @@
 
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.h"
-#include "phyBundleColl.hpp"
+#include "phyBundleColl.h"
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>

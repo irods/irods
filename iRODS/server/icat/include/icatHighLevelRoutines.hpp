@@ -6,12 +6,12 @@
 #define ICAT_HIGHLEVEL_ROUTINES_HPP
 
 #include "objInfo.h"
-#include "ruleExecSubmit.hpp"
+#include "ruleExecSubmit.h"
 #include "rcConnect.h"
 #include "icatStructs.hpp"
 #include "rodsGeneralUpdate.h"
-#include "specificQuery.hpp"
-#include "phyBundleColl.hpp"
+#include "specificQuery.h"
+#include "phyBundleColl.h"
 #include "readServerConfig.hpp"
 
 #include <sys/socket.h>

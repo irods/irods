@@ -1,5 +1,6 @@
-
-#include "zone_report.hpp"
+#include "zone_report.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcZoneReport( rcComm_t *conn, bytesBuf_t** _bbuf ) {

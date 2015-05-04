@@ -3,6 +3,7 @@
 #include "arithmetics.hpp"
 #include "index.hpp"
 #include "datetime.hpp"
+#include "rcMisc.h"
 #ifndef DEBUG
 #include "rodsType.h"
 #endif

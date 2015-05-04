@@ -1,7 +1,9 @@
 /* This is script-generated code.  */
 /* See ticketAdmin.h for a description of this API call.*/
 
-#include "ticketAdmin.hpp"
+#include "ticketAdmin.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 int
 rcTicketAdmin( rcComm_t *conn, ticketAdminInp_t *ticketAdminInp ) {

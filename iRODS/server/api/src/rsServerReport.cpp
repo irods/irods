@@ -10,7 +10,7 @@
 #include "irods_plugin_home_directory.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
-#include "server_report.hpp"
+#include "server_report.h"
 #include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_environment_properties.hpp"

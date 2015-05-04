@@ -7,7 +7,7 @@
 #include "cache.hpp"
 #include "configuration.hpp"
 #ifndef DEBUG
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"
 #include "dataObjOpr.hpp"
 #else

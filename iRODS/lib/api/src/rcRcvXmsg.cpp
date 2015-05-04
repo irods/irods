@@ -1,4 +1,6 @@
-#include "rcvXmsg.hpp"
+#include "rcvXmsg.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcRcvXmsg( rcComm_t *conn, rcvXmsgInp_t *rcvXmsgInp, rcvXmsgOut_t **rcvXmsgOut )

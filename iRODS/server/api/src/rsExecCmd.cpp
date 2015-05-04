@@ -15,6 +15,7 @@
 #include "fileClose.h"
 #include "miscServerFunct.hpp"
 #include "rodsLog.h"
+#include "icatDefines.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 

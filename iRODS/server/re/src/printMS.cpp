@@ -7,7 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"
 #include "reFuncDefs.hpp"
 

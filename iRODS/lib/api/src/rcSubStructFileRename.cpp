@@ -1,4 +1,6 @@
-#include "subStructFileRename.hpp"
+#include "subStructFileRename.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileRename( rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp )

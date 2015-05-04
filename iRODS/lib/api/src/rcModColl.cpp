@@ -1,4 +1,6 @@
-#include "modColl.hpp"
+#include "modColl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcModColl( rcComm_t *conn, collInp_t *modCollInp )

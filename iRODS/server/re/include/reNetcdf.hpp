@@ -9,7 +9,7 @@
 #ifndef RE_NETCDF_HPP
 #define RE_NETCDF_HPP
 
-#include "apiHeaderAll.hpp"
+#include "apiHeaderAll.h"
 #include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 

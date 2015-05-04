@@ -1,4 +1,6 @@
-#include "unbunAndRegPhyBunfile.hpp"
+#include "unbunAndRegPhyBunfile.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp )

@@ -13,6 +13,7 @@
 #include "arithmetics.hpp"
 #include "configuration.hpp"
 #include "filesystem.hpp"
+#include "rcMisc.h"
 #include "irods_log.hpp"
 
 

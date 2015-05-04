@@ -8,7 +8,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_file_object.hpp"
 #include "irods_log.hpp"
-#include "subStructFileRead.hpp"
+#include "subStructFileRead.h"
 
 namespace irods {
 

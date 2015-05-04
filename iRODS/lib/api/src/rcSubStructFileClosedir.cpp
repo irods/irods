@@ -1,4 +1,6 @@
-#include "subStructFileClosedir.hpp"
+#include "subStructFileClosedir.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileClosedir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp )

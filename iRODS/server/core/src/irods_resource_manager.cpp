@@ -11,7 +11,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "rsGlobalExtern.hpp"
 #include "generalAdmin.h"
-#include "phyBundleColl.hpp"
+#include "phyBundleColl.h"
 #include "miscServerFunct.hpp"
 #include "genQuery.h"
 

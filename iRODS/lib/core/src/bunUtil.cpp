@@ -5,6 +5,7 @@
 #include "rodsLog.h"
 #include "bunUtil.h"
 #include "miscUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

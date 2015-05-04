@@ -8,6 +8,7 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 #include "phymvUtil.h"
+#include "rcGlobalExtern.h"
 
 int
 phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,

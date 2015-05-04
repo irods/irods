@@ -1,4 +1,6 @@
-#include "subStructFileUnlink.hpp"
+#include "subStructFileUnlink.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSubStructFileUnlink( rcComm_t *conn, subFile_t *subFile )

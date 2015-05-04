@@ -15,8 +15,8 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "miscServerFunct.hpp"
-#include "openCollection.hpp"
-#include "readCollection.hpp"
+#include "openCollection.h"
+#include "readCollection.h"
 #include "closeCollection.h"
 #include "dataObjOpr.hpp"
 

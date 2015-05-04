@@ -1,4 +1,6 @@
-#include "sendXmsg.hpp"
+#include "sendXmsg.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcSendXmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp )

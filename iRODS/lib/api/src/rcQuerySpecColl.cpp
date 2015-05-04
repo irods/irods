@@ -1,4 +1,6 @@
-#include "querySpecColl.hpp"
+#include "querySpecColl.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
 
 /**
  * \fn rcQuerySpecColl( rcComm_t *conn, dataObjInp_t *querySpecCollInp, genQueryOut_t **genQueryOut )
