@@ -7,10 +7,6 @@
 #include <iostream>
 
 typedef std::vector< std::string > path_list_t;
-static bool is_stdout( const std::string& _p ) {
-    std::cout << "is_stdout : [" << _p << "]" << std::endl;
-    return _p == "-";
-}
 
 // this is global due to the fact that the storage of the
 // various strings used by _rods_args is managed by the
@@ -79,9 +75,9 @@ static int parse_program_options(
         return SYS_INVALID_INPUT_PARAM;
 
     }
-  
+
     bool have_verify = global_prog_ops_var_map.count( "verify_checksum" ) > 0;
-    bool have_stdout = _paths.end() != 
+    bool have_stdout = _paths.end() !=
                            std::find(
                                _paths.begin(),
                                _paths.end(),
