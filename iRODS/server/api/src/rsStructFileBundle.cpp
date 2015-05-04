@@ -257,6 +257,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     "_rsStructFileBundle - skipping [%s] on resc [%s]",
                     collEnt->phyPath,
                     collEnt->resc_hier );
+                collEnt = NULL;
+                free( collEnt );
                 continue;
             }
 
@@ -319,6 +321,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // entry is a collection
             if ( ( int ) strlen( collEnt->collName ) + 1 <= collLen ) {
                 free( collEnt );
+                collEnt = NULL;
                 continue;
             }
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
@@ -330,10 +333,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             }
         } // else
 
-        if ( collEnt != NULL ) {
-            free( collEnt );
-            collEnt = NULL;
-        }
+        free( collEnt );
+        collEnt = NULL;
 
     } // while
 
