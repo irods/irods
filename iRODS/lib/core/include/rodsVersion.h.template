@@ -4,13 +4,13 @@
 /* rodsVersion.h - defines the release version and API version
  */
 
+#include "irods_version.h"
 
+#ifndef RODS_VERSION_H
+#define RODS_VERSION_H
 
-#ifndef RODS_VERSION_H__
-#define RODS_VERSION_H__
-
-#define RODS_REL_VERSION	"rodsTEMPLATE_RODS_RELEASE_VERSION"
-#define RODS_API_VERSION	"d"
+#define RODS_REL_VERSION        "rodsTEMPLATE_RODS_RELEASE_VERSION"
+#define RODS_API_VERSION        "d"
 #define RODS_RELEASE_DATE       "TEMPLATE_RODS_RELEASE_DATE"
 
 

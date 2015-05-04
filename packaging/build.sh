@@ -222,22 +222,25 @@ echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 EPMCMD="external/epm/epm"
-cd $BUILDDIR/iRODS
 echo "Build Directory set to [$BUILDDIR]"
+# populate VERSION.json from VERSION.json.dist with current information
+cd $BUILDDIR
+python packaging/generate_version_json.py > VERSION.json
 # read iRODS Version from JSON
-IRODSVERSION=`python -c "from __future__ import print_function; import json; d = json.loads(open('../VERSION.json.dist').read()); print(d['irods_version'])"`
-echo "IRODSVERSION=$IRODSVERSION" > ../VERSION.tmp # needed for Makefiles
-IRODSVERSIONINT=${IRODSVERSION//\./0}0
+IRODSVERSION=`python -c "from __future__ import print_function; import json; d = json.loads(open('VERSION.json').read()); print(d['irods_version'])"`
+echo "IRODSVERSION=$IRODSVERSION" > VERSION.tmp # needed for Makefiles
+IRODSVERSIONINT=`python iRODS/scripts/python/get_irods_version.py integer`
 echo "Detected iRODS Version to Build [$IRODSVERSION]"
 echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
 # detect operating system
-DETECTEDOS=`../packaging/find_os.sh`
+DETECTEDOS=`packaging/find_os.sh`
 if [ "$PORTABLE" == "1" ] ; then
   DETECTEDOS="Portable"
 fi
 echo "Detected OS [$DETECTEDOS]"
-DETECTEDOSVERSION=`../packaging/find_os_version.sh`
+DETECTEDOSVERSION=`packaging/find_os_version.sh`
 echo "Detected OS Version [$DETECTEDOSVERSION]"
+cd $BUILDDIR/iRODS
 
 
 
@@ -1059,22 +1062,34 @@ echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
 echo "-----------------------------"
 
 # =-=-=-=-=-=-=-
-# populate VERSION.json from VERSION.json.dist with current information
-set_tmpfile
-cd $BUILDDIR
-python packaging/generate_version_json.py > $TMPFILE
-mv $TMPFILE VERSION.json
-
-# =-=-=-=-=-=-=-
 # generate canonical version information for the code from top level VERSION.json file
 cd $BUILDDIR
-TEMPLATE_RODS_RELEASE_VERSION=`python packaging/get_irods_version.py`
+# legacy rodsVersion.h.template
+LEGACY_VERSION_H_FILE=./iRODS/lib/core/include/rodsVersion.h
+cp $LEGACY_VERSION_H_FILE.template $LEGACY_VERSION_H_FILE
+TEMPLATE_RODS_RELEASE_VERSION=`python iRODS/scripts/python/get_irods_version.py string`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
-sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," ./iRODS/lib/core/include/rodsVersion.h.template > /tmp/rodsVersion.h
-sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," /tmp/rodsVersion.h > /tmp/rodsVersion.h.2
-rsync -c /tmp/rodsVersion.h.2 ./iRODS/lib/core/include/rodsVersion.h
-rm -f /tmp/rodsVersion.h
-rm -f /tmp/rodsVersion.h.2
+set_tmpfile
+sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," $LEGACY_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $LEGACY_VERSION_H_FILE
+sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," $LEGACY_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $LEGACY_VERSION_H_FILE
+# irods_version.h.template
+TEMPLATE_IRODS_VERSION_MAJOR=`python iRODS/scripts/python/get_irods_version.py major`
+TEMPLATE_IRODS_VERSION_MINOR=`python iRODS/scripts/python/get_irods_version.py minor`
+TEMPLATE_IRODS_VERSION_POINT=`python iRODS/scripts/python/get_irods_version.py point`
+TEMPLATE_IRODS_BUILD_DATE_STRING=`date +"%Y%m%d"`
+set_tmpfile
+IRODS_VERSION_H_FILE=./iRODS/lib/core/include/irods_version.h
+cp $IRODS_VERSION_H_FILE.template $IRODS_VERSION_H_FILE
+sed -e "s,TEMPLATE_IRODS_VERSION_MAJOR,$TEMPLATE_IRODS_VERSION_MAJOR,g" $IRODS_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $IRODS_VERSION_H_FILE
+sed -e "s,TEMPLATE_IRODS_VERSION_MINOR,$TEMPLATE_IRODS_VERSION_MINOR,g" $IRODS_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $IRODS_VERSION_H_FILE
+sed -e "s,TEMPLATE_IRODS_VERSION_POINT,$TEMPLATE_IRODS_VERSION_POINT,g" $IRODS_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $IRODS_VERSION_H_FILE
+sed -e "s,TEMPLATE_IRODS_BUILD_DATE_STRING,$TEMPLATE_IRODS_BUILD_DATE_STRING,g" $IRODS_VERSION_H_FILE > $TMPFILE
+rsync -c $TMPFILE $IRODS_VERSION_H_FILE
 
 cd $BUILDDIR/iRODS
 if [ $1 == "icat" ] ; then
