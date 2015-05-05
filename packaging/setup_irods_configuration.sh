@@ -426,7 +426,7 @@ fi
       echo "Schema Validation Base URI: $MYVALIDATIONBASEURI"
       echo "Administrator Username:     $MYADMINNAME"
       if [ $ICAT_SERVER -eq 1 ] ; then
-        echo "Administrator Password: Not Shown"
+        echo "Administrator Password:     Not Shown"
       fi
       echo "-------------------------------------------"
       echo -n "Please confirm these settings [yes]: "
