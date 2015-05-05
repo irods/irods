@@ -65,8 +65,8 @@ fetch :
 		fi
 
 $(PGUNIXODBCARCHIVE) :
-	echo "Getting PostgreSQL and unixODBC source for MacOSX..."; \
-		$(V_at)curl -o $(PGUNIXODBCARCHIVE) -z $(PGUNIXODBCARCHIVE) $(RENCI_FTP_EXTERNAL)/$(PGUNIXODBCARCHIVE) > /dev/null 2>&1;
+	echo "Getting PostgreSQL and unixODBC source for MacOSX..."
+	$(V_at)curl -o $(PGUNIXODBCARCHIVE) -z $(PGUNIXODBCARCHIVE) $(RENCI_FTP_EXTERNAL)/$(PGUNIXODBCARCHIVE) > /dev/null 2>&1;
 
 postgresql-$(PG_VERSION)/Makefile : $(PGUNIXODBCARCHIVE)
 	tar zxf $(PGUNIXODBCARCHIVE); \
@@ -219,6 +219,9 @@ $(AVROVERSIONARCHIVE) :
 
 $(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
 	@tar zxf $(AVROVERSIONARCHIVE)
+	@sed "s/target_link_libraries ( *avrocpp\\(.*\\)) *$$/target_link_libraries (avrocpp\\1 z)/" $(AVROVERSION)/CMakeLists.txt > /tmp/CMakeLists.txt.tmp; \
+		rsync -c /tmp/CMakeLists.txt.tmp $(AVROVERSION)/CMakeLists.txt; \
+		rm -f /tmp/CMakeLists.txt.tmp
 	@cd $(AVROVERSION) ; \
 		mkdir -p build; cd build; \
 		BOOST_ROOT=../$(BOOSTVERSION) ../../$(CMAKEVERSION)/bin/cmake -G "Unix Makefiles" ..
