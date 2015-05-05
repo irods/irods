@@ -28,6 +28,7 @@
 #include "reFuncDefs.hpp"
 
 #include <iostream>
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -1036,20 +1037,36 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
 
 int
 getDefFileMode() {
-    int defFileMode = DEFAULT_FILE_MODE;
+    int mode_int = DEFAULT_FILE_MODE;
 
-    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_FILE_MODE_KW, defFileMode );
+    std::string mode_str;
+    irods::error ret = irods::get_server_property<std::string>(
+                           DEF_FILE_MODE_KW,
+                           mode_str );
+    if( ret.ok() ) {
+        std::stringstream ss;
+        ss << std::oct << mode_str;
+        ss >> mode_int;
+    }
 
-    return defFileMode;
+    return mode_int;
 }
 
 int
 getDefDirMode() {
-    int defDirMode = DEFAULT_DIR_MODE;
+    int mode_int = DEFAULT_DIR_MODE;
 
-    irods::error ret = irods::server_properties::getInstance().get_property<int>( DEF_DIR_MODE_KW, defDirMode );
+    std::string mode_str;
+    irods::error ret = irods::get_server_property<std::string>(
+                           DEF_DIR_MODE_KW,
+                           mode_str );
+    if( ret.ok() ) {
+        std::stringstream ss;
+        ss << std::oct << mode_str;
+        ss >> mode_int;
+    }
 
-    return defDirMode;
+    return mode_int;
 }
 
 int

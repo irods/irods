@@ -1,5 +1,5 @@
 {
-    "default_dir_mode": "0700",
+    "default_dir_mode": "0750",
     "default_file_mode": "0600",
     "default_hash_scheme": "SHA256",
     "default_resource_directory": "/var/lib/irods/iRODS/Vault",
