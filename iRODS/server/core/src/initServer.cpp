@@ -1319,12 +1319,15 @@ initConnectControl() {
                            CONNECT_CONTROL_FILE,
                            ctrl_file );
     if( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+        return 0;
     }
 
     FILE *file = fopen( ctrl_file.c_str(), "r" );
     if ( file == NULL ) {
+        rodsLog(
+            LOG_ERROR,
+            "initConnectControl - failed to open [%s]",
+            ctrl_file.c_str() );
         return 0;
     }
 
