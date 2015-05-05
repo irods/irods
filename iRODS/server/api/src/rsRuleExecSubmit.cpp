@@ -140,21 +140,21 @@ getReiFilePath( char *reiFilePath, char *userName ) {
 
     std::string rei_dir;
     irods::error ret = irods::get_full_path_for_config_file(
-                           REI_FILE_NAME,
+                           PACKED_REI_DIR,
                            rei_dir );
     if( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-    snprintf( 
-        reiFilePath, 
+    snprintf(
+        reiFilePath,
         MAX_NAME_LEN,
         "%-s/%-s.%-s.%-d", 
-        rei_dir.c_str(), 
+        rei_dir.c_str(),
         REI_FILE_NAME, 
         myUserName, 
-        ( uint ) random() );
+        (uint) random());
 
     return 0;
 }
