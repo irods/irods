@@ -310,8 +310,9 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     }
 
     mySockAddr.sin_family = AF_INET;
+    mySockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    /* if portNum is <= 0 and server_port_range_start is set in 
+    /* if portNum is <= 0 and server_port_range_start is set in
      * server_config.json pick a port in the range.
      */
 
@@ -1355,7 +1356,7 @@ irods::error sendRodsMsg(
 
 int
 rodsSleep( int sec, int microSec ) {
-    unsigned int us = ( sec * 1000000 ) + ( microSec ); 
+    unsigned int us = ( sec * 1000000 ) + ( microSec );
     usleep( us );
     return 0;
 }
