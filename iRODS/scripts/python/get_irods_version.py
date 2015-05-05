@@ -5,7 +5,7 @@ import os
 import json
 
 def usage():
-    print('Usage: get_irods_version.py ["string"|"integer"|"major"|"minor"|"point"]')
+    print('Usage: get_irods_version.py ["string"|"integer"|"major"|"minor"|"patchlevel"]')
 
 # check parameters
 if len(sys.argv) != 2:
@@ -17,19 +17,19 @@ irods_top_level = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirnam
 with open(os.path.join(irods_top_level, 'VERSION.json')) as fh:
     data = json.load(fh)
 version_string = data['irods_version']
-(major, minor, point) = version_string.split('.')
+(major, minor, patchlevel) = version_string.split('.')
 
 # print it out
 if sys.argv[1] == 'string':
     print(version_string)
 elif sys.argv[1] == 'integer':
-    print(int(major)*1000000 + int(minor)*1000 + int(point))
+    print(int(major)*1000000 + int(minor)*1000 + int(patchlevel))
 elif sys.argv[1] == 'major':
     print(major)
 elif sys.argv[1] == 'minor':
     print(minor)
-elif sys.argv[1] == 'point':
-    print(point)
+elif sys.argv[1] == 'patchlevel':
+    print(patchlevel)
 else:
     print('ERROR: unknown format [%s] requested' % sys.argv[1], file=sys.stderr)
     usage()
