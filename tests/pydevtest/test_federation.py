@@ -584,6 +584,9 @@ class TestCrossZoneAdminCommands(unittest.TestCase):
         self.admin_session.assert_icommand(
             "ichmod -M read {user_name} /{remote_zone}".format(**self.parameters), 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
 
+    def test_iadmin(self):
+        pass
+
 
 class TestCrossZoneMicroservices(unittest.TestCase):
     pass

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import commands
 import contextlib
 import datetime
@@ -5,6 +7,7 @@ import itertools
 import json
 import mmap
 import os
+import platform
 import psutil
 import re
 import shlex
@@ -17,7 +20,6 @@ import time
 import errno
 
 import configuration
-from twisted.protocols.ftp import FileNotFoundError
 
 # Two-way mapping of the new (json) and old iRODS environment setting names
 json_env_map = {'irods_host': 'irodsHost',
@@ -192,14 +194,14 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
 
     regex_msg = 'regex ' if use_regex else ''
 
-    print 'Expecting {0}: {1}{2}'.format(check_type, regex_msg, expected_results)
-    print '  stdout:'
-    print '    | ' + '\n    | '.join(stdout.splitlines())
-    print '  stderr:'
-    print '    | ' + '\n    | '.join(stderr.splitlines())
+    print('Expecting {0}: {1}{2}'.format(check_type, regex_msg, expected_results))
+    print('  stdout:')
+    print('    | ' + '\n    | '.join(stdout.splitlines()))
+    print('  stderr:')
+    print('    | ' + '\n    | '.join(stderr.splitlines()))
 
     if check_type not in ['STDERR', 'STDERR_SINGLELINE', 'STDERR_MULTILINE'] and stderr != '':
-        print 'Unexpected output on stderr\n'
+        print('Unexpected output on stderr\n')
         return False
 
     if check_type in ['STDOUT', 'STDERR']:
@@ -207,8 +209,9 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
         for er in expected_results:
             regex_pattern = er if use_regex else re.escape(er)
             if not re.search(regex_pattern, output):
-                print 'Output not found\n'
+                print('Output not found\n')
                 return False
+        print('Output found\n')
         return True
     elif check_type in ['STDOUT_SINGLELINE', 'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE']:
         lines = stdout.splitlines() if check_type in ['STDOUT_SINGLELINE', 'STDOUT_MULTILINE'] else stderr.splitlines()
@@ -220,12 +223,12 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
                     if re.search(regex_pattern, line.rstrip('\n')):
                         break
                 else:
-                    print '    --> stopping search - expected result not found'
+                    print('    --> stopping search - expected result not found')
                     break
             else:
-                print 'Output found\n'
+                print('Output found\n')
                 return True
-            print 'Output not found\n'
+            print('Output not found\n')
             return False
         else:
             for line in lines:
@@ -235,20 +238,20 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
                     if re.search(regex_pattern, line.rstrip('\n')):
                         found_count += 1
                 if found_count == len(expected_results):
-                    print 'Output found\n'
+                    print('Output found\n')
                     return True
-            print 'Output not found\n'
+            print('Output not found\n')
             return False
     elif check_type == 'EMPTY':
         if stdout == '':
-            print 'Output found\n'
+            print('Output found\n')
             return True
-        print 'Unexpected output on stdout\n'
+        print('Unexpected output on stdout\n')
         return False
-    assert False
+    assert False, check_type
 
 def extract_function_kwargs(func, kwargs):
-    args = func.func_code.co_varnames
+    args = func.func_code.co_varnames[:func.func_code.co_argcount]
     args_dict = {}
     for k, v in kwargs.items():
         if k in args:
@@ -263,18 +266,26 @@ def assert_command_fail(*args, **kwargs):
 
 def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_fail=False, **kwargs):
     run_command_arg_dict = extract_function_kwargs(run_command, kwargs)
-    _, stdout, stderr = run_command(command_arg, **run_command_arg_dict)
+    rc, stdout, stderr = run_command(command_arg, **run_command_arg_dict)
 
     fail_string = ' FAIL' if should_fail else ''
     if isinstance(command_arg, basestring):
-        print 'Assert{0} Command: {1}'.format(fail_string, command_arg)
+        print('Assert{0} Command: {1}'.format(fail_string, command_arg))
     else:
-        print 'Assert{0} Command: {1}'.format(fail_string, ' '.join(command_arg))
+        print('Assert{0} Command: {1}'.format(fail_string, ' '.join(command_arg)))
 
     check_run_command_output_arg_dict = extract_function_kwargs(check_run_command_output, kwargs)
     result = should_fail != check_run_command_output(command_arg, stdout, stderr, check_type=check_type, expected_results=expected_results, **check_run_command_output_arg_dict)
+
+    desired_rc = kwargs.get('desired_rc', None)
+    if desired_rc is not None:
+        print('Checking return code: actual [{0}] desired [{1}]'.format(rc, desired_rc))
+        if desired_rc != rc:
+            print('RETURN CODE CHECK FAILED')
+            result = False
+
     if not result:
-        print 'FAILED TESTING ASSERTION\n\n'
+        print('FAILED TESTING ASSERTION\n\n')
     assert result
 
 def stop_irods_server():
@@ -406,6 +417,12 @@ def rmuser(username):
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(['iadmin', 'rmuser', username])
 
+def get_os_distribution():
+    return platform.linux_distribution()[0]
+
+def get_os_distribution_version_major():
+    return platform.linux_distribution()[1].split('.')[0]
+
 def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
     class SessionsMixin(object):
         def setUp(self):
@@ -523,7 +540,9 @@ class IrodsSession(object):
             icommand = arg[0]
             log_string = ' '.join(arg)
         assert icommand in valid_icommands, icommand
-        write_to_log('server', ' --- run_icommand by [{0}] [{1}] --- \n'.format(self.username, log_string))
+        message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(self.username, log_string)
+        write_to_log('server', message)
+        print(message, end='')
 
     def _write_environment_file(self):
         if self._environment_file_invalid:
@@ -561,11 +580,11 @@ class IrodsSession(object):
         '''
         filename = os.path.abspath(filename)
         parameters = shlex.split(fullcmd)
-        print "\n"
-        print "INTERRUPTING iCMD"
-        print "running icommand: " + self.username + "[" + fullcmd + "]"
-        print "  filename set to: [" + filename + "]"
-        print "  filesize set to: [" + str(filesize) + "] bytes"
+        print("\n")
+        print("INTERRUPTING iCMD")
+        print("running icommand: " + self.username + "[" + fullcmd + "]")
+        print("  filename set to: [" + filename + "]")
+        print("  filesize set to: [" + str(filesize) + "] bytes")
 
         write_to_log('server', ' --- interrupt icommand [{0}] --- \n'.format(fullcmd))
 
@@ -583,10 +602,10 @@ class IrodsSession(object):
         while time.time() - begin < timeout and (not os.path.exists(filename) or os.stat(filename).st_size < filesize):
             time.sleep(granularity)
         if (time.time() - begin) >= timeout:
-            print run_command(['ls', '-l', os.path.dirname(filename)])[1]
+            print(run_command(['ls', '-l', os.path.dirname(filename)])[1])
             out, err = p.communicate()
-            print out, err
-            print self.run_icommand(['ils', '-l'])[1]
+            print(out, err)
+            print(self.run_icommand(['ils', '-l'])[1])
             assert False
         elif p.poll() is None:
             p.terminate()
