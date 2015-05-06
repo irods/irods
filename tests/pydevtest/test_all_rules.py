@@ -19,7 +19,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     global rules30dir
     currentdir = os.path.dirname(os.path.realpath(__file__))
     rules30dir = currentdir + "/../../iRODS/clients/icommands/test/rules3.0/"
-    conf_dir = lib.get_irods_config_dir()
+    conf_dir = lib.get_core_re_dir()
 
     def setUp(self):
         super(Test_AllRules, self).setUp()

@@ -39,7 +39,14 @@ def get_irods_top_level_dir():
 def get_irods_config_dir():
     if os.path.isfile('/etc/irods/server_config.json'):
         return '/etc/irods'
-    return os.path.join(get_irods_top_level_dir(), 'iRODS/config')
+    return os.path.join(get_irods_top_level_dir(), 'iRODS/server/config')
+
+def get_core_re_dir():
+    top_lvl = get_irods_top_level_dir()
+    bin_flg = os.path.join(top_lvl, 'packaging/binary_installation.flag')
+    if os.path.isfile(bin_flg):
+        return '/etc/irods/core.re'
+    return os.path.join(get_irods_config_dir(), 'reConfigs')
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):

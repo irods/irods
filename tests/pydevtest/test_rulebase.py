@@ -6,6 +6,7 @@ else:
 import os
 import socket
 import time  # remove once file hash fix is commited #2279
+import lib
 
 from resource_suite import ResourceBase
 
@@ -24,13 +25,16 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
 
         # save original core.re
-        os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
+        corefile = os.path.join(lib.get_core_re_dir(), "core.re")
+        origcorefile = os.path.join(lib.get_core_re_dir(), "core.re.orig")
+        os.system("cp "+corefile+" "+origcorefile)
 
         # add acPostProcForPut replication rule
-        os.system(
-            '''sed -e '/^acPostProcForPut/i acPostProcForPut { replicateMultiple( "r1,r2" ); }' /etc/irods/core.re > /tmp/irods/core.re''')
+        part1="sed -e '/^acPostProcForPut/i acPostProcForPut { replicateMultiple( \"r1,r2\" ); }' "
+        part2=part1+corefile+' > '+origcorefile
+        os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        os.system("cp "+origcorefile+" "+corefile) 
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # add new rule to end of core.re
@@ -58,9 +62,9 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                 """
         with open('/tmp/irods/newrule', 'w') as f:
             f.write(newrule)
-        os.system("cat /etc/irods/core.re /tmp/irods/newrule > /tmp/irods/core.re")
+        os.system("cat "+corefile+" /tmp/irods/newrule > "+origcorefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        os.system("cp "+origcorefile+" "+corefile) 
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # put data
@@ -80,16 +84,18 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
         # restore core.re
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
+        os.system("cp " + origcorefile + " " + corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
     def test_dynamic_pep_with_rscomm_usage(self):
         # save original core.re
-        os.system("cp /etc/irods/core.re /etc/irods/core.re.orig")
+        corefile = os.path.join(lib.get_core_re_dir(), "core.re")
+        origcorefile = os.path.join(lib.get_core_re_dir(), "core.re.orig")
+        os.system("cp "+corefile+" "+origcorefile)
 
         # add dynamic PEP with rscomm usage
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system('''echo "pep_resource_open_pre(*OUT) { msiGetSystemTime( *junk, '' ); }" >> /etc/irods/core.re''')
+        os.system('''echo "pep_resource_open_pre(*OUT) { msiGetSystemTime( *junk, '' ); }" >> '''+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # check rei functioning
@@ -97,5 +103,5 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
         # restore core.re
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /etc/irods/core.re.orig /etc/irods/core.re")
+        os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279

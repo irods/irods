@@ -48,11 +48,11 @@ class Test_Xmsg(unittest.TestCase):
         my_env['XMSG_PORT'] = str(self.xmsgPort)
 
         # send msg
-        args = ['/usr/bin/ixmsg', 's', '-M "{0}"'.format(message)]
+        args = ['ixmsg', 's', '-M "{0}"'.format(message)]
         subprocess.Popen(args, env=my_env).communicate()
 
         # receive msg
-        args = ['/usr/bin/ixmsg', 'r', '-n 1']
+        args = ['ixmsg', 'r', '-n 1']
         res = subprocess.Popen(args, env=my_env, stdout=subprocess.PIPE).communicate()
 
         # assertion

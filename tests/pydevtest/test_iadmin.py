@@ -836,10 +836,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         if os.path.isfile('/etc/irods/hosts_config.json'):
             hosts_config = '/etc/irods/hosts_config.json'
         else:
-            install_dir = os.path.dirname(
-                os.path.dirname(
-                    os.path.realpath(__file__)))
-            hosts_config = install_dir + '/iRODS/server/config/hosts_config.json'
+            hosts_config = os.path.join(lib.get_irods_config_dir(), 'hosts_config.json')
 
         orig_file = hosts_config + '.orig'
         os.system('cp %s %s' % (hosts_config, orig_file))
@@ -864,13 +861,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         my_ip = socket.gethostbyname(socket.gethostname())
 
         # manipulate the core.re to enable host access control
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
+        origcorefile = corefile+'.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        os.system(
-            '''sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' /etc/irods/core.re > /tmp/irods/core.re''')
+        part1="sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' "
+        part2=part1+corefile+' > '+origcorefile
+        os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -880,10 +879,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         if os.path.isfile('/etc/irods/host_access_control_config.json'):
             host_access_control = '/etc/irods/host_access_control_config.json'
         else:
-            install_dir = os.path.dirname(
-                os.path.dirname(
-                    os.path.realpath(__file__)))
-            host_access_control = install_dir + '/iRODS/server/config/host_access_control_config.json'
+            host_access_control = os.path.join(lib.get_irods_config_dir(), 'host_access_control_config.json')
 
         orig_file = host_access_control + '.orig'
         os.system('cp %s %s' % (host_access_control, orig_file))
@@ -905,13 +901,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
+        origcorefile = corefile+'.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        os.system(
-            '''sed -e '/^acAclPolicy {msiAclPolicy("STRICT"); }/iacAclPolicy {ON($userNameClient == "quickshare") { } }' /etc/irods/core.re > /tmp/irods/core.re''')
+        part1="sed -e '/^acAclPolicy {msiAclPolicy(\"STRICT\"); }/iacAclPolicy {ON($userNameClient == \"quickshare\") { } }' "
+        part2=part1+corefile+' > '+origcorefile
+        os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp /tmp/irods/core.re /etc/irods/core.re")
+        os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -985,7 +983,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(True, 'Enable once #2631 is fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log"')
     def test_rule_engine_2521(self):
-        with lib.file_backed_up('/etc/irods/core.re'):
+        corefile = lib.get_core_re_dir() + "/core.re"
+        with lib.file_backed_up(corefile):
             initial_size_of_re_log = lib.get_log_size('re')
             rules_to_prepend = '''
 first_rule_called_from_delay() {
@@ -1004,7 +1003,7 @@ acPostProcForPut() {
 }
 '''
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
             trigger_file = 'file_to_trigger_acPostProcForPut'
             lib.make_file(trigger_file, 10)
@@ -1018,9 +1017,11 @@ acPostProcForPut() {
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        with lib.file_backed_up('/etc/irods/core.dvm'):
-            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', '/etc/irods/core.dvm')
-            with lib.file_backed_up('/etc/irods/core.re'):
+        corefile = lib.get_core_re_dir() + "/core.re"
+        coredvm = lib.get_core_re_dir() + "/core.dvm"
+        with lib.file_backed_up(coredvm):
+            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
+            with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_log_size('server')
                 rules_to_prepend = '''
  acSetNumThreads() {
@@ -1028,7 +1029,7 @@ acPostProcForPut() {
  }
  '''
                 time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+                lib.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 trigger_file = 'file_to_trigger_acSetNumThreads'
                 lib.make_file(trigger_file, 4*pow(10, 7))
@@ -1037,7 +1038,7 @@ acPostProcForPut() {
                 assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 
-            with lib.file_backed_up('/etc/irods/core.re'):
+            with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_log_size('server')
                 rules_to_prepend = '''
 acSetNumThreads() {
@@ -1045,7 +1046,7 @@ acSetNumThreads() {
 }
 '''
                 time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, '/etc/irods/core.re')
+                lib.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
                 assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)

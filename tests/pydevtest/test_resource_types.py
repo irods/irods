@@ -646,37 +646,37 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         full_logical_path = '/' + self.admin.zone_name + '/home/' + self.admin.username + '/' + self.admin._session_id + '/' + filename
         # assertions
         self.admin.assert_icommand('ils -L ' + filename, 'STDERR_SINGLELINE', 'does not exist')  # should not be listed
-        self.admin.assert_icommand('iput -K ' + filepath)  # iput
+        self.admin.assert_icommand('iput -K ' + self.testfile + ' ' + full_logical_path)  # iput
+        self.admin.assert_icommand('ils -L ' + filename, 'STDOUT_SINGLELINE', filename)  # should not be listed
         file_vault_full_path = os.path.join(lib.get_vault_session_path(self.admin), filename)
         # method 1
         self.admin.assert_icommand('ichksum -K ' + full_logical_path, 'STDOUT_MULTILINE',
                             ['Total checksum performed = 1, Failed checksum = 0',
-                            'sha2:ED5ZjdVDhtL8Th/rYtIraU1m3qMYzT0wNGy53FDrFR4='])  # ichksum
+                            'sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # ichksum
         # method 2
         self.admin.assert_icommand("iquest \"select DATA_CHECKSUM where DATA_NAME = '%s'\"" % filename,
-                            'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:ED5ZjdVDhtL8Th/rYtIraU1m3qMYzT0wNGy53FDrFR4='])  # iquest
+                            'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # iquest
         # method 3
         self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', filename)  # ils
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
         # change content in vault
-        filename2 = 'samesize.txt'
-        filepath2 = lib.create_local_testfile(filename2)
-        output = commands.getstatusoutput('cp ' + filename2 + ' ' + file_vault_full_path)
+        with open(file_vault_full_path, 'r+') as f:
+            f.seek(0)
+            f.write("x")
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','checksum not consistent with iRODS object'])  # ifsck
         # change size in vault
         lib.cat(file_vault_full_path, 'extra letters')
-        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','size not consistent with iRODS object'])  # ifsck
+        self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','size not consistent with iRODS object'])  # ifsck
         ## unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
         self.admin.assert_icommand('irm -U ' + full_logical_path)
         self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['WARNING: checksum not available'])  # ifsck
         self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT_MULTILINE',
                             ['Total checksum performed = 1, Failed checksum = 0',
-                            'sha2:o4aFNLNuhWfF1AWiZrZUftnvV84e4hYEfToF5H0uiHI='])
+                            'sha2:zJhArM/en4wfI9lVq+AIFAZa6RTqqdC6LVXf6tPbqxI='])
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
         # local cleanup
         os.remove(filepath)
-        os.remove(filepath2)
 
 class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
@@ -1457,7 +1457,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     @unittest.skip("TEMPORARY")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
 
         # new file to put and get
@@ -2144,7 +2144,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
 
         # new file to put and get
@@ -2521,7 +2521,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
         # back up core file
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
@@ -2569,7 +2569,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         shutil.rmtree(lib.get_irods_top_level_dir() + "/cacheResc2Vault", ignore_errors=True)
 
         # restore the original core.re
-        corefile = lib.get_irods_config_dir() + "/core.re"
+        corefile = lib.get_core_re_dir() + "/core.re"
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(backupcorefile, corefile)
         os.remove(backupcorefile)
