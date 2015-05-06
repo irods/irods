@@ -271,30 +271,6 @@ END_PREINSTALL
 # post remove
 # =-=-=-=-=-=-=-
 %postremove << END_POSTREMOVE
-
-# determine whether this is an upgrade
-if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
-  # integer, therefore rpm
-  if [ $$1 -gt 0 ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
-else
-  # string, therefore deb
-  if [ "$$1" = "upgrade" ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
-fi
-
-# on remove or purge
-if [ "$$PACKAGEUPGRADE" = "false" ] ; then
-  rm -rf $IRODS_HOME_DIR
-  rm -rf /etc/irods/
-fi
-
 END_POSTREMOVE
 
 
