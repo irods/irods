@@ -536,10 +536,13 @@ if [ "$1" == "clean" ] ; then
     rm -f iRODS/lib/core/include/rodsVersion.h
     rm -f iRODS/server/core/include/irods_plugin_home_directory.hpp
     rm -f iRODS/lib/core/include/irods_home_directory.hpp
+    rm -f /tmp/$USER/setup_irods_configuration.flag
+
     # database plugin cleanup
     ./plugins/database/build.sh clean
     rm -f iRODS/config/platform.mk
     rm -f iRODS/config/config.mk
+    rm -f /tmp/$USER/setup_irods_database.flag
 
     # avro generated header files
     rm -f iRODS/lib/core/include/server_control_plane_command.hpp
