@@ -26,7 +26,6 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     # izonereport
     ###################
 
-    @unittest.skipIf(lib.get_os_distribution() == 'CentOS', 'Enable when #2673 resolved')
     def test_izonereport_and_validate(self):
         jsonschema_installed = True
         if lib.get_os_distribution() == 'Ubuntu' and lib.get_os_distribution_version_major() == '12':
