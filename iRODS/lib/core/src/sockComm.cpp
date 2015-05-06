@@ -330,7 +330,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         int svr_port_range_end = 0;
         irods::error ret = irods::get_server_property<int>(
                                irods::CFG_SERVER_PORT_RANGE_END_KW,
-                               svr_port_range_start );
+                               svr_port_range_end );
         if ( ret.ok() ) {
             if ( svr_port_range_end < svr_port_range_start ) {
                 rodsLog( LOG_ERROR,
