@@ -25,7 +25,7 @@ use Cwd "abs_path";
 use Config;
 use IPC::Open3;
 
-$version{"irodsctl.pl"} = "Apr 2015";
+$version{"irodsctl.pl"} = "May 2015";
 
 
 $scriptfullpath = abs_path(__FILE__);
@@ -921,6 +921,32 @@ sub wait_for_server_to_start {
 
 } # wait_for_server_to_start
 
+
+#
+# @brief        Preflight Check - Detect possible package downgrade
+#
+# @return       0 = failed
+#               1 = success
+#
+sub preflight_db_schema_check
+{
+    # get database schema version from database
+    my $version_in_database = `python $scripttoplevel/iRODS/scripts/python/get_db_schema_version.py`;
+    chomp $version_in_database; # remove newline
+    # get database schema version from VERSION.json, already loaded
+    my $version_in_version_file = $CATALOG_SCHEMA_VERSION;
+    # compare, exit if database is ahead (possible package downgrade scenario)
+    if ( $version_in_database > $version_in_version_file )
+    {
+        printWarning( "catalog_schema_version in database     [$version_in_database]\n" );
+        printWarning( "catalog_schema_version in VERSION.json [$version_in_version_file]\n" );
+        return 0;
+    }
+    # a match
+    print( "Confirming catalog_schema_version... Success\n" );
+    return 1;
+}
+
 #
 # @brief        Preflight Run - Run single command, capture stdout and stderr, print accordingly
 #
@@ -946,7 +972,7 @@ sub preflight_run
 # @return       0 = failed
 #               1 = success
 #
-sub preflight_check
+sub preflight_json_check
 {
     # local variables
     my $VALIDATE = "python $scripttoplevel/iRODS/scripts/python/validate_json.py";
@@ -1006,10 +1032,22 @@ sub startIrods
                 exit( 1 );
         }
 
+        # Make sure the database schema matches VERSION file
+        # iCAT server
+       if ( -e "$irodsServerConfigDir/database_config.json" )
+        {
+            if ( 0 == preflight_db_schema_check( ) )
+            {
+                printError( "Preflight Check problem:\n" );
+                printError( "   Database Schema in the database is ahead of VERSION.json - Please upgrade.\n" );
+                exit( 1 );
+            }
+        }
+
         # Make sure the configurations are validated
         if ( $SCHEMA_VALIDATION_BASE_URI =~ /^https?:\/\// )
         {
-            if ( 0 == preflight_check( ) )
+            if ( 0 == preflight_json_check( ) )
             {
                     printError( "Preflight Check problem:\n" );
                     printError( "   JSON Configuration Validation failed.\n" );
@@ -1112,6 +1150,33 @@ sub gracefulStartIrods
                 printError( "    The server log directory, $irodsLogDir\n" );
                 printError( "    is not writable.  Please chmod it and retry.\n" );
                 exit( 1 );
+        }
+
+        # Make sure the database schema matches VERSION file
+        # iCAT server
+       if ( -e "$irodsServerConfigDir/database_config.json" )
+        {
+            if ( 0 == preflight_db_schema_check( ) )
+            {
+                printError( "Preflight Check problem:\n" );
+                printError( "   Database Schema in the database is ahead of VERSION.json - Please upgrade.\n" );
+                exit( 1 );
+            }
+        }
+
+        # Make sure the configurations are validated
+        if ( $SCHEMA_VALIDATION_BASE_URI =~ /^https?:\/\// )
+        {
+            if ( 0 == preflight_json_check( ) )
+            {
+                    printError( "Preflight Check problem:\n" );
+                    printError( "   JSON Configuration Validation failed.\n" );
+                    exit( 1 );
+            }
+        }
+        else
+        {
+            printStatus( "Skipped JSON Configuration Validation [$SCHEMA_VALIDATION_BASE_URI]\n" );
         }
 
         # Test for iRODS port in use

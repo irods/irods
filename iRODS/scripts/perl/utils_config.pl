@@ -106,9 +106,11 @@ sub load_database_config {
 sub load_irods_version_file {
     my ($filename) = @_;
     # from VERSION.json
+    $CATALOG_SCHEMA_VERSION       = undef;
     $CONFIGURATION_SCHEMA_VERSION = undef;
     # load specific variables
     $data = load_json_file($filename);
+    $CATALOG_SCHEMA_VERSION = $data->{'catalog_schema_version'};
     $CONFIGURATION_SCHEMA_VERSION = $data->{'configuration_schema_version'};
     # return
     return 1;
