@@ -173,6 +173,7 @@ else
 fi
 
 if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+
   # Upgrade
   echo "Upgrading Existing iRODS Installation"
   mkdir -p $IRODS_HOME_DIR
@@ -204,14 +205,16 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
 
   # get database password from pre-4.1 installations
   if [ "$$IRODSVERSION" \< "4.1.0" ] ; then
-    OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
-    DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
-    UNOBFDBLINE=`su - $$MYACCTNAME -c "iadmin dspass \"$$OBFDBPASS\" \"$$DBKEY\""`
-    UNOBFDBPASS=`echo $$UNOBFDBLINE | awk -F ':' '{print $$2}'`
-    PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
-    echo $$UNOBFDBPASS > $$PLAINTEXT_FILENAME
-    chown $$MYACCTNAME:$$MYGROUPNAME $$PLAINTEXT_FILENAME
-    chmod 600 $$PLAINTEXT_FILENAME
+    if [ -f /etc/irods/server.config ] ; then
+      OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
+      DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
+      UNOBFDBLINE=`su - $$MYACCTNAME -c "iadmin dspass \"$$OBFDBPASS\" \"$$DBKEY\""`
+      UNOBFDBPASS=`echo $$UNOBFDBLINE | awk -F ':' '{print $$2}'`
+      PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
+      echo $$UNOBFDBPASS > $$PLAINTEXT_FILENAME
+      chown $$MYACCTNAME:$$MYGROUPNAME $$PLAINTEXT_FILENAME
+      chmod 600 $$PLAINTEXT_FILENAME
+    fi
   fi
 
 else
