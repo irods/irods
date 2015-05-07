@@ -586,11 +586,12 @@ irods::error get_plugin_array(
     if ( !ret.ok() ) {
         return PASS( ret );
     }
-
+#ifdef RODS_CAT
     ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
+#endif // RODS_CAT
 
     ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
     if ( !ret.ok() ) {

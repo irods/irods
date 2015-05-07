@@ -35,38 +35,48 @@ namespace irods {
         rodsEnv env;
         int status = getRodsEnv( &env );
         if( !status ) {
-            // we'll allow it
-        }
-
-        if( strlen( env.irodsPluginHome ) > 0 ) {
-            plugin_home = env.irodsPluginHome;
+            if( strlen( env.irodsPluginHome ) > 0 ) {
+                plugin_home = env.irodsPluginHome;
+            }
+               
         }
 
         plugin_home += _type;
 
-        fs::path p = fs::canonical( plugin_home );
-        if( !fs::exists( p ) ) {
+        try {
+            if( !fs::exists( plugin_home ) ) {
+                std::string msg( "does not exist [" );
+                msg += plugin_home;
+                msg += "]";
+                return ERROR(
+                           SYS_INVALID_INPUT_PARAM,
+                           msg );
+
+            }
+            
+            fs::path p = fs::canonical( plugin_home );
+
+            if( fs::path::preferred_separator != *plugin_home.rbegin() ) {
+                plugin_home += fs::path::preferred_separator;
+            }
+
+            _path = plugin_home;
+
+            rodsLog(
+                LOG_DEBUG,
+                "resolved plugin home [%s]",
+                plugin_home.c_str() );
+
+            return SUCCESS();
+
+        } catch ( const fs::filesystem_error& _e ) {
             std::string msg( "does not exist [" );
             msg += plugin_home;
             msg += "]";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );
-
         }
-
-        if( fs::path::preferred_separator != *plugin_home.rbegin() ) {
-            plugin_home += fs::path::preferred_separator;
-        }
-
-        _path = plugin_home;
-
-        rodsLog(
-            LOG_DEBUG,
-            "resolved plugin home [%s]",
-            plugin_home.c_str() );
-
-        return SUCCESS();
 
     } // resolve_plugin_path
 
