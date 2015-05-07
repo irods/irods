@@ -32,8 +32,6 @@ def get_hostname():
     return socket.gethostname()
 
 def get_irods_top_level_dir():
-    if os.path.isfile('/etc/irods/server_config.json'):
-        return '/var/lib/irods'
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def get_irods_config_dir():
@@ -45,7 +43,7 @@ def get_core_re_dir():
     top_lvl = get_irods_top_level_dir()
     bin_flg = os.path.join(top_lvl, 'packaging/binary_installation.flag')
     if os.path.isfile(bin_flg):
-        return '/etc/irods/'
+        return '/etc/irods'
     return os.path.join(get_irods_config_dir(), 'reConfigs')
 
 def create_directory_of_small_files(directory_name_suffix, file_count):
