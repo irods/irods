@@ -105,3 +105,37 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
         os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
+
+    def test_rulebase_update__2585(self):
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+        with lib.file_backed_up(server_config_filename):
+            # write new rule file to config dir
+            test_re=os.path.join(lib.get_core_re_dir(),'test.re')
+            test_rule='acPostProcForPut { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_2585" ); }'
+            with open(test_re,'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [ { "filename": "test" }, {"filename": "core" } ]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+            self.admin.assert_icommand('iput -f '+self.testfile+' file_2585')
+            assert lib.count_occurrences_of_string_in_log('server', 'TEST_STRING_TO_FIND_1_2585',start_index=initial_log_size)
+            # repave rule with new string
+            test_rule='acPostProcForPut { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }'
+            os.unlink(test_re)
+            with open(test_re,'w') as f:
+                f.write(test_rule)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+            self.admin.assert_icommand('iput -f '+self.testfile+' file_2585')
+            assert lib.count_occurrences_of_string_in_log('server', 'TEST_STRING_TO_FIND_2_2585',start_index=initial_log_size)
+
+        # cleanup
+        self.admin.assert_icommand('irm -f file_2585')
+        os.unlink(test_re)
