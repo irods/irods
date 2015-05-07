@@ -8,9 +8,16 @@ USE_SSL = False
 ICAT_HOSTNAME = socket.gethostname()
 PREEXISTING_ADMIN_PASSWORD = 'rods'
 
-# federation settings
-LOCAL_IRODS_VERSION = (4,1,0)
-CROSS_ZONE_USER_NAME = 'zonehopper'
-CROSS_ZONE_USER_AUTH = '53CR37'
-CROSS_ZONE_TEST_CONFIG_FILE = os.path.abspath('federation_test_parameters.json')
-IRODS_DIR = '/var/lib/irods/iRODS'
+class FEDERATION(object):
+    LOCAL_IRODS_VERSION = (4,1,0)
+    RODSUSER_NAME_PASSWORD_LIST = [('zonehopper', '53CR37')]
+    RODSADMIN_NAME_PASSWORD_LIST = []
+    IRODS_DIR = '/var/lib/irods/iRODS'
+    LOCAL_ZONE = 'dev'
+    REMOTE_ZONE = '403'
+    REMOTE_RESOURCE = 'demoResc'
+    REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
+    TEST_FILE_SIZE = 4096   # 4MB
+    LARGE_FILE_SIZE = 67108864  # 64MB
+    TEST_FILE_COUNT = 300
+    MAX_THREADS = 16
