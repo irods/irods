@@ -14,6 +14,10 @@
 #include "dataObjChksum.h"
 #include "dataObjClose.h"
 
+#if IRODS_VERSION_INTEGER != 4001000
+    #error "IRODS_VERSION_INTEGER needs attention"
+#endif
+
 int main () {
     rodsEnv myEnv;
     int status = getRodsEnv( &myEnv );
