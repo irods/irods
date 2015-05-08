@@ -51,7 +51,7 @@ def get_hostname():
 
 def get_irods_top_level_dir():
     try:
-        return configuration.IRODS_DIR
+        return configuration.FEDERATION.IRODS_DIR
     except NameError:
         return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

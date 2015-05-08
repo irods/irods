@@ -740,6 +740,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
         super(Test_Microservices, self).tearDown()
 
+    @unittest.skipIf(FEDERATION.LOCAL_IRODS_VERSION < (4, 1, 0), 'Fixed in 4.1.0')
     def test_msirmcoll(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
