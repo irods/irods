@@ -59,7 +59,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.__exit__()
         lib.rmuser(self.auth_session.username)
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server')
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
@@ -107,7 +107,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         # server reboot to pick up new irodsEnv and server settings
         lib.restart_irods_server()
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server')
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
