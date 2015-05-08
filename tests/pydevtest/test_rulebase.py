@@ -9,6 +9,7 @@ import time  # remove once file hash fix is commited #2279
 import lib
 import time
 
+import configuration
 from resource_suite import ResourceBase
 
 
