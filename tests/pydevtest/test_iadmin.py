@@ -981,7 +981,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin rum')
         self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT_SINGLELINE', a)
 
-    @unittest.skipIf(True, 'Enable once #2631 is fixed. configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server: reads re server log"')
     def test_rule_engine_2521(self):
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
