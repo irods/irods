@@ -197,9 +197,10 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
             chkLogfileName( logDir, RULE_EXEC_LOGFILE );
 #endif
 #endif
+            rodsLog(
+                LOG_NOTICE,
+                "reServerMain: checking the queue for jobs" );
             chkAndResetRule();
-            rodsLog( LOG_NOTICE,
-                     "reServerMain: checking the queue for jobs" );
             status = getReInfo( rsComm, &genQueryOut );
             if ( status < 0 ) {
                 if ( status != CAT_NO_ROWS_FOUND ) {
@@ -306,14 +307,112 @@ reSvrSleep( rsComm_t *rsComm ) {
     return status;
 }
 
+irods::error capture_rulesets(
+    std::string& _res,
+    std::string& _fnm,
+    std::string& _dvm ) {
+    typedef irods::configuration_parser::array_t  array_t;
+
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret = props.capture();
+
+    array_t prop_arr;
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_RULEBASE_SET_KW,
+              prop_arr );
+
+    std::string prop_str;
+    if ( ret.ok() ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
+            try {
+                _res += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "failed to cast rule base file name entry to string" );
+                continue;
+            }
+            _res += ",";
+        }
+
+        _res = _res.substr( 0, _res.size() - 1 );
+
+    }
+
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
+              prop_arr );
+    if ( ret.ok() ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
+            try {
+                _fnm += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "failed to cast rule function file name entry to string" );
+                continue;
+            }
+            _fnm += ",";
+        }
+
+        _fnm = _fnm.substr( 0, _fnm.size() - 1 );
+
+    }
+
+    ret = props.get_property <
+          array_t > (
+              irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
+              prop_arr );
+    if ( ret.ok() ) {
+        for ( size_t i = 0;
+                i < prop_arr.size();
+                ++i ) {
+            try {
+                _dvm += boost::any_cast< std::string >(
+                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            } catch ( boost::bad_any_cast& _e ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "failed to cast rule data variable file name entry to string" );
+                continue;
+            }
+            _dvm += ",";
+        }
+
+        _dvm = _dvm.substr( 0, _dvm.size() - 1 );
+
+    }
+
+    return SUCCESS();
+
+} // capture_rulesets
+
 int
 chkAndResetRule() {
     int status = 0;
 
+    std::string re_str, fnm_str, dvm_str;
+    irods::error ret = capture_rulesets(
+                           re_str,
+                           fnm_str,
+                           dvm_str );
+    if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     /* get max timestamp */
     char fn[MAX_NAME_LEN];
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    snprintf( r2, sizeof( r2 ), "%s", reRuleStr );
+    snprintf( r2, sizeof( r2 ), "%s", re_str.c_str() );
     uint mtime = 0;
 
     std::string re_full_path;
@@ -332,7 +431,6 @@ chkAndResetRule() {
         }
 
         const uint mt = ( uint ) last_write_time( p );
-
         if ( mt > mtime ) {
             mtime = mt;
         }
@@ -347,17 +445,25 @@ chkAndResetRule() {
 
     if ( mtime > CoreIrbTimeStamp ) {
         /* file has been changed */
-        rodsLog( LOG_NOTICE,
-                 "chkAndResetRule: reconf file %s has been changed. re-initializing",
-                 re_full_path.c_str() );
+        rodsLog(
+            LOG_NOTICE,
+            "chkAndResetRule: reconf file %s has been changed. re-initializing",
+            re_full_path.c_str() );
         CoreIrbTimeStamp = mtime;
         clearCoreRule();
         /* The shared memory cache may have already been updated, do not force reload */
-        status = initRuleEngine( RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr );
+        status = initRuleEngine(
+                     RULE_ENGINE_TRY_CACHE,
+                     NULL,
+                     (char*)re_str.c_str(),
+                     (char*)fnm_str.c_str(),
+                     (char*)dvm_str.c_str() );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "chkAndResetRule: initRuleEngine error, status = %d", status );
         }
     }
+
     return status;
+
 }

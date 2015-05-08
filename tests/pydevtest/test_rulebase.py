@@ -7,6 +7,7 @@ import os
 import socket
 import time  # remove once file hash fix is commited #2279
 import lib
+import time
 
 from resource_suite import ResourceBase
 
@@ -107,35 +108,57 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
     def test_rulebase_update__2585(self):
+        rule_file = 'my_rule.r'
+        test_re=os.path.join(lib.get_core_re_dir(),'test.re')
+        my_rule = """
+my_rule { 
+    delay("<PLUSET>1s</PLUSET>") {
+	do_some_stuff(); 
+    } 
+}
+INPUT null
+OUTPUT ruleExecOut
+        """
+        with open(rule_file,'w') as f:
+            f.write(my_rule)
+
         server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
         with lib.file_backed_up(server_config_filename):
             # write new rule file to config dir
-            test_re=os.path.join(lib.get_core_re_dir(),'test.re')
-            test_rule='acPostProcForPut { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_2585" ); }'
+            test_rule='do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_2585" ); }'
             with open(test_re,'w') as f:
                 f.write(test_rule)
 
             # update server config with additional rule file
             server_config_update = {
-                "re_rulebase_set": [ { "filename": "test" }, {"filename": "core" } ]
+                "re_rulebase_set": [ { "filename": "test" }, {"filename": "core" } ] 
             }
             lib.update_json_file_from_dict(server_config_filename, server_config_update)
+            time.sleep( 35 ) # wait for delay rule engine to wake
 
             # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_log_size('server')
-            self.admin.assert_icommand('iput -f '+self.testfile+' file_2585')
-            assert lib.count_occurrences_of_string_in_log('server', 'TEST_STRING_TO_FIND_1_2585',start_index=initial_log_size)
-            # repave rule with new string
-            test_rule='acPostProcForPut { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }'
+            initial_log_size = lib.get_log_size('re')
+            self.admin.assert_icommand('irule -F '+rule_file)
+            time.sleep( 35 ) # wait for test to fire
+            assert lib.count_occurrences_of_string_in_log('re', 'TEST_STRING_TO_FIND_1_2585',start_index=initial_log_size)
+
+            # repave rule with new string            
+            test_rule='do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }'
             os.unlink(test_re)
             with open(test_re,'w') as f:
                 f.write(test_rule)
+            time.sleep( 35 ) # wait for delay rule engine to wake
 
             # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_log_size('server')
-            self.admin.assert_icommand('iput -f '+self.testfile+' file_2585')
-            assert lib.count_occurrences_of_string_in_log('server', 'TEST_STRING_TO_FIND_2_2585',start_index=initial_log_size)
+            initial_log_size = lib.get_log_size('re')
+            self.admin.assert_icommand('irule -F '+rule_file)
+            time.sleep( 35 ) # wait for test to fire
+            assert lib.count_occurrences_of_string_in_log('re', 'TEST_STRING_TO_FIND_2_2585',start_index=initial_log_size)
 
         # cleanup
-        self.admin.assert_icommand('irm -f file_2585')
         os.unlink(test_re)
+        os.unlink(rule_file)
+
+
+
+
