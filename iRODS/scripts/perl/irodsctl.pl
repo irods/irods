@@ -451,8 +451,8 @@ sub doTest
         setPrintVerbose( 1 );
 
         # Test iCommands
-        printSubtitle( "\nTesting iCommands...\n" );
-        doTestIcommands( );
+#        printSubtitle( "\nTesting iCommands...\n" );
+#        doTestIcommands( );
 
         # Test irules
 #       printSubtitle( "\nTesting irules...\n" );
