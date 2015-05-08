@@ -57,7 +57,7 @@ my @words;
 my $noprompt_flag;
 my $arg;
 
-$debug = 0;
+$debug = 1;
 $noprompt_flag = 0;
 foreach $arg (@ARGV)
 {
