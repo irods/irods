@@ -246,7 +246,7 @@ foreach $arg (@ARGV)
 
 
         # Commands
-        if ( $arg =~ /^-?-?(graceful_start)$/i )  
+        if ( $arg =~ /^-?-?(graceful_start)$/i )
         {
                 $numberCommands++;
                 printSubtitle( "Starting iRODS server...\n" );
@@ -451,8 +451,8 @@ sub doTest
         setPrintVerbose( 1 );
 
         # Test iCommands
-#        printSubtitle( "\nTesting iCommands...\n" );
-#        doTestIcommands( );
+        printSubtitle( "\nTesting iCommands...\n" );
+        doTestIcommands( );
 
         # Test irules
 #       printSubtitle( "\nTesting irules...\n" );
