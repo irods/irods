@@ -35,7 +35,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         part2=part1+corefile+' > '+origcorefile
         os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp "+origcorefile+" "+corefile) 
+        os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # add new rule to end of core.re
@@ -65,7 +65,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             f.write(newrule)
         os.system("cat "+corefile+" /tmp/irods/newrule > "+origcorefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp "+origcorefile+" "+corefile) 
+        os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # put data
@@ -107,14 +107,15 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.system("cp "+origcorefile+" "+corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rulebase_update__2585(self):
         rule_file = 'my_rule.r'
         test_re=os.path.join(lib.get_core_re_dir(),'test.re')
         my_rule = """
-my_rule { 
+my_rule {
     delay("<PLUSET>1s</PLUSET>") {
-	do_some_stuff(); 
-    } 
+        do_some_stuff();
+    }
 }
 INPUT null
 OUTPUT ruleExecOut
@@ -131,7 +132,7 @@ OUTPUT ruleExecOut
 
             # update server config with additional rule file
             server_config_update = {
-                "re_rulebase_set": [ { "filename": "test" }, {"filename": "core" } ] 
+                "re_rulebase_set": [ { "filename": "test" }, {"filename": "core" } ]
             }
             lib.update_json_file_from_dict(server_config_filename, server_config_update)
             time.sleep( 35 ) # wait for delay rule engine to wake
@@ -142,7 +143,7 @@ OUTPUT ruleExecOut
             time.sleep( 35 ) # wait for test to fire
             assert lib.count_occurrences_of_string_in_log('re', 'TEST_STRING_TO_FIND_1_2585',start_index=initial_log_size)
 
-            # repave rule with new string            
+            # repave rule with new string
             test_rule='do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }'
             os.unlink(test_re)
             with open(test_re,'w') as f:
@@ -158,7 +159,3 @@ OUTPUT ruleExecOut
         # cleanup
         os.unlink(test_re)
         os.unlink(rule_file)
-
-
-
-
