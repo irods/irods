@@ -119,7 +119,7 @@ typedef struct cache {
 		} \
 
 #define clearFuncDescIndex(u, l) \
-	if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentAllocated(ruleEngineConfig.l##FuncDescIndexStatus)) { \
+	if((resources & RESC_##u##_FUNC_DESC_INDEX) && isComponentInitialized(ruleEngineConfig.l##FuncDescIndexStatus)) { \
 		/* deleteEnv(ruleEngineConfig.l##FuncDescIndex, 1); */\
 		ruleEngineConfig.l##FuncDescIndex = NULL; \
 		ruleEngineConfig.l##FuncDescIndexStatus = UNINITIALIZED; \

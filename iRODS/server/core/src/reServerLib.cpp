@@ -973,6 +973,8 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
         return status;
     }
 
+    bzero( ruleExecSubmitInp->packedReiAndArgBBuf->buf,
+                   ruleExecSubmitInp->packedReiAndArgBBuf->len );
     status = read( fd, ruleExecSubmitInp->packedReiAndArgBBuf->buf,
                    ruleExecSubmitInp->packedReiAndArgBBuf->len );
 
