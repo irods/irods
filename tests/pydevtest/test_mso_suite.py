@@ -24,12 +24,12 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         hostname = lib.get_hostname()
         with lib.make_session_for_existing_admin() as admin_session:
-            admin_sesion.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
-            admin_sesion.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_sesion.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_sesion.assert_icommand("iadmin mkresc archiveResc mso " + hostname + ":/fake/vault/", 'STDOUT_SINGLELINE', 'mso')
-            admin_sesion.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
-            admin_sesion.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc mso " + hostname + ":/fake/vault/", 'STDOUT_SINGLELINE', 'mso')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_MSOSuite, self).setUp()
 
     def tearDown(self):
