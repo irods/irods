@@ -849,9 +849,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 ensure_ascii=False)
 
         hostuser = getpass.getuser()
+        temp_file = 'file_to_test_hosts_config'
+        lib.make_file(temp_file, 10)
         self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
                    hostuser, 'STDOUT_SINGLELINE', "jimbo")
-        self.admin.assert_icommand("iput -R jimboResc README jimbofile")
+        self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
         self.admin.assert_icommand("irm -f jimbofile")
         self.admin.assert_icommand("iadmin rmresc jimboResc")
 
