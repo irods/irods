@@ -191,5 +191,5 @@ f 644 root root ${IRODS_HOME_DIR}/packaging/update_catalog_schema.py ./packaging
 d 755 root root ${IRODS_HOME_DIR}/packaging/schema_updates -
 f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/2.mysql.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
 f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/3.mysql.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
-f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/4.mysql.sql ./packaging/schema_updates/4.postgres.mysql.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/4.mysql.sql ./packaging/schema_updates/4.mysql.sql
 
