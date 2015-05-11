@@ -85,7 +85,6 @@ $RESOURCE=true
 %if REDHAT
 %requires fuse-libs
 %requires perl-JSON
-%requires epel-release
 %endif
 
 %if SUSE
