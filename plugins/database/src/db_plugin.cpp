@@ -2865,16 +2865,15 @@ extern "C" {
                                              mySessionClientAddr,
                                              &icss );
         if ( iVal < 0 ) {
-            char errMsg[105];
             if ( iVal == CAT_UNKNOWN_COLLECTION ) {
-                snprintf( errMsg, 100, "collection '%s' is unknown",
-                          logicalDirName );
-                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
+                std::stringstream errMsg;
+                errMsg << "collection '" << logicalDirName << "' is unknown";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
             }
-            if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
-                snprintf( errMsg, 100, "no permission to update collection '%s'",
-                          logicalDirName );
-                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
+            else if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
+                std::stringstream errMsg;
+                errMsg << "no permission to update collection '" << logicalDirName << "'";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
             }
             return ERROR( iVal, "" );
         }
@@ -5446,17 +5445,16 @@ extern "C" {
                             ACCESS_MODIFY_OBJECT, &icss );
 
         if ( iVal < 0 ) {
-            char errMsg[105];
             if ( iVal == CAT_UNKNOWN_COLLECTION ) {
-                snprintf( errMsg, 100, "collection '%s' is unknown",
-                          _coll_info->collName );
-                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
+                std::stringstream errMsg;
+                errMsg << "collection '" << _coll_info->collName << "' is unknown";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
                 return ERROR( CAT_UNKNOWN_COLLECTION, "unknown collection" );
             }
             if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
-                snprintf( errMsg, 100, "no permission to update collection '%s'",
-                          _coll_info->collName );
-                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg );
+                std::stringstream errMsg;
+                errMsg << "no permission to update collection '" << _coll_info->collName << "'";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
                 return  ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
             }
             return ERROR( iVal, "cmlCheckDir failed" );
