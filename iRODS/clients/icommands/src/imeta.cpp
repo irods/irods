@@ -137,16 +137,14 @@ showDataObj( char *name, char *attrName, int wild ) {
     }
 
     i2a[0] = COL_COLL_NAME;
-    v1 += "='";
+    v1 = "='";
     v1 += cwd;
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_DATA_NAME;
-    v2 += "='";
+    v2 = "='";
     v2 += name;
     v2 += "'";
-    condVal[1] = (char*)v2.c_str();
 
     if ( *name == '/' ) {
         snprintf( fullName, sizeof( fullName ), "%s", name );
@@ -190,6 +188,9 @@ showDataObj( char *name, char *attrName, int wild ) {
         condVal[2] = (char*)v3.c_str();
         genQueryInp.sqlCondInp.len++;
     }
+
+    condVal[0] = (char*)v1.c_str();
+    condVal[1] = (char*)v2.c_str();
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -514,13 +515,11 @@ showUser( char *name, char *attrName, int wild ) {
     v1 += "='";
     v1 += userName;
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_USER_ZONE;
     v2 += "='";
     v2 += userZone;
     v2 += "'";
-    condVal[1] = (char*)v2.c_str();
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -541,6 +540,9 @@ showUser( char *name, char *attrName, int wild ) {
         condVal[2] = (char*)v3.c_str();
         genQueryInp.sqlCondInp.len++;
     }
+    
+    condVal[0] = (char*)v1.c_str();
+    condVal[1] = (char*)v2.c_str();
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -623,14 +625,12 @@ int queryDataObj( char *cmdToken[] ) {
     v1 += "='";
     v1 += cmdToken[2];
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_META_DATA_ATTR_VALUE;
     v2 += cmdToken[3];
     v2 += " '";
     v2 += cmdToken[4];
     v2 += "'";
-    condVal[1] = (char*)v2.c_str();
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -644,6 +644,9 @@ int queryDataObj( char *cmdToken[] ) {
         v3 += "'";
         v2 += v3;
     }
+
+    condVal[0] = (char*)v1.c_str();
+    condVal[1] = (char*)v2.c_str();
 
     cmdIx = 5;
     condIx = 2;
@@ -735,14 +738,12 @@ int queryCollection( char *cmdToken[] ) {
     v1 += "='";
     v1 += cmdToken[2];
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_META_COLL_ATTR_VALUE;
     v2 += cmdToken[3];
     v2 += " '";
     v2 += cmdToken[4];
     v2 += "'";
-    condVal[1] = (char*)v2.c_str();
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -758,6 +759,9 @@ int queryCollection( char *cmdToken[] ) {
         v2 += v3;
 
     }
+    
+    condVal[0] = (char*)v1.c_str();
+    condVal[1] = (char*)v2.c_str();
 
     cmdIx = 5;
     condIx = 2;
@@ -843,13 +847,14 @@ int queryResc( char *attribute, char *op, char *value ) {
     v1 += "='";
     v1 += attribute;
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_META_RESC_ATTR_VALUE;
     v2 += op;
     v2 += " '";
     v2 += value;
     v2 += "'";
+
+    condVal[0] = (char*)v1.c_str();
     condVal[1] = (char*)v2.c_str();
 
     genQueryInp.sqlCondInp.inx = i2a;
@@ -917,13 +922,14 @@ int queryUser( char *attribute, char *op, char *value ) {
     v1 += "='";
     v1 += attribute;
     v1 += "'";
-    condVal[0] = (char*)v1.c_str();
 
     i2a[1] = COL_META_USER_ATTR_VALUE;
     v2 += op;
     v2 += " '";
     v2 += value;
     v2 += "'";
+
+    condVal[0] = (char*)v1.c_str();
     condVal[1] = (char*)v2.c_str();
 
     genQueryInp.sqlCondInp.inx = i2a;
