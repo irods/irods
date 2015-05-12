@@ -856,6 +856,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
         std::string results;
         ret = irods::client_server_negotiation_for_client(
                   net_obj,
+                  conn->host,
                   results );
         if ( !ret.ok() ) {
             return ret.code();

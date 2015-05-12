@@ -11,6 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
+#include "rsGlobalExtern.hpp"
 #include "rodsDef.h"
 #include "rodsConnect.h"
 #include "rcMisc.h"
@@ -23,6 +24,34 @@
 
 
 namespace irods {
+/// =-=-=-=-=-=-=-
+/// @brief given a property map and the target host name decide between a federated key and a local key
+    error determine_negotiation_key(
+        const std::string& _host_name,
+        server_properties& _props,
+        std::string        _neg_key ) {
+#ifdef RODS_SERVER
+        // search the federation map for the host name
+        // NOTE:: strucuture of map is <zone_name,<sid,key>>
+        irods::lookup_table<
+            std::pair<
+                std::string,
+                std::string > >::iterator itr = remote_SID_key_map.begin();
+        for ( ; itr != remote_SID_key_map.end(); ++itr ) {
+            if( _host_name == itr->first ) {
+                _neg_key = itr->second.second;
+                return SUCCESS();
+            }
+
+        } // for itr
+
+        // if not, it must be in our zone
+        return _props.get_property<
+                   std::string > (
+                       CFG_NEGOTIATION_KEY_KW,
+                       _neg_key );
+#endif
+    } // determine_negotiation_key
 
 /// =-=-=-=-=-=-=-
 /// @brief given a buffer encrypt and hash it for negotiation
@@ -199,6 +228,7 @@ namespace irods {
 /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client(
         irods::network_object_ptr _ptr,
+        const std::string&        _host_name,
         std::string&              _result ) {
 
         // =-=-=-=-=-=-=-
@@ -284,6 +314,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // if we cannot read a server config file, punt
         // as this must be a client-side situation
+#ifdef RODS_SERVER
         server_properties& props = server_properties::getInstance();
         err = props.capture_if_needed();
         if ( err.ok() ) {
@@ -304,18 +335,18 @@ namespace irods {
             }
             
             if ( err.ok() ) {
-                std::string enc_key;
-                err = props.get_property <
-                      std::string > (
-                          CFG_NEGOTIATION_KEY_KW,
-                          enc_key );
+                std::string neg_key;
+                err = determine_negotiation_key(
+                          _host_name,
+                          props,
+                          neg_key );
                 if ( err.ok() ) {
                     // =-=-=-=-=-=-=-
                     // sign the SID
                     std::string signed_sid;
                     err = sign_server_sid(
                               sid,
-                              enc_key,
+                              neg_key,
                               signed_sid );
                     if ( err.ok() ) {
                         // =-=-=-=-=-=-=-
@@ -345,7 +376,7 @@ namespace irods {
             }
 
         }
-
+#endif
         // =-=-=-=-=-=-=-
         // tack on the rest of the result
         cli_msg += CS_NEG_RESULT_KW         +

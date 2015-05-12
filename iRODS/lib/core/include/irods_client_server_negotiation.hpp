@@ -69,7 +69,8 @@ namespace irods {
 /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client(
         irods::network_object_ptr, // client connection handle
-        std::string& );             // results of the negotiation
+        const std::string&,        // host name
+        std::string& );            // results of the negotiation
 
 /// =-=-=-=-=-=-=-
 /// @brief function which sends the negotiation message
