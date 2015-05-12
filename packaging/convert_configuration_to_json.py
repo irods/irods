@@ -359,7 +359,7 @@ def convert_serverconfig_and_irodsconfig():
                     elif columns[0] in ['RemoteZoneSID']:
                         (j, k) = new_value.split('-')
                         # use placeholder, fill it in with common negotiation_key after for loop completes
-                        server_config['federation'].append({'zone_name':j, 'zone_key':k, 'negotiation_key':'placeholder'})
+                        server_config['federation'].append({'icat_host': '', 'zone_name':j, 'zone_key':k, 'negotiation_key':'placeholder'})
                     else:
                         if legacy_key_map[columns[0]] in should_be_integers:
                             new_value = int(new_value)
