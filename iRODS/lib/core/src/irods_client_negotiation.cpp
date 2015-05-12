@@ -5,6 +5,7 @@
 #include "irods_kvp_string_parser.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_hasher_factory.hpp"
+#include "irods_configuration_parser.hpp"
 #include "MD5Strategy.hpp"
 #include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
@@ -29,28 +30,47 @@ namespace irods {
     error determine_negotiation_key(
         const std::string& _host_name,
         server_properties& _props,
-        std::string        _neg_key ) {
-#ifdef RODS_SERVER
-        // search the federation map for the host name
-        // NOTE:: strucuture of map is <zone_name,<sid,key>>
-        irods::lookup_table<
-            std::pair<
-                std::string,
-                std::string > >::iterator itr = remote_SID_key_map.begin();
-        for ( ; itr != remote_SID_key_map.end(); ++itr ) {
-            if( _host_name == itr->first ) {
-                _neg_key = itr->second.second;
-                return SUCCESS();
-            }
+        std::string&       _neg_key ) {
+        typedef irods::configuration_parser::object_t object_t;
+        typedef irods::configuration_parser::array_t  array_t;
 
-        } // for itr
+        // search the federation map for the host name
+        array_t fed_arr;
+        error ret = _props.get_property <
+                        array_t > (
+                        irods::CFG_FEDERATION_KW,
+                        fed_arr );
+        if ( ret.ok() ) {
+            for ( size_t i = 0; i < fed_arr.size(); ++i ) {
+                object_t& obj = fed_arr[ i ];
+                std::string fed_icat_host, fed_zone_negotiation_key;
+                try {
+                    fed_zone_negotiation_key = boost::any_cast< std::string >(
+                                                   obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
+                    fed_icat_host = boost::any_cast< std::string >(
+                                        obj[irods::CFG_ICAT_HOST_KW ] );
+                    if( _host_name == fed_icat_host ) {
+                        _neg_key = fed_zone_negotiation_key;
+                        return SUCCESS();
+                    }
+                } catch ( boost::bad_any_cast& _e ) {
+                    rodsLog(
+                        LOG_ERROR,
+                        "%s - failed to cast federation entry to string",
+                        __FUNCTION__ );
+                    continue;
+                }
+
+            } // for i
+
+        }
 
         // if not, it must be in our zone
         return _props.get_property<
                    std::string > (
                        CFG_NEGOTIATION_KEY_KW,
                        _neg_key );
-#endif
+
     } // determine_negotiation_key
 
 /// =-=-=-=-=-=-=-
@@ -314,7 +334,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // if we cannot read a server config file, punt
         // as this must be a client-side situation
-#ifdef RODS_SERVER
         server_properties& props = server_properties::getInstance();
         err = props.capture_if_needed();
         if ( err.ok() ) {
@@ -376,7 +395,7 @@ namespace irods {
             }
 
         }
-#endif
+
         // =-=-=-=-=-=-=-
         // tack on the rest of the result
         cli_msg += CS_NEG_RESULT_KW         +
