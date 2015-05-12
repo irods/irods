@@ -332,11 +332,12 @@ def convert_serverconfig_and_irodsconfig():
             with open(legacy_server_config_fullpath, 'r') as f:
                 for i, row in enumerate(f):
                     columns = row.strip().split() # splits on consecutive spaces and tabs
-                    # skip comments
+                    # skip comments and ignore some deprecated settings
                     if ( len(columns) < 1
                         or columns[0].startswith('#')
                         or columns[0] == ''
-                        or 'run_server_as_root' in columns[0]
+                        or columns[0] == 'run_server_as_root'
+                        or columns[0] == 'SIDKey'
                         or columns[0] == 'DBKey'
                         or columns[0] == 'DBPassword' ):
                         continue
@@ -351,22 +352,23 @@ def convert_serverconfig_and_irodsconfig():
                         database_config[legacy_key_map[columns[0]]] = new_value
 #                        print_debug(json.dumps(database_config, indent=4))
                         print_debug('========= done')
+                    elif columns[0] in ['reRuleSet','reFuncMapSet','reVariableMapSet']:
+                        server_config[legacy_key_map[columns[0]]] = []
+                        for j in new_value.split(','):
+                            server_config[legacy_key_map[columns[0]]].append({'filename':j})
+                    elif columns[0] in ['RemoteZoneSID']:
+                        (j, k) = new_value.split('-')
+                        # use placeholder, fill it in with common negotiation_key after for loop completes
+                        server_config['federation'].append({'zone_name':j, 'zone_key':k, 'negotiation_key':'placeholder'})
                     else:
-                        if columns[0] in ['reRuleSet','reFuncMapSet','reVariableMapSet']:
-                            server_config[legacy_key_map[columns[0]]] = []
-                            for j in new_value.split(','):
-                                # NOT MOVING TO FULL FILENAMES, STAYING WITH JUST 'core'
-                                #if columns[0] == 'reRuleSet':
-                                    #k = j.strip() + ".re"
-                                #if columns[0] == 'reFuncMapSet':
-                                    #k = j.strip() + ".fnm"
-                                #if columns[0] == 'reVariableMapSet':
-                                    #k = j.strip() + ".dvm"
-                                server_config[legacy_key_map[columns[0]]].append({'filename':j})
-                        else:
-                            if legacy_key_map[columns[0]] in should_be_integers:
-                                new_value = int(new_value)
-                            server_config[legacy_key_map[columns[0]]] = new_value
+                        if legacy_key_map[columns[0]] in should_be_integers:
+                            new_value = int(new_value)
+                        server_config[legacy_key_map[columns[0]]] = new_value
+#            print_debug(json.dumps(server_config, indent=4))
+#            print_debug(json.dumps(database_config, indent=4))
+            # update any federation negotiation_keys
+            for z in server_config['federation']:
+                z['negotiation_key'] = server_config['negotiation_key']
 #            print_debug(json.dumps(server_config, indent=4))
 #            print_debug(json.dumps(database_config, indent=4))
         else:
