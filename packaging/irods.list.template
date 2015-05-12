@@ -208,6 +208,8 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
     if [ -f /etc/irods/server.config ] ; then
       OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
       DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
+      # server must be up for iadmin to connect
+      JUNK=`su - $$MYACCTNAME -c "$IRODS_HOME_DIR/iRODS/irodsctl restart"`
       UNOBFDBLINE=`su - $$MYACCTNAME -c "iadmin dspass \"$$OBFDBPASS\" \"$$DBKEY\""`
       UNOBFDBPASS=`echo $$UNOBFDBLINE | awk -F ':' '{print $$2}'`
       PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
