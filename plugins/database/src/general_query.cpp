@@ -2163,15 +2163,9 @@ extern "C" int chl_gen_query_impl(
     if ( status < 0 || icss == NULL ) {
         return CAT_NOT_OPEN;
     }
-#if defined(_LP64) || defined(__LP64__)
     if ( debug ) {
-        printf( "icss=%ld\n", ( long int )icss );
+        printf( "icss=%ju\n", ( uintmax_t )icss );
     }
-#else
-    if ( debug ) {
-        printf( "icss=%d\n", ( uint )icss );
-    }
-#endif
 
     if ( genQueryInp.continueInx == 0 ) {
         if ( genQueryInp.options & QUOTA_QUERY ) {
@@ -2364,8 +2358,7 @@ extern "C" int chl_gen_query_impl(
            new result strings, copy each row value over, and free the
            old one. */
         if ( maxColSize > currentMaxColSize ) {
-            maxColSize += MINIMUM_COL_SIZE; /* bump it up to try to avoid
-					    some multiple resizes */
+            maxColSize += MINIMUM_COL_SIZE; // bump it up to try to avoid some multiple resizes
             if ( debug ) printf( "Bumping %d to %d\n",
                                      currentMaxColSize, maxColSize );
             attriTextLen = numOfCols * maxColSize;
@@ -2398,20 +2391,18 @@ extern "C" int chl_gen_query_impl(
         /* Store the current row values into the appropriate spots in
            the attribute string */
         for ( j = 0; j < numOfCols; j++ ) {
-            tResult2 = result->sqlResult[j].value; /* ptr to value str */
-            tResult2 += currentMaxColSize * ( result->rowCnt - 1 );  /* skip forward
-							for this row */
+            tResult2 = result->sqlResult[j].value; // ptr to value str
+            tResult2 += currentMaxColSize * ( result->rowCnt - 1 );  // skip forward for this row
             strncpy( tResult2, icss->stmtPtr[statementNum]->resultValue[j],
-                     currentMaxColSize ); /* copy in the value text */
+                     currentMaxColSize ); // copy in the value text
         }
 
     }
 
-    result->continueInx = statementNum + 1;  /* the statementnumber but
-						  always >0 */
+    result->continueInx = statementNum + 1;  // the statement number but always >0
     if ( genQueryInp.options & AUTO_CLOSE ) {
         int status2;
-        result->continueInx = -1; /* Indicate more rows might have been available */
+        result->continueInx = -1; // Indicate more rows might have been available
         status2 = cmlFreeStatement( statementNum, icss );
         return status2;
     }

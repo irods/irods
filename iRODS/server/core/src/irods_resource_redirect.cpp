@@ -365,9 +365,9 @@ namespace irods {
     } // resolve_hier_for_create_or_open
 
 /// =-=-=-=-=-=-=-
-/// @brief determine if a forced write is to be done to a destination resource 
+/// @brief determine if a forced write is to be done to a destination resource
 ///        which does not have an existing replica of the data object
-    error determine_force_write_to_new_resource( 
+    error determine_force_write_to_new_resource(
         const std::string& _oper,
         file_object_ptr&   _fobj,
         dataObjInp_t*      _data_obj_inp ) {
@@ -377,14 +377,14 @@ namespace irods {
         std::vector<physical_object> repls = _fobj->replicas();
         if( PUT_OPR != _data_obj_inp->oprType ||
             repls.empty()  ||
-            !dst_resc_kw   || 
-            !force_flag_kw || 
+            !dst_resc_kw   ||
+            !force_flag_kw ||
             strlen( dst_resc_kw ) == 0 ||
             !( OPEN_OPERATION  == _oper ||
                WRITE_OPERATION == _oper ) ) {
             return SUCCESS();
         }
-        
+
         bool hier_match_flg = false;
         for ( size_t i = 0; i < repls.size(); ++i ) {
             // =-=-=-=-=-=-=-
@@ -404,9 +404,9 @@ namespace irods {
         if( !hier_match_flg ) {
             std::stringstream msg;
             msg << "cannot force put ["
-                << _data_obj_inp->objPath 
+                << _data_obj_inp->objPath
                 << "] to a different resource ["
-                << dst_resc_kw 
+                << dst_resc_kw
                 << "]";
             return ERROR(
                        HIERARCHY_ERROR,
