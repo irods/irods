@@ -1671,7 +1671,7 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else if ( writeFlag > 0 && dataObjInp->oprType != REPLICATE_OPR ) {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
-                                 ACCESS_DELETE_OBJECT, 0 );
+                                 ACCESS_MODIFY_OBJECT, 0 );
     }
     else {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
