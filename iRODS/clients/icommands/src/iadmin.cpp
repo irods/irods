@@ -1260,9 +1260,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "dspass" ) == 0 ) {
         char unscrambled[MAX_PASSWORD_LEN + 100];
-        if ( simpleQueryCheck() != 0 ) {
-            exit( -1 ); /* not authorized */
-        }
         if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
             fprintf( stderr, "Scrambled password exceeds maximum length\n" );
         }
