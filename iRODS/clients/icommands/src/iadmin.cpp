@@ -1353,18 +1353,8 @@ main( int argc, char **argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    int status, i, j;
-    rErrMsg_t errMsg;
-
     rodsArguments_t myRodsArgs;
-
-    char *mySubName;
-    char *myName;
-
-    int maxCmdTokens = 20;
-    char *cmdToken[20];
-
-    status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
+    int status = parseCmdLineOpt( argc, argv, "fvVhZ", 1, &myRodsArgs );
 
 #ifdef osx_platform
     // getopt has different behavior on OSX, we work around this for
@@ -1380,7 +1370,6 @@ main( int argc, char **argv ) {
     } // if argc
 #endif
 
-
     if ( status ) {
         fprintf( stderr, "Use -h for help.\n" );
         return 2;
@@ -1391,22 +1380,18 @@ main( int argc, char **argv ) {
     }
     int argOffset = myRodsArgs.optind;
 
-    memset( &myEnv, 0, sizeof( myEnv ) );
-    status = getRodsEnv( &myEnv );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
-                 status );
-        return 1;
-    }
 
     if ( myRodsArgs.veryVerbose == True ) {
         veryVerbose = 1;
     }
 
+    int i;
+    const int maxCmdTokens = 20;
+    char *cmdToken[maxCmdTokens];
     for ( i = 0; i < maxCmdTokens; i++ ) {
         cmdToken[i] = "";
     }
-    j = 0;
+    int j = 0;
     for ( i = argOffset; i < argc; i++ ) {
         cmdToken[j++] = argv[i];
     }
@@ -1430,6 +1415,29 @@ main( int argc, char **argv ) {
             printf( "Scrambled form is:%s\n", scrambled );
         }
         return 0;
+    }
+
+    if ( strcmp( cmdToken[0], "dspass" ) == 0 ) {
+        char unscrambled[MAX_PASSWORD_LEN + 100];
+        if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
+            fprintf( stderr, "Scrambled password exceeds maximum length\n" );
+        }
+        else {
+            if ( strlen( cmdToken[2] ) == 0 ) {
+                fprintf( stderr, "Warning, scramble key is null\n" );
+            }
+            obfDecodeByKey( cmdToken[1], cmdToken[2], unscrambled );
+            printf( "Unscrambled form is:%s\n", unscrambled );
+        }
+        return 0;
+    }
+
+    memset( &myEnv, 0, sizeof( myEnv ) );
+    status = getRodsEnv( &myEnv );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
+                 status );
+        return 1;
     }
 
     if ( strcmp( cmdToken[0], "ctime" ) == 0 ) {
@@ -1462,11 +1470,13 @@ main( int argc, char **argv ) {
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();
     init_api_table( api_tbl, pk_tbl );
 
+    rErrMsg_t errMsg;
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
