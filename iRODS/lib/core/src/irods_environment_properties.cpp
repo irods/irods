@@ -181,7 +181,7 @@ namespace irods {
             if ( fs::exists( json_file ) ) {
                 ret = capture_json( json_file );
                 if ( !ret.ok() ) {
-                    // debug - irods::log( PASS( ret ) );
+                    irods::log( ret );
                     do_parse_legacy = true;
                 }
                 else {
