@@ -483,9 +483,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # place data into the resource
+        test_file = "iput_test_file"
+        lib.make_file(test_file, 10)
         num_children = 11
         for i in range(num_children):
-            self.admin.assert_icommand("iput -R pt README foo%d" % i)
+            self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
@@ -601,9 +603,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # place data into the resource
+        test_file = "iput_test_file"
+        lib.make_file(test_file, 10)
         num_children = 11
         for i in range(num_children):
-            self.admin.assert_icommand("iput -R pt README foo%d" % i)
+            self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
 
         # =-=-=-=-=-=-=-
         # visualize our replication
@@ -714,12 +718,16 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc %s" % "pt")
 
     def test_iexecmd(self):
-        self.admin.assert_icommand("iput README foo")
+        test_file = "iput_test_file"
+        lib.make_file(test_file, 10)
+        self.admin.assert_icommand("iput %s foo" % test_file)
         self.admin.assert_icommand(['iexecmd', '-p', self.admin.session_collection + '/foo', 'hello'], 'STDOUT_SINGLELINE', "Hello world  from irods")
         self.admin.assert_icommand("irm -f foo")
 
     def test_ibun(self):
-        cmd = "tar cf somefile.tar ./README"
+        test_file = "ibun_test_file"
+        lib.make_file(test_file, 1000)
+        cmd = "tar cf somefile.tar " + test_file
         output = commands.getstatusoutput(cmd)
 
         tar_path = self.admin.session_collection + '/somefile.tar'
@@ -727,8 +735,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand("iput somefile.tar")
         self.admin.assert_icommand("imkdir " + dir_path)
-        self.admin.assert_icommand("iput README " + dir_path + "/foo0")
-        self.admin.assert_icommand("iput README " + dir_path + "/foo1")
+        self.admin.assert_icommand("iput %s %s/foo0" % (test_file, dir_path))
+        self.admin.assert_icommand("iput %s %s/foo1" % (test_file, dir_path))
 
         self.admin.assert_icommand("ibun -cD tar " + tar_path + " " +
                    dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
@@ -752,10 +760,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # place data into the resource
+        test_file = "rebalance_test_file"
+        lib.make_file(test_file, 100)
         num_children = 3
         for i in range(num_children):
-            self.admin.assert_icommand("iput -R repl README foo%d" % i)
-            self.user0.assert_icommand("iput -R repl README bar%d" % i)
+            self.admin.assert_icommand("iput -R repl %s foo%d" % (test_file, i))
+            self.user0.assert_icommand("iput -R repl %s bar%d" % (test_file, i))
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance

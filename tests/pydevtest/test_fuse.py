@@ -10,7 +10,7 @@ import os
 import subprocess
 import stat
 import socket
-
+import lib
 
 class Test_Fuse(ResourceBase, unittest.TestCase):
     def setUp(self):
@@ -72,7 +72,9 @@ class Test_Fuse(ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # put some test data
-        cmd = "iput README foo0"
+        test_file = "irodsfs_test_file"
+        lib.make_file(test_file, 10)
+        cmd = "iput " + test_file + " foo0"
         output = commands.getstatusoutput(cmd)
 
         # =-=-=-=-=-=-=-
@@ -87,7 +89,7 @@ class Test_Fuse(ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # use system copy to put some data into the mount mount
         # and verify that it shows up in the ils
-        cmd = "cp README " + mount_point + "/baz ; ils -l baz"
+        cmd = "cp " + test_file + " " + mount_point + "/baz ; ils -l baz"
         output = commands.getstatusoutput(cmd)
         out_str = str(output)
         print("results[" + out_str + "]")
