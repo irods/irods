@@ -165,7 +165,9 @@ namespace irods {
         _session_file = legacy_session_file;
 
         if( fs::exists( legacy_file ) ) {
-            std::cout << "Warning: use of legacy configuration is deprecated." << std::endl;
+            std::cout << "Warning: use of legacy configuration ["
+                      << legacy_file
+                      << "] is deprecated." << std::endl;
         }
 
         return SUCCESS();
