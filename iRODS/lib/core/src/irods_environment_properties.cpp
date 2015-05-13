@@ -125,8 +125,6 @@ namespace irods {
     error environment_properties::get_legacy_environment_file(
         std::string& _env_file,
         std::string& _session_file ) {
-        printf(
-            "get_legacy_environment_file - use of legacy configuration is deprecated\n" );
         // capture parent process id for use in creation of 'session'
         // file which contains the cwd for a given session.  this cwd
         // is only updated by the icd command which writes a new irods
@@ -165,6 +163,10 @@ namespace irods {
 
         _env_file     = legacy_file;
         _session_file = legacy_session_file;
+
+        if( fs::exists( legacy_file ) ) {
+            std::cout << "Warning: use of legacy configuration is deprecated." << std::endl;
+        }
 
         return SUCCESS();
 
@@ -226,7 +228,7 @@ namespace irods {
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
                 } 
-                
+
                 config_props_.set< std::string >(
                     CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
                     legacy_session_file );
