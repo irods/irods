@@ -16,7 +16,6 @@ def get_irods_root_directory():
 
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(get_irods_root_directory(), 'iRODS', 'irodsctl')
-    print(irodsctl)
     subprocess.check_call([irodsctl, arg])
 
 def restart_irods_server():
@@ -44,11 +43,15 @@ def optparse_callback_topology_test(option, opt_str, value, parser):
     configuration.HOSTNAME_3 = 'resource3.example.org'
     configuration.ICAT_HOSTNAME = 'icat.example.org'
 
-def run_tests_from_names(names, buffer_test_output):
+def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
     suites = [loader.loadTestsFromName(name) for name in names]
     super_suite = unittest.TestSuite(suites)
-    runner = unittest.TextTestRunner(verbosity=2, failfast=True, buffer=buffer_test_output, resultclass=RegisteredTestResult)
+    if xml_output:
+        import xmlrunner
+        runner = xmlrunner.XMLTestRunner(output='test-reports', verbosity=2)
+    else:
+        runner = unittest.TextTestRunner(verbosity=2, failfast=True, buffer=buffer_test_output, resultclass=RegisteredTestResult)
     results = runner.run(super_suite)
     return results
 
@@ -73,6 +76,7 @@ if __name__ == '__main__':
     parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
     parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
     parser.add_option('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
+    parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
     options, _ = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -92,7 +96,7 @@ if __name__ == '__main__':
     if options.include_fuse_tests:
         test_identifiers.append('test_fuse')
 
-    results = run_tests_from_names(test_identifiers, options.buffer_test_output)
+    results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
     if not results.wasSuccessful():
         sys.exit(1)
