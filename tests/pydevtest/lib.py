@@ -360,7 +360,8 @@ def mkuser_and_return_session(user_type, username, password, hostname):
     zone_name = service_env['irods_zone_name']
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(['iadmin', 'mkuser', username, user_type])
-        admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])
+        if password is not None:
+            admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])
         env_dict = make_environment_dict(username, hostname, zone_name)
         return IrodsSession(env_dict, password, True)
 
@@ -414,7 +415,8 @@ class IrodsSession(object):
         self._authentication_file_path = os.path.join(self._local_session_dir, 'irods_authentication')
         self._session_id = datetime.datetime.utcnow().strftime('%Y-%m-%dZ%H:%M:%S--') + os.path.basename(self._local_session_dir)
 
-        self.assert_icommand(['iinit', self._password])
+        if self._password is not None:
+            self.assert_icommand(['iinit', self._password])
         if self._manage_irods_data:
             self.assert_icommand(['imkdir', self.session_collection])
             self.assert_icommand(['icd', self.session_collection])
@@ -479,7 +481,8 @@ class IrodsSession(object):
         if 'env' not in kwargs:
             environment = os.environ.copy()
             environment['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
-            environment['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
+            if self._password is not None:
+                environment['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
             kwargs['env'] = environment
 
     def _log_run_icommand(self, arg):
