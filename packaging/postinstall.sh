@@ -36,9 +36,7 @@ mv $IRODS_HOME_DIR/VERSION.json.tmp $IRODS_HOME_DIR/VERSION.json
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
-if [ -f /tmp/irodsServer.* ] ; then
-    rm /tmp/irodsServer.*
-fi
+rm -f /tmp/irodsServer.*
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS shared memory mutex files
