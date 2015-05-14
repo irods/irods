@@ -9,9 +9,9 @@ else:
 from resource_suite import ResourceBase
 
 
-class Test_iMetaSet(ResourceBase, unittest.TestCase):
+class Test_ImetaSet(ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_iMetaSet, self).setUp()
+        super(Test_ImetaSet, self).setUp()
 
         usernames = [s.username for s in itertools.chain(self.admin_sessions, self.user_sessions)]
         self.admin.assert_icommand('iadmin lu', 'STDOUT_MULTILINE', usernames)
@@ -25,7 +25,7 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
         for u in usernames:
             self.admin.run_icommand(['imeta', 'rmw', '-u', u, '%', '%', '%'])
 
-        super(Test_iMetaSet, self).tearDown()
+        super(Test_ImetaSet, self).tearDown()
 
     def set_avu(self, user_name, a, v, u):
         self.admin.assert_icommand('imeta set -u %s %s %s %s' % (user_name, a, v, u))
@@ -160,12 +160,14 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['value: ' + v + '$'])
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['units:' + u + '$'])
 
-        def test_imeta_bind_var_limit(self):
-            self.admin.assert_icommand( 'iput -f '+self.testfile )
-            self.admin.assert_icommand( 'imeta add -d '+self.testfile+' AAA VVV UUU' )
-            cmd='imeta qu -d AAA in "var\''
-            for n in range(1,20000):
-                cmd=cmd+" 'var'"
-                cmd=cmd+" 'VVV\""
-                print 'length of commend: '+str(len(cmd))
-                self.admin.assert_icommand( cmd, 'STDERR_SINGLELINE', 'USER_STRLEN_TOOLONG' )
+    def test_imeta_with_too_long_string(self):
+        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
+        num_extra_bind_vars = 10000
+        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'"*num_extra_bind_vars)
+        self.admin.assert_icommand(command_str, 'STDERR_SINGLELINE', 'USER_STRLEN_TOOLONG')
+
+    def test_imeta_with_many_bind_vars(self):
+        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
+        num_extra_bind_vars = 3848 # any more and the argument string is too long
+        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'"*num_extra_bind_vars)
+        self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)
