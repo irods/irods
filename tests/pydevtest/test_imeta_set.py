@@ -159,3 +159,13 @@ class Test_iMetaSet(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['attribute: ' + a + '$'])
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['value: ' + v + '$'])
             self.admin.assert_icommand_fail('imeta ls -u %s %s' % (user, a), 'STDOUT_SINGLELINE', ['units:' + u + '$'])
+
+        def test_imeta_bind_var_limit(self):
+            self.admin.assert_icommand( 'iput -f '+self.testfile )
+            self.admin.assert_icommand( 'imeta add -d '+self.testfile+' AAA VVV UUU' )
+            cmd='imeta qu -d AAA in "var\''
+            for n in range(1,20000):
+                cmd=cmd+" 'var'"
+                cmd=cmd+" 'VVV\""
+                print 'length of commend: '+str(len(cmd))
+                self.admin.assert_icommand( cmd, 'STDERR_SINGLELINE', 'USER_STRLEN_TOOLONG' )
