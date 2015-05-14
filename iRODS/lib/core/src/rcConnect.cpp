@@ -19,7 +19,6 @@
 
 
 // =-=-=-=-=-=-=-
-#include "irods_stacktrace.hpp"
 #include "irods_network_factory.hpp"
 
 #include "sockComm.h"
@@ -30,12 +29,6 @@
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
            int reconnFlag, rErrMsg_t *errMsg ) {
-    if ( strlen( rodsHost ) == 0 ) {
-        irods::stacktrace st;
-        st.trace();
-        st.dump();
-    }
-
     rcComm_t *conn;
 
 #ifdef windows_platform
@@ -237,10 +230,6 @@ setSockAddr( struct sockaddr_in *remoteAddr, const char *rodsHost, int rodsPort 
     myHostent = gethostbyname( rodsHost );
 
     if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
-        irods::stacktrace st;
-        st.trace();
-        st.dump();
-
         rodsLog( LOG_ERROR, "unknown hostname: [%s]", rodsHost );
         return USER_RODS_HOSTNAME_ERR - errno;
     }
