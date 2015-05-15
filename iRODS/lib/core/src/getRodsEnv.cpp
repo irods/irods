@@ -460,7 +460,7 @@ extern "C" {
         capture_string_property(
             msg_lvl,
             props,
-            irods::CFG_IRODS_PLUGIN_HOME_KW,
+            irods::CFG_IRODS_PLUGINS_HOME_KW,
             _env->irodsPluginHome );
 
         return 0;
@@ -746,7 +746,7 @@ extern "C" {
             env_var,
             _env->irodsTransBufferSizeForParaTrans );
 
-        env_var = irods::CFG_IRODS_PLUGIN_HOME_KW;
+        env_var = irods::CFG_IRODS_PLUGINS_HOME_KW;
         capture_string_env_var(
             env_var,
             _env->irodsPluginHome );
