@@ -3233,9 +3233,10 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
             try {
                 boost::format formatter( format );
                 for ( int j = 0; j < n; j++ ) {
-                    formatter % v[j]->value[v[j]->len * i];
+                    formatter % &v[j]->value[v[j]->len * i];
                 }
-                std::cout << formatter;
+                std::stringstream ss; ss << formatter;
+                fprintf( fd, "%s\n", ss.str().c_str() );
             }
             catch( const boost::io::format_error& _e ) {
                 std::cout << _e.what() << std::endl;
