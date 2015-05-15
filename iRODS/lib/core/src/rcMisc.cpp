@@ -41,6 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/format.hpp>
 using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
@@ -3229,47 +3230,16 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
             fprintf( fd, "------------------------------------------------------------\n" );
         }
         else {
-            if ( n == 1 ) {
-                fprintf( fd, format, &v[0]->value[v[0]->len * i] );
+            try {
+                boost::format formatter( format );
+                for ( int j = 0; j < n; j++ ) {
+                    formatter % v[j]->value[v[j]->len * i];
+                }
+                std::cout << formatter;
             }
-            else if ( n == 2 ) {
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i] );
+            catch( const boost::io::format_error& _e ) {
+                std::cout << _e.what() << std::endl;
             }
-            else if ( n == 3 ) {
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i] );
-            }
-            else if ( n == 4 ) {
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i] );
-            }
-            else if ( n == 5 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i] );
-            else if ( n == 6 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i] );
-            else if ( n == 7 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i] );
-            else if ( n == 8 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i] );
-            else if ( n == 9 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                         &v[8]->value[v[8]->len * i] );
-            else if ( n == 10 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i] );
-            else if ( n == 11 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i] );
-            else if ( n == 12 )
-                fprintf( fd, format, &v[0]->value[v[0]->len * i], &v[1]->value[v[1]->len * i], &v[2]->value[v[2]->len * i], &v[3]->value[v[3]->len * i],
-                         &v[4]->value[v[4]->len * i], &v[5]->value[v[5]->len * i], &v[6]->value[v[6]->len * i], &v[7]->value[v[7]->len * i],
-                         &v[8]->value[v[8]->len * i], &v[9]->value[v[9]->len * i], &v[10]->value[v[10]->len * i], &v[11]->value[v[11]->len * i] );
-            fprintf( fd, "\n" );
         }
 
     }
