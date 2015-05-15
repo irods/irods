@@ -175,6 +175,10 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iquest \"bad formatting\"", 'STDERR_SINGLELINE',
                    "INPUT_ARG_NOT_WELL_FORMED_ERR")  # bad request
 
+    def test_iquest_incorrect_format_count(self):
+        self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
+                    'STDOUT', 'Format [2] / Attribute [1] count mismatch.')
+
     ###################
     # isysmeta
     ###################
