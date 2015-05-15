@@ -177,6 +177,7 @@ fi
 # =-=-=-=-=-=-=-
 # remove temporary files
 rm -f $IRODS_HOME_DIR/plaintext_database_password.txt
+rm -f $UPGRADE_FLAG_FILE
 
 # =-=-=-=-=-=-=-
 # chown the binary_installation.flag file
