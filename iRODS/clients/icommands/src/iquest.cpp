@@ -121,10 +121,23 @@ printBasicGenQueryOut( genQueryOut_t *genQueryOut, char *format ) {
                 tResult += i * genQueryOut->sqlResult[j].len;
                 results[j] = tResult;
             }
+        
             printFormatted( format, results, j );
         }
     }
 }
+
+static int get_percent_s_count(
+    const std::string& _f ) {
+    int    c = 0;
+    size_t p = _f.find( "%s" );
+    while( p != std::string::npos ) {
+        c++;
+        p+=2; // get past %s
+        p = _f.find( "%s", p );
+    }
+    return c;
+} // get_percent_s_count
 
 int
 queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
@@ -161,6 +174,12 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
     i = rcGenQuery( conn, &genQueryInp, &genQueryOut );
     if ( i < 0 ) {
         return i;
+    }
+
+    int n = get_percent_s_count( format );
+    if( n != genQueryOut->attriCnt ) {
+        std::cout << "Format [" << n << "] / Attribute [" << genQueryOut->attriCnt << "] count mismatch." << std::endl;
+        return 0;
     }
 
     i = printGenQueryOut( stdout, format, hint,  genQueryOut );
