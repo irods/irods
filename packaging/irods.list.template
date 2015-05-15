@@ -420,10 +420,6 @@ d 755 root root ${IRODS_HOME}/server/re -
 d 755 root root ${IRODS_HOME}/server/re/include -
 f 644 root root ${IRODS_HOME}/server/re/include/reAction.hpp ./iRODS/server/re/include/reAction.hpp
 d 755 root root ${IRODS_HOME}/server/test -
-f 644 root root ${IRODS_HOME}/server/test/rdaToDataObj.ir ./iRODS/server/test/rdaToDataObj.ir
-f 644 root root ${IRODS_HOME}/server/test/rdaNoResult1.ir ./iRODS/server/test/rdaNoResult1.ir
-f 644 root root ${IRODS_HOME}/server/test/rdaNoResult2.ir ./iRODS/server/test/rdaNoResult2.ir
-f 644 root root ${IRODS_HOME}/server/test/rdaToStdout.ir ./iRODS/server/test/rdaToStdout.ir
 d 755 root root ${IRODS_HOME}/server/test/bin -
 f 755 root root ${IRODS_HOME}/server/test/bin/checkIcatLog.pl ./iRODS/server/test/bin/checkIcatLog.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/dataTest.pl ./iRODS/server/test/bin/dataTest.pl
@@ -448,13 +444,7 @@ d 755 root root ${IRODS_HOME}/clients -
 d 755 root root ${IRODS_HOME}/clients/icommands -
 d 755 root root ${IRODS_HOME}/clients/icommands/bin -
 
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir    ./iRODS/clients/icommands/bin/chgCoreToCore1.ir
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir    ./iRODS/clients/icommands/bin/chgCoreToCore2.ir
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir     ./iRODS/clients/icommands/bin/chgCoreToOrig.ir
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir     ./iRODS/clients/icommands/bin/delUnusedAVUs.ir
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          ./iRODS/clients/icommands/bin/runQuota.ir
 f 644 root root ${IRODS_HOME}/clients/icommands/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/showCore.ir          ./iRODS/clients/icommands/bin/showCore.ir
 
 # igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
