@@ -1,3 +1,0 @@
-myTest||admAppendToTopOfCoreIRB(*A)|nop
-*A=core.irb.1
-*A
