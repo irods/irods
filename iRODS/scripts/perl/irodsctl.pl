@@ -793,7 +793,6 @@ sub doTestIcat
         my $icatTestLog = File::Spec->catfile( $serverTestBinDir, "icatTest.log" );
         my $icatMiscTestLog = File::Spec->catfile( $serverTestBinDir, "icatMiscTest.log" );
         my $moveTestLog = File::Spec->catfile( $serverTestBinDir, "moveTest.log" );
-        my $icatTicketTestLog = File::Spec->catfile( $serverTestBinDir, "icatTicketTest.log" );
         my $quotaTestLog = File::Spec->catfile( $serverTestBinDir, "quotaTest.log" );
         my $specNameTestLog = File::Spec->catfile( $serverTestBinDir, "specNameTest.log" );
 
@@ -826,15 +825,6 @@ sub doTestIcat
     $moveTestStatus="FAILURE";
   }
         printToFile( $moveTestLog, $output);
-
-        $output = `$perl icatTicketTest.pl 2>&1`;
-  $icatTicketTestStatus="OK";
-        if ( $? != 0 )
-  {
-    $icatFailure=1;
-    $icatTicketTestStatus="FAILURE";
-  }
-        printToFile( $icatTicketTestLog, $output );
 
         $output = `$perl quotaTest.pl 2>&1`;
   $quotaTestStatus="OK";
