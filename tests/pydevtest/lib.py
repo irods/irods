@@ -245,10 +245,10 @@ def extract_function_kwargs(func, kwargs):
     return args_dict
 
 def assert_command(*args, **kwargs):
-    _assert_helper(*args, should_fail=False, **kwargs)
+    return _assert_helper(*args, should_fail=False, **kwargs)
 
 def assert_command_fail(*args, **kwargs):
-    _assert_helper(*args, should_fail=True, **kwargs)
+    return _assert_helper(*args, should_fail=True, **kwargs)
 
 def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_fail=False, **kwargs):
     run_command_arg_dict = extract_function_kwargs(run_command, kwargs)
@@ -273,6 +273,7 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
     if not result:
         print('FAILED TESTING ASSERTION\n\n')
     assert result
+    return rc, stdout, stderr
 
 def stop_irods_server():
     hostname = get_hostname()
@@ -362,8 +363,9 @@ def mkuser_and_return_session(user_type, username, password, hostname):
         admin_session.assert_icommand(['iadmin', 'mkuser', username, user_type])
         if password is not None:
             admin_session.assert_icommand(['iadmin', 'moduser', username, 'password', password])
+        manage_data = password!=None
         env_dict = make_environment_dict(username, hostname, zone_name)
-        return IrodsSession(env_dict, password, True)
+        return IrodsSession(env_dict, password, manage_data)
 
 def mkgroup_and_add_users(group_name, usernames):
     with make_session_for_existing_admin() as admin_session:
@@ -469,11 +471,11 @@ class IrodsSession(object):
 
     def assert_icommand(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
-        assert_command(*args, **kwargs)
+        return assert_command(*args, **kwargs)
 
     def assert_icommand_fail(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
-        assert_command_fail(*args, **kwargs)
+        return assert_command_fail(*args, **kwargs)
 
     def _prepare_run_icommand(self, arg, kwargs):
         self._log_run_icommand(arg)
