@@ -3222,15 +3222,15 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
         }
     }
 
-    for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-        if ( format == NULL || strlen( format ) == 0 ) {
-            for ( j = 0; j < n; j++ ) {
-                fprintf( fd, "%s = %s\n", cname[j], &v[j]->value[v[j]->len * i] );
+    try {
+        for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
+            if ( format == NULL || strlen( format ) == 0 ) {
+                for ( j = 0; j < n; j++ ) {
+                    fprintf( fd, "%s = %s\n", cname[j], &v[j]->value[v[j]->len * i] );
+                }
+                fprintf( fd, "------------------------------------------------------------\n" );
             }
-            fprintf( fd, "------------------------------------------------------------\n" );
-        }
-        else {
-            try {
+            else {
                 boost::format formatter( format );
                 for ( int j = 0; j < n; j++ ) {
                     formatter % &v[j]->value[v[j]->len * i];
@@ -3238,12 +3238,11 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
                 std::stringstream ss; ss << formatter;
                 fprintf( fd, "%s\n", ss.str().c_str() );
             }
-            catch( const boost::io::format_error& _e ) {
-                std::cout << _e.what() << std::endl;
-            }
         }
-
+    } catch( const boost::io::format_error& _e ) {
+        std::cerr << _e.what() << std::endl;
     }
+
     return 0;
 }
 

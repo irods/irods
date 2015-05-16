@@ -177,7 +177,7 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
 
     def test_iquest_incorrect_format_count(self):
         self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
-                    'STDOUT', 'Format [2] / Attribute [1] count mismatch.')
+                    'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
 
     ###################
     # isysmeta
