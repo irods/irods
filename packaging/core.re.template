@@ -44,9 +44,13 @@ acDeleteUserF1 {
 acDeleteDefaultCollections {
   acDeleteUserZoneCollections; }
 acDeleteUserZoneCollections {
-  acDeleteCollByAdmin("/"++$rodsZoneProxy++"/home",$otherUserName);
-  acDeleteCollByAdmin("/"++$rodsZoneProxy++"/trash/home",$otherUserName); }
+  acDeleteCollByAdminIfPresent("/"++$rodsZoneProxy++"/home",$otherUserName);
+  acDeleteCollByAdminIfPresent("/"++$rodsZoneProxy++"/trash/home",$otherUserName); }
 #acDeleteCollByAdmin(*parColl,*childColl) {msiDeleteCollByAdmin(*parColl,*childColl); }
+acDeleteCollByAdminIfPresent(*parColl,*childColl) {
+  *status=errorcode(msiDeleteCollByAdmin(*parColl,*childColl));
+  if(*status!=0 && *status!=-808000) {
+    failmsg(*status, "msiDeleteCollByAdmin failed in acDeleteCollByAdminIfPresent") }}
 acDeleteCollByAdmin(*parColl,*childColl) {
   msiDeleteCollByAdmin(*parColl,*childColl); }
 #
