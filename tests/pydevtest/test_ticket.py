@@ -7,6 +7,7 @@ from resource_suite import ResourceBase
 
 
 class Test_Ticket(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Ticket, self).setUp()
 

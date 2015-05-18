@@ -10,6 +10,7 @@ import lib
 
 
 class Test_Compatibility(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Compatibility, self).setUp()
 
@@ -39,7 +40,7 @@ class Test_Compatibility(ResourceBase, unittest.TestCase):
             os.unlink(f)
         self.admin.assert_icommand('icd ..')
         self.admin.assert_icommand('iphybun -N3 -SdemoResc -RdemoResc testColl')
-        coll_dir = self.admin.run_icommand('ils /'+self.admin.zone_name+'/bundle/home/'+self.admin.username)[1].split('\n')[-2].lstrip(string.printable.translate(None, '/'))
+        coll_dir = self.admin.run_icommand('ils /' + self.admin.zone_name + '/bundle/home/' + self.admin.username)[1].split('\n')[-2].lstrip(string.printable.translate(None, '/'))
         after = self.admin.run_icommand(['ils', coll_dir])[1].split('\n')
         assert len(after) == 2 + 3
         self.admin.assert_icommand('irm -rf testColl')

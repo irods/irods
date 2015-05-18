@@ -16,6 +16,7 @@ import configuration
 from resource_suite import ResourceBase
 import lib
 
+
 class ChunkyDevTest(ResourceBase):
 
     def test_beginning_from_devtest(self):
@@ -67,10 +68,10 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
         self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest/foo1",
-                   'STDOUT_SINGLELINE', username + "#" + irodszone + ":own")
+                                   'STDOUT_SINGLELINE', username + "#" + irodszone + ":own")
         self.admin.assert_icommand("ichmod read " + testuser1 + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest/foo1",
-                   'STDOUT_SINGLELINE', testuser1 + "#" + irodszone + ":read")
+                                   'STDOUT_SINGLELINE', testuser1 + "#" + irodszone + ":read")
         # basic replica
         self.admin.assert_icommand("irepl -B -R " + self.testresc + " --rlock " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', self.testresc)
@@ -86,7 +87,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["180"])
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["cm"])
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
-                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
+                                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
         # test imeta -v
         imeta_popen = subprocess.Popen(
@@ -153,7 +154,7 @@ class ChunkyDevTest(ResourceBase):
         # we put foo1 in $irodsdefresource and foo2 in testresource
         self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
-                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
+                                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
         self.admin.assert_icommand("irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest/foo1")
         phypath = dir_w + "/" + "foo1." + str(random.randrange(10000000))
@@ -161,7 +162,7 @@ class ChunkyDevTest(ResourceBase):
         # show have 2 different copies
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1",
-                   'STDOUT_SINGLELINE', ["foo1", str(os.stat(sfile2).st_size)])
+                                   'STDOUT_SINGLELINE', ["foo1", str(os.stat(sfile2).st_size)])
         # update all old copies
         self.admin.assert_icommand("irepl -U " + irodshome + "/icmdtest/foo1")
         # make sure the old size is not there
@@ -174,7 +175,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         self.admin.assert_icommand("iput -PkITr -X " + rsfile + " --retries 10 " +
-                   mysdir + " " + irodshome + "/icmdtestw", 'STDOUT_SINGLELINE', "Processing")
+                                   mysdir + " " + irodshome + "/icmdtestw", 'STDOUT_SINGLELINE', "Processing")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtestw " + irodshome + "/icmdtestw1")
         self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestw1", 'STDOUT_SINGLELINE', "sfile10")
         self.admin.assert_icommand("ils -Ar " + irodshome + "/icmdtestw1", 'STDOUT_SINGLELINE', "sfile10")
@@ -182,7 +183,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         self.admin.assert_icommand("iget -vIKPfr -X rsfile --retries 10 " +
-                   irodshome + "/icmdtest " + dir_w + "/testx", 'STDOUT_SINGLELINE', "opened")
+                                   irodshome + "/icmdtest " + dir_w + "/testx", 'STDOUT_SINGLELINE', "opened")
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         commands.getstatusoutput("tar -chf " + dir_w + "/testx.tar -C " + dir_w + "/testx .")
@@ -317,7 +318,7 @@ class ChunkyDevTest(ResourceBase):
         testuser2home = "/" + irodszone + "/home/" + self.user1.username
         commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2c")
         self.user1.assert_icommand("ireg -KR " + self.testresc + " /tmp/sfile2c " +
-                   testuser2home + "/foo5", 'STDERR_SINGLELINE', "PATH_REG_NOT_ALLOWED")
+                                   testuser2home + "/foo5", 'STDERR_SINGLELINE', "PATH_REG_NOT_ALLOWED")
         self.user1.assert_icommand("iput -R " + self.testresc + " /tmp/sfile2c " + testuser2home + "/foo5")
         self.user1.assert_icommand("irm -f " + testuser2home + "/foo5")
 
@@ -358,7 +359,7 @@ class ChunkyDevTest(ResourceBase):
         # we put foo1 in $irodsdefresource and foo2 in testresource
         self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
-                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
+                                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
         # prepare icmdtesta
         self.admin.assert_icommand("ireg -KCR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
@@ -378,12 +379,12 @@ class ChunkyDevTest(ResourceBase):
         shutil.rmtree(dir_w + "/testb")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm")
         self.admin.assert_icommand("imcoll -m filesystem -R " +
-                   self.testresc + " " + mysdir + " " + irodshome + "/icmdtestm")
+                                   self.testresc + " " + mysdir + " " + irodshome + "/icmdtestm")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm/testmm")
         self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestm/testmm/foo1")
         self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestm/testmm/foo11")
         self.admin.assert_icommand("imv " + irodshome +
-                   "/icmdtestm/testmm/foo1 " + irodshome + "/icmdtestm/testmm/foo2")
+                                   "/icmdtestm/testmm/foo1 " + irodshome + "/icmdtestm/testmm/foo2")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm " + irodshome + "/icmdtestm/testmm1")
 
         # mv to normal collection
@@ -414,7 +415,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(dir_w + "/testx")
         self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtest  " + dir_w + "/testx", 'STDOUT_SINGLELINE', "testx")
         self.admin.assert_icommand("iget -vr " + irodshome +
-                   "/icmdtestt_mcol/icmdtest  " + dir_w + "/testt", 'STDOUT_SINGLELINE', "testt")
+                                   "/icmdtestt_mcol/icmdtest  " + dir_w + "/testt", 'STDOUT_SINGLELINE', "testt")
         output = commands.getstatusoutput("diff -r  " + dir_w + "/testx " + dir_w + "/testt")
         print "output is [" + str(output) + "]"
         assert output[0] == 0
@@ -422,7 +423,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol/mydirtt")
         self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt " +
-                   irodshome + "/icmdtestt_mcol/mydirtt/foo1mtx")
+                                   irodshome + "/icmdtestt_mcol/mydirtt/foo1mtx")
 
         # unlink
         self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestt_mcol")
@@ -455,7 +456,7 @@ class ChunkyDevTest(ResourceBase):
         # we put foo1 in $irodsdefresource and foo2 in testresource
         self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
-                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
+                                   irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
         # added so icmdtestx.tar exists
         self.admin.assert_icommand("ibun -c " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtest")
@@ -528,13 +529,13 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("iphybun -KR " + self.anotherresc + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
-                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
+                                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
         output = commands.getstatusoutput("ils -L " + irodshome + "/icmdtestp/sfile1 | tail -n1 | awk '{ print $NF }'")
         print output[1]
         bunfile = output[1]
         self.admin.assert_icommand("irepl --purgec -R " + self.anotherresc + " " + bunfile)
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
-                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
+                                   irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
         # get the name of bundle file
         self.admin.assert_icommand("irm -f --empty " + bunfile)
         # should not be able to remove it because it is not empty
@@ -625,7 +626,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ichmod read " + self.user0.username + " " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest1/foo1",
-                   'STDOUT_SINGLELINE', self.user0.username + "#" + irodszone + ":read")
+                                   'STDOUT_SINGLELINE', self.user0.username + "#" + irodszone + ":read")
         self.admin.assert_icommand("irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest1/foo1")
         # overwrite a copy
         self.admin.assert_icommand("itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1")
@@ -635,7 +636,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', "180")
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', "cm")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
-                   irodshome + "/icmdtest1/foo1 " + irodshome + "/icmdtest1/foo2")
+                                   irodshome + "/icmdtest1/foo1 " + irodshome + "/icmdtest1/foo2")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtest1/foo2 " + irodshome + "/icmdtest1/foo4")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtest1/foo4 " + irodshome + "/icmdtest1/foo2")
         self.admin.assert_icommand("ichksum -K " + irodshome + "/icmdtest1/foo2", 'STDOUT_SINGLELINE', "foo2")
@@ -694,24 +695,24 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         self.admin.assert_icommand("iput -vbPKr --retries 10 --wlock -X " + rsfile + " --lfrestart " +
-                   lrsfile + " -N 2 " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "New restartFile")
+                                   lrsfile + " -N 2 " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "New restartFile")
         self.admin.assert_icommand("ichksum -rK " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "Total checksum performed")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         self.admin.assert_icommand("irepl -BvrPT -R " + self.testresc + " --rlock " +
-                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
+                                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " --dryrun --age 1 -N 1 " +
-                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "This is a DRYRUN")
+                                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "This is a DRYRUN")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " -N 1 " +
-                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "a copy trimmed")
+                                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "a copy trimmed")
         self.admin.assert_icommand("icp -vKPTr -N 2 " + irodshome + "/icmdtest/testy " +
-                   irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "Processing lfile1")
+                                   irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "Processing lfile1")
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testy i:" + irodshome + "/icmdtest/testz")
         self.admin.assert_icommand("irm -vrf " + irodshome + "/icmdtest/testy")
         self.admin.assert_icommand("iphymv -vrS " + irodsdefresource + " -R " +
-                   self.testresc + " " + irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "icmdtest/testz")
+                                   self.testresc + " " + irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "icmdtest/testz")
 
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
@@ -720,7 +721,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(dir_w + "/testz"):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
-                   " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
+                                   " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
         self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz")
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testz " + dir_w + "/testz")
         if os.path.isfile(lrsfile):
@@ -733,7 +734,7 @@ class ChunkyDevTest(ResourceBase):
         assert output[1] == "", "diff output was not empty..."
         # test -N0 transfer
         self.admin.assert_icommand("iput -N0 -R " + self.testresc + " " +
-                   myldir + "/lfile1 " + irodshome + "/icmdtest/testz/lfoo100")
+                                   myldir + "/lfile1 " + irodshome + "/icmdtest/testz/lfoo100")
         if os.path.isfile(dir_w + "/lfoo100"):
             os.unlink(dir_w + "/lfoo100")
         self.admin.assert_icommand("iget -N0 " + irodshome + "/icmdtest/testz/lfoo100 " + dir_w + "/lfoo100")
@@ -795,13 +796,13 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
         self.admin.assert_icommand("iput -vQPKr --retries 10 -X " + rsfile + " --lfrestart " +
-                   lrsfile + " " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
+                                   lrsfile + " " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
         self.admin.assert_icommand("irepl -BQvrPT -R " + self.testresc + " " +
-                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
+                                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "icmdtest/testy")
         self.admin.assert_icommand("itrim -vrS " + irodsdefresource + " -N 1 " +
-                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "a copy trimmed")
+                                   irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "a copy trimmed")
         self.admin.assert_icommand("icp -vQKPTr " + irodshome + "/icmdtest/testy " +
-                   irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "Processing sfile1")
+                                   irodshome + "/icmdtest/testz", 'STDOUT_SINGLELINE', "Processing sfile1")
         self.admin.assert_icommand("irm -vrf " + irodshome + "/icmdtest/testy")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
@@ -810,7 +811,7 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(dir_w + "/testz"):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vQPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
-                   " " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "Processing sfile2")
+                                   " " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "Processing sfile2")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):

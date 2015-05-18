@@ -24,6 +24,7 @@ from server_config import ServerConfig
 
 
 class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             context_prefix = lib.get_hostname() + ':' + lib.get_irods_top_level_dir()

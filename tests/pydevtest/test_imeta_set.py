@@ -10,6 +10,7 @@ from resource_suite import ResourceBase
 
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_ImetaSet, self).setUp()
 
@@ -43,9 +44,9 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         u = re.escape(u)
 
         self.admin.assert_icommand('imeta ls -u %s %s' % (user_name, a), 'STDOUT_MULTILINE', ['attribute: ' + a + '$',
-                                                                                          'value: ' + v + '$',
-                                                                                          'units: ' + u + '$'],
-                   use_regex=True)
+                                                                                              'value: ' + v + '$',
+                                                                                              'units: ' + u + '$'],
+                                   use_regex=True)
 
     def set_and_check_avu(self, user_name, a, v, u):
         self.set_avu(user_name, a, v, u)
@@ -163,11 +164,11 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
     def test_imeta_with_too_long_string(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
         num_extra_bind_vars = 10000
-        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'"*num_extra_bind_vars)
+        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
         self.admin.assert_icommand(command_str, 'STDERR_SINGLELINE', 'USER_STRLEN_TOOLONG')
 
     def test_imeta_with_many_bind_vars(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
-        num_extra_bind_vars = 3848 # any more and the argument string is too long
-        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'"*num_extra_bind_vars)
+        num_extra_bind_vars = 3848  # any more and the argument string is too long
+        command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
         self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)

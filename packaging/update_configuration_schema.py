@@ -18,6 +18,7 @@ def print_debug(*args, **kwargs):
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+
 def get_current_schema_version():
     # read from version file
     if os.path.isfile('/var/lib/irods/packaging/binary_installation.flag'):

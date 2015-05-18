@@ -14,6 +14,7 @@ import resource_suite
 
 @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
 class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_ICommands_File_Operations, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
@@ -39,14 +40,14 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         return (local_dir, local_files)
 
     def test_iget_with_verify_to_stdout(self):
-        self.admin.assert_icommand("iget -K nopes -", 'STDERR_SINGLELINE', 'Cannot verify checksum if data is piped to stdout' )
+        self.admin.assert_icommand("iget -K nopes -", 'STDERR_SINGLELINE', 'Cannot verify checksum if data is piped to stdout')
 
     def test_force_iput_to_diff_resc(self):
         filename = "original.txt"
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand("iput " + filename)  # put file
         self.admin.assert_icommand("iput -f " + filename)  # put file
-        self.admin.assert_icommand("iput -fR " + self.testresc + " " + filename, 'STDERR_SINGLELINE', 'HIERARCHY_ERROR' )  # fail
+        self.admin.assert_icommand("iput -fR " + self.testresc + " " + filename, 'STDERR_SINGLELINE', 'HIERARCHY_ERROR')  # fail
 
     def test_iput_r(self):
         self.iput_r_large_collection(self.user0, "test_iput_r_dir", file_count=1000, file_size=100)

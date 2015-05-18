@@ -42,7 +42,9 @@ def write_host_access_control(filename, username, group, address, mask):
     with open(filename, 'w') as f:
         json.dump(hac, f, sort_keys=True, indent=4, ensure_ascii=False)
 
+
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Iadmin, self).setUp()
 
@@ -98,27 +100,27 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  # longer than NAME_LEN
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("?/=*", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                                   ("?/=*", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("replication.B", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                                   ("replication.B", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
+                                   ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
+                                   (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
 
     def test_modify_resource_name(self):
         h = lib.get_hostname()
         # tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt1", h, "pt1"), 'STDOUT_SINGLELINE', "Creating")  # passthru
+                                   ("pt1", h, "pt1"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("repl", h, "repl"), 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   ("repl", h, "repl"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unix1", h, "unix1"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unix1", h, "unix1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt2", h, "pt2"), 'STDOUT_SINGLELINE', "Creating")  # passthru
+                                   ("pt2", h, "pt2"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unix2", h, "unix2"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unix2", h, "unix2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt1",  "repl"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("repl", "unix1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("repl", "pt2"))
@@ -127,7 +129,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # rename repl node
         newnodename = "replwithmoreletters"
         self.admin.assert_icommand("iadmin modresc %s name %s" %
-                   ("repl", newnodename), 'STDOUT_SINGLELINE', 'OK, performing the resource rename', stdin_string='yes\n')
+                                   ("repl", newnodename), 'STDOUT_SINGLELINE', 'OK, performing the resource rename', stdin_string='yes\n')
 
         # confirm children of pt1 is newnodename
         self.admin.assert_icommand("iadmin lr %s" % "pt1", 'STDOUT_SINGLELINE', "resc_children: %s" % newnodename + "{}")
@@ -156,15 +158,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_resource_hierarchy_errors(self):
         # prep
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("pt"), 'STDOUT_SINGLELINE', "Creating")
+                                   ("pt"), 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("the_child"), 'STDOUT_SINGLELINE', "Creating")
+                                   ("the_child"), 'STDOUT_SINGLELINE', "Creating")
         # bad parent
         self.admin.assert_icommand("iadmin addchildtoresc non_existent_resource %s" %
-                   ("pt"), 'STDERR_SINGLELINE', "CAT_INVALID_RESOURCE")
+                                   ("pt"), 'STDERR_SINGLELINE', "CAT_INVALID_RESOURCE")
         # bad child
         self.admin.assert_icommand("iadmin addchildtoresc %s non_existent_resource" %
-                   ("pt"), 'STDERR_SINGLELINE', "CHILD_NOT_FOUND")
+                                   ("pt"), 'STDERR_SINGLELINE', "CHILD_NOT_FOUND")
         # duplicate parent
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child")
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child", 'STDERR_SINGLELINE', "CHILD_HAS_PARENT")
@@ -177,23 +179,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
-                   ("pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
+                                   ("pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication" %
-                   ("replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   ("replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt", "replA"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
         self.admin.assert_icommand("iadmin mkresc %s replication" %
-                   ("replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   ("replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
@@ -242,14 +244,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
+                                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
+                                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
         # check resc_name on replB files
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
+                                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
+                                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
 
         # remove child
         # rm replB from replA
@@ -272,10 +274,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should start with replB and not have pt anymore
         self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT_SINGLELINE', "replB")
+                                   "replB", 'STDOUT_SINGLELINE', "replB")
         # check resc_name on replB files
         self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                   "replB", 'STDOUT_SINGLELINE', "replB")
+                                   "replB", 'STDOUT_SINGLELINE', "replB")
 
         # delete files
         self.admin.assert_icommand("irm -rf %s" % dir1)
@@ -306,7 +308,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 + " unixfilesystem " +
-                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         self.admin.assert_icommand_fail("iadmin rmresc notaresource")  # bad remove
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
@@ -318,7 +320,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 + " unixfilesystem " +
-                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   hostname + ":/tmp/irods/pydevtest_" + testresc1, 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         self.admin.assert_icommand("iadmin rmresc " + testresc1)  # good remove
         self.admin.assert_icommand_fail("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be gone
@@ -343,7 +345,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
         self.admin.assert_icommand("iadmin mkresc " + testresc1 +
-                   " replication '' Context:String", 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   " replication '' Context:String", 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin lr", 'STDOUT_SINGLELINE', testresc1)  # should be listed
         # should have empty host
         self.admin.assert_icommand("iadmin lr " + testresc1, 'STDOUT_SINGLELINE', ["resc_net", "EMPTY_RESC_HOST"])
@@ -405,13 +407,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # Test invalid names
         for name in invalid:
             self.admin.assert_icommand("iadmin mkuser " + name + " rodsuser",
-                       'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
+                                       'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
 
         # Invalid names with special characters
         self.admin.assert_icommand(r"iadmin mkuser hawai\'i rodsuser",
-                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
+                                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
         self.admin.assert_icommand(r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser",
-                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
+                                   'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
 
     # =-=-=-=-=-=-=-
     # REBALANCE
@@ -467,11 +469,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
 
         self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
 
         self.admin.assert_icommand("iadmin addchildtoresc pt repl")
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
@@ -578,23 +580,23 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         h = lib.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
-                   ("pt", h, "pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
+                                   ("pt", h, "pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replA", h, "replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   ("replA", h, "replA"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixA1", h, "unixA1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixA2", h, "unixA2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("pt", "replA"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
         # second tree standup
         self.admin.assert_icommand("iadmin mkresc %s replication %s:/tmp/irods/pydevtest_%s" %
-                   ("replB", h, "replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
+                                   ("replB", h, "replB"), 'STDOUT_SINGLELINE', "Creating")  # replication
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixB1", h, "unixB1"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
-                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ("unixB2", h, "unixB2"), 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
         self.admin.assert_icommand("iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
@@ -739,7 +741,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iput %s %s/foo1" % (test_file, dir_path))
 
         self.admin.assert_icommand("ibun -cD tar " + tar_path + " " +
-                   dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
+                                   dir_path, 'STDERR_SINGLELINE', "OVERWRITE_WITHOUT_FORCE_FLAG")
 
         self.admin.assert_icommand("irm -rf " + dir_path)
         self.admin.assert_icommand("irm -rf " + tar_path)
@@ -752,9 +754,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # STANDUP
         self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
-                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+                                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
         self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
 
@@ -862,7 +864,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         temp_file = 'file_to_test_hosts_config'
         lib.make_file(temp_file, 10)
         self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
-                   hostuser, 'STDOUT_SINGLELINE', "jimbo")
+                                   hostuser, 'STDOUT_SINGLELINE', "jimbo")
         self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
         self.admin.assert_icommand("irm -f jimbofile")
         self.admin.assert_icommand("iadmin rmresc jimboResc")
@@ -874,14 +876,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # manipulate the core.re to enable host access control
         corefile = lib.get_core_re_dir() + "/core.re"
-        origcorefile = corefile+'.orig'
+        origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        part1="sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' "
-        part2=part1+corefile+' > '+origcorefile
+        part1 = "sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' "
+        part2 = part1 + corefile + ' > ' + origcorefile
         os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp "+origcorefile+" "+corefile)
+        os.system("cp " + origcorefile + " " + corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -914,14 +916,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
         corefile = lib.get_core_re_dir() + "/core.re"
-        origcorefile = corefile+'.orig'
+        origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        part1="sed -e '/^acAclPolicy {msiAclPolicy(\"STRICT\"); }/iacAclPolicy {ON($userNameClient == \"quickshare\") { } }' "
-        part2=part1+corefile+' > '+origcorefile
+        part1 = "sed -e '/^acAclPolicy {msiAclPolicy(\"STRICT\"); }/iacAclPolicy {ON($userNameClient == \"quickshare\") { } }' "
+        part2 = part1 + corefile + ' > ' + origcorefile
         os.system(part2)
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp "+origcorefile+" "+corefile)
+        os.system("cp " + origcorefile + " " + corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -1021,7 +1023,8 @@ acPostProcForPut() {
             lib.make_file(trigger_file, 10)
             self.admin.assert_icommand(['iput', trigger_file])
             time.sleep(40)
-            assert 1 == lib.count_occurrences_of_string_in_log('re', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
+            assert 1 == lib.count_occurrences_of_string_in_log(
+                're', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
             assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
             os.unlink(trigger_file)
@@ -1043,9 +1046,10 @@ acPostProcForPut() {
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 trigger_file = 'file_to_trigger_acSetNumThreads'
-                lib.make_file(trigger_file, 4*pow(10, 7))
+                lib.make_file(trigger_file, 4 * pow(10, 7))
                 self.admin.assert_icommand('iput {0}'.format(trigger_file))
-                assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
+                assert 1 == lib.count_occurrences_of_string_in_log(
+                    'server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
                 assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 
@@ -1060,7 +1064,8 @@ acSetNumThreads() {
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
-                assert 1 == lib.count_occurrences_of_string_in_log('server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
+                assert 1 == lib.count_occurrences_of_string_in_log(
+                    'server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
                 assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 

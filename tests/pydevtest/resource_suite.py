@@ -21,6 +21,7 @@ import lib
 
 
 class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass'), ('bobby', 'bpass')])):
+
     def setUp(self):
         super(ResourceBase, self).setUp()
         self.admin = self.admin_sessions[0]
@@ -35,8 +36,10 @@ class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
         hostname = lib.get_hostname()
         hostuser = getpass.getuser()
-        self.admin.assert_icommand(['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.testresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
-        self.admin.assert_icommand(['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.anotherresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand(
+            ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.testresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand(
+            ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.anotherresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
         with open(self.testfile, 'w') as f:
             f.write('I AM A TESTFILE -- [' + self.testfile + ']')
         self.admin.run_icommand(['imkdir', self.testdir])
@@ -62,6 +65,7 @@ class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
 
 
 class ResourceSuite(ResourceBase):
+
     '''Define the tests to be run for a resource type.
 
     This class is designed to be used as a base class by developers
@@ -79,8 +83,8 @@ class ResourceSuite(ResourceBase):
     def test_ibun_resource_failure_behavior(self):
         lib.touch("file.tar")
         self.user0.assert_icommand('iput file.tar ', 'EMPTY')
-        self.admin.assert_icommand('ibun -x -R ' + self.testresc + ' file.tar /tempZone/home/rods/doesntmatter','STDERR_SINGLELINE', 'REPLICA_NOT_IN_RESC' )
-        self.admin.assert_icommand('ibun -x -R notaResc file.tar /tempZone/home/rods/doesntmatter', 'STDERR_SINGLELINE', 'SYS_RESC_DOES_NOT_EXIST' )
+        self.admin.assert_icommand('ibun -x -R ' + self.testresc + ' file.tar /tempZone/home/rods/doesntmatter', 'STDERR_SINGLELINE', 'REPLICA_NOT_IN_RESC')
+        self.admin.assert_icommand('ibun -x -R notaResc file.tar /tempZone/home/rods/doesntmatter', 'STDERR_SINGLELINE', 'SYS_RESC_DOES_NOT_EXIST')
 
     def test_local_iget(self):
         # local setup
@@ -110,7 +114,7 @@ class ResourceSuite(ResourceBase):
         # assertions
         self.admin.assert_icommand_fail("iget -z")  # run iget with bad option
 
-    def test_iget_with_stale_replica(self): # formerly known as 'dirty'
+    def test_iget_with_stale_replica(self):  # formerly known as 'dirty'
         # local setup
         filename = "original.txt"
         filepath = lib.create_local_testfile(filename)
@@ -223,7 +227,7 @@ class ResourceSuite(ResourceBase):
     def test_iphymv_to_nonexistent_resource(self):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # debug
         self.admin.assert_icommand("iphymv -R nonexistentresc " + self.testfile,
-                   'STDERR_SINGLELINE', "SYS_RESC_DOES_NOT_EXIST")  # should fail
+                                   'STDERR_SINGLELINE', "SYS_RESC_DOES_NOT_EXIST")  # should fail
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # debug
 
     def test_iphymv_admin_mode(self):
@@ -240,7 +244,7 @@ class ResourceSuite(ResourceBase):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 100') # normally 2048, but smaller size here for speed
+        lib.run_command('openssl dhparam -2 -out dhparams.pem 100')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
@@ -432,7 +436,7 @@ class ResourceSuite(ResourceBase):
     def test_local_iput_interrupt_largefile(self):
         # local setup
         datafilename = 'bigfile'
-        file_size = int(6*pow(10, 8))
+        file_size = int(6 * pow(10, 8))
         lib.make_file(datafilename, file_size)
         rf = 'bigrestartfile'
         iputcmd = 'iput --lfrestart {0} {1}'.format(rf, datafilename)
@@ -449,7 +453,7 @@ class ResourceSuite(ResourceBase):
         # confirm the restart
         self.admin.assert_icommand(iputcmd, 'STDOUT_SINGLELINE', datafilename + " was restarted successfully")
         self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE',
-                   [" " + str(os.stat(datafilename).st_size) + " " + today.isoformat(), datafilename])  # length should be size on disk
+                                   [" " + str(os.stat(datafilename).st_size) + " " + today.isoformat(), datafilename])  # length should be size on disk
         # local cleanup
         output = commands.getstatusoutput('rm ' + datafilename)
         output = commands.getstatusoutput('rm ' + rf)
@@ -461,7 +465,7 @@ class ResourceSuite(ResourceBase):
             f.write("TESTFILE -- [" + datafilename + "]")
         # assertions
         self.admin.assert_icommand("iput -p /newfileinroot.txt " + datafilename, 'STDERR_SINGLELINE',
-                   ["UNIX_FILE_CREATE_ERR", "Permission denied"])  # should fail to write
+                                   ["UNIX_FILE_CREATE_ERR", "Permission denied"])  # should fail to write
         # local cleanup
         output = commands.getstatusoutput('rm ' + datafilename)
 
@@ -586,7 +590,6 @@ class ResourceSuite(ResourceBase):
         os.remove(filepath)
         os.remove(doublefile)
 
-
     ###################
     # ireg
     ###################
@@ -602,7 +605,7 @@ class ResourceSuite(ResourceBase):
         # assertions
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("ireg " + filepath + " /" + self.admin.zone_name + "/home/" +
-                   self.admin.username + "/" + self.admin._session_id + "/" + filename)  # ireg
+                                   self.admin.username + "/" + self.admin._session_id + "/" + filename)  # ireg
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # should be listed
 
         # local cleanup
@@ -696,9 +699,9 @@ class ResourceSuite(ResourceBase):
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -777,7 +780,7 @@ class ResourceSuite(ResourceBase):
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -818,12 +821,12 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 1 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 1 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 1 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 1 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 2
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
         # local cleanup
@@ -892,11 +895,11 @@ class ResourceSuite(ResourceBase):
         # replica 1 should be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["1 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_irm_recursive_file(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
@@ -946,10 +949,10 @@ class ResourceSuite(ResourceBase):
         # assertions
         self.admin.assert_icommand("irm " + self.testfile)  # remove from grid
         self.admin.assert_icommand("ils -rL /" + self.admin.zone_name + "/trash/home/" +
-                   self.admin.username + "/", 'STDOUT_SINGLELINE', self.testfile)  # should be listed
+                                   self.admin.username + "/", 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irmtrash")  # should be listed
         self.admin.assert_icommand_fail("ils -rL /" + self.admin.zone_name + "/trash/home/" +
-                       self.admin.username + "/", 'STDOUT_SINGLELINE', self.testfile)  # should be deleted
+                                        self.admin.username + "/", 'STDOUT_SINGLELINE', self.testfile)  # should be deleted
 
     ###################
     # itrim

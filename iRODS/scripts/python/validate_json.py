@@ -9,6 +9,7 @@ if len(sys.argv) != 3:
 config_file = sys.argv[1]
 schema_uri = sys.argv[2]
 
+
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -22,7 +23,7 @@ try:
     e = jsonschema.exceptions
 except AttributeError:
     print_error('WARNING: Validation Failed for [%s] -- jsonschema too old v[%s]' %
-                (config_file, jsonschema.__version__) )
+                (config_file, jsonschema.__version__))
     sys.exit(0)
 
 try:
@@ -41,7 +42,7 @@ try:
         schema = json.loads(response.content)
 
     # validate
-    jsonschema.validate( config, schema )
+    jsonschema.validate(config, schema)
 except (jsonschema.exceptions.RefResolutionError) as e:
     # could not resolve recursive schema $ref
     print_error('WARNING: Validation Failed for [%s]' % config_file)
@@ -57,7 +58,7 @@ except (ValueError) as e:
 except (
         jsonschema.exceptions.ValidationError,
         jsonschema.exceptions.SchemaError
-        ) as e:
+) as e:
     print_error('ERROR: Validation Failed for [%s]' % config_file)
     print_error('     : against [%s]' % schema_uri)
     print_error("  {0}: {1}".format(e.__class__.__name__, e))
@@ -71,6 +72,5 @@ except:
     sys.exit(1)
 
 else:
-    print("Validating ["+sys.argv[1]+"]... Success")
+    print("Validating [" + sys.argv[1] + "]... Success")
     sys.exit(0)
-

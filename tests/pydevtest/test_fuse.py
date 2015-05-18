@@ -12,7 +12,9 @@ import stat
 import socket
 import lib
 
+
 class Test_Fuse(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Fuse, self).setUp()
 

@@ -11,7 +11,9 @@ import time
 import configuration
 import lib
 
+
 class TestControlPlane(unittest.TestCase):
+
     def test_pause_and_resume(self):
         # test pause
         lib.assert_command('irods-grid pause --all', 'STDOUT_SINGLELINE', 'pausing')
@@ -33,7 +35,7 @@ class TestControlPlane(unittest.TestCase):
     def test_shutdown(self):
         # test shutdown
         lib.assert_command('irods-grid shutdown --all', 'STDOUT_SINGLELINE', 'shutting down')
-        time.sleep( 2 )
+        time.sleep(2)
         lib.assert_command('ils', 'STDERR_SINGLELINE', 'USER_SOCK_CONNECT_ERR')
 
         lib.start_irods_server()

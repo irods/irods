@@ -16,6 +16,7 @@ import lib
 
 
 class Test_Catalog(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Catalog, self).setUp()
 
@@ -34,16 +35,20 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         # bad URL
         self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
         if jsonschema_installed:
-            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl', 'STDERR_MULTILINE', ['WARNING: Validation Failed', 'ValueError: No JSON object could be decoded'], desired_rc=0)
+            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl', 'STDERR_MULTILINE',
+                               ['WARNING: Validation Failed', 'ValueError: No JSON object could be decoded'], desired_rc=0)
         else:
-            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl', 'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
+            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl',
+                               'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
 
         # good URL
         self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
         if jsonschema_installed:
-            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json', 'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
+            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json',
+                               'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
         else:
-            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json', 'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
+            lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json',
+                               'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
 
         # cleanup
         os.remove('out.txt')
@@ -66,7 +71,7 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     def test_icd_to_subdir(self):
         self.admin.assert_icommand("icd " + self.testdir)  # get into subdir
         self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', "/" + self.admin.zone_name + "/home/" +
-                           self.admin.username + "/" + self.admin._session_id + "/" + self.testdir + ":")
+                                   self.admin.username + "/" + self.admin._session_id + "/" + self.testdir + ":")
 
     def test_icd_to_parentdir(self):
         self.admin.assert_icommand("icd ..")  # go to parent
@@ -169,15 +174,15 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
 
     def test_iquest_totaldatasize(self):
         self.admin.assert_icommand("iquest \"select sum(DATA_SIZE) where COLL_NAME like '/" +
-                   self.admin.zone_name + "/home/%'\"", 'STDOUT_SINGLELINE', "DATA_SIZE")  # selects total data size
+                                   self.admin.zone_name + "/home/%'\"", 'STDOUT_SINGLELINE', "DATA_SIZE")  # selects total data size
 
     def test_iquest_bad_format(self):
         self.admin.assert_icommand("iquest \"bad formatting\"", 'STDERR_SINGLELINE',
-                   "INPUT_ARG_NOT_WELL_FORMED_ERR")  # bad request
+                                   "INPUT_ARG_NOT_WELL_FORMED_ERR")  # bad request
 
     def test_iquest_incorrect_format_count(self):
         self.admin.assert_icommand("iquest \"%s %s\" \"select COLL_NAME where COLL_NAME like '%home%'\"",
-                    'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
+                                   'STDERR_SINGLELINE', 'boost::too_few_args: format-string referred to more arguments than were passed')
 
     ###################
     # isysmeta
@@ -186,21 +191,21 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     def test_isysmeta_init_set_and_reset(self):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "pydevtest_testfile.txt")  # basic listing
         self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                   "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
+                                   "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
         offset_seconds = 1
         expected_time_string = time.strftime('%Y-%m-%d.%H:%M:%S', time.localtime(offset_seconds))
         # set to 1 sec after epoch
         self.admin.assert_icommand('isysmeta mod pydevtest_testfile.txt {0}'.format(offset_seconds), "EMPTY")
         self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                   "data_expiry_ts (expire time): 00000000001: {0}".format(expected_time_string))  # confirm
+                                   "data_expiry_ts (expire time): 00000000001: {0}".format(expected_time_string))  # confirm
         self.admin.assert_icommand("isysmeta mod pydevtest_testfile.txt 0", "EMPTY")  # reset to zeros
         self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                   "data_expiry_ts (expire time): 00000000000: None")  # confirm
+                                   "data_expiry_ts (expire time): 00000000000: None")  # confirm
 
     def test_isysmeta_relative_set(self):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "pydevtest_testfile.txt")  # basic listing
         self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                   "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
+                                   "data_expiry_ts (expire time): 00000000000: None")  # initialized with zeros
 
         def check_relative_expiry(offset_seconds):
             def get_future_time_string(t):
@@ -210,12 +215,12 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
             #  current time and this script recording current time
             try:
                 self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                           get_future_time_string(current_time))
+                                           get_future_time_string(current_time))
             # Back script's current_time off by a second, since iCAT command issued before script records
             #  current_time
             except AssertionError:
                 self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
-                           get_future_time_string(current_time - datetime.timedelta(0, 1)))
+                                           get_future_time_string(current_time - datetime.timedelta(0, 1)))
 
         # test seconds syntax
         seconds_ahead = 10
@@ -227,7 +232,9 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("isysmeta mod pydevtest_testfile.txt +1h", "EMPTY")
         check_relative_expiry(seconds_ahead)
 
+
 class Test_CatalogPermissions(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_CatalogPermissions, self).setUp()
 
@@ -238,5 +245,5 @@ class Test_CatalogPermissions(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand('icd /' + self.user0.zone_name + '/home/public')  # get into public/
         self.user0.assert_icommand('ils -L ', 'STDOUT_SINGLELINE', 'pydevtest_testfile.txt')
         self.user0.assert_icommand('isysmeta ls pydevtest_testfile.txt', 'STDOUT_SINGLELINE',
-                                              'data_expiry_ts (expire time): 00000000000: None')  # initialized with zeros
+                                   'data_expiry_ts (expire time): 00000000000: None')  # initialized with zeros
         self.user0.assert_icommand('isysmeta mod pydevtest_testfile.txt 1', 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')  # cannot set expiry

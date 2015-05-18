@@ -11,13 +11,16 @@ import time
 def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
+
 def is_binary_installation():
     return os.path.isfile(os.path.join(get_install_dir(), 'packaging', 'binary_installation.flag'))
+
 
 def get_config_dir():
     if is_binary_installation():
         return '/etc/irods'
     return os.path.join(get_install_dir(), 'iRODS', 'server', 'config')
+
 
 def load_odbc_ini(filename):
     rv = {}
@@ -37,7 +40,9 @@ def load_odbc_ini(filename):
             rv[key] = value
     return rv
 
+
 class ServerConfig(object):
+
     def __init__(self):
         self.combined_config_dict = {}
 

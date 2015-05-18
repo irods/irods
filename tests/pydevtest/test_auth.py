@@ -15,10 +15,11 @@ import resource_suite
 
 # Requires OS account 'irods' to have password 'temporarypasswordforci'
 class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_OSAuth_Only, self).setUp()
         self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irods', 'temporarypasswordforci',
-                                                                         lib.get_hostname())
+                                                          lib.get_hostname())
 
     def tearDown(self):
         super(Test_OSAuth_Only, self).tearDown()
@@ -48,11 +49,14 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         os.unlink(keyfile_path)
 
 # Requires existence of OS account 'irodsauthuser' with password 'iamnotasecret'
+
+
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
+
     def setUp(self):
         super(Test_Auth, self).setUp()
         self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irodsauthuser', 'iamnotasecret',
-                                                                         lib.get_hostname())
+                                                          lib.get_hostname())
 
     def tearDown(self):
         super(Test_Auth, self).tearDown()
@@ -64,7 +68,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 100') # normally 2048, but smaller size here for speed
+        lib.run_command('openssl dhparam -2 -out dhparams.pem 100')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
@@ -102,7 +106,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
             # clean up
             for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
-                os.unlink(os.path.join(lib.get_irods_top_level_dir(),file))
+                os.unlink(os.path.join(lib.get_irods_top_level_dir(), file))
 
         # server reboot to pick up new irodsEnv and server settings
         lib.restart_irods_server()
@@ -112,7 +116,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 100') # normally 2048, but smaller size here for speed
+        lib.run_command('openssl dhparam -2 -out dhparams.pem 100')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
@@ -155,7 +159,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
         self.auth_session.environment_file_contents = auth_session_env_backup
         for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
-            os.unlink(os.path.join(lib.get_irods_top_level_dir(),file))
+            os.unlink(os.path.join(lib.get_irods_top_level_dir(), file))
 
         lib.restart_irods_server()
 

@@ -18,14 +18,18 @@ from test_chunkydevtest import ChunkyDevTest
 
 
 class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc rrResc random", 'STDOUT_SINGLELINE', 'random')
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc rrResc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
@@ -133,12 +137,12 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
 
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # local cleanup
@@ -153,7 +157,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -207,9 +211,9 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -275,11 +279,11 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -313,14 +317,18 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
 
 
 class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc rrResc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
@@ -428,12 +436,12 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
 
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # local cleanup
@@ -448,7 +456,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -502,9 +510,9 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -570,11 +578,11 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -608,11 +616,13 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
 
 
 class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCase):
+
     def setUp(self):
         hostname = lib.get_hostname()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
-            admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/demoRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc demoResc 'unixfilesystem' " + hostname + ":" +
+                                          lib.get_irods_top_level_dir() + "/demoRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         super(Test_Resource_Unixfilesystem, self).setUp()
 
     def tearDown(self):
@@ -630,11 +640,11 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         lib.make_file('file.txt', 15)
         initial_log_size = lib.get_log_size('server')
         self.user0.assert_icommand('iput --kv_pass="put_key=val1" file.txt')
-        assert lib.count_occurrences_of_string_in_log('server', 'key [put_key] - value [val1]', start_index=initial_log_size) in [1, 2] # double print if collection missing
+        assert lib.count_occurrences_of_string_in_log('server', 'key [put_key] - value [val1]', start_index=initial_log_size) in [1, 2]  # double print if collection missing
 
         initial_log_size = lib.get_log_size('server')
         self.user0.assert_icommand('iget -f --kv_pass="get_key=val3" file.txt other.txt')
-        assert lib.count_occurrences_of_string_in_log('server', 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2] # double print if collection missing
+        assert lib.count_occurrences_of_string_in_log('server', 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2]  # double print if collection missing
         lib.restart_irods_server()
         lib.assert_command('rm -f file.txt other.txt')
 
@@ -651,11 +661,11 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         file_vault_full_path = os.path.join(lib.get_vault_session_path(self.admin), filename)
         # method 1
         self.admin.assert_icommand('ichksum -K ' + full_logical_path, 'STDOUT_MULTILINE',
-                            ['Total checksum performed = 1, Failed checksum = 0',
-                            'sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # ichksum
+                                   ['Total checksum performed = 1, Failed checksum = 0',
+                                    'sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # ichksum
         # method 2
         self.admin.assert_icommand("iquest \"select DATA_CHECKSUM where DATA_NAME = '%s'\"" % filename,
-                            'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # iquest
+                                   'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:0MczF/+UQ4lYmtu417LDmMb4mEarpxPShHfg1PhLtQw='])  # iquest
         # method 3
         self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', filename)  # ils
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
@@ -663,27 +673,30 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         with open(file_vault_full_path, 'r+') as f:
             f.seek(0)
             f.write("x")
-        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','checksum not consistent with iRODS object'])  # ifsck
+        self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION', 'checksum not consistent with iRODS object'])  # ifsck
         # change size in vault
         lib.cat(file_vault_full_path, 'extra letters')
-        self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION','size not consistent with iRODS object'])  # ifsck
-        ## unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
+        self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION', 'size not consistent with iRODS object'])  # ifsck
+        # unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
         self.admin.assert_icommand('irm -U ' + full_logical_path)
         self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['WARNING: checksum not available'])  # ifsck
         self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT_MULTILINE',
-                            ['Total checksum performed = 1, Failed checksum = 0',
-                            'sha2:zJhArM/en4wfI9lVq+AIFAZa6RTqqdC6LVXf6tPbqxI='])
+                                   ['Total checksum performed = 1, Failed checksum = 0',
+                                    'sha2:zJhArM/en4wfI9lVq+AIFAZa6RTqqdC6LVXf6tPbqxI='])
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
         # local cleanup
         os.remove(filepath)
 
+
 class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT_SINGLELINE', 'passthru')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
         super(Test_Resource_Passthru, self).setUp()
 
@@ -700,14 +713,18 @@ class Test_Resource_Passthru(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+
 class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
+
     def setUp(self):
         hostname = lib.get_hostname()
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":" + lib.get_irods_top_level_dir() + "/unixBVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + hostname + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixBVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin mkresc w_pt passthru 'write=1.0;read=1.0'", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc w_pt")
@@ -736,21 +753,24 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "local")
 
         # repave a copy in the vault to differentiate
-        vaultpath = os.path.join( lib.get_irods_top_level_dir(), "unixBVault/home/" + self.admin.username, os.path.basename( self.admin._session_id ), filename )
-        subprocess.check_call( "echo 'THISISBROEKN' | cat > %s" % (vaultpath),shell=True)
+        vaultpath = os.path.join(lib.get_irods_top_level_dir(), "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
 
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
-        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "THISISBROEKN" )
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "THISISBROEKN")
 
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
-        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE" )
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
+
 
 class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc deferred", 'STDOUT_SINGLELINE', 'deferred')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
         super(Test_Resource_Deferred, self).setUp()
 
@@ -767,14 +787,19 @@ class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+
 class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc random", 'STDOUT_SINGLELINE', 'random')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
@@ -801,10 +826,12 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
 
 class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
-            admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/nbVault", 'STDOUT_SINGLELINE', 'nonblocking')
+            admin_session.assert_icommand("iadmin mkresc demoResc nonblocking " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/nbVault", 'STDOUT_SINGLELINE', 'nonblocking')
         super(Test_Resource_NonBlocking, self).setUp()
 
     def tearDown(self):
@@ -815,12 +842,15 @@ class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase)
 
 
 class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'mockarchive')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc mockarchive " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'mockarchive')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_CompoundWithMockarchive, self).setUp()
@@ -845,11 +875,11 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -909,9 +939,9 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -999,7 +1029,7 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -1044,12 +1074,12 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # local cleanup
@@ -1115,12 +1145,15 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
 
 
 class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'univmss')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc univmss " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveRescVault univMSSInterface.sh", 'STDOUT_SINGLELINE', 'univmss')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_CompoundWithUnivmss, self).setUp()
@@ -1145,11 +1178,11 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1205,9 +1238,9 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -1295,7 +1328,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -1340,12 +1373,12 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # local cleanup
@@ -1411,12 +1444,15 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
 
 class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
         super(Test_Resource_Compound, self).setUp()
@@ -1440,11 +1476,11 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -1564,9 +1600,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -1654,7 +1690,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -1699,12 +1735,12 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 2 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 2 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # local cleanup
@@ -1771,14 +1807,18 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
 
 class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc replResc replication", 'STDOUT_SINGLELINE', 'replication')
-            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixA 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB1 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unixB2 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unixB2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc replResc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc replResc unixB1")
@@ -1893,12 +1933,12 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", filename])  # should not have a replica 4
         # local cleanup
         os.remove(filepath)
@@ -1931,7 +1971,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -1961,9 +2001,9 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -2039,11 +2079,11 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         # replica 3 should be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["3 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
@@ -2079,16 +2119,21 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
 
 
 class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT_SINGLELINE', 'compound')
             admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
@@ -2127,11 +2172,11 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["4 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2285,9 +2330,9 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")   # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -2387,7 +2432,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -2440,12 +2485,12 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 5
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
         # local cleanup
@@ -2518,7 +2563,9 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # local cleanup
         output = commands.getstatusoutput('rm ' + filepath)
 
+
 class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         # back up core file
         corefile = lib.get_core_re_dir() + "/core.re"
@@ -2534,10 +2581,14 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
             admin_session.assert_icommand("iadmin mkresc compResc1 compound", 'STDOUT_SINGLELINE', 'compound')
             admin_session.assert_icommand("iadmin mkresc compResc2 compound", 'STDOUT_SINGLELINE', 'compound')
-            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc1 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveResc1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc cacheResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/cacheResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc archiveResc2 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/archiveResc2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc1")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc compResc2")
             admin_session.assert_icommand("iadmin addchildtoresc compResc1 cacheResc1 cache")
@@ -2582,11 +2633,11 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["4 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         self.admin.assert_icommand_fail("ils -L " + trashpath + "/" + self.testfile, 'STDOUT_SINGLELINE',
-                       ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
+                                        ["0 " + self.admin.default_resource, self.testfile])  # replica should not be in trash
 
     @unittest.skip("--wlock has possible race condition due to Compound/Replication PDMO")
     def test_local_iput_collision_with_wlock(self):
@@ -2655,9 +2706,9 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -2757,7 +2808,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -2810,12 +2861,12 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 4 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 4 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 5
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
         # local cleanup
@@ -2890,12 +2941,15 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
 
 class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
         super(Test_Resource_RoundRobin, self).setUp()
@@ -2934,13 +2988,17 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
 
 class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
@@ -3044,9 +3102,9 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
 
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("iadmin mkresc fourthresc unixfilesystem %s:/tmp/%s/fourthrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create fourth resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")              # should not be listed
         self.admin.assert_icommand("iput " + filename)                                         # put file
         # replicate to test resource
@@ -3066,7 +3124,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
         # should have a clean copy
-        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
         # should have a dirty copy
@@ -3081,11 +3139,11 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " & " + filename])
         # should have a clean copy
-        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
         # should have a clean copy
-        self.admin.assert_icommand(   "ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
 
         self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
 
@@ -3140,7 +3198,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
-                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
+                                   (hostname, hostuser), 'STDOUT_SINGLELINE', "Creating")  # create third resource
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)                            # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)      # replicate to test resource
@@ -3194,12 +3252,12 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", " " + doublesize + " ", " & " + filename])
         # test resource should not have doublesize file
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE',
-                       [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
+                                        [" 3 " + self.testresc, " " + doublesize + " ", "  " + filename])
         # replicate back onto test resource
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)
         # test resource should have new clean doublesize file
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE',
-                   [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
+                                   [" 3 " + self.testresc, " " + doublesize + " ", " & " + filename])
         # should not have a replica 3
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
         # local cleanup
@@ -3268,15 +3326,19 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
 
 
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+
     def setUp(self):
         with lib.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc passthru", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin mkresc pass2Resc passthru", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
-            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" + lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" + lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" + lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3Resc 'unixfilesystem' " + configuration.HOSTNAME_3 + ":" +
+                                          lib.get_irods_top_level_dir() + "/unix3RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc pass2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc pass2Resc rrResc")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")

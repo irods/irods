@@ -13,6 +13,7 @@ import lib
 import metaclass_unittest_test_case_generator
 import resource_suite
 
+
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
@@ -24,7 +25,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_AllRules, self).setUp()
 
-        self.rods_session = lib.make_session_for_existing_admin() # some rules hardcode 'rods' and 'tempZone'
+        self.rods_session = lib.make_session_for_existing_admin()  # some rules hardcode 'rods' and 'tempZone'
 
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
@@ -32,7 +33,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         dir_w = rules30dir + ".."
         self.rods_session.assert_icommand('icd')  # to get into the home directory (for testallrules assumption)
         self.rods_session.assert_icommand('iadmin mkuser devtestuser rodsuser')
-        self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' + hostuser + '/pydevtest_testallrulesResc', 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' +
+                                          hostuser + '/pydevtest_testallrulesResc', 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.rods_session.assert_icommand('imkdir sub1')
         self.rods_session.assert_icommand('imkdir sub3')
         self.rods_session.assert_icommand('imkdir forphymv')
@@ -81,7 +83,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.assert_icommand('icd')  # for home directory assumption
         self.rods_session.assert_icommand(['ichmod', '-r', 'own', self.rods_session.username, '.'])
         self.rods_session.run_icommand(['imcoll', '-U', self.rods_session.home_collection + '/test/phypathreg'])
-        self.rods_session.run_icommand('irm -rf test ruletest forphymv sub1 sub2 sub3 bagit rules bagit.tar /' + self.rods_session.zone_name + '/bundle/home/' + self.rods_session.username)
+        self.rods_session.run_icommand('irm -rf test ruletest forphymv sub1 sub2 sub3 bagit rules bagit.tar /' +
+                                       self.rods_session.zone_name + '/bundle/home/' + self.rods_session.username)
         self.rods_session.assert_icommand('iadmin rmresc testallrulesResc')
         self.rods_session.assert_icommand('iadmin rmuser devtestuser')
         self.rods_session.assert_icommand('iqdel -a')  # remove all/any queued rules
@@ -342,7 +345,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 def test(self):
                     self.rods_session.assert_icommand("icd")
                     self.rods_session.assert_icommand("irule -vF " + rules30dir + rulefile,
-                               'STDOUT_SINGLELINE', "completed successfully")
+                                                      'STDOUT_SINGLELINE', "completed successfully")
                 return test
 
             yield 'test_' + rulefile.replace('.', '_'), make_test(rulefile)
@@ -390,7 +393,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
         # rule test
         self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT_SINGLELINE',
-                   "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
+                                          "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
 
         # look for the bundle
         bundle_path = '/tempZone/bundle/home/' + self.rods_session.username

@@ -4,6 +4,7 @@ import sys
 import os
 import json
 
+
 def usage():
     print('Usage: get_irods_version.py ["string"|"integer"|"major"|"minor"|"patchlevel"]')
 
@@ -23,7 +24,7 @@ version_string = data['irods_version']
 if sys.argv[1] == 'string':
     print(version_string)
 elif sys.argv[1] == 'integer':
-    print(int(major)*1000000 + int(minor)*1000 + int(patchlevel))
+    print(int(major) * 1000000 + int(minor) * 1000 + int(patchlevel))
 elif sys.argv[1] == 'major':
     print(major)
 elif sys.argv[1] == 'minor':
