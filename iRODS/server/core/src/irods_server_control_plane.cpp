@@ -33,8 +33,8 @@ int getAgentProcPIDs(
     std::vector<int>& _pids );
 
 namespace irods {
-    static void ctrl_plane_sleep( 
-        int _s, 
+    static void ctrl_plane_sleep(
+        int _s,
         int _ms ) {
         useconds_t us = ( _s * 1000000 ) + ( _ms * 1000 );
         usleep( us );
@@ -203,10 +203,10 @@ namespace irods {
         zmq::message_t req;
         zmq_skt.recv( &req );
 
-        if( 0 == req.size() ) {
-            return ERROR( 
-                        SYS_INVALID_INPUT_PARAM, 
-                        "empty response string" );
+        if ( 0 == req.size() ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "empty response string" );
 
         }
 
@@ -291,8 +291,8 @@ namespace irods {
         error ret;
         int sleep_time_out_milli_sec = 0;
         ret = get_server_property < int > (
-                CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                sleep_time_out_milli_sec );
+                  CFG_SERVER_CONTROL_PLANE_TIMEOUT,
+                  sleep_time_out_milli_sec );
         if ( !ret.ok() ) {
             return PASS( ret );
 
@@ -347,7 +347,7 @@ namespace irods {
 
         // kill the rule engine server
         ret = kill_re_server( );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
         }
 
@@ -522,14 +522,15 @@ namespace irods {
         const std::string& _hn2 ) {
 
         bool we_are_the_host = ( _hn1 == _hn2 );
-        if( !we_are_the_host ) {
+        if ( !we_are_the_host ) {
             bool host_has_dots = ( std::string::npos != _hn1.find( "." ) );
             bool my_host_has_dots = ( std::string::npos != _hn2.find( "." ) );
 
-            if( host_has_dots && !my_host_has_dots ) {
+            if ( host_has_dots && !my_host_has_dots ) {
                 we_are_the_host = ( std::string::npos != _hn1.find( _hn2 ) );
 
-            } else if ( !host_has_dots && my_host_has_dots ) {
+            }
+            else if ( !host_has_dots && my_host_has_dots ) {
                 we_are_the_host = ( std::string::npos != _hn2.find( _hn1 ) );
 
             }
@@ -539,16 +540,16 @@ namespace irods {
         return we_are_the_host;
 
     } // compare_host_names
-    
+
     bool server_control_executor::is_host_in_list(
         const std::string& _hn,
         const host_list_t& _hosts ) {
-        for( size_t i = 0;
-             i < _hosts.size();
-             ++i ) {
-            if( compare_host_names(
-                    _hn,
-                    _hosts[ i ] ) ) {
+        for ( size_t i = 0;
+                i < _hosts.size();
+                ++i ) {
+            if ( compare_host_names(
+                        _hn,
+                        _hosts[ i ] ) ) {
                 return true;
             }
 
@@ -642,19 +643,19 @@ namespace irods {
             host_list_t hosts;
             hosts.push_back( _host );
             ret = process_host_list(
-                       _name,
-                       _wait_option,
-                       _wait_seconds,
-                       hosts,
-                       _output );
+                      _name,
+                      _wait_option,
+                      _wait_seconds,
+                      hosts,
+                      _output );
 
         }
         else {
             ret = forward_server_control_command(
-                       _name,
-                       _host,
-                       _port_keyword,
-                       _output );
+                      _name,
+                      _host,
+                      _port_keyword,
+                      _output );
 
         }
 
@@ -743,8 +744,8 @@ namespace irods {
         clearGenQueryInp( &gen_inp );
 
         status = rcDisconnect( comm );
-        if( status < 0 ) {
-            return ERROR( 
+        if ( status < 0 ) {
+            return ERROR(
                        status,
                        "failed in rcDisconnect" );
         }
@@ -770,10 +771,10 @@ namespace irods {
 
         }
 
-        if( shared_secret.empty() ||
-            encryption_algorithm.empty() ||
-            0 == port ||
-            0 == num_hash_rounds ) {
+        if ( shared_secret.empty() ||
+                encryption_algorithm.empty() ||
+                0 == port ||
+                0 == num_hash_rounds ) {
             rodsLog(
                 LOG_NOTICE,
                 "control plane is not configured properly" );
@@ -968,9 +969,9 @@ namespace irods {
                 itr != _cmd_hosts.end();
                 ++itr ) {
             // check host value against list from the icat
-            if( !is_host_in_list(
-                     *itr,
-                     _irods_hosts ) ) {
+            if ( !is_host_in_list(
+                        *itr,
+                        _irods_hosts ) ) {
                 std::string msg( "invalid server hostname [" );
                 msg += *itr;
                 msg += "]";
@@ -982,13 +983,13 @@ namespace irods {
 
             // skip the IES since it is a special case
             // and handled elsewhere
-            if( compare_host_names( icat_host_name_, *itr ) ) {
+            if ( compare_host_names( icat_host_name_, *itr ) ) {
                 continue;
             }
 
             // skip the local server since it is also a
             // special case and handled elsewhere
-            if( compare_host_names( my_host_name_, *itr ) ) {
+            if ( compare_host_names( my_host_name_, *itr ) ) {
                 continue;
 
             }
@@ -1106,9 +1107,9 @@ namespace irods {
             }
 
             std::string output;
-            if ( compare_host_names( 
-                    *itr,
-                    my_host_name_ ) ) {
+            if ( compare_host_names(
+                        *itr,
+                        my_host_name_ ) ) {
                 error ret = op_map_[ _cmd_name ](
                                 _wait_option,
                                 _wait_seconds,
@@ -1120,7 +1121,8 @@ namespace irods {
 
                 _output += output;
 
-            } else {
+            }
+            else {
                 error ret = forward_command(
                                 _cmd_name,
                                 *itr,
@@ -1132,7 +1134,8 @@ namespace irods {
                     log( PASS( ret ) );
                     fwd_err = PASS( ret );
 
-                } else {
+                }
+                else {
                     _output += output;
 
                 }

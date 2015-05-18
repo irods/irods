@@ -1043,7 +1043,7 @@ getDefFileMode() {
     irods::error ret = irods::get_server_property<std::string>(
                            DEF_FILE_MODE_KW,
                            mode_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         std::stringstream ss;
         ss << std::oct << mode_str;
         ss >> mode_int;
@@ -1060,7 +1060,7 @@ getDefDirMode() {
     irods::error ret = irods::get_server_property<std::string>(
                            DEF_DIR_MODE_KW,
                            mode_str );
-    if( ret.ok() ) {
+    if ( ret.ok() ) {
         std::stringstream ss;
         ss << std::oct << mode_str;
         ss >> mode_int;
@@ -1210,22 +1210,22 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
     irods::error ret = irods::get_full_path_for_config_file(
                            LOCK_FILE_DIR,
                            lock_path );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
     len = lock_path.size() +
-          strlen( tmpPath ) + 
+          strlen( tmpPath ) +
           strlen( LOCK_FILE_TRAILER ) + 10;
     *outLockPath = ( char * ) malloc( len );
 
-    snprintf( 
-        *outLockPath, 
-        len, 
-        "%-s/%-s.%-s", 
-        lock_path.c_str(), 
-        tmpPath, 
+    snprintf(
+        *outLockPath,
+        len,
+        "%-s/%-s.%-s",
+        lock_path.c_str(),
+        tmpPath,
         LOCK_FILE_TRAILER );
 
     return 0;

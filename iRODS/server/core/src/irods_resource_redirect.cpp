@@ -375,13 +375,13 @@ namespace irods {
         char* dst_resc_kw   = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW );
         char* force_flag_kw = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
         std::vector<physical_object> repls = _fobj->replicas();
-        if( PUT_OPR != _data_obj_inp->oprType ||
-            repls.empty()  ||
-            !dst_resc_kw   ||
-            !force_flag_kw ||
-            strlen( dst_resc_kw ) == 0 ||
-            !( OPEN_OPERATION  == _oper ||
-               WRITE_OPERATION == _oper ) ) {
+        if ( PUT_OPR != _data_obj_inp->oprType ||
+                repls.empty()  ||
+                !dst_resc_kw   ||
+                !force_flag_kw ||
+                strlen( dst_resc_kw ) == 0 ||
+                !( OPEN_OPERATION  == _oper ||
+                   WRITE_OPERATION == _oper ) ) {
             return SUCCESS();
         }
 
@@ -394,14 +394,14 @@ namespace irods {
 
             std::string root_resc;
             parser.first_resc( root_resc );
-            if( root_resc == dst_resc_kw ) {
+            if ( root_resc == dst_resc_kw ) {
                 hier_match_flg = true;
                 break;
             }
 
         } // for i
 
-        if( !hier_match_flg ) {
+        if ( !hier_match_flg ) {
             std::stringstream msg;
             msg << "cannot force put ["
                 << _data_obj_inp->objPath
@@ -487,10 +487,10 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // reality check: if the key_word is set, verify that the resource
         // actually exists before moving forward.
-        if( key_word ) {
+        if ( key_word ) {
             resource_ptr resc;
             error ret = resc_mgr.resolve( key_word, resc );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 return PASS( ret );
             }
         }
@@ -505,7 +505,7 @@ namespace irods {
                         oper,
                         file_obj,
                         _data_obj_inp );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
 
         }
@@ -513,7 +513,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specified ( thats all we have for now )
         if ( OPEN_OPERATION  == oper ||
-             WRITE_OPERATION == oper ) {
+                WRITE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for
             // success before proceeding

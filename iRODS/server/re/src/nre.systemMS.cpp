@@ -983,7 +983,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
                            single_buff_sz );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -1080,7 +1080,7 @@ msiListEnabledMS(
     // scan plugin directory for additional plugins
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_MICROSERVICE, plugin_home );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }

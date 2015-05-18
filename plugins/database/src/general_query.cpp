@@ -349,21 +349,21 @@ tScan( int table, int link ) {
                     printf( "%d use link %d\n", table, i );
                 }
                 if ( strlen( whereSQL ) > 6 ) {
-                    if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
-                if(!rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 if ( tablePresent( Tables[Links[i].table2].tableAlias, fromSQL ) == 0 ) {
-                    if(!rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, Tables[Links[i].table2].tableAlias,
-                             MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, Tables[Links[i].table2].tableAlias,
+                                   MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( tablePresent( Tables[Links[i].table1].tableAlias, fromSQL ) == 0 ) {
-                    if(!rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, Tables[Links[i].table1].tableAlias,
-                             MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, Tables[Links[i].table1].tableAlias,
+                                   MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( debug > 1 ) {
                     printf( "added (2) to fromSQL: %s\n", fromSQL );
@@ -388,21 +388,21 @@ tScan( int table, int link ) {
                     printf( "%d use link %d\n", table, i );
                 }
                 if ( strlen( whereSQL ) > 6 ) {
-                    if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
-                if(!rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 if ( tablePresent( Tables[Links[i].table2].tableAlias, fromSQL ) == 0 ) {
-                    if(!rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, Tables[Links[i].table2].tableAlias,
-                             MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, Tables[Links[i].table2].tableAlias,
+                                   MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( tablePresent( Tables[Links[i].table1].tableAlias, fromSQL ) == 0 ) {
-                    if(!rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, Tables[Links[i].table1].tableAlias,
-                             MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, Tables[Links[i].table1].tableAlias,
+                                   MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( debug > 1 ) {
                     printf( "added (3) to fromSQL: %s\n", fromSQL );
@@ -625,61 +625,61 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
             Tables[i].flag = 1;
             if ( sel ) {
                 if ( selectSQLInitFlag == 0 ) {
-                    if(!rstrcat( selectSQL, ",", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( selectSQL, ",", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 selectSQLInitFlag = 0; /* no longer empty of columns */
 
                 selectOptFlag = 0;
                 if ( selectOption != 0 ) {
                     if ( selectOption == SELECT_MIN ) {
-                        if(!rstrcat( selectSQL, "min(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( selectSQL, "min(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                         selectOptFlag = 1;
                     }
                     if ( selectOption == SELECT_MAX ) {
-                        if(!rstrcat( selectSQL, "max(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( selectSQL, "max(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                         selectOptFlag = 1;
                     }
                     if ( selectOption == SELECT_SUM ) {
-                        if(!rstrcat( selectSQL, "sum(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( selectSQL, "sum(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                         selectOptFlag = 1;
                     }
                     if ( selectOption == SELECT_AVG ) {
-                        if(!rstrcat( selectSQL, "avg(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( selectSQL, "avg(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                         selectOptFlag = 1;
                     }
                     if ( selectOption == SELECT_COUNT ) {
-                        if(!rstrcat( selectSQL, "count(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( selectSQL, "count(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                         selectOptFlag = 1;
                     }
                 }
-                if(!rstrcat( selectSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( selectSQL, ".", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( selectSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( selectSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( selectSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( selectSQL, ".", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( selectSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( selectSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 if ( selectOptFlag ) {
-                    if(!rstrcat( selectSQL, ") ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( selectSQL, ") ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     mightNeedGroupBy = 1;
                 }
                 else {
                     if ( strlen( groupBySQL ) > 10 ) {
-                        if(!rstrcat( groupBySQL, ",", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( groupBySQL, ",", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     }
-                    if(!rstrcat( groupBySQL, Tables[i].tableName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( groupBySQL, ".", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( groupBySQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( groupBySQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( groupBySQL, Tables[i].tableName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( groupBySQL, ".", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( groupBySQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( groupBySQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
                 if ( tablePresent( Tables[i].tableAlias, fromSQL ) == 0 ) {
                     if ( fromCount ) {
-                        if(!rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( fromSQL, ", ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     }
                     else {
-                        if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                        if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                     }
                     fromCount++;
-                    if(!rstrcat( fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                    if(!rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( fromSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( debug > 1 ) {
                     printf( "added (1) to fromSQL: %s\n", fromSQL );
@@ -688,22 +688,22 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
             else {
 
                 if ( strlen( whereSQL ) > 6 ) {
-                    if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 if ( castOption == 1 ) {
-                    if(!rstrcat( whereSQL, "cast (", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "cast (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
                 if ( doUpperCase == 1 && castOption == 0 ) {
-                    if(!rstrcat( whereSQL, "upper (", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "upper (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
-                if(!rstrcat( whereSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( whereSQL, ".", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-                if(!rstrcat( whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, ".", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 
                 if ( doUpperCase == 1 && castOption == 0 ) {
-                    if(!rstrcat( whereSQL, " )", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " )", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
 
                 if ( castOption == 1 ) {
@@ -711,9 +711,9 @@ int setTable( int column, int sel, int selectOption, int castOption ) {
                        fine but for Oracle 'number' is needed to handle
                        both integer and floating point. */
 #if ORA_ICAT
-                    if(!rstrcat( whereSQL, " as number)", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " as number)", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #else
-                    if(!rstrcat( whereSQL, " as decimal)", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " as decimal)", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #endif
                 }
             }
@@ -781,7 +781,7 @@ handleMultiDataAVUConditions( int nConditions ) {
         snprintf( newStr, sizeof newStr,
                   ", R_OBJT_METAMAP r_data_metamap%d, R_META_MAIN r_data_meta_mn%2.2d ",
                   i, i );
-        if(!rstrcat( fromSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( fromSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
     }
 
     /* In the whereSQL, add items for
@@ -792,10 +792,10 @@ handleMultiDataAVUConditions( int nConditions ) {
         char newStr[100];
         snprintf( newStr, sizeof newStr,
                   " AND r_data_metamap%d.meta_id = r_data_meta_mn%2.2d.meta_id", i, i );
-        if(!rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
         snprintf( newStr, sizeof newStr,
                   " AND R_DATA_MAIN.data_id = r_data_metamap%d.object_id ", i );
-        if(!rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
     }
 }
 
@@ -854,7 +854,7 @@ handleMultiCollAVUConditions( int nConditions ) {
         snprintf( newStr, sizeof newStr,
                   ", R_OBJT_METAMAP r_coll_metamap%d, R_META_MAIN r_coll_meta_mn%2.2d ",
                   i, i );
-        if(!rstrcat( fromSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( fromSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
     }
 
     /* In the whereSQL, add items for
@@ -865,10 +865,10 @@ handleMultiCollAVUConditions( int nConditions ) {
         char newStr[100];
         snprintf( newStr, sizeof newStr,
                   " AND r_coll_metamap%d.meta_id = r_coll_meta_mn%2.2d.meta_id", i, i );
-        if(!rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
         snprintf( newStr, sizeof newStr,
                   " AND R_COLL_MAIN.coll_id = r_coll_metamap%d.object_id ", i );
-        if(!rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ )){ return; }
+        if ( !rstrcat( whereSQL, newStr, MAX_SQL_SIZE_GQ ) ) { return; }
     }
 }
 
@@ -945,19 +945,19 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         prevWhereLen = i + 3;
     }
 
-    if(!rstrcpy( tabAndColumn, ( char * )&whereSQL[prevWhereLen], MAX_SQL_SIZE_GQ )) {
+    if ( !rstrcpy( tabAndColumn, ( char * )&whereSQL[prevWhereLen], MAX_SQL_SIZE_GQ ) ) {
         return USER_STRLEN_TOOLONG;
     }
 
     whereSQL[prevWhereLen] = '\0'; /* reset whereSQL to previous spot */
-    if(!rstrcat( whereSQL, " ( ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, " ( ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 
-    if(!rstrcpy( condPart2, condition, MAX_NAME_LEN * 2 ) ) {
+    if ( !rstrcpy( condPart2, condition, MAX_NAME_LEN * 2 ) ) {
         return USER_STRLEN_TOOLONG;
     }
 
     while ( true ) {
-        if(!rstrcpy( condPart1, condPart2, MAX_NAME_LEN * 2 ) ) {
+        if ( !rstrcpy( condPart1, condPart2, MAX_NAME_LEN * 2 ) ) {
             return USER_STRLEN_TOOLONG;
         }
 
@@ -978,13 +978,13 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         }
         *cptr = '\0';
         cptr += 2; /* past the && or || */
-        if(!rstrcpy( condPart2, cptr, MAX_NAME_LEN * 2 ) ) {
+        if ( !rstrcpy( condPart2, cptr, MAX_NAME_LEN * 2 ) ) {
             return USER_STRLEN_TOOLONG;
         }
 
-        if(!rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcpy( ( char* )&conditionsForBind[conditionsForBindIx], condPart1,
-                 ( MAX_SQL_SIZE_GQ * 2 ) - conditionsForBindIx ) ) {
+        if ( !rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcpy( ( char* )&conditionsForBind[conditionsForBindIx], condPart1,
+                       ( MAX_SQL_SIZE_GQ * 2 ) - conditionsForBindIx ) ) {
             return USER_STRLEN_TOOLONG;
         }
         status = insertWhere( ( char* )&conditionsForBind[conditionsForBindIx], 0 );
@@ -994,20 +994,20 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
         conditionsForBindIx += strlen( condPart1 ) + 1;
 
         if ( type == 1 ) {
-            if(!rstrcat( whereSQL, " OR ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, " OR ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         else if ( type == 2 ) {
-            if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
     }
 
-    if(!rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     status = insertWhere( condPart2, 0 );
     if ( status ) {
         return status;
     }
 
-    if(!rstrcat( whereSQL, " ) ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, " ) ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     return 0;
 }
 
@@ -1039,11 +1039,11 @@ setOrderBy( genQueryInp_t genQueryInp, int column ) {
                 for ( j = 0; j < nColumns; j++ ) {
                     if ( Columns[j].defineValue == column ) {
                         if ( strlen( orderBySQL ) > 10 ) {
-                            if(!rstrcat( orderBySQL, ", ", MAX_SQL_SIZE_GQ )){ return; }
+                            if ( !rstrcat( orderBySQL, ", ", MAX_SQL_SIZE_GQ ) ) { return; }
                         }
-                        if(!rstrcat( orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ )){ return; }
-                        if(!rstrcat( orderBySQL, ".", MAX_SQL_SIZE_GQ )){ return; }
-                        if(!rstrcat( orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ )){ return; }
+                        if ( !rstrcat( orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ ) ) { return; }
+                        if ( !rstrcat( orderBySQL, ".", MAX_SQL_SIZE_GQ ) ) { return; }
+                        if ( !rstrcat( orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ ) ) { return; }
                         break;
                     }
                 }
@@ -1065,13 +1065,13 @@ setOrderByUser( genQueryInp_t genQueryInp ) {
             for ( j = 0; j < nColumns && done == 0; j++ ) {
                 if ( Columns[j].defineValue == genQueryInp.selectInp.inx[i] ) {
                     if ( strlen( orderBySQL ) > 10 ) {
-                        if(!rstrcat( orderBySQL, ", ", MAX_SQL_SIZE_GQ )){ return ; }
+                        if ( !rstrcat( orderBySQL, ", ", MAX_SQL_SIZE_GQ ) ) { return ; }
                     }
-                    if(!rstrcat( orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ )){ return ; }
-                    if(!rstrcat( orderBySQL, ".", MAX_SQL_SIZE_GQ )){ return ; }
-                    if(!rstrcat( orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ )){ return ; }
+                    if ( !rstrcat( orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ ) ) { return ; }
+                    if ( !rstrcat( orderBySQL, ".", MAX_SQL_SIZE_GQ ) ) { return ; }
+                    if ( !rstrcat( orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ ) ) { return ; }
                     if ( genQueryInp.selectInp.value[i] & ORDER_BY_DESC ) {
-                        if(!rstrcat( orderBySQL, " DESC ", MAX_SQL_SIZE_GQ )){ return ; }
+                        if ( !rstrcat( orderBySQL, " DESC ", MAX_SQL_SIZE_GQ ) ) { return ; }
                     }
                     done = 1;
                 }
@@ -1098,7 +1098,7 @@ checkCondition( char *condition ) {
     char tmpStr[25];
     char *cp;
 
-    if(!rstrcpy( tmpStr, condition, 20 ) ) {
+    if ( !rstrcpy( tmpStr, condition, 20 ) ) {
         return USER_STRLEN_TOOLONG;
     }
     for ( cp = tmpStr; *cp != '\0'; cp++ ) {
@@ -1176,7 +1176,7 @@ addInClauseToWhereForParentOf( char *inArg ) {
     static char inStrings[MAX_SQL_SIZE_GQ];
     int inStrIx = 0;
 
-    if(!rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     len = strlen( inArg );
     for ( i = 0; i < len + 1; i++ ) {
         if ( inArg[i] == '/' || inArg[i] == ' ' || inArg[i] == '\0' ) {
@@ -1185,18 +1185,18 @@ addInClauseToWhereForParentOf( char *inArg ) {
                 ncopy++;
             }
             if ( nput == 0 ) {
-                if(!rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
             else {
-                if(!rstrcat( whereSQL, ", ?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, ", ?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
             nput++;
 
             /* Add the substing as a bind variable in case there are quotes */
             tmpStr[0] = '\0';
             rstrncat( tmpStr, inArg, ncopy, MAX_SQL_SIZE_GQ );
-            if(!rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
-                     ( MAX_SQL_SIZE_GQ ) - inStrIx ) ) {
+            if ( !rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
+                           ( MAX_SQL_SIZE_GQ ) - inStrIx ) ) {
                 return USER_STRLEN_TOOLONG;
             }
             inStrings[inStrIx + ncopy] = '\0';
@@ -1207,7 +1207,7 @@ addInClauseToWhereForParentOf( char *inArg ) {
             inStrIx = inStrIx + ncopy + 1;
         }
     }
-    if(!rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     return 0;
 }
 
@@ -1230,7 +1230,7 @@ addInClauseToWhereForIn( char *inArg, int option ) {
         inStrIx = 0;
         return 0;
     }
-    if(!rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     len = strlen( inArg );
     for ( i = 0; i < len + 1; i++ ) {
         if ( inArg[i] == '\'' ) {
@@ -1242,10 +1242,10 @@ addInClauseToWhereForIn( char *inArg, int option ) {
                 quoteState = 0;
                 endIx = i - 1;
                 if ( nput == 0 ) {
-                    if(!rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 else {
-                    if(!rstrcat( whereSQL, ", ?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, ", ?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 nput++;
 
@@ -1254,8 +1254,8 @@ addInClauseToWhereForIn( char *inArg, int option ) {
                 tmpStr[0] = '\0';
                 ncopy = endIx - startIx + 1;
                 rstrncat( tmpStr, ( char * )&inArg[startIx], ncopy, MAX_SQL_SIZE_GQ );
-                if(!rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
-                         ( MAX_SQL_SIZE_GQ * 2 ) - inStrIx ) ) {
+                if ( !rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
+                               ( MAX_SQL_SIZE_GQ * 2 ) - inStrIx ) ) {
                     return USER_STRLEN_TOOLONG;
                 }
                 inStrings[inStrIx + ncopy] = '\0';
@@ -1268,7 +1268,7 @@ addInClauseToWhereForIn( char *inArg, int option ) {
             }
         }
     }
-    if(!rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     if ( nput == 0 ) {
         return CAT_INVALID_ARGUMENT;
     }
@@ -1288,7 +1288,7 @@ addBetweenClauseToWhere( char *inArg ) {
     static char inStrings[MAX_SQL_SIZE_GQ];
     int inStrIx = 0;
     int ncopy;
-    if(!rstrcat( whereSQL, " BETWEEN ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( whereSQL, " BETWEEN ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     len = strlen( inArg );
     for ( i = 0; i < len + 1; i++ ) {
         if ( inArg[i] == '\'' ) {
@@ -1300,10 +1300,10 @@ addBetweenClauseToWhere( char *inArg ) {
                 quoteState = 0;
                 endIx = i - 1;
                 if ( nput == 0 ) {
-                    if(!rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 else {
-                    if(!rstrcat( whereSQL, " AND ? ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " AND ? ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 nput++;
 
@@ -1312,8 +1312,8 @@ addBetweenClauseToWhere( char *inArg ) {
                 tmpStr[0] = '\0';
                 ncopy = endIx - startIx + 1;
                 rstrncat( tmpStr, ( char * )&inArg[startIx], ncopy, MAX_SQL_SIZE_GQ );
-                if(!rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
-                         MAX_SQL_SIZE_GQ - inStrIx ) ) {
+                if ( !rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
+                               MAX_SQL_SIZE_GQ - inStrIx ) ) {
                     return USER_STRLEN_TOOLONG;
                 }
                 inStrings[inStrIx + ncopy] = '\0';
@@ -1387,15 +1387,15 @@ insertWhere( char *condition, int option ) {
         }
     }
     if ( strcmp( condition, "IS NULL" ) == 0 ) {
-        if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         return 0;
     }
     if ( strcmp( condition, "IS NOT NULL" ) == 0 ) {
-        if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, condition, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         return 0;
     }
     bindIx++;
@@ -1431,7 +1431,7 @@ insertWhere( char *condition, int option ) {
         }
     }
     tmpStr[i] = '\0';
-    if(!rstrcpy( myCondition, tmpStr, 20 ) ) {
+    if ( !rstrcpy( myCondition, tmpStr, 20 ) ) {
         return USER_STRLEN_TOOLONG;
     }
 
@@ -1443,22 +1443,22 @@ insertWhere( char *condition, int option ) {
             cp1--;
         }
         cp1++;
-        if(!rstrcpy( tmpStr2, cp1, MAX_SQL_SIZE_GQ ) ) {
+        if ( !rstrcpy( tmpStr2, cp1, MAX_SQL_SIZE_GQ ) ) {
             return USER_STRLEN_TOOLONG;
         } /*use table/column name just added*/
 #if ORA_ICAT
-        if(!rstrcat( whereSQL, "=substr(?,1,length(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, "))", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, " AND length(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, "=substr(?,1,length(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, "))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " AND length(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #else
-        if(!rstrcat( whereSQL, "=substr(?,1,char_length(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, "))", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, " AND char_length(", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, "=substr(?,1,char_length(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, "))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, " AND char_length(", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #endif
-        if(!rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( whereSQL, ")>0", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, tmpStr2, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, ")>0", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
     else {
         cp = strstr( myCondition, "parent_of" );
@@ -1477,7 +1477,7 @@ insertWhere( char *condition, int option ) {
             tmpStr[i++] = '?';
             tmpStr[i++] = ' ';
             tmpStr[i++] = '\0';
-            if(!rstrcat( whereSQL, tmpStr, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, tmpStr, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
     }
     return checkCondition( myCondition );
@@ -1518,11 +1518,11 @@ genqAppendAccessCheck() {
     if ( strstr( selectSQL, "ticket_string" ) != NULL &&
             strstr( selectSQL, "R_TICKET_MAIN" ) != NULL ) {
         if ( strlen( whereSQL ) > 6 ) {
-            if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         cllBindVars[cllBindVarCount++] = accessControlUserName;
         cllBindVars[cllBindVarCount++] = accessControlZone;
-        if(!rstrcat( whereSQL, "R_TICKET_MAIN.user_id in (select user_id from R_USER_MAIN UM where UM.user_name = ? AND UM.zone_name=?)", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( whereSQL, "R_TICKET_MAIN.user_id in (select user_id from R_USER_MAIN UM where UM.user_name = ? AND UM.zone_name=?)", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
 
     if ( doCheck == 0 ) {
@@ -1535,20 +1535,20 @@ genqAppendAccessCheck() {
             strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
 
         if ( strlen( whereSQL ) > 6 ) {
-            if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         if ( sessionTicket[0] == '\0' ) {
             /* Normal access control */
 
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
-            if(!rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         else {
             /* Ticket-based access control */
             cllBindVars[cllBindVarCount++] = sessionTicket;
             cllBindVars[cllBindVarCount++] = sessionTicket;
-            if(!rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             addedTicketCheck = 1;
         }
     }
@@ -1560,11 +1560,11 @@ genqAppendAccessCheck() {
         if ( sessionTicket[0] == '\0' ) {
             /* Normal access control */
             if ( strlen( whereSQL ) > 6 ) {
-                if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
-            if(!rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         else {
             /* Ticket-based access control */
@@ -1572,7 +1572,7 @@ genqAppendAccessCheck() {
               lines above that includes this */
             if ( addedTicketCheck != 1 ) {
                 if ( strlen( whereSQL ) > 6 ) {
-                    if(!rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 cllBindVars[cllBindVarCount++] = sessionTicket;
                 if ( strstr( whereSQL, "parent_coll_name =" ) != NULL ) {
@@ -1583,10 +1583,10 @@ genqAppendAccessCheck() {
                       a read (or write) ticket on a collection will find the
                       existing sub-collections.
                       */
-                    if(!rstrcat( whereSQL, "parent_coll_name IN (select coll_name from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "parent_coll_name IN (select coll_name from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
                 else {
-                    if(!rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+                    if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
             }
         }
@@ -1646,10 +1646,10 @@ generateSpecialQuery( genQueryInp_t genQueryInp, char *resultingSQL ) {
     for ( i = 0; i < genQueryInp.sqlCondInp.len; i++ ) {
         if ( genQueryInp.sqlCondInp.inx[i] == COL_USER_NAME ) {
             int status = parseUserName( genQueryInp.sqlCondInp.value[i], userName,
-                           userZone );
+                                        userZone );
             if ( status ) {
                 rodsLog( LOG_ERROR, "parseUserName failed in generateSpecialQuery on %s with status %d.",
-                        genQueryInp.sqlCondInp.value[i], status );
+                         genQueryInp.sqlCondInp.value[i], status );
                 return status;
             }
             if ( userZone[0] == '\0' ) {
@@ -1739,12 +1739,12 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     insertWhere( "", 1 ); /* initialize */
 
     if ( genQueryInp.options & NO_DISTINCT ) {
-        if(!rstrcpy( selectSQL, "select ", MAX_SQL_SIZE_GQ ) ) {
+        if ( !rstrcpy( selectSQL, "select ", MAX_SQL_SIZE_GQ ) ) {
             return USER_STRLEN_TOOLONG;
         }
     }
     else {
-        if(!rstrcpy( selectSQL, "select distinct ", MAX_SQL_SIZE_GQ ) ) {
+        if ( !rstrcpy( selectSQL, "select distinct ", MAX_SQL_SIZE_GQ ) ) {
             return USER_STRLEN_TOOLONG;
         }
     }
@@ -1754,14 +1754,14 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         doUpperCase = 1;
     }
 
-    if(!rstrcpy( fromSQL, "from ", MAX_SQL_SIZE_GQ ) ) {
+    if ( !rstrcpy( fromSQL, "from ", MAX_SQL_SIZE_GQ ) ) {
         return USER_STRLEN_TOOLONG;
     }
     fromCount = 0;
-    if(!rstrcpy( whereSQL, "where ", MAX_SQL_SIZE_GQ ) ) {
+    if ( !rstrcpy( whereSQL, "where ", MAX_SQL_SIZE_GQ ) ) {
         return USER_STRLEN_TOOLONG;
     }
-    if(!rstrcpy( groupBySQL, "group by ", MAX_SQL_SIZE_GQ ) ) {
+    if ( !rstrcpy( groupBySQL, "group by ", MAX_SQL_SIZE_GQ ) ) {
         return USER_STRLEN_TOOLONG;
     }
     mightNeedGroupBy = 0;
@@ -1914,21 +1914,21 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     }
 
     combinedSQL[0] = '\0';
-    if(!rstrcat( combinedSQL, selectSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-    if(!rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-    if(!rstrcat( combinedSQL, fromSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( combinedSQL, selectSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( combinedSQL, fromSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 
     genqAppendAccessCheck();
 
     if ( strlen( whereSQL ) > 6 ) {
-        if(!rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( combinedSQL, whereSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, whereSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
     if ( useGroupBy ) {
-        if(!rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( combinedSQL, groupBySQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, " " , MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, groupBySQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
-    if(!rstrcpy( orderBySQL, " order by ", MAX_SQL_SIZE_GQ ) ) {
+    if ( !rstrcpy( orderBySQL, " order by ", MAX_SQL_SIZE_GQ ) ) {
         return USER_STRLEN_TOOLONG;
     }
     setOrderByUser( genQueryInp );
@@ -1936,7 +1936,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
     setOrderBy( genQueryInp, COL_DATA_NAME );
     setOrderBy( genQueryInp, COL_DATA_REPL_NUM );
     if ( strlen( orderBySQL ) > 10 ) {
-        if(!rstrcat( combinedSQL, orderBySQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, orderBySQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
 
     if ( genQueryInp.rowOffset > 0 ) {
@@ -1949,14 +1949,14 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 #elif MY_ICAT
         /* MySQL/ODBC handles it nicely via just adding limit/offset */
         snprintf( offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset );
-        if(!rstrcat( combinedSQL, " limit ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( combinedSQL, offsetStr, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( combinedSQL, ",18446744073709551615", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, " limit ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, offsetStr, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, ",18446744073709551615", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #else
         /* Postgres/ODBC handles it nicely via just adding offset */
         snprintf( offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset );
         cllBindVars[cllBindVarCount++] = offsetStr;
-        if(!rstrcat( combinedSQL, " offset ?", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( combinedSQL, " offset ?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 #endif
     }
 
@@ -1967,12 +1967,12 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
 
 #if ORA_ICAT
     countSQL[0] = '\0';
-    if(!rstrcat( countSQL, "select distinct count(*) ", MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-    if(!rstrcat( countSQL, fromSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( countSQL, "select distinct count(*) ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+    if ( !rstrcat( countSQL, fromSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
 
     if ( strlen( whereSQL ) > 6 ) {
-        if(!rstrcat( countSQL, " " , MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
-        if(!rstrcat( countSQL, whereSQL, MAX_SQL_SIZE_GQ )){ return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( countSQL, " " , MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        if ( !rstrcat( countSQL, whereSQL, MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     }
 
     if ( debug ) {
@@ -2129,12 +2129,12 @@ int chl_gen_query_access_control_setup_impl(
     int priv,
     int controlFlag ) {
     if ( user != NULL ) {
-        if(!rstrcpy( accessControlUserName, user, MAX_NAME_LEN ) ) {
-        return USER_STRLEN_TOOLONG;
-    }
-    if(!rstrcpy( accessControlZone, zone, MAX_NAME_LEN ) ) {
-        return USER_STRLEN_TOOLONG;
-    }
+        if ( !rstrcpy( accessControlUserName, user, MAX_NAME_LEN ) ) {
+            return USER_STRLEN_TOOLONG;
+        }
+        if ( !rstrcpy( accessControlZone, zone, MAX_NAME_LEN ) ) {
+            return USER_STRLEN_TOOLONG;
+        }
 //      if(!rstrcpy(accessControlHost, host, MAX_NAME_LEN);
         accessControlPriv = priv;
     }
@@ -2160,10 +2160,10 @@ int chl_gen_query_access_control_setup_impl(
 extern "C" int chl_gen_query_ticket_setup_impl(
     char* ticket,
     char* clientAddr ) {
-    if(!rstrcpy( sessionTicket, ticket, sizeof( sessionTicket ) ) ) {
+    if ( !rstrcpy( sessionTicket, ticket, sizeof( sessionTicket ) ) ) {
         return USER_STRLEN_TOOLONG;
     }
-    if(!rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) ) ) {
+    if ( !rstrcpy( sessionClientAddr, clientAddr, sizeof( sessionClientAddr ) ) ) {
         return USER_STRLEN_TOOLONG;
     }
     rodsLog( LOG_NOTICE, "session ticket setup, value: %s", ticket );

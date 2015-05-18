@@ -44,7 +44,7 @@ main( int argc, char **argv ) {
                     UNKNOWN_FILE_T,
                     0,
                     &rodsPathInp );
-    if( p_err < 0 ) {
+    if ( p_err < 0 ) {
         usage();
         return 1;
 

@@ -32,24 +32,24 @@ namespace irods {
     const std::string CFG_FEDERATION_KW( "federation" );
     const std::string CFG_ENVIRONMENT_VARIABLES_KW( "environment_variables" );
     const std::string CFG_ADVANCED_SETTINGS_KW( "advanced_settings" );
-    
+
     const std::string CFG_SERVER_PORT_RANGE_START_KW( "server_port_range_start" );
     const std::string CFG_SERVER_PORT_RANGE_END_KW( "server_port_range_end" );
 
     // advanced settings
-    const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER( 
+    const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER(
         "maximum_size_for_single_buffer_in_megabytes" );
-    const std::string CFG_DEF_NUMBER_TRANSFER_THREADS( 
+    const std::string CFG_DEF_NUMBER_TRANSFER_THREADS(
         "default_number_of_transfer_threads" );
-    const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS( 
+    const std::string CFG_TRANS_CHUNK_SIZE_PARA_TRANS(
         "transfer_chunk_size_for_parallel_transfer_in_megabytes" );
-    const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS( 
-        "transfer_buffer_size_for_parallel_transfer_in_megabytes" ); 
-    const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME( 
+    const std::string CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS(
+        "transfer_buffer_size_for_parallel_transfer_in_megabytes" );
+    const std::string CFG_DEF_TEMP_PASSWORD_LIFETIME(
         "default_temporary_password_lifetime_in_seconds" );
-    const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME( 
+    const std::string CFG_MAX_TEMP_PASSWORD_LIFETIME(
         "maximum_temporary_password_lifetime_in_seconds" );
-    const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS( 
+    const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS(
         "maximum_number_of_concurrent_rule_engine_server_processes" );
 
     // service_account_environment.json keywords
@@ -103,14 +103,14 @@ namespace irods {
         "irods_server_control_plane_encryption_algorithm" );
 
     // irods environment advanced settings
-    const std::string CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER( 
+    const std::string CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER(
         "irods_maximum_size_for_single_buffer_in_megabytes" );
-    const std::string CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS( 
+    const std::string CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS(
         "irods_default_number_of_transfer_threads" );
-    const std::string CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS( 
+    const std::string CFG_IRODS_MAX_NUMBER_TRANSFER_THREADS(
         "irods_maximum_number_of_transfer_threads" );
-    const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS( 
-        "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes" ); 
+    const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS(
+        "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes" );
 
     // legacy ssl environment variables
     const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH(

@@ -37,7 +37,7 @@ main( int _argc, char** ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    if( _argc > 1 ) {
+    if ( _argc > 1 ) {
         usage();
         return 0;
     }

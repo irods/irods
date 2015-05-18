@@ -390,21 +390,23 @@ main( int argc, char **argv ) {
                                session_file );
         if ( ret.ok() ) {
             json_error_t error;
-            json_t *current_contents = json_load_file(env_file.c_str(), 0, &error);
+            json_t *current_contents = json_load_file( env_file.c_str(), 0, &error );
 
             json_t *obj_to_dump = 0;
-            if (current_contents) {
+            if ( current_contents ) {
                 int ret = json_object_update( current_contents, json_env );
-                if (ret == 0) {
+                if ( ret == 0 ) {
                     obj_to_dump = current_contents;
-                } else {
+                }
+                else {
                     obj_to_dump = json_env;
                     std::cerr << "Failed to update " << env_file.c_str() << std::endl;
                     std::cerr << error.text << std::endl;
                     std::cerr << error.source << std::endl;
                     std::cerr << error.line << ":" << error.column << " " << error.position << std::endl;
                 }
-            } else {
+            }
+            else {
                 obj_to_dump = json_env;
             }
 
@@ -420,12 +422,12 @@ main( int argc, char **argv ) {
                     env_file.c_str() );
             }
 
-            if (current_contents) {
+            if ( current_contents ) {
                 json_decref( current_contents );
             }
         }
         else {
-            printf( "failed to get environment file - %ji\n", (intmax_t)ret.code() );
+            printf( "failed to get environment file - %ji\n", ( intmax_t )ret.code() );
         }
     } // if doingEnvFileUpdate
 

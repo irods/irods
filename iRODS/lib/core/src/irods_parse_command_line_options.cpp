@@ -32,7 +32,7 @@ static int parse_program_options(
     ( "checksum,k", "checksum - calculate a checksum on the data server-side, and store it in the catalog" )
     ( "verify_checksum,K", "verify checksum - calculate and verify the checksum on the data, both client-side and server-side, without storing in the catalog." )
     ( "repl_num,n", po::value<std::string>(), "replNum  - the replica to be replaced, typically not needed" )
-    ( "num_threads,N", po::value<int>(), "numThreads - the number of threads to use for the transfer. A value of 0 means no threading. By default (-N option not used) the server decides the number of threads to use.")
+    ( "num_threads,N", po::value<int>(), "numThreads - the number of threads to use for the transfer. A value of 0 means no threading. By default (-N option not used) the server decides the number of threads to use." )
     ( "physical_path,p", po::value<std::string>(), "physicalPath - the absolute physical path of the uploaded file on the server" )
     ( "progress,P", "output the progress of the upload." )
     ( "rbudp,Q", "use RBUDP (datagram) protocol for the data transfer" )
@@ -53,7 +53,7 @@ static int parse_program_options(
     ( "kv_pass", po::value<std::string>(), "pass key-value strings through to the plugin infrastructure" )
     ( "metadata", po::value<std::string>(), "atomically assign metadata after a data object is put" )
     ( "acl", po::value<std::string>(), "atomically apply an access control list after a data object is put" )
-    ( "path_args", po::value<path_list_t>(&_paths)->composing(), "some files and stuffs" );
+    ( "path_args", po::value<path_list_t>( &_paths )->composing(), "some files and stuffs" );
 
     po::positional_options_description pos_desc;
     pos_desc.add( "path_args", -1 );
@@ -78,53 +78,53 @@ static int parse_program_options(
 
     bool have_verify = global_prog_ops_var_map.count( "verify_checksum" ) > 0;
     bool have_stdout = _paths.end() !=
-                           std::find(
-                               _paths.begin(),
-                               _paths.end(),
-                               std::string( "-" ) );
-    if( have_verify && have_stdout ) {
+                       std::find(
+                           _paths.begin(),
+                           _paths.end(),
+                           std::string( "-" ) );
+    if ( have_verify && have_stdout ) {
         std::cerr << "Cannot verify checksum if data is piped to stdout." << std::endl << std::endl;
         return SYS_INVALID_INPUT_PARAM;
     }
 
     memset( &_rods_args, 0, sizeof( _rods_args ) );
-    if( global_prog_ops_var_map.count( "help" ) ) {
+    if ( global_prog_ops_var_map.count( "help" ) ) {
         return SYS_INVALID_INPUT_PARAM;
     }
-    if( global_prog_ops_var_map.count( "all" ) ) {
+    if ( global_prog_ops_var_map.count( "all" ) ) {
         _rods_args.all = 1;
     }
-    if( global_prog_ops_var_map.count( "bulk" ) ) {
+    if ( global_prog_ops_var_map.count( "bulk" ) ) {
         _rods_args.bulk = 1;
     }
-    if( global_prog_ops_var_map.count( "force" ) ) {
+    if ( global_prog_ops_var_map.count( "force" ) ) {
         _rods_args.bulk = 1;
     }
-    if( global_prog_ops_var_map.count( "force" ) ) {
+    if ( global_prog_ops_var_map.count( "force" ) ) {
         _rods_args.force = 1;
     }
-    if( global_prog_ops_var_map.count( "redirect" ) ) {
+    if ( global_prog_ops_var_map.count( "redirect" ) ) {
         _rods_args.redirectConn = 1;
     }
-    if( global_prog_ops_var_map.count( "checksum" ) ) {
+    if ( global_prog_ops_var_map.count( "checksum" ) ) {
         _rods_args.checksum = 1;
     }
-    if( global_prog_ops_var_map.count( "verify_checksum" ) ) {
+    if ( global_prog_ops_var_map.count( "verify_checksum" ) ) {
         _rods_args.verifyChecksum = 1;
     }
-    if( global_prog_ops_var_map.count( "" ) ) {
+    if ( global_prog_ops_var_map.count( "" ) ) {
         _rods_args.verifyChecksum = 1;
     }
-    if( global_prog_ops_var_map.count( "repl_num" ) ) {
+    if ( global_prog_ops_var_map.count( "repl_num" ) ) {
         _rods_args.replNum = 1;
         try {
-            _rods_args.replNumValue = (char*)global_prog_ops_var_map[ "repl_num" ].as<std::string>().c_str();
+            _rods_args.replNumValue = ( char* )global_prog_ops_var_map[ "repl_num" ].as<std::string>().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "num_threads" ) ) {
+    if ( global_prog_ops_var_map.count( "num_threads" ) ) {
         _rods_args.number = 1;
         try {
             _rods_args.numberValue = global_prog_ops_var_map[ "num_threads" ].as<int>();
@@ -133,84 +133,84 @@ static int parse_program_options(
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "physical_path" ) ) {
+    if ( global_prog_ops_var_map.count( "physical_path" ) ) {
         _rods_args.physicalPath = 1;
         try {
-            _rods_args.physicalPathString = (char*)global_prog_ops_var_map[ "physical_path" ].as< std::string >().c_str();
+            _rods_args.physicalPathString = ( char* )global_prog_ops_var_map[ "physical_path" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "progress" ) ) {
+    if ( global_prog_ops_var_map.count( "progress" ) ) {
         _rods_args.progressFlag = 1;
     }
-    if( global_prog_ops_var_map.count( "rbudp" ) ) {
+    if ( global_prog_ops_var_map.count( "rbudp" ) ) {
         _rods_args.rbudp = 1;
     }
-    if( global_prog_ops_var_map.count( "recursive" ) ) {
+    if ( global_prog_ops_var_map.count( "recursive" ) ) {
         _rods_args.recursive = 1;
     }
-    if( global_prog_ops_var_map.count( "dest_resc" ) ) {
+    if ( global_prog_ops_var_map.count( "dest_resc" ) ) {
         _rods_args.resource = 1;
         try {
-            _rods_args.resourceString = (char*)global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str();
+            _rods_args.resourceString = ( char* )global_prog_ops_var_map[ "dest_resc" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "ticket" ) ) {
+    if ( global_prog_ops_var_map.count( "ticket" ) ) {
         _rods_args.ticket = 1;
         try {
-            _rods_args.ticketString = (char*)global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str();
+            _rods_args.ticketString = ( char* )global_prog_ops_var_map[ "ticket" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "renew_socket" ) ) {
+    if ( global_prog_ops_var_map.count( "renew_socket" ) ) {
         _rods_args.reconnect = 1;
     }
-    if( global_prog_ops_var_map.count( "verbose" ) ) {
+    if ( global_prog_ops_var_map.count( "verbose" ) ) {
         _rods_args.verbose = 1;
     }
-    if( global_prog_ops_var_map.count( "very_verbose" ) ) {
+    if ( global_prog_ops_var_map.count( "very_verbose" ) ) {
         _rods_args.verbose = 1;
         _rods_args.veryVerbose = 1;
         rodsLogLevel( LOG_NOTICE );
     }
-    if( global_prog_ops_var_map.count( "data_type" ) ) {
+    if ( global_prog_ops_var_map.count( "data_type" ) ) {
         _rods_args.dataType = 1;
         try {
-            _rods_args.dataTypeString = (char*)global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str();
+            _rods_args.dataTypeString = ( char* )global_prog_ops_var_map[ "data_type" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "restart_file" ) ) {
+    if ( global_prog_ops_var_map.count( "restart_file" ) ) {
         _rods_args.restart = 1;
         try {
-            _rods_args.restartFileString = (char*)global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str();
+            _rods_args.restartFileString = ( char* )global_prog_ops_var_map[ "restart_file" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "link" ) ) {
+    if ( global_prog_ops_var_map.count( "link" ) ) {
         _rods_args.link = 1;
     }
-    if( global_prog_ops_var_map.count( "lfrestart" ) ) {
+    if ( global_prog_ops_var_map.count( "lfrestart" ) ) {
         _rods_args.lfrestart = 1;
         try {
-            _rods_args.lfrestartFileString = (char*)global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str();
+            _rods_args.lfrestartFileString = ( char* )global_prog_ops_var_map[ "lfrestart" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "retries" ) ) {
+    if ( global_prog_ops_var_map.count( "retries" ) ) {
         _rods_args.retries = 1;
         try {
             _rods_args.retriesValue = global_prog_ops_var_map[ "retries" ].as< int >();
@@ -219,35 +219,35 @@ static int parse_program_options(
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "wlock" ) ) {
+    if ( global_prog_ops_var_map.count( "wlock" ) ) {
         _rods_args.wlock = 1;
     }
-    if( global_prog_ops_var_map.count( "rlock" ) ) {
+    if ( global_prog_ops_var_map.count( "rlock" ) ) {
         _rods_args.rlock = 1;
     }
-    if( global_prog_ops_var_map.count( "purgec" ) ) {
+    if ( global_prog_ops_var_map.count( "purgec" ) ) {
         _rods_args.purgeCache = 1;
     }
-    if( global_prog_ops_var_map.count( "kv_pass" ) ) {
+    if ( global_prog_ops_var_map.count( "kv_pass" ) ) {
         _rods_args.kv_pass = 1;
         try {
-            _rods_args.kv_pass_string = (char*)global_prog_ops_var_map[ "kv_pass" ].as< std::string >().c_str();
+            _rods_args.kv_pass_string = ( char* )global_prog_ops_var_map[ "kv_pass" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "metadata" ) ) {
+    if ( global_prog_ops_var_map.count( "metadata" ) ) {
         try {
-            _rods_args.metadata_string = (char*)global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
+            _rods_args.metadata_string = ( char* )global_prog_ops_var_map[ "metadata" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
         }
     }
-    if( global_prog_ops_var_map.count( "acl" ) ) {
+    if ( global_prog_ops_var_map.count( "acl" ) ) {
         try {
-            _rods_args.acl_string = (char*)global_prog_ops_var_map[ "acl" ].as< std::string >().c_str();
+            _rods_args.acl_string = ( char* )global_prog_ops_var_map[ "acl" ].as< std::string >().c_str();
         }
         catch ( const boost::bad_any_cast& ) {
             return INVALID_ANY_CAST;
@@ -354,19 +354,19 @@ int parse_opts_and_paths(
                     _argv,
                     _rods_args,
                     paths );
-    if( p_err < 0 ) {
+    if ( p_err < 0 ) {
         return p_err;
 
     }
 
     p_err = build_irods_path_structure(
-                 paths,
-                 _rods_env,
-                 _src_type,
-                 _dst_type,
-                 _flag,
-                 _rods_paths );
-    if( p_err < 0 ) {
+                paths,
+                _rods_env,
+                _src_type,
+                _dst_type,
+                _flag,
+                _rods_paths );
+    if ( p_err < 0 ) {
         return p_err;
     }
 

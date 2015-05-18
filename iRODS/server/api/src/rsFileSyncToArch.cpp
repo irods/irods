@@ -147,11 +147,11 @@ int _rsFileSyncToArch(
             // =-=-=-=-=-=-=-
             // the directory does not exist, lets make one
             int status = mkDirForFilePath(
-                _comm,
-                0,
-                _sync_inp->filename,
-                _sync_inp->rescHier,
-                getDefDirMode() );
+                             _comm,
+                             0,
+                             _sync_inp->filename,
+                             _sync_inp->rescHier,
+                             getDefDirMode() );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR, "mkDirForFilePath failed in _rsFileSyncToArch with status %d", status );
                 return status;

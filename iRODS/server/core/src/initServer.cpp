@@ -213,9 +213,10 @@ initRcatServerHostByFile() {
             std::string val;
             try {
                 val = boost::any_cast <
-                          std::string > (
+                      std::string > (
                           itr->second );
-            } catch ( boost::bad_any_cast& _e ) {
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast env var entry to string" );
@@ -257,7 +258,8 @@ initRcatServerHostByFile() {
             try {
                 rule_arr += boost::any_cast< std::string >(
                                 prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast rule base file name entry to string" );
@@ -307,7 +309,8 @@ initRcatServerHostByFile() {
             try {
                 rule_arr += boost::any_cast< std::string >(
                                 prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast rule function file name entry to string" );
@@ -355,7 +358,8 @@ initRcatServerHostByFile() {
             try {
                 rule_arr += boost::any_cast< std::string >(
                                 prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast rule data variable file name entry to string" );
@@ -484,10 +488,10 @@ initRcatServerHostByFile() {
     // try for new federation config
     std::string neg_key;
     ret = props.get_property <
-              std::string > (
-                  irods::CFG_NEGOTIATION_KEY_KW,
-                  neg_key );
-    if( !ret.ok() ) {
+          std::string > (
+              irods::CFG_NEGOTIATION_KEY_KW,
+              neg_key );
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -507,7 +511,8 @@ initRcatServerHostByFile() {
                                     obj[irods::CFG_ZONE_NAME_KW ] );
                 fed_zone_negotiation_key = boost::any_cast< std::string >(
                                                obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast federation entry to string" );
@@ -542,7 +547,7 @@ initRcatServerHostByFile() {
                 }
             }
         }
-        
+
     } // else
 
     return 0;
@@ -1318,7 +1323,7 @@ initConnectControl() {
     irods::error ret = irods::get_full_path_for_config_file(
                            CONNECT_CONTROL_FILE,
                            ctrl_file );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return 0;
     }
 
@@ -1533,7 +1538,7 @@ purgeLockFileDir( int chkLockFlag ) {
     irods::error ret = irods::get_full_path_for_config_file(
                            LOCK_FILE_DIR,
                            lock_dir );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }

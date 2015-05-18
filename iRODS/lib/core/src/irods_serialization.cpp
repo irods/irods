@@ -13,40 +13,40 @@ namespace irods {
     const std::string default_special_characters = std::string( 1, default_escape_char ) + default_delimiter_char;
 
     std::string get_format_string_for_escape(
-            const char escape_char ) {
+        const char escape_char ) {
         std::stringstream str;
         switch ( escape_char ) {
-            case '\0':
-                break;
-            case '$':
-            case '(':
-            case ')':
-            case '?':
-            case ':':
-            case '\\':
-                str << '\\' << escape_char;
-                break;
-            default:
-                str << escape_char;
+        case '\0':
+            break;
+        case '$':
+        case '(':
+        case ')':
+        case '?':
+        case ':':
+        case '\\':
+            str << '\\' << escape_char;
+            break;
+        default:
+            str << escape_char;
         }
         str << "$&";
         return str.str();
     }
 
     boost::regex character_set_regex(
-            const std::set<char>& character_set ) {
+        const std::set<char>& character_set ) {
         std::stringstream str;
         str << '[';
         for ( std::set<char>::const_iterator iter = character_set.begin(); iter != character_set.end(); ++iter ) {
             switch ( *iter ) {
-                case ']':
-                case '^':
-                case '-':
-                case '\\':
-                    str << '\\' << *iter;
-                    break;
-                default:
-                    str << *iter;
+            case ']':
+            case '^':
+            case '-':
+            case '\\':
+                str << '\\' << *iter;
+                break;
+            default:
+                str << *iter;
             }
         }
         str << ']';
@@ -54,18 +54,18 @@ namespace irods {
     }
 
     boost::regex character_set_regex(
-            const std::string& character_set ) {
+        const std::string& character_set ) {
         std::set<char> set;
-        for( std::string::const_iterator iter = character_set.begin(); iter != character_set.end(); iter++ ) {
+        for ( std::string::const_iterator iter = character_set.begin(); iter != character_set.end(); iter++ ) {
             set.insert( *iter );
         }
         return character_set_regex( set );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const boost::regex& special_character_set_regex,
-            const char escape_char ) {
+        const std::vector<std::string>& strs,
+        const boost::regex& special_character_set_regex,
+        const char escape_char ) {
         std::vector<std::string> escaped_strs;
         if ( escape_char ) {
             if ( !boost::regex_match( std::string( 1, escape_char ), special_character_set_regex ) ) {
@@ -84,85 +84,85 @@ namespace irods {
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const std::set<char>& special_character_set,
-            const char escape_char ) {
+        const std::vector<std::string>& strs,
+        const std::set<char>& special_character_set,
+        const char escape_char ) {
         return escape_strings( strs, character_set_regex( special_character_set ), escape_char );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const std::string& special_character_set,
-            const char escape_char ) {
+        const std::vector<std::string>& strs,
+        const std::string& special_character_set,
+        const char escape_char ) {
         return escape_strings( strs, character_set_regex( special_character_set ), escape_char );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const boost::regex& special_character_set_regex ) {
+        const std::vector<std::string>& strs,
+        const boost::regex& special_character_set_regex ) {
         return escape_strings( strs, special_character_set_regex, default_escape_char );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const std::set<char>& special_character_set ) {
+        const std::vector<std::string>& strs,
+        const std::set<char>& special_character_set ) {
         return escape_strings( strs, character_set_regex( special_character_set ) );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs,
-            const std::string& special_character_set ) {
+        const std::vector<std::string>& strs,
+        const std::string& special_character_set ) {
         return escape_strings( strs, character_set_regex( special_character_set ) );
     }
 
     std::vector<std::string> escape_strings(
-            const std::vector<std::string>& strs ) {
+        const std::vector<std::string>& strs ) {
         return escape_strings( strs, default_special_characters );
     }
 
     std::string escape_string(
-            const std::string& str,
-            const boost::regex& special_character_set_regex,
-            const char escape_char ) {
+        const std::string& str,
+        const boost::regex& special_character_set_regex,
+        const char escape_char ) {
         std::vector<std::string> v;
         v.push_back( str );
         return escape_strings( v, special_character_set_regex, escape_char )[0];
     }
 
     std::string escape_string(
-            const std::string& str,
-            const std::set<char>& special_character_set,
-            const char escape_char ) {
+        const std::string& str,
+        const std::set<char>& special_character_set,
+        const char escape_char ) {
         return escape_string( str, character_set_regex( special_character_set ), escape_char );
     }
 
     std::string escape_string(
-            const std::string& str,
-            const std::string& special_character_set,
-            const char escape_char ) {
+        const std::string& str,
+        const std::string& special_character_set,
+        const char escape_char ) {
         return escape_string( str, character_set_regex( special_character_set ), escape_char );
     }
 
     std::string escape_string(
-            const std::string& str,
-            const boost::regex& special_character_set_regex ) {
+        const std::string& str,
+        const boost::regex& special_character_set_regex ) {
         return escape_string( str, special_character_set_regex, default_escape_char );
     }
 
     std::string escape_string(
-            const std::string& str,
-            const std::set<char>& special_character_set ) {
+        const std::string& str,
+        const std::set<char>& special_character_set ) {
         return escape_string( str, character_set_regex( special_character_set ) );
     }
 
     std::string escape_string(
-            const std::string& str,
-            const std::string& special_character_set ) {
+        const std::string& str,
+        const std::string& special_character_set ) {
         return escape_string( str, character_set_regex( special_character_set ) );
     }
 
     std::string escape_string(
-            const std::string& str ) {
+        const std::string& str ) {
         return escape_string( str, default_special_characters );
     }
 
@@ -183,10 +183,10 @@ namespace irods {
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const boost::regex& special_character_set_regex,
-            const char delimiter_char,
-            const char escape_char ) {
+        const std::vector<std::string>& list,
+        const boost::regex& special_character_set_regex,
+        const char delimiter_char,
+        const char escape_char ) {
         if ( escape_char && !boost::regex_match( std::string( 1, delimiter_char ), special_character_set_regex ) ) {
             THROW( SYS_BAD_INPUT, "Regular expression passed to serialize_list must match against the delimiter character." );
         }
@@ -195,69 +195,69 @@ namespace irods {
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::set<char>& special_character_set,
-            const char delimiter_char,
-            const char escape_char ) {
+        const std::vector<std::string>& list,
+        const std::set<char>& special_character_set,
+        const char delimiter_char,
+        const char escape_char ) {
         return serialize_list( list, character_set_regex( special_character_set ), delimiter_char, escape_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::string& special_character_set,
-            const char delimiter_char,
-            const char escape_char ) {
+        const std::vector<std::string>& list,
+        const std::string& special_character_set,
+        const char delimiter_char,
+        const char escape_char ) {
         return serialize_list( list, character_set_regex( special_character_set ), delimiter_char, escape_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const boost::regex& special_character_set_regex,
-            const char delimiter_char ) {
+        const std::vector<std::string>& list,
+        const boost::regex& special_character_set_regex,
+        const char delimiter_char ) {
         return serialize_list( list, special_character_set_regex, delimiter_char, default_escape_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::set<char>& special_character_set,
-            const char delimiter_char ) {
+        const std::vector<std::string>& list,
+        const std::set<char>& special_character_set,
+        const char delimiter_char ) {
         return serialize_list( list, character_set_regex( special_character_set ), delimiter_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::string& special_character_set,
-            const char delimiter_char ) {
+        const std::vector<std::string>& list,
+        const std::string& special_character_set,
+        const char delimiter_char ) {
         return serialize_list( list, character_set_regex( special_character_set ), delimiter_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const boost::regex& special_character_set_regex ) {
+        const std::vector<std::string>& list,
+        const boost::regex& special_character_set_regex ) {
         return serialize_list( list, special_character_set_regex, default_delimiter_char );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::set<char>& special_character_set ) {
+        const std::vector<std::string>& list,
+        const std::set<char>& special_character_set ) {
         return serialize_list( list, character_set_regex( special_character_set ) );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list,
-            const std::string& special_character_set ) {
+        const std::vector<std::string>& list,
+        const std::string& special_character_set ) {
         return serialize_list( list, character_set_regex( special_character_set ) );
     }
 
     std::string serialize_list(
-            const std::vector<std::string>& list ) {
+        const std::vector<std::string>& list ) {
         return serialize_list( list, default_special_characters );
     }
 
     std::vector<std::string> deserialize_list(
-            const std::string& list,
-            const std::string& delimiters,
-            const char escape_char ) {
+        const std::string& list,
+        const std::string& delimiters,
+        const char escape_char ) {
         std::vector<std::string> deserialized_list;
         std::stringstream current_string;
         const char delimiter_char = delimiters[0];
@@ -287,26 +287,26 @@ namespace irods {
     }
 
     std::vector<std::string> deserialize_list(
-            const std::string& list,
-            const char delimiter_char,
-            const char escape_char ) {
+        const std::string& list,
+        const char delimiter_char,
+        const char escape_char ) {
         return deserialize_list( list, std::string( 1, delimiter_char ), escape_char );
     }
 
     std::vector<std::string> deserialize_list(
-            const std::string& list,
-            const std::string& delimiters ) {
+        const std::string& list,
+        const std::string& delimiters ) {
         return deserialize_list( list, delimiters, '\\' );
     }
 
     std::vector<std::string> deserialize_list(
-            const std::string& list,
-            const char delimiter_char ) {
+        const std::string& list,
+        const char delimiter_char ) {
         return deserialize_list( list, delimiter_char, '\\' );
     }
 
     std::vector<std::string> deserialize_list(
-            const std::string& list ) {
+        const std::string& list ) {
         return deserialize_list( list, ";", '\\' );
     }
 

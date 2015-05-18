@@ -261,9 +261,10 @@ std::string format_grid_status(
     status += "]    \n}";
 
     std::string::size_type pos = status.find_last_of( "," );
-    if( std::string::npos != pos ) {
+    if ( std::string::npos != pos ) {
         status.erase( pos, 1 );
-    } else {
+    }
+    else {
         // possible error message
         return _status;
 

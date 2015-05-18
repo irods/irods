@@ -37,7 +37,7 @@ namespace irods {
         // search the federation map for the host name
         array_t fed_arr;
         error ret = _props.get_property <
-                        array_t > (
+                    array_t > (
                         irods::CFG_FEDERATION_KW,
                         fed_arr );
         if ( ret.ok() ) {
@@ -49,11 +49,12 @@ namespace irods {
                                                    obj[ irods::CFG_NEGOTIATION_KEY_KW ] );
                     fed_icat_host = boost::any_cast< std::string >(
                                         obj[irods::CFG_ICAT_HOST_KW ] );
-                    if( _host_name == fed_icat_host ) {
+                    if ( _host_name == fed_icat_host ) {
                         _neg_key = fed_zone_negotiation_key;
                         return SUCCESS();
                     }
-                } catch ( boost::bad_any_cast& _e ) {
+                }
+                catch ( boost::bad_any_cast& _e ) {
                     rodsLog(
                         LOG_ERROR,
                         "%s - failed to cast federation entry to string",
@@ -66,10 +67,10 @@ namespace irods {
         }
 
         // if not, it must be in our zone
-        return _props.get_property<
-                   std::string > (
-                       CFG_NEGOTIATION_KEY_KW,
-                       _neg_key );
+        return _props.get_property <
+               std::string > (
+                   CFG_NEGOTIATION_KEY_KW,
+                   _neg_key );
 
     } // determine_negotiation_key
 
@@ -265,8 +266,8 @@ namespace irods {
         if ( svr_policy.empty() || cs_neg->status_ != CS_NEG_STATUS_SUCCESS ) {
             std::stringstream msg;
             msg << "invalid result [" << cs_neg->result_ << "]  or status: " << cs_neg->status_;
-            return ERROR( 
-                       CLIENT_NEGOTIATION_ERROR, 
+            return ERROR(
+                       CLIENT_NEGOTIATION_ERROR,
                        msg.str() );
         }
 
@@ -308,7 +309,7 @@ namespace irods {
             cs_neg_t send_cs_neg;
             send_cs_neg.status_ = CS_NEG_STATUS_FAILURE;
             snprintf( send_cs_neg.result_, sizeof( send_cs_neg.result_ ),
-                    "%s", CS_NEG_FAILURE.c_str() );
+                      "%s", CS_NEG_FAILURE.c_str() );
             error send_err = send_client_server_negotiation_message(
                                  _ptr,
                                  send_cs_neg );
@@ -319,7 +320,7 @@ namespace irods {
             std::stringstream msg;
             msg << "client-server negoations failed for server request [";
             msg << svr_policy << "] and client request [" << cli_policy << "]";
-            ret = ERROR( 
+            ret = ERROR(
                       CLIENT_NEGOTIATION_ERROR,
                       msg.str() );
             return ret;
@@ -344,15 +345,15 @@ namespace irods {
                       irods::CFG_ZONE_KEY_KW,
                       sid );
             if ( !err.ok() ) {
-                 err = props.get_property <
+                err = props.get_property <
                       std::string > (
                           LOCAL_ZONE_SID_KW,
                           sid );
-                  if( !err.ok() ) {
-                      return PASS( err );
-                  }
+                if ( !err.ok() ) {
+                    return PASS( err );
+                }
             }
-            
+
             if ( err.ok() ) {
                 std::string neg_key;
                 err = determine_negotiation_key(

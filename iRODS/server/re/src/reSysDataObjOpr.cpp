@@ -529,7 +529,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_TYPE_KW,  genQueryOut->sqlResult[0].value );
 
-    if ( strcmp(dataObjInfoHead->rescHier, "") ) {
+    if ( strcmp( dataObjInfoHead->rescHier, "" ) ) {
         addKeyVal( &regParam, IN_PDMO_KW, dataObjInfoHead->rescHier );
     }
 
@@ -747,13 +747,13 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
 
 
     int def_num_thr = 0;
-    irods::error ret = irods::get_advanced_setting( 
-                           irods::CFG_DEF_NUMBER_TRANSFER_THREADS, 
+    irods::error ret = irods::get_advanced_setting(
+                           irods::CFG_DEF_NUMBER_TRANSFER_THREADS,
                            def_num_thr );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
-    } 
+    }
 
     if ( rei->rsComm != NULL ) {
         if ( strcmp( windowSizeStr, "null" ) == 0 ||
@@ -769,9 +769,9 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     ret = irods::get_advanced_setting<int>(
               irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
               size_per_tran_thr );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return ret.code(); 
+        return ret.code();
     }
     size_per_tran_thr *= 1024 * 1024;
 
@@ -823,9 +823,9 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
         ret = irods::get_advanced_setting<int>(
                   irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                   trans_buff_size );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
-            return ret.code(); 
+            return ret.code();
         }
         trans_buff_size *= 1024 * 1024;
 
@@ -1435,9 +1435,9 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
         irods::error ret = irods::get_advanced_setting<int>(
                                irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
                                max_re_procs );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
-            return ret.code(); 
+            return ret.code();
         }
 
         if ( numProc > max_re_procs ) {
@@ -1585,7 +1585,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
     }
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, DATA_COMMENTS_KW, dataCommentStr );
-    if ( strcmp(dataObjInfo.rescHier, "") ) {
+    if ( strcmp( dataObjInfo.rescHier, "" ) ) {
         addKeyVal( &regParam, IN_PDMO_KW, dataObjInfo.rescHier );
     }
 
@@ -1828,7 +1828,7 @@ msiSysMetaModify( msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei 
                                 ( char * ) sysMetadata->inOutStruct );
         }
 
-        if ( strcmp(dataObjInfo.rescHier,  "") ) {
+        if ( strcmp( dataObjInfo.rescHier,  "" ) ) {
             addKeyVal( &regParam, IN_PDMO_KW, dataObjInfo.rescHier );
         }
 

@@ -144,9 +144,9 @@ checkModArgType( char *arg );
 #include "irods_network_object.hpp"
 
 irods::error readStartupPack(
-        irods::network_object_ptr,
-        startupPack_t **startupPack,
-        struct timeval *tv );
+    irods::network_object_ptr,
+    startupPack_t **startupPack,
+    struct timeval *tv );
 
 irods::error get_current_resource_object_count(
     rsComm_t*,          // comm handle

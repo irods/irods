@@ -841,8 +841,8 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "lrg" ) == 0 ) {
         fprintf( stderr, "Resource groups are deprecated.\n"
-            "Please investigate the available coordinating resource plugins.\n"
-            "(e.g. random, replication, etc.)\n" );
+                 "Please investigate the available coordinating resource plugins.\n"
+                 "(e.g. random, replication, etc.)\n" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "mkuser" ) == 0 ) {
@@ -1086,12 +1086,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "modresc" ) == 0 ) {
         if ( strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
-                    "If you modify a resource name, you and other users will need to\n"
-                    "change your irods_environment.json files to use it, you may need to update\n"
-                    "server_config.json and, if rules use the resource name, you'll need to\n"
-                    "update the core rules (core.re).  This command will update various\n"
-                    "tables with the new name.\n"
-                    "Do you really want to modify the resource name? (enter y or yes to do so):" );
+                "If you modify a resource name, you and other users will need to\n"
+                "change your irods_environment.json files to use it, you may need to update\n"
+                "server_config.json and, if rules use the resource name, you'll need to\n"
+                "update the core rules (core.re).  This command will update various\n"
+                "tables with the new name.\n"
+                "Do you really want to modify the resource name? (enter y or yes to do so):" );
             std::string response = "";
             getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
@@ -1102,10 +1102,10 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 if ( strcmp( cmdToken[2], "path" ) == 0 ) {
                     if ( stat == 0 ) {
                         printf(
-                                "Modify resource path was successful.\n"
-                                "If the existing iRODS files have been physically moved,\n"
-                                "you may want to run 'iadmin modrescdatapaths' with the old\n"
-                                "and new path.  See 'iadmin h modrescdatapaths' for more information.\n" );
+                            "Modify resource path was successful.\n"
+                            "If the existing iRODS files have been physically moved,\n"
+                            "you may want to run 'iadmin modrescdatapaths' with the old\n"
+                            "and new path.  See 'iadmin h modrescdatapaths' for more information.\n" );
                     }
                 }
 
@@ -1129,12 +1129,12 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         if ( strcmp( myEnv.rodsZone, cmdToken[1] ) == 0 &&
                 strcmp( cmdToken[2], "name" ) == 0 )       {
             printf(
-                    "If you modify the local zone name, you and other users will need to\n"
-                    "change your irods_environment.json files to use it, you may need to update\n"
-                    "server_config.json and, if rules use the zone name, you'll need to update\n"
-                    "core.re.  This command will update various tables with the new name\n"
-                    "and rename the top-level collection.\n"
-                    "Do you really want to modify the local zone name? (enter y or yes to do so):" );
+                "If you modify the local zone name, you and other users will need to\n"
+                "change your irods_environment.json files to use it, you may need to update\n"
+                "server_config.json and, if rules use the zone name, you'll need to update\n"
+                "core.re.  This command will update various tables with the new name\n"
+                "and rename the top-level collection.\n"
+                "Do you really want to modify the local zone name? (enter y or yes to do so):" );
             std::string response = "";
             getline( std::cin, response );
             if ( response == "y" || response == "yes" ) {
@@ -1190,17 +1190,17 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
     if ( strcmp( cmdToken[0], "atrg" ) == 0 ) {
         fprintf( stderr,
-                "Resource groups are deprecated.\n"
-                "Please investigate the available coordinating resource plugins.\n"
-                "(e.g. random, replication, etc.)\n" );
+                 "Resource groups are deprecated.\n"
+                 "Please investigate the available coordinating resource plugins.\n"
+                 "(e.g. random, replication, etc.)\n" );
         return 0;
     }
 
     if ( strcmp( cmdToken[0], "rfrg" ) == 0 ) {
         fprintf( stderr,
-                "Resource groups are deprecated.\n"
-                "Please investigate the available coordinating resource plugins.\n"
-                "(e.g. random, replication, etc.)\n" );
+                 "Resource groups are deprecated.\n"
+                 "Please investigate the available coordinating resource plugins.\n"
+                 "(e.g. random, replication, etc.)\n" );
         return 0;
     }
 
@@ -1299,9 +1299,9 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                                "", "", "", "", "", "" );
         if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
             printf(
-                    "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n"
-                    "SQL succeeded but there were no rows removed; there were no unused\n"
-                    "AVUs to remove.\n" );
+                "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n"
+                "SQL succeeded but there were no rows removed; there were no unused\n"
+                "AVUs to remove.\n" );
             lastCommandStatus = 0;
 
         }
@@ -1501,7 +1501,7 @@ main( int argc, char **argv ) {
         }
         if ( firstTime ) {
             if ( status == 0 ||
-                 status == -2 ) {
+                    status == -2 ) {
                 keepGoing = false;
             }
             firstTime = false;
@@ -1509,7 +1509,8 @@ main( int argc, char **argv ) {
         if ( keepGoing ) {
             getInput( cmdToken, maxCmdTokens );
         }
-    } while ( keepGoing );
+    }
+    while ( keepGoing );
 
     printErrorStack( Conn->rError );
     rcDisconnect( Conn );
@@ -2159,7 +2160,7 @@ usage( char *subOpt ) {
         usageMain();
     }
     else {
-        for (size_t i = 0; i < sizeof(subCmds)/sizeof(subCmds[0]); ++i ) {
+        for ( size_t i = 0; i < sizeof( subCmds ) / sizeof( subCmds[0] ); ++i ) {
             if ( strcmp( subOpt, subCmds[i] ) == 0 ) {
                 printMsgs( pMsgs[i] );
             }

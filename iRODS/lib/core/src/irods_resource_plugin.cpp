@@ -278,7 +278,7 @@ namespace irods {
         // resolve plugin directory
         std::string plugin_home;
         error ret = resolve_plugin_path( PLUGIN_TYPE_RESOURCE, plugin_home );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
         }
 

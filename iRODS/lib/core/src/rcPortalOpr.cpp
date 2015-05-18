@@ -809,10 +809,11 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         // rcDataObjRead may return 0 in an error case, we need
         // to ensure the total written is matching the total size
         // otherwise we are also in an error case
-        if( totalWritten == dataSize ) {
+        if ( totalWritten == dataSize ) {
             return 0;
 
-        } else {
+        }
+        else {
             return SYS_COPY_LEN_ERR;
 
         }

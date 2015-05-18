@@ -19,9 +19,9 @@ namespace irods {
 extern "C" {
 #endif
 
-    char* serialize_list_c( const char** list, size_t list_len );
-    char* serialize_metadata_c( const char** metadata, size_t metadata_len );
-    char* serialize_acl_c( const char** acl, size_t acl_len );
+char* serialize_list_c( const char** list, size_t list_len );
+char* serialize_metadata_c( const char** metadata, size_t metadata_len );
+char* serialize_acl_c( const char** acl, size_t acl_len );
 
 #ifdef __cplusplus
 }

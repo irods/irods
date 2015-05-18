@@ -1170,7 +1170,7 @@ extern "C" {
                 irods::error ret = irods::get_advanced_setting<int>(
                                        irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                                        trans_buff_size );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     close( outFd );
                     close( inFd );
                     return PASS( ret );

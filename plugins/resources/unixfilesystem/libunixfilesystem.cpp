@@ -125,7 +125,7 @@ static irods::error unix_file_copy_plugin(
                 irods::error ret = irods::get_advanced_setting<int>(
                                        irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                                        trans_buff_size );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     close( inFd );
                     close( outFd );
                     return PASS( ret );
@@ -440,17 +440,17 @@ extern "C" {
             char* kvp_str = getValByKey(
                                 &fco->cond_input(),
                                 KEY_VALUE_PASSTHROUGH_KW );
-            if( kvp_str ) {
+            if ( kvp_str ) {
                 irods::kvp_map_t kvp;
                 ret = irods::parse_kvp_string(
                           kvp_str,
                           kvp );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     irods::log( PASS( ret ) );
                 }
                 else {
                     irods::kvp_map_t::iterator itr = kvp.begin();
-                    for( ; itr != kvp.end(); ++ itr ) {
+                    for ( ; itr != kvp.end(); ++ itr ) {
                         rodsLog(
                             LOG_DEBUG,
                             "unix_file_create_plugin - kv_pass :: key [%s] - value [%s]",
@@ -546,17 +546,17 @@ extern "C" {
             char* kvp_str = getValByKey(
                                 &fco->cond_input(),
                                 KEY_VALUE_PASSTHROUGH_KW );
-            if( kvp_str ) {
+            if ( kvp_str ) {
                 irods::kvp_map_t kvp;
                 ret = irods::parse_kvp_string(
                           kvp_str,
                           kvp );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     irods::log( PASS( ret ) );
                 }
                 else {
                     irods::kvp_map_t::iterator itr = kvp.begin();
-                    for( ; itr != kvp.end(); ++ itr ) {
+                    for ( ; itr != kvp.end(); ++ itr ) {
                         rodsLog(
                             LOG_DEBUG,
                             "unix_file_open_plugin - kv_pass :: key [%s] - value [%s]",
@@ -1080,7 +1080,7 @@ extern "C" {
                 ret = _ctx.prop_map().get<mode_t>(
                           DEFAULT_VAULT_DIR_MODE,
                           mode );
-                if( !ret.ok() ) {
+                if ( !ret.ok() ) {
                     return PASS( ret );
 
                 }
@@ -1486,7 +1486,7 @@ extern "C" {
                 irods::resource(
                     _inst_name,
                     _context ) {
-                    properties_.set<mode_t>( DEFAULT_VAULT_DIR_MODE, 0750 );
+                properties_.set<mode_t>( DEFAULT_VAULT_DIR_MODE, 0750 );
 
 
             } // ctor

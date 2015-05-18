@@ -64,12 +64,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // if not, check against all remote zone SIDs and keys
-        irods::lookup_table<
-            std::pair<
-                std::string,
-                std::string > >::iterator itr = remote_SID_key_map.begin();
+        irods::lookup_table <
+        std::pair <
+        std::string,
+            std::string > >::iterator itr = remote_SID_key_map.begin();
         for ( ; itr != remote_SID_key_map.end(); ++itr ) {
-            const std::pair<std::string,std::string>& entry = itr->second;
+            const std::pair<std::string, std::string>& entry = itr->second;
 
             // =-=-=-=-=-=-=-
             // sign SID
@@ -261,11 +261,11 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // else, return a failure
         std::stringstream msg;
-        msg << "failure detected from client for result [" 
-            << read_cs_neg->result_ 
+        msg << "failure detected from client for result ["
+            << read_cs_neg->result_
             << "]";
-        return ERROR( 
-                   SERVER_NEGOTIATION_ERROR, 
+        return ERROR(
+                   SERVER_NEGOTIATION_ERROR,
                    msg.str() );
 
     } // client_server_negotiation_for_server

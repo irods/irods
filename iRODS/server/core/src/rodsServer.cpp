@@ -1191,7 +1191,7 @@ readWorkerTask() {
         else {
             if ( startupPack->clientUser[0] == '\0' ) {
                 int status = chkAllowedUser( startupPack->clientUser,
-                                         startupPack->clientRodsZone );
+                                             startupPack->clientRodsZone );
                 if ( status < 0 ) {
                     sendVersion( net_obj, status, 0, NULL, 0 );
                     mySockClose( newSock );

@@ -190,7 +190,7 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
     LastRescUpdateTime = time( NULL );
 
     try {
-        while ( true ) { 
+        while ( true ) {
 
 #ifndef windows_platform
 #ifndef SYSLOG
@@ -329,8 +329,9 @@ irods::error capture_rulesets(
                 ++i ) {
             try {
                 _res += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "failed to cast rule base file name entry to string" );
@@ -353,8 +354,9 @@ irods::error capture_rulesets(
                 ++i ) {
             try {
                 _fnm += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "failed to cast rule function file name entry to string" );
@@ -377,8 +379,9 @@ irods::error capture_rulesets(
                 ++i ) {
             try {
                 _dvm += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            } catch ( boost::bad_any_cast& _e ) {
+                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+            }
+            catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "failed to cast rule data variable file name entry to string" );
@@ -404,7 +407,7 @@ chkAndResetRule() {
                            re_str,
                            fnm_str,
                            dvm_str );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -419,7 +422,7 @@ chkAndResetRule() {
     while ( strlen( r2 ) > 0 ) {
         rSplitStr( r2, r1, NAME_LEN, r3, RULE_SET_DEF_LENGTH, ',' );
         getRuleBasePath( r1, fn );
-        
+
         re_full_path = fn;
         path p( re_full_path );
         if ( !exists( p ) ) {
@@ -455,9 +458,9 @@ chkAndResetRule() {
         status = initRuleEngine(
                      RULE_ENGINE_TRY_CACHE,
                      NULL,
-                     (char*)re_str.c_str(),
-                     (char*)fnm_str.c_str(),
-                     (char*)dvm_str.c_str() );
+                     ( char* )re_str.c_str(),
+                     ( char* )fnm_str.c_str(),
+                     ( char* )dvm_str.c_str() );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "chkAndResetRule: initRuleEngine error, status = %d", status );

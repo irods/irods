@@ -34,9 +34,9 @@ namespace irods {
 /// @brief given a string, break the string along the kvp association and then
 ///        place the pair into the map
     static error parse_token_into_kvp(
-            const std::string& _token,
-            kvp_map_t&         _kvp,
-            const std::string& _assoc ) {
+        const std::string& _token,
+        kvp_map_t&         _kvp,
+        const std::string& _assoc ) {
         // =-=-=-=-=-=-=-
         // split along the associative delimiter and place into the map
         std::vector< std::string > token_vec;
@@ -53,8 +53,8 @@ namespace irods {
                 << _token
                 << "]";
             return ERROR(
-                    SYS_INVALID_INPUT_PARAM,
-                    msg.str() );
+                       SYS_INVALID_INPUT_PARAM,
+                       msg.str() );
         }
 
         _kvp[ token_vec[0] ] = token_vec[1];
@@ -67,10 +67,10 @@ namespace irods {
 /// @brief given a string, break the string along the delimiter and then
 ///        break the tokens along the assignment for key-value pairs
     error parse_kvp_string(
-            const std::string& _string,
-            kvp_map_t&         _kvp,
-            const std::string& _assoc,
-            const std::string& _delim ) {
+        const std::string& _string,
+        kvp_map_t&         _kvp,
+        const std::string& _assoc,
+        const std::string& _delim ) {
         // =-=-=-=-=-=-=-
         // test for the delim first, if there is none then
         // short circuit, test for association and place in map
@@ -83,9 +83,9 @@ namespace irods {
                 // =-=-=-=-=-=-=-
                 // no association, just add to the map
                 rodsLog(
-                        LOG_DEBUG,
-                        "parse_kvp_string :: no kvp found [%s]",
-                        _string.c_str() );
+                    LOG_DEBUG,
+                    "parse_kvp_string :: no kvp found [%s]",
+                    _string.c_str() );
                 return ERROR( -1, "" );
 
             }
@@ -94,9 +94,9 @@ namespace irods {
                 // association found, break it into a kvp
                 // and place it in the map
                 return parse_token_into_kvp(
-                        _string,
-                        _kvp,
-                        _assoc );
+                           _string,
+                           _kvp,
+                           _assoc );
             }
 
         } // if no delim found
@@ -126,11 +126,11 @@ namespace irods {
     /// @brief given a string, break the string along the delimiter and then
     ///        break the tokens along the assignment for key-value pairs
     error parse_escaped_kvp_string(
-            const std::string& _string,
-            kvp_map_t&         _kvp,
-            const std::string& _assoc,
-            const std::string& _delim,
-            const std::string& _escape ) {
+        const std::string& _string,
+        kvp_map_t&         _kvp,
+        const std::string& _assoc,
+        const std::string& _delim,
+        const std::string& _escape ) {
         if ( _delim.empty() || _assoc.empty() || _escape.empty() ) {
             return ERROR( SYS_BAD_INPUT, "_delim, _assoc, and _escape may not be empty" );
         }
@@ -164,7 +164,7 @@ namespace irods {
             else if ( boost::starts_with( _string.substr( i ), _delim ) ) {
                 if ( !assoc_encountered ) {
                     return ERROR( SYS_BAD_INPUT,
-                            "no unescaped _assoc token encountered before unescaped delimiter when parsing kvp" );
+                                  "no unescaped _assoc token encountered before unescaped delimiter when parsing kvp" );
                 }
                 _kvp[ key.str() ] = value.str();
                 assoc_encountered = false;
@@ -180,7 +180,7 @@ namespace irods {
 
         if ( !key.str().empty() && !assoc_encountered ) {
             return ERROR( SYS_BAD_INPUT,
-                    "no unescaped _assoc token encountered before end of string when parsing kvp" );
+                          "no unescaped _assoc token encountered before end of string when parsing kvp" );
         }
         else if ( assoc_encountered ) {
             _kvp[ key.str() ] = value.str();
@@ -189,21 +189,21 @@ namespace irods {
     }
 
     std::string kvp_string(
-            const kvp_map_t& _kvp ) {
+        const kvp_map_t& _kvp ) {
         std::stringstream str;
         bool first = true;
         for ( kvp_map_t::const_iterator it = _kvp.begin(); it != _kvp.end(); ++it ) {
             first ?
-                first = false :
-                str << kvp_delimiter();
+            first = false :
+                    str << kvp_delimiter();
             str << it->first << kvp_association() << it->second;
         }
         return str.str();
     }
 
     std::string escape_string( const std::string& _string,
-            const std::string& _escape_token,
-            const std::set<std::string>& _special_tokens ) {
+                               const std::string& _escape_token,
+                               const std::set<std::string>& _special_tokens ) {
         std::stringstream escaped_str;
         for ( size_t i = 0; i < _string.size(); ) {
             std::set<std::string>::const_iterator tok;
@@ -218,7 +218,7 @@ namespace irods {
                 continue;
             }
             else if ( _special_tokens.count( _escape_token ) == 0 &&
-                    boost::starts_with( _string.substr( i ), _escape_token ) ) {
+                      boost::starts_with( _string.substr( i ), _escape_token ) ) {
                 escaped_str << _escape_token << _escape_token;
                 i += _escape_token.size();
                 continue;
@@ -231,7 +231,7 @@ namespace irods {
 
 
     std::string escaped_kvp_string(
-            const kvp_map_t& _kvp ) {
+        const kvp_map_t& _kvp ) {
         std::stringstream str;
         std::set<std::string> special_tokens;
         special_tokens.insert( kvp_delimiter() );
@@ -239,8 +239,8 @@ namespace irods {
         bool first = true;
         for ( kvp_map_t::const_iterator it = _kvp.begin(); it != _kvp.end(); ++it ) {
             first ?
-                first = false :
-                str << kvp_delimiter();
+            first = false :
+                    str << kvp_delimiter();
             str << escape_string( it->first, kvp_escape(), special_tokens );
             str << kvp_association();
             str << escape_string( it->second, kvp_escape(), special_tokens );

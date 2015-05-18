@@ -644,8 +644,8 @@ sslInit( char *certfile, char *keyfile ) {
     }
 
     /* set up CA paths and files here */
-    const char *ca_path = strcmp(env.irodsSSLCACertificatePath, "") ? env.irodsSSLCACertificatePath : NULL;
-    const char *ca_file = strcmp(env.irodsSSLCACertificateFile, "") ? env.irodsSSLCACertificateFile : NULL;
+    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : NULL;
+    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : NULL;
     if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             sslLogError( "sslInit: error loading CA certificate locations" );

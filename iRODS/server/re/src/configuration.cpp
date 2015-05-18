@@ -455,7 +455,8 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
     if ( ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
             ruleBaseName[1] == ':' ) {
         snprintf( rulesFileName, MAX_NAME_LEN, "%s", ruleBaseName );
-    } else {
+    }
+    else {
         std::string cfg_file, fn( ruleBaseName );
         fn += ".re";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );

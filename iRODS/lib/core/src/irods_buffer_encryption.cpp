@@ -18,14 +18,14 @@ namespace irods {
 
     class evp_lifetime_mgr {
         public:
-        evp_lifetime_mgr() {
-            OpenSSL_add_all_algorithms();
+            evp_lifetime_mgr() {
+                OpenSSL_add_all_algorithms();
 
-        }
+            }
 
-        ~evp_lifetime_mgr() {
-            EVP_cleanup();
-        }
+            ~evp_lifetime_mgr() {
+                EVP_cleanup();
+            }
 
     }; // class evp_lifetime_mgr
     static evp_lifetime_mgr global_evp_lifetime_mgr_;
@@ -55,10 +55,10 @@ namespace irods {
         num_hash_rounds_( 16 ),
         algorithm_( "AES-256-CBC" ) {
 
-        std::transform( 
-            algorithm_.begin(), 
-            algorithm_.end(), 
-            algorithm_.begin(), 
+        std::transform(
+            algorithm_.begin(),
+            algorithm_.end(),
+            algorithm_.begin(),
             ::tolower );
 
     }
@@ -73,10 +73,10 @@ namespace irods {
         num_hash_rounds_( _num_rnds ),
         algorithm_( _algo ) {
 
-        std::transform( 
-            algorithm_.begin(), 
-            algorithm_.end(), 
-            algorithm_.begin(), 
+        std::transform(
+            algorithm_.begin(),
+            algorithm_.end(),
+            algorithm_.begin(),
             ::tolower );
 
         // =-=-=-=-=-=-=-

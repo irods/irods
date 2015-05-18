@@ -544,11 +544,11 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
     else {
         /* make the necessary dir */
         status = mkDirForFilePath(
-            rsComm,
-            0,
-            dataObjInfo.filePath,
-            dataObjInfo.rescHier,
-            getDefDirMode() );
+                     rsComm,
+                     0,
+                     dataObjInfo.filePath,
+                     dataObjInfo.rescHier,
+                     getDefDirMode() );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "mkDirForFilePath failed in bulkProcAndRegSubfile with status %d", status );
             return status;

@@ -164,7 +164,7 @@ namespace irods {
         _env_file     = legacy_file;
         _session_file = legacy_session_file;
 
-        if( fs::exists( legacy_file ) ) {
+        if ( fs::exists( legacy_file ) ) {
             std::cout << "Warning: use of legacy configuration ["
                       << legacy_file
                       << "] is deprecated." << std::endl;
@@ -195,7 +195,7 @@ namespace irods {
                     ret = capture_json( json_session_file );
                     if ( !ret.ok() ) {
                         // debug - irods::log( PASS( ret ) );
-                    } 
+                    }
                     config_props_.set< std::string >(
                         CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
                         json_session_file );
@@ -218,18 +218,19 @@ namespace irods {
                 ret = capture_legacy( legacy_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
-                } else {
+                }
+                else {
                     config_props_.set< std::string >(
                         CFG_IRODS_ENVIRONMENT_FILE_KW,
                         legacy_file );
                 }
 
-                // session file ( written by icd ) already moved 
+                // session file ( written by icd ) already moved
                 // to json
                 ret = capture_json( legacy_session_file );
                 if ( !ret.ok() ) {
                     // debug - irods::log( PASS( ret ) );
-                } 
+                }
 
                 config_props_.set< std::string >(
                     CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
@@ -243,7 +244,7 @@ namespace irods {
 
         } // do parse legacy
 
-        // set the captured flag so we no its already 
+        // set the captured flag so we no its already
         // been captured
         captured_ = true;
         return SUCCESS();
@@ -331,11 +332,11 @@ namespace irods {
 
             error ret;
             if ( CFG_IRODS_PORT_KW                        == key ||
-                 CFG_IRODS_XMSG_PORT_KW                   == key ||
-                 CFG_IRODS_LOG_LEVEL_KW                   == key ||
-                 CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
-                 CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
-                 CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
+                    CFG_IRODS_XMSG_PORT_KW                   == key ||
+                    CFG_IRODS_LOG_LEVEL_KW                   == key ||
+                    CFG_IRODS_ENCRYPTION_KEY_SIZE_KW         == key ||
+                    CFG_IRODS_ENCRYPTION_SALT_SIZE_KW        == key ||
+                    CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
                 try {
                     int i_val = boost::lexical_cast< int >( val );
                     ret = config_props_.set< int >( key, i_val );

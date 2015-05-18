@@ -83,7 +83,8 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
         // api calls, etc.
         addKeyVal( &phyBundleCollInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-    } else {
+    }
+    else {
         hier = hier_kw;
 
     }

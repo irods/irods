@@ -51,14 +51,14 @@ rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char 
     return conn;
 }
 
-rcComm_t* _rcConnect( 
-    const char *rodsHost, 
+rcComm_t* _rcConnect(
+    const char *rodsHost,
     int         rodsPort,
-    const char *proxyUserName, 
+    const char *proxyUserName,
     const char *proxyRodsZone,
-    const char *clientUserName, 
-    const char *clientRodsZone, 
-    rErrMsg_t *errMsg, 
+    const char *clientUserName,
+    const char *clientRodsZone,
+    rErrMsg_t *errMsg,
     int connectCnt,
     int reconnFlag ) {
     rcComm_t *conn;
@@ -294,10 +294,10 @@ int rcDisconnect(
         try {
             // force an interruption point
             _conn->exit_flg = true;
-            bool val = _conn->thread_ctx->reconnThr->try_join_for( 
-                           boost::chrono::seconds( 
+            bool val = _conn->thread_ctx->reconnThr->try_join_for(
+                           boost::chrono::seconds(
                                2 ) );
-            if( true != val ) {
+            if ( true != val ) {
                 // do not error out to client
             }
 

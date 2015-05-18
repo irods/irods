@@ -141,8 +141,8 @@ int chlOpen() {
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call( 0,
-              irods::DATABASE_OP_OPEN,
-              ptr );
+                    irods::DATABASE_OP_OPEN,
+                    ptr );
 
     // =-=-=-=-=-=-=-
     // call the start operation, as it may have opinions
@@ -205,8 +205,8 @@ int chlClose() {
     // =-=-=-=-=-=-=-
     // call the close operation on the plugin
     ret = db->call( 0,
-              irods::DATABASE_OP_CLOSE,
-              ptr );
+                    irods::DATABASE_OP_CLOSE,
+                    ptr );
 
 
     return ret.code();
@@ -256,9 +256,9 @@ int chlGetRcs(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call< icatSessionStruct** >( 0,
-              irods::DATABASE_OP_GET_RCS,
-              ptr,
-              _icss );
+                                           irods::DATABASE_OP_GET_RCS,
+                                           ptr,
+                                           _icss );
 
     return ret.code();
 
@@ -305,9 +305,9 @@ int chlGetLocalZone(
     // call the get local zone operation on the plugin
     ret = db->call <
           const std::string* > ( 0,
-              irods::DATABASE_OP_GET_LOCAL_ZONE,
-              ptr,
-              &_zone );
+                                 irods::DATABASE_OP_GET_LOCAL_ZONE,
+                                 ptr,
+                                 &_zone );
 
     return ret.code();
 
@@ -472,7 +472,7 @@ int chlModDataObjMeta(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call<
+    ret = db->call <
           dataObjInfo_t*,
           keyValPair_t* > (
               _comm,
@@ -3472,7 +3472,7 @@ int chlCalcUsageAndQuota(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call (
+    ret = db->call(
               _comm,
               irods::DATABASE_OP_CALC_USAGE_AND_QUOTA,
               ptr );
@@ -3632,7 +3632,7 @@ chlDelUnusedAVUs(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call (
+    ret = db->call(
               _comm,
               irods::DATABASE_OP_DEL_UNUSED_AVUS,
               ptr );
@@ -4236,10 +4236,10 @@ int chlSpecificQuery(
     ret = db->call <
           specificQueryInp_t*,
           genQueryOut_t* > ( 0,
-              irods::DATABASE_OP_SPECIFIC_QUERY,
-              ptr,
-              &_spec_query_inp,
-              _result );
+                             irods::DATABASE_OP_SPECIFIC_QUERY,
+                             ptr,
+                             &_spec_query_inp,
+                             _result );
 
     return ret.code();
 
@@ -4343,10 +4343,10 @@ int chlGetDistinctDataObjCountOnResource(
     ret = db->call <
           const char*,
           long long* > ( 0,
-              irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
-              ptr,
-              _resc_name.c_str(),
-              &_count );
+                         irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
+                         ptr,
+                         _resc_name.c_str(),
+                         &_count );
 
     return ret.code();
 
@@ -4400,12 +4400,12 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
           const std::string*,
           int,
           dist_child_result_t* > ( 0,
-              irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
-              ptr,
-              &_parent,
-              &_child,
-              _limit,
-              &_results );
+                                   irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
+                                   ptr,
+                                   &_parent,
+                                   &_child,
+                                   _limit,
+                                   &_results );
 
     return ret.code();
 
@@ -4455,11 +4455,11 @@ int chlGetHierarchyForResc(
           const std::string*,
           const std::string*,
           std::string* > ( 0,
-              irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
-              ptr,
-              &_resc_name,
-              &_zone_name,
-              &_hierarchy );
+                           irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
+                           ptr,
+                           &_resc_name,
+                           &_zone_name,
+                           &_hierarchy );
 
     return ret.code();
 
@@ -4568,10 +4568,10 @@ int chlGenQuery(
     ret = db->call <
           genQueryInp_t*,
           genQueryOut_t* > ( 0,
-              irods::DATABASE_OP_GEN_QUERY,
-              ptr,
-              &_gen_query_inp,
-              _result );
+                             irods::DATABASE_OP_GEN_QUERY,
+                             ptr,
+                             &_gen_query_inp,
+                             _result );
 
     return ret.code();
 
@@ -4623,13 +4623,13 @@ int chlGenQueryAccessControlSetup(
           const char*,
           int,
           int > ( 0,
-              irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
-              ptr,
-              _user,
-              _zone,
-              _host,
-              _priv,
-              _control_flag );
+                  irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
+                  ptr,
+                  _user,
+                  _zone,
+                  _host,
+                  _priv,
+                  _control_flag );
 
     return ret.code();
 
@@ -4675,10 +4675,10 @@ int chlGenQueryTicketSetup(
     ret = db->call <
           const char*,
           const char* > ( 0,
-              irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
-              ptr,
-              _ticket,
-              _client_addr );
+                          irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
+                          ptr,
+                          _ticket,
+                          _client_addr );
 
     return ret.code();
 
@@ -4723,9 +4723,9 @@ int chlGeneralUpdate(
     // call the operation on the plugin
     ret = db->call <
           generalUpdateInp_t* > ( 0,
-              irods::DATABASE_OP_GENERAL_UPDATE,
-              ptr,
-              &_update_inp );
+                                  irods::DATABASE_OP_GENERAL_UPDATE,
+                                  ptr,
+                                  &_update_inp );
 
     return ret.code();
 

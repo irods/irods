@@ -47,7 +47,7 @@ main( int argc, char **argv ) {
     }
 
     bool doingInherit = !strcmp( argv[myRodsArgs.optind], ACCESS_INHERIT ) ||
-            !strcmp( argv[myRodsArgs.optind], ACCESS_NO_INHERIT );
+                        !strcmp( argv[myRodsArgs.optind], ACCESS_NO_INHERIT );
     int optind = doingInherit ? myRodsArgs.optind + 1 : myRodsArgs.optind + 2;
 
     rodsPathInp_t rodsPathInp;
@@ -68,7 +68,7 @@ main( int argc, char **argv ) {
 
     rErrMsg_t errMsg;
     rcComm_t * conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                      myEnv.rodsZone, 0, &errMsg );
+                                 myEnv.rodsZone, 0, &errMsg );
 
     if ( conn == NULL ) {
         return 5;

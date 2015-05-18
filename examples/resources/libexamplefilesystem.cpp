@@ -81,8 +81,8 @@ static irods::error example_file_copy_plugin(
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
-        return PASS( ret ); 
+    if ( !ret.ok() ) {
+        return PASS( ret );
     }
     trans_buff_size *= 1024 * 1024;
 

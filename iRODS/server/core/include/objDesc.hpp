@@ -61,59 +61,59 @@ typedef struct l1desc {
 
 extern "C" {
 
-    int
-    initL1Desc();
+int
+initL1Desc();
 
-    int
-    allocL1Desc();
+int
+allocL1Desc();
 
-    int
-    freeL1Desc( int fileInx );
+int
+freeL1Desc( int fileInx );
 
-    int
-    fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
-                dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize );
-    int
-    getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo );
-    int
-    getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
-                   keyValPair_t *condInput, char *destRescName, char *srcRescName, int oprType );
-    int
-    initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
-    int
-    initDataObjInfoForRepl( dataObjInfo_t *destDataObjInfo,
-                            dataObjInfo_t *srcDataObjInfo, const char *_resc_name );
-    int
-    convL3descInx( int l3descInx );
-    int
-    initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp );
-    int
-    allocL1desc();
-    int
-    freeL1desc( int l1descInx );
-    int
-    closeAllL1desc( rsComm_t *rsComm );
-    int
-    initSpecCollDesc();
-    int
-    allocSpecCollDesc();
-    int
-    freeSpecCollDesc( int specCollInx );
-    int
-    initL1desc();
-    int
-    initCollHandle();
-    int
-    allocCollHandle();
-    int
-    freeCollHandle( int handleInx );
-    int
-    rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm );
-    int
-    allocAndSetL1descForZoneOpr( int l3descInx, dataObjInp_t *dataObjInp,
-                                 rodsServerHost_t *remoteZoneHost, openStat_t *openStat );
-    int
-    isL1descInuse();
+int
+fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
+            dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize );
+int
+getL1descIndexByDataObjInfo( const dataObjInfo_t * dataObjInfo );
+int
+getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
+               keyValPair_t *condInput, char *destRescName, char *srcRescName, int oprType );
+int
+initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
+int
+initDataObjInfoForRepl( dataObjInfo_t *destDataObjInfo,
+                        dataObjInfo_t *srcDataObjInfo, const char *_resc_name );
+int
+convL3descInx( int l3descInx );
+int
+initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp );
+int
+allocL1desc();
+int
+freeL1desc( int l1descInx );
+int
+closeAllL1desc( rsComm_t *rsComm );
+int
+initSpecCollDesc();
+int
+allocSpecCollDesc();
+int
+freeSpecCollDesc( int specCollInx );
+int
+initL1desc();
+int
+initCollHandle();
+int
+allocCollHandle();
+int
+freeCollHandle( int handleInx );
+int
+rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm );
+int
+allocAndSetL1descForZoneOpr( int l3descInx, dataObjInp_t *dataObjInp,
+                             rodsServerHost_t *remoteZoneHost, openStat_t *openStat );
+int
+isL1descInuse();
 
 }
 

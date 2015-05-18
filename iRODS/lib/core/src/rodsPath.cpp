@@ -244,7 +244,8 @@ getFileType( rodsPath_t *rodsPath ) {
             rodsPath->objType = LOCAL_DIR_T;
             rodsPath->objState = EXIST_ST;
         }
-    } catch ( const boost::filesystem::filesystem_error& e ) {
+    }
+    catch ( const boost::filesystem::filesystem_error& e ) {
         fprintf( stderr, "%s\n", e.what() );
         return SYS_NO_PATH_PERMISSION;
     }

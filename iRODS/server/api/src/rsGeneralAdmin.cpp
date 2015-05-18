@@ -218,7 +218,7 @@ _addResource(
     // resolve plugin directory
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
@@ -266,7 +266,7 @@ _listRescTypes( rsComm_t* _rsComm ) {
     // resolve plugin directory
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_RESOURCE, plugin_home );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }

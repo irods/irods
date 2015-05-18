@@ -307,7 +307,7 @@ irods::error convert_server_config(
 
     ret = props.get_property< std::string >( "agent_key", s_val );
     if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX") );
+        json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
     }
 
     ret = props.get_property< std::string >( "match_hash_policy", s_val );
@@ -545,7 +545,7 @@ irods::error add_plugin_type_to_json_array(
 
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( _plugin_type, plugin_home );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         return PASS( ret );
     }
 
@@ -727,7 +727,7 @@ irods::error get_resource_array(
 
         std::string host_name;
         ret = resc->get_property< std::string >( irods::RESOURCE_LOCATION, host_name );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             continue;
         }
@@ -739,13 +739,13 @@ irods::error get_resource_array(
             continue;
         }
 
-        if( host_name != irods::EMPTY_RESC_HOST &&
-            std::string::npos == host_name.find( local_host_name ) &&
-            std::string::npos == local_host_name.find( host_name ) ) {
-            rodsLog( 
-                LOG_DEBUG, 
-                "get_resource_array - skipping non-local resource [%s] on [%s]", 
-                name.c_str(), 
+        if ( host_name != irods::EMPTY_RESC_HOST &&
+                std::string::npos == host_name.find( local_host_name ) &&
+                std::string::npos == local_host_name.find( host_name ) ) {
+            rodsLog(
+                LOG_DEBUG,
+                "get_resource_array - skipping non-local resource [%s] on [%s]",
+                name.c_str(),
                 host_name.c_str() );
             continue;
 

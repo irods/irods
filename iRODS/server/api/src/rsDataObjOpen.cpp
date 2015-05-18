@@ -66,10 +66,10 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         // determine the resource hierarchy if one is not provided
         if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            irods::error ret = irods::resolve_resource_hierarchy( 
+            irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::OPEN_OPERATION,
-                                   rsComm, 
-                                   dataObjInp, 
+                                   rsComm,
+                                   dataObjInp,
                                    hier );
             if ( !ret.ok() ) {
                 std::stringstream msg;
@@ -113,12 +113,12 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int lockFd = -1; // JMC - backport 4604
     if ( lockType != NULL ) {
         lockFd = irods::server_api_call(
-                         DATA_OBJ_LOCK_AN,
-                         rsComm,
-                         dataObjInp,
-                         NULL,
-                         ( void** ) NULL,
-                         NULL );
+                     DATA_OBJ_LOCK_AN,
+                     rsComm,
+                     dataObjInp,
+                     NULL,
+                     ( void** ) NULL,
+                     NULL );
         if ( lockFd > 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
@@ -321,9 +321,9 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( l1descInx < 0 ) {
         return l1descInx;
     }
-    
+
     // kv pasthru
-    copyKeyVal( 
+    copyKeyVal(
         &dataObjInp->condInput,
         &dataObjInfo->condInput );
 
@@ -346,7 +346,7 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         irods::error ret = irods::get_advanced_setting<int>(
                                irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
                                single_buff_sz );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return ret.code();
         }

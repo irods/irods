@@ -234,8 +234,8 @@ static SSL_CTX* ssl_init_context(
     }
 
     /* set up CA paths and files here */
-    const char *ca_path = strcmp(env.irodsSSLCACertificatePath, "") ? env.irodsSSLCACertificatePath : NULL;
-    const char *ca_file = strcmp(env.irodsSSLCACertificateFile, "") ? env.irodsSSLCACertificateFile : NULL;
+    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : NULL;
+    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : NULL;
     if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             ssl_log_error( "sslInit: error loading CA certificate locations" );
@@ -352,7 +352,7 @@ static int ssl_post_connection_check(
     char name_text[256];
     if ( !match &&
             ( X509_NAME_get_text_by_NID( X509_get_subject_name( cert ),
-                                         NID_commonName, name_text, sizeof(name_text) ) != -1 ) ) {
+                                         NID_commonName, name_text, sizeof( name_text ) ) != -1 ) ) {
         if ( !strcasecmp( name_text, peer ) ) {
             match = true;
         }

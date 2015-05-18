@@ -482,9 +482,10 @@ main( int argc, char **argv ) {
     rcDisconnect( Conn );
 
     /* Exit 0 if one or more items were displayed */
-    if( status >= 0 ) {
+    if ( status >= 0 ) {
         return 0;
-    } else {
+    }
+    else {
         return status;
     }
 }

@@ -950,7 +950,7 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
         irods::error ret = irods::get_full_path_for_config_file(
                                "reConfigs",
                                re_dir );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return ret.code();
         }
@@ -1473,7 +1473,8 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
     if ( inFileName[0] == '/' || inFileName[0] == '\\' ||
             inFileName[1] == ':' ) {
         snprintf( fileName, MAX_NAME_LEN, "%s", inFileName );
-    } else {
+    }
+    else {
         std::string cfg_file, fn( inFileName );
         fn += ".fnm";
         irods::error ret = irods::get_full_path_for_config_file( fn, cfg_file );
@@ -1518,7 +1519,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
         irods::error ret = irods::get_full_path_for_config_file(
                                "reConfigs",
                                re_dir );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return ret.code();
         }

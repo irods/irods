@@ -44,7 +44,7 @@ scanObj( rcComm_t *conn,
         }
         if ( lenInpPath >= LONG_NAME_LEN ) {
             rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in scanObj",
-                    inpPathO, ( intmax_t ) LONG_NAME_LEN );
+                     inpPathO, ( intmax_t ) LONG_NAME_LEN );
             return USER_STRLEN_TOOLONG;
         }
 
@@ -91,7 +91,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, co
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
         snprintf( fullPath, LONG_NAME_LEN, "%s",
-                cp.c_str() );
+                  cp.c_str() );
         if ( is_symlink( cp ) ) {
             /* don't do anything if it is symlink */
             continue;
@@ -220,7 +220,7 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         rstrcpy( fileStatInp.addr.zoneName, zone, sizeof( fileStatInp.addr.zoneName ) );
         rstrcpy( fileStatInp.fileName, dataPath, sizeof( fileStatInp.fileName ) );
         rstrcpy( fileStatInp.rescHier, rescHier, sizeof( fileStatInp.rescHier ) );
-        snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName);
+        snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName );
         rodsStat_t *fileStatOut;
         int status = rcFileStat( conn, &fileStatInp, &fileStatOut );
         if ( SYS_NO_API_PRIV == status ) {

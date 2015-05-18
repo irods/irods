@@ -116,11 +116,11 @@ int _rsFileStageToCache(
     // need to make this now. It will be difficult to do it with
     // parallel I/O
     int status = mkDirForFilePath(
-        _comm,
-        0,
-        _stage_inp->cacheFilename,
-        _stage_inp->rescHier,
-        getDefDirMode() );
+                     _comm,
+                     0,
+                     _stage_inp->cacheFilename,
+                     _stage_inp->rescHier,
+                     getDefDirMode() );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "mkDirForFilePath failed in _rsFileStageToCache with status %d.", status );
         return status;

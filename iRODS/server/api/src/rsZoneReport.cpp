@@ -72,7 +72,7 @@ irods::error get_server_reports(
     rodsServerHost_t* icat_host = 0;
     char* zone_name = getLocalZoneName();
     int status = getRcatHost( MASTER_RCAT, zone_name, &icat_host );
-    if( status < 0 ) {
+    if ( status < 0 ) {
         return ERROR(
                    status,
                    "getRcatHost failed" );
@@ -96,7 +96,7 @@ irods::error get_server_reports(
         // skip the icat server as that is done separately
         // also skip null tmp_hosts resources ( coordinating )
         // skip local host
-        if( !tmp_host || tmp_host == icat_host || LOCAL_HOST == tmp_host->localFlag ) {
+        if ( !tmp_host || tmp_host == icat_host || LOCAL_HOST == tmp_host->localFlag ) {
             continue;
 
         }
@@ -104,7 +104,7 @@ irods::error get_server_reports(
         // skip previously reported servers
         std::map< rodsServerHost_t*, int >::iterator svr_itr =
             svr_reported.find( tmp_host );
-        if( svr_itr != svr_reported.end() ) {
+        if ( svr_itr != svr_reported.end() ) {
             continue;
 
         }
@@ -133,7 +133,7 @@ irods::error get_server_reports(
 
         // possible null termination issues
         std::string tmp_str;
-        tmp_str.assign( (char*)bbuf->buf, bbuf->len );
+        tmp_str.assign( ( char* )bbuf->buf, bbuf->len );
 
         json_error_t j_err;
         json_t* j_resc = json_loads(

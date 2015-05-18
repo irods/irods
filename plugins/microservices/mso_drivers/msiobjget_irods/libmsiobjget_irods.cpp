@@ -212,7 +212,7 @@ extern "C" {
         irods::error ret = irods::get_advanced_setting<int>(
                                irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
                                single_buff_sz );
-        if( !ret.ok() ) {
+        if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             close( destFd );
             return ret.code();

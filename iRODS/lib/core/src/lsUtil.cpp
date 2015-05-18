@@ -243,10 +243,10 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     }
 
     if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == NULL ) {
-    	// If the index is not found then COL_D_RESC_HIER was most likely stripped
-    	// from the query input to talk to an older zone.
-    	// use resource name instead
-    	rescHier = rescName;
+        // If the index is not found then COL_D_RESC_HIER was most likely stripped
+        // from the query input to talk to an older zone.
+        // use resource name instead
+        rescHier = rescName;
     }
 
     if ( ( replStatus = getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) ==

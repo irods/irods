@@ -108,12 +108,12 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
     if ( lockType != NULL ) {
         lockFd = irods::server_api_call(
-                         DATA_OBJ_LOCK_AN,
-                         rsComm,
-                         dataObjInp,
-                         NULL,
-                         ( void** ) NULL,
-                         NULL );
+                     DATA_OBJ_LOCK_AN,
+                     rsComm,
+                     dataObjInp,
+                     NULL,
+                     ( void** ) NULL,
+                     NULL );
         if ( lockFd >= 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
@@ -199,8 +199,8 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             irods::error ret = irods::resolve_resource_hierarchy( irods::WRITE_OPERATION,
                                rsComm, dataObjInp, hier );
             if ( !ret.ok() ) {
-                if( HIERARCHY_ERROR == ret.code() ) {
-                    char* dst_resc_kw = getValByKey(&dataObjInp->condInput, DEST_RESC_NAME_KW );
+                if ( HIERARCHY_ERROR == ret.code() ) {
+                    char* dst_resc_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
                     rodsLogAndErrorMsg(
                         LOG_ERROR,
                         &rsComm->rError,
@@ -208,7 +208,8 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                         "Cannot overwrite replica of [%s] to resource [%s] as no prior replica exists on that resource",
                         dataObjInp->objPath,
                         dst_resc_kw );
-                } else {
+                }
+                else {
                     std::stringstream msg;
                     msg << "failed in irods::resolve_resource_hierarchy for [";
                     msg << dataObjInp->objPath << "]";
@@ -364,8 +365,8 @@ _rsDataObjCreateWithResc(
     char* kvp_str = getValByKey(
                         &dataObjInp->condInput,
                         KEY_VALUE_PASSTHROUGH_KW );
-    if( kvp_str ) {
-        addKeyVal( 
+    if ( kvp_str ) {
+        addKeyVal(
             &dataObjInfo->condInput,
             KEY_VALUE_PASSTHROUGH_KW,
             kvp_str );
@@ -538,7 +539,7 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
     rstrcpy( fileCreateInp.addr.hostAddr, location.c_str(), NAME_LEN );
-    copyKeyVal( 
+    copyKeyVal(
         &dataObjInfo->condInput,
         &fileCreateInp.condInput );
 

@@ -60,7 +60,7 @@ main( int argc, char **argv ) {
 
     rErrMsg_t errMsg;
     rcComm_t *conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-                      myEnv.rodsZone, 0, &errMsg );
+                                myEnv.rodsZone, 0, &errMsg );
 
     if ( conn == NULL ) {
         return 2;

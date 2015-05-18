@@ -193,11 +193,11 @@ int
 parseUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
     const char * octothorpePointer = strchr( fullUserNameIn, '#' );
     const std::string userNameString = octothorpePointer ?
-        std::string( fullUserNameIn, octothorpePointer - fullUserNameIn ) :
-        std::string( fullUserNameIn );
+                                       std::string( fullUserNameIn, octothorpePointer - fullUserNameIn ) :
+                                       std::string( fullUserNameIn );
     const std::string zoneNameString = octothorpePointer ?
-        std::string( octothorpePointer + 1 ) :
-        std::string();
+                                       std::string( octothorpePointer + 1 ) :
+                                       std::string();
     if ( zoneNameString.find( '#' ) != std::string::npos || userNameString.size() >= NAME_LEN || zoneNameString.size() >= NAME_LEN ) {
         if ( userName != NULL ) {
             userName[0] = '\0';
@@ -3239,7 +3239,8 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
                 fprintf( fd, "%s\n", ss.str().c_str() );
             }
         }
-    } catch( const boost::io::format_error& _e ) {
+    }
+    catch ( const boost::io::format_error& _e ) {
         std::cerr << _e.what() << std::endl;
     }
 

@@ -52,19 +52,19 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
     int status;
     /* specify the location of the metadata file here */
     char metafile[MAX_NAME_LEN];
-    
+
     std::string re_dir;
     irods::error ret = irods::get_full_path_for_config_file(
                            "reConfigs",
                            re_dir );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
 
-    snprintf( 
-        metafile, 
-        MAX_NAME_LEN, "%-s/%-s", 
+    snprintf(
+        metafile,
+        MAX_NAME_LEN, "%-s/%-s",
         re_dir.c_str(),
         NARA_META_DATA_FILE );
 

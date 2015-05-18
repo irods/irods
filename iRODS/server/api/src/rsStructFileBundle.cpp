@@ -278,11 +278,11 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     collEnt->collName + collLen + 1,
                     collEnt->dataName );
                 status = mkDirForFilePath(
-                    rsComm,
-                    strlen( phyBunDir ),
-                    tmpPath,
-                    collEnt->resc_hier,
-                    getDefDirMode() );
+                             rsComm,
+                             strlen( phyBunDir ),
+                             tmpPath,
+                             collEnt->resc_hier,
+                             getDefDirMode() );
                 if ( status < 0 ) {
                     rodsLog(
                         LOG_ERROR,

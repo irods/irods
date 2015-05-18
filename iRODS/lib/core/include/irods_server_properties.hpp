@@ -81,7 +81,7 @@ namespace irods {
             error get_property( const std::string& _key, T& _val ) {
                 error ret = config_props_.get< T >( _key, _val );
                 if ( !ret.ok() ) {
-                    if( key_map_.has_entry( _key ) ) {
+                    if ( key_map_.has_entry( _key ) ) {
                         ret = config_props_.get< T >( key_map_[ _key ], _val );
 
                     }
@@ -160,7 +160,7 @@ namespace irods {
         if ( !ret.ok() ) {
             return PASS( ret );
         }
-       
+
         object_t adv_set;
         ret = props.get_property< object_t > (
                   CFG_ADVANCED_SETTINGS_KW,
@@ -170,7 +170,7 @@ namespace irods {
 
         }
 
-        if( !adv_set.has_entry( _prop ) ) {
+        if ( !adv_set.has_entry( _prop ) ) {
             std::string msg( "missing [" );
             msg += _prop;
             msg += "]";
@@ -180,7 +180,7 @@ namespace irods {
 
         }
 
-        return adv_set.get<T>( 
+        return adv_set.get<T>(
                    _prop,
                    _val );
 

@@ -426,7 +426,7 @@ rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {
     std::string dest_coll( destColl );
     const std::string log_sep = irods::get_virtual_path_separator();
     size_t pos = dest_coll.find_last_of( log_sep );
-    if( ( dest_coll.size() - 1 ) == pos ) {
+    if ( ( dest_coll.size() - 1 ) == pos ) {
         dest_coll.erase( pos, std::string::npos );
     }
 

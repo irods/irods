@@ -627,9 +627,9 @@ partialDataPut( portalTransferInp_t *myInput ) {
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
                            chunk_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     chunk_size *= 1024 * 1024;
 
@@ -637,9 +637,9 @@ partialDataPut( portalTransferInp_t *myInput ) {
     ret = irods::get_advanced_setting<int>(
               irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
               trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     trans_buff_size *= 1024 * 1024;
 
@@ -857,7 +857,7 @@ void partialDataGet(
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return;
     }
@@ -872,7 +872,7 @@ void partialDataGet(
     ret = irods::get_advanced_setting<int>(
               irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
               chunk_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         free( buf );
         return;
@@ -1090,9 +1090,9 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     trans_buff_size *= 1024 * 1024;
 
@@ -1654,12 +1654,12 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     trans_buff_size *= 1024 * 1024;
-    
+
     buf = malloc( trans_buff_size );
 
     toCopy = myInput->size;
@@ -1772,12 +1772,12 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return; 
+        return;
     }
     trans_buff_size *= 1024 * 1024;
-    
+
     buf = ( unsigned char* )malloc( 2 * trans_buff_size * sizeof( unsigned char ) );
 
     while ( myInput->status >= 0 ) {
@@ -2517,14 +2517,14 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                  "singleRemToLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    
+
     int trans_buff_size = 0;
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return ret.code(); 
+        return ret.code();
     }
     trans_buff_size *= 1024 * 1024;
 
@@ -2583,17 +2583,17 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                  "singleRemToLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    
+
     int trans_buff_size = 0;
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return ret.code(); 
+        return ret.code();
     }
     trans_buff_size *= 1024 * 1024;
-   
+
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
     srcL3descInx = dataOprInp->srcL3descInx;
@@ -2650,14 +2650,14 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                  "singleL1Copy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    
+
     int trans_buff_size = 0;
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
                            trans_buff_size );
-    if( !ret.ok() ) {
+    if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        return ret.code(); 
+        return ret.code();
     }
     trans_buff_size *= 1024 * 1024;
 

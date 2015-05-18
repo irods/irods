@@ -827,8 +827,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  * \post none
  * \sa msiAdmReadMSrvcsFromFileIntoStruct, msiGetMSrvcsFromDBIntoStruct, msiAdmWriteMSrvcsFromStructIntoFile
 **/
-int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t* inCoreMsrvcStruct, ruleExecInfo_t* rei )
-{
+int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t* inCoreMsrvcStruct, ruleExecInfo_t* rei ) {
 
     msrvcStruct_t *coreMsrvcStruct;
     int i;

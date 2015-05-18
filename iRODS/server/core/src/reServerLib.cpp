@@ -560,7 +560,7 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
     }
 
     // JMC :: do not bzero std::vector -- bzero( reExec, sizeof( reExec_t ) );
-    // initialize 
+    // initialize
     reExec->runCnt = 0;
     reExec->maxRunCnt = 0;
     reExec->doFork = 0;
@@ -587,9 +587,9 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
             irods::error ret = irods::get_advanced_setting<int>(
                                    irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
                                    max_re_procs );
-            if( !ret.ok() ) {
+            if ( !ret.ok() ) {
                 irods::log( PASS( ret ) );
-                return ret.code(); 
+                return ret.code();
             }
 
             if ( reExec->maxRunCnt > max_re_procs ) {
@@ -974,7 +974,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
     }
 
     bzero( ruleExecSubmitInp->packedReiAndArgBBuf->buf,
-                   ruleExecSubmitInp->packedReiAndArgBBuf->len );
+           ruleExecSubmitInp->packedReiAndArgBBuf->len );
     status = read( fd, ruleExecSubmitInp->packedReiAndArgBBuf->buf,
                    ruleExecSubmitInp->packedReiAndArgBBuf->len );
 

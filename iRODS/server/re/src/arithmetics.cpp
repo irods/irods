@@ -953,7 +953,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     }
 
     if ( ii < 0 ) {
-        if(strcmp(msName, "msiExecCmd") == 0) {
+        if ( strcmp( msName, "msiExecCmd" ) == 0 ) {
             for ( i = 0; i < numOfStrArgs; i++ ) {
                 if ( myArgv[i] != NULL ) {
                     res = convertMsParamToRes( myArgv[i], r );
