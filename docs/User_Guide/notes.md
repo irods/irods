@@ -36,7 +36,7 @@
 
 ### Notable Bug Fixes
 
-  - Coverity Clean - Fixed over 1200 identified bugs related to memory management, error checking, dead code, and other miscellany.
+  - Coverity Clean - Fixed over 1100 identified bugs related to memory management, error checking, dead code, and other miscellany.
 
   - Many permission inconsistencies ironed out
 
