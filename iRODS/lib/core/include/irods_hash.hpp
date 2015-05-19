@@ -22,9 +22,6 @@ namespace irods {
 
         size_t operator()( const std::string& s1 ) const {
             if( s1.empty() ) {
-                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-                irods::stacktrace st; st.trace(); st.dump();
-                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
                 rodsLog(
                     LOG_NOTICE,
                     "irods_string_hash - empty string value" );
@@ -44,6 +41,12 @@ namespace irods {
 
         bool operator()( const std::string s1, const std::string s2 ) const {
             return s1 < s2;
+        }
+
+        ~irods_string_hash() {
+                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+                irods::stacktrace st; st.trace(); st.dump();
+                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         }
 
     }; // struct irods_string_hash
