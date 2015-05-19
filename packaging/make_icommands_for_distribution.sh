@@ -17,21 +17,19 @@
 # once this file is created, iinit may be run to finish setting up the
 # irods environment.
 
-SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+SCRIPTPATH=$( cd $(dirname $0)/.. ; pwd -P )
 
 mkdir -p $SCRIPTPATH/icommands
 mkdir -p $SCRIPTPATH/icommands/plugins
 mkdir -p $SCRIPTPATH/icommands/plugins/auth
 mkdir -p $SCRIPTPATH/icommands/plugins/network
-mkdir -p $SCRIPTPATH/icommands/plugins/api
 
 cp $SCRIPTPATH/iRODS/clients/icommands/bin/* $SCRIPTPATH/icommands
 
 cp $SCRIPTPATH/plugins/auth/*.so $SCRIPTPATH/icommands/plugins/auth
 cp $SCRIPTPATH/plugins/network/*.so $SCRIPTPATH/icommands/plugins/network
-cp $SCRIPTPATH/plugins/api/*.so $SCRIPTPATH/icommands/plugins/api
 
-tar zcf icommands.tgz $SCRIPTPATH/icommands/
+tar zcf icommands.tgz icommands
 
 rm -rf $SCRIPTPATH/icommands
 
