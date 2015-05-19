@@ -1457,7 +1457,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
     iUsesLimit = atoi( usesLimit );
     if ( iUsesLimit > 0 ) {
         iUsesCount = atoi( usesCount );
-        if ( iUsesCount >= iUsesLimit ) {
+        if ( iUsesCount > iUsesLimit ) {
             return CAT_TICKET_USES_EXCEEDED;
         }
         intDataId = atoll( dataId );
