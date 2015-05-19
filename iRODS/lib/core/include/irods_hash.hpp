@@ -44,9 +44,6 @@ namespace irods {
         }
 
         ~irods_string_hash() {
-                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-                irods::stacktrace st; st.trace(); st.dump();
-                rodsLog( LOG_NOTICE, "XXXX - DEBUG - XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         }
 
     }; // struct irods_string_hash
