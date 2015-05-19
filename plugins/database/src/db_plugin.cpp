@@ -2362,23 +2362,23 @@ extern "C" {
            names; one for one. */
         int dataTypeIndex = 1; /* matches table below for quick check */
         // Using the keyword defines so there is one point of truth - hcj
-        char *regParamNames[] = {
+        const char *regParamNames[] = {
             REPL_NUM_KW,        DATA_TYPE_KW,       DATA_SIZE_KW,
             RESC_NAME_KW,       FILE_PATH_KW,       DATA_OWNER_KW,
             DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW,
             DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
-            DATA_MODIFY_KW,     DATA_MODE_KW,		RESC_HIER_STR_KW,
+            DATA_MODIFY_KW,     DATA_MODE_KW,       RESC_HIER_STR_KW,
             "END"
         };
 
         /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
          * you add items before "data_expiry_ts" and */
-        char *colNames[] = {
-            "data_repl_num",   "data_type_name",	"data_size",
-            "resc_name",       "data_path",			"data_owner_name",
-            "data_owner_zone", "data_is_dirty",		"data_checksum",
-            "data_expiry_ts",  "r_comment",			"create_ts",
-            "modify_ts",       "data_mode",			"resc_hier"
+        const char *colNames[] = {
+            "data_repl_num",   "data_type_name", "data_size",
+            "resc_name",       "data_path",      "data_owner_name",
+            "data_owner_zone", "data_is_dirty",  "data_checksum",
+            "data_expiry_ts",  "r_comment",      "create_ts",
+            "modify_ts",       "data_mode",      "resc_hier"
         };
         int DATA_EXPIRY_TS_IX = 9; /* must match index in above colNames table */
         int MODIFY_TS_IX = 12;   /* must match index in above colNames table */
