@@ -451,7 +451,6 @@ def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_lis
 
 
 class IrodsSession(object):
-
     def __init__(self, environment_file_contents, password, manage_irods_data):
         self._environment_file_contents = environment_file_contents
         self._password = password
@@ -529,8 +528,7 @@ class IrodsSession(object):
         if 'env' not in kwargs:
             environment = os.environ.copy()
             environment['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
-            if self._password is not None:
-                environment['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
+            environment['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
             kwargs['env'] = environment
 
     def _log_run_icommand(self, arg):
