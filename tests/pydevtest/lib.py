@@ -567,7 +567,6 @@ class IrodsSession(object):
             self.assert_icommand('icd')
             self.assert_icommand(['irm', '-rf', self.session_collection])
             self.assert_icommand('irmtrash')
-        self.assert_icommand('iexit full')
         shutil.rmtree(self._local_session_dir)
 
     def interrupt_icommand(self, fullcmd, filename, filesize):
