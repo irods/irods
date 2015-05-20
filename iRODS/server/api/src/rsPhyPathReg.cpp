@@ -492,6 +492,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         rodsLog( LOG_ERROR,
                  "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
                  dataObjInfo.objPath, status );
+        clearKeyVal( &dataObjInfo.condInput );
         return status;
     }
 
@@ -507,6 +508,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
             rodsLog( LOG_ERROR,
                      "filePathReg: _dataObjChksum for %s failed, status = %d",
                      dataObjInfo.objPath, status );
+            clearKeyVal( &dataObjInfo.condInput );
             return status;
         }
         rstrcpy( dataObjInfo.chksum, chksum, NAME_LEN );
@@ -526,6 +528,8 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         rei.status = applyRule( "acPostProcForFilePathReg", NULL, &rei,
                                 NO_SAVE_REI );
     }
+        
+    clearKeyVal( &dataObjInfo.condInput );
 
     return status;
 }

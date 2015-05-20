@@ -335,6 +335,9 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
 
     /* XXXXX need to be able to handle structured file */
     bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
+
+    clearKeyVal( &fileGetInp.condInput );
+
     return bytesRead;
 }
 

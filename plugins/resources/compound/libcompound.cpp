@@ -482,6 +482,7 @@ extern "C" {
                             transferStat_t* trans_stat = NULL;
                             int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
                             free( trans_stat );
+                            clearKeyVal( &data_obj_inp.condInput );
                             if ( status < 0 ) {
                                 std::stringstream msg;
                                 msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
