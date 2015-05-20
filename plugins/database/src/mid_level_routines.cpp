@@ -1425,7 +1425,7 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
         iWriteFileLimit = atoi( writeFileLimit );
         if ( iWriteFileLimit > 0 ) {
             iWriteFileCount = atoi( writeFileCount );
-            if ( iWriteFileCount >= iWriteFileLimit ) {
+            if ( iWriteFileCount > iWriteFileLimit ) {
                 return CAT_TICKET_WRITE_USES_EXCEEDED;
             }
             intDataId = atoll( dataId );
