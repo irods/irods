@@ -224,6 +224,10 @@ int _rsFileCreate(
 
     } // if !create_err.ok()
 
+    if( !create_err.ok() ) {
+        return create_err.code();
+    }
+
     // =-=-=-=-=-=-=-
     // percolate possible change in phy path up
     ( *_out ) = ( fileCreateOut_t* ) malloc( sizeof( fileCreateOut_t ) );
