@@ -21,8 +21,6 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-
-
 #define BUF_LEN 500
 
 
@@ -118,9 +116,6 @@ namespace irods {
 
 // Read LEGACY_SERVER_CONFIG_FILE and fill server_properties::properties
     error server_properties::capture_legacy() {
-        rodsLog(
-            LOG_ERROR,
-            "server_properties::capture_legacy - use of legacy configuration is deprecated" );
         error result = SUCCESS();
         std::string prop_name, prop_setting; // property name and setting
 
@@ -142,6 +137,13 @@ namespace irods {
             return PASS( ret );
         }
 
+        if( !fs::exists( cfg_file ) ) {
+            return SUCCESS();
+        }
+
+        rodsLog(
+            LOG_ERROR,
+            "server_properties::capture_legacy - use of legacy configuration is deprecated" );
 
         fptr = fopen( cfg_file.c_str(), "r" );
 
