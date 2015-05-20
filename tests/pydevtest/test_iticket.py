@@ -23,6 +23,9 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def tearDown(self):
         super(Test_Iticket, self).tearDown()
 
+    def test_iticket_bad_subcommand(self):
+        self.admin.assert_icommand('iticket badsubcommand', 'STDOUT_SINGLELINE', 'unrecognized command')
+
     def test_iticket_get(self):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
