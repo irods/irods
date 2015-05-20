@@ -43,7 +43,7 @@ main( int argc, char **argv ) {
                     &rodsPathInp );
     if ( p_err < 0 ) {
         usage();
-        return 1;
+        return 0;
 
     }
 
