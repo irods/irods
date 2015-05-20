@@ -9,8 +9,11 @@ ICAT_HOSTNAME = socket.gethostname()
 PREEXISTING_ADMIN_PASSWORD = 'rods'
 
 
+# TODO: allow for arbitrary number of remote zones
+
 class FEDERATION(object):
-    LOCAL_IRODS_VERSION = (4, 1, 0)
+    LOCAL_IRODS_VERSION = (4,1,0)
+    REMOTE_IRODS_VERSION = (4,1,0)
     RODSUSER_NAME_PASSWORD_LIST = [('zonehopper', '53CR37')]
     RODSADMIN_NAME_PASSWORD_LIST = []
     IRODS_DIR = '/var/lib/irods/iRODS'
