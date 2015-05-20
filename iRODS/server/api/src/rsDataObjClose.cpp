@@ -555,7 +555,7 @@ _rsDataObjClose(
         }
 
         if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
-            addKeyVal( &regParam, ALL_REPL_STATUS_KW, tmpStr );
+            addKeyVal( &regParam, ALL_REPL_STATUS_KW, "TRUE" );
             snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
             addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
         }
