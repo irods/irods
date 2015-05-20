@@ -147,8 +147,8 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // performing a local replication
-    *transStat = ( transferStat_t* )malloc( sizeof( *transStat ) );
-    memset( *transStat, 0, sizeof( *transStat ) );
+    *transStat = ( transferStat_t* )malloc( sizeof( **transStat ) );
+    memset( *transStat, 0, sizeof( **transStat ) );
     // =-=-=-=-=-=-=-
     // JMC - backport 4609
     lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
