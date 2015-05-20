@@ -162,6 +162,8 @@ int _rsFileOpen(
         msg << "]";
         irods::error out_err = PASSMSG( msg.str(), ret_err );
         irods::log( out_err );
+        return ret_err.code();
+
     } // if
 
     return file_obj->file_descriptor();
