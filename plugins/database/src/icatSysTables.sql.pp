@@ -1,6 +1,5 @@
-
 /*****************************************************************************
-  These are the System Tables in the RODS Catalog 
+  These are the System Tables in the RODS Catalog
     R_DATA_xxx            - Tables defining Data Info
     R_ZONE_xxx            - Tables defining Zone Info
     R_USER_xxx            - Tables defining User Info
@@ -8,8 +7,8 @@
     R_COLL_xxx            - Tables defining Collection Info
     R_META_xxx            - Tables defining Metadata Info
     R_TOKN_xxx            - Tables defining Token Info
-    R_RULE_xxx            - Tables defining Rules Info 
-    R_OBJT_xxx            - Tables defining info applicable to multiple 
+    R_RULE_xxx            - Tables defining Rules Info
+    R_OBJT_xxx            - Tables defining info applicable to multiple
                                  first-class objects
   The column lengths are used as follows:
     ids                - bigint (64 bit)
@@ -21,41 +20,41 @@
   R_TOKN_MAIN table is like a meta table for holding all
     reserved keywords/tokens/systemic ontologies that are used by
     the other RODS table. For example, one may store information
-    about the data_types in here instead of storing them in a 
-    separate table. 
-    
-    Hence rows such as 
+    about the data_types in here instead of storing them in a
+    separate table.
+
+    Hence rows such as
         token_id        = 1000
-        token_namespace = 'data_type' 
+        token_namespace = 'data_type'
         token_name      = 'gif image'
     or
         token_id        = 20
         token_namespace = 'access_type'
         token_name      = 'write'
-        token_value     = '020' 
+        token_value     = '020'
     will provide the keyword for the different token types.
 
     This is actually a multi-hierarchy table because what is used in the
-    'token_namespace' column should be validated. To assist with that, 
+    'token_namespace' column should be validated. To assist with that,
     we use the string 'token_namespace' as a reserved keyword and use it to
-    boot-strap the other tokens. Hence, on installation, there will be a 
-    namespace called 'token_namespace' with the following token_names: 
+    boot-strap the other tokens. Hence, on installation, there will be a
+    namespace called 'token_namespace' with the following token_names:
           'data_type', 'object_type','zone_type','resc_type',
           'user_type','action_type','rulexec_type','access_type',
           'resc_class','coll_map', 'data_type_dot_ext', 'data_type_mime',
           'auth_scheme_type'.
 
-    On installation, each of the above mentioned namespaces will have  
+    On installation, each of the above mentioned namespaces will have
     at least one token_name called 'generic' associated with them.
-    On installation, other values might be populated for a few 
+    On installation, other values might be populated for a few
     token_namespaces.
-    
-    Whenever a new value for a token is introduced. the token_type is checked 
+
+    Whenever a new value for a token is introduced. the token_type is checked
     to see if the token_namespace is a valid one, and the triple
-    (token_namespace, token_name, token_value) is checked for uniqueness 
+    (token_namespace, token_name, token_value) is checked for uniqueness
     before being added.
 
-    Whenever a token value is filled in any other table, it is checked 
+    Whenever a token value is filled in any other table, it is checked
     against the R_TOKN_MAIN table for validity.
 *******************************************************/
 
@@ -132,7 +131,7 @@ create table R_COLL_MAIN
    modify_ts            varchar(32)
  ) ;
 
-/* 
+/*
   The data_is_dirty column is replStatus in the DataObjStatus structure.
   The data_status column is statusString (unused, currently).
 */
@@ -299,10 +298,10 @@ create table R_MICROSRVC_VER
  (
    msrvc_id             INT64TYPE not null,
    msrvc_version        varchar(250) DEFAULT '0',
-   msrvc_host           varchar(250) DEFAULT 'ALL', 
-   msrvc_location       varchar(500), 
+   msrvc_host           varchar(250) DEFAULT 'ALL',
+   msrvc_location       varchar(500),
    msrvc_language       varchar(250) DEFAULT 'C',
-   msrvc_type_name      varchar(250) DEFAULT 'IRODS COMPILED', 
+   msrvc_type_name      varchar(250) DEFAULT 'IRODS COMPILED',
    msrvc_status         INT64TYPE DEFAULT 1,
    msrvc_owner_name     varchar(250) not null,
    msrvc_owner_zone     varchar(250) not null,
@@ -467,21 +466,21 @@ create table R_SPECIFIC_QUERY
    Column ticket_type: read or write;
           object_type: data or collection;
           restrictions: flag for hosts, users, both or neither,
-                  may be used to avoid unneeded queries on 
+                  may be used to avoid unneeded queries on
                   the ticket_allowed tables below,
                   default is any are allowed. */
 create table R_TICKET_MAIN
 (
    ticket_id           INT64TYPE not null,
    ticket_string       varchar(100),
-   ticket_type         varchar(20),   
+   ticket_type         varchar(20),
    user_id             INT64TYPE not null,
    object_id           INT64TYPE not null,
    object_type         varchar(16),
    uses_limit          int  DEFAULT 0,
    uses_count          int  DEFAULT 0,
-   write_file_limit    int  DEFAULT 10, 
-   write_file_count    int  DEFAULT 0, 
+   write_file_limit    int  DEFAULT 10,
+   write_file_count    int  DEFAULT 0,
    write_byte_limit    int  DEFAULT 0,
    write_byte_count    int  DEFAULT 0,
    ticket_expiry_ts    varchar(32),
@@ -521,11 +520,11 @@ create table R_GRID_CONFIGURATION
 /* The max size for a MySQL InnoDB index prefix is 767 bytes,
    but since utf8 characters each take up three bytes,
    the max is 255 utf8 characters (255x3=765)
-   http://dev.mysql.com/doc/refman/5.0/en/create-index.html 
+   http://dev.mysql.com/doc/refman/5.0/en/create-index.html
 */
 #define VARCHAR_MAX_IDX_SIZE (767)
 
-/* For MySQL we provide an emulation of the sequences using the 
+/* For MySQL we provide an emulation of the sequences using the
    auto-increment field in a special table
 */
 delimiter %%
@@ -546,8 +545,8 @@ end
 %%
 
 drop function if exists R_ObjectId_currval %%
-create function R_ObjectId_currval() 
-returns bigint 
+create function R_ObjectId_currval()
+returns bigint
 deterministic
 begin
     return @R_ObjectId_val ;
@@ -562,7 +561,7 @@ delimiter ;
 create sequence R_ObjectId increment by 1 start with 10000;
 
 /* And use a blank VARCHAR_MAX_IDX_SIZE */
-#define VARCHAR_MAX_IDX_SIZE 
+#define VARCHAR_MAX_IDX_SIZE
 
 #endif
 
@@ -602,7 +601,7 @@ create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
 create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr VARCHAR_MAX_IDX_SIZE);
-create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
+create index idx_specific_query2 on R_SPECIFIC_QUERY (alias VARCHAR_MAX_IDX_SIZE);
 
 
 /* these indexes enforce the uniqueness constraint on the ticket strings
@@ -613,4 +612,3 @@ create unique index idx_ticket_user on R_TICKET_ALLOWED_USERS (ticket_id, user_n
 create unique index idx_ticket_group on R_TICKET_ALLOWED_GROUPS (ticket_id, group_name);
 
 create unique index idx_grid_configuration on R_GRID_CONFIGURATION (namespace VARCHAR_MAX_IDX_SIZE, option_name VARCHAR_MAX_IDX_SIZE);
-
