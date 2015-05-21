@@ -424,7 +424,6 @@ d 755 root root ${IRODS_HOME}/server/test/bin -
 f 755 root root ${IRODS_HOME}/server/test/bin/checkIcatLog.pl ./iRODS/server/test/bin/checkIcatLog.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/dataTest.pl ./iRODS/server/test/bin/dataTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/icatMiscTest.pl ./iRODS/server/test/bin/icatMiscTest.pl
-f 755 root root ${IRODS_HOME}/server/test/bin/icatTicketTest.pl ./iRODS/server/test/bin/icatTicketTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/icatTest.pl ./iRODS/server/test/bin/icatTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/moveTest.pl ./iRODS/server/test/bin/moveTest.pl
 f 755 root root ${IRODS_HOME}/server/test/bin/quotaTest.pl ./iRODS/server/test/bin/quotaTest.pl

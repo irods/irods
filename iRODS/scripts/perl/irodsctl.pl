@@ -862,7 +862,6 @@ sub doTestIcat
         printStatus( "    Logs:     $icatTestLog        $icatTestStatus\n" );
         printStatus( "              $icatMiscTestLog    $icatMiscTestStatus\n" );
         printStatus( "              $moveTestLog        $moveTestStatus\n" );
-        printStatus( "              $icatTicketTestLog  $icatTicketTestStatus\n" );
         printStatus( "              $quotaTestLog       $quotaTestStatus\n" );
         printStatus( "              $specNameTestLog    $specNameTestStatus\n" );
 }
