@@ -807,6 +807,7 @@ _rescHasParentOrChild( char* rescId ) {
 /// @brief function which determines if a char is allowed in a zone name
 static bool allowed_zone_char( const char _c ) {
     return ( !std::isalnum( _c ) &&
+             !( '.' == _c )      &&
              !( '_' == _c )      &&
              !( '-' == _c ) );
 } // allowed_zone_char
