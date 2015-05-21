@@ -271,7 +271,7 @@ runCmd( "iadmin lr testresource", "", "r_comment:", "Modify by me $username" );
 #runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
 #runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 
-# Simple test to increase coverage; run each of the i-commands with -h
+# Simple test to increase coverage; run each of the iCommands with -h
 runCmd( "ihelp -a" );
 # and also run the ihelp usage function
 runCmd( "ihelp -h" );

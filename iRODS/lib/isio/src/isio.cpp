@@ -16,7 +16,7 @@
    the form irodsNAME, such as irodsfopen.  Internal function names
    begin with 'isio'.
 
-   The irods environment is assummed.  That is, like i-commands, this
+   The irods environment is assummed.  That is, like iCommands, this
    library needs to read the user's irods_environment.json and
    authentication files to be able to connect to an iRODS server.
 

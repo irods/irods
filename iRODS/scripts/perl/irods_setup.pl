@@ -147,7 +147,7 @@ setPrintVerbose( 1 );
 # Confirm that prior setup stages have probably run.
 #
 
-# Make sure the i-command binaries exist.  They are built during 'make',
+# Make sure the iCommand binaries exist.  They are built during 'make',
 # which should already have occurred.
 if ( ! -e $iadmin )
 {
@@ -317,7 +317,7 @@ if ( $IRODS_ADMIN_NAME eq "" )
         # password either.  Without these, we cannot do any
         # server configuration.  This case occurs when the
         # build scripts are set to only build and install the
-        # i-commands, so this is not an error.
+        # iCommands, so this is not an error.
         $totalSteps = 0;
         $currentStep = 0;
 

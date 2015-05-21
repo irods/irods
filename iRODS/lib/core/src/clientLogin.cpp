@@ -142,7 +142,7 @@ int clientLoginPam( rcComm_t* Conn,
         return status;
     }
     memset( myPassword, 0, sizeof( myPassword ) );
-    rodsLog( LOG_NOTICE, "iRODS password set up for i-command use: %s\n",
+    rodsLog( LOG_NOTICE, "iRODS password set up for iCommand use: %s\n",
              pamAuthReqOut->irodsPamPassword );
 
     /* can turn off SSL now. Have to request the server to do so.

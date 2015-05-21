@@ -56,7 +56,7 @@ is only readable by the iRODS service user. So how does a client
 (who is not the iRODS user) access this key? By using an executable
 program which is setuid to the iRODS user to read the key and
 generate the authenticator. This program, called genOSAuth, is installed
-alongside the other i-commands, and uses a key configured in at
+alongside the other iCommands, and uses a key configured in at
 program build time.
 
 It comes from slightly different sources on the server, but it needs
@@ -144,9 +144,9 @@ and set the path of the key file (e.g. /opt/iRODS/config/irods.key)
    OS_AUTH_KEYFILE = /opt/iRODS/config/irods.key
    endif
 
-2. Run 'make' to rebuild the servers and libraries/i-commands. In
+2. Run 'make' to rebuild the servers and libraries/iCommands. In
 addition to building the support libraries, the genOSAuth executable
-will be built alongside the other i-commands.
+will be built alongside the other iCommands.
 
 3. If you haven't done so already, generate the irods.key file. There
 is no format to the key file. The OS authentication library will read
@@ -170,8 +170,8 @@ Now you must make the genOSAuth executable owned by the iRODS service
 user (if not already) and make it 'setuid' to this userid, so that
 when it runs, it can read the key file. Like so:
 
-   chown irods /opt/iRODS/clients/i-commands/bin/genOSAuth
-   chmod 4755 /opt/iRODS/clients/i-commands/bin/genOSAuth
+   chown irods /opt/iRODS/clients/iCommands/bin/genOSAuth
+   chmod 4755 /opt/iRODS/clients/iCommands/bin/genOSAuth
 
 Note that this must be done on all iRODS clients/servers if the iRODS
 binaries are stored on local filesystems. If iRODS is installed in
@@ -194,8 +194,8 @@ Users set their irodsAuthScheme variable in their irods_environment.json
 file (or in their environment) to 'OS' or 'os'.
 
 Users need to ensure that the genOSAuth executable is in their
-path. It's normally installed with the rest of the i-commands, so if
-the i-commands are in the path, genOSAuth should be
+path. It's normally installed with the rest of the iCommands, so if
+the iCommands are in the path, genOSAuth should be
 locatable. Otherwise, make sure to set the path to include the path to
 genOSAuth.
 

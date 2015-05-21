@@ -5,7 +5,7 @@ handling mechanisms:
 1) error codes.  Much like how we did with SRB, each API call and many
 of the other C functions will return error codes as the functional
 value when something fails.  There will be a global set of error
-codes, which we will add to as we go.  There will be an i-command,
+codes, which we will add to as we go.  There will be an iCommand,
 somewhat like Serror, to display more detail about each error.
 
 2) An error stack.  Each of the client/server API calls will also have

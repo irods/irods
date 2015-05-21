@@ -3778,7 +3778,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
 
 /*
    Print some release information.
-   Used by the i-commands when printting the help text.
+   Used by the iCommands when printting the help text.
  */
 void
 printReleaseInfo( char * cmdName ) {

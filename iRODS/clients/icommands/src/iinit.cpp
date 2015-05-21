@@ -249,7 +249,7 @@ main( int argc, char **argv ) {
 
     if ( doingEnvFileUpdate ) {
         printf( "Those values will be added to your environment file (for use by\n" );
-        printf( "other i-commands) if the login succeeds.\n\n" );
+        printf( "other iCommands) if the login succeeds.\n\n" );
     }
 
     /*
@@ -457,10 +457,10 @@ void usageTTL() {
     printf( "for only the number of hours you specify (up to a limit set by the\n" );
     printf( "administrator).  This is more secure, as this temporary password\n" );
     printf( "(not your permanent one) will be stored in the obfuscated\n" );
-    printf( "credential file (.irodsA) for use by the other i-commands.\n" );
+    printf( "credential file (.irodsA) for use by the other iCommands.\n" );
     printf( "\n" );
     printf( "When using PAM, iinit always generates a temporary iRODS password\n" );
-    printf( "for use by the other i-commands, using a time-limit set by the\n" );
+    printf( "for use by the other iCommands, using a time-limit set by the\n" );
     printf( "administrator (usually a few days).  With the --ttl option, you can\n" );
     printf( "specify how long this derived password will be valid, within the\n" );
     printf( "limits set by the administrator.\n" );

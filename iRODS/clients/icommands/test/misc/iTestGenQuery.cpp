@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* This is a test program that operates like an i-command to test the
+/* This is a test program that operates like an iCommand to test the
    general-query calls.  We have other general-query tests that link
    with the ICAT library, but this performs a few other tests and uses
    the rc calls.  To build, one can move this to icommands/src and

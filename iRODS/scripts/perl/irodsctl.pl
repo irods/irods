@@ -459,7 +459,7 @@ sub doTest
 #       doTestIrules( );
 
         # Check if this host is ICAT-enabled.
-        # Note that the tests assume i-commands are in the path so we can too.
+        # Note that the tests assume iCommands are in the path so we can too.
         # Need to re-iinit first for svr to svr connections, non-ICAT hosts.
         my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;
         my $outEnv = `ienv | grep irods_host | tail -1`;

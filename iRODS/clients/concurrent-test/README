@@ -29,6 +29,6 @@ in the src directory which is built.
 If putget has any trouble getting or retrieving anything it
 bails and so does poundtest.
 
-These tests now run concurrently, so there are many i-commands and
+These tests now run concurrently, so there are many iCommands and
 agents running at the same time.  This creates a reasonably good test
 of iRODS/ICAT/DBMS concurrency processing, even on just one host.

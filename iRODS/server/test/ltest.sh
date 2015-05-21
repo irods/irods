@@ -6,7 +6,7 @@
 # Creates and destroys local and irods directories called 'tmpdir' or
 # whatever is $tmpDir and also creates/destroys local directory tmpdir2.
 #
-# Assumes i-commands in path and iinit has been run.
+# Assumes iCommands in path and iinit has been run.
 #
 
 # functions ################################################

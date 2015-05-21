@@ -1,7 +1,7 @@
 This directory contains some additional scripts that can be used to
-supplement the functionality of the i-commands.  These are bash
-scripts that run the i-commands.  To make them available, you can move
-them into the clients/bin directory with the other i-commands,
+supplement the functionality of the iCommands.  These are bash
+scripts that run the iCommands.  To make them available, you can move
+them into the clients/bin directory with the other iCommands,
 changing the name if you wish.
 
 Currently, these are some ticket-related scripts: iTicket, iGet, and

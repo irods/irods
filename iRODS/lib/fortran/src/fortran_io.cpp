@@ -5,7 +5,7 @@
    This package provides a FORTRAN-callable set of functions to do
    irods IO (open, read, write, etc).
 
-   The irods environment is assummed.  That is, like i-commands, this
+   The irods environment is assumed.  That is, like iCommands, this
    library needs to read the user's irods_environment.json and
    authentication files to be able to connect to an iRODS server.
 
