@@ -33,7 +33,7 @@ All Data Objects stored in an iRODS system are stored in some Collection, which 
 
 ### Data Grid
 
-A grid computing system (a set of distributed, cooperating computers) that deals with the controlled sharing and management of large amounts of distributed data.  One or more iRODS Zones can be considered a data grid.
+A grid computing system (a set of distributed, cooperating computers) that deals with the controlled sharing and management of large amounts of distributed data.  An iRODS Grid consists of the physical computers, disks, network, and operating systems that run the iRODS software.  A Grid can report on its status, and member servers can be paused, resumed, or shutdown via the `irods-grid` command.
 
 ### Data Object
 
@@ -141,4 +141,4 @@ An iRODS Vault is a data repository system that iRODS can maintain on any storag
 
 ### Zone
 
-An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Resource Servers (which can reach hundreds, worldwide), and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.
+An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Resource Servers (which can reach hundreds, worldwide), and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.  A Zone can report on its configuration and upgrade history via `izonereport`.

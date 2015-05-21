@@ -1,4 +1,4 @@
-## Zone Federation
+# Zone Federation
 
 iRODS Zones are independent administrative units.  When federated, users of one Zone may grant access to authenticated users from the other Zone on some of their dataObjects, Collections, and Metadata.  Each Zone will authenticate its own users before a Federated Zone will allow access.  User passwords are never exchanged between Zones.
 
@@ -7,7 +7,7 @@ Primary reasons for using Zone Federation include:
 1. Local control. Some iRODS sites want to share resources and collections, yet maintain more local control over those resources, data objects, and collections. Rather than a single iRODS Zone managed by one administrator, they may need two (or more) cooperating iRODS systems managed locally, primarily for security and/or authorization reasons.
 1. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast is often 1-2 seconds for a simple query. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
 
-### Setup
+## Setup
 
 To federate Zone A and Zone B, administrators in each zone must:
 

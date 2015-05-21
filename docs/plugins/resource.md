@@ -6,7 +6,7 @@
 
 ### Storage Resource Plugins
 
-## How to write Resource plugin
+## How to write a Resource plugin
 
 ## Installation
 

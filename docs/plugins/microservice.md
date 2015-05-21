@@ -11,7 +11,7 @@ features:
 automatic input/output handling
 automatic factory code generation
 
-    MICROSERVICE_BEGIN(
+  MICROSERVICE_BEGIN(
       add,
       INT, a, INPUT,
       INT, b, INPUT,

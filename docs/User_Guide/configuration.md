@@ -1,10 +1,24 @@
-# JSON Server Configuration Files
+# Configuration Files
 
-The following configuration files control nearly all aspects of how an iRODS deployment functions.  There are configuration variables available for the server, the client environment, and the database connection.  All files are in JSON and validate against the configuration schema defined at [https://schemas.irods.org/configuration](https://schemas.irods.org/configuration).
+# Legacy Configuration Files
 
-# server_config.json
+## ~/.odbc.ini
 
-Controlling the basic configuration of the iRODS Server itself, and found in `/etc/irods` for packaged binary installations, this file contains the following top level entries:
+This file, in the home directory of the unix service account (default 'irods'), defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database. This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
+
+## ~/.irods/.irodsA
+
+This scrambled password file is saved after an `iinit` is run. If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server. If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt. This file can be deleted manually or can be removed by running `iexit full`.
+
+# JSON Configuration Files
+
+The following configuration files control nearly all aspects of how an iRODS deployment functions.  There are configuration variables available for the server, the database connection, and the client environment.  All files are in JSON and validate against the configuration schema defined at [https://schemas.irods.org/configuration](https://schemas.irods.org/configuration).
+
+## /etc/irods/server_config.json
+
+This file defines the behavior of the server Agent that answers individual requests coming into iRODS. It is created and populated by the installer package.
+
+This file contains the following top level entries:
 
   - `advanced_settings` (required) - Contains subtle network and password related variables.  These values should be changed only in concert with all connecting clients and other servers in the Zone.
 
@@ -32,7 +46,7 @@ Controlling the basic configuration of the iRODS Server itself, and found in `/e
 
   - `default_resource_name` (optional) - The name of the initial resource on server installation
 
-  - `environment_variables` (required) - Contains a set of key/value properties from the server's environment.  Can be empty.
+  - `environment_variables` (required) - Contains a set of key/value properties of the form VARIABLE=VALUE such as "ORACLE_HOME=/full/path" from the server's environment.  Can be empty.
 
   - `federation` (required) - Contains an array of objects which each contain the parameters necessary for federating with another grid.  The array can be empty, but if an object exists, it must contain the following properties:
     - `icat_host` (required) -  The hostname of the iCAT server in the federated zone.
@@ -85,14 +99,92 @@ Controlling the basic configuration of the iRODS Server itself, and found in `/e
   - `zone_user` (required) - The name of the rodsadmin user running this iRODS instance.
 
 
-# Rule Engine
+## /etc/irods/database_config.json
 
-Moving on to the new, structured portions of the JSON configuration, we have been able to create a more robust syntax for referencing the configuration files for the rule engine.  The following three sections are used to configure the rule engine:
+This file defines the database settings for the iRODS installation. It is created and populated by the installer package.
+
+This file contains the following top level entries:
 
 
-# Server Environment
+## ~/.irods/irods_environment.json
 
-We now have a section for setting environment variables for the server environment, which allows for the consolidation of the configuration environment:
+This is the main iRODS configuration file defining the iRODS environment. Any changes are effective immediately since iCommands reload their environment on every execution.
 
-  - `environment_variables` - This section is an array of strings of the form VARIABLE=VALUE such as "ORACLE_HOME=/full/path"
+The service account environment file contains the following top level entries:
 
+  - `irods_authentication_file` (optional) - 
+  - `irods_authentication_scheme` (optional) - 
+  - `irods_client_server_negotiation` (required) - 
+  - `irods_client_server_policy` (required) - 
+  - `irods_control_plane_port` (optional) - 
+  - `irods_control_plane_key` (optional) - 
+  - `irods_cwd` (required) - 
+  - `irods_debug` (optional) - 
+  - `irods_default_hash_scheme` (required) - 
+  - `irods_default_resource` (required) - 
+  - `irods_encryption_algorithm` (required) - 
+  - `irods_encryption_key_size` (required) - 
+  - `irods_encryption_num_hash_rounds` (required) - 
+  - `irods_encryption_salt_size` (required) - 
+  - `irods_gsi_server_dn` (optional) - 
+  - `irods_home` (required) - 
+  - `irods_host` (required) - 
+  - `irods_log_level` (optional) - 
+  - `irods_match_hash_policy` (required) - 
+  - `irods_plugins_home` (optional) - 
+  - `irods_port` (required) - 
+  - `irods_ssl_ca_certificate_file` (optional) - 
+  - `irods_ssl_ca_certificate_path` (optional) - 
+  - `irods_ssl_certificate_chain_file` (optional) - 
+  - `irods_ssl_certificate_key_file` (optional) - 
+  - `irods_ssl_dh_params_file` (optional) - 
+  - `irods_ssl_verify_server` (optional) - 
+  - `irods_user_name` (required) - 
+  - `irods_xmsg_host` (optional) - 
+  - `irods_xmsg_port` (optional) - 
+  - `irods_zone_name` (required) - 
+
+The same schema is used to define (but not enforce) the client side environment.  The following top level entries constitute the minimum working set of properties:
+
+  - `irods_host`
+  - `irods_port`
+  - `irods_user_name`
+  - `irods_zone_name`
+
+
+# Checksum Configuration
+
+Checksums in iRODS 4.0+ can be calculated using one of multiple hashing schemes.  Since the default hashing scheme for iRODS 4.0+ is SHA256, some existing earlier checksums may need to be recalculated and stored in the iCAT.
+
+The following two settings, the default hash scheme and the default hash policy, need to be set on both the client and the server:
+
+ | Client (irods_environment.json) | Server (server_config.json)    |
+ | ------------------------------- | ------------------------------ |
+ | irods_default_hash_scheme       | default_hash_scheme            |
+ |  - SHA256 (default)             |  - SHA256 (default)            |
+ |  - MD5                          |  - MD5                         |
+ | ------------------------------- | ------------------------------ |
+ | irods_match_hash_policy         | match_hash_policy              |
+ |  - Compatible (default)         |  - Compatible (default)        |
+ |  - Strict                       |  - Strict                      |
+
+When a request is made, the sender and receiver's hash schemes and the receiver's policy are considered:
+
+|  Sender      |   Receiver             |   Result                          |
+| ------------ | ---------------------- | --------------------------------- |
+|  MD5         |   MD5                  |   Success with MD5                |
+|  SHA256      |   SHA256               |   Success with SHA256             |
+|  MD5         |   SHA256, Compatible   |   Success with MD5                |
+|  MD5         |   SHA256, Strict       |   Error, USER_HASH_TYPE_MISMATCH  |
+|  SHA256      |   MD5, Compatible      |   Success with SHA256             |
+|  SHA256      |   MD5, Strict          |   Error, USER_HASH_TYPE_MISMATCH  |
+
+If the sender and receiver have consistent hash schemes defined, everything will match.
+
+If the sender and receiver have inconsistent hash schemes defined, and the receiver's policy is set to 'compatible', the sender's hash scheme is used.
+
+If the sender and receiver have inconsistent hash schemes defined, and the receiver's policy is set to 'strict', a USER_HASH_TYPE_MISMATCH error occurs.
+
+# Special Characters
+
+The default setting for 'standard_conforming_strings' in PostgreSQL 9.1+ was changed to 'on'.  Non-standard characters in iRODS Object names will require this setting to be changed to 'off'.  Without the correct setting, this may generate a USER_INPUT_PATH_ERROR error.

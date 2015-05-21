@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource:
 
@@ -11,7 +11,7 @@ A single computer cannot have both an iCAT server and a Resource server installe
 
 The simplest iRODS installation consists of one iCAT server and zero Resource servers.
 
-### iCAT Server
+## iCAT Server
 
 The irods-icat package installs the iRODS binaries and management scripts.
 
@@ -19,7 +19,7 @@ Additionally, an iRODS database plugin is required. iRODS uses this plugin (see 
 
 The iRODS installation script (which also configures the iRODS database plugin) requires database connection information about an existing database.  iRODS neither creates nor manages a database instance itself, just the tables within the database. Therefore, the database instance should be created and configured before installing iRODS.
 
-#### Database Setup
+### Database Setup
 
 iRODS can use many different database configurations.  As an example, a local PostgreSQL database can be configured on Ubuntu 12.04 with the following steps:
 
@@ -45,7 +45,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
  (N rows)
 ~~~
 
-#### iRODS Setup
+### iRODS Setup
 
 Installation of the iCAT DEB and PostgreSQL plugin DEB:
 
@@ -100,7 +100,7 @@ The `setup_irods.sh` script will ask for the following eighteen pieces of inform
 18. Database Password
 
 !!! Note
-    A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 12) above.
+    A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 14) above.
 
 !!! Note
     A default system PostgreSQL installation is configured for ident-based authentication which means the unix service account name must match the database user name.  iRODS currently assumes this is the case.
@@ -115,7 +115,7 @@ The `setup_irods.sh` script will ask for the following eighteen pieces of inform
 irods@hostname:~/ $ iadmin rsq DataObjInCollReCur
 ~~~
 
-### Resource Server
+## Resource Server
 
 The irods-resource package installs the iRODS binaries and management scripts.
 
@@ -148,7 +148,7 @@ The `setup_irods.sh` script will ask for the following fourteen pieces of inform
 13. iCAT Zone
 14. iRODS Administrator Password
 
-### Default Environment
+## Default Environment
 
 Once a server is up and running, the default environment can be shown:
 
@@ -190,7 +190,7 @@ NOTICE: irods_server_control_plane_encryption_algorithm - AES-256-CBC
 NOTICE: irods_server_control_plane_port - 1248
 ~~~
 
-### Run In Place
+## Run In Place
 
 iRODS can be compiled from source and run from the same directory.  Although this is not recommended for production deployment, it may be useful for testing, running multiple iRODS servers on the same system, running iRODS on systems without a package manager, and users who do not have administrator rights on their system.
 
@@ -271,14 +271,14 @@ Please confirm these settings [yes]:
 ~~~
 
 
-#### MacOSX
+### MacOSX
 
 Installation on a MacOSX system requires the use of the --run-in-place build option due to the lack of a system-level package manager.
 
 .. include:: packaging/MACOSX_DATABASE_SETUP.txt
 
 
-## Quickstart
+# Quickstart
 
 Successful installation will complete and result in a running iRODS server.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem:
 
@@ -289,7 +289,7 @@ irods@hostname:~/ $ ils
 
 When moving into production, you should cover the following steps as best practice:
 
-### Changing the administrator account password
+## Changing the administrator account password
 
 The default installation of iRODS comes with a single user account 'rods' that is also an admin account ('rodsadmin') with the password 'rods'.  You should change the password before letting anyone else into the system:
 
@@ -308,7 +308,7 @@ irods@hostname:~/ $ ils
 
 If you see an authentication or other error message here, please try again.  The password update only manipulates a single database value, and is independent of other changes to the system.
 
-### Changing the Zone name
+## Changing the Zone name
 
 The default installation of iRODS comes with a Zone named 'tempZone'.  You probably want to change the Zone name to something more domain-specific:
 
@@ -368,7 +368,7 @@ irods@hostname:~/ $ ils
 /<newzonename>/home/rods:
 ~~~
 
-### Changing the zone_key and negotiation_key
+## Changing the zone_key and negotiation_key
 
 iRODS 4.1+ servers use the `zone_key` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`:
 
@@ -391,7 +391,7 @@ The following error will be logged when the negotiation_key values do not align 
 ERROR: client-server negotiation_key mismatch
 ~~~
 
-### Add additional resource(s)
+## Add additional resource(s)
 
 The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path:
 
@@ -420,7 +420,7 @@ to an empty string ('').
 
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
 
-### Add additional user(s)
+## Add additional user(s)
 
 The default installation of iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional user accounts (of type 'rodsuser') and set their passwords before allowing connections to your new Zone:
 

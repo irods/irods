@@ -62,7 +62,7 @@
 
 ### Other Issues
 
-  - Full 4.1.0 listing [available at GitHub](https://github.com/irods/irods/issues?q=is%3Aclosed+milestone%3A4.1.0)
+  - [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.0)
 
 
 ## 4.0.3
@@ -71,11 +71,15 @@ Release Date: 2014-08-20
 
 More flexible installation options (service account name/group), block storage operation fix, impostor resource, memory leak fixes, and security fixes.
 
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.0.3)
+
 ## 4.0.2
 
 Release Date: 2014-06-17
 
 Random and RoundRobin resource plugin fix, memory leak fixes, microservice fixes, security fixes, large collection recursive operations, and better server-server authentication setup.
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.0.2)
 
 ## 4.0.1
 
@@ -83,11 +87,15 @@ Release Date: 2014-06-05
 
 Memory leak fixes, security fixes, --run-in-place, MacOSX support, schema update mechanism.
 
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.0.1)
+
 ## 4.0.0
 
 Release Date: 2014-03-28
 
 This is the fourth major release of iRODS and the first merged open source release from RENCI.
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.0.0)
 
 ## 4.0.0rc2
 
@@ -119,6 +127,8 @@ Release Date: 2013-11-16
 
 This is the second open source release from RENCI. It includes Federation compliance with Community iRODS and signaling for dynamic post-PEPs to know whether their operation failed.
 
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A3.0.1)
+
 ## 3.0.1rc1
 
 Release Date: 2013-11-14
@@ -142,6 +152,8 @@ This is the first beta of the second open source release from RENCI. It includes
 Release Date: 2013-06-05
 
 This is the first open source release from RENCI. It includes all the features mentioned below and has been both manually and continuously tested.
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A3.0)
 
 ## 3.0rc1
 

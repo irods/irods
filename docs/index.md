@@ -33,6 +33,6 @@ iRODS is released under a 3-clause BSD License.
 
 ## Links to elsewhere...
 
- - http://github.com/irods
- - http://twitter.com/irods
+ - [http://github.com/irods](http://github.com/irods)
+ - [http://twitter.com/irods](http://twitter.com/irods)
 
