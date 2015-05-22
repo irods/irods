@@ -552,6 +552,7 @@ _rsDataObjClose(
 
         if ( chksumStr != NULL ) {
             addKeyVal( &regParam, CHKSUM_KW, chksumStr );
+            free( chksumStr );
         }
 
         if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
@@ -570,7 +571,6 @@ _rsDataObjClose(
         clearKeyVal( &regParam );
 
         if ( status < 0 ) {
-            free( chksumStr );
             return status;
         }
 
@@ -648,8 +648,6 @@ _rsDataObjClose(
                                 newSize, ALL_QUOTA );
         }
     }
-
-    free( chksumStr );
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4537
