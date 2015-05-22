@@ -1081,6 +1081,7 @@ msiListEnabledMS(
     std::string plugin_home;
     irods::error ret = irods::resolve_plugin_path( irods::PLUGIN_TYPE_MICROSERVICE, plugin_home );
     if ( !ret.ok() ) {
+        free( results );
         irods::log( PASS( ret ) );
         return ret.code();
     }
