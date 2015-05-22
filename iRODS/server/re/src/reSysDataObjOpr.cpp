@@ -827,6 +827,11 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
             irods::log( PASS( ret ) );
             return ret.code();
         }
+        if ( 0 >= trans_buff_size ) {
+            rodsLog( LOG_ERROR, "%d is an invalid trans_buff size. "
+                    "trans_buff_size must be greater than zero.", trans_buff_size );
+            return SYS_INVALID_INPUT_PARAM;
+        }
         trans_buff_size *= 1024 * 1024;
 
         numThr = doinp->dataSize / trans_buff_size + 1;
