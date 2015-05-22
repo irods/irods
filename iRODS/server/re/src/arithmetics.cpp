@@ -389,7 +389,7 @@ Res* evaluateActions( Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei,
                     for ( i2 = reco->degree - 1 < i ? reco->degree - 1 : i; i2 >= 0; i2-- ) {
 #ifndef DEBUG
                         if ( reTestFlag > 0 ) {
-                            if ( reTestFlag == COMMAND_TEST_1 || COMMAND_TEST_MSI ) {
+                            if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == COMMAND_TEST_MSI ) {
                                 fprintf( stdout, "***RollingBack\n" );
                             }
                             else if ( reTestFlag == HTML_TEST_1 ) {
