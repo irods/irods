@@ -83,6 +83,10 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* data included in buf */
             return status;
         }
+        else if ( !portalOprOut ) {
+            rodsLog( LOG_ERROR, "_rcDataObjGet returned a %d status code, but left portalOprOut null.", status );
+            return SYS_INVALID_PORTAL_OPR;
+        }
         else {
             /* have to allocate a local l1descInx to keep track of things
              * since the file is in remote zone. It sets remoteL1descInx,
