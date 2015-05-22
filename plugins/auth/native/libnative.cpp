@@ -220,44 +220,39 @@ extern "C" {
     } // native_auth_establish_context
 
     // =-=-=-=-=-=-=-
-    // handle an client-side auth request call
+    // handle a client-side auth request call
     irods::error native_auth_client_request(
         irods::auth_plugin_context& _ctx,
-        rcComm_t*                    _comm ) {
-        irods::error result = SUCCESS();
-        irods::error ret;
+        rcComm_t*                   _comm ) {
 
-        // =-=-=-=-=-=-=-
-        // validate incoming parameters
-        ret = _ctx.valid< irods::native_auth_object >();
-        if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // make the call to our auth request
-            authRequestOut_t* auth_request = 0;
-            int status = rcAuthRequest( _comm, &auth_request );
-            if ( !( result = ASSERT_ERROR( status >= 0, status, "Call to rcAuthRequest failed." ) ).ok() ) {
-                free( auth_request->challenge );
-                free( auth_request );
-            }
-            else {
-
-                // =-=-=-=-=-=-=-
-                // get the auth object
-                irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
-
-                // =-=-=-=-=-=-=-
-                // cache the challenge
-                if ( ( result = ASSERT_ERROR( auth_request->challenge, 0, "Challenge attribute is blank." ) ).ok() ) {
-                    ptr->request_result( std::string( auth_request->challenge, CHALLENGE_LEN ) );
-                }
-
-                free( auth_request->challenge );
-                free( auth_request );
-            }
+        if ( !_ctx.valid< irods::native_auth_object >().ok() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid plugin context." );
         }
 
-        return result;
+        authRequestOut_t* auth_request = NULL;
+        int status = rcAuthRequest( _comm, &auth_request );
+        if ( status < 0 ) {
+            if ( auth_request ) {
+                free( auth_request->challenge );
+                free( auth_request );
+            }
+            return ERROR( status, "Call to rcAuthRequest failed." );
+        }
+        else if ( !auth_request ) {
+            return ERROR( SYS_NULL_INPUT, "Call to rcAuthRequest resulted in a null authRequest." );
+        }
+        else if ( !auth_request->challenge ) {
+            free( auth_request );
+            return ERROR( 0, "Challenge attribute is blank." );
+        }
+
+        irods::native_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::native_auth_object >( _ctx.fco() );
+        ptr->request_result( std::string( auth_request->challenge, CHALLENGE_LEN ) );
+
+        free( auth_request->challenge );
+        free( auth_request );
+
+        return SUCCESS();
 
     } // native_auth_client_request
 
