@@ -89,6 +89,15 @@ if __name__ == '__main__':
     parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
     options, _ = parser.parse_args()
 
+
+    import shutil
+    shutil.copyfile('/etc/irods/server.key', '/var/lib/irods/server.key')
+    shutil.copyfile('/etc/irods/server.crt', '/var/lib/irods/server.crt')
+    shutil.copyfile('/etc/irods/dhparams.pem', '/var/lib/irods/dhparams.pem')
+    shutil.copyfile('/var/lib/irods/.irods/irods_environment.json', '/var/lib/irods/irods_environment.json')
+
+
+
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(0)
