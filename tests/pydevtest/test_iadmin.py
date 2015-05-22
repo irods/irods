@@ -52,6 +52,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_Iadmin, self).tearDown()
 
     def test_api_plugin(self):
+        import shutil
+        shutil.copyfile('/etc/irods/server.key', '/var/lib/irods/server.key')
+        shutil.copyfile('/etc/irods/server.crt', '/var/lib/irods/server.crt')
+        shutil.copyfile('/etc/irods/dhparams.pem', '/var/lib/irods/dhparams.pem')
+        shutil.copyfile('/var/lib/irods/.irods/irods_environment.json', '/var/lib/irods/irods_environment.json')
+
+
         self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
         assert 0 < lib.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
 
