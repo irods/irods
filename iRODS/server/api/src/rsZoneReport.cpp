@@ -118,22 +118,23 @@ irods::error get_server_reports(
                        "failed in svrToSvrConnect" );
         }
 
-        bytesBuf_t* bbuf = 0;
+        bytesBuf_t* bbuf = NULL;
         status = rcServerReport(
                      tmp_host->conn,
                      &bbuf );
         if ( status < 0 ) {
             freeBBuf( bbuf );
+            bbuf = NULL;
             rodsLog(
                 LOG_ERROR,
                 "rcServerReport failed for [%s], status = %d",
-                "",
+                tmp_host->hostName->name,
                 status );
         }
 
         // possible null termination issues
-        std::string tmp_str;
-        tmp_str.assign( ( char* )bbuf->buf, bbuf->len );
+        std::string tmp_str = bbuf ? std::string( ( char* )bbuf->buf, bbuf->len ) :
+            std::string();
 
         json_error_t j_err;
         json_t* j_resc = json_loads(
