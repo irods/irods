@@ -257,8 +257,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     "_rsStructFileBundle - skipping [%s] on resc [%s]",
                     collEnt->phyPath,
                     collEnt->resc_hier );
-                collEnt = NULL;
                 free( collEnt );
+                collEnt = NULL;
                 continue;
             }
 
