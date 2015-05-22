@@ -636,10 +636,8 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     while ( ( status = rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) ) >= 0 ) {
 
-        fileStatInp_t fileStatInp;
-        rodsStat_t *myStat = NULL;
-
-        if ( strlen( rodsDirent->d_name ) == 0 ) {
+        if ( NULL == rodsDirent || strlen( rodsDirent->d_name ) == 0 ) {
+            free( rodsDirent );
             break;
         }
 
@@ -654,9 +652,11 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                   phyPathRegInp->objPath, rodsDirent->d_name );
 
         if ( matchPathname( ExcludePatterns, rodsDirent->d_name, filePath ) ) {
+            free( rodsDirent );
             continue;
         }
 
+        fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
 
         snprintf( fileStatInp.fileName, MAX_NAME_LEN, "%s/%s", filePath, rodsDirent->d_name );
@@ -664,7 +664,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         fileStatInp.addr = fileOpendirInp.addr;
         rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
 
-
+        rodsStat_t *myStat = NULL;
         status = rsFileStat( rsComm, &fileStatInp, &myStat );
 
         if ( status != 0 ) {
