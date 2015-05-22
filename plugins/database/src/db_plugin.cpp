@@ -5790,6 +5790,20 @@ extern "C" {
                               "It is not valid to rename the local zone via chlModZone; iadmin should use acRenameLocalZone" );
                 return ERROR( CAT_INVALID_ARGUMENT, "cannot rename localzone" );
             }
+
+            // =-=-=-=-=-=-=-
+            // validate the zone name does not include improper characters
+            ret = validate_zone_name( _option_value );
+            if ( !ret.ok() ) {
+                irods::log( ret );
+                std::string msg( "zone name is invalid [" );
+                msg += _option_value;
+                msg += "]";
+                addRErrorMsg( &_ctx.comm()->rError, 0,
+                              msg.c_str() );
+                return PASS( ret );
+            }
+
             cllBindVars[cllBindVarCount++] = _option_value;
             cllBindVars[cllBindVarCount++] = myTime;
             cllBindVars[cllBindVarCount++] = zoneId;
