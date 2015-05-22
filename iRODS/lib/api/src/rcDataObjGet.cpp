@@ -89,9 +89,6 @@
 
 int
 rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
-    int status;
-    portalOprOut_t *portalOprOut = NULL;
-    bytesBuf_t dataObjOutBBuf;
 #ifndef windows_platform
     struct stat statbuf;
 #else
@@ -114,12 +111,12 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         }
     }
 
-    status = _rcDataObjGet( conn, dataObjInp, &portalOprOut, &dataObjOutBBuf );
+    portalOprOut_t *portalOprOut = NULL;
+    bytesBuf_t dataObjOutBBuf;
+    int status = _rcDataObjGet( conn, dataObjInp, &portalOprOut, &dataObjOutBBuf );
 
     if ( status < 0 ) {
-        if ( portalOprOut != NULL ) {
-            free( portalOprOut );
-        }
+        free( portalOprOut );
         return status;
     }
 
@@ -136,6 +133,10 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         ****/
         status = getIncludeFile( conn, &dataObjOutBBuf, locFilePath );
         free( dataObjOutBBuf.buf );
+    }
+    else if ( !portalOprOut ) {
+        rodsLog( LOG_ERROR, "_rcDataObjGet returned a %d status code, but left portalOprOut null.", status );
+        return SYS_INVALID_PORTAL_OPR;
     }
     else if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         int veryVerbose;
@@ -251,9 +252,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
 
         }
     }
-    if ( portalOprOut != NULL ) {
-        free( portalOprOut );
-    }
+    free( portalOprOut );
 
     return status;
 }
