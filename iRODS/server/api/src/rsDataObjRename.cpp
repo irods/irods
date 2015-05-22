@@ -576,9 +576,12 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     fileReaddirInp.fileInx = l3descInx;
     rsMkCollR( rsComm, "/", destDataObjInp->objPath );
     while ( rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) >= 0 ) {
-        rodsDirent_t myRodsDirent;
+        if ( rodsDirent == NULL ) {
+            savedStatus = SYS_INTERNAL_NULL_INPUT_ERR;
+            break;
+        }
 
-        myRodsDirent = *rodsDirent;
+        rodsDirent_t myRodsDirent = *rodsDirent;
         free( rodsDirent );
 
         if ( strcmp( myRodsDirent.d_name, "." ) == 0 ||
@@ -621,10 +624,8 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                      "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
                      subSrcDataObjInfo.objPath, status );
         }
-        //if (fileStatOut != NULL) {
         free( fileStatOut );
         fileStatOut = NULL;
-        //}
     }
     l3Rmdir( rsComm, srcDataObjInfo );
     return savedStatus;
