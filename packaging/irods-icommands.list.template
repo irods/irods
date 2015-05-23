@@ -58,12 +58,12 @@ $RESOURCE=true
 
 
 %if CENTOS6
-%requires openssl098e
+%requires openssl
 %endif
 
 %if DEB
 %requires libc6
-%requires libssl0.9.8
+%requires libssl1.0.0
 %requires libfuse2
 %endif
 
@@ -72,7 +72,7 @@ $RESOURCE=true
 %endif
 
 %if SUSE
-%requires libopenssl0_9_8
+%requires libopenssl1_0_0
 %requires libfuse2
 %endif
 
