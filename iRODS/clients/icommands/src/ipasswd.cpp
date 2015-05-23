@@ -134,16 +134,18 @@ main( int argc, char **argv ) {
         printf( "Enter your new iRODS password:" );
         std::string password = "";
         getline( std::cin, password );
+        printf( "\n" );
         strncpy( newPw, password.c_str(), MAX_PASSWORD_LEN );
         len = strlen( newPw );
         if ( len < 4 ) {
-            printf( "\nYour password must be at least 3 characters long.\n" );
+            printf( "Your password must be at least 3 characters long.\n" );
         }
     }
     if ( myRodsArgs.force != True ) {
         printf( "Reenter your new iRODS password:" );
         std::string password = "";
         getline( std::cin, password );
+        printf( "\n" );
         strncpy( newPw2, password.c_str(), MAX_PASSWORD_LEN );
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
             printf( "Entered passwords do not match\n" );
