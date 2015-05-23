@@ -14,6 +14,9 @@ RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
 OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then echo "_CentOS6" ; fi)
+ifeq ($(OS_platform), osx_platform)
+OS=$(OSNAME)$$( echo "-$(OSVERSION)" )
+endif
 IRODSEXTERNALARCHIVE=irods_external_$(IRODSVERSION)_$(OS).tar.gz
 IRODSEXTERNALLOCAL=irods_external.tar.gz
 
@@ -112,14 +115,13 @@ $(LIBS3VERSIONARCHIVE) :
 
 $(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
 	@tar zxf $(LIBS3VERSIONARCHIVE)
-	@if [ $(OSNAME) = "MacOSX" ] ; then \
-		sed "s/-soname,/-install_name,/" $(LIBS3VERSION)/GNUmakefile > /tmp/libs3Makefile; \
-		rsync -c /tmp/libs3Makefile $(LIBS3VERSION)/GNUmakefile; \
-		rm -f /tmp/libs3Makefile; \
-		fi
 
 libs3 : $(LIBS3VERSIONMAKE)
-	@CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION)
+	$(V_at)if [ $(OSNAME) = "MacOSX" ] ; then \
+		CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION) -f GNUmakefile.osx; \
+		else \
+		CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION); \
+		fi
 
 $(CMAKEVERSIONARCHIVE) :
 	@wget $(RENCI_FTP_EXTERNAL)/$(CMAKEVERSIONARCHIVE) 2>&1
@@ -181,15 +183,13 @@ $(BOOSTVERSIONARCHIVE) :
 
 $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@tar zxf $(BOOSTVERSIONARCHIVE)
-	@sed "s/\\(future_state::state get_state(boost::unique_lock<boost::mutex>&\\) lk\\() const\\)/\\1\\2/" $(BOOSTVERSION)/boost/thread/future.hpp > /tmp/future.hpp
-	@rsync -c /tmp/future.hpp $(BOOSTVERSION)/boost/thread/future.hpp
-	@rm /tmp/future.hpp
 	@cd $(BOOSTVERSION) ; \
 		./bootstrap.sh --with-libraries=program_options,filesystem,system,thread,regex,program_options,iostreams,chrono,date_time
 
 boost : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
+		./b2 headers; \
 		./b2 link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
 
 $(HDF5VERSIONARCHIVE) :
