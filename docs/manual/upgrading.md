@@ -1,18 +1,18 @@
 # Upgrading
 
-Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see [Changing the zone_key and negotiation_key](#changing-the-zone_key-and-negotiation_key) for information on server-server authentication.
+Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see [Changing the zone_key and negotiation_key](installation.md#changing-the-zone_key-and-negotiation_key) for information on server-server authentication.
 
 ## RPM based systems
 
-~~
+~~~
 $ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-64bit-suse.rpm
-~~
+~~~
 
 ## DEB based systems
 
-~~
+~~~
 $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb
-~~
+~~~
 
 ## From iRODS 3.3.x
 

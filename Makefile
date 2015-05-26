@@ -69,6 +69,7 @@ mkdocs :
 	@./docs/generate_icommands_md.sh
 	@mkdocs build --clean
 	@cp iRODS/images/* mkdocs/html/
+	@find mkdocs/html -name '*.html' -type f -exec sed -i 's/TEMPLATE_IRODSVERSION/$(IRODSVERSION)/g' {} \;
 
 epm :
 	@$(MAKE) -C external epm

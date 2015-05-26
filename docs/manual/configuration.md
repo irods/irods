@@ -156,17 +156,35 @@ The same schema is used to define (but not enforce) the client side environment.
 
 Checksums in iRODS 4.0+ can be calculated using one of multiple hashing schemes.  Since the default hashing scheme for iRODS 4.0+ is SHA256, some existing earlier checksums may need to be recalculated and stored in the iCAT.
 
-The following two settings, the default hash scheme and the default hash policy, need to be set on both the client and the server:
+The following two settings, the default hash scheme and the match hash policy, need to be set on both the client and the server:
 
- | Client (irods_environment.json) | Server (server_config.json)    |
- | ------------------------------- | ------------------------------ |
- | irods_default_hash_scheme       | default_hash_scheme            |
- |  - SHA256 (default)             |  - SHA256 (default)            |
- |  - MD5                          |  - MD5                         |
- | ------------------------------- | ------------------------------ |
- | irods_match_hash_policy         | match_hash_policy              |
- |  - Compatible (default)         |  - Compatible (default)        |
- |  - Strict                       |  - Strict                      |
+<table>
+<tr>
+<th>Client (irods_environment.json)</th>
+<th>Server (server_config.json)</th>
+</tr>
+<tr>
+<td>irods_default_hash_scheme<br />
+ - SHA256 (default)<br />
+ - MD5
+</td>
+<td>default_hash_scheme<br />
+ - SHA256 (default)<br />
+ - MD5
+</td>
+</tr>
+<tr>
+<td>irods_match_hash_policy<br />
+ - Compatible (default)<br />
+ - Strict
+</td>
+<td>match_hash_policy<br />
+ - Compatible (default)<br />
+ - Strict
+</td>
+</tr>
+</table>
+
 
 When a request is made, the sender and receiver's hash schemes and the receiver's policy are considered:
 

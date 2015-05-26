@@ -277,8 +277,8 @@ writeLine("stdout", "This is a string." like regex "This.*string[.]");
 **Substring**: `substr()`
 
 ~~~c
-writeLine("stdout", substr("This is a string.", 0, 4));
-# Output: This
+writeLine("stdout", substr("This is a string.", 5, 4));
+# Output: is a
 ~~~
 
 **Length**: `strlen()`
@@ -295,18 +295,18 @@ writeLine("stdout", split("This is a string.", " "));
 # Output: [This,is,a,string.]
 ~~~
 
-**Trim left**: `triml(*str, *del)`, which trims from `*str` the leftmost `*del`.
+**Trim left**: `triml(*str, *del)`, which trims from `*str` the leftmost `*del`, inclusive.
 
 ~~~c
-writeLine("stdout", triml("This is a string.", " "));
-# Output: is a string.
+writeLine("stdout", triml("This is a string.", "i"));
+# Output: s is a string.
 ~~~
 
-**Trim right**: `trimr(*str, *del)`, which trims from `*str` the rightmost `*del`.
+**Trim right**: `trimr(*str, *del)`, which trims from `*str` the rightmost `*del`, inclusive.
 
 ~~~c
-writeLine("stdout", trimr("This is a string.", " "));
-# Output: This is a
+writeLine("stdout", trimr("This is a string.", "r"));
+# Output: This is a st
 ~~~
 
 ### Variable Expansion

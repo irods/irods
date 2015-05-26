@@ -22,37 +22,37 @@ Configuring iRODS to communicate via GSI requires a few simple steps.
 
 First, if GSI is being configured for a new user, it must be created:
 
-~~
+~~~
 iadmin mkuser newuser rodsuser
-~~
+~~~
 
 Then that user must be configured so its Distiguished Name (DN) matches its certificate:
 
-~~
+~~~
 iadmin aua newuser '/DC=org/DC=example/O=Example/OU=People/CN=New User/CN=UID:drexample'
-~~
+~~~
 
 !!! Note
     The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
 
 On the client side, the user's 'irods_auth_scheme' must be set to 'GSI'.  This can be done via environment variable:
 
-~~
+~~~
 irods@hostname:~/ $ irods_auth_scheme=GSI
 irods@hostname:~/ $ export irods_auth_scheme
-~~
+~~~
 
 Or, preferably, in the user's `irods_environment.json` file:
 
-~~
+~~~
 "irods_auth_scheme": "GSI",
-~~
+~~~
 
 Then, to have a temporary proxy certificate issued and authenticate:
 
-~~
+~~~
 grid-proxy-init
-~~
+~~~
 
 This will prompt for the user's GSI password.  If the user is successfully authenticated, temporary certificates are issued and setup in the user's environment.  The certificates are good, by default, for 24 hours.
 
@@ -84,9 +84,9 @@ Configuration of Kerberos is out of scope for this document, but consists of the
 
 A new keytab file can be created with the following command:
 
-~~
+~~~
 kadmin ktadd -k /var/lib/irods/irods.keytab irodsserver/serverhost.example.org@EXAMPLE.ORG
-~~
+~~~
 
 ### iRODS Configuration
 
@@ -94,41 +94,41 @@ Configuring iRODS to communicate via Kerberos requires a few simple steps.
 
 First, if Kerberos is being configured for a new user, it must be created:
 
-~~
+~~~
 iadmin mkuser newuser rodsuser
-~~
+~~~
 
 Then that user must be configured so its principal matches the KDC:
 
-~~
+~~~
 iadmin aua newuser newuser@EXAMPLE.ORG
-~~
+~~~
 
 The `/etc/irods/server_config.json` must be updated to include:
 
-~~
+~~~
 kerberos_service_principal=irodsserver/serverhost.example.org@EXAMPLE.ORG
 kerberos_keytab=/var/lib/irods/irods.keytab
-~~
+~~~
 
 On the client side, the user's 'irods_auth_scheme' must be set to 'KRB'.  This can be done via environment variable:
 
-~~
+~~~
 irods@hostname:~/ $ irods_auth_scheme=KRB
 irods@hostname:~/ $ export irods_auth_scheme
-~~
+~~~
 
 Or, preferably, in the user's `irods_environment.json` file:
 
-~~
+~~~
 "irods_auth_scheme": "KRB",
-~~
+~~~
 
 Then, to initialize the Kerberos session ticket and authenticate:
 
-~~
+~~~
 kinit
-~~
+~~~
 
 ### Limitations
 
@@ -150,18 +150,18 @@ The workaround is to use iRODS native password authentication when using these.
 
 PAM can be configured to to support various authentication systems; however the iRODS administrator still needs to add the users to the iRODS database:
 
-~~
+~~~
 irods@hostname:~/ $ iadmin mkuser newuser rodsuser
-~~
+~~~
 
 If the user's credentials will be exclusively authenticated with PAM, a password need not be assigned.
 
 For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their `irods_environment.json` file or by setting their environment variable:
 
-~~
+~~~
 irods@hostname:~/ $ irods_auth_scheme=PAM
 irods@hostname:~/ $ export irods_auth_scheme
-~~
+~~~
 
 Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the `iinit` session.
 
@@ -191,9 +191,9 @@ Here are the basic steps to configure the server:
 
 Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -idea options to genrsa):
 
-~~
+~~~
 irods@hostname:~/ $ openssl genrsa -out server.key
-~~
+~~~
 
 #### Acquire a certificate for the server
 
@@ -201,15 +201,15 @@ The certificate can be either from a trusted CA (internal or external), or can b
 
 To generate a Certificate Signing Request that can be sent to a CA, run the 'openssl req' command using the previously generated key:
 
-~~
+~~~
 irods@hostname:~/ $ openssl req -new -key server.key -out server.csr
-~~
+~~~
 
 To generate a self-signed certificate, also run 'openssl req', but with slightly different parameters. In the openssl command, you can put as many days as you wish:
 
-~~
+~~~
 irods@hostname:~/ $ openssl req -new -x509 -key server.key -out server.crt -days 365
-~~
+~~~
 
 #### Create the certificate chain file
 
@@ -217,7 +217,7 @@ If you are using a self-signed certificate, the chain file is just the same as t
 
 An example best illustrates how to create this file. A certificate for a host 'irods.example.org' is requested from the proper domain registrar. Three files are received from the CA: irods.crt, PositiveSSLCA2.crt and AddTrustExternalCARoot.crt. The certificates have the following 'subjects' and 'issuers':
 
-~~
+~~~
 openssl x509 -noout -subject -issuer -in irods.crt
 subject= /OU=Domain Control Validated/OU=PositiveSSL/CN=irods.example.org
 issuer= /C=GB/ST=Greater Manchester/L=Salford/O=COMODO CA Limited/CN=PositiveSSL CA 2
@@ -227,23 +227,23 @@ issuer= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust Externa
 openssl x509 -noout -subject -issuer -in AddTrustExternalCARoot.crt
 subject= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust External CA Root
 issuer= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust External CA Root
-~~
+~~~
 
 The irods.example.org cert was signed by the PositiveSSL CA 2, and that the PositiveSSL CA 2 cert was signed by the AddTrust External CA Root, and that the AddTrust External CA Root cert was self-signed, indicating that it is the root CA (and the end of the chain).
 
 To create the chain file for irods.example.org:
 
-~~
+~~~
 irods@hostname:~/ $ cat irods.crt PositiveSSLCA2.crt AddTrustExternalCARoot.crt > chain.pem
-~~
+~~~
 
 #### Generate OpenSSL parameters
 
 Generate some Diffie-Hellman parameters for OpenSSL:
 
-~~
+~~~
 irods@hostname:~/ $ openssl dhparam -2 -out dhparams.pem 2048
-~~
+~~~
 
 #### Place files within accessible area
 
@@ -253,22 +253,22 @@ Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS se
 
 The server needs to read these variables on startup:
 
-~~
+~~~
 irods@hostname:~/ $ irods_ssl_certificate_chain_file=/etc/irods/chain.pem
 irods@hostname:~/ $ export irods_ssl_certificate_chain_file
 irods@hostname:~/ $ irods_ssl_certificate_key_file=/etc/irods/server.key
 irods@hostname:~/ $ export irods_ssl_certificate_key_file
 irods@hostname:~/ $ irods_ssl_dh_params_file=/etc/irods/dhparams.pem
 irods@hostname:~/ $ export irods_ssl_dh_params_file
-~~
+~~~
 
 #### Restart iRODS
 
 Restart the server:
 
-~~
+~~~
 irods@hostname:~/ $ ./iRODS/irodsctl restart
-~~
+~~~
 
 ### Client SSL Setup
 
@@ -278,7 +278,7 @@ After setting up SSL on the server side, test SSL by using the PAM authenticatio
 
 Error from non-trusted self-signed certificate:
 
-~~
+~~~
 irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
 NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
 NOTICE: created irodsHome=/dn/home/irods
@@ -290,11 +290,11 @@ NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/L=Chapel Hill/O=R
 NOTICE: sslVerifyCallback:   err 18:self signed certificate
 ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
 sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
-~~
+~~~
 
 Error from untrusted CA that signed the server certificate:
 
-~~
+~~~
 irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
 NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
 NOTICE: created irodsHome=/dn/home/irods
@@ -306,24 +306,24 @@ NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/O=example.org/CN=
 NOTICE: sslVerifyCallback:   err 19:self signed certificate in certificate chain
 ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
 sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
-~~
+~~~
 
 Server verification can be turned off using the irodsSSLVerifyServer environment variable. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
 
 It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irods_ssl_ca_certificate_file environment variable to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following in your environment:
 
-~~
+~~~
 irods@hostname:~/ $ irods_ssl_ca_certificate_file=/etc/irods/chain.pem
 irods@hostname:~/ $ export irods_ssl_ca_certificate_file
-~~
+~~~
 
 Or this file could just contain the root CA certificate for a CA-signed server certificate.
 Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irodsHost' variable. If this situation cannot be corrected on the server side, the client can set:
 
-~~
+~~~
 irods@hostname:~/ $ irods_ssl_verify_server=cert
 irods@hostname:~/ $ export irods_ssl_verify_server
-~~
+~~~
 
 Then, the client library will only require certificate validation, but will not check that the hostname of the iRODS server matches the hostname(s) embedded within the certificate.
 

@@ -1,11 +1,9 @@
-## Troubleshooting
-
-### Common Errors
+# Troubleshooting
 
 Some of the commonly encountered iRODS errors along with troubleshooting steps are discussed below.
 
 
-#### iRODS Server is down
+## iRODS Server is down
 
 !!! error
     USER_SOCK_CONNECT_TIMEDOUT -347000
@@ -32,7 +30,7 @@ Common areas to check for this error include:
 
 If the iRODS environment issues and networking issues have been ruled out, the iRODS server/client logs may provide additional information with regards to the specifics of the error in question.
 
-#### Routing issue and/or an accidental use of localhost
+## Routing issue and/or an accidental use of localhost
 
 !!! error
     SYS_EXCEED_CONNECT_CNT -9000
@@ -57,7 +55,7 @@ There are two networking requirements for iRODS:
 
 This error could occur if the gethostname() function is not returning the expected value on every machine in the Zone.  The values in the iCAT must match the values returned by gethostname() on each machine.
 
-#### No such file or directory
+## No such file or directory
 
 Common areas to check for this error include:
 
@@ -66,7 +64,7 @@ Common areas to check for this error include:
 3. Zero byte files
 
 
-#### No rows found in the iRODS Catalog
+## No rows found in the iRODS Catalog
 
 !!! error
     CAT_NO_ROWS_FOUND -808000
@@ -76,7 +74,7 @@ This error is occurs when there are no results for the database query that was e
 1. the query itself is not well-formed (e.g. syntax error), or
 2. the well-formed query produced no actual results (i.e. there is no data corresponding to the specified criteria).
 
-#### Access Control and Permissions
+## Access Control and Permissions
 
 !!! error
     CAT_NO_ACCESS_PERMISSION -818000
@@ -87,22 +85,14 @@ With the more restrictive "StrictACL" policy being turned "on" by default in iRO
 
 Modifying the "StrictACL" setting in the iRODS server's `core.re` file will apply the policy permanently; applying the policy via `irule` will have an impact only during the execution of that particular rule.
 
-#### Credentials
+## Credentials
 
 !!! error
     CAT_INVALID_USER -827000
 
 This error can occur when the iRODS user is unknown or invalid in some way (for instance, no password has been defined for the user, or the user does not exist in that Zone).  This error is most common while debugging configuration issues with Zone Federation.
 
-## Known Issues
-
-### Marked as "bug"
-
-All existing issues marked as "bug" are tracked at github:
-
-  [https://github.com/irods/irods/labels/bug](https://github.com/irods/irods/labels/bug)
-
-### Using 3.x iCommands with a 4.0+ iRODS Server
+## Using 3.x iCommands with a 4.0+ iRODS Server
 
 3.x iCommands retain basic functionality when speaking with a 4.0+ iRODS Server.
 

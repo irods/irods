@@ -1,41 +1,4 @@
-# iRODS Administration Guide
-
-## Overview
-
-This manual provides standalone documentation for [iRODS](https://irods.org) as packaged by the [Renaissance Computing Institute (RENCI)](http://www.renci.org) under the aegis of the [iRODS Consortium](https://irods.org/consortium).
-
-Full definitions for terms discussed in this manual are available in the [Glossary](../User_Guide/glossary.md).
-
-## Download
-
-iRODS is released in both binary package format and with full source code.
-
-### Binaries
-
-RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for combinations of platform and operating system.
-
-More combinations will be made available as our testing matrix continues to mature and increase in scope.
-
-The latest files can be downloaded from [https://irods.org/download](https://irods.org/download).
-
-### Open Source
-
-Repositories, issue trackers, and source code are available on GitHub.
-
- [https://github.com/irods](https://github.com/irods)
-
-
-## Backing Up
-
-Backing up iRODS involves: The data, the iRODS system and configuration files, and the iCAT database itself.
-
-Configuration and maintenance of this type of backup system is out of scope for this document, but is included here as an indication of best practice.
-
-1. The data itself can be handled by the iRODS system through replication and should not require any specific backup efforts worth noting here.
-2. The state of a zone (current policy and configuration settings) can be gathered by a 'rodsadmin' by running `izonereport`.  The resulting JSON file can be stored into iRODS or saved somewhere else.  When run on a regular schedule, the `izonereport` can gather all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
-3. The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called ["Record-based Log Shipping"](http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD).  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played".  This would bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called ["Streaming Replication"](http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION) was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
-
-## Architecture
+# Architecture
 
 iRODS 4.0+ represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of iRODS.
 
@@ -55,7 +18,7 @@ The planned plugin interfaces and their status are listed here:
 | Pluggable First Class Objects  | Requested  |          |
 
 
-### Dynamic Policy Enforcement Points
+## Dynamic Policy Enforcement Points
 
 iRODS 4.0+ has introduced the capability for dynamic policy enforcement points (PEP).  For every operation that is called, two policy enforcement points are constructed (both a pre and post variety), and if it has been defined in core.re or any other loaded rulebase file they will be executed by the rule engine.
 
@@ -71,7 +34,7 @@ The flow of information from the pre PEP to the plugin operation to the post PEP
 
 Note that if pep_PLUGINOPERATION_pre() fails, the PLUGINOPERATION will not be called and the plugin operation call will fail with the resulting error code of the pep_PLUGINOPERATION_pre() rule call.  This ability to fail early allows for fine-grained control of which plugin operations may or may not be allowed as defined by the policy of the data grid administrator.
 
-#### Available Plugin Operations
+### Available Plugin Operations
 
 The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP. Also, not every plugin operation has an available network connection handle which is required for calling out to microservices, these are noted in the table.
 
@@ -329,10 +292,10 @@ No
 </table>
 
 
-Microservice plugins and API plugins are also not wrapped with dynamic policy enforcement points.
+Microservice plugins and API plugins are not wrapped with dynamic policy enforcement points.
 
 
-#### Available Values within Dynamic PEPs
+### Available Values within Dynamic PEPs
 
 The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of `$KVPairs.VARIABLE_NAME` and are originally defined in `iRODS/lib/core/include/rodsKeyWdDef.h`.
 
@@ -453,7 +416,7 @@ Any resource node can be a coordinating resource and/or a storage resource.  How
 
 This powerful tree metaphor is best illustrated with an actual example.  You can now use `ilsresc --tree` to visualize the tree structure of a Zone.
 
-![ilsresc --tree](treeview.png "alt title")
+![ilsresc --tree](../treeview.png "alt title")
 
 ### Virtualization
 
@@ -645,7 +608,7 @@ Creating a composite resource consists of creating the individual nodes of the d
 
 #### Example 1
 
-![example1 tree](example1-tree.jpg)
+![example1 tree](../example1-tree.jpg)
 
 **Example 1:** Replicates Data Objects to three locations
 
@@ -768,77 +731,4 @@ API plugins self-describe their IN and OUT packing instructions (examples coming
 
 
 
-
-## Users & Permissions
-
-Users and permissions in iRODS are inspired by, but slightly different from, traditional Unix filesystem permissions.  Access to Data Objects and Collections can be modified using the `ichmod` iCommand.
-
-Additionally, permissions can be managed via user groups in iRODS.  A user can belong to more than one group at a time.  The owner of a Data Object has full control of the file and can grant and remove access to other users and groups.  The owner of a Data Object can also give ownership rights to other users, who in turn can grant or revoke access to users.
-
-Inheritance is a collection-specific setting that determines the permission settings for new Data Objects and sub-Collections.  Data Objects created within Collections with Inheritance set to Disabled do not inherit the parent Collection's permissions.  By default, iRODS has Inheritance set to Disabled.  More can be read from the help provided by `ichmod h`.
-
-Inheritance is especially useful when working with shared projects such as a public Collection to which all users should have read access. With Inheritance set to Enabled, any sub-Collections created under the public Collection will inherit the properties of the public Collection.  Therefore, a user with read access to the public Collection will also have read access to all Data Objects and Collections created in the public Collection.
-
-## Rule Engine
-
-The Rule Engine, which keeps track of state and interprets both system-defined rules and user-defined rules, is a critical component of the iRODS system.  Rules are definitions of actions that are to be performed by the server.  These actions are defined in terms of microservices and other actions.  The iRODS built-in Rule Engine interprets the rules and calls the appropriate microservices.
-
-### File Locking
-
-A race condition occurs when two processes simultaneously try to change the same data. The outcome of a race condition is unpredictable since both threads are "racing" to update the data.  To allow iRODS users to control such events, the iCommands `iput`, `iget`, and `irepl` each have both --wlock and --rlock options to lock the Data Objects during these operations.  An irodsServer thread then purges unused locked files every 2 hours.
-
-### Delay execution
-
-Rules can be run in two modes - immediate execution or delayed execution.  Most of the actions and microservices executed by the rule engine are executed immediately, however, some actions are better suited to be placed in a queue and executed later.  The actions and microservices which are to be executed in delay mode can be queued with the `delay` microservice.  Typically, delayed actions and microservices are resource-heavy, time-intensive processes, better suited to being carried out without having the user wait for their completion.  These delayed processes can also be used for cleanup and general maintenance of the iRODS system, like the cron in UNIX.
-
-Monitoring the delayed queue is important once your workflows and maintenance scripts depends on the health of the system. The delayed queue can be managed with the following three iCommands:
-
-1. iqdel    - remove a delayed rule (owned by you) from the queue.
-2. iqmod    - modify certain values in existing delayed rules (owned by you).
-3. iqstat   - show the queue status of delayed rules.
-
-### Additional Information
-
-More information is available in the standalone document named [Rule Language](../User_Guide/Rule_Language.md)
-
-<!--
-..
-.. ---------------
-.. Delay Execution
-.. ---------------
-.. - how
-.. - what
-.. - when
-.. - where
-.. - why
-.. - errors
-.. - queue management
-.. - file locking
-..
-.. ----------
-.. Monitoring
-.. ----------
-.. - nagios plugins (Jean-Yves)
-.. - other
-.. - Failover checking
-..
--->
-
-
-## Other Notes
-
-
-The iRODS setting 'StrictACL' is configured on by default in iRODS 4.x.  This is different from iRODS 3.x and behaves more like standard Unix permissions.  This setting can be found in the `/etc/irods/core.re` file under acAclPolicy{}.
-
-
-
-<!--
-..
-..
-.. --------------
-.. Best Practices
-.. --------------
-.. - tickets
-.. - quota management
--->
 

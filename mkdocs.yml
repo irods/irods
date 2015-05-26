@@ -4,9 +4,44 @@ site_description: Control Your Data
 site_author: iRODS Consortium
 site_dir: mkdocs/html
 theme: readthedocs
-theme: simplex
 
 markdown_extensions:
  - admonition
  - attr_list
  - def_list
+
+pages:
+ - 'index.md'
+ - Release Notes: 'release_notes.md'
+ - 'developers.md'
+ - Manual:
+    - 'manual/overview.md'
+    - 'manual/download.md'
+    - 'manual/installation.md'
+    - 'manual/upgrading.md'
+    - 'manual/configuration.md'
+    - Users & Permissions: 'manual/users_and_permissions.md'
+    - Backing Up: 'manual/backing_up.md'
+    - 'manual/architecture.md'
+    - 'manual/authentication.md'
+    - 'manual/federation.md'
+    - Distributing iCommands: 'manual/distributing_icommands.md'
+    - Rule Engine: 'manual/rule_engine.md'
+    - Rule Language: 'manual/rule_language.md'
+    - 'manual/glossary.md'
+    - Best Practices: 'manual/best_practices.md'
+    - 'manual/troubleshooting.md'
+ - iCommands:
+    - 'icommands/administrator.md'
+    - 'icommands/user.md'
+    - 'icommands/metadata.md'
+    - 'icommands/tickets.md'
+    - 'icommands/groupadmin.md'
+ - Plugins:
+    - 'plugins/microservice.md'
+    - 'plugins/resource.md'
+    - 'plugins/authentication.md'
+    - 'plugins/network.md'
+    - 'plugins/database.md'
+    - API: 'plugins/api.md'
+

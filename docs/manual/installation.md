@@ -106,7 +106,7 @@ The `setup_irods.sh` script will ask for the following eighteen pieces of inform
     A default system PostgreSQL installation is configured for ident-based authentication which means the unix service account name must match the database user name.  iRODS currently assumes this is the case.
 
 !!! Note
-    Installing the MySQL database plugin will also require [Installing lib_mysqludf_preg](#installing-lib_mysqludf_preg).  These functions are required for the internal iRODS SQL which uses regular expressions.
+    Installing the MySQL database plugin will also require [Installing lib_mysqludf_preg](architecture.md#installing-lib_mysqludf_preg).  These functions are required for the internal iRODS SQL which uses regular expressions.
 
 !!! Note
     When running iRODS on pre-8.4 PostgreSQL, it is necessary to remove an optimized specific query which was not yet available:

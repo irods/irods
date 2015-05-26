@@ -1,5 +1,0 @@
-# Dynamic PEPs
-
-## Overview
-
-## Plugins
