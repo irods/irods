@@ -659,7 +659,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         reDebug( EXEC_ACTION_END, -4, &param, node, env, rei );
     }
 
-    if ( getNodeType( res ) == N_ERROR ) {
+    if ( getNodeType( res ) == N_ERROR && strcmp(fn, "msiExecCmd") != 0) {
         RETURN;
     }
 
