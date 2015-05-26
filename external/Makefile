@@ -57,10 +57,14 @@ PG_VERSION=9.3.4
 UNIXODBC_VERSION=2.2.12
 PGUNIXODBCARCHIVE=postgresql-$(PG_VERSION)_unixODBC-$(UNIXODBC_VERSION)-$(OSNAME).tar.gz
 
+ifeq ($(OS_platform), osx_platform)
+default : generate
+else
 default :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
 	$(V_at)curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(RENCI_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
 	$(V_at)$(MAKE) $(FAKETARGETFORMAKE)
+endif
 
 $(PGUNIXODBCARCHIVE) :
 	echo "Getting PostgreSQL and unixODBC source for MacOSX..."

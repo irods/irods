@@ -249,6 +249,13 @@ echo "Detected OS Version [$DETECTEDOSVERSION]"
 cd $BUILDDIR/iRODS
 
 
+# MacOSX requires --run-in-place
+if [ "$DETECTEDOS" == "MacOSX" -a "$RUNINPLACE" != "1" ] ; then
+    echo "${text_red}#######################################################" 1>&2
+    echo "ERROR :: MacOSX requires the --run-in-place option" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
+    exit 1
+fi
 
 
 ############################################################
