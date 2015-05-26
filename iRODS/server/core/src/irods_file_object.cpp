@@ -71,7 +71,7 @@ namespace irods {
         repl_requested_( -1 ) {
         // =-=-=-=-=-=-=-
         // explicit initialization
-        replicas_.empty();
+        replicas_.clear();
     } // file_object
 
 // from dataObjInfo
@@ -86,7 +86,7 @@ namespace irods {
         resc_hier_      = _dataObjInfo->rescHier;
         flags_          = _dataObjInfo->flags;
         repl_requested_ = _dataObjInfo->replNum;
-        replicas_.empty();
+        replicas_.clear();
         replKeyVal( &_dataObjInfo->condInput, &cond_input_ );
         l1_desc_idx_ = getL1descIndexByDataObjInfo( _dataObjInfo );
         size_ = _dataObjInfo->dataSize;
