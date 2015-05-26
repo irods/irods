@@ -83,7 +83,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* data included in buf */
             return status;
         }
-        else if ( !portalOprOut ) {
+        else if ( !( *portalOprOut ) ) {
             rodsLog( LOG_ERROR, "_rcDataObjGet returned a %d status code, but left portalOprOut null.", status );
             return SYS_INVALID_PORTAL_OPR;
         }
