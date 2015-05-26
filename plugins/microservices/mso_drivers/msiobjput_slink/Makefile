@@ -4,6 +4,6 @@ SRCS = libmsiobjput_slink.cpp
 
 HEADERS = 
 
-EXTRALIBS = ../../../../iRODS/lib/core/obj/libRodsAPIs.a
+EXTRALIBS = 
 
 include ../Makefile.base
