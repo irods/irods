@@ -995,39 +995,25 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin rum')
         self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT_SINGLELINE', a)
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
-    def test_rule_engine_2521(self):
+    def test_msiset_default_resc__2712(self):
+        hostname = lib.get_hostname()
+        testresc1='pydevtest_TestResc'
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
-            initial_size_of_re_log = lib.get_log_size('re')
-            rules_to_prepend = '''
-first_rule_called_from_delay() {
-    writeLine("serverLog","test_rule_engine_2521: first delay rule executed successfully");
-}
-
-second_rule_called_from_delay() {
-    writeLine("serverLog","test_rule_engine_2521: second delay rule executed successfully");
-}
-
-acPostProcForPut() {
-    delay("<PLUSET>0m</PLUSET>") {
-        first_rule_called_from_delay();
-        second_rule_called_from_delay();
-    }
-}
-'''
+            initial_size_of_server_log = lib.get_log_size('server')
+            rules_to_prepend = 'acSetRescSchemeForCreate{ msiSetDefaultResc("'+testresc1+'","forced"); }\n'
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
-            trigger_file = 'file_to_trigger_acPostProcForPut'
+
+            trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
             lib.make_file(trigger_file, 10)
-            self.admin.assert_icommand(['iput', trigger_file])
-            time.sleep(40)
-            assert 1 == lib.count_occurrences_of_string_in_log(
-                're', 'writeLine: inString = test_rule_engine_2521: second delay rule executed successfully', start_index=initial_size_of_re_log)
-            assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid size', start_index=initial_size_of_re_log)
-            assert 0 == lib.count_occurrences_of_string_in_log('re', 'free(): invalid pointer', start_index=initial_size_of_re_log)
+            self.user0.assert_icommand(['iput', trigger_file])
+            self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
+
             os.unlink(trigger_file)
+            self.user0.assert_icommand('irm -f '+trigger_file)
+        time.sleep(2)  # remove once file hash fix is commited #2279
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
