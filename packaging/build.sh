@@ -149,6 +149,14 @@ while getopts ":chfj:rspvz" opt; do
 done
 echo ""
 
+# detect environment variables
+if [ "$IRODS_FTP_EXTERNAL" != "" ] ; then
+    echo "\$IRODS_FTP_EXTERNAL detected ... [$IRODS_FTP_EXTERNAL]"
+fi
+if [ "$IRODS_FTP_BUILD" != "" ] ; then
+    echo "\$IRODS_FTP_BUILD detected ... [$IRODS_FTP_BUILD]"
+fi
+
 # detect lack of submodules, and exit
 if [ ! -e ${SCRIPTPATH}/../irods_schema_configuration/v1 -o ! -e ${SCRIPTPATH}/../irods_schema_messaging/v1 ] ; then
     echo "${text_red}#######################################################" 1>&2
