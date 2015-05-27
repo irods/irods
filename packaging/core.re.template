@@ -48,9 +48,9 @@ acDeleteUserZoneCollections {
   acDeleteCollByAdminIfPresent("/"++$rodsZoneProxy++"/trash/home",$otherUserName); }
 #acDeleteCollByAdmin(*parColl,*childColl) {msiDeleteCollByAdmin(*parColl,*childColl); }
 acDeleteCollByAdminIfPresent(*parColl,*childColl) {
-  *status=errorcode(msiDeleteCollByAdmin(*parColl,*childColl));
+  *status=errormsg(msiDeleteCollByAdmin(*parColl,*childColl),*msg);
   if(*status!=0 && *status!=-808000) {
-    failmsg(*status, "msiDeleteCollByAdmin failed in acDeleteCollByAdminIfPresent") }}
+    failmsg(*status,*msg) }}
 acDeleteCollByAdmin(*parColl,*childColl) {
   msiDeleteCollByAdmin(*parColl,*childColl); }
 #
