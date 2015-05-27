@@ -13,7 +13,7 @@
 #include "irods_pack_table.hpp"
 #include "irods_parse_command_line_options.hpp"
 
-void usage();
+void usage( FILE* );
 
 int
 main( int argc, char **argv ) {
@@ -42,9 +42,12 @@ main( int argc, char **argv ) {
                     0,
                     &rodsPathInp );
     if ( p_err < 0 ) {
-        usage();
-        return 0;
+        usage( stderr );
+        return EXIT_FAILURE;
 
+    } else if( myRodsArgs.help ) {
+        usage( stdout );
+        return EXIT_SUCCESS;
     }
 
     if ( myRodsArgs.reconnect == True ) {
@@ -92,7 +95,12 @@ main( int argc, char **argv ) {
 }
 
 void
-usage() {
+usage( FILE* _fout ) {
+    if( !_fout ) {
+        fprintf( stderr, "usage - invalid file pointer\n" );
+        return;
+    }
+
     char *msgs[] = {
         "Usage: iput [-abfIkKPQrtTUvV] [-D dataType] [-N numThreads] [-n replNum]",
         "             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
@@ -214,7 +222,7 @@ usage() {
         if ( strlen( msgs[i] ) == 0 ) {
             break;
         }
-        printf( "%s\n", msgs[i] );
+        fprintf( _fout, "%s\n", msgs[i] );
     }
     printReleaseInfo( "iput" );
 }

@@ -89,7 +89,8 @@ static int parse_program_options(
 
     memset( &_rods_args, 0, sizeof( _rods_args ) );
     if ( global_prog_ops_var_map.count( "help" ) ) {
-        return SYS_INVALID_INPUT_PARAM;
+        _rods_args.help = 1;
+        return 0;
     }
     if ( global_prog_ops_var_map.count( "all" ) ) {
         _rods_args.all = 1;
@@ -357,6 +358,10 @@ int parse_opts_and_paths(
     if ( p_err < 0 ) {
         return p_err;
 
+    }
+
+    if( _rods_args.help ) {
+        return 0;
     }
 
     p_err = build_irods_path_structure(
