@@ -43,7 +43,8 @@ endif
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
 # use our locally built Boost on the include line
-CCFLAGS+=-I$(BOOST_DIR)
+CCFLAGS+= -DBOOST_SYSTEM_NO_DEPRECATED
+CCFLAGS+= -I$(BOOST_DIR)
 
 # =-=-=-=-=-=-=-
 
