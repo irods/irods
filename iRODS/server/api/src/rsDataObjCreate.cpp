@@ -379,16 +379,28 @@ _rsDataObjCreateWithResc(
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
 
-    rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
-
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
-        rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+        // we need to favor the results from the PEP acSetRescSchemeForCreate
+        irods::hierarchy_parser parse;
+        parse.set_string( resc_hier );
+        std::string root_resc;
+        parse.first_resc( root_resc );
 
+        if( root_resc == _resc_name ) {
+            // backwards compatibility
+            rstrcpy( dataObjInfo->rescName, root_resc.c_str(), NAME_LEN );
+            rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+        } else {
+            // backwards compatibility
+            rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
+            rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
+        }
     }
     else {
+        // backwards compatibility
+        rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
         rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
-
     }
 
     dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
@@ -619,7 +631,6 @@ int getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _
     // get resource name
     if ( !strlen( rei.rescName ) ) {
         irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, _resc_name );
-
         if ( !set_err.ok() ) {
             irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
