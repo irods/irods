@@ -416,3 +416,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_str_2528(self):
         self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT_SINGLELINE', "a=A++++b=B")
+
+    def test_return_data_structure_non_null_2604(self):
+        self.rods_session.assert_icommand('''irule "*Err = errorcode(msiExecCmd('cmd', '', '', '', '', *Out)); msiGetStderrInExecCmdOut(*Out, *Stderr); writeLine('stdout', 'stderr: *Err*Stderr')" null ruleExecOut''', 'STDOUT_SINGLELINE', "stderr")
