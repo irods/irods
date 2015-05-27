@@ -69,14 +69,14 @@ The flow of information from the pre PEP to the plugin operation to the post PEP
 - PLUGINOPERATION - Will receive any \*OUT defined by pep_PLUGINOPERATION_pre(\*OUT) above and will pass its own \*OUT variable to pep_PLUGINOPERATION_post()
 - pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION.  If the PLUGINOPERATION itself failed, the \*OUT variable will be populated with the string "OPERATION_FAILED".
 
-
+Note that if pep_PLUGINOPERATION_pre fails, the PLUGINOPERATION will not be called and the plugin operation call will fail with the resulting error code of the pep_PLUGINOPERATION_pre rule call.  This ability to fail early alllows for fine-grained control of which plugin operations may or may not be allowed as defined by the policy of the data grid administrator.
 
 #### Available Plugin Operations
 
-The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP.
+The following operations are available for dynamic PEP evaluation.  At this time, only very few operations themselves consider the output (\*OUT) of its associated pre PEP. Also, not every plugin operation has an available network connection handle which is required for calling out to microservices, these are noted in the table.
 
 <table border="1">
-<tr><th>Plugin Type</th><th>Plugin Operation</th></tr>
+<tr><th>Plugin Type</th><th>Plugin Operation</th><th>Can Call Microservices</tr>
 <tr>
 <td>Resource</td>
 <td>resource_create<br />
@@ -91,6 +91,19 @@ resource_modified<br />
 resource_resolve_hierarchy<br />
 resource_rebalance
 </td>
+<td>
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes
+</td>
 </tr>
 <tr>
 <td>Authentication</td>
@@ -102,6 +115,16 @@ auth_agent_auth_request<br />
 auth_agent_client_response<br />
 auth_agent_auth_response<br />
 auth_agent_auth_verify
+</td>
+<td>
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No
 </td>
 </tr>
 <tr>
@@ -115,8 +138,199 @@ network_read_body<br />
 network_write_header<br />
 network_write_body
 </td>
+<td>
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No<br />
+No
+</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>
+database_start<br/>
+database_stop<br/>
+database_debug<br/>
+database_open<br/>
+database_close<br/>
+database_get_local_zone<br/>
+database_update_resc_obj_count<br/>
+database_mod_data_obj_meta<br/>
+database_reg_data_obj<br/>
+database_reg_replica<br/>
+database_unreg_replica<br/>
+database_reg_rule_exec<br/>
+database_mod_rule_exec<br/>
+database_del_rule_exec<br/>
+database_resc_obj_count<br/>
+database_add_child_resc<br/>
+database_reg_resc<br/>
+database_del_child_resc<br/>
+database_del_resc<br/>
+database_rollback<br/>
+database_commit<br/>
+database_del_user_re<br/>
+database_reg_coll_by_admin<br/>
+database_reg_coll<br/>
+database_mod_coll<br/>
+database_simple_query<br/>
+database_gen_query<br/>
+database_gen_query_access_control_setup<br/>
+database_gen_query_ticket_setup<br/>
+database_specific_query<br/>
+database_general_update<br/>
+database_del_coll_by_admin<br/>
+database_del_coll<br/>
+database_check_auth<br/>
+database_make_tmp_pw<br/>
+database_make_limited_pw<br/>
+database_mod_user<br/>
+database_mod_group<br/>
+database_mod_resc<br/>
+database_mod_resc_data_paths<br/>
+database_mod_resc_freespace<br/>
+database_reg_user_re<br/>
+database_add_avu_metadata<br/>
+database_add_avu_metadata_wild<br/>
+database_del_avu_metadata<br/>
+database_set_avu_metadata<br/>
+database_copy_avu_metadata<br/>
+database_mod_avu_metadata<br/>
+database_mod_access_control<br/>
+database_mod_access_control_resc<br/>
+database_rename_object<br/>
+database_move_object<br/>
+database_reg_token<br/>
+database_del_token<br/>
+database_reg_zone<br/>
+database_mod_zone<br/>
+database_mod_zone_coll_acl<br/>
+database_del_zone<br/>
+database_rename_local_zone<br/>
+database_rename_coll<br/>
+database_reg_server_load<br/>
+database_reg_server_load_digest<br/>
+database_purge_server_load<br/>
+database_purge_server_load_digest<br/>
+database_calc_usage_and_quota<br/>
+database_set_quota<br/>
+database_check_quota<br/>
+database_del_unused_avus<br/>
+database_add_specific_query<br/>
+database_del_specific_query<br/>
+database_version_rule_base<br/>
+database_version_dvm_base<br/>
+database_ins_rule_table<br/>
+database_ins_dvm_table<br/>
+database_ins_fnm_table<br/>
+database_ins_msrvc_table<br/>
+database_version_fnm_base<br/>
+database_mod_ticket<br/>
+database_update_pam_password<br/>
+database_substitute_resource_hierarchies<br/>
+database_get_distinct_data_objs_missing_from_child_given_parent<br/>
+database_get_distinct_data_obj_count_on_resource<br/>
+database_get_hierarchy_for_resc<br/>
+database_check_and_get_obj_id<br/>
+database_get_rcs
+</td>
+<td>
+No<br/>
+No<br/>
+No<br/>
+No<br/>
+No<br/>
+No<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+No<br/>
+No<br/>
+No<br/>
+Yes<br/>
+No<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
+No<br/>
+No<br/>
+No<br/>
+No
+</td>
 </tr>
 </table>
+
+
+Microservice plugins and API plugins are also not wrapped with dynamic policy enforcement points.
+
 
 #### Available Values within Dynamic PEPs
 
@@ -188,6 +402,26 @@ ssl_num_hash_rounds<br />
 ssl_algorithm
 </td>
 </tr>
+
+
+<tr>
+<td rowspan="3">Database</td>
+
+<td>Postgres</td>
+<td>No Values Available</td>
+</tr>
+
+<tr>
+<td>MySQL</td>
+<td>No Values Available</td>
+</tr>
+
+<tr>
+<td>Oracle</td>
+<td>No Values Available</td>
+</tr>
+
+
 </table>
 
 

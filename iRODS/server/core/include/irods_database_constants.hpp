@@ -24,7 +24,7 @@ namespace irods {
     const std::string DATABASE_OP_MOD_RULE_EXEC( "database_mod_rule_exec" );
     const std::string DATABASE_OP_DEL_RULE_EXEC( "database_del_rule_exec" );
     const std::string DATABASE_OP_RESC_OBJ_COUNT( "database_resc_obj_count" );
-    const std::string DATABASE_OP_ADD_CHILD_RESC( "pg_add_child_resc" );
+    const std::string DATABASE_OP_ADD_CHILD_RESC( "database_add_child_resc" );
     const std::string DATABASE_OP_REG_RESC( "database_reg_resc" );
     const std::string DATABASE_OP_DEL_CHILD_RESC( "database_del_child_resc" );
     const std::string DATABASE_OP_DEL_RESC( "database_del_resc" );
