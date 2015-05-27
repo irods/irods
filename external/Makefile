@@ -177,6 +177,7 @@ $(LIBARCHIVEVERSIONMAKE) : $(LIBARCHIVEVERSIONARCHIVE) cmake
 	@rsync -c /tmp/archive_read_support_format_xar.c $(LIBARCHIVEVERSION)/libarchive/archive_read_support_format_xar.c
 	@rm -f /tmp/archive_read_support_format_xar.c
 	@cd $(LIBARCHIVEVERSION) ; \
+		rm -f CMakeCache.txt ; \
 		../$(CMAKEVERSION)/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
 
 libarchive : $(LIBARCHIVEVERSIONMAKE)
