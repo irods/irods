@@ -229,7 +229,6 @@ _rsDataObjClose(
     rodsLong_t newSize;
     char tmpStr[MAX_NAME_LEN];
     modDataObjMeta_t modDataObjMetaInp;
-    char *chksumStr = NULL;
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     int srcL1descInx;
     regReplica_t regReplicaInp;
@@ -350,10 +349,16 @@ _rsDataObjClose(
     }
 
     // need a checksum check
+    std::string checksum;
     if ( !noChkCopyLenFlag || updateChksumFlag ) {
+        char *chksumStr = NULL;
         status = procChksumForClose( rsComm, l1descInx, &chksumStr );
         if ( status < 0 ) {
             return status;
+        }
+        if ( chksumStr != NULL ) {
+            checksum = std::string( chksumStr );
+            free( chksumStr );
         }
     }
 
@@ -366,13 +371,12 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
-            free( chksumStr );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
-        if ( chksumStr != NULL ) {
-            addKeyVal( &regParam, CHKSUM_KW, chksumStr );
+        if ( !checksum.empty() ) {
+            addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
         }
         addKeyVal( &regParam, FILE_PATH_KW,     destDataObjInfo->filePath );
         addKeyVal( &regParam, RESC_NAME_KW,     destDataObjInfo->rescName );
@@ -420,7 +424,6 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: srcL1descInx %d out of range",
                      srcL1descInx );
-            free( chksumStr );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
@@ -433,8 +436,8 @@ _rsDataObjClose(
             addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
             snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
             addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
-            if ( chksumStr != NULL ) {
-                addKeyVal( &regParam, CHKSUM_KW, chksumStr );
+            if ( !checksum.empty() ) {
+                addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
             }
 
             if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
@@ -487,7 +490,6 @@ _rsDataObjClose(
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize srcDataObjInfo failed, status = [%d]", status );
-                    free( chksumStr );
                     return status;
                 }
             }
@@ -497,7 +499,6 @@ _rsDataObjClose(
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize destDataObjInfo failed, status = [%d]", status );
-                    free( chksumStr );
                     return status;
                 }
             }
@@ -522,7 +523,6 @@ _rsDataObjClose(
             rodsLog( LOG_NOTICE,
                      "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
                      destDataObjInfo->objPath, status );
-            free( chksumStr );
             return status;
         }
     }
@@ -550,9 +550,8 @@ _rsDataObjClose(
             L1desc[l1descInx].dataObjInfo->dataSize = newSize;
         }
 
-        if ( chksumStr != NULL ) {
-            addKeyVal( &regParam, CHKSUM_KW, chksumStr );
-            free( chksumStr );
+        if ( !checksum.empty() ) {
+            addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
         }
 
         if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
