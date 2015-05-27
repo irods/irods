@@ -1742,8 +1742,9 @@ myChmod( char *inPath, uint dataMode ) {
     }
 
     int error_code = chmod( inPath, dataMode & 0777 & ~( Myumask ) );
+    int errsav = errno;
     if ( error_code != 0 ) {
-        rodsLog( LOG_ERROR, "chmod failed myChmod with error code %d", error_code );
+        rodsLog( LOG_ERROR, "chmod failed for [%s] in myChmod with error code [%s]", inPath, strerror( errsav ) );
     }
 
     return 0;

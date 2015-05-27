@@ -81,7 +81,7 @@ static int parse_program_options(
                        std::find(
                            _paths.begin(),
                            _paths.end(),
-                           std::string( "-" ) );
+                           std::string( STDOUT_FILE_NAME ) );
     if ( have_verify && have_stdout ) {
         std::cerr << "Cannot verify checksum if data is piped to stdout." << std::endl << std::endl;
         return SYS_INVALID_INPUT_PARAM;
