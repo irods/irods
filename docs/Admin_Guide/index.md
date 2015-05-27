@@ -69,7 +69,7 @@ The flow of information from the pre PEP to the plugin operation to the post PEP
 - PLUGINOPERATION - Will receive any \*OUT defined by pep_PLUGINOPERATION_pre(\*OUT) above and will pass its own \*OUT variable to pep_PLUGINOPERATION_post()
 - pep_PLUGINOPERATION_post() - Will receive any \*OUT from PLUGINOPERATION.  If the PLUGINOPERATION itself failed, the \*OUT variable will be populated with the string "OPERATION_FAILED".
 
-Note that if pep_PLUGINOPERATION_pre fails, the PLUGINOPERATION will not be called and the plugin operation call will fail with the resulting error code of the pep_PLUGINOPERATION_pre rule call.  This ability to fail early alllows for fine-grained control of which plugin operations may or may not be allowed as defined by the policy of the data grid administrator.
+Note that if pep_PLUGINOPERATION_pre() fails, the PLUGINOPERATION will not be called and the plugin operation call will fail with the resulting error code of the pep_PLUGINOPERATION_pre() rule call.  This ability to fail early allows for fine-grained control of which plugin operations may or may not be allowed as defined by the policy of the data grid administrator.
 
 #### Available Plugin Operations
 
