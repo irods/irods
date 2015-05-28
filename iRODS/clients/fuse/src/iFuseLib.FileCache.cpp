@@ -268,8 +268,8 @@ getFileCachePath( const char *inPath, char *cachePath ) {
     splitPathByKey( ( char * ) inPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
 
     while ( 1 ) {
-        snprintf( cachePath, MAX_NAME_LEN, "%s/%s.%d", FuseCacheDir,
-                  myFile, ( int ) random() );
+        snprintf( cachePath, MAX_NAME_LEN, "%s/%s.%u", FuseCacheDir,
+                  myFile, getRandomInt() );
         if ( stat( cachePath, &statbuf ) < 0 ) {
             break;
         }
