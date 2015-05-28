@@ -694,15 +694,36 @@ The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 are:
 
 ~~~
 # Get Dependencies
-sudo apt-get install mysql-server mysql-client libmysqlclient-dev libpcre3-dev automake libtool
+sudo apt-get install mysql-server mysql-client libpcre3-dev libmysqlclient-dev build-essential libtool autoconf git
 
 # Build and Install
+git clone https://github.com/mysqludf/lib_mysqludf_preg.git
 cd lib_mysqludf_preg
+git checkout lib_mysqludf_preg-1.1
 autoreconf --force --install
 ./configure
 make
 sudo make install
 sudo make MYSQL="mysql -p" installdb
+sudo service mysql restart
+~~~
+
+The steps for installing `lib_mysqludf_preg` on CentOS 6 are:
+
+~~~
+# Get Dependencies
+sudo yum install mysql mysql-server pcre-devel gcc make automake mysql-devel autoconf git
+
+# Build and Install
+git clone https://github.com/mysqludf/lib_mysqludf_preg.git
+cd lib_mysqludf_preg
+git checkout lib_mysqludf_preg-1.1
+autoreconf --force --install
+./configure
+make
+sudo make install
+mysql --user=root --password="password" < installdb.sql
+sudo service mysqld restart
 ~~~
 
 To test the installation, execute the following command::
@@ -728,7 +749,3 @@ The iRODS API has traditionally been a hard-coded table of values and names.  Wi
 At runtime, if a reqested API number is not already in the table, it is dynamically loaded from `plugins/api` and executed.  As it is a dynamic system, there is the potential for collisions between existing API numbers and any new dynamically loaded API numbers.  It is considered best practice to use a dynamic API number above 10000 to ensure no collisions with the existing static API calls.
 
 API plugins self-describe their IN and OUT packing instructions (examples coming soon).  These packing instructions are loaded into the table at runtime along with the API name, number, and the operation implementation being described.
-
-
-
-
