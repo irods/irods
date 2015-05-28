@@ -319,6 +319,7 @@ int
 getPathStMode( const char* p );
 
 void getRandomBytes( void * buf, int bytes );
+int getRandomInt();
 
 #ifdef __cplusplus
 }

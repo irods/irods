@@ -692,10 +692,8 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
         int loopCnt = 0;
         bzero( dataObjInp, sizeof( dataObjInp_t ) );
         while ( 1 ) {
-            int myRanNum;
-            getRandomBytes( &myRanNum, sizeof ( myRanNum ) );
             status = rsMkBundlePath( rsComm, collection, dataObjInp->objPath,
-                                     myRanNum );
+                                     getRandomInt() );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "createPhyBundleFile: getPhyBundlePath err for %s.stat = %d",
