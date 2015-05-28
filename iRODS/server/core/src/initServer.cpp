@@ -763,14 +763,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
     GlobalQuotaOverrun = 0;
     RescQuotaPolicy = RESC_QUOTA_UNINIT;
 
-    status = seedRandom();
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "initAgent: seedRandom error, status = %d",
-                 status );
-        return status;
-    }
-
 #ifndef windows_platform
     if ( rsComm->reconnFlag == RECONN_TIMEOUT ) {
         rsComm->reconnSock = svrSockOpenForInConn( rsComm, &rsComm->reconnPort,
@@ -780,7 +772,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
             rsComm->reconnAddr = NULL;
         }
         else {
-            rsComm->cookie = random();
+            rsComm->cookie = ( int )( getRandomInt() >> 1 );
         }
         try {
             rsComm->thread_ctx->lock      = new boost::mutex;
