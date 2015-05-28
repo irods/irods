@@ -133,7 +133,10 @@ int processXMsg( int streamId, char *readmsg,
     int grdf[2];
     int cmd = 0;
     int smallW;
+
     snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s", param->actionName );
+    memset( mymsg, 0, sizeof( mymsg ) );
+
     PARSER_BEGIN( DbgCmd )
     TRY( DbgCmd )
     TTEXT2( "n", "next" );
