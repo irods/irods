@@ -68,7 +68,7 @@ if [ -f $SETUP_DATABASE_FLAG ] ; then
     DATABASENAME=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_name']"`
     DATABASEUSER=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_username']"`
     if [ "$DATABASETYPE" == "oracle" ] ; then
-        ORACLEHOME=`$PYTHON -c "import json; print json.load(open('$server_config'))['ORACLE_HOME']"`
+        ORACLEHOME=`$PYTHON -c "import json; print json.load(open('$server_config'))['environment_variables']['ORACLE_HOME']"`
     fi
     STATUS="loop"
 else
