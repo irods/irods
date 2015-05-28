@@ -602,7 +602,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
     tmpDataObjInfo = *dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
         if ( tmpCnt > 1 ) {
-            order = random() % tmpCnt;
+            order = getRandomInt() % tmpCnt;
         }
         else {
             order = 0;
