@@ -351,7 +351,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         svr_port_range_end = svr_port_range_end < 65535 ? svr_port_range_end : 65535;
         int portRangeCount = svr_port_range_end - svr_port_range_start + 1;
 
-        int myPortNum = svr_port_range_start + random() % portRangeCount;
+        int myPortNum = svr_port_range_start + getRandomInt() % portRangeCount;
         int bindCnt = 0;
         while ( bindCnt < portRangeCount ) {
             if ( myPortNum > svr_port_range_end ) {
