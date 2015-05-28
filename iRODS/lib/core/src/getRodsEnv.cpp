@@ -853,6 +853,73 @@ extern "C" {
                 return savePtr;
             }
         }
-    }
+    } // findNextTokenAndTerm
+
+    void printRodsEnv( 
+        FILE*    _fout, 
+        rodsEnv* _env ) {
+        if( !_env || !_fout ) {
+            fprintf( _fout, "Null iRODS Environemnt Parameter\n" );
+            return;
+        }
+        
+        fprintf( _fout, "irods_user_name - [%s]\n", _env->rodsUserName );
+        fprintf( _fout, "irods_host - [%s]\n",  _env->rodsHost );
+        fprintf( _fout, "irods_port - [%d]\n",  _env->rodsPort );
+        fprintf( _fout, "irods_home - [%s]\n",  _env->rodsHome );
+        fprintf( _fout, "irods_cwd - [%s]\n",  _env->rodsCwd );
+        fprintf( _fout, "irods_authentication_scheme - [%s]\n", _env->rodsAuthScheme );
+        fprintf( _fout, "irods_default_resource - [%s]\n", _env->rodsDefResource );
+        fprintf( _fout, "irods_zone_name - [%s]\n", _env->rodsZone );
+        fprintf( _fout, "irods_gsi_server_dn - [%s]\n", _env->rodsServerDn );
+        fprintf( _fout, "irods_log_level - [%d]\n", _env->rodsLogLevel );
+        fprintf( _fout, "irods_authentication_file - [%s]\n", _env->rodsAuthFile );
+        fprintf( _fout, "irods_debug -  [%s]\n", _env->rodsDebug );
+        fprintf( _fout, "irods_client_server_policy - [%s]\n", _env->rodsClientServerPolicy );
+        fprintf( _fout, "irods_client_server_negotiation - [%s]\n", _env->rodsClientServerNegotiation );
+
+        // =-=-=-=-=-=-=-
+        // client side options for encryption
+        fprintf( _fout, "irods_encryption_key_size - [%d]\n",  _env->rodsEncryptionKeySize );
+        fprintf( _fout, "irods_encryption_salt_size - [%d]\n",  _env->rodsEncryptionSaltSize );
+        fprintf( _fout, "irods_encryption_num_hash_rounds - [%d]\n",  _env->rodsEncryptionNumHashRounds );
+        fprintf( _fout, "irods_encryption_algorithm - [%s]\n", _env->rodsEncryptionAlgorithm );
+
+        // =-=-=-=-=-=-=-
+        // client side options for hashing
+        fprintf( _fout, "irods_default_hash_scheme - [%s]\n",  _env->rodsDefaultHashScheme );
+        fprintf( _fout, "irods_match_hash_policy - [%s]\n", _env->rodsMatchHashPolicy );
+
+        // =-=-=-=-=-=-=-
+        // leagcy ssl environment variables
+        fprintf( _fout, "irods_ssl_ca_certificate_path - [%s]\n", _env->irodsSSLCACertificatePath );
+        fprintf( _fout, "irods_ssl_ca_certificate_file - [%s]\n", _env->irodsSSLCACertificateFile );
+        fprintf( _fout, "irods_ssl_verify_server - [%s]\n", _env->irodsSSLVerifyServer );
+        fprintf( _fout, "irods_ssl_certificate_chain_file - [%s]\n", _env->irodsSSLCertificateChainFile );
+        fprintf( _fout, "irods_ssl_certificate_key_file - [%s]\n",  _env->irodsSSLCertificateKeyFile );
+        fprintf( _fout, "irods_ssl_dh_params_file - [%s]\n",  _env->irodsSSLDHParamsFile );
+
+        // =-=-=-=-=-=-=-
+        // control plane parameters
+        fprintf( _fout, "irods_server_control_plane_key - [%s]\n", _env->irodsCtrlPlaneKey );
+        fprintf( _fout, "irods_server_control_plane_port - [%d]\n",   _env->irodsCtrlPlanePort );
+        fprintf( _fout, "irods_server_control_plane_encryption_num_hash_rounds - [%d]\n",  _env->irodsCtrlPlaneEncryptionNumHashRounds );
+        fprintf( _fout, "irods_server_control_plane_encryption_algorithm - [%s]\n", _env->irodsCtrlPlaneEncryptionAlgorithm );
+
+        // =-=-=-=-=-=-=-
+        // advanced settings
+        fprintf( _fout,  "irods_maximum_size_for_single_buffer_in_megabytes - [%d]\n", _env->irodsMaxSizeForSingleBuffer );
+        fprintf( _fout, "irods_default_number_of_transfer_threads - [%d]\n",  _env->irodsDefaultNumberTransferThreads );
+        fprintf( _fout, "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes - [%d]\n", _env->irodsTransBufferSizeForParaTrans );
+
+        // =-=-=-=-=-=-=-
+        // override of plugin installation directory
+        fprintf( _fout,  "irods_plugins_home - [%s]\n", _env->irodsPluginHome );
+        
+        fprintf( _fout, "irods_xmsg_host - [%s]\n",  _env->xmsgHost );
+        fprintf( _fout, "irods_xmsg_port - [%d]\n",  _env->xmsgPort );
+        fprintf( _fout, "\n" );
+
+    } // printRodsEnv
 
 } // extern "C"

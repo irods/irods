@@ -179,7 +179,6 @@ static int parse_program_options(
     if ( global_prog_ops_var_map.count( "very_verbose" ) ) {
         _rods_args.verbose = 1;
         _rods_args.veryVerbose = 1;
-        rodsLogLevel( LOG_NOTICE );
     }
     if ( global_prog_ops_var_map.count( "data_type" ) ) {
         _rods_args.dataType = 1;
@@ -356,6 +355,12 @@ int parse_opts_and_paths(
                     _rods_args,
                     paths );
     if ( p_err < 0 ) {
+        if( _rods_args.veryVerbose ) {
+            rodsEnv env;
+            getRodsEnv( &env );
+            printRodsEnv( stderr, &env );
+        }
+
         return p_err;
 
     }
@@ -372,9 +377,19 @@ int parse_opts_and_paths(
                 _flag,
                 _rods_paths );
     if ( p_err < 0 ) {
+        if( _rods_args.veryVerbose ) {
+            rodsEnv env;
+            getRodsEnv( &env );
+            printRodsEnv( stderr, &env );
+        }
         return p_err;
     }
 
+    if( _rods_args.veryVerbose ) {
+        rodsEnv env;
+        getRodsEnv( &env );
+        printRodsEnv( stdout, &env );
+    }
     return 0;
 
 } // parse_opts_and_paths
