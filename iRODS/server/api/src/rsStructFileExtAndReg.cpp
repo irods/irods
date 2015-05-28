@@ -190,7 +190,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         /* rename the phyBunDir */
         char tmp[MAX_NAME_LEN]; // JMC cppcheck - src & dst snprintf
         strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
-        snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-d", tmp, ( int ) random() ); // JMC cppcheck - src & dst snprintf
+        snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-d", tmp, getRandomInt() ); // JMC cppcheck - src & dst snprintf
         status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name,
                                   dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0,
                                   rescHier.c_str() );
