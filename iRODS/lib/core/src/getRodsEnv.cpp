@@ -859,7 +859,7 @@ extern "C" {
         FILE*    _fout, 
         rodsEnv* _env ) {
         if( !_env || !_fout ) {
-            fprintf( _fout, "Null iRODS Environemnt Parameter\n" );
+            fprintf( stderr, "Null iRODS Environment Parameter\n" );
             return;
         }
         
