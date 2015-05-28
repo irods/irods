@@ -150,11 +150,11 @@ getReiFilePath( char *reiFilePath, char *userName ) {
     snprintf(
         reiFilePath,
         MAX_NAME_LEN,
-        "%-s/%-s.%-s.%-d",
+        "%-s/%-s.%-s.%-u",
         rei_dir.c_str(),
         REI_FILE_NAME,
         myUserName,
-        ( uint ) random() );
+        getRandomInt() );
 
     return 0;
 }
