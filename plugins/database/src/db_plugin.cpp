@@ -812,13 +812,13 @@ static bool allowed_zone_char( const char _c ) {
 } // allowed_zone_char
 
 // =-=-=-=-=-=-=-
-/// @brief function for validing the name of a zone
+/// @brief function for validating the name of a zone
 irods::error validate_zone_name(
     std::string _zone_name ) {
     std::string::iterator itr = std::find_if( _zone_name.begin(),
                                 _zone_name.end(),
                                 allowed_zone_char );
-    if ( itr != _zone_name.end() ) {
+    if ( itr != _zone_name.end() || _zone_name.length() >= NAME_LEN ) {
         std::stringstream msg;
         msg << "validate_zone_name failed for zone [";
         msg << _zone_name;
