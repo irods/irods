@@ -725,7 +725,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
                                           lib.get_irods_top_level_dir() + "/unixAVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin mkresc unixB 'unixfilesystem' " + hostname + ":" +
                                           lib.get_irods_top_level_dir() + "/unixBVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-            admin_session.assert_icommand("iadmin mkresc w_pt passthru 'write=1.0;read=1.0'", 'STDOUT_SINGLELINE', 'passthru')
+            admin_session.assert_icommand("iadmin mkresc w_pt passthru '' 'write=1.0;read=1.0'", 'STDOUT_SINGLELINE', 'passthru')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc w_pt")
             admin_session.assert_icommand("iadmin addchildtoresc w_pt unixB")
