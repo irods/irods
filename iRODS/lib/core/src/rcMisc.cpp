@@ -2357,7 +2357,7 @@ appendRandomToPath( char * trashPath ) {
         return SYS_INVALID_FILE_PATH;
     }
     tmpPtr = trashPath + len;
-    sprintf( tmpPtr, ".%d", ( uint ) random() );
+    sprintf( tmpPtr, ".%u", getRandomInt() );
 
     return 0;
 }
