@@ -459,8 +459,8 @@ chkAndResetRule() {
                      RULE_ENGINE_TRY_CACHE,
                      NULL,
                      ( char* )re_str.c_str(),
-                     ( char* )fnm_str.c_str(),
-                     ( char* )dvm_str.c_str() );
+                     ( char* )dvm_str.c_str(),
+                     ( char* )fnm_str.c_str() );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "chkAndResetRule: initRuleEngine error, status = %d", status );
