@@ -310,6 +310,10 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
     @unittest.skipIf(FEDERATION.LOCAL_IRODS_VERSION < (4, 0, 3) or FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
     def test_iget_from_bundle(self):
+        '''
+        WIP
+        '''
+
         # make test dir
         dir_name = 'iphybun_test_dir'
         file_count = 20
@@ -332,7 +336,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         remote_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -fr {dir_path} {remote_home_collection}/".format(**parameters))
 
         # new collection should be there
         remote_session.assert_icommand(
@@ -343,8 +347,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_home_collection'])
 
         # cleanup
-# remote_session.assert_icommand("irm -rf
-# {remote_home_collection}/{dir_name}".format(**parameters))
+        remote_session.assert_icommand(
+            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
         # close remote session
