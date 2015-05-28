@@ -4611,8 +4611,8 @@ void getRandomBytes( void * buf, int bytes ) {
     }
 }
 
-int getRandomInt() {
-    int random;
+unsigned int getRandomInt() {
+    unsigned int random;
     getRandomBytes( &random, sizeof( random ) );
     return random;
 }

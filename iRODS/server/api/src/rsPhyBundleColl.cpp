@@ -800,7 +800,7 @@ rsMkBundlePath( rsComm_t *rsComm, char *collection, char *bundlePath,
     *bundlePathPtr = '\0';
     rstrcpy( startBundlePath, bundlePath, MAX_NAME_LEN );
 
-    snprintf( bundlePathPtr, MAX_NAME_LEN, "bundle/%s.%d", tmpStr, myRanNum );
+    snprintf( bundlePathPtr, MAX_NAME_LEN, "bundle/%s.%u", tmpStr, ( unsigned int)myRanNum );
 
     if ( ( status = splitPathByKey( bundlePath, destBundleColl, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' ) )
             < 0 ) {

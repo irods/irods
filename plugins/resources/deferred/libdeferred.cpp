@@ -134,7 +134,6 @@ extern "C" {
     irods::error deferred_start_operation(
         irods::plugin_property_map&,
         irods::resource_child_map& ) {
-        srand( time( NULL ) );
         return SUCCESS();
 
     } // deferred_start_operation
@@ -153,9 +152,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // get the size of the map and deferredly pick an index into it
-            double rand_number  = static_cast<double>( rand() );
-            rand_number /= static_cast<double>( RAND_MAX );
-            size_t target_index = ( size_t )round( ( _cmap.size() - 1 ) * rand_number );
+            size_t target_index = getRandomInt() % _cmap.size();
 
             // =-=-=-=-=-=-=-
             // child map is keyed by resource name so we need to count out the index
