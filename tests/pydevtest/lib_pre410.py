@@ -423,6 +423,9 @@ def get_service_account_environment_file_contents():
             raise err
         return open_and_load_pre410_env_file(os.path.expanduser('~/.irods/.irodsEnv'))
 
+def make_session_for_existing_user(username, password, hostname, zone):
+    env_dict = make_environment_dict(username, hostname, zone)
+    return IrodsSession(env_dict, password, False)
 
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()

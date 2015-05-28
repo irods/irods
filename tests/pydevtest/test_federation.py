@@ -325,9 +325,10 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['user_name'] = 'rods'
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}".format(
             **parameters)
-        
+
         # make session for existing remote user
-        remote_session = lib.make_session_for_existing_user('rods', 'rods', 'irods403', '403')
+        remote_session = lib.make_session_for_existing_user(
+            'rods', 'rods', 'irods403', '403')
 
         # put dir in remote collection
         remote_session.assert_icommand(
@@ -342,13 +343,12 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_home_collection'])
 
         # cleanup
-#        remote_session.assert_icommand("irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
+# remote_session.assert_icommand("irm -rf
+# {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
         # close remote session
         remote_session.__exit__()
-
-        pass
 
     def test_irm_f(self):
         # pick session(s) for the test
@@ -821,7 +821,8 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
             **parameters)
 
         # invoke msiRmColl() and checks that it returns 0
-        test_session.assert_icommand(irule_str, 'STDOUT', '^0$', use_regex=True)
+        test_session.assert_icommand(
+            irule_str, 'STDOUT', '^0$', use_regex=True)
 
         # collection should be gone
         test_session.assert_icommand(
@@ -857,9 +858,9 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', filename)
 
         # prepare rule file
-        rule_file = os.path.join(self.local_test_dir_path, 'delay_msiobjstat.r')
-        
-        with open(rule_file, 'w') as f:
+        rule_file_path = os.path.join(
+            self.local_test_dir_path, 'delay_msiobjstat.r')
+        with open(rule_file_path, 'w') as rule_file:
             rule_str = '''
 delay_msiobjstat {{
     delay("<PLUSET>30s</PLUSET>") {{
@@ -872,18 +873,19 @@ delay_msiobjstat {{
 INPUT *obj="{remote_home_collection}/{filename}"
 OUTPUT ruleExecOut
 '''.format(**parameters)
-            f.write(rule_str)
+            rule_file.write(rule_str)
 
         # invoke rule
-        test_session.assert_icommand('irule -F ' + rule_file)
-        
+        test_session.assert_icommand('irule -F ' + rule_file_path)
+
         # give it time to complete
         time.sleep(60)
-        
+
         # look for AVU set by delay rule
         attr = "delay_msiobjstat_return_value"
         value = "0"
-        test_session.assert_icommand('imeta ls -d {remote_home_collection}/{filename}'.format(**parameters), 'STDOUT_MULTILINE', ['attribute: ' + attr + '$', 'value: ' + value + '$'], use_regex=True)
+        test_session.assert_icommand('imeta ls -d {remote_home_collection}/{filename}'.format(
+            **parameters), 'STDOUT_MULTILINE', ['attribute: ' + attr + '$', 'value: ' + value + '$'], use_regex=True)
 
         # cleanup
         test_session.assert_icommand(
