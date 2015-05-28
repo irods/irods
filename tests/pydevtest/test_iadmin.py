@@ -997,11 +997,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_msiset_default_resc__2712(self):
         hostname = lib.get_hostname()
-        testresc1='pydevtest_TestResc'
+        testresc1 = 'pydevtest_TestResc'
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_log_size('server')
-            rules_to_prepend = 'acSetRescSchemeForCreate{ msiSetDefaultResc("'+testresc1+'","forced"); }\n'
+            rules_to_prepend = 'acSetRescSchemeForCreate{ msiSetDefaultResc("' + testresc1 + '","forced"); }\n'
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
@@ -1012,7 +1012,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
 
             os.unlink(trigger_file)
-            self.user0.assert_icommand('irm -f '+trigger_file)
+            self.user0.assert_icommand('irm -f ' + trigger_file)
         time.sleep(2)  # remove once file hash fix is commited #2279
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')

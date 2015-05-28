@@ -13,7 +13,10 @@ import lib
 
 
 SessionsMixin = lib.make_sessions_mixin([('otherrods', 'apass')], [('alice', 'password'), ('anonymous', None)])
+
+
 class Test_Iticket(SessionsMixin, unittest.TestCase):
+
     def setUp(self):
         super(Test_Iticket, self).setUp()
         self.admin = self.admin_sessions[0]

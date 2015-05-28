@@ -40,10 +40,10 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         return (local_dir, local_files)
 
     def test_icommand_help_and_error_codes(self):
-        icmds = [ 'iput', 'iget' ]
+        icmds = ['iput', 'iget']
         for i in icmds:
-            self.admin.assert_icommand(i+' -h', 'STDOUT_SINGLELINE', 'Usage', desired_rc=0)
-            self.admin.assert_icommand(i+' -thisisanerror','STDERR_SINGLELINE','Usage',desired_rc=1)
+            self.admin.assert_icommand(i + ' -h', 'STDOUT_SINGLELINE', 'Usage', desired_rc=0)
+            self.admin.assert_icommand(i + ' -thisisanerror', 'STDERR_SINGLELINE', 'Usage', desired_rc=1)
 
     def test_iget_with_verify_to_stdout(self):
         self.admin.assert_icommand("iget -K nopes -", 'STDERR_SINGLELINE', 'Cannot verify checksum if data is piped to stdout')
