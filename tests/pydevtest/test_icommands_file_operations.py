@@ -45,17 +45,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(i+' -h', 'STDOUT_SINGLELINE', 'Usage', desired_rc=0)
             self.admin.assert_icommand(i+' -thisisanerror','STDERR_SINGLELINE','Usage',desired_rc=1)
 
-    def test_icommand_print_irods_env_for_verbose(self):
-        icmds = [ 'iput', 'iget' ]
-        for i in icmds:
-            self.admin.assert_icommand(i+' -V', 'STDERR_SINGLELINE', 'irods_')
-        
-        icmds = [ 'ichmod', 'ils' ]
-        for i in icmds:
-            self.admin.assert_icommand(i+' -V', 'STDOUT_SINGLELINE', 'irods_')
-        
-        self.admin.assert_icommand('ienv', 'STDOUT_SINGLELINE', 'irods_')
-
     def test_iget_with_verify_to_stdout(self):
         self.admin.assert_icommand("iget -K nopes -", 'STDERR_SINGLELINE', 'Cannot verify checksum if data is piped to stdout')
 

@@ -67,8 +67,7 @@ typedef struct {
 extern "C" {
 #endif
 
-int  getRodsEnv( rodsEnv *myRodsEnv );
-void printRodsEnv(FILE*, rodsEnv*);
+int getRodsEnv( rodsEnv *myRodsEnv );
 
 char *getRodsEnvFileName();
 char *getRodsEnvAuthFileName();
