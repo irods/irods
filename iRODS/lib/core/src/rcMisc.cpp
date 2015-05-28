@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <string>
 #include <openssl/md5.h>
+#include <openssl/rand.h>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
@@ -42,6 +43,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
+#include <boost/random.hpp>
+#include <boost/generator_iterator.hpp>
 using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
@@ -4694,4 +4697,15 @@ hasSymlinkInPath( const char * myPath ) {
         rstrcpy( lastCheckedPath, myPath, MAX_NAME_LEN );
     }
     return status;
+}
+
+void getRandomBytes( void * buf, int bytes ) {
+    if ( RAND_bytes( ( unsigned char * )buf, bytes ) != 1 ) {
+        static boost::mt19937 generator( std::time( 0 ) ^ ( getpid() << 16 ) );
+        static boost::uniform_int<unsigned char> byte_range( 0, 0xff );
+        static boost::variate_generator<boost::mt19937, boost::uniform_int<unsigned char> > random_byte( generator, byte_range );
+        for ( int i = 0; i < bytes; i++ ) {
+            ( ( unsigned char * ) buf )[i] = random_byte();
+        }
+    }
 }

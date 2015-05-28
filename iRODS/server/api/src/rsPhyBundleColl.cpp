@@ -671,7 +671,6 @@ int
 createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
                         const std::string& _resc_name, const char* rescHier, dataObjInp_t *dataObjInp, // should be able to only use rescHier
                         char* dataType ) { // JMC - backport 4658
-    int myRanNum;
     int l1descInx;
     int status;
 
@@ -693,7 +692,8 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
         int loopCnt = 0;
         bzero( dataObjInp, sizeof( dataObjInp_t ) );
         while ( 1 ) {
-            myRanNum = random();
+            int myRanNum;
+            getRandomBytes( &myRanNum, sizeof ( myRanNum ) );
             status = rsMkBundlePath( rsComm, collection, dataObjInp->objPath,
                                      myRanNum );
             if ( status < 0 ) {

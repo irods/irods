@@ -318,6 +318,8 @@ static const int STDOUT_STATUS = 1000000;
 int
 getPathStMode( const char* p );
 
+void getRandomBytes( void * buf, int bytes );
+
 #ifdef __cplusplus
 }
 #endif
