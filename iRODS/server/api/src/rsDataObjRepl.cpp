@@ -1229,7 +1229,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
         if ( status == 0 && tmpDataObjInfo.dataId != destDataObjInfo->dataId ) {
             /* someone is using it */
             char tmp_str[ MAX_NAME_LEN ];
-            snprintf( tmp_str, MAX_NAME_LEN, "%s.%-d", destDataObjInfo->filePath, ( int ) random() );
+            snprintf( tmp_str, MAX_NAME_LEN, "%s.%-u", destDataObjInfo->filePath, getRandomInt() );
             strncpy( destDataObjInfo->filePath, tmp_str, MAX_NAME_LEN );
         }
     }
