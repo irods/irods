@@ -37,7 +37,7 @@ rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
     }
     ( *outXmsgTicketInfo )->flag = getXmsgTicketInp->flag;
     while ( 1 ) {
-        ( *outXmsgTicketInfo )->rcvTicket = random();
+        ( *outXmsgTicketInfo )->rcvTicket = getRandomInt();
         ( *outXmsgTicketInfo )->sendTicket = ( *outXmsgTicketInfo )->rcvTicket;
         hashSlotNum = ticketHashFunc( ( *outXmsgTicketInfo )->rcvTicket );
         status = addTicketToHQue(
