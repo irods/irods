@@ -250,8 +250,8 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
         if ( rodsArgs->verbose == True ) {
             ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
             printTiming( conn, dataObjOprInp->objPath, srcSize,
-                    strcmp( targPath, STDOUT_FILE_NAME) ? targPath : NULL,
-                    &startTime, &endTime );
+                         strcmp( targPath, STDOUT_FILE_NAME ) ? targPath : NULL,
+                         &startTime, &endTime );
         }
         if ( gGuiProgressCB != NULL ) {
             conn->operProgress.totalNumFilesDone++;

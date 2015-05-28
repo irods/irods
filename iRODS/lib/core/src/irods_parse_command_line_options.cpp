@@ -360,7 +360,7 @@ int parse_opts_and_paths(
 
     }
 
-    if( _rods_args.help ) {
+    if ( _rods_args.help ) {
         return 0;
     }
 

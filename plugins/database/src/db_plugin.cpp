@@ -2714,9 +2714,9 @@ extern "C" {
         else {
             /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
             j = upCols;
-            updateCols.push_back("data_is_dirty");
+            updateCols.push_back( "data_is_dirty" );
             snprintf( newCopy, NAME_LEN, "%d", NEWLY_CREATED_COPY );
-            updateVals.push_back(newCopy);
+            updateVals.push_back( newCopy );
             upCols++;
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 5" );

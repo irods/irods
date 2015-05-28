@@ -137,7 +137,7 @@ namespace irods {
             return PASS( ret );
         }
 
-        if( !fs::exists( cfg_file ) ) {
+        if ( !fs::exists( cfg_file ) ) {
             return SUCCESS();
         }
 

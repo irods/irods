@@ -13,7 +13,7 @@
 #include "irods_pack_table.hpp"
 #include "irods_parse_command_line_options.hpp"
 
-void usage(FILE*);
+void usage( FILE* );
 
 int
 main( int argc, char **argv ) {
@@ -47,7 +47,8 @@ main( int argc, char **argv ) {
     if ( p_err < 0 ) {
         usage( stderr );
         return EXIT_FAILURE;
-    } else if( myRodsArgs.help ) {
+    }
+    else if ( myRodsArgs.help ) {
         usage( stdout );
         return EXIT_SUCCESS;
     }
@@ -100,7 +101,7 @@ main( int argc, char **argv ) {
 
 void
 usage( FILE* _fout ) {
-    if( !_fout ) {
+    if ( !_fout ) {
         fprintf( stderr, "usage - invalid file pointer\n" );
         return;
     }

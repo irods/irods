@@ -224,7 +224,7 @@ int _rsFileCreate(
 
     } // if !create_err.ok()
 
-    if( !create_err.ok() ) {
+    if ( !create_err.ok() ) {
         return create_err.code();
     }
 

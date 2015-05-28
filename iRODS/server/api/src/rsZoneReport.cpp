@@ -134,7 +134,7 @@ irods::error get_server_reports(
 
         // possible null termination issues
         std::string tmp_str = bbuf ? std::string( ( char* )bbuf->buf, bbuf->len ) :
-            std::string();
+                              std::string();
 
         json_error_t j_err;
         json_t* j_resc = json_loads(

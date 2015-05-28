@@ -254,7 +254,7 @@ _rsDataObjClose(
         const rodsLong_t vault_size = getSizeInVault(
                                           rsComm,
                                           L1desc[l1descInx].dataObjInfo );
-        if( vault_size < 0 ) {
+        if ( vault_size < 0 ) {
             rodsLog( LOG_ERROR,
                      "_rsDataObjClose - getSizeInVault failed [%ld]",
                      vault_size );

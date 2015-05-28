@@ -21,7 +21,7 @@ namespace irods {
         }; // min_buckets = 2 ^^ N, 0 < N
 
         size_t operator()( const std::string& s1 ) const {
-            if( s1.empty() ) {
+            if ( s1.empty() ) {
                 rodsLog(
                     LOG_NOTICE,
                     "irods_string_hash - empty string value" );

@@ -775,7 +775,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     }
     if ( 0 >= size_per_tran_thr ) {
         rodsLog( LOG_ERROR, "%d is an invalid size_per_tran_thr value. "
-                "size_per_tran_thr must be greater than zero.", size_per_tran_thr );
+                 "size_per_tran_thr must be greater than zero.", size_per_tran_thr );
         return SYS_INVALID_INPUT_PARAM;
     }
     size_per_tran_thr *= 1024 * 1024;
@@ -834,7 +834,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
         }
         if ( 0 >= trans_buff_size ) {
             rodsLog( LOG_ERROR, "%d is an invalid trans_buff size. "
-                    "trans_buff_size must be greater than zero.", trans_buff_size );
+                     "trans_buff_size must be greater than zero.", trans_buff_size );
             return SYS_INVALID_INPUT_PARAM;
         }
         trans_buff_size *= 1024 * 1024;

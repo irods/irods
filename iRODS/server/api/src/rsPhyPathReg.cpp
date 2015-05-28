@@ -528,7 +528,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         rei.status = applyRule( "acPostProcForFilePathReg", NULL, &rei,
                                 NO_SAVE_REI );
     }
-        
+
     clearKeyVal( &dataObjInfo.condInput );
 
     return status;

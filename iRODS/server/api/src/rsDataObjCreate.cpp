@@ -387,11 +387,12 @@ _rsDataObjCreateWithResc(
         std::string root_resc;
         parse.first_resc( root_resc );
 
-        if( root_resc == _resc_name ) {
+        if ( root_resc == _resc_name ) {
             // backwards compatibility
             rstrcpy( dataObjInfo->rescName, root_resc.c_str(), NAME_LEN );
             rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
-        } else {
+        }
+        else {
             // backwards compatibility
             rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
             rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
