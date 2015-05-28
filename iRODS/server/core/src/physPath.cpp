@@ -191,13 +191,12 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 int
 setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
                         char *outPath ) {
-    int myRandom;
     int dir1, dir2;
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN];
     int status;
 
-    myRandom = random();
+    unsigned int myRandom = getRandomInt();
     dir1 = myRandom & 0xf;
     dir2 = ( myRandom >> 4 ) & 0xf;
 
@@ -691,8 +690,8 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
     oldPtr = filePath + len;
     newPtr = fileRenameInp->newFileName + len;
 
-    snprintf( newPtr, MAX_NAME_LEN - len, "/%s%s.%-d", newDir, oldPtr,
-              ( uint ) random() );
+    snprintf( newPtr, MAX_NAME_LEN - len, "/%s%s.%-u", newDir, oldPtr,
+              getRandomInt() );
 
 
     if ( renameFlag > 0 ) {
@@ -1161,8 +1160,8 @@ rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath ) {
     }
     orphanPathPtr = orphanPath + strlen( orphanPath );
 
-    snprintf( orphanPathPtr, strlen( childName ) + 20, "/%s.%-d",
-              childName, ( uint ) random() );
+    snprintf( orphanPathPtr, strlen( childName ) + 20, "/%s.%-u",
+              childName, getRandomInt() );
 
     return 0;
 }
