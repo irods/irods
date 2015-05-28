@@ -783,8 +783,8 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 int
 getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
     while ( 1 ) {
-        snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%d", phyBunRootDir,
-                  userName, ( int ) random() );
+        snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%u", phyBunRootDir,
+                  userName, getRandomInt() );
         boost::filesystem::path p( outPhyBunDir );
         if ( !exists( p ) ) {
             break;
