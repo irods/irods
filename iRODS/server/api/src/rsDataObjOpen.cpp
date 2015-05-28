@@ -556,8 +556,16 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     status = getFilePathName( rsComm, myDataObjInfo, dataObjInp );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "getFilePathName failed in %s with status %d", __FUNCTION__, status );
+        return status;
+    }
 
     status = l3CreateByObjInfo( rsComm, dataObjInp, myDataObjInfo );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "l3CreateByObjInfo failed in %s with status %d", __FUNCTION__, status );
+        return status;
+    }
 
     /* close it */
     _l3Close( rsComm, status );

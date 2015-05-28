@@ -97,8 +97,6 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
         return 0;
     }
-    else {
-    }
 
     /* Make up a physical path */
     if ( dataObjInfo->rescName[0] == '\0' ) {
