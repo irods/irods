@@ -868,7 +868,7 @@ extern "C" {
         fprintf( _fout, "irods_client_server_negotiation - [%s]\n", _env->rodsClientServerNegotiation );
         fprintf( _fout, "irods_client_server_policy - [%s]\n", _env->rodsClientServerPolicy );
         fprintf( _fout, "irods_cwd - [%s]\n",  _env->rodsCwd );
-        fprintf( _fout, "irods_debug -  [%s]\n", _env->rodsDebug );
+        fprintf( _fout, "irods_debug - [%s]\n", _env->rodsDebug );
         fprintf( _fout, "irods_default_hash_scheme - [%s]\n",  _env->rodsDefaultHashScheme );
         fprintf( _fout, "irods_default_number_of_transfer_threads - [%d]\n",  _env->irodsDefaultNumberTransferThreads );
         fprintf( _fout, "irods_default_resource - [%s]\n", _env->rodsDefResource );
