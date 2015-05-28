@@ -199,7 +199,7 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     }
 
     thisPortList->sock = lsock;
-    thisPortList->cookie = random();
+    thisPortList->cookie = ( int )( getRandomInt() >> 1 );
     if ( ProcessType == CLIENT_PT ) {
         rstrcpy( thisPortList->hostAddr, laddr, LONG_NAME_LEN );
     }
