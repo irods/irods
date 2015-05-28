@@ -1693,7 +1693,7 @@ usage( char *subOpt ) {
         "Type is the user type (see 'lt user_type' for a list)",
         "Zone is the user's zone (for remote-zone users)",
         " ",
-        "Tip: Use moduser to set a password or other attributes, "
+        "Tip: Use moduser to set a password or other attributes,",
         "     use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)",
         ""
     };

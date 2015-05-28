@@ -2,7 +2,7 @@
 
 iRODS is provided in binary form in a collection of interdependent packages.  There are two types of iRODS server, iCAT and Resource:
 
-1. An iCAT server manages a Zone, handles the database connection to the iCAT metadata catalog (which could be either local or remote), and can provide [Storage Resources](#storage-resources).  An iRODS Zone will have exactly one iCAT server.
+1. An iCAT server manages a Zone, handles the database connection to the iCAT metadata catalog (which could be either local or remote), and can provide [Storage Resources](architecture.md#storage-resources).  An iRODS Zone will have exactly one iCAT server.
 2. A Resource server connects to an existing Zone and can provide additional storage resource(s).  An iRODS Zone can have zero or more Resource servers.
 
 An iCAT server is just a Resource server that also provides the central point of coordination for the Zone and manages the metadata.
@@ -15,13 +15,13 @@ The simplest iRODS installation consists of one iCAT server and zero Resource se
 
 The irods-icat package installs the iRODS binaries and management scripts.
 
-Additionally, an iRODS database plugin is required. iRODS uses this plugin (see [Pluggable Database](#pluggable-database) to communicate with the desired database management system (e.g. Oracle, MySQL, PostgreSQL).
+Additionally, an iRODS database plugin is required. iRODS uses this plugin (see [Pluggable Database](architecture.md#pluggable-database) to communicate with the desired database management system (e.g. Oracle, MySQL, PostgreSQL).
 
 The iRODS installation script (which also configures the iRODS database plugin) requires database connection information about an existing database.  iRODS neither creates nor manages a database instance itself, just the tables within the database. Therefore, the database instance should be created and configured before installing iRODS.
 
 ### Database Setup
 
-iRODS can use many different database configurations.  As an example, a local PostgreSQL database can be configured on Ubuntu 12.04 with the following steps:
+iRODS can use many different database configurations.  As an example, a local PostgreSQL database can be configured on Ubuntu 14.04 with the following steps:
 
 ~~~
 $ (sudo) su - postgres
@@ -78,7 +78,7 @@ The `setup_irods.sh` script below will prompt for, and then create, if necessary
 $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 ~~~
 
-The `setup_irods.sh` script will ask for the following eighteen pieces of information before starting the iRODS server:
+The `setup_irods.sh` script will ask for the following nineteen pieces of information before starting the iRODS server:
 
 1. Service Account Name
 2. Service Account Group
@@ -91,16 +91,17 @@ The `setup_irods.sh` script will ask for the following eighteen pieces of inform
 9. negotiation_key
 10. Control Plane Port
 11. Control Plane Key
-12. iRODS Administrator Username
-13. iRODS Administrator Password
-14. Database Server's Hostname or IP
-15. Database Port
-16. Database Name
-17. Database User
-18. Database Password
+12. Schema Validation Base URI
+13. iRODS Administrator Username
+14. iRODS Administrator Password
+15. Database Server's Hostname or IP
+16. Database Port
+17. Database Name
+18. Database User
+19. Database Password
 
 !!! Note
-    A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 14) above.
+    A default system PostgreSQL installation does not listen on a TCP port, it only listens on a local socket.  If your PostgreSQL server is localhost, use 'localhost' for 15) above.
 
 !!! Note
     A default system PostgreSQL installation is configured for ident-based authentication which means the unix service account name must match the database user name.  iRODS currently assumes this is the case.
@@ -131,7 +132,7 @@ Installation of the Resource RPM:
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 ~~~
 
-The `setup_irods.sh` script will ask for the following fourteen pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+The `setup_irods.sh` script will ask for the following fifteen pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1. Service Account Name
 2. Service Account Group
@@ -143,10 +144,11 @@ The `setup_irods.sh` script will ask for the following fourteen pieces of inform
 8. negotiation_key
 9. Control Plane Port
 10. Control Plane Key
-11. iRODS Administrator Username
-12. iCAT Host
-13. iCAT Zone
-14. iRODS Administrator Password
+11. Schema Validation Base URI
+12. iRODS Administrator Username
+13. iCAT Host
+14. iCAT Zone
+15. iRODS Administrator Password
 
 ## Default Environment
 
@@ -155,7 +157,7 @@ Once a server is up and running, the default environment can be shown:
 ~~~
 irods@hostname:~/ $ ienv
 NOTICE: Release Version = rodsTEMPLATE_IRODSVERSION, API Version = d
-NOTICE: irods_session_environment_file - /var/lib/irods/.irods/irods_environment.json.24368
+NOTICE: irods_session_environment_file - /var/lib/irods/.irods/irods_environment.json.19345
 NOTICE: irods_user_name - rods
 NOTICE: irods_host - hostname
 NOTICE: xmsg_host is not defined
@@ -177,7 +179,7 @@ NOTICE: irods_match_hash_policy - compatible
 NOTICE: irods_gsi_server_dn is not defined
 NOTICE: irods_debug is not defined
 NOTICE: irods_log_level is not defined
-NOTICE: irods_authentication_file_name is not defined
+NOTICE: irods_authentication_file is not defined
 NOTICE: irods_ssl_ca_certificate_path is not defined
 NOTICE: irods_ssl_ca_certificate_file is not defined
 NOTICE: irods_ssl_verify_server is not defined
@@ -188,6 +190,10 @@ NOTICE: irods_server_control_plane_key - TEMPORARY__32byte_ctrl_plane_key
 NOTICE: irods_server_control_plane_encryption_num_hash_rounds - 16
 NOTICE: irods_server_control_plane_encryption_algorithm - AES-256-CBC
 NOTICE: irods_server_control_plane_port - 1248
+NOTICE: irods_maximum_size_for_single_buffer_in_megabytes - 32
+NOTICE: irods_default_number_of_transfer_threads - 4
+NOTICE: irods_transfer_buffer_size_for_parallel_transfer_in_megabytes - 4
+NOTICE: irods_plugins_home is not defined
 ~~~
 
 ## Run In Place
@@ -232,9 +238,9 @@ You are installing iRODS with the --run-in-place option.
 
 The iRODS server cannot be started until it has been configured.
 
-iRODS server's port [1247]:
+iRODS server's zone name [tempZone]:
 
-iRODS server's zone [tempZone]:
+iRODS server's port [1247]:
 
 iRODS port range (begin) [20000]:
 
@@ -250,22 +256,25 @@ Control Plane port [1248]:
 
 Control Plane key [TEMPORARY__32byte_ctrl_plane_key]:
 
+Schema Validation Base URI (or 'off') [https://schemas.irods.org/configuration]:
+
 iRODS server's administrator username [rods]:
 
 iRODS server's administrator password:
 
 -------------------------------------------
-iRODS Port:             1247
-iRODS Zone:             tempZone
-Range (Begin):          20000
-Range (End):            20199
-Vault Directory:        /full/path/to/Vault
-zone_key:               TEMPORARY_zone_key
-negotiation_key:        TEMPORARY_32byte_negotiation_key
-Control Plane Port:     1248
-Control Plane Key:      TEMPORARY__32byte_ctrl_plane_key
-Administrator Name:     rods
-Administrator Password: Not Shown
+iRODS Zone:                 tempZone
+iRODS Port:                 1247
+Range (Begin):              20000
+Range (End):                20199
+Vault Directory:            /full/path/to/Vault
+zone_key:                   TEMPORARY_zone_key
+negotiation_key:            TEMPORARY_32byte_negotiation_key
+Control Plane Port:         1248
+Control Plane Key:          TEMPORARY__32byte_ctrl_plane_key
+Schema Validation Base URI: https://schemas.irods.org/configuration
+Administrator Username:     rods
+Administrator Password:     Not Shown
 -------------------------------------------
 Please confirm these settings [yes]:
 ~~~
@@ -275,8 +284,46 @@ Please confirm these settings [yes]:
 
 Installation on a MacOSX system requires the use of the --run-in-place build option due to the lack of a system-level package manager.
 
-.. include:: packaging/MACOSX_DATABASE_SETUP.txt
+Building and running iRODS on MacOSX is currently only supported with a locally compiled PostgreSQL.  Once the build.sh script is complete, the PostgreSQL system needs to be configured and made ready to be used by iRODS:
 
+```
+ # =-=-=-=-=-=-=-
+ # on MacOSX, default postgresql has socket connections managed through /var
+ # but its associated helper scripts assume /tmp
+ export PGHOST=/tmp
+
+ # =-=-=-=-=-=-=-
+ # switch into the new database directory
+ cd external/postgresql-9.3.4
+
+ # =-=-=-=-=-=-=-
+ # update $PATH to use this local psql
+ export PATH=`pwd`/pgsql/bin:$PATH
+
+ # =-=-=-=-=-=-=-
+ # initialize the database
+ ./pgsql/bin/initdb -D `pwd`/pgsql/data
+
+ # =-=-=-=-=-=-=-
+ # turn off standard_conforming_strings (postgresql 9.x)
+ sed -i '' 's/#standard_conforming_strings = on/standard_conforming_strings = off/' ./pgsql/data/postgresql.conf
+
+ # =-=-=-=-=-=-=-
+ # start the database, with logging
+ ./pgsql/bin/pg_ctl -D `pwd`/pgsql/data -l logfile start
+
+ # =-=-=-=-=-=-=-
+ # create database, user, and permissions
+ ./pgsql/bin/createdb ICAT
+ ./pgsql/bin/createuser irods
+ ./pgsql/bin/psql ICAT -c "ALTER ROLE irods WITH PASSWORD 'testpassword'"
+ ./pgsql/bin/psql ICAT -c "GRANT ALL PRIVILEGES ON DATABASE \"ICAT\" TO irods"
+
+ # =-=-=-=-=-=-=-
+ # switch back to top level and run setup_irods_database.sh
+ cd ../../
+ ./plugins/database/packaging/setup_irods_database.sh
+```
 
 # Quickstart
 
@@ -355,7 +402,10 @@ irods@hostname:~/ $ cat .irods/irods_environment.json
     "irods_server_control_plane_port": 1248,
     "irods_server_control_plane_key": "TEMPORARY__32byte_ctrl_plane_key",
     "irods_server_control_plane_encryption_num_hash_rounds": 16,
-    "irods_server_control_plane_encryption_algorithm": "AES-256-CBC"
+    "irods_server_control_plane_encryption_algorithm": "AES-256-CBC",
+    "irods_maximum_size_for_single_buffer_in_megabytes": 32,
+    "irods_default_number_of_transfer_threads": 4,
+    "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes": 4
 }
 ~~~
 
@@ -370,14 +420,14 @@ irods@hostname:~/ $ ils
 
 ## Changing the zone_key and negotiation_key
 
-iRODS 4.1+ servers use the `zone_key` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`:
+iRODS 4.1+ servers use the `zone_key` and `negotiation_key` to mutually authenticate.  These two variables should be changed from their default values in `/etc/irods/server_config.json`:
 
 ~~~
 "zone_key": "TEMPORARY_zone_key",
 "negotiation_key":   "TEMPORARY_32byte_negotiation_key",
 ~~~
 
-The `zone_key` can be up to 50 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see [Server Authentication](#server-authentication) for more information).
+The `zone_key` can be up to 49 alphanumeric characters long and cannot include a hyphen.  The 'negotiation_key' must be exactly 32 alphanumeric bytes long.  These values need to be the same on all servers in the same Zone, or they will not be able to authenticate (see [Server Authentication](federation.md#server-authentication) for more information).
 
 The following error will be logged if a negotiation_key is missing:
 
@@ -404,12 +454,12 @@ Additional information about creating resources can be found with:
 ~~~
 irods@hostname:~/ $ iadmin help mkresc
  mkresc Name Type [Host:Path] [ContextString] (make Resource)
-Create (register) a new storage or database resource.
+Create (register) a new coordinating or storage resource.
 
 Name is the name of the new resource.
 Type is the resource type.
 Host is the DNS host name.
-And Path is the defaultPath for the vault.
+Path is the defaultPath for the vault.
 ContextString is any contextual information relevant to this resource.
   (semi-colon separated key=value pairs e.g. "a=b;c=d")
 
@@ -440,7 +490,7 @@ Type is the user type (see 'lt user_type' for a list)
 Zone is the user's zone (for remote-zone users)
 
 Tip: Use moduser to set a password or other attributes,
-use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)
+     use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)
 ~~~
 
 It is best to change your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local irods_environment.json files.

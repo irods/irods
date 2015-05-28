@@ -105,6 +105,13 @@ This file defines the database settings for the iRODS installation. It is create
 
 This file contains the following top level entries:
 
+  - `catalog_database_type` (required) - The type of database iRODS is using for the iCAT, either 'postgres', 'mysql', or 'oracle'
+  - `db_host` (required) - The hostname of the database server (can be localhost)
+  - `db_odbc_type` (required) - The ODBC type, usually 'unix'
+  - `db_password` (required) - The password for the `db_username` to connect to the `db_name`
+  - `db_port` (required) - The port on which the database server is listening
+  - `db_name` (required) - The name of the database used as the iCAT
+  - `db_username` (required) - The database user name
 
 ## ~/.irods/irods_environment.json
 
@@ -112,37 +119,37 @@ This is the main iRODS configuration file defining the iRODS environment. Any ch
 
 The service account environment file contains the following top level entries:
 
-  - `irods_authentication_file` (optional) - 
-  - `irods_authentication_scheme` (optional) - 
-  - `irods_client_server_negotiation` (required) - 
-  - `irods_client_server_policy` (required) - 
-  - `irods_control_plane_port` (optional) - 
-  - `irods_control_plane_key` (optional) - 
-  - `irods_cwd` (required) - 
-  - `irods_debug` (optional) - 
-  - `irods_default_hash_scheme` (required) - 
-  - `irods_default_resource` (required) - 
-  - `irods_encryption_algorithm` (required) - 
-  - `irods_encryption_key_size` (required) - 
-  - `irods_encryption_num_hash_rounds` (required) - 
-  - `irods_encryption_salt_size` (required) - 
-  - `irods_gsi_server_dn` (optional) - 
-  - `irods_home` (required) - 
-  - `irods_host` (required) - 
-  - `irods_log_level` (optional) - 
-  - `irods_match_hash_policy` (required) - 
-  - `irods_plugins_home` (optional) - 
-  - `irods_port` (required) - 
-  - `irods_ssl_ca_certificate_file` (optional) - 
-  - `irods_ssl_ca_certificate_path` (optional) - 
-  - `irods_ssl_certificate_chain_file` (optional) - 
-  - `irods_ssl_certificate_key_file` (optional) - 
-  - `irods_ssl_dh_params_file` (optional) - 
-  - `irods_ssl_verify_server` (optional) - 
-  - `irods_user_name` (required) - 
-  - `irods_xmsg_host` (optional) - 
-  - `irods_xmsg_port` (optional) - 
-  - `irods_zone_name` (required) - 
+  - `irods_authentication_file` (optional) - Fully qualified path to a file holding the credentials of an authenticated iRODS user
+  - `irods_authentication_scheme` (optional) - This user's iRODS authentication method, currently: "pam", "krb", "gsi" or "native"
+  - `irods_client_server_negotiation` (required) - Set to "request_server_negotiation" indicating advanced negotiation is desired, for use in enabling SSL and other technologies
+  - `irods_client_server_policy` (required) - "CS_NEG_REFUSE" for no SSL, "CS_NEG_REQUIRE" to demand SSL, or "CS_NEG_DONT_CARE" to allow the server to decide
+  - `irods_control_plane_port` (optional) - The port on which the control plane operates.
+  - `irods_control_plane_key` (optional) - The encryption key required for communicating with the iRODS grid control plane.
+  - `irods_cwd` (required) - The current working directory within iRODS
+  - `irods_debug` (optional) - Desired verbosity of the debug logging level
+  - `irods_default_hash_scheme` (required) - Currently either MD5 or SHA256
+  - `irods_default_resource` (required) - The name of the resource used for iRODS operations if one is not specified
+  - `irods_encryption_algorithm` (required) - EVP-supplied encryption algorithm for parallel transfer encryption
+  - `irods_encryption_key_size` (required) - Key size for parallel transfer encryption
+  - `irods_encryption_num_hash_rounds` (required) - Number of hash rounds for parallel transfer encryption
+  - `irods_encryption_salt_size` (required) - Salt size for parallel transfer encryption
+  - `irods_gsi_server_dn` (optional) - The Distinguished Name of the GSI Server
+  - `irods_home` (required) - The home directory within the iRODS Zone for a given user
+  - `irods_host` (required) - A fully qualified domain name for the given iRODS server
+  - `irods_log_level` (optional) - Desired verbosity of the iRODS logging
+  - `irods_match_hash_policy` (required) - Use 'strict' to refuse defaulting to another scheme or 'compatible' for supporting alternate schemes
+  - `irods_plugins_home` (optional) - Directory to use for the client side plugins (useful when [Distributing iCommands to Users](distributing_icommands.md))
+  - `irods_port` (required) - The port number for the given iRODS Zone
+  - `irods_ssl_ca_certificate_file` (optional) - Location of a file of trusted CA certificates in PEM format. Note that the certificates in this file are used in conjunction with the system default trusted certificates.
+  - `irods_ssl_ca_certificate_path` (optional) - Location of a directory containing CA certificates in PEM format. The files each contain one CA certificate. The files are looked up by the CA subject name hash value, which must hence be available. If more than one CA certificate with the same name hash value exist, the extension must be different (e.g. 9d66eef0.0, 9d66eef0.1 etc). The search is performed in the ordering of the extension number, regardless of other properties of the certificates. Use the ‘c_rehash’ utility to create the necessary links.
+  - `irods_ssl_certificate_chain_file` (optional) - The file containing the server's certificate chain. The certificates must be in PEM format and must be sorted starting with the subject's certificate (actual client or server certificate), followed by intermediate CA certificates if applicable, and ending at the highest level (root) CA.
+  - `irods_ssl_certificate_key_file` (optional) - Private key corresponding to the server's certificate in the certificate chain file.
+  - `irods_ssl_dh_params_file` (optional) - The Diffie-Hellman parameter file location
+  - `irods_ssl_verify_server` (optional) - What level of server certificate based authentication to perform. 'none' means not to perform any authentication at all. 'cert' means to verify the certificate validity (i.e. that it was signed by a trusted CA). 'hostname' means to validate the certificate and to verify that the irods_host's FQDN matches either the common name or one of the subjectAltNames of the certificate. 'hostname' is the default setting.
+  - `irods_user_name` (required) - The username within iRODS for this account
+  - `irods_xmsg_host` (optional) - The host name of the XMessage server (usually localhost)
+  - `irods_xmsg_port` (optional) - The port of the XMessage server
+  - `irods_zone_name` (required) - The name of the iRODS Zone
 
 The same schema is used to define (but not enforce) the client side environment.  The following top level entries constitute the minimum working set of properties:
 

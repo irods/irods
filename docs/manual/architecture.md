@@ -508,7 +508,29 @@ If the selected target child resource of a put operation is currently marked "do
 
 #### Passthru
 
-The passthru resource was originally designed as a testing mechanism to exercise the new composable resource hierarchies.
+The passthru resource was originally designed as a testing mechanism to exercise the new composable resource hierarchies.  They have proven to be more useful than that in a couple of interesting ways.
+
+1. A passthru can be used as the root node of a resource hierarchy.  This will allow a Zone's users to have a stable default resource, even as an administrator changes out disks or other resource names in the Zone.
+
+2. A passthru resource's contextString can be set to have an effect on its child's votes for both read and/or write.
+
+To create a resource with priority read, use a 'read' weight greater than 1 (note the empty host:path parameter):
+
+```
+irods@hostname:~/ $ iadmin mkresc newResc passthru '' 'write=1.0;read=2.0'
+Creating resource:
+Name:           "newResc"
+Type:           "passthru"
+Host:           ""
+Path:           ""
+Context:        "write=1.0;read=2.0"
+```
+
+To modify an existing passthru resource to be written to only after other eligible resources, use a 'write' weight less than 1:
+
+```
+irods@hostname:~/ $ iadmin modresc newResc context 'write=0.4;read=1.0'
+```
 
 A passthru resource can have one and only one child.
 
@@ -536,11 +558,21 @@ These are used mainly for mounted collections.
 
 #### Amazon S3 (Archive)
 
-The Amazon S3 archive storage resource is used to interface with an S3 bucket.  It is expected to be used as the archive child of a compound resource composition.  The credentials are stored in a file which is referenced by the context string.  Read more at: [https://github.com/irods/irods_resource_plugin_s3](https://github.com/irods/irods_resource_plugin_s3)
+The Amazon S3 archive storage resource is used to interface with an S3 bucket.  It is expected to be used as the archive child of a compound resource composition.  The credentials are stored in a file which is referenced by the context string.
+
+Read more at: [https://github.com/irods/irods_resource_plugin_s3](https://github.com/irods/irods_resource_plugin_s3)
 
 #### DDN WOS (Archive)
 
-The DataDirect Networks (DDN) WOS archive storage resource is used to interface with a Web Object Scalar (WOS) Appliance.  It is expected to be used as the archive child of a compound resource composition.  It currently references a single WOS endpoint and WOS policy in the context string.  Read more at: [https://github.com/irods/irods_resource_plugin_wos](https://github.com/irods/irods_resource_plugin_wos)
+The DataDirect Networks (DDN) WOS archive storage resource is used to interface with a Web Object Scalar (WOS) Appliance.  It is expected to be used as the archive child of a compound resource composition.  It currently references a single WOS endpoint and WOS policy in the context string.
+
+Read more at: [https://github.com/irods/irods_resource_plugin_wos](https://github.com/irods/irods_resource_plugin_wos)
+
+#### HPSS
+
+The HPSS storage resource is used to interface with an HPSS storage management system.  It can be used as the archive child of a compound resource composition or as a first class resource in iRODS.  The connection information is referenced in the context string.
+
+Read more at: [https://github.com/irods/irods_resource_plugin_hpss](https://github.com/irods/irods_resource_plugin_hpss)
 
 #### Non-Blocking
 
@@ -568,13 +600,12 @@ A few other storage resource types are under development and will be released as
 
  - ERDDAP (expected)
  - HDFS (expected)
- - HPSS (expected)
  - Pydap (expected)
  - TDS (expected)
 
 ### Managing Child Resources
 
-There are two new ``iadmin`` subcommands introduced with this feature.
+There are two new `iadmin` subcommands introduced with this feature.
 
 `addchildtoresc`:
 
@@ -608,7 +639,7 @@ Creating a composite resource consists of creating the individual nodes of the d
 
 #### Example 1
 
-![example1 tree](../example1-tree.jpg)
+![example1 tree](../example1-tree.png)
 
 **Example 1:** Replicates Data Objects to three locations
 
@@ -666,7 +697,7 @@ The possible values for irodsClientServerPolicy include:
 - CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
 - CS_NEG_REFUSE: (default) This side of the connection refuses to connect via SSL
 
-In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose ``CS_NEG_DONT_CARE``, iRODS shows an affinity for security by connecting via SSL.  Additionally, it is important to note that all servers in an iRODS Zone are required to share the same SSL credentials (certificates, keys, etc.).  Maintaining per-route certificates is not supported at this time.
+In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose `CS_NEG_DONT_CARE`, iRODS shows an affinity for security by connecting via SSL.  Additionally, it is important to note that all servers in an iRODS Zone are required to share the same SSL credentials (certificates, keys, etc.).  Maintaining per-route certificates is not supported at this time.
 
 The remaining parameters are standard SSL parameters and made available through the EVP library included with OpenSSL.  You can read more about these remaining parameters at [https://www.openssl.org/docs/crypto/evp.html](https://www.openssl.org/docs/crypto/evp.html).
 

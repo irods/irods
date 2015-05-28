@@ -95,7 +95,7 @@ extern "C" {
         std::pair<std::string, irods::resource_ptr> child_pair;
         if ( _cmap.size() != 1 ) {
             std::stringstream msg;
-            msg << "passthru_get_first_child_resc - Weighted Passthru resource can have 1 and only 1 child. This resource has " << _cmap.size();
+            msg << "passthru_get_first_child_resc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap.size();
             result = ERROR( -1, msg.str() );
         }
         else {

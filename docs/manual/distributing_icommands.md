@@ -35,7 +35,7 @@ joe_user:~$ mkdir .irods
 joe_user:~$ touch .irods/irods_environment.json
 ```
 
-Once this is done, the irods_environment.json file will need to be pointed towards the location of the client-side plugins in order for the `iinit` command to finish the bootstrapping process. Using their favorite editor the user needs to add a few lines to .irods/irods_environment.json:
+Once this is done, the irods_environment.json file will need to be pointed towards the location of the client-side plugins in order for the `iinit` command to finish the bootstrapping process. Using their favorite editor the user needs to add a few lines to `.irods/irods_environment.json`:
 
 ```
 {
@@ -55,6 +55,7 @@ Enter your irods user name: joe
 Enter your irods zone: joeZone
 Those values will be added to your environment file (for use by
 other iCommands) if the login succeeds.
+
 Enter your current iRODS password:
 ```
 

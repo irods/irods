@@ -206,15 +206,9 @@ timestr(*time)
 ~~~
 
 converts a datetime stored in `*time` to a string, according to the default
-format.
+format of `%b %d %Y %H:%M:%S`.  An example would be `Jun 01 2015 16:12:13`.
 
-The default format is
-
-~~~c
-%b %d %Y %H:%M:%S
-~~~
-
-The format string uses the same directives as the standard C library.
+The format string uses the same directives as [the standard C library](http://en.cppreference.com/w/c/chrono/strftime).
 
 ### Converting Strings to Values of Other Types
 
@@ -240,7 +234,7 @@ datetime(*str)
 ~~~
 
 converts a string stored in `*str` to a datetime, according to the default
-format. It can also be used to convert an integer or a double to a datetime.
+format (`%b %d %Y %H:%M:%S`, e.g. `Jun 01 2015 16:12:13`). It can also be used to convert an integer or a double to a datetime.
 
 The following are examples of string datetime conversion
 

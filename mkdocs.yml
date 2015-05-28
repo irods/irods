@@ -25,6 +25,7 @@ pages:
     - 'manual/architecture.md'
     - 'manual/authentication.md'
     - 'manual/federation.md'
+    - Control Plane: 'manual/control_plane.md'
     - Distributing iCommands: 'manual/distributing_icommands.md'
     - Rule Engine: 'manual/rule_engine.md'
     - Rule Language: 'manual/rule_language.md'
@@ -37,11 +38,11 @@ pages:
     - 'icommands/metadata.md'
     - 'icommands/tickets.md'
     - 'icommands/groupadmin.md'
- - Plugins:
-    - 'plugins/microservice.md'
-    - 'plugins/resource.md'
-    - 'plugins/authentication.md'
-    - 'plugins/network.md'
-    - 'plugins/database.md'
-    - API: 'plugins/api.md'
+# - Plugin Tutorials:
+#    - 'plugins/microservice.md'
+#    - 'plugins/resource.md'
+#    - 'plugins/authentication.md'
+#    - 'plugins/network.md'
+#    - 'plugins/database.md'
+#    - API: 'plugins/api.md'
 

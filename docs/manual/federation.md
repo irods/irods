@@ -5,15 +5,15 @@ iRODS Zones are independent administrative units.  When federated, users of one 
 Primary reasons for using Zone Federation include:
 
 1. Local control. Some iRODS sites want to share resources and collections, yet maintain more local control over those resources, data objects, and collections. Rather than a single iRODS Zone managed by one administrator, they may need two (or more) cooperating iRODS systems managed locally, primarily for security and/or authorization reasons.
-1. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast is often 1-2 seconds for a simple query. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
+2. iCAT WAN performance. In world-wide networks, the network latency may cause significant iRODS performance degradation. For example, in the United States, the latency between the east coast and the west coast is often 1-2 seconds for a simple query. Many iRODS operations require multiple interations with the iCAT database, which compounds any delays.
 
 ## Setup
 
 To federate Zone A and Zone B, administrators in each zone must:
 
-1. Share and properly define their `zone_key` values [Between Two Zones](#between-two-zones)
-2. Define remote zones in their respective iCAT, and
-3. Define remote users in their respective iCAT before any access permissions can be granted.
+1. Coordinate and share their `icat_host`, `zone_name`, `zone_key`, and `negotiation_key` information
+2. Define the remote zone in their respective iCAT, and
+3. Define any remote users in their respective iCAT before any access permissions can be granted.
 
 
 In Zone A, add Zone B and define a remote user:
@@ -53,7 +53,7 @@ ZoneB $ iget /ZoneA/home/rods/myFile
 
 ### Within A Zone
 
-When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure the `zone_key` to cause the iRODS system to authenticate the servers themselves. This `zone_key` should be a unique and arbitrary string (maximum alphanumeric length of 50), one for your whole zone:
+When a client connects to a resource server and then authenticates, the resource server connects to the iCAT server to perform the authentication. To make this more secure, you must configure the `zone_key` to cause the iRODS system to authenticate the servers themselves. This `zone_key` should be a unique and arbitrary string (maximum alphanumeric length of 49), one for your whole zone:
 
 ~~~
 "zone_key": "SomeChosenKeyString",
@@ -69,7 +69,7 @@ For GSI, users can set the `irodsServerDn` variable to do mutual authentication.
 
 When a user from a remote zone connects to the local zone, the iRODS server will check with the iCAT in the user's home zone to authenticate the user (confirm their password).  Passwords are never sent across federated zones, they always remain in their home zone.
 
-To make this more secure, the iRODS system uses a `zone_key` to authenticate the servers in `server_config.json`, via a similar method as iRODS passwords. This `zone_key` should be a unique and arbitrary string, one for each zone.
+To make this more secure, the iRODS system uses both the `zone_key` and the `negotiation_key` to authenticate the servers in `server_config.json`, via a similar method as iRODS passwords. The `zone_key` should be a unique and arbitrary string, one for each zone.  The `negotiation_key` should be a shared key only for this pairing of two zones.
 
 To configure this, add items to the `/etc/irods/server_config.json` file.
 
@@ -84,6 +84,7 @@ Add an object to the "federation" array for each remote zone, for example:
 ~~~
 "federation": [
     {
+        "icat_host": "otherzone.example.org",
         "zone_name": "anotherZone",
         "zone_key": "ghjk6789",
         "negotiation_key": "abcdefghijklmnopqrstuvwxyzabcdef"
