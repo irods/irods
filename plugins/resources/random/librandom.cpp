@@ -166,13 +166,10 @@ irods::error random_get_resc_for_call(
 extern "C" {
 
     // =-=-=-=-=-=-=-
-    /// @brief Start Up Operation - initialize the random number generator
+    /// @brief Start Up Operation
     irods::error random_start_operation(
         irods::plugin_property_map&,   // _prop_map
         irods::resource_child_map& ) { // _cmap
-        uintmax_t p = getpid();
-        uintmax_t t = time( NULL );
-        srand( ( p + t ) ^ ( p * t ) );
         return SUCCESS();
 
     } // random_start_operation
@@ -191,7 +188,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // get the size of the map and randomly pick an index into it
-            size_t target_index = rand() % _cmap.size();
+            size_t target_index = getRandomInt() % _cmap.size();
 
             // =-=-=-=-=-=-=-
             // child map is keyed by resource name so we need to count out the index
@@ -732,7 +729,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // generate random index
-            size_t rand_index = rand() % candidate_resources.size();
+            size_t rand_index = getRandomInt() % candidate_resources.size();
 
             // =-=-=-=-=-=-=-
             // pick resource in pool at random index
