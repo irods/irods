@@ -319,7 +319,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     do {
         snprintf( phyBunDir, MAX_NAME_LEN, "%s/%s.%d", dataObjInfo.filePath,
-                  TMP_PHY_BUN_DIR, ( int ) random() );
+                  TMP_PHY_BUN_DIR, getRandomInt() );
         path p( phyBunDir );
         if ( exists( p ) ) {
             status = 0;
