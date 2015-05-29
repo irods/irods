@@ -11739,7 +11739,7 @@ checkLevel:
         }
         status =  cmlExecuteNoAnswerSql(
 #if defined ORA_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)) ESCAPE '\\'",
+            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
 #elif defined MY_ICAT
             "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
 #else
@@ -11769,7 +11769,7 @@ checkLevel:
         }
         status =  cmlExecuteNoAnswerSql(
 #if defined ORA_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?) ESCAPE '\\'",
+            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
 #elif defined MY_ICAT
             "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
 #else
@@ -11814,7 +11814,7 @@ checkLevel:
 #if ORA_ICAT
         /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
         status =  cmlExecuteNoAnswerSql(
-            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)) ESCAPE '\\'",
+            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
                       &icss );
 #elif MY_ICAT
         status =  cmlExecuteNoAnswerSql(
@@ -11848,7 +11848,7 @@ checkLevel:
 #if ORA_ICAT
         /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
         status =  cmlExecuteNoAnswerSql(
-            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?) ESCAPE '\\'",
+            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
                       &icss );
 #elif MY_ICAT
         status =  cmlExecuteNoAnswerSql(
