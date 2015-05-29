@@ -1,6 +1,6 @@
 # Distributing iCommands to Users
 
-If your user community does not have root access to their machines, distributing a set of iCommands they can run is very desireable. This document discusses how to build, bundle and configure the iCommands for use by such a user.
+If your user community does not have root access to their machines, distributing a set of iCommands they can run is very desirable. This document discusses how to build, bundle and configure the iCommands for use by such a user.
 
 ## Building the iCommands
 
@@ -10,7 +10,7 @@ Starting from a clean irods repository, from within the top level directory run 
 dan_admin:~/irods$ ./packaging/build.sh -r icommands
 ```
 
-The build script will download the external libraries, compile the iRODS client library, and then compile the iCommands. EPM will be used to package the iCommands into either a deb or rpm file. This we will ignore and instead use a new script to build a tar file containing all of the appropriate iCommand binaries and related client-side plugins. From the top level of the iRODS repository, run:
+The build script will download the external libraries, compile the iRODS client library, and then compile the iCommands. This script will use EPM to package the iCommands into a deb or rpm file. However, we will ignore this package (since it can't be installed without root access) and instead use a second script to build a tar file containing all of the appropriate iCommand binaries and related client-side plugins. From the top level of the iRODS repository, run:
 
 ```
 dan_admin:~/irods$ ./packaging/make_icommands_for_distribution.sh
@@ -64,9 +64,10 @@ At this point the user has a valid iRODS environment:
 joe_user:~$ cat .irods/irods_environment.json
 {
     "irods_host": "joeserver.example.org",
+    "irods_plugins_home" : "/home/joe_user/icommands/plugins/",
     "irods_port": 1247,
-    "irods_zone_name": "joeZone",
-    "irods_user_name": "joe"
+    "irods_user_name": "joe",
+    "irods_zone_name": "joeZone"
 }
 ```
 
@@ -80,5 +81,3 @@ joe_user:~$ ils
 It is also important to remember there are many other additional parameters available for configuration:
 
   - [https://github.com/irods/irods_schema_configuration](https://github.com/irods/irods_schema_configuration)
-
-
