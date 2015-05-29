@@ -708,8 +708,12 @@ extern "C" {
             return PASSMSG( "failed to call get_property", get_err );
         }
 
-        if ( !rods_host->hostName ) {
+        if ( !rods_host ) {
             return ERROR( -1, "null rods server host" );
+        }
+
+        if ( !rods_host->hostName ) {
+            return ERROR( -1, "null rods server hostname" );
         }
 
         _resc_host = rods_host->hostName->name;
