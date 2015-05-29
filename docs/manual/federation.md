@@ -26,7 +26,7 @@ ZoneA $ iadmin mkuser bobby#ZoneB rodsuser
 In Zone B, add Zone A, but skip adding any remote users at this time:
 
 ~~~
-ZoneB $ iadmin mkzone ZoneA remote zoneB-iCAT.hostname.example.org:ZoneAPort
+ZoneB $ iadmin mkzone ZoneA remote zoneA-iCAT.hostname.example.org:ZoneAPort
 ~~~
 
 Then, any user of Zone A will be able to grant permissions to `bobby#ZoneB`:

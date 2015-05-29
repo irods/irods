@@ -164,7 +164,7 @@ auth        required      pam_deny.so
 For more information on the syntax of the pam.d configuration please refer to [The Linux Documentation Project](http://tldp.org/HOWTO/User-Authentication-HOWTO/x115.html)
 
 A quick test for the basic authentication mechanism for PAM is to run the `iRODS/server/bin/PamAuthCheck` tool.
-PamAuthCheck reads the password from stdin (without any prompting), so your example of using it appears correct.
+PamAuthCheck reads the password from stdin (without any prompting).
 
 If PamAuthCheck returns `Not Authenticated`, that suggests that PAM is not set up correctly. You will need to configure PAM correctly (and therefore get PamAuthCheck returning Authenticated) before using PAM through iRODS.
 
