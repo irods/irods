@@ -106,7 +106,7 @@ rcComm_t* _rcConnect(
     if ( status < 0 ) {
         if ( errMsg != NULL ) {
             rodsLogError( LOG_ERROR, status,
-                          "_rcConnect: setRhostInfo error, irodsHost is probably not set correctly" );
+                          "_rcConnect: setRhostInfo error, IRODS_HOST is probably not set correctly" );
             errMsg->status = status;
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setRhostInfo failed\n" );
