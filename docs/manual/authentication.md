@@ -150,14 +150,37 @@ For PAM Authentication, the iRODS user selects the new iRODS PAM authentication 
 
 Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the `iinit` session.
 
+Configuring the operating system, the service name used for PAM is 'irods'.  An addition to /etc/pam.d/ is required if the fall-through behavior is not desired.
 
+For example:
+~~~
+$ cat /etc/pam.d/irods
+auth        required      pam_env.so
+auth        sufficient    pam_unix.so
+auth        requisite     pam_succeed_if.so uid >= 500 quiet
+auth        required      pam_deny.so
+~~~
 
+For more information on the syntax of the pam.d configuration please refer to [The Linux Documentation Project](http://tldp.org/HOWTO/User-Authentication-HOWTO/x115.html)
+
+A quick test for the basic authentication mechanism for PAM is to run the `iRODS/server/bin/PamAuthCheck` tool.
+PamAuthCheck reads the password from stdin (without any prompting), so your example of using it appears correct.
+
+If PamAuthCheck returns `Not Authenticated`, that suggests that PAM is not set up correctly. You will need to configure PAM correctly (and therefore get PamAuthCheck returning Authenticated) before using PAM through iRODS.
+
+A simple way to check that you are using PamAuthCheck correctly, and that it is the PAM settings that need updated, is to create a fully permissive PAM setup with the following command.
+
+~~~
+sudo su - root -c 'echo "auth sufficient pam_permit.so" > /etc/pam.d/irods'
+~~~
+
+This will allow any username/password combination to successfully authenticate with the irods PAM service, meaning that any username/password combination should cause PamAuthCheck to return `Authenticated`.
+
+With the permissive configuration working with PamAuthCheck, the next step is to adjust your PAM configuration to your desired settings (LDAP, in this case). You will know that is correct when PamAuthCheck behaves as you would expect when using LDAP username/passwords. iRODS uses PamAuthCheck directly, so if it is working on the command line, it should work when run by iRODS.
 
 Since PAM requires the user's password in plaintext, iRODS relies on SSL encryption to protect these credentials.  PAM authentication makes use of SSL regardless of the iRODS Zone SSL configuration (meaning even if iRODS explicitly does *not* encrypt data traffic, PAM will use SSL during authentication).
 
 In order to use the iRODS PAM support, you also need to have SSL working between the iRODS client and server. The SSL communication between client and iRODS server needs some basic setup in order to function properly. Much of the setup concerns getting a proper X.509 certificate setup on the server side, and setting up the trust for the server certificate on the client side. You can use either a self-signed certificate (best for testing) or a certificate from a trusted CA.
-
-
 
 ### Server Configuration
 
