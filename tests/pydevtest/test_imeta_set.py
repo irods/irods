@@ -169,6 +169,6 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
     def test_imeta_with_many_bind_vars(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
-        num_extra_bind_vars = 607 # 3848 for postgres and mysql, any more and the argument string is too long
+        num_extra_bind_vars = 607  # 3848 for postgres and mysql, any more and the argument string is too long
         command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
         self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)
