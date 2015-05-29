@@ -1598,12 +1598,12 @@ void
 usage( char *subOpt ) {
     char *luMsgs[] = {
         "lu [name] (list user info; details if name entered)",
-        "list user information.  ",
+        "list user information.",
         "Just 'lu' will briefly list currently defined users.",
         "If you include a user name, more detailed information is provided.",
-        "Usernames can include the zone preceeded by #, for example rods#tempZone.",
+        "Usernames can include the zone preceded by #, for example rods#tempZone.",
         "Users are listed in the userName#ZoneName form.",
-        "Also see the luz and lz and the iuserinfo command.",
+        "Also see the 'luz', 'lz', and 'iuserinfo' commands.",
         ""
     };
     char *luaMsgs[] = {
@@ -1612,8 +1612,8 @@ usage( char *subOpt ) {
         "Just 'lua' will list all the GSI/Kerberos names currently defined",
         "for all users along with the associated iRODS user names.",
         "If you include a user name, then the auth-names for that user are listed.",
-        "Usernames can include the zone preceeded by #, for example rods#tempZone.",
-        "Also see the 'luan', 'aua' and 'rua' and the 'iuserinfo' command.",
+        "Usernames can include the zone preceded by #, for example rods#tempZone.",
+        "Also see the 'luan', 'aua', 'rua', and 'iuserinfo' commands.",
         ""
     };
     char *luanMsgs[] = {
@@ -1634,7 +1634,7 @@ usage( char *subOpt ) {
     };
     char *ltMsgs[] = {
         "lt [name] [subname]",
-        "list token information.  ",
+        "list token information.",
         "Just 'lt' lists the types of tokens that are defined",
         "If you include a tokenname, it will list the values that are",
         "allowed for the token type.  For details, lt name subname, ",
@@ -1743,7 +1743,7 @@ usage( char *subOpt ) {
 
     char *ruaMsgs[] = {
         " rua Name[#Zone] Auth-Name (remove user authentication-name (GSI/Kerberos)",
-        "Remove a user authentication name, a GSI  Distinquished Name (DN) or",
+        "Remove a user authentication name, a GSI Distinquished Name (DN) or",
         "Kerberos Principal name, from being associated with an iRODS user.",
         "These are used with Kerberos and/or GSI authentication, if enabled.",
         "Also see 'aua', 'lua', and 'luan'.",
@@ -1752,7 +1752,7 @@ usage( char *subOpt ) {
 
     char *rppMsgs[] = {
         " rpp Name (remove PAM-derived Password for user Name)",
-        "Remove irods short-term (ususally 2 weeks) passwords that are created",
+        "Remove iRODS short-term (usually 2 weeks) passwords that are created",
         "when users authenticate via the iRODS PAM authentication method.",
         "For additional security, when using PAM (system passwords), 'iinit' will",
         "create a separate iRODS password that is then used (a subsequent 'iinit'",
@@ -1764,7 +1764,7 @@ usage( char *subOpt ) {
 
     char *rmuserMsgs[] = {
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
-        " Remove an irods user.",
+        " Remove an iRODS user.",
         ""
     };
 
@@ -1908,7 +1908,7 @@ usage( char *subOpt ) {
         " modzone Name [ name | conn | comment ] newValue  (modify zone)",
         "Modify values in a zone definition, either the name, conn (connection-info),",
         "or comment.  Connection-info is the DNS host string:port, for example:",
-        "zuri.unc.edu:1247",
+        "irods.example.org:1247",
         "When modifying the conn information, it should be the hostname of the",
         "ICAT-Enabled-Server (IES); see 'h mkzone' for more.",
         " ",
@@ -1929,7 +1929,7 @@ usage( char *subOpt ) {
         "The problem only occurs at the '/' level because for zones there are",
         "both local and remote collections for the zone. As with any query in",
         "strict mode, when the user asks for information on a collection, the",
-        "ICAT-generated SQL adds checks to restrict results to data-objects or",
+        "iCAT-generated SQL adds checks to restrict results to data-objects or",
         "sub-collections in that collection to which the user has read or",
         "better access. The problem is that collections for the remote zones",
         "(/zone) do not have ACLs set, even if ichmod is run try to give it",
@@ -2026,8 +2026,8 @@ usage( char *subOpt ) {
         " ",
         " ctime now      - convert a current time to an iRODS time integer value.",
         " ",
-        " ctime str Timestr  - convert a string time string (YYYY-MM-DD.hh:mm:ss)",
-        " to an iRODS integer value time.",
+        " ctime str Timestr  - convert a string of the format Timestr",
+        " (YYYY-MM-DD.hh:mm:ss) to an iRODS integer value time.",
         " ",
         ""
     };
@@ -2073,18 +2073,11 @@ usage( char *subOpt ) {
         "(AVUs)) on objects (collections, data-objects, etc), or remove the",
         "objects themselves, the associations between those objects and the",
         "AVUs are removed but the actual AVUs (rows in another table) are left",
-        "in place.  This is because the SQL processing can be slow for this",
-        "because each AVU can be associated with multiple objects.  But this",
-        "only needs to be run once in a while, after any number of such",
-        "deletions have been done and only if the number of unused AVUs has",
-        "gotten large and so is slowing down the DBMS.  This command runs SQL",
-        "to remove those unused AVU rows.  For PostgreSQL and Oracle this will",
-        "usually only take a few seconds.  For MySQL it is much slower.",
-        " ",
-        "You can start a periodic rule/microservice to do this automatically,",
-        "by running 'irule clients/icommands/bin/delUnusedAVUs.ir'.",
-        "A good practice would be to schedule this to run once a night.",
-        "See the contents of delUnusedAVUs.ir for more information.",
+        "in place.  This is because each AVU can be associated with multiple",
+        "objects.  But this only needs to be run if the number of unused AVUs has",
+        "gotten large and is slowing down the DBMS.  This command runs SQL",
+        "to remove those unused AVU rows.  This is a slower command on MySQL",
+        " than on PostgreSQL and Oracle.",
         ""
     };
 
