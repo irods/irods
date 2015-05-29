@@ -1607,8 +1607,8 @@ int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, 
                       &icss );
 #else
         status =  cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or coll_name like ?",
-            &icss );
+                      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or coll_name like ?",
+                      &icss );
 #endif
     }
     if ( status != 0 ) {
@@ -11739,9 +11739,9 @@ checkLevel:
         }
         status =  cmlExecuteNoAnswerSql(
 #if defined ORA_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
 #elif defined MY_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
 #else
                       /*  Use the temporary table to greatly speed up this operation
                       (and similar ones below).  The last constraint, the 'where
@@ -11769,11 +11769,11 @@ checkLevel:
         }
         status =  cmlExecuteNoAnswerSql(
 #if defined ORA_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
 #elif defined MY_ICAT
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
 #else
-            "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
+                      "delete from R_OBJT_ACCESS where user_id=? and object_id = ANY(ARRAY(select coll_id from R_MOD_ACCESS_TEMP1 where coll_name = ? or coll_name like ?))",
 #endif
                       & icss );
         if ( status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
@@ -11814,7 +11814,7 @@ checkLevel:
 #if ORA_ICAT
         /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
         status =  cmlExecuteNoAnswerSql(
-            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
+                      "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\'))",
                       &icss );
 #elif MY_ICAT
         status =  cmlExecuteNoAnswerSql(
@@ -11848,7 +11848,7 @@ checkLevel:
 #if ORA_ICAT
         /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
         status =  cmlExecuteNoAnswerSql(
-            "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
+                      "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ? ESCAPE '\\')",
                       &icss );
 #elif MY_ICAT
         status =  cmlExecuteNoAnswerSql(
