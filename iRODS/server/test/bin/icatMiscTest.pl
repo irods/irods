@@ -69,6 +69,30 @@ $ACCESS_GOOD="'read metadata'";
 $ACCESS_BAD="'bad access'";
 
 
+########################################################################
+#
+# Load configuration files
+#
+
+# binary installation
+if ( -e "$scripttoplevel/packaging/binary_installation.flag" ) {
+    load_server_config("/etc/irods/server_config.json");
+    if ( -e "/etc/irods/database_config.json" ) {
+        load_database_config("/etc/irods/database_config.json");
+    }
+}
+# run-in-place
+else {
+    load_server_config("$scripttoplevel/iRODS/server/config/server_config.json");
+    if ( -e "$scripttoplevel/iRODS/server/config/database_config.json" ) {
+        load_database_config("$scripttoplevel/iRODS/server/config/database_config.json");
+    }
+}
+
+# load version information
+load_irods_version_file("$scripttoplevel/VERSION.json");
+
+
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
 # if 1, don't care
