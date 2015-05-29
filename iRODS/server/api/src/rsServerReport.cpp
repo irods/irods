@@ -720,6 +720,10 @@ irods::error get_resource_array(
             irods::log( PASS( ret ) );
             continue;
         }
+        if ( !tmp_host ) {
+            rodsLog( LOG_ERROR, "null tmp_host in get_resource_array" );
+            continue;
+        }
 
         if ( LOCAL_HOST != tmp_host->localFlag ) {
             continue;
