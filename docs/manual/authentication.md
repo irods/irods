@@ -1,12 +1,12 @@
 # Authentication
 
-By default, iRODS uses a secure password system for user authentication.  The user passwords are scrambled and stored in the iCAT database.  Additionally, iRODS supports user authentication via PAM (Pluggable Authentication Modules), which can be configured to support many things, including the LDAP authentication system.  PAM and SSL have been configured 'available' out of the box with iRODS, but there is still some setup required to configure an installation to communicate with your local external authentication server of choice.
+By default, iRODS uses a secure password system for user authentication.  The user passwords are scrambled and stored in the iCAT database.  Additionally, iRODS supports user authentication via PAM (Pluggable Authentication Modules), which can be configured to support many things, including the LDAP authentication system.  PAM and SSL have been configured 'available' out of the box with iRODS, but there is still some setup required to configure an installation to communicate with your external authentication server of choice.
 
-The iRODS administrator can 'force' a particular auth scheme for a rodsuser by 'blanking' the native password for the rodsuser.  There is currently no way to signal to a particular login attempt that it is using an incorrect scheme ([GitHub Issue #2005](https://github.com/irods/irods/issues/2005)).
+The iRODS administrator can 'force' a particular authentication scheme for a rodsuser by 'blanking' the native password for the rodsuser.  There is currently no way to signal to a particular login attempt that it is using an incorrect scheme ([GitHub Issue #2005](https://github.com/irods/irods/issues/2005)).
 
 ## GSI
 
-Grid Security Infrastructure (GSI) setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the [GSI auth plugin](https://github.com/irods/irods_auth_plugin_gsi).
+Grid Security Infrastructure (GSI) setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the [GSI authentication plugin](https://github.com/irods/irods_auth_plugin_gsi).
 
 ### GSI Configuration
 
@@ -14,11 +14,11 @@ Configuration of GSI is out of scope for this document, but consists of the foll
 
 1. Install GSI (most easily done via package manager)
 2. Confirm the (default) irods service account has a certificate in good standing (signed)
-3. Confirm the local system account for client "newuser" account has a certificate in good standing (signed)
+3. Confirm the local system account for client "newuser" has a certificate in good standing (signed)
 
 ### iRODS Configuration
 
-Configuring iRODS to communicate via GSI requires a few simple steps.
+Configuring iRODS to authenticate via GSI requires a few simple steps.
 
 First, if GSI is being configured for a new user, it must be created:
 
@@ -35,20 +35,13 @@ iadmin aua newuser '/DC=org/DC=example/O=Example/OU=People/CN=New User/CN=UID:dr
 !!! Note
     The comma characters (,) in the Distiguished Name (DN) must be replaced with forward slash characters (/).
 
-On the client side, the user's 'irods_auth_scheme' must be set to 'GSI'.  This can be done via environment variable:
+On the client side, the user's 'irods_authentication_scheme' must be set to 'GSI'.  This can be configured via an `irods_environment.json` property:
 
 ~~~
-irods@hostname:~/ $ irods_auth_scheme=GSI
-irods@hostname:~/ $ export irods_auth_scheme
+"irods_authentication_scheme": "GSI",
 ~~~
 
-Or, preferably, in the user's `irods_environment.json` file:
-
-~~~
-"irods_auth_scheme": "GSI",
-~~~
-
-Then, to have a temporary proxy certificate issued and authenticate:
+Then, to authenticate with a temporary proxy certificate:
 
 ~~~
 grid-proxy-init
@@ -65,13 +58,13 @@ The iRODS administrator will see two limitations when using GSI authentication:
 1. The 'client_user_name' environment variable will fail (the admin cannot alias as another user)
 2. The `iadmin moduser password` will fail (cannot update the user's password)
 
-The workaround is to use iRODS native password authentication when using these.
+The workaround is to use iRODS native authentication when using these.
 
 `ipasswd` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their GSI passwords via iCommands.
 
 ## Kerberos
 
-Kerberos setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the [Kerberos auth plugin](https://github.com/irods/irods_auth_plugin_kerberos).
+Kerberos setup in iRODS 4.0+ has been greatly simplified.  The functionality itself is provided by the [Kerberos authentication plugin](https://github.com/irods/irods_auth_plugin_kerberos).
 
 ### Kerberos Configuration
 
@@ -79,7 +72,7 @@ Configuration of Kerberos is out of scope for this document, but consists of the
 
 1. Set up Kerberos (Key Distribution Center (KDC) and Kerberos Admin Server)
 2. Confirm the (default) irods service account has a service principal in KDC (with the hostname of the rodsServer) (e.g. irodsserver/serverhost.example.org@EXAMPLE.ORG)
-3. Confirm the local system account for client "newuser" account has principal in KDC (e.g. newuser@EXAMPLE.ORG)
+3. Confirm the local system account for client "newuser" has principal in KDC (e.g. newuser@EXAMPLE.ORG)
 4. Create an appropriate keytab entry (adding to an existing file or creating a new one)
 
 A new keytab file can be created with the following command:
@@ -90,9 +83,9 @@ kadmin ktadd -k /var/lib/irods/irods.keytab irodsserver/serverhost.example.org@E
 
 ### iRODS Configuration
 
-Configuring iRODS to communicate via Kerberos requires a few simple steps.
+Configuring iRODS to authenticate via Kerberos requires a few simple steps.
 
-First, if Kerberos is being configured for a new user, it must be created:
+First, if Kerberos is being configured for a new user, the new user must be created:
 
 ~~~
 iadmin mkuser newuser rodsuser
@@ -111,17 +104,10 @@ kerberos_service_principal=irodsserver/serverhost.example.org@EXAMPLE.ORG
 kerberos_keytab=/var/lib/irods/irods.keytab
 ~~~
 
-On the client side, the user's 'irods_auth_scheme' must be set to 'KRB'.  This can be done via environment variable:
+On the client side, the user's 'irods_authentication_scheme' must be set to 'KRB'.  This can be configured via an `irods_environment.json` property:
 
 ~~~
-irods@hostname:~/ $ irods_auth_scheme=KRB
-irods@hostname:~/ $ export irods_auth_scheme
-~~~
-
-Or, preferably, in the user's `irods_environment.json` file:
-
-~~~
-"irods_auth_scheme": "KRB",
+"irods_authentication_scheme": "KRB",
 ~~~
 
 Then, to initialize the Kerberos session ticket and authenticate:
@@ -137,7 +123,7 @@ The iRODS administrator will see two limitations when using Kerberos authenticat
 1. The 'clientUserName' environment variable will fail (the admin cannot alias as another user)
 2. The `iadmin moduser password` will fail (cannot update the user's password)
 
-The workaround is to use iRODS native password authentication when using these.
+The workaround is to use iRODS native authentication when using these.
 
 `ipasswd` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their Kerberos passwords via iCommands.
 
@@ -156,11 +142,10 @@ irods@hostname:~/ $ iadmin mkuser newuser rodsuser
 
 If the user's credentials will be exclusively authenticated with PAM, a password need not be assigned.
 
-For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their `irods_environment.json` file or by setting their environment variable:
+For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of Native, or Kerberos) via an `irods_environment.json` property:
 
 ~~~
-irods@hostname:~/ $ irods_auth_scheme=PAM
-irods@hostname:~/ $ export irods_auth_scheme
+'irods_authentication_scheme': 'PAM',
 ~~~
 
 Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the `iinit` session.
@@ -249,17 +234,14 @@ irods@hostname:~/ $ openssl dhparam -2 -out dhparams.pem 2048
 
 Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS server can access them (e.g. in /etc/irods).  Make sure that the irods unix user can read the files (although you also want to make sure that the key file is only readable by the irods user).
 
-#### Set SSL environment variables
+#### Set the iRODS SSL environment
 
-The server needs to read these variables on startup:
+The server expects to have these `irods_environment.json` properties set on startup:
 
 ~~~
-irods@hostname:~/ $ irods_ssl_certificate_chain_file=/etc/irods/chain.pem
-irods@hostname:~/ $ export irods_ssl_certificate_chain_file
-irods@hostname:~/ $ irods_ssl_certificate_key_file=/etc/irods/server.key
-irods@hostname:~/ $ export irods_ssl_certificate_key_file
-irods@hostname:~/ $ irods_ssl_dh_params_file=/etc/irods/dhparams.pem
-irods@hostname:~/ $ export irods_ssl_dh_params_file
+'irods_ssl_certificate_chain_file': '/etc/irods/chain.pem',
+'irods_ssl_certificate_key_file': '/etc/irods/server.key',
+'irods_ssl_dh_params_file': '/etc/irods/dhparams.pem',
 ~~~
 
 #### Restart iRODS
@@ -272,17 +254,17 @@ irods@hostname:~/ $ ./iRODS/irodsctl restart
 
 ### Client SSL Setup
 
-The client may or may not require configuration at the SSL level, but there are a few parameters that can be set via environment variables to customize the client SSL interaction if necessary. In many cases, if the server's certificate comes from a common CA, your system might already be configured to accept certificates from that CA, and you will not have to adjust the client configuration at all. For example, on an Ubuntu12 (Precise) system, the /etc/ssl/certs directory is used as a repository for system trusted certificates installed via an Ubuntu package. Many of the commercial certificate vendors such as VeriSign and AddTrust have their certificates already installed.
+The client may or may not require configuration at the SSL level, but there are a few parameters that can be set via `irods_environment.json` properties to customize the client SSL interaction if necessary. In many cases, if the server's certificate comes from a common CA, your system might already be configured to accept certificates from that CA, and you will not have to adjust the client configuration at all. For example, on an Ubuntu12 (Precise) system, the /etc/ssl/certs directory is used as a repository for system trusted certificates installed via an Ubuntu package. Many of the commercial certificate vendors such as VeriSign and AddTrust have their certificates already installed.
 
 After setting up SSL on the server side, test SSL by using the PAM authentication (which requires an SSL connection) and running ``iinit`` with the log level set to LOG_NOTICE. If you see messages as follows, you need to set up trust for the server's certificate, or you need to turn off server verification.
 
 Error from non-trusted self-signed certificate:
 
 ~~~
-irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
+irods@hostname:~/ $ IRODS_LOG_LEVEL=LOG_NOTICE iinit
 NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
-NOTICE: created irodsHome=/dn/home/irods
-NOTICE: created irodsCwd=/dn/home/irods
+NOTICE: created irods_home=/dn/home/irods
+NOTICE: created irods_cwd=/dn/home/irods
 Enter your current PAM (system) password:
 NOTICE: sslVerifyCallback: problem with certificate at depth: 0
 NOTICE: sslVerifyCallback:   issuer = /C=US/ST=North Carolina/L=Chapel Hill/O=RENCI/CN=irods.example.org
@@ -295,10 +277,10 @@ sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
 Error from untrusted CA that signed the server certificate:
 
 ~~~
-irods@hostname:~/ $ irods_log_level=LOG_NOTICE iinit
+irods@hostname:~/ $ IRODS_LOG_LEVEL=LOG_NOTICE iinit
 NOTICE: environment variable set, irods_log_level(input)=LOG_NOTICE, value=5
-NOTICE: created irodsHome=/dn/home/irods
-NOTICE: created irodsCwd=/dn/home/irods
+NOTICE: created irods_home=/dn/home/irods
+NOTICE: created irods_cwd=/dn/home/irods
 Enter your current PAM (system) password:
 NOTICE: sslVerifyCallback: problem with certificate at depth: 1
 NOTICE: sslVerifyCallback:   issuer = /C=US/ST=North Carolina/O=example.org/CN=irods.example.org Certificate Authority
@@ -308,28 +290,26 @@ ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SS
 sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR
 ~~~
 
-Server verification can be turned off using the irodsSSLVerifyServer environment variable. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
+Server verification can be turned off using the irods_ssl_verify_server `irods_environment.json` property. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
 
-It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irods_ssl_ca_certificate_file environment variable to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following in your environment:
-
-~~~
-irods@hostname:~/ $ irods_ssl_ca_certificate_file=/etc/irods/chain.pem
-irods@hostname:~/ $ export irods_ssl_ca_certificate_file
-~~~
-
-Or this file could just contain the root CA certificate for a CA-signed server certificate.
-Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irodsHost' variable. If this situation cannot be corrected on the server side, the client can set:
+It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irods_ssl_ca_certificate_file `irods_environment.json` property to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following property in your `irods_environment.json`:
 
 ~~~
-irods@hostname:~/ $ irods_ssl_verify_server=cert
-irods@hostname:~/ $ export irods_ssl_verify_server
+'irods_ssl_ca_certificate_file': '/etc/irods/chain.pem'
+~~~
+
+
+Or this file could just contain the root CA certificate for a CA-signed server certificate. Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irods_host' property. If this situation cannot be corrected on the server side, the client can set:
+
+~~~
+'irods_ssl_verify_server': 'cert'
 ~~~
 
 Then, the client library will only require certificate validation, but will not check that the hostname of the iRODS server matches the hostname(s) embedded within the certificate.
 
 ### Environment Variables
 
-All the environment variables used by the SSL support (both server and client side) are listed below:
+All the `irods_environment.json` properties used by the SSL support (both server and client side) are listed below:
 
 irods_ssl_certificate_chain_file (server)
 :       The file containing the server's certificate chain. The certificates must be in PEM format and must be sorted starting with the subject's certificate (actual client or server certificate), followed by intermediate CA certificates if applicable, and ending at the highest level (root) CA.
