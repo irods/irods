@@ -2212,7 +2212,6 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
     int myStrlen;
     int numElement, numPointer;
     int myDim;
-    char *myPtr;
     int tagLen;
 
     if ( *inPtr == NULL ) {
@@ -2221,11 +2220,11 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
         return 0;
     }
 
+    char *myPtr = ( char* ) * inPtr;
     if ( irodsProt == XML_PROT ) {
-        int skipLen;
 
-        myPtr = ( char* ) * inPtr;
-        /* check if tag exist */
+        /* check if tag exists */
+        int skipLen;
         tagLen = parseXmlTag( ( void ** )( static_cast< void * >( &myPtr ) ), myPackedItem, START_TAG_FL,
                               &skipLen );
         if ( tagLen < 0 ) {
@@ -2253,10 +2252,9 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
         /* add a null pointer */
         addPointerToPackedOut( unpackedOutput, 0, NULL );
         if ( irodsProt == XML_PROT ) {
-            int nameLen;
             if ( strncmp( myPtr, "</", 2 ) == 0 ) {
                 myPtr += 2;
-                nameLen = strlen( myPackedItem->name );
+                int nameLen = strlen( myPackedItem->name );
                 if ( strncmp( myPtr, myPackedItem->name, nameLen ) == 0 ) {
                     myPtr += ( nameLen + 1 );
                     if ( *myPtr == '\n' ) {
