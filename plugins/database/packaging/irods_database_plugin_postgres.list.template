@@ -92,7 +92,9 @@ else
 fi
 
 if [ "$$PACKAGEUPGRADE" = "true" ] ; then
-  echo "NOP" > /dev/null
+  # write version information down for postinstall
+  UPGRADE_FLAG_FILE="$IRODS_HOME_DIR/packaging/upgrade_db.tmp"
+  touch $$UPGRADE_FLAG_FILE
 else
   echo "NOP" > /dev/null
 fi
@@ -105,7 +107,7 @@ END_PREINSTALL
 %postinstall << END_POSTINSTALL
 # =-=-=-=-=-=-=-
 # detect whether this is an upgrade
-UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/upgrade.tmp
+UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/packaging/upgrade_db.tmp
 if [ -f "$$UPGRADE_FLAG_FILE" ] ; then
     UPGRADE_FLAG="true"
 else
@@ -128,6 +130,7 @@ if [ "$$UPGRADE_FLAG" = "false" ] ; then
     echo "======================================================================="
     echo ""
 fi
+rm -f $$UPGRADE_FLAG_FILE
 END_POSTINSTALL
 
 # =-=-=-=-=-=-=-
