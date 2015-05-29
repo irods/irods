@@ -57,6 +57,7 @@ irods : libs
 	@$(MAKE) -C iRODS
 
 docs : doxygen mkdocs
+	@cp -r doxygen/html/* mkdocs/html/doxygen
 
 doxygen :
 	@echo "Generating Doxygen..."
@@ -67,6 +68,8 @@ doxygen :
 mkdocs :
 	@echo "Generating Mkdocs..."
 	@./docs/generate_icommands_md.sh
+	@mkdir -p docs/doxygen
+	@touch docs/doxygen/index.html
 	@mkdocs build --clean
 	@cp iRODS/images/* mkdocs/html/
 	@find mkdocs/html -name '*.html' -type f -exec sed -i 's/TEMPLATE_IRODSVERSION/$(IRODSVERSION)/g' {} \;

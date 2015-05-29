@@ -38,6 +38,8 @@ pages:
     - 'icommands/metadata.md'
     - 'icommands/tickets.md'
     - 'icommands/groupadmin.md'
+ - Doxygen:
+    - 'doxygen/index.html'
 # - Plugin Tutorials:
 #    - 'plugins/microservice.md'
 #    - 'plugins/resource.md'

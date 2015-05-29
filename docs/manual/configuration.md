@@ -1,18 +1,15 @@
 # Configuration Files
 
-# Legacy Configuration Files
+
+The following configuration files control nearly all aspects of how an iRODS deployment functions.  All JSON files validate against the configuration schema defined at [https://schemas.irods.org/configuration](https://schemas.irods.org/configuration).
 
 ## ~/.odbc.ini
 
-This file, in the home directory of the unix service account (default 'irods'), defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database. This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
+This file, in the home directory of the unix service account (default 'irods'), defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database. This file was created by the installer package and probably should not be changed.
 
 ## ~/.irods/.irodsA
 
 This scrambled password file is saved after an `iinit` is run. If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server. If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt. This file can be deleted manually or can be removed by running `iexit full`.
-
-# JSON Configuration Files
-
-The following configuration files control nearly all aspects of how an iRODS deployment functions.  There are configuration variables available for the server, the database connection, and the client environment.  All files are in JSON and validate against the configuration schema defined at [https://schemas.irods.org/configuration](https://schemas.irods.org/configuration).
 
 ## /etc/irods/server_config.json
 
