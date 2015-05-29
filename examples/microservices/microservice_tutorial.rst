@@ -203,7 +203,7 @@ Edit the rulefile ``irods_curl_get.r`` to make sure that the destination object 
 
 Run the rulefile::
 
- $ irule -F irods_hello.r
+ $ irule -F irods_curl_get.r
 
 Check if the new object is there::
 
