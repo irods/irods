@@ -322,17 +322,18 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         local_files = lib.make_large_local_tmp_dir(
             dir_path, file_count, file_size)
 
+        # make session for existing *remote* user
+        user, password = 'rods', 'rods'
+        remote_session = lib.make_session_for_existing_user(
+            user, password, FEDERATION.REMOTE_HOST, FEDERATION.REMOTE_ZONE)
+
         # test specific parameters
         parameters = self.config.copy()
         parameters['dir_path'] = dir_path
         parameters['dir_name'] = dir_name
-        parameters['user_name'] = 'rods'
+        parameters['user_name'] = remote_session.username
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}".format(
             **parameters)
-
-        # make session for existing remote user
-        remote_session = lib.make_session_for_existing_user(
-            'rods', 'rods', 'irods403', '403')
 
         # put dir in remote collection
         remote_session.assert_icommand(

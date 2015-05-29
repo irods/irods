@@ -19,6 +19,7 @@ class FEDERATION(object):
     IRODS_DIR = '/var/lib/irods/iRODS'
     LOCAL_ZONE = 'dev'
     REMOTE_ZONE = '403'
+    REMOTE_HOST = 'irods403'
     REMOTE_RESOURCE = 'demoResc'
     REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
     TEST_FILE_SIZE = 4096   # 4MB
