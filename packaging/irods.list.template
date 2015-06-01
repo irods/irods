@@ -173,7 +173,12 @@ else
 fi
 
 if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  # detect current service account information
+  MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $$3}'`
+  MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $$4}'`
 
+  # Stop server to prevent db plugin / irods server mismatch
+  HIDE_OUTPUT=`su - $$MYACCTNAME -c "$IRODS_HOME_DIR/iRODS/irodsctl stop"`
   # Upgrade
   echo "Upgrading Existing iRODS Installation"
   mkdir -p $IRODS_HOME_DIR
@@ -193,32 +198,12 @@ if [ "$$PACKAGEUPGRADE" = "true" ] ; then
 
   # service account information
   SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
-  # detect current service account information
-  MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $$3}'`
-  MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $$4}'`
   if [ ! -e $$SERVICE_ACCOUNT_CONFIG_FILE ] ; then
     # populate configuration file
     echo "IRODS_SERVICE_ACCOUNT_NAME=$$MYACCTNAME " > $$SERVICE_ACCOUNT_CONFIG_FILE
     echo "IRODS_SERVICE_GROUP_NAME=$$MYGROUPNAME " >> $$SERVICE_ACCOUNT_CONFIG_FILE
     chown $$MYACCTNAME:$$MYGROUPNAME $$SERVICE_ACCOUNT_CONFIG_FILE
   fi
-
-  # get database password from pre-4.1 installations
-  if [ "$$IRODSVERSION" \< "4.1.0" ] ; then
-    if [ -f /etc/irods/server.config ] ; then
-      OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
-      DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $$2}'`
-      # server must be up for iadmin to connect
-      JUNK=`su - $$MYACCTNAME -c "$IRODS_HOME_DIR/iRODS/irodsctl restart"`
-      UNOBFDBLINE=`su - $$MYACCTNAME -c "iadmin dspass \"$$OBFDBPASS\" \"$$DBKEY\""`
-      UNOBFDBPASS=`echo $$UNOBFDBLINE | awk -F ':' '{print $$2}'`
-      PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
-      echo $$UNOBFDBPASS > $$PLAINTEXT_FILENAME
-      chown $$MYACCTNAME:$$MYGROUPNAME $$PLAINTEXT_FILENAME
-      chmod 600 $$PLAINTEXT_FILENAME
-    fi
-  fi
-
 else
   # New Install
 
