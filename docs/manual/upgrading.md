@@ -5,14 +5,20 @@ Upgrading is handled by the host Operating System via the package manager.  Depe
 ## RPM based systems
 
 ~~~
-$ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-64bit-suse.rpm
+$ (sudo) rpm -U irods-database-plugin-postgres-1.5-opensuse13-x86_64.rpm
+$ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-opensuse13-x86_64.rpm
 ~~~
+
+The database plugin must be upgraded first.
+
 
 ## DEB based systems
 
 ~~~
-$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb
+$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.5-ubuntu14-x86_64.deb
 ~~~
+
+The database plugin should be upgraded at the same time.  The iRODS packages are not yet separated enough to allow for them to be upgraded independently.
 
 ## From iRODS 3.3.x
 
