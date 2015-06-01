@@ -2,6 +2,8 @@
 
 ## 4.1.0
 
+Release Date: 2015-05-29
+
 ### Notable Features
 
   - Configuration Management - All configuration files are now JSON and schema-backed.
