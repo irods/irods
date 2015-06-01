@@ -50,7 +50,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Installation of the iCAT DEB and PostgreSQL plugin DEB:
 
 ~~~
-$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-64bit.deb irods-database-plugin-postgres-1.5.deb
+$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.5-ubuntu14-x86_64.deb
 $ (sudo) apt-get -f install
 ~~~
 
@@ -128,7 +128,7 @@ Installation of the Resource RPM:
 
 ~~~
 - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
- $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-64bit-centos6.rpm
+ $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-centos6-x86_64.rpm
  $ (sudo) /var/lib/irods/packaging/setup_irods.sh
 ~~~
 
