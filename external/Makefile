@@ -17,7 +17,7 @@ ifndef IRODS_FTP_BUILD
 IRODS_FTP_BUILD=$(RENCI_FTP_BUILD)
 endif
 
-.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost hdf5 netcdf epm lib_mysqludf_preg libs3
+.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost boost-build hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
@@ -38,6 +38,7 @@ JANSSONVERSIONARCHIVE=$(JANSSONVERSION).tar.gz
 JANSSONVERSIONMAKE=$(JANSSONVERSION)/Makefile
 BOOSTVERSIONARCHIVE=$(BOOSTVERSION).tar.gz
 BOOSTVERSIONMAKE=$(BOOSTVERSION)/b2
+BOOSTEPMLIST=boost-include.list
 HDF5VERSIONARCHIVE=$(HDF5VERSION).tar.gz
 HDF5VERSIONMAKE=$(HDF5VERSION)/Makefile
 NETCDFVERSIONARCHIVE=$(NETCDFVERSION).tar.gz
@@ -56,7 +57,6 @@ ZEROMQVERSIONMAKE=$(ZEROMQVERSION)/Makefile
 CPPZMQVERSIONARCHIVE=$(CPPZMQVERSION).tar.gz
 CPPZMQVERSIONMAKE=$(CPPZMQVERSION)/Makefile
 
-FAKETARGETFORMAKE=FakeTargetForMake
 
 LIBARCHIVESEDCMD="/^\#ifdef HAVE_LINUX_FIEMAP_H/i \#ifdef HAVE_LINUX_TYPES_H\x0a\#include \<linux/types.h\>\x0a\#endif"
 
@@ -70,8 +70,12 @@ default : generate
 else
 default :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
-	$(V_at)curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(IRODS_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1
-	$(V_at)$(MAKE) $(FAKETARGETFORMAKE)
+	$(V_at)mtime=$$(stat -c \%Y $(IRODSEXTERNALLOCAL) 2> /dev/null); \
+		curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(IRODS_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
+		if [[ "$$mtime" != "$$(stat -c \%Y $(IRODSEXTERNALLOCAL) 2> /dev/null)" ]]; then \
+			echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
+			tar zxf $(IRODSEXTERNALLOCAL); \
+		fi
 endif
 
 $(PGUNIXODBCARCHIVE) :
@@ -95,11 +99,6 @@ build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
 		cd ../../../../; \
 		$(MAKE) distclean;
 
-$(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
-	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
-	$(V_at)tar zxf $(IRODSEXTERNALLOCAL)
-	$(V_at)touch $(FAKETARGETFORMAKE)
-
 ifeq ($(OS_platform), osx_platform)
 build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
 else
@@ -108,9 +107,8 @@ endif
 
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
-	$(V_at)tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
+	$(V_at)tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" *
 	$(V_at)cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
-	$(V_at)touch $(FAKETARGETFORMAKE)
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(IRODS_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
@@ -199,11 +197,27 @@ $(BOOSTVERSIONMAKE) : $(BOOSTVERSIONARCHIVE)
 	@cd $(BOOSTVERSION) ; \
 		./bootstrap.sh --with-libraries=program_options,filesystem,system,thread,regex,program_options,iostreams,chrono,date_time
 
-boost : $(BOOSTVERSIONMAKE)
+boost-headers : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
 		./b2 headers; \
-		./b2 link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT
+		./b2 link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT;
+
+$(BOOSTEPMLIST) : boost-headers
+	@echo "d 755 root root /usr/include/irods/boost -" > $(BOOSTEPMLIST)
+	@for d in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type d); do \
+		if [[ $$(find -L $$d -regex ".*\\.[ih]\\(pp\\)?$$") ]]; then \
+			echo $$d | sed "s/.*$(BOOSTVERSION)\\(.*\\)/d 755 root root \\/usr\\/include\\/irods\\/boost\\1 -/" >> $(BOOSTEPMLIST); \
+		fi \
+	done
+	@find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type f -regex ".*\\.[ih]\\(pp\\)?$$" | sed "s/\\(.*$(BOOSTVERSION)\\(.*\\)\\)/f 644 root root \\/usr\\/include\\/irods\\/boost\\2 .\\/external\\/\\1/" >> $(BOOSTEPMLIST)
+	@for l in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type l); do \
+		if [[ $$(find -L $$l -regex ".*\\.[ih]\\(pp\\)?$$") ]]; then \
+			ls -l $$l | sed "s/.*$(BOOSTVERSION)/l 777 root root \\/usr\\/include\\/irods\\/boost/" | sed "s/ -> / /" >> $(BOOSTEPMLIST); \
+		fi \
+	done
+
+boost : boost-headers $(BOOSTEPMLIST)
 
 $(HDF5VERSIONARCHIVE) :
 	@wget $(IRODS_FTP_EXTERNAL)/$(HDF5VERSIONARCHIVE) 2>&1
@@ -231,7 +245,7 @@ netcdf : $(NETCDFVERSIONMAKE)
 $(AVROVERSIONARCHIVE) :
 	@wget $(IRODS_FTP_EXTERNAL)/$(AVROVERSIONARCHIVE) 2>&1
 
-$(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
+$(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost-build cmake
 	@tar zxf $(AVROVERSIONARCHIVE)
 	@sed "s/target_link_libraries ( *avrocpp\\(.*\\)) *$$/target_link_libraries (avrocpp\\1 z)/" $(AVROVERSION)/CMakeLists.txt > /tmp/CMakeLists.txt.tmp; \
 		rsync -c /tmp/CMakeLists.txt.tmp $(AVROVERSION)/CMakeLists.txt; \
@@ -302,6 +316,7 @@ clean :
 	@echo "Cleaning boost..."
 	@rm -rf $(BOOSTVERSION)
 	@rm -f $(BOOSTVERSIONARCHIVE)
+	@rm -f $(BOOSTEPMLIST)
 	@echo "Cleaning jansson..."
 	@rm -rf $(JANSSONVERSION)
 	@rm -f $(JANSSONVERSIONARCHIVE)
@@ -337,4 +352,3 @@ clean :
 	@echo "Cleaning $(IRODSEXTERNALARCHIVE)"
 	@rm -f $(IRODSEXTERNALARCHIVE)
 	@rm -f $(IRODSEXTERNALLOCAL)
-	@rm -f ${FAKETARGETFORMAKE}
