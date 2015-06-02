@@ -72,7 +72,7 @@ default :
 	@echo "Getting $(IRODSEXTERNALARCHIVE) -> $(IRODSEXTERNALLOCAL)..."
 	$(V_at)mtime=$$(stat -c \%Y $(IRODSEXTERNALLOCAL) 2> /dev/null); \
 		curl -o $(IRODSEXTERNALLOCAL) -z $(IRODSEXTERNALLOCAL) $(IRODS_FTP_BUILD)/$(IRODSEXTERNALARCHIVE) > /dev/null 2>&1; \
-		if [[ "$$mtime" != "$$(stat -c \%Y $(IRODSEXTERNALLOCAL) 2> /dev/null)" ]]; then \
+		if [ "$$mtime" != "$$(stat -c \%Y $(IRODSEXTERNALLOCAL) 2> /dev/null)" ]; then \
 			echo "Unpacking $(IRODSEXTERNALLOCAL)..."; \
 			tar zxf $(IRODSEXTERNALLOCAL); \
 		fi
@@ -206,13 +206,13 @@ boost-headers : $(BOOSTVERSIONMAKE)
 $(BOOSTEPMLIST) : boost-headers
 	@echo "d 755 root root /usr/include/irods/boost -" > $(BOOSTEPMLIST)
 	@for d in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type d); do \
-		if [[ $$(find -L $$d -regex ".*\\.[ih]\\(pp\\)?$$") ]]; then \
+		if [ $$(find -L $$d -regex ".*\\.[ih]\\(pp\\)?$$") ]; then \
 			echo $$d | sed "s/.*$(BOOSTVERSION)\\(.*\\)/d 755 root root \\/usr\\/include\\/irods\\/boost\\1 -/" >> $(BOOSTEPMLIST); \
 		fi \
 	done
 	@find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type f -regex ".*\\.[ih]\\(pp\\)?$$" | sed "s/\\(.*$(BOOSTVERSION)\\(.*\\)\\)/f 644 root root \\/usr\\/include\\/irods\\/boost\\2 .\\/external\\/\\1/" >> $(BOOSTEPMLIST)
 	@for l in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type l); do \
-		if [[ $$(find -L $$l -regex ".*\\.[ih]\\(pp\\)?$$") ]]; then \
+		if [ $$(find -L $$l -regex ".*\\.[ih]\\(pp\\)?$$") ]; then \
 			ls -l $$l | sed "s/.*$(BOOSTVERSION)/l 777 root root \\/usr\\/include\\/irods\\/boost/" | sed "s/ -> / /" >> $(BOOSTEPMLIST); \
 		fi \
 	done
