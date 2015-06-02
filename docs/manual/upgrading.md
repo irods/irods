@@ -2,6 +2,8 @@
 
 Upgrading is handled by the host Operating System via the package manager.  Depending on your package manager, your config files will have been preserved with your local changes since the last installation.  Please see [Changing the zone_key and negotiation_key](installation.md#changing-the-zone_key-and-negotiation_key) for information on server-server authentication.
 
+All servers in a Zone must be running the same version of iRODS.  First, upgrade the iCAT server, then upgrade all the Resource servers.
+
 ## RPM based systems
 
 ~~~
@@ -9,8 +11,7 @@ $ (sudo) rpm -U irods-database-plugin-postgres-1.5-opensuse13-x86_64.rpm
 $ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-opensuse13-x86_64.rpm
 ~~~
 
-The database plugin must be upgraded first.
-
+The database plugin must be upgraded first when installing RPMs.
 
 ## DEB based systems
 
@@ -18,7 +19,7 @@ The database plugin must be upgraded first.
 $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.5-ubuntu14-x86_64.deb
 ~~~
 
-The database plugin should be upgraded at the same time.  The iRODS packages are not yet separated enough to allow for them to be upgraded independently.
+The database plugin should be upgraded first or at the same time.  Listing them on the same line will allow dpkg to satisfy its depdendencies.
 
 ## From iRODS 3.3.x
 
