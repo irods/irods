@@ -1,5 +1,15 @@
 # Release Notes
 
+## 4.1.1
+
+### Bug Fixes
+
+  - Hardening of upgrade process against bad input
+
+  - Fix for incomplete development package
+
+  - Fix for removing package-manager-marked config files
+
 ## 4.1.0
 
 ### Notable Features
