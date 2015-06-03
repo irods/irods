@@ -55,7 +55,7 @@ void rodsLogLevel( int level );
 void rodsLogSqlReq( int onOrOff );
 void rodsLogSql( const char *sql );
 void rodsLogSqlResult( char *stat );
-char *rodsErrorName( int errorValue, char **subName );
+const char *rodsErrorName( int errorValue, char **subName );
 void rodsLogErrorOld( int level, int errCode, char *textStr );
 void rodsLogError( int level, int errCode, char *formatStr, ... );
 int getRodsLogLevel();

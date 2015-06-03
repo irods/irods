@@ -47,8 +47,8 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // get the rods error and errno string
-        char* errno_str = 0;
-        char* irods_err = rodsErrorName( code_, &errno_str );
+        char* errno_str = NULL;
+        const char* irods_err = rodsErrorName( code_, &errno_str );
 
         // =-=-=-=-=-=-=-
         // compose resulting message given all components
@@ -56,6 +56,7 @@ namespace irods {
                   + " status [" + irods_err + "]  errno [" + errno_str + "]"
                   + " -- message [" + message_ + "]";
 
+        free( errno_str );
         return result;
 
     } // build_result_string

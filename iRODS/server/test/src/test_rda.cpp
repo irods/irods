@@ -25,8 +25,6 @@ main( int argc, char **argv ) {
     int status;
     rsComm_t *Comm;
     rodsArguments_t myRodsArgs;
-    char *mySubName;
-    char *myName;
     int didOne;
 
     Comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
@@ -95,9 +93,11 @@ main( int argc, char **argv ) {
     }
 
     if ( status != 0 ) {
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", argv[1],
                  status, myName, mySubName );
+        free( mySubName );
     }
     else {
         status = rdaClose();

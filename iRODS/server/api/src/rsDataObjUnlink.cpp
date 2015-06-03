@@ -96,14 +96,15 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
                                         &dataObjInfoHead );
 
     if ( status < 0 ) {
-        char* sys_error;
-        char* rods_error = rodsErrorName( status, &sys_error );
+        char* sys_error = NULL;
+        const char* rods_error = rodsErrorName( status, &sys_error );
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to get data objects.";
         msg << " - " << rods_error << " " << sys_error;
         irods::error result = ERROR( status, msg.str() );
         irods::log( result );
+        free( sys_error );
         return status;
     }
 

@@ -127,19 +127,6 @@ INCLUDES +=	-I$(svrIcatIncDir)
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 
-ifdef PSQICAT
-INCLUDES +=	-I$(POSTGRES_HOME)/include
-endif
-
-ifdef ORAICAT
-CFLAGS +=	-DORA_ICAT
-INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
-endif
-endif
-
-ifdef MYICAT
-INCLUDES +=	-I$(UNIXODBC_HOME)/include
-CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
 endif
 
 ifdef RELEASE_FLAG

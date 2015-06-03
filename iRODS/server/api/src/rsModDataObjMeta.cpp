@@ -122,8 +122,8 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
     else {
         status = chlModDataObjMeta( rsComm, dataObjInfo, regParam );
         if ( status < 0 ) {
-            char* sys_error;
-            char* rods_error = rodsErrorName( status, &sys_error );
+            char* sys_error = NULL;
+            const char* rods_error = rodsErrorName( status, &sys_error );
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to modify the database for object \"";
@@ -131,6 +131,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
             msg << "\" - " << rods_error << " " << sys_error;
             irods::error ret = ERROR( status, msg.str() );
             irods::log( ret );
+            free( sys_error );
         }
     }
 

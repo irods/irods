@@ -39,4 +39,11 @@ EXTRA_LDRFLAGS = \
 	-L${ORACLE_HOME_LIB}/lib/ \
 	-lclntsh -locci -lnnz11
 
+DBMS_LIB+= -L$(ORACLE_HOME)/lib64 -L$(ORACLE_HOME)/lib -L$(ORACLE_HOME)/lib32 -lclntsh
+
+ifneq ($(findstring /xe/, $(ORACLE_HOME)),)
+# For Oracle xe, also need nnz10 library
+DBMS_LIB+= -lnnz10
+endif
+
 include ../Makefile.base

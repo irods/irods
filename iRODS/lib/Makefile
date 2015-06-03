@@ -127,9 +127,6 @@ ifdef SHA256_FILE_HASH
 CFLAGS += -DSHA256_FILE_HASH
 endif
 
-# Logging (automatically generated source)
-LOG_SRC =	$(libCoreSrcDir)/rodsLog.cpp
-
 # Hasher
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
@@ -191,7 +188,7 @@ all:	libs
 lib:	libs
 	@true
 
-libs:	$(CONFIG) $(LOG_SRC) $(LIBRARY)
+libs:	$(CONFIG) $(LIBRARY)
 	@true
 
 $(LIBRARY): $(OBJS) $(BOOST_LIBS)
@@ -216,7 +213,6 @@ clean:
 	@echo "Cleaning library..."
 	@rm -f $(OBJS)
 	@rm -f $(LIBRARY)
-	@rm -f $(LOG_SRC)
 
 #
 # Compilation Targets
@@ -239,10 +235,3 @@ $(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk)
 $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
-
-# Build logging source
-rodslog:  $(LOG_SRC)
-	@true
-
-$(LOG_SRC):  $(libCoreIncDir)/rodsErrorTable.h
-	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl

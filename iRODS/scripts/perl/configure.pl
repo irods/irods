@@ -535,13 +535,6 @@ else
 #
 
 #
-# Find perl
-#
-$platformMkVariables{ "PERL" } = choosePerl( );
-printStatus( "Perl:        " . $platformMkVariables{ "PERL" } . "\n" );
-
-
-#
 # Find compiler and loader
 #
 ($platformMkVariables{ "CC" },$platformMkVariables{ "CC_IS_GCC" },$platformMkVariables{ "LDR" }) =
@@ -816,46 +809,6 @@ sub checkCommand($)
 }
 
 
-
-
-
-#
-# @brief	Choose a Perl for use by the Makefiles
-#
-# Return the name or path of the Perl command to be used by
-# Makefiles.  If the irods.config file has set $PERL, and
-# that points to an existing Perl command, use that.
-# Otherwise use the same Perl this script was run with.
-#
-# Output an error message and exit if there is a problem.
-#
-# @return	the name or path of Perl
-#
-sub choosePerl()
-{
-	# Default to the Perl version running this script.  This is the
-	# preferred way to go.
-	if ( !defined( $PERL ) || $PERL eq "" )
-	{
-		$PERL = $perl;
-		return $PERL;
-	}
-
-	# Use $PERL set in irods.config, if the command exists.
-	return $PERL if ( checkCommand( $PERL ) );
-
-	printError(
-		"\n",
-		"Configuration problem:\n",
-		"    The Perl interpreter chosen in the iRODS configuration file does\n",
-		"    not exist.  Please check your setting for the \$PERL variable\n",
-		"    or leave it empty to use a default.\n",
-		"        Perl:  $PERL\n",
-		"        File:  $irodsConfig\n",
-		"\n",
-		"Abort.  Please re-run this script when the problem is fixed.\n" );
-	exit( 1 );
-}
 
 
 

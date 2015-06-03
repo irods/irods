@@ -16,7 +16,6 @@ LIB_INCLUDES =	-I$(libCoreIncDir) -I$(libApiIncDir)
 SVR_INCLUDES =	-I$(svrCoreIncDir) -I$(svrReIncDir) -I$(svrIcatIncDir) \
 		-I$(svrDriversIncDir)
 
-directoryMk = $(configDir)/directories.mk
 platformMk = $(configDir)/platform.mk
 
 # Depend upon configuration file changes and changes to any

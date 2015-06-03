@@ -11,31 +11,28 @@ main( int argc, char **argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    char *myErrName;
-    int errorCode;
-    char *mySubErrName;
-
     if ( argc != 2 ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
 
     if ( strcmp( argv[1], "-h" ) == 0 ) {
         usage( argv[0] );
-        exit( 0 );
+        return 0;
     }
 
-    errorCode = atoi( argv[1] );
+    int errorCode = atoi( argv[1] );
 
     if ( errorCode > 0 ) {
         errorCode = -errorCode;
     }
 
-    myErrName = rodsErrorName( errorCode, &mySubErrName );
+    char *mySubErrName = NULL;
+    const char *myErrName = rodsErrorName( errorCode, &mySubErrName );
     printf( "irods error: %d %s %s\n",
             errorCode, myErrName, mySubErrName );
-
-    exit( 0 );
+    free( mySubErrName );
+    return 0;
 }
 
 

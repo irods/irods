@@ -28,8 +28,6 @@ int
 irods_connect_() {
     int status;
     rErrMsg_t errMsg;
-    char *mySubName;
-    char *myName;
 
     if ( debug ) {
         printf( "irods_connect_\n" );
@@ -44,13 +42,15 @@ irods_connect_() {
                       myRodsEnv.rodsZone, 0, &errMsg );
 
     if ( Comm == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
         status = errMsg.status;
+        free( mySubName );
         return status;
     }
 

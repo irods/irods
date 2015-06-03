@@ -1194,23 +1194,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
         set_tmpfile
         sed -e "\,RODS_CAT=,s,^.*$,RODS_CAT=1," ./config/config.mk > $TMPFILE
         mv $TMPFILE ./config/config.mk
-        # set database type
-        if [ "$DATABASE_PLUGIN_TYPE" == "postgres" ] ; then
-            set_tmpfile
-            sed -e "\,^#PSQICAT,s,^.*$,PSQICAT=1," ./config/config.mk > $TMPFILE
-            mv $TMPFILE ./config/config.mk
-        elif [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
-            set_tmpfile
-            sed -e "\,^#MYICAT=,s,^.*$,MYICAT=1," ./config/config.mk > $TMPFILE
-            mv $TMPFILE ./config/config.mk
-        elif [ "$DATABASE_PLUGIN_TYPE" == "oracle" ] ; then
-            set_tmpfile
-            sed -e "\,^#ORAICAT=,s,^.*$,ORAICAT=1," ./config/config.mk > $TMPFILE
-            mv $TMPFILE ./config/config.mk
-        else
-            echo "unknown database type"
-            exit 1
-        fi
     fi
 
     # set RELEASE_FLAG accordingly

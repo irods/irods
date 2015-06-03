@@ -314,8 +314,6 @@ main( int argc, char **argv ) {
     int argOffset;
     rcComm_t *Conn;
     rErrMsg_t errMsg;
-    char *mySubName;
-    char *myName;
 
     status = parseCmdLineOpt( argc, argv, "lvVh", 0, &myRodsArgs );
     if ( status ) {
@@ -356,12 +354,14 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
+        free( mySubName );
         exit( 2 );
     }
 

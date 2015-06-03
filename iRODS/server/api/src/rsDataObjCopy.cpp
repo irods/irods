@@ -61,14 +61,15 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 
     if ( srcL1descInx < 0 ) {
         std::stringstream msg;
-        char* sys_error;
-        char* rods_error = rodsErrorName( srcL1descInx, &sys_error );
+        char* sys_error = NULL;
+        const char* rods_error = rodsErrorName( srcL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to open source object: \"";
         msg << srcDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
         irods::log( LOG_ERROR, msg.str() );
+        free( sys_error );
         return srcL1descInx;
     }
 
@@ -101,14 +102,15 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     if ( destL1descInx < 0 ) {
         clearKeyVal( &destDataObjInp->condInput );
         std::stringstream msg;
-        char* sys_error;
-        char* rods_error = rodsErrorName( destL1descInx, &sys_error );
+        char* sys_error = NULL;
+        const char* rods_error = rodsErrorName( destL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to create destination object: \"";
         msg << destDataObjInp->objPath;
         msg << "\" - ";
         msg << rods_error << " " << sys_error;
         irods::log( LOG_ERROR, msg.str() );
+        free( sys_error );
         return destL1descInx;
     }
 

@@ -199,8 +199,6 @@ userAdmin( char *arg0, char *arg1, char *arg2, char *arg3,
            char *arg4, char *arg5, char *arg6, char *arg7 ) {
     userAdminInp_t userAdminInp;
     int status;
-    char *mySubName;
-    char *myName;
     char *funcName;
 
     userAdminInp.arg0 = arg0;
@@ -228,9 +226,11 @@ userAdmin( char *arg0, char *arg1, char *arg2, char *arg3,
         }
     }
     if ( status < 0 ) {
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName,
                  status, myName, mySubName );
+        free( mySubName );
         if ( status == CAT_INVALID_USER_TYPE ) {
             printf( "See 'lt user_type' for a list of valid user types.\n" );
         }
@@ -331,9 +331,6 @@ main( int argc, char **argv ) {
 
     rodsArguments_t myRodsArgs;
 
-    char *mySubName;
-    char *myName;
-
     int argOffset;
 
     int maxCmdTokens = 20;
@@ -399,12 +396,14 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
+        free( mySubName );
 
         exit( 2 );
     }

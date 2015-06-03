@@ -29,11 +29,9 @@
 #
 #	POSTGRES_HOME	The home directory of Postgres, if PSQICAT = 1
 #
-#	ORAICAT		A 1 if the iCAT uses an Oracle database.
-#
 #	MYICAT	    A 1 if the iCAT uses an MySQL database.
 #
-#	ORACLE_HOME	The home directory of Oracle, if ORAICAT = 1
+#	ORACLE_HOME	The home directory of Oracle
 #
 
 #RELEASE_FLAG=1
@@ -41,15 +39,10 @@ OS_platform=
 #osx_106plus=
 FILE_64BITS=1
 #RODS_CAT=1
-#PSQICAT=1
 #POSTGRES_HOME=
-#ORAICAT=1
-#MYICAT=1
 #UNIXODBC_HOME=
 #UNIXODBC_DATASOURCE=
-ifndef ORACLE_HOME
 ORACLE_HOME=
-endif
 
 IRODS_BUILD_DIR=
 CPU_COUNT=
@@ -61,148 +54,6 @@ BOOST_DIR=$(IRODS_BUILD_DIR)/external/$(BOOSTVERSION)
 LIBARCHIVE_DIR=$(IRODS_BUILD_DIR)/external/$(LIBARCHIVEVERSION)
 NETCDF_DIR=$(IRODS_BUILD_DIR)/external/$(NETCDFVERSION)
 HDF5_DIR=$(IRODS_BUILD_DIR)/external/$(HDF5VERSION)
-
-#
-# Check which database is in use for the iCAT
-#
-ifdef RODS_CAT
-
-# Postgres
-ifdef PSQICAT
-PSQ_DBMS =  1
-endif
-
-# Oracle
-ifdef ORAICAT
-ORA_DBMS =  1
-endif
-
-# MySQL
-ifdef MYICAT
-MY_DBMS =  1
-endif
-
-endif
-
-
-#
-# Adjust for the Postgres iCAT
-#
-ifdef PSQICAT
-RODS_CAT = 1
-PSQ_DBMS = 1
-DBMS_INCLUDE+= -DPSQICAT
-endif
-
-
-#
-# Adjust for the Oracle iCAT
-#
-ifdef ORAICAT
-RODS_CAT = 1
-ORA_DBMS = 1
-endif
-
-
-#
-# Adjust for the MySQL iCAT
-#
-ifdef MYICAT
-RODS_CAT = 1
-MY_DBMS = 1
-endif
-
-
-#
-# Postgres options
-#
-ifdef PSQ_DBMS
-ifeq ($(OS_platform), osx_platform)
-NSL=
-else
-NSL=-lnsl
-endif
-PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
-PSQ_HDR_DIR = $(POSTGRES_HOME)/include
-DBMS_LIB+= -L$(PSQ_LIB_DIR) $(NSL) -lm
-DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
-endif
-
-
-#
-# Oracle options
-#
-ifdef ORA_DBMS
-
-ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
-DBMS_LIB+= -L$(ORACLE_HOME)/lib64 -L$(ORACLE_HOME)/lib -L$(ORACLE_HOME)/lib32 -lclntsh
-DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
-
-ifneq ($(findstring /xe/, $(ORACLE_HOME)),)
-# For Oracle xe, also need nnz10 library
-DBMS_LIB+= -lnnz10
-endif
-
-endif
-
-#
-# MySQL options
-#
-ifdef MY_DBMS
-ifeq ($(OS_platform), osx_platform)
-NSL=
-else
-NSL=-lnsl
-endif
-ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
-ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
-DBMS_LIB+= -L$(ODBC_LIB_DIR) $(NSL) -lm
-DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
-endif
-
-#
-# DBR (database-resource) options
-#
-#DBR=1
-ifdef DBR
-DBR_TYPE=postgres
-POSTGRES_HOME=/tbox/IRODS_BUILD/iRODS/../pgsql
-ifeq ($(OS_platform), osx_platform)
-NSL=
-else
-NSL=-lnsl
-endif
-PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
-PSQ_HDR_DIR = $(POSTGRES_HOME)/include
-DBMS_LIB+= -L$(PSQ_LIB_DIR) $(NSL) -lm
-DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
-# Use lines like these, in place of the Postgres items above 
-# (under ifdef DBR), for an Oracle DBR, using values for your
-# Oracle installation:
-#DBR_TYPE=oracle
-#ORACLE_HOME=/usr/local/apps/oracle/home_102
-#ORA_LIB_DIR = $(ORACLE_HOME)/lib
-#ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
-#DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
-#DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
-
-# Use lines like these, in place of the Postgres items above 
-# for mysql:
-#DBR_TYPE=mysql
-#UNIXODBC_HOME=/usr
-#UNIXODBC_DATASOURCE=ICAT
-#ifeq ($(OS_platform), osx_platform)
-#NSL=
-#else
-#NSL=-lnsl
-#endif
-#ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
-#ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
-#DBMS_LIB+= -L$(ODBC_LIB_DIR) $(NSL) -lm
-#DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
-
-endif
-
 
 #
 # Misc options

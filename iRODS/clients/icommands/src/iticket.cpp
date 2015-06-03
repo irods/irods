@@ -450,8 +450,6 @@ doTicketOp( const char *arg1, const char *arg2, const char *arg3,
             const char *arg4, const char *arg5 ) {
     ticketAdminInp_t ticketAdminInp;
     int status;
-    char *mySubName;
-    char *myName;
 
     ticketAdminInp.arg1 = strdup( arg1 );
     ticketAdminInp.arg2 = strdup( arg2 );
@@ -481,9 +479,11 @@ doTicketOp( const char *arg1, const char *arg2, const char *arg3,
                 rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
             }
         }
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcTicketAdmin failed with error %d %s %s",
                  status, myName, mySubName );
+        free( mySubName );
     }
     return status;
 }
@@ -677,7 +677,6 @@ main( int argc, char **argv ) {
     rodsArguments_t myRodsArgs;
 
     char *mySubName;
-    char *myName;
 
     int argOffset;
 
@@ -809,7 +808,7 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,

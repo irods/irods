@@ -32,4 +32,12 @@ GENU_OBJS = \
         ${OBJDIR}/mid_level_routines.o
 
 EXTRA_CFLAGS = -DMY_ICAT
+
+ifeq ($(OS_platform), osx_platform)
+NSL=
+else
+NSL=-lnsl
+endif
+DBMS_LIB+= -L$(UNIXODBC_HOME)/lib $(NSL) -lm
+
 include ../Makefile.base

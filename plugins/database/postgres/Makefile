@@ -37,4 +37,12 @@ GENU_OBJS = \
         ${OBJDIR}/mid_level_routines.o
 
 EXTRA_CFLAGS =  -DPSQICAT
+
+ifeq ($(OS_platform), osx_platform)
+NSL=
+else
+NSL=-lnsl
+endif
+DBMS_LIB+= -L$(POSTGRES_HOME)/lib $(NSL) -lm
+
 include ../Makefile.base

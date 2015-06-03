@@ -53,14 +53,15 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     irods::error ret;
     status = chlRegDataObj( rsComm, dataObjInfo );
     if ( status < 0 ) {
-        char* sys_error;
-        char* rods_error = rodsErrorName( status, &sys_error );
+        char* sys_error = NULL;
+        const char* rods_error = rodsErrorName( status, &sys_error );
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to register data object \"" << dataObjInfo->objPath << "\"";
         msg << " - " << rods_error << " " << sys_error;
         ret = ERROR( status, msg.str() );
         irods::log( ret );
+        free( sys_error );
     }
     else {
         irods::file_object_ptr file_obj(

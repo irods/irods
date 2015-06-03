@@ -749,8 +749,6 @@ main( int argc, char **argv ) {
     generalAdminInp_t generalAdminInp;
 
     rodsArguments_t myRodsArgs;
-    char *mySubName;
-    char *myName;
 
     int mode1, mode2;
     int argOffset;
@@ -802,7 +800,8 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLogError( LOG_ERROR, errMsg.status, "rcConnect failure" );
 
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
@@ -810,6 +809,7 @@ main( int argc, char **argv ) {
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
+        free( mySubName );
 
         exit( 2 );
     }

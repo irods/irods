@@ -540,10 +540,11 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
                                              1, new_fn );
             if ( status < 0 ) {
-                char* sys_error;
-                char* rods_error = rodsErrorName( status, &sys_error );
+                char* sys_error = NULL;
+                const char* rods_error = rodsErrorName( status, &sys_error );
                 rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                          __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
+                free( sys_error );
                 return status;
             }
             /* register the change */
@@ -593,10 +594,11 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                 return 0;
             }
             else {
-                char* sys_error;
-                char* rods_error = rodsErrorName( status, &sys_error );
+                char* sys_error = NULL;
+                const char* rods_error = rodsErrorName( status, &sys_error );
                 rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                          __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
+                free( sys_error );
                 return status;
             }
         }
@@ -614,10 +616,11 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             return 1;
         }
         else {
-            char* sys_error;
-            char* rods_error = rodsErrorName( status, &sys_error );
+            char* sys_error = NULL;
+            const char* rods_error = rodsErrorName( status, &sys_error );
             rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                      __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
+            free( sys_error );
             return status;
         }
     }

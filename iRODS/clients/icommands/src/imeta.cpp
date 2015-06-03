@@ -970,8 +970,6 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                     char *arg4, char *arg5, char *arg6, char *arg7 ) {
     modAVUMetadataInp_t modAVUMetadataInp;
     int status;
-    char *mySubName;
-    char *myName;
     char fullName1[MAX_NAME_LEN];
     char fullName2[MAX_NAME_LEN];
 
@@ -1033,9 +1031,11 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                 rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
             }
         }
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
                  status, myName, mySubName );
+        free( mySubName );
     }
 
     if ( status == CAT_UNKNOWN_FILE ) {
@@ -1069,8 +1069,6 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                 char *arg4, char *arg5, char *arg6, char *arg7, char *arg8 ) {
     modAVUMetadataInp_t modAVUMetadataInp;
     int status;
-    char *mySubName;
-    char *myName;
     char fullName[MAX_NAME_LEN];
 
     if ( strcmp( arg1, "-R" ) == 0 || strcmp( arg1, "-r" ) == 0 ||
@@ -1115,9 +1113,11 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                 rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
             }
         }
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
                  status, myName, mySubName );
+        free( mySubName );
     }
     return status;
 }
@@ -1435,8 +1435,6 @@ main( int argc, char **argv ) {
 
     rodsArguments_t myRodsArgs;
 
-    char *mySubName;
-    char *myName;
 
     int argOffset;
 
@@ -1572,12 +1570,14 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
-        myName = rodsErrorName( errMsg.status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
+        free( mySubName );
 
         exit( 2 );
     }

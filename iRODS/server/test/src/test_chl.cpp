@@ -868,8 +868,6 @@ int
 main( int argc, char **argv ) {
     int status;
     rsComm_t *Comm;
-    char *mySubName;
-    char *myName;
     int didOne;
 
 
@@ -1183,9 +1181,11 @@ main( int argc, char **argv ) {
           }
           }
         */
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", argv[1],
                  status, myName, mySubName );
+        free( mySubName );
     }
     else {
         if ( didOne ) {

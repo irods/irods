@@ -17,7 +17,6 @@ LDR=
 LDRFLAGS=
 RANLIB=
 AR=
-PERL=
 
 
 # added by Jason C (updated by Wayne for solaris)

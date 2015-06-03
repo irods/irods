@@ -89,8 +89,6 @@ int
 doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
     int status;
     simpleQueryOut_t *simpleQueryOut;
-    char *mySubName;
-    char *myName;
     status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
     lastCommandStatus = status;
 
@@ -111,9 +109,11 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
                 rodsLog( LOG_ERROR, "Level %d: %s", i, ErrMsg->msg );
             }
         }
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
                  status, myName, mySubName );
+        free( mySubName );
         return status;
     }
 
@@ -126,10 +126,12 @@ doSimpleQuery( simpleQueryInp_t simpleQueryInp ) {
         for ( ; simpleQueryOut->control > 0 && status == 0; ) {
             status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                myName = rodsErrorName( status, &mySubName );
+                char *mySubName = NULL;
+                const char *myName = rodsErrorName( status, &mySubName );
                 rodsLog( LOG_ERROR,
                          "rcSimpleQuery failed with error %d %s %s",
                          status, myName, mySubName );
+                free( mySubName );
                 return status;
             }
             if ( status == 0 ) {
@@ -230,12 +232,12 @@ getLocalZone() {
         status = rcSimpleQuery( Conn, &simpleQueryInp, &simpleQueryOut );
         lastCommandStatus = status;
         if ( status < 0 ) {
-            char *myName;
-            char *mySubName;
-            myName = rodsErrorName( status, &mySubName );
+            char *mySubName = NULL;
+            const char *myName = rodsErrorName( status, &mySubName );
             rodsLog( LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
                      status, myName, mySubName );
             fprintf( stderr, "Error getting local zone\n" );
+            free( mySubName );
             return status;
         }
         strncpy( localZone, simpleQueryOut->outBuf, BIG_STR );
@@ -604,8 +606,6 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
     generalAdminInp_t generalAdminInp;
     userAdminInp_t userAdminInp;
     int status;
-    char *mySubName;
-    char *myName;
     char *funcName;
 
     if ( _rodsArgs && _rodsArgs->dryrun ) {
@@ -661,11 +661,13 @@ generalAdmin( int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
         fprintf( stderr, "Invalid username format." );
     }
     else if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        myName = rodsErrorName( status, &mySubName );
+        char *mySubName = NULL;
+        const char *myName = rodsErrorName( status, &mySubName );
         rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
         if ( status == CAT_INVALID_USER_TYPE ) {
             fprintf( stderr, "See 'lt user_type' for a list of valid user types.\n" );
         }
+        free( mySubName );
     } // else if status < 0
 
     printErrorStack( Conn->rError );
@@ -1476,12 +1478,13 @@ main( int argc, char **argv ) {
 
     if ( Conn == NULL ) {
         char *mySubName = NULL;
-        char *myName = rodsErrorName( errMsg.status, &mySubName );
+        const char *myName = rodsErrorName( errMsg.status, &mySubName );
         rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
                  myName,
                  mySubName,
                  errMsg.status,
                  errMsg.msg );
+        free( mySubName );
         return 2;
     }
 

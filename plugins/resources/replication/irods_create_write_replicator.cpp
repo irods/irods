@@ -57,11 +57,12 @@ namespace irods {
 
                     transferStat_t* trans_stat = NULL;
                     int status = rsDataObjRepl( _ctx.comm(), &dataObjInp, &trans_stat );
-                    char* sys_error;
-                    char* rods_error = rodsErrorName( status, &sys_error );
+                    char* sys_error = NULL;
+                    const char* rods_error = rodsErrorName( status, &sys_error );
                     result = ASSERT_ERROR( status >= 0, status, "Failed to replicate the data object: \"%s\" from resource: \"%s\" "
                                            "to sibling: \"%s\" - %s %s.", object.logical_path().c_str(), child_.c_str(),
                                            hierarchy_string.c_str(), rods_error, sys_error );
+                    free( sys_error );
 
                     if ( trans_stat != NULL ) {
                         free( trans_stat );

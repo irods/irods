@@ -490,8 +490,8 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             status = rcDataObjCopy( conn, dataObjCopyInp );
 
             if ( status < 0 ) {
-                char* sys_error;
-                char* rods_error = rodsErrorName( status, &sys_error );
+                char* sys_error = NULL;
+                const char* rods_error = rodsErrorName( status, &sys_error );
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to copy the object \"";
@@ -501,6 +501,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 msg << "\" ";
                 msg << rods_error << " " << sys_error;
                 irods::log( LOG_ERROR, msg.str() );
+                free( sys_error );
             }
 
         }

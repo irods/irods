@@ -265,14 +265,15 @@ namespace irods {
                 freeAllDataObjInfo( head_ptr );
             }
 
-            char* sys_error;
-            char* rods_error = rodsErrorName( status, &sys_error );
+            char* sys_error = NULL;
+            const char* rods_error = rodsErrorName( status, &sys_error );
             std::stringstream msg;
             msg << "failed in call to getDataObjInfoIncSpecColl";
             msg << " for [";
             msg << _data_obj_inp->objPath;
             msg << "] ";
             msg << rods_error << " " << sys_error;
+            free( sys_error );
             return ERROR( status, msg.str() );
         }
 
