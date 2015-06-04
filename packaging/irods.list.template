@@ -352,7 +352,6 @@ d 755 root root ${IRODS_HOME}/installLogs -
 d 755 root root ${IRODS_HOME}/scripts -
 f 755 root root ${IRODS_HOME}/scripts/find_irods_home.sh ./iRODS/scripts/find_irods_home.sh
 f 755 root root ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
-f 755 root root ${IRODS_HOME}/scripts/izoneinfo.sh ./iRODS/scripts/izoneinfo.sh
 d 755 root root ${IRODS_HOME}/scripts/notify -
 f 644 root root ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
 f 755 root root ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl

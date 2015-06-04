@@ -25,11 +25,7 @@
 #
 #	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
 #
-#	PSQICAT		A 1 if the iCAT uses an Postgres database.
-#
 #	POSTGRES_HOME	The home directory of Postgres, if PSQICAT = 1
-#
-#	MYICAT	    A 1 if the iCAT uses an MySQL database.
 #
 #	ORACLE_HOME	The home directory of Oracle
 #
