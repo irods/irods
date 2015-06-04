@@ -530,9 +530,13 @@ runCmd(0, "iadmin moduser $U2 comment 'this is a comment'");
 runCmd(0, "iadmin moduser $U2 comment ''");
 runCmd(0, "iadmin moduser $U2 info 'this is Info field'");
 runCmd(0, "iadmin moduser $U2 info ''");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $U2 password 'abc'");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $U2 password '1234'");
+runCmd(0,"sleep 1");
 runCmd(2, "iadmin moduser $UA password '1234'");
+runCmd(0,"sleep 1");
 
 # For groupadmin test below, make sure G! doesn't exist
 runCmd(1, "iadmin rmgroup $G1");

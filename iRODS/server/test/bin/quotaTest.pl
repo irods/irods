@@ -330,11 +330,15 @@ delete $ENV{'IRODS_AUTHENTICATION_FILE'};
 
 runCmd(1, "iadmin rmuser $QU1");
 runCmd(0, "iadmin mkuser $QU1 rodsuser");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $QU1 password 123");
+runCmd(0,"sleep 1");
 
 runCmd(1, "iadmin rmuser $QU2");
 runCmd(0, "iadmin mkuser $QU2 rodsuser");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $QU2 password 123");
+runCmd(0,"sleep 1");
 
 runCmd(0, "iadmin cu");               # make sure it's initialized
 
@@ -368,7 +372,9 @@ delete $ENV{'IRODS_AUTHENTICATION_FILE'};
 # Create user $QU3
 runCmd(1, "iadmin rmuser $QU3");
 runCmd(0, "iadmin mkuser $QU3 rodsuser");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $QU3 password 123");
+runCmd(0,"sleep 1");
 
 if ($QuotaEnforcementEnabled!=1) {
 # Store a file as $QU3

@@ -239,7 +239,9 @@ runCmd(0, "test_chl rm $HOME/$F1 999999"); # 999999 is taken as -1
 # server style login/auth (altho actually redundant with other tests)
 runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
+runCmd(0,"sleep 1");
 runCmd(0, "iadmin moduser $User2 password 123");
+runCmd(0,"sleep 1");
 #$ENV{'IRODS_USER_NAME'}=$User2;
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'IRODS_USER_NAME'};
