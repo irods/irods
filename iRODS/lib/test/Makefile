@@ -37,8 +37,8 @@ endif
 endif
 
 ifdef PHP_LIB
-TARGETS+= phptest phpexttest
-TESTOBJS+= phptest.o phpexttest.o
+TARGETS+= phptest
+TESTOBJS+= phptest.o
 CFLAGS+=-I$(PHP_INCLUDE_DIR) -I$(PHP_INCLUDE_DIR)/main -I$(PHP_INCLUDE_DIR)/Zend -I$(PHP_INCLUDE_DIR)/TSRM -I$(PHP_INCLUDE_DIR)/regex -I$(PHP_INCLUDE_DIR)/sapi/embed
 AG_LDADD+= -L/data/mwan/php/libxml2-2.6.30/.libs -lrt -lresolv -lm -ldl -lnsl -lxml2 -lz -lcrypt -liconv
 endif
@@ -103,9 +103,6 @@ xmsgtest: xmsgtest.o
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
 phptest: phptest.o
-	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
-
-phpexttest: phpexttest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 listcoll: listcoll.o

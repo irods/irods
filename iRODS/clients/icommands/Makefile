@@ -170,11 +170,6 @@ ifneq (${OS_platform}, osx_platform)
 LDFLAGS += -lrt
 endif
 
-# for checking memleak
-ifdef CCMALLOC
-LDFLAGS += -L$(CCMALLOC_DIR)/lib
-endif
-
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \

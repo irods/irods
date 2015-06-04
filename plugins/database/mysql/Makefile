@@ -38,6 +38,6 @@ NSL=
 else
 NSL=-lnsl
 endif
-DBMS_LIB+= -L$(UNIXODBC_HOME)/lib $(NSL) -lm
+DBMS_LIB+= -L$(MYSQL_HOME)/lib $(NSL) -lm
 
 include ../Makefile.base

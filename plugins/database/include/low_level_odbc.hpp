@@ -22,14 +22,6 @@
 extern int cllBindVarCount;
 extern const char *cllBindVars[MAX_BIND_VARS];
 
-
-/* The name in the various 'odbc.ini' files for the catalog: */
-#ifdef UNIXODBC_DATASOURCE
-#define CATALOG_ODBC_ENTRY_NAME UNIXODBC_DATASOURCE
-#else
-#define CATALOG_ODBC_ENTRY_NAME "PostgreSQL"
-#endif
-
 /* The name in the various 'odbc.ini' files for the RDA: */
 #define RDA_ODBC_ENTRY_NAME "iRODS_RDA"
 

@@ -281,7 +281,6 @@ test:	$(TEST_OBJS) $(TEST_BINS)
 
 # temp include jansson for zonereport
 CFLAGS += -I../../external/$(JANSSONVERSION)/src/
-AG_LDADD += ../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
 LDFLAGS += ../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
 
 # temp include for control plane
@@ -380,7 +379,7 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIB
 
 $(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Link agent server `basename $@`..."
-	$(V_at)$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)  $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
+	$(V_at)$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)  $(DB_PLUGIN_OBJ) $(BOOST_LIBS) $(LDFLAGS)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)

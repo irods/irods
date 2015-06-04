@@ -23,7 +23,6 @@ CFLAGS += `../../packaging/compiler_check.sh 4 2`
 
 # jansson support
 CFLAGS += -I../../external/jansson-2.7/src/
-AG_LDADD += ../../external/jansson-2.7/src/.libs/libjansson.a
 LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 
 #

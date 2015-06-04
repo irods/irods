@@ -25,7 +25,9 @@
 #
 #	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
 #
-#	POSTGRES_HOME	The home directory of Postgres, if PSQICAT = 1
+#	POSTGRES_HOME	The home directory of Postgres
+#
+#	MYSQL_HOME	The home directory of MySQL
 #
 #	ORACLE_HOME	The home directory of Oracle
 #
@@ -36,8 +38,7 @@ OS_platform=
 FILE_64BITS=1
 #RODS_CAT=1
 #POSTGRES_HOME=
-#UNIXODBC_HOME=
-#UNIXODBC_DATASOURCE=
+#MYSQL_HOME=
 ORACLE_HOME=
 
 IRODS_BUILD_DIR=
@@ -54,12 +55,6 @@ HDF5_DIR=$(IRODS_BUILD_DIR)/external/$(HDF5VERSION)
 #
 # Misc options
 #
-
-# CCMALLOC - specify whether mem leak checking CCMALLOC should be run
-# CCMALLOC = 1
-ifdef CCMALLOC
-CCMALLOC_DIR=/data/mwan/rods/ccmalloc/ccmalloc-0.4.0
-endif
 
 
 # VERBOSE - specify whether to show compilation commands
@@ -83,7 +78,7 @@ endif
 # Would like to use PHP as a micro-service language
 # PHP_LIB = 1
 ifdef PHP_LIB
-PHP_LIB_DIR=/data/mwan/php/php-5.2.5x/libs
+PHP_LIB_DIR=
 endif
 
 # TAR_STRUCT_FILE - specify whether the tar structured file will be loaded

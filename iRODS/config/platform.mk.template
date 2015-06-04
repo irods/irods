@@ -71,19 +71,6 @@ LDADD += $(LDRFLAGS)
 CL_LDADD += $(LDRFLAGS)
 endif
 
-
-
-
-
-#
-# Special memory allocation library
-#
-ifdef CCMALLOC
-LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
-CL_LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
-endif
-
-
 #
 # Embedded PHP
 #

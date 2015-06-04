@@ -433,9 +433,8 @@ if ( $configMkVariables{ "RODS_CAT" } ne "1" )
         # Configuration has enabled MySQL.  Make sure the
         # rest of the configuration matches.
         $irodsConfigVariables{ "DATABASE_TYPE" } = "mysql";
-        $irodsConfigVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
-        $configMkVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
-        $configMkVariables{ "UNIXODBC_DATASOURCE" } = $DB_NAME;
+        $irodsConfigVariables{ "MYSQL_HOME" } = $DATABASE_HOME;
+        $configMkVariables{ "MYSQL_HOME" } = $DATABASE_HOME;
 
         $databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
         if ( ! -e $databaseHome )

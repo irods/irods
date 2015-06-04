@@ -53,7 +53,6 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_chrono.a
 # temp include jansson for gridreport
 INC += -I../../../external/jansson-2.7/src/
-AG_LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
 LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
 
 default: tests $(FULLTARGET)
