@@ -217,7 +217,7 @@ usage( FILE* _fout ) {
         "              form attr1;val1;unit1;attr2;val2;unit2;",
         " --acl - atomically apply ACLs of the form",
         "          'perm user_or_group;perm user_or_group;'",
-        "          where <perm> is defined as null|read|write|own",
+        "          where 'perm' is defined as null|read|write|own",
         " -h  this help",
         ""
     };
