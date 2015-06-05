@@ -6,6 +6,7 @@ import subprocess
 import sys
 import shutil
 import pwd
+import grp
 import socket
 
 DEBUG = True
@@ -44,7 +45,7 @@ def get_owner(filename):
 
 
 def get_group(filename):
-    return pwd.getpwuid(os.stat(filename).st_gid).pw_name
+    return grp.getgrgid(os.stat(filename).st_gid).gr_name
 
 
 def get_config_file_path(config_file):
@@ -465,8 +466,7 @@ def convert_serverconfig_and_irodsconfig():
         #
         # write out new files
         #
-        new_owner = get_owner('/etc/irods/core.re')
-        new_group = get_group('/etc/irods/core.re')
+
         # new server_config file
         print_debug('writing [' + new_server_config_file + '] begin')
         with open(new_server_config_file, 'w') as fh:
@@ -476,6 +476,7 @@ def convert_serverconfig_and_irodsconfig():
         else:
             os.chmod(new_server_config_file, 0600)
         print_debug('writing [' + new_server_config_file + '] end')
+
         # new database_config file
         if server_config['icat_host'] == 'localhost' or server_config['icat_host'] == socket.gethostname():
             print_debug('writing [' + new_database_config_file + '] begin')
