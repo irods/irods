@@ -1,6 +1,18 @@
 # Release Notes
 
+## 4.1.2
+
+Release Date: 2015-06-05
+
+### Bug Fixes
+
+  - Fix information leakage in izonereport
+
+  - Fix misuse of uid for gid in configuration conversion script
+
 ## 4.1.1
+
+Release Date: 2015-06-02
 
 ### Bug Fixes
 
