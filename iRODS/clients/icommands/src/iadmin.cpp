@@ -1796,6 +1796,9 @@ usage( char *subOpt ) {
         "A ContextString can be added to a coordinating resource (where there is",
         "no hostname or vault path to be set) by explicitly setting the Host:Path",
         "to an empty string ('').",
+        " ",
+        "A list of available resource types can be shown with:",
+        "  iadmin lt resc_type",
         ""
     };
 
