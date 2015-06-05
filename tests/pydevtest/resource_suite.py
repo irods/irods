@@ -244,7 +244,7 @@ class ResourceSuite(ResourceBase):
         lib.run_command('openssl genrsa -out server.key')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 100')  # normally 2048, but smaller size here for speed
+        lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
         with lib.file_backed_up(service_account_environment_file_path):
@@ -286,7 +286,7 @@ class ResourceSuite(ResourceBase):
         os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
         os.system("mv server.crt chain.pem")
         # normally 2048, but smaller size here for speed
-        os.system("openssl dhparam -2 -out dhparams.pem 100 2> /dev/null")
+        os.system("openssl dhparam -2 -out dhparams.pem 1024 2> /dev/null")
 
         # server side environment variables
         os.environ['irodsSSLCertificateChainFile'] = lib.get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
