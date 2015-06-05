@@ -162,6 +162,11 @@ irods::error sanitize_server_config_keys(
     // sanitize the top level keys
     json_object_set(
         _svr_cfg,
+        "zone_key",
+        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+
+    json_object_set(
+        _svr_cfg,
         "negotiation_key",
         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
@@ -178,9 +183,6 @@ irods::error sanitize_server_config_keys(
         return SUCCESS();
 
     }
-
-
-
 
     // sanitize all federation keys
     size_t      idx = 0;
