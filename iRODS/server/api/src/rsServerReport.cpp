@@ -192,7 +192,10 @@ irods::error sanitize_server_config_keys(
             obj,
             "negotiation_key",
             json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-
+        json_object_set(
+            obj,
+            "zone_key",
+            json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
     }
 
     return SUCCESS();
