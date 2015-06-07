@@ -118,13 +118,12 @@ extern "C" {
             i++;
 
         }
-
         if (rei->condInputData) {
             for (i=0; i< rei->condInputData->len;i++) {
                 ss<<escapeJsonString(rei->condInputData->keyWord[i]) << ":" << escapeJsonString(rei->condInputData->value[i]) <<(i==rei->condInputData->len-1?"":",")<< std::endl;
             }
         } else {
-            ss<< "no condInputData"<<std::endl;
+            ss<< escapeJsonString("")<<":"<<escapeJsonString("no condInputData")<<std::endl;
         }
         ss<<"}}";
         return _eff_hdlr(std::string("writeLine"), std::string("serverLog"), ss.str());
