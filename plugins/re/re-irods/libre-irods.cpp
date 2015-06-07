@@ -43,7 +43,7 @@ extern "C" {
         (void) _u;
         return SUCCESS();
     }
-    
+
     irods::error stop(irods::default_re_ctx& _u) {
         (void) _u;
         return SUCCESS();
@@ -66,7 +66,7 @@ extern "C" {
         );
         return SUCCESS();
     }
-    
+
     irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
 
         if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
@@ -76,7 +76,7 @@ extern "C" {
             );
             return SUCCESS();
         }
-        
+
         rodsLog(
                 LOG_NOTICE,
                 "applying rule %s", _rn.c_str()
@@ -90,29 +90,28 @@ extern "C" {
         struct all_resources{
             all_resources() {
                 memset(&msParamArray, 0, sizeof(msParamArray_t));
-        
+
             }
             ~all_resources() {
                 clearMsParamArray(&msParamArray, 1);
             }
             msParamArray_t msParamArray;
-        
+
         }ar;
-        
+
         if(_rn.compare(0,4,"pep_") == 0 ) {
             // adapter for 4.0.3 dynamic pep
             // because it only accepts one string param
             // but all operation parameters are passed here
             std::stringstream expr;
-            std::string instance_name;
-            irods::plugin_context plugin_ctx;
+            boost::any* arg0, *arg1;
             std::string rule_ctx;
             int i = 0;
             for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
                 switch(i) {
                     case 0:
                         if(itr->type() == typeid(std::string)) {
-                            instance_name = boost::any_cast<std::string>(*itr).c_str();
+                            arg0 = &*itr;
                         } else {
                             rodsLog(LOG_ERROR, "only string arguments are supported for instance_name");
                             return ERROR(-1, "only string arguments are supported for instance_name");
@@ -120,41 +119,44 @@ extern "C" {
                         break;
                     case 1:
                         if(itr->type() == typeid(irods::plugin_context)) {
-                            plugin_ctx = boost::any_cast<irods::plugin_context>(*itr);
-                            rule_param = plugin_ctx.rule_result();
+                            arg1 = &*itr;
                         } else {
                             rodsLog(LOG_ERROR, "only plugin_context arguments are supported for rule_param");
                             return ERROR(-1, "only plugin_context arguments are supported for rule_param");
                         }
                         break;
                 }
-                
+
             }
+            std::string instance_name = boost::any_cast<std::string>(*arg0).c_str();
+            irods::plugin_context plugin_ctx = boost::any_cast<irods::plugin_context>(*arg1);
+            addMsParam(&(ar.msParamArray), "*OUT", STR_MS_T, (void *) plugin_ctx.rule_results().c_str(), NULL);
+
             expr << _rn << "(*OUT)";
-            snprintf(rei->pluginInstanceName, MAX_NAME_LEN, "%s", instance_name);
+            snprintf(rei->pluginInstanceName, MAX_NAME_LEN, "%s", instance_name.c_str());
             rodsLog(
                     LOG_NOTICE,
                     "applying rule %s", _rn.c_str()
                 );
             int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
-            
-            
+
+
             msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), "*OUT");
             if(msParam != NULL) {
-                plugin_ctx.rule_result(reinterpret_cast<char *>(msParam->inOutStruct)); // currently won't work because boost::any doesn't store reference, use std::ref to make this work
+                plugin_ctx.rule_results(reinterpret_cast<char *>(msParam->inOutStruct)); // currently won't work because boost::any doesn't store reference, use std::ref to make this work
             } else {
                 rodsLog(LOG_ERROR, "no output parameter");
             }
-            
+
             rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
-            
+
             rodsLog(
                     LOG_NOTICE,
                     "rule engine return %d", ret
                 );
 
             return ret == 0 ? SUCCESS() : CODE(ret);
-            
+
         } else {
             std::stringstream expr;
             expr << _rn << "(";
@@ -175,13 +177,13 @@ extern "C" {
                 i++;
             }
             expr << ")";
-            
+
             rodsLog(
                     LOG_NOTICE,
                     "applying rule %s", _rn.c_str()
                 );
             int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
-            
+
             i = 0;
             for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
                 char arg[10];
@@ -194,7 +196,7 @@ extern "C" {
                     } else {
                         rodsLog(LOG_ERROR, "no output parameter");
                     }
-                    
+
                 } else {
                     rodsLog(LOG_ERROR, "only string arguments are supported for returning from xre rules to outside");
                 }
@@ -202,7 +204,7 @@ extern "C" {
             }
 
             rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
-            
+
             rodsLog(
                     LOG_NOTICE,
                     "rule engine return %d", ret
@@ -210,11 +212,11 @@ extern "C" {
 
             return ret == 0 ? SUCCESS() : CODE(ret);
         }
-    
-        
+
+
 
     }
-    
+
     irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
                                      const std::string& _context ) {
         irods::pluggable_rule_engine<irods::default_re_ctx>* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
@@ -223,6 +225,3 @@ extern "C" {
     }
 
 }; // extern "C"
-
-
-

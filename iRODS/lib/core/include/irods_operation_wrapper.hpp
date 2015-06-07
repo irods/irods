@@ -61,7 +61,7 @@ namespace irods {
      * \brief
      *
      **/
-    
+
     class operation_wrapper final {
     public:
         // =-=-=-=-=-=-=-
@@ -110,12 +110,17 @@ namespace irods {
             // in turn that limits the arguments to pre and post rules, unless we put them in boost any here
             // the solution is to test on whether key server data structure which the server-side version depends on exists
             // the data structure chosen here is ruleExecInfo_t, but others will suffice too
-            
+            #ifdef ENABLE_RE
+            static const bool enable_re = true;
+            #else
+            static const bool enable_re = false;
+            #endif
+
             template< bool cond, typename T, typename... T1 >
             using resolve = typename std::tuple_element<0, typename std::enable_if<cond, std::tuple<T, T1...> >::type>::type;
-            
+
             template< typename... T1 >
-            resolve<!std::is_class<ruleExecInfo_t>::value, error, T1...> call(
+            resolve<!enable_re, error, T1...> call(
                 plugin_context& _ctx,
                 T1            ... _t1 ) {
                 if ( operation_ ) {
@@ -125,9 +130,9 @@ namespace irods {
                     return ERROR( NULL_VALUE_ERR, "null resource operation." );
                 }
             }
-            
+
             template< typename... T1 >
-            resolve<std::is_class<ruleExecInfo_t>::value, error, T1...> call(
+            resolve<enable_re, error, T1...> call(
                 plugin_context& _ctx,
                 T1            ... _t1 ) {
                 if ( operation_ ) {
@@ -136,19 +141,19 @@ namespace irods {
                     keyValPair_t kvp;
                     bzero( &kvp, sizeof( kvp ) );
                     _ctx.fco()->get_re_vars( kvp );
-                    
+
                     // =-=-=-=-=-=-=-
                     // add additional global re params
                     error err = add_global_re_params_to_kvp_for_dynpep( kvp );
                     if( !err.ok() ) {
                         return PASS( err );
                     }
-                    
+
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     // rei.rsComm        = _comm;
                     rei.condInputData = &kvp; // give rule scope to our key value pairs
-        
+
 
                     // =-=-=-=-=-=-=-
                     // call the pep-rule for this op
