@@ -10,13 +10,12 @@
 #
 # Commands as found by the 'configure' script during iRODS installation
 #
-CC=
+CC=g++
 CC_IS_GCC=0
 CCFLAGS=
-LDR=
+LDR=g++
 LDRFLAGS=
-RANLIB=
-AR=
+AR=ar
 
 
 # added by Jason C (updated by Wayne for solaris)
@@ -95,11 +94,6 @@ endif
 LDADD+= -lm -lpthread
 CL_LDADD+= -lm -lpthread
 
-ifeq ($(OS_platform), solaris_pc_platform)
-OS_platform=solaris_platform
-hardware_platform=i86_hardware
-endif
-
 # added by Terrell - using system level unixodbc and openssl installation on Solaris
 ifeq ($(OS_platform), solaris_platform)
 CCFLAGS += -I/opt/csw/include -I/usr/sfw/include -I/opt/csw/gxx/include
@@ -173,10 +167,6 @@ endif
 
 MY_CFLAG+= -I$(libCoreIncDir) -I$(libApiIncDir)        \
 		-I$(libHasherIncDir) -I$(libRbudpIncDir)
-
-ifdef UNI_CODE
-MY_CFLAG+= -DUNI_CODE
-endif
 
 # server specific LDADD
 

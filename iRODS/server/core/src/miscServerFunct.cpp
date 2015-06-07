@@ -30,7 +30,7 @@
 #include <openssl/md5.h>
 #if !defined(solaris_platform)
 char *__loc1;
-#endif /* linux_platform */
+#endif /* solaris_platform */
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 

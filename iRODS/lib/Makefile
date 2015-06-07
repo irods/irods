@@ -122,10 +122,6 @@ ifdef RELEASE_FLAG
 CFLAGS +=       -DRELEASE_FLAG
 endif
 
-ifdef SHA256_FILE_HASH
-CFLAGS += -DSHA256_FILE_HASH
-endif
-
 # Hasher
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
@@ -165,9 +161,6 @@ CONFIG =	$(svrConfigDir)/irodsHost
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES)
 
-ifdef IRODS_SYSLOG
-CFLAGS_OPTIONS += -D IRODS_SYSLOG
-endif
 ifdef SYSLOG_FACILITY_CODE
 CFLAGS_OPTIONS += -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
 endif
@@ -196,7 +189,7 @@ $(LIBRARY): $(OBJS) $(BOOST_LIBS)
 	@echo "Building lib$(LIBRARY_NAME).a"
 	@rm -f $(LIBRARY)
 	$(V_at)$(AR) $(AROPT) $(LIBRARY) $^
-	$(V_at)$(RANLIB) $(LIBRARY)
+	$(V_at)$(AR) -s $(LIBRARY)
 
 # Server configuration
 $(svrConfigDir)/irodsHost:

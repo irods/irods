@@ -78,12 +78,9 @@ $configDir  = abs_path( $configDir );
 # Get the script name.  We'll use it for some print messages.
 my $scriptName = $0;
 
-# Load support scripts.
-require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
-require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
-require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
+require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 
 # Get the path to Perl.  We'll use it for running other Perl scripts.
 my $perl = $Config{"perlpath"};
@@ -95,7 +92,6 @@ if ( !defined( $perl ) || $perl eq "" )
 
 # Determine the execution environment.
 my $thisUserID = $<;
-my $thisHost   = getCurrentHostName( );
 
 # Set the number of seconds to sleep after starting or stopping the
 # iRODS servers.  This gives them time to start or stop before
@@ -158,9 +154,9 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # iRODS Server names
 %servers = (
         # Nice name             process name
-        "iRODS agents" =>       "(irodsAge)(nt)?",
-        "iRODS rule servers" => "(irodsReS)(erver)?",
-        "iRODS servers" =>      "(irodsSer)(ver)?"
+        "iRODS agents" =>       "irodsAgent",
+        "iRODS rule servers" => "irodsReServer",
+        "iRODS servers" =>      "irodsServer"
 
         # Process names need to be able to match on just 8 characters,
         # due to limitations of SysV /bin/ps (such as Solaris) which
@@ -1074,15 +1070,8 @@ sub startIrods
         chdir( $serverBinDir );
         umask( 077 );
         # Start the server
-        my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk 2> /dev/null | grep -v \'#'`;
-        if ($syslogStat) {
-#           syslog enabled, need to start differently
-            my $status = system("$irodsServer&");
-        }
-        else {
-            my $output = `$irodsServer 2>&1`;
-            my $status = $?;
-        }
+        my $output = `$irodsServer 2>&1`;
+        my $status = $?;
         if ( $status )
         {
                 printError( "iRODS server failed to start\n" );
@@ -1193,16 +1182,8 @@ sub gracefulStartIrods
         my $startingDir = cwd( );
         chdir( $serverBinDir );
         umask( 077 );
-        # Start the server
-        my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk 2> /dev/null | grep -v \'#'`;
-        if ($syslogStat) {
-#           syslog enabled, need to start differently
-            my $status = system("$irodsServer&");
-        }
-        else {
-            my $output = `$irodsServer 2>&1`;
-            my $status = $?;
-        }
+        my $output = `$irodsServer 2>&1`;
+        my $status = $?;
         if ( $status )
         {
                 printError( "iRODS server failed to start\n" );
@@ -1302,7 +1283,8 @@ sub getIrodsProcessIds()
         foreach $serverType (keys %servers)
         {
                 my $processName = $servers{$serverType};
-                my @pids = getProcessIds( $processName );
+                my @pids = `ps -C $processName o pid`;
+                shift @pids;
                 next if ( $#pids < 0 );
                 $serverPids{$serverType} = [ @pids ];
         }

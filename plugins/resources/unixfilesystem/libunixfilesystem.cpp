@@ -375,17 +375,13 @@ extern "C" {
             struct statfs statbuf;
 #endif
 
-#if defined(solaris_platform) || defined(sgi_platform)   ||     \
-    defined(aix_platform)     || defined(linux_platform) ||     \
-    defined(osx_platform)
+#if not defined(windows_platform)
 #if defined(solaris_platform)
             status = statvfs( path.c_str(), &statbuf );
-#else
-#if defined(sgi_platform)
+#elif defined(sgi_platform)
             status = statfs( path.c_str(), &statbuf, sizeof( struct statfs ), 0 );
-#else
+#elif defined(aix_platform) || defined(linux_platform) || defined(osx_platform)
             status = statfs( path.c_str(), &statbuf );
-#endif
 #endif
 
             // =-=-=-=-=-=-=-
@@ -407,9 +403,7 @@ extern "C" {
 #if defined(aix_platform) || defined(osx_platform) ||   \
     defined(linux_platform)
                 fssize = statbuf.f_bavail * statbuf.f_bsize;
-#endif
-
-#if defined(sgi_platform)
+#elif defined(sgi_platform)
                 fssize = statbuf.f_bfree * statbuf.f_bsize;
 #endif
                 result.code( fssize );

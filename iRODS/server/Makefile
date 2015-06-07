@@ -118,7 +118,7 @@ INCLUDES +=	-I$(svrIcatIncDir)
 
 # icat
 ifdef RODS_CAT
-CFLAGS +=	-DRODS_CAT
+CFLAGS += -DRODS_CAT
 SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o
 
@@ -130,24 +130,21 @@ SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 endif
 
 ifdef RELEASE_FLAG
-CFLAGS +=       -DRELEASE_FLAG
-endif
-ifdef IRODS_SYSLOG
-CFLAGS +=		-DIRODS_SYSLOG
+CFLAGS += -DRELEASE_FLAG
 endif
 
 ifdef SYSLOG_FACILITY_CODE
-CFLAGSS +=     -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
+CFLAGSS += -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
 endif
 
 # re
-CFLAGS +=       -DCACHE_ENABLE
+CFLAGS += -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
 # osx_platform does not support the POSIX realtime extension, but the shared memory functions are supported
 LDADD += -rdynamic -force_flat_namespace
 else
-LDADD +=		-lrt
+LDADD += -lrt
 endif
 
 SVR_RE_OBJS =	\

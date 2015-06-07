@@ -71,6 +71,8 @@ if ( ! -d $configDir )
 # Make the $IRODS_HOME path absolute.
 $IRODS_HOME = abs_path( $IRODS_HOME );
 $configDir  = abs_path( $configDir );
+$userIrodsDir = File::Spec->catfile( $ENV{"HOME"}, ".irods" );
+$userIrodsFile = File::Spec->catfile( $userIrodsDir, "irods_environment.json" );
 
 ########################################################################
 #
@@ -85,12 +87,10 @@ my $currentPort = 0;
 
 push @INC, "/etc/irods";
 push @INC, $configDir;
-require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
-require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
+
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
-require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
-require File::Spec->catfile( $perlScriptsDir, "utils_prompt.pl" );
+require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
 
 
@@ -105,13 +105,11 @@ if ( !defined( $perl ) || $perl eq "" )
 # Determine the execution environment.  These values are used
 # later to select different options for different OSes, or to
 # print information to the log file or various configuration files.
-my $thisOS     = getCurrentOS( );
-my $thisUser   = getCurrentUser( );
-my $thisUserID = $<;
-my $thisHost   = getCurrentHostName( );
-my %thisHostAddresses = getCurrentHostAddresses( );
+my $thisHost   = `hostname -f`;
+$thisHost =~ s/^\s+|\s+$//g;
 
 # Name a log file.
+$logDir = File::Spec->catdir( $IRODS_HOME, "installLogs" );
 my $logFile = File::Spec->catfile( $logDir, "irods_setup.log" );
 
 # iRODS Server names (don't change these names without also changing
@@ -141,24 +139,6 @@ my $noAsk = 0;
 my $noHeader = 0;
 my $isUpgrade = 0;
 setPrintVerbose( 1 );
-
-########################################################################
-#
-# Confirm that prior setup stages have probably run.
-#
-
-# Make sure the iCommand binaries exist.  They are built during 'make',
-# which should already have occurred.
-if ( ! -e $iadmin )
-{
-        printError( "Usage error:\n" );
-        printError( "    The file 'iadmin' is missing.  This probably\n" );
-        printError( "    means that prior setup stages have not been\n" );
-        printError( "    completed yet.\n" );
-        printError( "\n    Please run ./setup.\n" );
-        exit( 1 );
-}
-
 
 ########################################################################
 #
@@ -211,9 +191,6 @@ chmod( 0600, $logFile );
 printLog( "iRODS setup\n" );
 printLog( "------------------------------------------------------------------------\n" );
 
-# When was this script run?
-printLog( getCurrentDateTime( ) . "\n" );
-
 # What's the name of this script?
 printLog( "\nScript:\n" );
 printLog( "    Script:  $scriptName\n" );
@@ -224,18 +201,6 @@ printLog( "\nPerl:\n" );
 printLog( "    Perl path:  $perl\n" );
 printLog( "    Perl version:  $]\n" );
 
-# What was the execution environment?
-printLog( "\nSystem:\n" );
-printLog( "    OS:  $thisOS\n" );
-printLog( "    User:  $thisUser\n" );
-printLog( "    User ID:  $thisUserID\n" );
-printLog( "    Host name:  $thisHost\n" );
-printLog( "    Host addresses:  " );
-my $ip;
-foreach $ip (keys %thisHostAddresses )
-{
-        printLog( "$ip " );
-}
 printLog( "\n" );
 
 # What are the environment variables?
@@ -372,7 +337,6 @@ else
 
 # Done.
 printLog( "\nDone.\n" );
-printLog( getCurrentDateTime( ) . "\n" );
 closeLog( );
 if ( ! $noHeader )
 {
@@ -413,7 +377,6 @@ sub prepare()
         printSubtitle( "\nStep $currentStep of $totalSteps:  Preparing to initialize...\n" );
         printLog( "\nPreparing to initialize...\n" );
         printLog( "------------------------------------------------------------------------\n" );
-        printLog( getCurrentDateTime( ) . "\n\n" );
 
 
         # Stop iRODS if it is running.
@@ -455,7 +418,6 @@ sub configureDatabaseUser
         printLog( "\n" );
         printLog( "Configuring database user...\n" );
         printLog( "------------------------------------------------------------------------\n" );
-        printLog( getCurrentDateTime( ) . "\n\n" );
 
 
         # Postgres
@@ -518,7 +480,6 @@ sub createDatabaseAndTables
         printLog( "\n" );
         printLog( "Creating database and tables...\n" );
         printLog( "------------------------------------------------------------------------\n" );
-        printLog( getCurrentDateTime( ) . "\n\n" );
 
         if ( $DATABASE_TYPE eq "" )
         {
@@ -613,7 +574,7 @@ sub createDatabaseAndTables
                 foreach $sqlfile (@sqlfiles)
                 {
                         printLog( "    $sqlfile...\n" );
-                        my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
+                        my $sqlPath = File::Spec->catfile( "./server/icat/src/", $sqlfile );
                         ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
                         if ( $status != 0 )
                         {
@@ -699,10 +660,9 @@ sub testDatabase()
         printStatus( "Testing database communications...\n" );
         printLog( "\nTesting database communications with test_cll...\n" );
 
-        my $test_cll = File::Spec->catfile( $serverTestCLLBinDir, "test_cll" );
+        my $test_cll = File::Spec->catfile( "./server/test/bin/", "test_cll" );
 
-        $exec_str = "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'";
-        my ($status,$output) = run( "$exec_str" );
+        my $output = `$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD' 2>&1`;
 
         # scrub the password before logging and displaying
         $output =~ s/(.*,pass=)(.*)/$1XXXXX/;
@@ -742,7 +702,6 @@ sub configureIrodsServer
         printLog( "\n" );
         printLog( "Configuring iRODS server...\n" );
         printLog( "------------------------------------------------------------------------\n" );
-        printLog( getCurrentDateTime( ) . "\n\n" );
 
         # Update/set the iRODS server configuration.
         #       Tell iRODS the database host (often this host),
@@ -855,7 +814,7 @@ sub configureIrodsServer
 
                 printStatus( "Running 'iinit' to enable server to server connections...\n" );
                 printLog( "Running 'iinit' to enable server to server connections...\n" );
-                my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
+                $output = `iinit $IRODS_ADMIN_PASSWORD`;
 
                 printStatus( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
                 printLog( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
@@ -901,7 +860,6 @@ sub configureIrodsUser
         printLog( "\n" );
         printLog( "Configuring iRODS user and starting server...\n" );
         printLog( "------------------------------------------------------------------------\n" );
-        printLog( getCurrentDateTime( ) . "\n\n" );
 
 
         if ($isUpgrade)  {
@@ -919,14 +877,14 @@ sub configureIrodsUser
 
             printStatus( "Opening iRODS connection...\n" );
             printLog( "\nOpening iRODS connection...\n" );
-            my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
-            if ( $status != 0 )
+            my $output = `iinit $IRODS_ADMIN_PASSWORD`;
+            if ( $? != 0 )
             {
                 printError( "\nInstall problem:\n" );
                 printError( "    Connection to iRODS server failed.\n" );
-                printError( "        ", $output );
+                printError( "        $output" );
                 printLog( "\nCannot open connection to iRODS server.\n" );
-                printLog( "    ", $output );
+                printLog( "    $output" );
                 cleanAndExit( 1 );
             }
             return();
@@ -950,8 +908,8 @@ sub configureIrodsUser
                 chmod( 0600, $userIrodsFile . ".orig" );
         }
 
-    # populate the irods environment for this server instance
-    printToFile( $userIrodsFile,
+        # populate the irods environment for this server instance
+        printToFile( $userIrodsFile,
         "{\n" .
         "    \"irods_host\": \"$thisHost\",\n" .
         "    \"irods_port\": $IRODS_PORT,\n" .
@@ -999,8 +957,8 @@ sub configureIrodsUser
         # Connect.
         printStatus( "Opening iRODS connection...\n" );
         printLog( "\nOpening iRODS connection...\n" );
-        my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
-        if ( $status != 0 )
+        my $output = `iinit $IRODS_ADMIN_PASSWORD`;
+        if ( $? != 0 )
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Connection to iRODS server failed.\n" );
@@ -1015,8 +973,8 @@ sub configureIrodsUser
         {
             printStatus( "Updating admin user...\n" );
             printLog( "\nUpdating admin user...\n" );
-            my ($status,$output) = run( "$iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD" );
-            if ( $status != 0 )
+            my $output = `iadmin moduser $IRODS_ADMIN_NAME password $IRODS_ADMIN_PASSWORD`;
+            if ( $? != 0 )
             {
                 printError( "\nInstall problem:\n" );
                 printError( "    Cannot update admin user [$IRODS_ADMIN_NAME] password:\n" );
@@ -1032,8 +990,8 @@ sub configureIrodsUser
         printLog( "\nCreating default resource...\n" );
 
         # List existing resources first to see if it already exists.
-        my ($status,$output) = run( "$iadmin lr" );
-        if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
+        my $output = `iadmin lr`;
+        if ( $? == 0 && index($output,$RESOURCE_NAME) >= 0 )
         {
                 printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
                 printLog( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
@@ -1063,8 +1021,8 @@ sub configureIrodsUser
                         }
                 }
                 # Create new default resource
-                ($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME unixfilesystem $thisHost:$RESOURCE_DIR \"\"" );
-                if ( $status != 0 )
+                $output = `iadmin mkresc $RESOURCE_NAME unixfilesystem $thisHost:$RESOURCE_DIR \"\"`;
+                if ( $? != 0 )
                 {
                         printError( "\nInstall problem:\n" );
                         printError( "    Cannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
@@ -1087,8 +1045,8 @@ sub configureIrodsUser
         my $tmpGetFile = "irods_get.$thisHost.tmp";
         printToFile( $tmpPutFile, "This is a test file." );
 
-        my ($status,$output) = run( "$iput $tmpPutFile" );
-        if ( $status != 0 )
+        my $output = `iput $tmpPutFile`;
+        if ( $? != 0 )
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Cannot put test file into iRODS:\n" );
@@ -1098,8 +1056,8 @@ sub configureIrodsUser
                 cleanAndExit( 1 );
         }
 
-        ($status,$output) = run( "$iget $tmpPutFile $tmpGetFile" );
-        if ( $status != 0 )
+        $output = `iget $tmpPutFile $tmpGetFile`;
+        if ( $? != 0 )
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Cannot get test file from iRODS:\n" );
@@ -1109,8 +1067,8 @@ sub configureIrodsUser
                 cleanAndExit( 1 );
         }
 
-        ($status,$output) = run( "diff $tmpPutFile $tmpGetFile" );
-        if ( $status != 0 )
+        $output = `diff $tmpPutFile $tmpGetFile`;
+        if ( $? != 0 )
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Test file retrieved from iRODS doesn't match file written there:\n" );
@@ -1120,8 +1078,8 @@ sub configureIrodsUser
                 cleanAndExit( 1 );
         }
 
-        ($status,$output) = run( "$irm -f $tmpPutFile" );
-        if ( $status != 0 )
+        $output = `irm -f $tmpPutFile`;
+        if ( $? != 0 )
         {
                 printError( "\nInstall problem:\n" );
                 printError( "    Cannot remove test file from iRODS:\n" );
@@ -1263,12 +1221,15 @@ sub listDatabaseTables()
 #
 sub getIrodsProcessIds()
 {
-        my @serverPids = ();
-
-        $parentPid=getIrodsServerPid();
-        my @serverPids = getFamilyProcessIds( $parentPid );
-
-        return @serverPids;
+        my $parentPid = getIrodsServerPid();
+        if ( $parentPid == "NotFound" )
+        {
+            return ();
+        }
+        print "getIrodsProcessIds $parentPid\n";
+        my @pids = `ps --ppid $parentPid o pid`;
+        shift @pids;
+        return @pids;
 }
 
 
@@ -1297,9 +1258,9 @@ sub startIrods()
                 return 2;
         }
 
-        ($status,$output) = run( "$perl $irodsctl start" );
+        $output = `$perl $irodsctl start`;
 
-        if ( $status != 0 )
+        if ( $? != 0 )
         {
                 printError( "Could not start iRODS server.\n" );
                 printError( "    $output\n" );
@@ -1373,8 +1334,7 @@ sub stopIrods
         #       the children.
         #
         # Find and kill the server process IDs
-        $parentPid=getIrodsServerPid();
-        my @pids = getFamilyProcessIds( $parentPid );
+        my @pids = getIrodsProcessIds();
         my $found = 0;
         $num = @pids;
         print( "Found $num processes:\n" );
@@ -1392,7 +1352,8 @@ sub stopIrods
         }
 
         # Repeat to catch stragglers.  This time use kill -9.
-        my @pids = getFamilyProcessIds( $parentPid );
+        my $pids=getIrodsProcessIds();
+        shift @pids;
         my $found = 0;
         foreach $pid (@pids)
         {
@@ -1430,8 +1391,8 @@ sub runIcommand($)
 {
         my ($icommand) = @_;
 
-        my ($status,$output) = run( $icommand );
-        return 1 if ( $status == 0 );   # Success
+        my $output = `$icommand`;
+        return 1 if ( $? == 0 );   # Success
 
 
         printError( "\nInstall problem:\n" );
@@ -1466,8 +1427,8 @@ sub imkdir($)
         my ($directory) = @_;
 
         # Check if the directory already exists.
-        my ($status,$output) = run( "$ils $directory" );
-        if ( $status == 0 )
+        my $output = `ils $directory`;
+        if ( $? == 0 )
         {
                 # The 'ls' completed fine, which means the
                 # directory already exists.
@@ -1483,7 +1444,7 @@ sub imkdir($)
                 # Something more serious.
                 printError( "\nInstall problem:\n" );
                 printError( "    iRODS command failed:\n" );
-                printError( "        Command:  $ils $directory\n" );
+                printError( "        Command:  ils $directory\n" );
                 printError( "        ", $output );
                 printLog( "\nils failed:\n" );
                 printLog( "    $output\n" );
@@ -1491,7 +1452,7 @@ sub imkdir($)
         }
 
         # The directory doesn't exist.  Create it.
-        return runIcommand( "$iadmin mkdir -f $directory" );
+        return runIcommand( "iadmin mkdir -f $directory" );
 }
 
 
@@ -1519,7 +1480,7 @@ sub imkuser($)
         # Check if the account already exists.
         #       'iadmin lu' returns a list of accounts, one per line.
         #       Ignore leading and trailing white-space on the account name.
-        my ($status,$output) = run( "$iadmin lu" );
+        my $output = `iadmin lu`;
         my $line;
         my @lines = split( "\n", $output );
         $usernameWithZone=$username . "#" . $ZONE_NAME;
@@ -1534,7 +1495,7 @@ sub imkuser($)
         }
 
         # Create it.
-        return runIcommand( "$iadmin mkuser $username rodsadmin" );
+        return runIcommand( "iadmin mkuser $username rodsadmin" );
 }
 
 
@@ -1559,7 +1520,7 @@ sub imkgroup($)
         # Check if the account already exists.
         #       'iadmin lu' returns a list of accounts, one per line.
         #       Ignore leading and trailing white-space on the group name.
-        my ($status,$output) = run( "$iadmin lg" );
+        my $output = `iadmin lg`;
         my $line;
         my @lines = split( "\n", $output );
         foreach $line (@lines)
@@ -1573,7 +1534,7 @@ sub imkgroup($)
         }
 
         # Create it.
-        return runIcommand( "$iadmin mkgroup $groupname" );
+        return runIcommand( "iadmin mkgroup $groupname" );
 }
 
 
@@ -1604,13 +1565,13 @@ sub ichown($$)
         # directory first, but there was not iCommand to do that at
         # the time (now, ils -A does it).  But it does no harm to just
         # set it, even if it is redundant.
-        my ($status,$output) = run( "$ichmod own $username $directory" );
-        return 1 if ( $status == 0 );
+        my $output = `ichmod own $username $directory`;
+        return 1 if ( $? == 0 );
 
         # An error.
         printError( "\nInstall problem:\n" );
         printError( "    iRODS command failed:\n" );
-        printError( "        Command:  $ichmod own $username $directory\n" );
+        printError( "        Command:  ichmod own $username $directory\n" );
         printError( "        ", $output );
         printLog( "\nichmod failed:\n" );
         printLog( "    ", $output );
@@ -1683,7 +1644,7 @@ sub cleanAndExit($)
         my ($code) = @_;
 
         # Try to close open iRODS connections.  Ignore failure.
-        my $output = `$iexit full 2>&1`;
+        my $output = `iexit full 2>&1`;
 
         # Try to shut down iRODS server.  Ignore failure.
         stopIrods( );
@@ -1883,7 +1844,7 @@ sub Postgres_CreateDatabase()
         $psqlcmd = "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST -l $DB_NAME";
     }
     printLog( "    Connecting with: $psqlcmd\n" );
-    my ($status,$output) = run( $psqlcmd );
+    my $output = `$psqlcmd`;
         if ( $output =~ /List of databases/i )
         {
                 printStatus( "    [$DB_NAME] on [$DATABASE_HOST] found.\n");
@@ -2454,9 +2415,11 @@ sub Postgres_sql($$)
         $PSQL=$PSQL . "/psql";
 
         if ($DATABASE_HOST eq "localhost") {
-            return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT $databaseName < $sqlFilename" );
+            my $output = `$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT $databaseName < $sqlFilename`;
+            return ($?,$output);
         }
-        return run( "$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST $databaseName < $sqlFilename" );
+        my $output = `$PSQL -U $DATABASE_ADMIN_NAME -p $DATABASE_PORT -h $DATABASE_HOST $databaseName < $sqlFilename`;
+        return ($?,$output);
 }
 
 #
@@ -2489,10 +2452,9 @@ sub Oracle_sql($$)
               $DATABASE_ADMIN_PASSWORD . "@" .
               $tnsname;
     $sqlplus = "sqlplus";
-    $exec_str = "$sqlplus '$connectArg' < $sqlFilename";
-    ($code,$output) = run( "$exec_str" );
+    my $output = `$sqlplus '$connectArg' < $sqlFilename`;
 
-    return ($code,$output);
+    return ($?,$output);
 }
 
 #
@@ -2524,5 +2486,6 @@ sub MySQL_sql($$)
         chomp $MYSQL;
         $MYSQL=$MYSQL . "/mysql";
         my ($databaseName,$sqlFilename) = @_;
-        return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --host=$DATABASE_HOST --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
+        my $output = `$MYSQL --user=$DATABASE_ADMIN_NAME --host=$DATABASE_HOST --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename`;
+        return ($?, $output);
 }

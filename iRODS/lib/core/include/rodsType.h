@@ -18,16 +18,13 @@
 #if defined(osx_platform)
 typedef int64_t rodsLong_t;
 typedef u_int64_t rodsULong_t;
-#else	/* osx_platform */
-#if defined(sgi_platform)
+#elif defined(sgi_platform)
 typedef __int64_t rodsLong_t;
 typedef int64_t u_longlong_t;
-#else	/* sgi_platform */
-#if defined(linux_platform) || defined(alpha_platform)
+#elif defined(linux_platform) || defined(alpha_platform)
 typedef long long rodsLong_t;
 typedef unsigned long long rodsULong_t;
-#else	/* linux_platform */
-#if defined(windows_platform)
+#elif defined(windows_platform)
 typedef unsigned int uint;
 typedef __int64 rodsLong_t;
 typedef unsigned __int64 rodsULong_t;
@@ -35,9 +32,6 @@ typedef unsigned __int64 rodsULong_t;
 typedef long long rodsLong_t;
 typedef unsigned long long rodsULong_t;
 #endif	/* windows_platform */
-#endif	/* linux_platform */
-#endif	/* sgi_platform */
-#endif	/* osx_platform */
 
 typedef enum {  /* object type */
     UNKNOWN_OBJ_T,

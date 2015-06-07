@@ -70,7 +70,7 @@ sub load_server_config {
     $IRODS_PORT = $data->{'zone_port'};
     $SVR_PORT_RANGE_START = $data->{'server_port_range_start'};
     $SVR_PORT_RANGE_END = $data->{'server_port_range_end'};
-    $IRODS_HOST = getCurrentHostName( );
+    $IRODS_HOST = `hostname -f`;
     $RESOURCE_NAME = $data->{'default_resource_name'};
     $RESOURCE_DIR = $data->{'default_resource_directory'};
     $IRODS_ADMIN_PASSWORD = $data->{'admin_password'};

@@ -1693,20 +1693,16 @@ rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag ) {
 
 int
 mySockClose( int sock ) {
-    int status;
-#ifdef _WIN32
-    status = closesocket( sock );
-#else   /* _WIN32 */
+    // A socket write immediately followed by a socket close can cause the
+    // receiver to get errno 104 (reset by peer) and not receive the message,
+    // even with SO_LINGER. Calling shutdown prevents this behavior.
 #if defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
-    /* For reason I do not completely understand, if I do a socket write and
-     * then a socket close immediately, the receiver at the other end can
-     * get a errno 104 (reset by peer) and does no always get the sent msg
-     * even though setting SO_LINGER. Making a shutdown call to shutdown
-     * the send channel seems to do the job.
-     */
     shutdown( sock, SHUT_WR );
 #endif
-    status = close( sock );
+
+#if defined(windows_platform)
+    return closesocket( sock );
+#else
+    return close( sock );
 #endif
-    return status;
 }

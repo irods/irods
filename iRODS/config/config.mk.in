@@ -34,11 +34,10 @@
 
 #RELEASE_FLAG=1
 OS_platform=
-#osx_106plus=
 FILE_64BITS=1
 #RODS_CAT=1
-#POSTGRES_HOME=
-#MYSQL_HOME=
+POSTGRES_HOME=
+MYSQL_HOME=
 ORACLE_HOME=
 
 IRODS_BUILD_DIR=
@@ -55,7 +54,6 @@ HDF5_DIR=$(IRODS_BUILD_DIR)/external/$(HDF5VERSION)
 #
 # Misc options
 #
-
 
 # VERBOSE - specify whether to show compilation commands
 ifndef VERBOSE
@@ -85,41 +83,26 @@ endif
 # into irodsAgent. TAR_EXEC_PATH specifies the path of the tar executable
 # is located if the tar executable is to be used for tar operation.
 # Otherwise tarDir can be used to specify the directory path of libtar.
-# Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default, 
+# Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default,
 # TAR_EXEC_PATH is on and tarDir is off.
 # GNU_TAR -specifies whether the tar execuable is a GNU tar. The default
 # is it is a GNU tar
-# TAR_EXTENDED_HDR - specify whether the extended header format option (-E) 
-# which allows individual file size larger than 8 Gb, is to be used. 
+# TAR_EXTENDED_HDR - specify whether the extended header format option (-E)
+# which allows individual file size larger than 8 Gb, is to be used.
 # The default is off since not all tar commands support this option.
 TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
-GNU_TAR=1 
+GNU_TAR=1
 # TAR_EXTENDED_HDR = 1
 #ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
 #else
 TAR_EXEC_PATH=/bin/tar
 #endif
-#tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 # ZIP_EXEC_PATH and UNZIP_EXEC_PATH define the paths of zip/unzip executable.
 ZIP_EXEC_PATH=/usr/bin/zip
 UNZIP_EXEC_PATH=/usr/bin/unzip
-
-
-# UNI_CODE - support UTF-8 on linux and UTF-16 on windows
-# UNI_CODE = 1
-
-# Syslog logging
-# Uncomment this line to log into syslog instead of the usual
-# server/log/ log files.
-#IRODS_SYSLOG = 1
-
-# =-=-=-=-=-=-=-
-# compile in the sha256 support for the hasher class
-# NOTE:: this should be a build.sh template value
-SHA256_FILE_HASH = 1
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to
@@ -143,11 +126,3 @@ PAM_AUTH_CHECK_PROG=TEMPLATE_IRODS_TOPLEVEL/iRODS/server/bin/PamAuthCheck
 # IRODS_PAM_PASSWORD_MAX_TIME defined in icatHighLevelRoutines.c.  You
 # can edit those values in icatHighLevelRoutines.c to further adjust.
 # PAM_AUTH_NO_EXTEND = 1
-
-# DIRECT_ACCESS_VAULT - build in support for a resource type that
-# will allow users to directly access files in the vault of this 
-# type of resource. Intended for use in environments where there is a
-# need for an "iRODS overlay" of an existing high-performance
-# filesystem (e.g. a parallel file system NAS). It requires that the
-# RUN_SERVER_AS_ROOT feature is turned on.
-# DIRECT_ACCESS_VAULT = 1

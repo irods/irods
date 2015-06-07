@@ -386,9 +386,9 @@ alignInt16( void *ptr ) {
 
 void *
 alignDouble( void *ptr ) {
-#if defined(linux_platform) || defined(windows_platform)   /* no need align at 64 bit boundary for linux */
-    /* By Bing on 5-29-08: Mike and I found that
-       Windows 32-bit OS is aligned with 4. */
+#if defined(linux_platform) || defined(windows_platform)
+    // no need align at 64 bit boundary for linux
+    // Windows 32-bit OS is aligned with 4.
 
 #if defined(_LP64) || defined(__LP64__)
     return alignAddrToBoundary( ptr, 8 );
@@ -915,7 +915,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 
     case PACK_DOUBLE_TYPE:
         /* align inPtr to 8 bytes boundary. Will not align outPtr */
-#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
+#if defined(osx_platform)
         /* osx does not align */
         *inPtr = alignInt( *inPtr );
 #else
@@ -1826,7 +1826,7 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
         /* now pack each child item */
         tmpItem = packItemHead;
         while ( tmpItem != NULL ) {
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
             if ( tmpItem->pointerType == 0 &&
                     packTypeTable[tmpItem->typeInx].number == PACK_DOUBLE_TYPE ) {
                 doubleInStruct = 1;
@@ -1840,7 +1840,7 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
             tmpItem = tmpItem->next;
         }
         freePackedItem( packItemHead );
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
         /* seems that solaris align to 64 bit boundary if there is any
          * double in struct */
         if ( doubleInStruct > 0 ) {
@@ -2616,7 +2616,7 @@ unpackNatDoubleToOutPtr( void **inPtr, void **outPtr, int numElement ) {
     }
     /* align inPtr to 8 bytes boundary. Will not align outPtr */
 
-#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
+#if defined(osx_platform)
     /* osx does not align */
     *outPtr = alignInt( *outPtr );
 #else
@@ -2643,7 +2643,7 @@ unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
 
     /* align inPtr to 8 bytes boundary. Will not align outPtr */
 
-#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
+#if defined(osx_platform)
     /* osx does not align */
     *outPtr = tmpDoublePtr = ( rodsLong_t* )alignInt( *outPtr );
 #else
@@ -2688,7 +2688,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
     int i = 0, status = 0;
     packItem_t *unpackItemHead, *tmpItem;
     int skipLen = 0;
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
     int doubleInStruct = 0;
 #endif
 #if defined(solaris_platform)
@@ -2747,12 +2747,12 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
 
         /* now unpack each child item */
 
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
         doubleInStruct = 0;
 #endif
         tmpItem = unpackItemHead;
         while ( tmpItem != NULL ) {
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
             if ( tmpItem->pointerType == 0 &&
                     packTypeTable[tmpItem->typeInx].number == PACK_DOUBLE_TYPE ) {
                 doubleInStruct = 1;
@@ -2766,7 +2766,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
             tmpItem = tmpItem->next;
         }
         freePackedItem( unpackItemHead );
-#if defined(solaris_platform) && !defined(i86_hardware)
+#if defined(solaris_platform)
         /* seems that solaris align to 64 bit boundary if there is any
          * double in struct */
         if ( doubleInStruct > 0 ) {

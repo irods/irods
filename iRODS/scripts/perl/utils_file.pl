@@ -130,20 +130,20 @@ sub createTempFilePath($)
 #
 sub printToFile
 {
-	my ($file, @text) = @_;
+    my ($file, @text) = @_;
 
-	# Do not delete the old file first.  Instead, when using
-	# open() below, use ">" to write to the file, truncating it
-	# if the file already exists.  This insures that the file
-	# is changed in-place, retaining its existing permissions,
-	# ownership, and other attributes.
-	open( FILE, ">$file" );
-	my $entry;
-	foreach $entry (@text)
-	{
-		print( FILE $entry );
-	}
-	close( FILE );
+    # Do not delete the old file first.  Instead, when using
+    # open() below, use ">" to write to the file, truncating it
+    # if the file already exists.  This ensures that the file
+    # is changed in-place, retaining its existing permissions,
+    # ownership, and other attributes.
+    open( FILE, ">$file" );
+    my $entry;
+    foreach $entry (@text)
+    {
+        print( FILE $entry );
+    }
+    close( FILE );
 }
 
 

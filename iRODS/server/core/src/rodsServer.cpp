@@ -485,7 +485,7 @@ serverMain( char *logDir ) {
 }
 
 void
-#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
+#if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(osx_platform)
 serverExit( int sig )
 #else
 serverExit()
