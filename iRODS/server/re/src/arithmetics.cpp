@@ -14,6 +14,7 @@
 #include "reVariableMap.gen.hpp"
 #include "reVariableMap.hpp"
 #include "debug.hpp"
+#include "irods_re_plugin.hpp"
 
 //    #include "irods_ms_plugin.hpp"
 //    extern irods::ms_table MicrosTable;
@@ -808,20 +809,52 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
     if ( getNodeType( actionRet ) == N_ERROR && (
                 RES_ERR_CODE( actionRet ) == NO_RULE_FOUND_ERR ) ) {
 
-        // =-=-=-=-=-=-=-
-        // didnt find a rule, try a msvc
-        irods::ms_table_entry ms_entry;
-        int actionInx = actionTableLookUp( ms_entry, action );
-        if ( actionInx >= 0 ) { /* rule */
+        bool supported = true;
+        for(unsigned int i = 0; i < nargs; i++) {
+            if(TYPE(args[i]) != T_STRING) {
+                supported = false;
+                break;
+            }
+        }
+        if(supported) {
+            irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr =
+                irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE>(irods::global_re_mgr, rei);
 
-            return execMicroService3( action, args, nargs, node, env, rei, errmsg, r );
+            irods::error err;
+            std::list<std::string> args_storage;
+            std::list<boost::any> args2;
+            for(unsigned int i = 0; i < nargs; i++) {
+                args_storage.emplace_back(args[i]->text);
+                args2.emplace_back(&args_storage.back());
+            }
+            err = re_ctx_mgr.exec_rule(action, irods::unpack(args2));
+            for(unsigned int i = 0; i < nargs; i++) {
+                args[i] = newStringRes(r, args_storage.back().c_str());
+            }
+            if(err.ok()) {
+                return newIntRes(r, err.code() );
+            } else {
+                return newErrorRes( r, err.code() );
+            }
+
+        } else {
+            // =-=-=-=-=-=-=-
+            // didnt find a rule, try a msvc
+            irods::ms_table_entry ms_entry;
+            int actionInx = actionTableLookUp( ms_entry, action );
+            if ( actionInx >= 0 ) { /* rule */
+
+                return execMicroService3( action, args, nargs, node, env, rei, errmsg, r );
+            }
+            else {
+                snprintf( buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules() );
+                generateErrMsg( buf, NODE_EXPR_POS( node ), node->base, buf2 );
+                addRErrorMsg( errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2 );
+                return newErrorRes( r, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR );
+            }
+
         }
-        else {
-            snprintf( buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules() );
-            generateErrMsg( buf, NODE_EXPR_POS( node ), node->base, buf2 );
-            addRErrorMsg( errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2 );
-            return newErrorRes( r, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR );
-        }
+
     }
     else {
         return actionRet;
@@ -1631,4 +1664,3 @@ int definitelyEq( Res *a, Res *b ) {
     }
     return a == b;
 }
-

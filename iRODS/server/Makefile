@@ -128,6 +128,11 @@ CFLAGS += -DRODS_CAT
 SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o
 
+SVR_ICAT_OBJS_NO_RE =	\
+		$(svrIcatObjDir)/icatHighLevelRoutines_no_re.o
+
+SVR_ICAT_OBJS_NO_RE_SRC =	\
+		$(svrIcatSrcDir)/icatHighLevelRoutines.cpp
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
@@ -341,7 +346,7 @@ LDFLAGS += -lz $(RPATH)
 
 db_plugin_with_re: $(DB_PLUGIN_SRC)
 	@echo "Compile With RE `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ)
+	@$(CC) -c $(CFLAGS) -DENABLE_RE $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ)
 
 db_plugin_with_no_re: $(DB_PLUGIN_SRC) $(ICAT_HLR_SRC)
 	@echo "Compile Without RE `basename $@`..."
@@ -353,39 +358,44 @@ db_plugin_with_no_re: $(DB_PLUGIN_SRC) $(ICAT_HLR_SRC)
 # Build server API
 $(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile api `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 # Build server core
 $(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile core `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 # Build server drivers
 $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.cpp $(DEPEND) 
 	@echo "Compile drivers `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 # Build server ICAT
 $(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile icat `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
+
+# Build server ICAT
+$(SVR_ICAT_OBJS_NO_RE):	$(SVR_ICAT_OBJS_NO_RE_SRC) $(DEPEND) $(BOOST_LIBS)
+	@echo "Compile icat no re `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server DBR
 $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.cpp
 	@echo "Compile dbr `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 # Builder server rule engine
 $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile re `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 # Servers
 #
 # Agent
 $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile agent server `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)
 	@echo "Link agent server `basename $@`..."
@@ -394,7 +404,7 @@ $(serverBinDir)/irodsAgent: db_plugin_with_re $(svrCoreObjDir)/rodsAgent.o $(LIB
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile rule engine server `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS)
 	@echo "Link rule engine server `basename $@`..."
@@ -403,7 +413,7 @@ $(serverBinDir)/irodsReServer: db_plugin_with_re $(svrCoreObjDir)/irodsReServer.
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile rods server `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS)
 	@echo "Link rods server `basename $@`..."
@@ -412,7 +422,7 @@ $(serverBinDir)/irodsServer: db_plugin_with_re $(svrCoreObjDir)/rodsServer.o $(L
 # xmsg server
 $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.cpp $(LIBRARY) $(OBJS)
 	@echo "Compile xmsg server `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS)
 	@echo "Link xmsg server `basename $@`..."
@@ -424,7 +434,7 @@ $(serverBinDir)/irodsXmsgServer: db_plugin_with_re $(svrCoreObjDir)/irodsXmsgSer
 #
 $(svrAuthObjDir)/PamAuthCheck.o: $(svrAuthSrcDir)/PamAuthCheck.cpp
 	@echo "Compile PamAuthCheck utility `basename $@`..."
-	$(V_at)$(CC) -c $(AUTH_CFLAGS) -o $@ $<
+	@$(CC) -c $(AUTH_CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 	@echo "Link PamAuthCheck utility `basename $@`..."
@@ -454,7 +464,7 @@ ruleadmin:: $(serverBinDir)/ruleAdmin
 	@cp $(serverBinDir)/ruleAdmin /misc/www/projects/srb-secure/cgi-bin/ruleAdminRaja.cgi
 
 $(svrCoreObjDir)/ruleAdmin.o: $(svrCoreObjDir)/%.o: %.cpp $(LIBRARY) $(OBJS)
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -DENABLE_RE -o $@ $<
 
 $(serverBinDir)/ruleAdmin: $(svrCoreObjDir)/ruleAdmin.o $(LIBRARY) $(OBJS)
 	$(V_at)$(LDR) -o $@ $^ $(LDFLAGS)
