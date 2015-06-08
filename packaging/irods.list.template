@@ -368,9 +368,6 @@ f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/i
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/utils_print.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/irods_get_config_dir.pl ./iRODS/scripts/perl/irods_get_config_dir.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/irods_get_server_config_dir.pl ./iRODS/scripts/perl/irods_get_server_config_dir.pl
-f 755 root root ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/README.txt ./iRODS/scripts/perl/README.txt
 f 644 root root ${IRODS_HOME}/scripts/README.txt ./iRODS/scripts/README.txt
 d 755 root root ${IRODS_HOME}/server -

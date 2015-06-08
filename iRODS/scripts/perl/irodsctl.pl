@@ -43,7 +43,9 @@ my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
 
-$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+$configDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
+    "/etc/irods" :
+    File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
 
 if ( ! -e $configDir )
 {
@@ -66,7 +68,8 @@ if ( ! -e $configDir )
 $IRODS_HOME = abs_path( $IRODS_HOME );
 $configDir  = abs_path( $configDir );
 
-
+$icommandsTestDir = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "test" );
+$serverTestBinDir = File::Spec->catdir( $IRODS_HOME, "server", "test", "bin" );
 
 
 
@@ -92,6 +95,8 @@ if ( !defined( $perl ) || $perl eq "" )
 
 # Determine the execution environment.
 my $thisUserID = $<;
+my $thisHost   = `hostname -f`;
+$thisHost =~ s/^\s+|\s+$//g;
 
 # Set the number of seconds to sleep after starting or stopping the
 # iRODS servers.  This gives them time to start or stop before
@@ -143,7 +148,9 @@ $serverBinDir = File::Spec->catdir( $IRODS_HOME, "server", "bin" );
 $irodsServer  = File::Spec->catfile( $serverBinDir, "irodsServer" );
 
 # Directory containing server configuration 'server_config.json'.
-$irodsServerConfigDir = `perl $perlScriptsDir/irods_get_server_config_dir.pl`;
+$irodsServerConfigDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
+    "/etc/irods" :
+    File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "config" );
 
 # Directory for the server log.
 $irodsLogDir    = File::Spec->catdir( $IRODS_HOME, "server", "log" );
@@ -457,11 +464,10 @@ sub doTest
         # Check if this host is ICAT-enabled.
         # Note that the tests assume iCommands are in the path so we can too.
         # Need to re-iinit first for svr to svr connections, non-ICAT hosts.
-        my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;
+        my $output  = `iinit $IRODS_ADMIN_PASSWORD 2>&1`;
         my $outEnv = `ienv | grep irods_host | tail -1`;
         my $outMisc = `imiscsvrinfo`;
-        my $myHostName = getCurrentHostName( );
-        if ( $outEnv =~ /$myHostName/ &&
+        if ( $outEnv =~ /$thisHost/ &&
              $outMisc =~ /RCAT_ENABLED/) {
             # Test iCAT
             printSubtitle( "\nTesting iCAT...\n" );
@@ -571,7 +577,7 @@ sub doTestIrules
 # Use the same technique to get the hostname as testiCommands.pl
 # (instead of hostname( )) so that this name will be the same on all
 # hosts (was a problem on NMI AIX (perhaps others)).
-        my $hostname2 = hostname();
+        my $hostname2 = $thisHost;
         if ( $hostname2 =~ '.' ) {
         @words = split( /\./, $hostname2 );
         $hostname2  = $words[0];
@@ -668,7 +674,7 @@ sub doTestIcommands
 # Use the same technique to get the hostname as testiCommands.pl
 # (instead of hostname( )) so that this name will be the same on all
 # hosts (was a problem on NMI AIX (perhaps others)).
-        my $hostname2 = hostname();
+        my $hostname2 = $thisHost;
         if ( $hostname2 =~ '.' ) {
         @words = split( /\./, $hostname2 );
         $hostname2  = $words[0];
@@ -753,7 +759,7 @@ sub doTestIcat
         $ENV{PATH} = "$ENV{PATH}:$scripttoplevel/plugins/database";
 
         # Connect to iRODS.
-        my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;
+        my $output  = `iinit $IRODS_ADMIN_PASSWORD 2>&1`;
         if ( $? != 0 )
         {
                 printError( "Cannot connect to iRODS.\n" );
@@ -766,7 +772,7 @@ sub doTestIcat
         my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
         my $tmpDir   = File::Spec->catdir( File::Spec->tmpdir( ), $username );
         mkpath($tmpDir);
-        my $outputFile   = File::Spec->catfile( $tmpDir, "icatSurvey_" . hostname( ) . ".txt" );
+        my $outputFile   = File::Spec->catfile( $tmpDir, "icatSurvey_" . $thisHost . ".txt" );
 
         # Enable CATSQL debug mode in Server by changing user's env file
         $homeDir=$ENV{'HOME'};

@@ -44,7 +44,10 @@ $IRODS_HOME = cwd( );   # Might not be actual iRODS home.  Fixed below.
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
 # iRODS configuration directory
-$configDir = `perl $perlScriptsDir/irods_get_config_dir.pl`;
+$configDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
+    "/etc/irods" :
+    File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
+
 
 if ( ! -d $configDir )
 {
@@ -52,7 +55,6 @@ if ( ! -d $configDir )
         # script was run from the scripts or scripts/perl subdirectories.
         # Look up one directory.
         $IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
-        $configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
         if ( ! -d $configDir )
         {
                 $IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));

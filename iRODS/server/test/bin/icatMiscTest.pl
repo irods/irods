@@ -31,16 +31,12 @@ use File::Basename;
 use File::Spec;
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname(dirname($scriptfullpath)))));
-require "$scripttoplevel/iRODS/scripts/perl/utils_platform.pl";
 require "$scripttoplevel/iRODS/scripts/perl/utils_config.pl";
-if( -e "/etc/irods/server_config.json" )
-{
-        $configDir = "/etc/irods";
-}
-else
-{
-        $configDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
-}
+
+$configDir = ( -e "/etc/irods/server_config.json" ) ?
+    "/etc/irods" :
+    File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
+
 $logDir = File::Spec->catdir( "$scripttoplevel", "iRODS", "server", "log" );
 
 
@@ -53,7 +49,6 @@ $myZone=substr($cmdStdout, $ix+1);
 $myZone =~ s/^\s+//;
 
 $F1="TestFile1";
-$F2="TestFile2";
 $Resc="demoResc";
 $HOME="/$myZone/home/rods";
 $Resc2="resc2";
@@ -318,7 +313,7 @@ chomp($temp2);
 $ix2=index($temp2,"clientPrivLevel=$LOCAL_USER_AUTH");
 if ($ix2 < 0) {
     printf("stdout is:$temp2:");
-    die("For checkauth on $user2 the clientPrivLevel is not $LOCAL_USER_AUTH");
+    die("For checkauth on $User2 the clientPrivLevel is not $LOCAL_USER_AUTH");
 }
 
 # modColl test
