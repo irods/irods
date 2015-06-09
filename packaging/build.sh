@@ -15,6 +15,7 @@ COVERAGEBUILDDIR="/var/lib/irods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
+PREFLIGHTEXIT="1"
 IRODSPACKAGEDIR="./build"
 FAST="0"
 USAGE="
@@ -27,6 +28,7 @@ Options:
 -c, --coverage       Build with coverage support (gcov)
 -f, --fast           Fast build, skip dev, runtime, and icommands packages
 -h, --help           Show this help
+-i, --ignore-prereqs Attempt to build even if some prerequisites are missing
 -j, --jobs NUM       Run NUM make jobs simultaneously (instead of using all cores)
 -p, --portable       Portable option, ignores OS and builds a tar.gz
 -r, --release        Build a release package (no debugging symbols, optimized)
@@ -86,6 +88,7 @@ do
         --coverage) args="${args}-c ";;
         --help) args="${args}-h ";;
         --fast) args="${args}-f ";;
+        --ignore-prereqs) args="${args}-i ";;
         --jobs) args="${args}-j ";;
         --release) args="${args}-r ";;
         --skip) args="${args}-s ";;
@@ -100,7 +103,7 @@ done
 # reset the translated args
 eval set -- $args
 # now we can process with getopts
-while getopts ":chfj:rspvz" opt; do
+while getopts ":chfij:rspvz" opt; do
     case $opt in
         c)
         COVERAGE="1"
@@ -117,6 +120,10 @@ while getopts ":chfj:rspvz" opt; do
         f)
         FAST="1"
         echo "-f, --fast detected -- Skipping dev, runtime, and icommands packages"
+        ;;
+        i)
+        PREFLIGHTEXIT="0"
+        echo "-i, --ignore-prereqs detected -- Building even if some prerequisites are missing"
         ;;
         j)
         CPUJOBS="$OPTARG"
@@ -318,9 +325,14 @@ detect_number_of_cpus_and_set_makejcmd() {
 
 # confirm preflight checks are all met
 confirm_preflight_prerequisites() {
+    case $PREFLIGHTEXIT in
+        0) error="WARNING:";;
+        1) error="ERROR ::";;
+    esac
+
     if [ "$PREFLIGHT" != "" ] ; then
         echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+        echo "$error $SCRIPTNAME requires some software to be installed" 1>&2
         if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
             echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
@@ -335,26 +347,28 @@ confirm_preflight_prerequisites() {
             echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
         fi
         echo "#######################################################${text_reset}" 1>&2
-        exit 1
+        [ "$PREFLIGHTEXIT" == "1" ] && exit 1
     fi
 
     if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
         echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+        echo "$error $SCRIPTNAME requires some software to be installed" 1>&2
         echo "$PREFLIGHTDOWNLOAD" 1>&2
         echo "#######################################################${text_reset}" 1>&2
-        exit 1
+        [ "$PREFLIGHTEXIT" == "1" ] && exit 1
     fi
 
     # print out python prerequisites error
     if [ "$PYPREFLIGHT" != "" ] ; then
         echo "${text_red}#######################################################" 1>&2
-        echo "ERROR :: python requires some software to be installed" 1>&2
+        echo "$error python requires some software to be installed" 1>&2
         echo "      :: try: ${text_reset}sudo easy_install$PYPREFLIGHT${text_red}" 1>&2
         echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
         echo "#######################################################${text_reset}" 1>&2
-        exit 1
+        [ "$PREFLIGHTEXIT" == "1" ] && exit 1
     fi
+
+    unset error
 }
 
 # rename generated packages appropriately
