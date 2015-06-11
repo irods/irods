@@ -43,7 +43,7 @@ main( int argc, char **argv ) {
         return -1;
     }
 
-    void* handle = dlopen( so_name.c_str(), RTLD_LAZY );
+    void* handle = dlopen( so_name.c_str(), RTLD_LAZY | RTLD_LOCAL);
     if ( !handle ) {
         std::stringstream msg;
         msg << "failed to open shared object file [" << so_name
@@ -75,4 +75,3 @@ int
 icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
     return 0;
 }
-

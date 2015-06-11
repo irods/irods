@@ -164,7 +164,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // try to open the shared object
-        void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
+        void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY | RTLD_LOCAL);
         if ( !handle ) {
             std::stringstream msg;
             msg << "failed to open shared object file [" << so_name
@@ -260,6 +260,3 @@ namespace irods {
 
 
 #endif // __IRODS_LOAD_PLUGIN_HPP__
-
-
-
