@@ -2,6 +2,7 @@ BASEDIRS = \
            re \
            re-irods \
            re-audit \
+           re-python \
 
 ######################################################################
 # Configuration should occur above this line

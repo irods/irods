@@ -23,7 +23,8 @@ INC = -I${IRODSDIR}/lib/core/include/ \
       -I${IRODSDIR}/../plugins/api/include \
       -I$(LIBARCHIVE_DIR)/libarchive/ \
       -I../../../external/jansson-2.7/src/ \
-      -I$(BOOST_DIR) 
+      -I$(BOOST_DIR) \
+      ${HEADERS}
 
 MY_CFLAG += ${INC}
 
@@ -53,7 +54,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
+	${GCC} -std=c++11 ${INC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 
