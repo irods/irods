@@ -1242,7 +1242,7 @@ sub stopIrods
 {
         # no regard for PIDs
         # iRODS must kill all owned processes for packaging purposes
-        system( "ps aux | grep \"^[_]\\?\$USER\" | grep \"irods[A|S|R|X]\" | awk '{print \$2}' | xargs kill -9 > /dev/null 2>&1" );
+        system( "python $scripttoplevel/iRODS/scripts/python/terminate_irods_processes.py" );
         # remove shared memory mutex and semaphore
         # this will be handled more cleanly when servers can be gracefully shutdown
         system( "rm -f /var/run/shm/*re_cache_*iRODS*" ); # ubuntu
