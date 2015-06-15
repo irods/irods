@@ -24,7 +24,7 @@ CHL_OBJS=\
          $(IRODSDIR)/lib/core/obj/irods_plugin_base.o
 
 SVR_ICAT_OBJS_NO_RE =	\
-		$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines_no_re.o
+		$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines_with_no_re.o
 
 CHL_OBJS_NO_RE=$(SVR_ICAT_OBJS_NO_RE)  \
 	     $(IRODSDIR)/server/core/obj/irods_database_factory.o \

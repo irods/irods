@@ -16,7 +16,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "reGlobalsExtern.hpp"
-#include "dataObjInpOut.hpp"
+//#include "dataObjInpOut.hpp"
 #else
 #ifndef ___IRODS_OPERATION_WRAPPER_HPP__
 #define ___IRODS_OPERATION_WRAPPER_HPP__
