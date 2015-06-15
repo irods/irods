@@ -1,7 +1,7 @@
 #include "irods_re_plugin.hpp"
 #include "irods_re_home.hpp"
-#include "region.hpp"
-#include "hashtable.hpp"
+#include "region.h"
+#include "irods_hashtable.h"
 #include "restructs.hpp"
 #include "functions.hpp"
 #include "conversion.hpp"
@@ -12,21 +12,21 @@ int processReturnRes( Res *res );
 namespace irods{
     void var_arg_to_list(std::list<boost::any>& _l) {
         (void) _l;
-    } 
-    
+    }
+
     error list_to_var_arg(std::list<boost::any>& _l) {
         if(! _l.empty()) {
             return ERROR(-1, "arg list mismatch");
         } else {
             return SUCCESS();
         }
-    }   
-    
+    }
+
     unpack::unpack(std::list<boost::any> &_l) : l_(_l) {};
-    
+
     configuration_parser::array_t get_re_configs() {
         server_properties& props = server_properties::getInstance();
-        
+
         props.capture_if_needed();
         configuration_parser::array_t re_plugin_configs;
         error err;
@@ -40,25 +40,25 @@ namespace irods{
         std::vector<re_pack_inp<default_re_ctx> > ret;
         configuration_parser::array_t re_plugin_configs = get_re_configs();
         for(auto itr = begin(re_plugin_configs); itr != end(re_plugin_configs); ++itr) {
-            ret.push_back(re_pack_inp<default_re_ctx>( 
+            ret.push_back(re_pack_inp<default_re_ctx>(
                 boost::any_cast< std::string> ((*itr)["instance_name"]),
                 boost::any_cast< std::string> ((*itr)["plugin_name"]),
                 UNIT));
         }
         return ret;
     }
-    
-    
+
+
     microservice_manager<default_ms_ctx> global_ms_mgr;
     auto global_re_packs = init_global_re_packs();
     rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr = rule_engine_plugin_manager<default_re_ctx>(IRODS_RE_HOME);
     rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
     template class pluggable_rule_engine<default_re_ctx>;
-    
+
     Region *r = make_region(0, NULL);
     Hashtable *ft = newHashTable2(10, r);
     bool load = false;
-    
+
     error convertToMsParam(boost::any &itr, msParam_t *t) {
         if(itr.type() == typeid(std::string)) {
             fillStrInMsParam( t, const_cast<char*>( boost::any_cast<std::string>(itr).c_str() ));
@@ -68,7 +68,7 @@ namespace irods{
             return SUCCESS();
         } else {
             return ERROR(-1, "cannot convert parameter");
-        }        
+        }
     }
     error convertFromMsParam(boost::any& itr, msParam_t *t) {
         if(std::string(t->type).compare(STR_MS_T) == 0) {
@@ -78,7 +78,7 @@ namespace irods{
             return SUCCESS();
         } else {
             return ERROR(-1, "cannot convert parameter");
-        }        
+        }
     }
 
     error default_microservice_manager<default_ms_ctx>:: exec_microservice_adapter( std::string msName, default_ms_ctx rei, std::list<boost::any> &l ) {
@@ -92,15 +92,15 @@ namespace irods{
             *p = rei;
             return SUCCESS();
         }
-        
+
         if(!load) {
             getSystemFunctions(ft,r);
             load = true;
         }
-        
+
         unsigned int nargs = l.size();
-        
-        
+
+
         error err;
         struct all_resources {
             all_resources() {
@@ -115,16 +115,16 @@ namespace irods{
                 }
                 region_free(rNew);
             }
-            
+
             std::vector<msParam_t *> myArgv;
             Region *rNew;
             Env *env;
             msParam_t msParams[10];
             Res* args[10];
         } ar;
-        
+
         irods::ms_table_entry ms_entry;
-        int actionInx;   
+        int actionInx;
         // look in the system functions table first
         // sys func table support are limited as they should be roll into the rule engien plugin and microservice plugins
         // currently no return val support
@@ -139,7 +139,7 @@ namespace irods{
             }
 
         }
-        
+
         int i = 0;
         for(auto itr = begin(l); itr != end(l); ++itr) {
             msParam_t* p = &(ar.msParams[i]);
@@ -149,8 +149,8 @@ namespace irods{
             ar.myArgv.push_back(p);
             i++;
         }
-        
-        if (node!=NULL) {      
+
+        if (node!=NULL) {
             i = 0;
             for(auto itr = begin(ar.myArgv); itr != end(ar.myArgv); ++itr) {
                 ar.args[i] = convertMsParamToRes(*itr, ar.rNew);
@@ -159,7 +159,7 @@ namespace irods{
                 }
                 i++;
             }
-            
+
             Res *res = node->func( ar.args, nargs, NULL, rei, NO_SAVE_REI, ar.env, &rei->rsComm->rError, ar.rNew);
             int ret = processReturnRes(res);
             if(ret) {
@@ -178,14 +178,14 @@ namespace irods{
             unsigned int numOfStrArgs;
             int ii = 0;
             std::vector<msParam_t *> &myArgv = ar.myArgv;
-            
+
             myFunc       = ms_entry.call_action_;
             numOfStrArgs = ms_entry.num_args_;
             if ( nargs != numOfStrArgs ) {
                 return ERROR( ACTION_ARG_COUNT_MISMATCH, "execMicroService3: wrong number of arguments");
             }
 
-                
+
             if ( numOfStrArgs == 0 ) {
                 ii = ( *( int ( * )( ruleExecInfo_t * ) )myFunc )( rei ) ;
             }
@@ -232,11 +232,9 @@ namespace irods{
             i++;
         }
         return  SUCCESS();
-        
-        
+
+
 
     }
-    
+
 }
-        
-   

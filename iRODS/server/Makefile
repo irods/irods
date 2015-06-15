@@ -129,7 +129,7 @@ SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o
 
 SVR_ICAT_OBJS_NO_RE =	\
-		$(svrIcatObjDir)/icatHighLevelRoutines_no_re.o
+		$(svrIcatObjDir)/icatHighLevelRoutines_with_no_re.o
 
 SVR_ICAT_OBJS_NO_RE_SRC =	\
 		$(svrIcatSrcDir)/icatHighLevelRoutines.cpp
