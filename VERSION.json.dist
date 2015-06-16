@@ -1,5 +1,5 @@
 {
-    "irods_version": "4.1.2",
+    "irods_version": "4.1.3",
     "catalog_schema_version": 4,
     "configuration_schema_version": 2
 }
