@@ -10,6 +10,7 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -85,13 +86,11 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
  */
 int
 showDataObj( char *name, char *attrName, int wild ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    std::string v1, v2, v3;
 
     char fullName[MAX_NAME_LEN];
     char myDirName[MAX_NAME_LEN];
@@ -100,11 +99,8 @@ showDataObj( char *name, char *attrName, int wild ) {
     /* "id" only used in testMode, in longMode id is reset to be 'time set' :*/
     char *columnNames[] = {"attribute", "value", "units", "id"};
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -137,11 +133,13 @@ showDataObj( char *name, char *attrName, int wild ) {
     }
 
     i2a[0] = COL_COLL_NAME;
+    std::string v1;
     v1 = "='";
     v1 += cwd;
     v1 += "'";
 
     i2a[1] = COL_DATA_NAME;
+    std::string v2;
     v2 = "='";
     v2 += name;
     v2 += "'";
@@ -173,24 +171,25 @@ showDataObj( char *name, char *attrName, int wild ) {
     genQueryInp.sqlCondInp.value = condVal;
     genQueryInp.sqlCondInp.len = 2;
 
+    std::string v3;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[2] = COL_META_DATA_ATTR_NAME;
         if ( wild ) {
-            v3 += "like '";
+            v3  = "like '";
             v3 += attrName;
             v3 += "'";
         }
         else {
-            v3 += "='";
+            v3  = "='";
             v3 += attrName;
             v3 += "'";
         }
-        condVal[2] = ( char* )v3.c_str();
+        condVal[2] = const_cast<char*>(v3.c_str());
         genQueryInp.sqlCondInp.len++;
     }
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -240,23 +239,18 @@ Via a general query, show the AVUs for a collection
 */
 int
 showColl( char *name, char *attrName, int wild ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    std::string v1, v2;
 
     char fullName[MAX_NAME_LEN];
     int  status;
     char *columnNames[] = {"attribute", "value", "units"};
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -294,29 +288,31 @@ showColl( char *name, char *attrName, int wild ) {
     }
 
     i2a[0] = COL_COLL_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += fullName;
     v1 += "'";
 
-    condVal[0] = ( char* )v1.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
     genQueryInp.sqlCondInp.len = 1;
 
+    std::string v2;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[1] = COL_META_COLL_ATTR_NAME;
         if ( wild ) {
-            v2 += "like '";
+            v2 =  "like '";
             v2 += attrName;
             v2 += "'";
         }
         else {
-            v2 += "='";
+            v2 =  "= '";
             v2 += attrName;
             v2 += "'";
         }
-        condVal[1] = ( char* )v2.c_str();
+        condVal[1] = const_cast<char*>(v2.c_str());
         genQueryInp.sqlCondInp.len++;
     }
 
@@ -365,22 +361,17 @@ Via a general query, show the AVUs for a resource
 */
 int
 showResc( char *name, char *attrName, int wild ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    std::string v1, v2;
 
     int  status;
     char *columnNames[] = {"attribute", "value", "units"};
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -398,28 +389,30 @@ showResc( char *name, char *attrName, int wild ) {
     genQueryInp.selectInp.len = 3;
 
     i2a[0] = COL_R_RESC_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += name;
     v1 += "'";
-    condVal[0] = ( char* )v1.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
     genQueryInp.sqlCondInp.len = 1;
 
+    std::string v2;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[1] = COL_META_RESC_ATTR_NAME;
         if ( wild ) {
-            v2 += "like '";
+            v2 =  "like '";
             v2 += attrName;
             v2 += "'";
         }
         else {
-            v2 += "='";
+            v2 =  "= '";
             v2 += attrName;
             v2 += "'";
         }
-        condVal[1] = ( char* ) v2.c_str();
+        condVal[1] = const_cast<char*>(v2.c_str());
         genQueryInp.sqlCondInp.len++;
     }
 
@@ -468,13 +461,11 @@ Via a general query, show the AVUs for a user
 */
 int
 showUser( char *name, char *attrName, int wild ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    std::string v1, v2, v3;
     int status;
     char *columnNames[] = {"attribute", "value", "units"};
 
@@ -490,11 +481,8 @@ showUser( char *name, char *attrName, int wild ) {
         snprintf( userZone, sizeof( userZone ), "%s", myEnv.rodsZone );
     }
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -512,12 +500,14 @@ showUser( char *name, char *attrName, int wild ) {
     genQueryInp.selectInp.len = 3;
 
     i2a[0] = COL_USER_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += userName;
     v1 += "'";
 
     i2a[1] = COL_USER_ZONE;
-    v2 += "='";
+    std::string v2;
+    v2 =  "='";
     v2 += userZone;
     v2 += "'";
 
@@ -525,24 +515,25 @@ showUser( char *name, char *attrName, int wild ) {
     genQueryInp.sqlCondInp.value = condVal;
     genQueryInp.sqlCondInp.len = 2;
 
+    std::string v3;
     if ( attrName != NULL && *attrName != '\0' ) {
         i2a[2] = COL_META_USER_ATTR_NAME;
         if ( wild ) {
-            v3 += "like '";
+            v3 =  "like '";
             v3 += attrName;
             v3 += "'";
         }
         else {
-            v3 += "='";
+            v3 =  "= '";
             v3 += attrName;
             v3 += "'";
         }
-        condVal[2] = ( char* )v3.c_str();
+        condVal[2] = const_cast<char*>(v3.c_str());
         genQueryInp.sqlCondInp.len++;
     }
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -589,25 +580,19 @@ Do a query on AVUs for dataobjs and show the results
 attribute op value [AND attribute op value] [REPEAT]
  */
 int queryDataObj( char *cmdToken[] ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[20];
     int i1b[20];
     int i2a[20];
     char *condVal[20];
-    std::string v1, v2, v3;
 
     int status;
     char *columnNames[] = {"collection", "dataObj"};
     int cmdIx;
     int condIx;
-    std::vector< std::string > vstr( 20 );
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -622,12 +607,14 @@ int queryDataObj( char *cmdToken[] ) {
     genQueryInp.selectInp.len = 2;
 
     i2a[0] = COL_META_DATA_ATTR_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += cmdToken[2];
     v1 += "'";
 
     i2a[1] = COL_META_DATA_ATTR_VALUE;
-    v2 += cmdToken[3];
+    std::string v2;
+    v2 =  cmdToken[3];
     v2 += " '";
     v2 += cmdToken[4];
     v2 += "'";
@@ -637,35 +624,32 @@ int queryDataObj( char *cmdToken[] ) {
     genQueryInp.sqlCondInp.len = 2;
 
     if ( strcmp( cmdToken[5], "or" ) == 0 ) {
-        v3 += " || ";
-        v3 += cmdToken[6];
-        v3 += " '";
-        v3 += cmdToken[7];
-        v3 += "'";
-        v2 += v3;
+        std::stringstream s;
+        s << "|| " << cmdToken[6] << " '" << cmdToken[7] << "'";
+        v2 += s.str();
     }
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     cmdIx = 5;
     condIx = 2;
+    std::vector<std::string> vstr( condIx );
     while ( strcmp( cmdToken[cmdIx], "and" ) == 0 ) {
         i2a[condIx] = COL_META_DATA_ATTR_NAME;
         cmdIx++;
-        vstr[condIx] = "='";
-        vstr[condIx] += cmdToken[cmdIx];
-        vstr[condIx] += "'";
-        condVal[condIx] = ( char* )vstr[condIx].c_str();
+        std::stringstream s1;
+        s1 << "='" << cmdToken[cmdIx] << "'";
+        vstr.push_back(s1.str());
+        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
         condIx++;
 
         i2a[condIx] = COL_META_DATA_ATTR_VALUE;
-        vstr[condIx] += cmdToken[cmdIx + 1];
-        vstr[condIx] = " '";
-        vstr[condIx] += cmdToken[cmdIx + 2];
-        vstr[condIx] += "'";
+        std::stringstream s2;
+        s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
+        vstr.push_back(s2.str());
         cmdIx += 3;
-        condVal[condIx] = ( char* )vstr[condIx].c_str();
+        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
         condIx++;
         genQueryInp.sqlCondInp.len += 2;
     }
@@ -704,25 +688,19 @@ int queryDataObj( char *cmdToken[] ) {
 Do a query on AVUs for collections and show the results
  */
 int queryCollection( char *cmdToken[] ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[20];
     int i1b[20];
     int i2a[20];
     char *condVal[20];
-    std::string v1, v2, v3;
 
     int status;
     char *columnNames[] = {"collection"};
     int cmdIx;
     int condIx;
-    std::vector<std::string> vstr;
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -735,12 +713,14 @@ int queryCollection( char *cmdToken[] ) {
     genQueryInp.selectInp.len = 1;
 
     i2a[0] = COL_META_COLL_ATTR_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += cmdToken[2];
     v1 += "'";
 
     i2a[1] = COL_META_COLL_ATTR_VALUE;
-    v2 += cmdToken[3];
+    std::string v2;
+    v2 =  cmdToken[3];
     v2 += " '";
     v2 += cmdToken[4];
     v2 += "'";
@@ -750,37 +730,32 @@ int queryCollection( char *cmdToken[] ) {
     genQueryInp.sqlCondInp.len = 2;
 
     if ( strcmp( cmdToken[5], "or" ) == 0 ) {
-        v3 += " || ";
-        v3 += cmdToken[6];
-        v3 += " '";
-        v3 += cmdToken[7];
-        v3 += "'";
-
-        v2 += v3;
-
+        std::stringstream s;
+        s << "|| " << cmdToken[6] << " '" << cmdToken[7] << "'";
+        v2 += s.str();
     }
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     cmdIx = 5;
     condIx = 2;
+    std::vector<std::string> vstr( condIx );
     while ( strcmp( cmdToken[cmdIx], "and" ) == 0 ) {
         i2a[condIx] = COL_META_COLL_ATTR_NAME;
         cmdIx++;
-        vstr[condIx] = "='";
-        vstr[condIx] += cmdToken[cmdIx];
-        vstr[condIx] += "'";
-        condVal[condIx] = ( char* )vstr[condIx].c_str();
+        std::stringstream s1;
+        s1 << "='" << cmdToken[cmdIx] << "'";
+        vstr.push_back(s1.str());
+        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
         condIx++;
 
         i2a[condIx] = COL_META_COLL_ATTR_VALUE;
-        vstr[condIx] += cmdToken[cmdIx + 1];
-        vstr[condIx] = " '";
-        vstr[condIx] += cmdToken[cmdIx + 2];
-        vstr[condIx] += "'";
+        std::stringstream s2;
+        s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
+        vstr.push_back(s2.str());
         cmdIx += 3;
-        condVal[condIx] = ( char* )vstr[condIx].c_str();
+        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
         condIx++;
         genQueryInp.sqlCondInp.len += 2;
     }
@@ -820,18 +795,17 @@ int queryCollection( char *cmdToken[] ) {
 Do a query on AVUs for resources and show the results
  */
 int queryResc( char *attribute, char *op, char *value ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    std::string v1, v2;
 
     int status;
     char *columnNames[] = {"resource"};
 
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -844,18 +818,20 @@ int queryResc( char *attribute, char *op, char *value ) {
     genQueryInp.selectInp.len = 1;
 
     i2a[0] = COL_META_RESC_ATTR_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += attribute;
     v1 += "'";
 
     i2a[1] = COL_META_RESC_ATTR_VALUE;
-    v2 += op;
+    std::string v2;
+    v2 =  op;
     v2 += " '";
     v2 += value;
     v2 += "'";
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -890,7 +866,6 @@ int queryResc( char *attribute, char *op, char *value ) {
 Do a query on AVUs for users and show the results
  */
 int queryUser( char *attribute, char *op, char *value ) {
-    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[10];
     int i1b[10];
@@ -898,14 +873,10 @@ int queryUser( char *attribute, char *op, char *value ) {
     char *condVal[10];
     int status;
     char *columnNames[] = {"user", "zone"};
-    std::string v1, v2;
 
     printCount = 0;
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    if ( upperCaseFlag ) {
-        genQueryInp.options = UPPER_CASE_WHERE;
-    }
-
+    genQueryInp_t genQueryInp;
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     if ( upperCaseFlag ) {
         genQueryInp.options = UPPER_CASE_WHERE;
     }
@@ -919,18 +890,20 @@ int queryUser( char *attribute, char *op, char *value ) {
     genQueryInp.selectInp.len = 2;
 
     i2a[0] = COL_META_USER_ATTR_NAME;
-    v1 += "='";
+    std::string v1;
+    v1 =  "='";
     v1 += attribute;
     v1 += "'";
 
     i2a[1] = COL_META_USER_ATTR_VALUE;
-    v2 += op;
+    std::string v2;
+    v2 =  op;
     v2 += " '";
     v2 += value;
     v2 += "'";
 
-    condVal[0] = ( char* )v1.c_str();
-    condVal[1] = ( char* )v2.c_str();
+    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[1] = const_cast<char*>(v2.c_str());
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
