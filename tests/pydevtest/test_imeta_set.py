@@ -172,3 +172,37 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         num_extra_bind_vars = 607  # 3848 for postgres and mysql, any more and the argument string is too long
         command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
         self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)
+
+
+class Test_ImetaQu(ResourceBase, unittest.TestCase):
+    def helper_imeta_qu_comparison_2748(self, irods_object_option_flag):
+        attribute = 'helper_imeta_qu_comparison_2748_attribute'
+        object_name_base = 'helper_imeta_qu_comparison_2748_base_name'
+        for i in range(10):
+            object_name = object_name_base+str(i)
+            value = str(i)
+            if irods_object_option_flag == '-C':
+                self.admin.assert_icommand(['imkdir', object_name])
+            elif irods_object_option_flag == '-d':
+                self.admin.assert_icommand(['iput', self.testfile, object_name])
+            else:
+                assert False, irods_object_option_flag
+
+            self.admin.assert_icommand(['imeta', 'add', irods_object_option_flag, object_name, attribute, value])
+
+        rc, stdout, stderr = self.admin.run_icommand(['imeta', 'qu', irods_object_option_flag, attribute, '<=', '8', 'and', attribute, '>=', '2'])
+        assert rc == 0, rc
+        assert stderr == '', stderr
+        all_objects = set([object_name_base+str(i) for i in range(0, 10)])
+        should_find = set([object_name_base+str(i) for i in range(2, 9)])
+        should_not_find = all_objects - should_find
+        for c in should_find:
+            assert c in stdout, c + ' not found in ' + stdout
+        for c in should_not_find:
+            assert c not in stdout, c + ' found in ' + stdout
+
+    def test_imeta_qu_C_comparison_2748(self):
+        self.helper_imeta_qu_comparison_2748('-C')
+
+    def test_imeta_qu_d_comparison_2748(self):
+        self.helper_imeta_qu_comparison_2748('-d')
