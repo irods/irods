@@ -1,7 +1,6 @@
 from __future__ import print_function
 import json
 import sys
-import requests
 
 if len(sys.argv) != 3:
     sys.exit('Usage: {0} <configuration_file> <schema_url>'.format(sys.argv[0]))
@@ -12,6 +11,12 @@ schema_uri = sys.argv[2]
 
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
+try:
+    import requests
+except ImportError:
+    print_error('ERROR: python module [requests] required')
+    sys.exit(1)
 
 try:
     import jsonschema
