@@ -1070,6 +1070,82 @@ else
 fi
 
 
+# check whether a package is installed
+#  - package manager type
+#  - package name
+check_package_installed() {
+    PKGMANAGERCMD=$1
+    PKGNAME=$2
+    INSTALLED=`$PKGMANAGERCMD $PKGNAME 2>&1 > /dev/null`
+    if [ "$?" != "0" ] ; then
+        PREFLIGHT="$PREFLIGHT $PKGNAME"
+    fi
+}
+
+# for --run-in-place, also declare the runtime dependencies here
+# (otherwise, these would be picked up by the package managers)
+if [ "RUNINPLACE"=="1" ] ; then
+
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        # all os
+        check_package_installed "dpkg -s" "perl"
+        check_package_installed "dpkg -s" "python"
+        check_package_installed "dpkg -s" "openssl"
+        check_package_installed "dpkg -s" "python-psutil"
+        check_package_installed "dpkg -s" "python-requests"
+        # specific
+        check_package_installed "dpkg -s" "libc6"
+        check_package_installed "dpkg -s" "sudo"
+        check_package_installed "dpkg -s" "libssl1.0.0"
+        check_package_installed "dpkg -s" "libfuse2"
+        check_package_installed "dpkg -s" "libjson-perl"
+        if [ "$DETECTEDOSVERSION" \> "14" ] ; then
+            check_package_installed "dpkg -s" "python-jsonschema"
+        fi
+        # externals
+        check_package_installed "dpkg -s" "libmysqlclient-dev"
+        check_package_installed "dpkg -s" "libpcre3-dev"
+        check_package_installed "dpkg -s" "libtool"
+        check_package_installed "dpkg -s" "automake"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+        # all os
+        check_package_installed "rpm -q" "perl"
+        check_package_installed "rpm -q" "python"
+        check_package_installed "rpm -q" "openssl"
+        check_package_installed "rpm -q" "python-psutil"
+        check_package_installed "rpm -q" "python-requests"
+        # specific
+        check_package_installed "rpm -q" "fuse-libs"
+        check_package_installed "rpm -q" "perl-JSON"
+        # externals
+        check_package_installed "rpm -q" "mysql-devel"
+        check_package_installed "rpm -q" "pcre-devel"
+        check_package_installed "rpm -q" "libtool"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        # all os
+        check_package_installed "rpm -q" "perl"
+        check_package_installed "rpm -q" "python"
+        check_package_installed "rpm -q" "openssl"
+        check_package_installed "rpm -q" "python-psutil"
+        check_package_installed "rpm -q" "python-requests"
+        # specific
+        check_package_installed "rpm -q" "libopenssl1_0_0"
+        check_package_installed "rpm -q" "libfuse2"
+        check_package_installed "rpm -q" "perl-JSON"
+        # externals
+        check_package_installed "rpm -q" "libmysqlclient-devel"
+        check_package_installed "rpm -q" "pcre-devel"
+        check_package_installed "rpm -q" "libtool"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        # externals
+        check_package_installed "brew list" "osxfuse"
+        check_package_installed "brew list" "mysql"
+        check_package_installed "brew list" "pcre"
+    fi
+
+fi
+
+
 confirm_preflight_prerequisites
 
 # reset to exit on an error
