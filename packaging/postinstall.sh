@@ -33,14 +33,16 @@ DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 if [ "$UPGRADE_FLAG" == "true" ] ; then
   MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $3}'`
   if [ ! -f /etc/irods/database_config.json ] ; then
-    OBFDBPASS=`grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $2}'`
-    DBKEY=`grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $2}'`
-    UNOBFDBLINE=`su - $MYACCTNAME -c "iadmin dspass \"$OBFDBPASS\" \"$DBKEY\""`
-    UNOBFDBPASS=`echo $UNOBFDBLINE | awk -F ':' '{print $2}'`
+    DSPASS_INPUT_FILE=`su - $MYACCTNAME -c 'mktemp -t dspass_input.XXXXXX'`
+    grep "^DBPassword" /etc/irods/server.config | tail -n1 | awk '{print $2}' > $DSPASS_INPUT_FILE
+    grep "^DBKey" /etc/irods/server.config | tail -n1 | awk '{print $2}' >> $DSPASS_INPUT_FILE
     PLAINTEXT_FILENAME=$IRODS_HOME_DIR/plaintext_database_password.txt
-    echo $UNOBFDBPASS > $PLAINTEXT_FILENAME
+    rm -f $PLAINTEXT_FILENAME
+    touch $PLAINTEXT_FILENAME
     chown $MYACCTNAME:$MYGROUPNAME $PLAINTEXT_FILENAME
     chmod 600 $PLAINTEXT_FILENAME
+    su - $MYACCTNAME -c 'iadmin dspass < $DSPASS_INPUT_FILE' | sed 's/[^:]*://' > $PLAINTEXT_FILENAME
+    rm -f $DSPASS_INPUT_FILE
   fi
 fi
 
@@ -85,55 +87,55 @@ fi
 
 # =-=-=-=-=-=-=-
 # symlink the icommands
-ln -fs    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth         
-ln -fs    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin            
-ln -fs    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun              
-ln -fs    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/icd               
-ln -fs    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
-ln -fs    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
-ln -fs    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
-ln -fs    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
-ln -fs    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
-ln -fs    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            
-ln -fs    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/iexecmd           
-ln -fs    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit             
-ln -fs    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck             
-ln -fs    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget              
-ln -fs    /usr/bin/igetwild                ${IRODS_HOME}/clients/icommands/bin/igetwild          
-ln -fs    /usr/bin/igroupadmin             ${IRODS_HOME}/clients/icommands/bin/igroupadmin       
-ln -fs    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp             
-ln -fs    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit             
-ln -fs    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate           
-ln -fs    /usr/bin/ils                     ${IRODS_HOME}/clients/icommands/bin/ils               
-ln -fs    /usr/bin/ilsresc                 ${IRODS_HOME}/clients/icommands/bin/ilsresc           
-ln -fs    /usr/bin/imcoll                  ${IRODS_HOME}/clients/icommands/bin/imcoll            
-ln -fs    /usr/bin/imeta                   ${IRODS_HOME}/clients/icommands/bin/imeta             
-ln -fs    /usr/bin/imiscsvrinfo            ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo      
-ln -fs    /usr/bin/imkdir                  ${IRODS_HOME}/clients/icommands/bin/imkdir            
-ln -fs    /usr/bin/imv                     ${IRODS_HOME}/clients/icommands/bin/imv               
-ln -fs    /usr/bin/ipasswd                 ${IRODS_HOME}/clients/icommands/bin/ipasswd           
-ln -fs    /usr/bin/iphybun                 ${IRODS_HOME}/clients/icommands/bin/iphybun           
-ln -fs    /usr/bin/iphymv                  ${IRODS_HOME}/clients/icommands/bin/iphymv            
-ln -fs    /usr/bin/ips                     ${IRODS_HOME}/clients/icommands/bin/ips               
-ln -fs    /usr/bin/iput                    ${IRODS_HOME}/clients/icommands/bin/iput              
-ln -fs    /usr/bin/ipwd                    ${IRODS_HOME}/clients/icommands/bin/ipwd              
-ln -fs    /usr/bin/iqdel                   ${IRODS_HOME}/clients/icommands/bin/iqdel             
-ln -fs    /usr/bin/iqmod                   ${IRODS_HOME}/clients/icommands/bin/iqmod             
-ln -fs    /usr/bin/iqstat                  ${IRODS_HOME}/clients/icommands/bin/iqstat            
-ln -fs    /usr/bin/iquest                  ${IRODS_HOME}/clients/icommands/bin/iquest            
-ln -fs    /usr/bin/iquota                  ${IRODS_HOME}/clients/icommands/bin/iquota            
-ln -fs    /usr/bin/ireg                    ${IRODS_HOME}/clients/icommands/bin/ireg              
-ln -fs    /usr/bin/irepl                   ${IRODS_HOME}/clients/icommands/bin/irepl             
-ln -fs    /usr/bin/irm                     ${IRODS_HOME}/clients/icommands/bin/irm               
-ln -fs    /usr/bin/irmtrash                ${IRODS_HOME}/clients/icommands/bin/irmtrash          
-ln -fs    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/irsync            
-ln -fs    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule             
-ln -fs    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan             
-ln -fs    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta          
-ln -fs    /usr/bin/iticket                 ${IRODS_HOME}/clients/icommands/bin/iticket           
-ln -fs    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
-ln -fs    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
-ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
+ln -fs    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth
+ln -fs    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin
+ln -fs    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun
+ln -fs    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/icd
+ln -fs    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum
+ln -fs    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod
+ln -fs    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp
+ln -fs    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug
+ln -fs    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv
+ln -fs    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror
+ln -fs    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/iexecmd
+ln -fs    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit
+ln -fs    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck
+ln -fs    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget
+ln -fs    /usr/bin/igetwild                ${IRODS_HOME}/clients/icommands/bin/igetwild
+ln -fs    /usr/bin/igroupadmin             ${IRODS_HOME}/clients/icommands/bin/igroupadmin
+ln -fs    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp
+ln -fs    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit
+ln -fs    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate
+ln -fs    /usr/bin/ils                     ${IRODS_HOME}/clients/icommands/bin/ils
+ln -fs    /usr/bin/ilsresc                 ${IRODS_HOME}/clients/icommands/bin/ilsresc
+ln -fs    /usr/bin/imcoll                  ${IRODS_HOME}/clients/icommands/bin/imcoll
+ln -fs    /usr/bin/imeta                   ${IRODS_HOME}/clients/icommands/bin/imeta
+ln -fs    /usr/bin/imiscsvrinfo            ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo
+ln -fs    /usr/bin/imkdir                  ${IRODS_HOME}/clients/icommands/bin/imkdir
+ln -fs    /usr/bin/imv                     ${IRODS_HOME}/clients/icommands/bin/imv
+ln -fs    /usr/bin/ipasswd                 ${IRODS_HOME}/clients/icommands/bin/ipasswd
+ln -fs    /usr/bin/iphybun                 ${IRODS_HOME}/clients/icommands/bin/iphybun
+ln -fs    /usr/bin/iphymv                  ${IRODS_HOME}/clients/icommands/bin/iphymv
+ln -fs    /usr/bin/ips                     ${IRODS_HOME}/clients/icommands/bin/ips
+ln -fs    /usr/bin/iput                    ${IRODS_HOME}/clients/icommands/bin/iput
+ln -fs    /usr/bin/ipwd                    ${IRODS_HOME}/clients/icommands/bin/ipwd
+ln -fs    /usr/bin/iqdel                   ${IRODS_HOME}/clients/icommands/bin/iqdel
+ln -fs    /usr/bin/iqmod                   ${IRODS_HOME}/clients/icommands/bin/iqmod
+ln -fs    /usr/bin/iqstat                  ${IRODS_HOME}/clients/icommands/bin/iqstat
+ln -fs    /usr/bin/iquest                  ${IRODS_HOME}/clients/icommands/bin/iquest
+ln -fs    /usr/bin/iquota                  ${IRODS_HOME}/clients/icommands/bin/iquota
+ln -fs    /usr/bin/ireg                    ${IRODS_HOME}/clients/icommands/bin/ireg
+ln -fs    /usr/bin/irepl                   ${IRODS_HOME}/clients/icommands/bin/irepl
+ln -fs    /usr/bin/irm                     ${IRODS_HOME}/clients/icommands/bin/irm
+ln -fs    /usr/bin/irmtrash                ${IRODS_HOME}/clients/icommands/bin/irmtrash
+ln -fs    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/irsync
+ln -fs    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule
+ln -fs    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan
+ln -fs    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta
+ln -fs    /usr/bin/iticket                 ${IRODS_HOME}/clients/icommands/bin/iticket
+ln -fs    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim
+ln -fs    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo
+ln -fs    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg
 
 
 # =-=-=-=-=-=-=-
