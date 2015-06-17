@@ -235,7 +235,7 @@ echo "Build Directory set to [$BUILDDIR]"
 cd $BUILDDIR
 python packaging/generate_version_json.py > VERSION.json
 
-if [ "RUNINPLACE"=="1" ] ; then
+if [ "RUNINPLACE" == "1" ] ; then
     python -c "from __future__ import print_function; import datetime; import json; data=json.load(open('VERSION.json')); data['installation_time'] = datetime.datetime.utcnow().strftime( '%Y-%m-%dT%H:%M:%SZ' ); print(json.dumps(data, indent=4, sort_keys=True))" > VERSION.json.tmp
     mv VERSION.json.tmp VERSION.json
 fi
@@ -1084,7 +1084,7 @@ check_package_installed() {
 
 # for --run-in-place, also declare the runtime dependencies here
 # (otherwise, these would be picked up by the package managers)
-if [ "RUNINPLACE"=="1" ] ; then
+if [ "RUNINPLACE" == "1" ] ; then
 
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         # all os
