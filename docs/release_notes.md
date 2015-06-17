@@ -1,6 +1,38 @@
 # Release Notes
 
+## 4.1.3
+
+Release Date: 2015-06-18
+
+### Bug Fixes
+
+  - Fix upgrading with obfuscated password
+
+  - Fix imeta query comparison bug
+
+  - Fix for cleaning up temporary files during installation
+
+  - Run-in-Place installations
+  
+    - Fix preflight checks
+
+    - Fix for stopping server and killing processes
+
+    - Fix for finding database binary tool
+
+## 4.1.2
+
+Release Date: 2015-06-05
+
+### Bug Fixes
+
+  - Fix information leakage in izonereport
+
+  - Fix misuse of uid for gid in configuration conversion script
+
 ## 4.1.1
+
+Release Date: 2015-06-02
 
 ### Bug Fixes
 
