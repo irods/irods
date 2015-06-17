@@ -7,6 +7,9 @@
 # Usage is:
 #       perl irods_setup.pl [options]
 #
+use warnings;
+no warnings 'once';
+
 use File::Spec;
 use File::Copy;
 use Cwd;
@@ -297,92 +300,8 @@ else
     }
 }
 
-########################################################################
-#
-# Finish setting up iRODS.
-#
-
 my $totalSteps  = 0;
 my $currentStep = 0;
-
-# Initially, assume a database restart is not needed.  Any of the
-# steps that might change database configuration files will change
-# this flag to indicate that a restart is needed.  That restart
-# happens just before configuring the iRODS server.
-my $databaseRestartNeeded = 0;
-
-if ( $IRODS_ADMIN_NAME eq "" )
-{
-        # There is no administrator account name.  Probably no
-        # password either.  Without these, we cannot do any
-        # server configuration.  This case occurs when the
-        # build scripts are set to only build and install the
-        # iCommands, so this is not an error.
-        $totalSteps = 0;
-        $currentStep = 0;
-
-        # Nothing to do.  Fall through.
-}
-elsif ( $DATABASE_TYPE eq "" )
-{
-        # There is no database.  This means we are not installing
-        # the iCAT on this host, so there is no need to create the
-        # database schema and tables, or adjust the database's
-        # configuration files.
-        $totalSteps  = 3;
-        $currentStep = 0;
-
-        # 1.  Prepare by starting/stopping servers.
-        prepare( );
-
-        # 2.  Configure
-        configureIrodsServer( );
-
-        # 3.  Configure the iRODS user account.
-        configureIrodsUser( );
-}
-else
-{
-        # There is a database.  We need to configure it.
-        $totalSteps  = 4;
-        if ($isUpgrade) {$totalSteps=3;}
-        $currentStep = 0;
-
-        # Ignore the iCAT host name, if any, if we
-        # are using a database.
-        $IRODS_ICAT_HOST = "";
-
-        # 1.  Set up the user account for the database.
-        if (!$isUpgrade) {
-            configureDatabaseUser( );
-        }
-
-        # 2.  Create the database schema and tables.
-        if (!$isUpgrade) {
-            createDatabaseAndTables( );
-            testDatabase( );
-        }
-
-        # 3.  Configure
-        configureIrodsServer( );
-
-        # 4.  Configure the iRODS user account.
-        configureIrodsUser( );
-}
-
-# Done.
-printLog( "\nDone.\n" );
-printLog( getCurrentDateTime( ) . "\n" );
-closeLog( );
-if ( ! $noHeader )
-{
-        printSubtitle( "\nDone.  Additional detailed information is in the log file:\n" );
-        printStatus( "$logFile\n" );
-}
-exit( 0 );
-
-
-
 
 
 
@@ -655,7 +574,7 @@ sub createDatabaseAndTables
                     }
                     printLog( "        ", $output );
                 }
-                my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtInserts.sql" );
+                $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtInserts.sql" );
                 if (-e $sqlPath) {
                     printStatus( "    Inserting iCAT Extension table rows...\n" );
                     printLog( "    Inserting iCAT Extension table rows...\n" );
@@ -1032,7 +951,7 @@ sub configureIrodsUser
         printLog( "\nCreating default resource...\n" );
 
         # List existing resources first to see if it already exists.
-        my ($status,$output) = run( "$iadmin lr" );
+        ($status,$output) = run( "$iadmin lr" );
         if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
         {
                 printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
@@ -1089,7 +1008,7 @@ sub configureIrodsUser
             printToFile( $tmpPutFile, "This is a test file." );
         }
 
-        my ($status,$output) = run( "$iput -f $tmpPutFile" );
+        ($status,$output) = run( "$iput -f $tmpPutFile" );
         if ( $status != 0 )
         {
                 printError( "\nInstall problem:\n" );
@@ -1274,7 +1193,7 @@ sub getIrodsProcessIds()
         my @serverPids = ();
 
         $parentPid=getIrodsServerPid();
-        my @serverPids = getFamilyProcessIds( $parentPid );
+        @serverPids = getFamilyProcessIds( $parentPid );
 
         return @serverPids;
 }
@@ -1344,6 +1263,7 @@ sub getIrodsServerPid()
         if (!-e $tmpDir)  {
             $tmpDir="/tmp";
         }
+        $currentPort = $IRODS_PORT;
         my $processFile   = $tmpDir . "/irodsServer" . "." . $currentPort;
 
         open( PIDFILE, "<$processFile" );
@@ -1400,8 +1320,8 @@ sub stopIrods
         }
 
         # Repeat to catch stragglers.  This time use kill -9.
-        my @pids = getFamilyProcessIds( $parentPid );
-        my $found = 0;
+        @pids = getFamilyProcessIds( $parentPid );
+        $found = 0;
         foreach $pid (@pids)
         {
                 $found = 1;
@@ -1875,8 +1795,16 @@ sub Postgres_CreateDatabase()
             $finding_psql="$scripttoplevel/packaging/find_bin_postgres.sh";
         }
         $PSQL=`$finding_psql`;
+        my $retcode = ${^CHILD_ERROR_NATIVE};
+        if ($retcode != 0) {
+            printStatus("    Ran $finding_psql\n");
+            printStatus("    Return Code [$retcode].\n");
+            printLog("    Ran $finding_psql\n");
+            printLog("    Return Code [$retcode].\n");
+            cleanAndExit( 1 );
+        }
         chomp $PSQL;
-        if ($PSQL eq "FAIL") {
+        if ($PSQL eq "FAIL" or $PSQL eq "") {
             printStatus("    Ran $finding_psql\n");
             printStatus("    Failed to find psql binary.\n");
             printLog("    Ran $finding_psql\n");
@@ -2534,3 +2462,88 @@ sub MySQL_sql($$)
         my ($databaseName,$sqlFilename) = @_;
         return run( "$MYSQL --user=$DATABASE_ADMIN_NAME --host=$DATABASE_HOST --port=$DATABASE_PORT --password=$DATABASE_ADMIN_PASSWORD $databaseName < $sqlFilename" );
 }
+
+
+
+
+
+########################################################################
+#
+# Finish setting up iRODS.
+#
+
+# Initially, assume a database restart is not needed.  Any of the
+# steps that might change database configuration files will change
+# this flag to indicate that a restart is needed.  That restart
+# happens just before configuring the iRODS server.
+my $databaseRestartNeeded = 0;
+
+if ( $IRODS_ADMIN_NAME eq "" )
+{
+        # There is no administrator account name.  Probably no
+        # password either.  Without these, we cannot do any
+        # server configuration.  This case occurs when the
+        # build scripts are set to only build and install the
+        # iCommands, so this is not an error.
+        $totalSteps = 0;
+        $currentStep = 0;
+
+        # Nothing to do.  Fall through.
+}
+elsif ( $DATABASE_TYPE eq "" )
+{
+        # There is no database.  This means we are not installing
+        # the iCAT on this host, so there is no need to create the
+        # database schema and tables, or adjust the database's
+        # configuration files.
+        $totalSteps  = 3;
+        $currentStep = 0;
+
+        # 1.  Prepare by starting/stopping servers.
+        prepare( );
+
+        # 2.  Configure
+        configureIrodsServer( );
+
+        # 3.  Configure the iRODS user account.
+        configureIrodsUser( );
+}
+else
+{
+        # There is a database.  We need to configure it.
+        $totalSteps  = 4;
+        if ($isUpgrade) {$totalSteps=3;}
+        $currentStep = 0;
+
+        # Ignore the iCAT host name, if any, if we
+        # are using a database.
+        $IRODS_ICAT_HOST = "";
+
+        # 1.  Set up the user account for the database.
+        if (!$isUpgrade) {
+            configureDatabaseUser( );
+        }
+
+        # 2.  Create the database schema and tables.
+        if (!$isUpgrade) {
+            createDatabaseAndTables( );
+            testDatabase( );
+        }
+
+        # 3.  Configure
+        configureIrodsServer( );
+
+        # 4.  Configure the iRODS user account.
+        configureIrodsUser( );
+}
+
+# Done.
+printLog( "\nDone.\n" );
+printLog( getCurrentDateTime( ) . "\n" );
+closeLog( );
+if ( ! $noHeader )
+{
+        printSubtitle( "\nDone.  Additional detailed information is in the log file:\n" );
+        printStatus( "$logFile\n" );
+}
+exit( 0 );
