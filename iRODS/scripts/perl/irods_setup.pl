@@ -1085,9 +1085,11 @@ sub configureIrodsUser
         printLog( "\nTesting resource...\n" );
         my $tmpPutFile = "irods_put_$thisHost.tmp";
         my $tmpGetFile = "irods_get.$thisHost.tmp";
-        printToFile( $tmpPutFile, "This is a test file." );
+        if ( ! -e $tmpPutFile ){
+            printToFile( $tmpPutFile, "This is a test file." );
+        }
 
-        my ($status,$output) = run( "$iput $tmpPutFile" );
+        my ($status,$output) = run( "$iput -f $tmpPutFile" );
         if ( $status != 0 )
         {
                 printError( "\nInstall problem:\n" );
@@ -1095,10 +1097,11 @@ sub configureIrodsUser
                 printError( "        ", $output );
                 printLog( "\nCannot put test file into iRODS:\n" );
                 printLog( "    ", $output );
+                unlink( $tmpPutFile );
                 cleanAndExit( 1 );
         }
 
-        ($status,$output) = run( "$iget $tmpPutFile $tmpGetFile" );
+        ($status,$output) = run( "$iget -f $tmpPutFile $tmpGetFile" );
         if ( $status != 0 )
         {
                 printError( "\nInstall problem:\n" );
@@ -1106,6 +1109,7 @@ sub configureIrodsUser
                 printError( "        ", $output );
                 printLog( "\nCannot get test file from iRODS:\n" );
                 printLog( "    ", $output );
+                unlink( $tmpPutFile );
                 cleanAndExit( 1 );
         }
 
@@ -1117,6 +1121,8 @@ sub configureIrodsUser
                 printError( "        ", $output );
                 printLog( "\nGet file doesn't match put file:\n" );
                 printLog( "    ", $output );
+                unlink( $tmpPutFile );
+                unlink( $tmpGetFile );
                 cleanAndExit( 1 );
         }
 
@@ -1128,6 +1134,8 @@ sub configureIrodsUser
                 printError( "        ", $output );
                 printLog( "\nCannot remove test file from iRODS:\n" );
                 printLog( "    ", $output );
+                unlink( $tmpPutFile );
+                unlink( $tmpGetFile );
                 cleanAndExit( 1 );
         }
 
