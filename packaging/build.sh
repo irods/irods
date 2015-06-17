@@ -1099,7 +1099,7 @@ if [ "RUNINPLACE" == "1" ] ; then
         check_package_installed "dpkg -s" "libssl1.0.0"
         check_package_installed "dpkg -s" "libfuse2"
         check_package_installed "dpkg -s" "libjson-perl"
-        if [ "$DETECTEDOSVERSION" \> "14" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -a "$DETECTEDOSVERSION" \> "14" ] ; then
             check_package_installed "dpkg -s" "python-jsonschema"
         fi
         # externals
