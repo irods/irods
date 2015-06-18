@@ -41,7 +41,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     touch $PLAINTEXT_FILENAME
     chown $MYACCTNAME:$MYGROUPNAME $PLAINTEXT_FILENAME
     chmod 600 $PLAINTEXT_FILENAME
-    su - $MYACCTNAME -c 'iadmin dspass < $DSPASS_INPUT_FILE' | sed 's/[^:]*://' > $PLAINTEXT_FILENAME
+    su - $MYACCTNAME -c "iadmin dspass < \"$DSPASS_INPUT_FILE\"" | sed 's/[^:]*://' > $PLAINTEXT_FILENAME
     rm -f $DSPASS_INPUT_FILE
   fi
 fi
