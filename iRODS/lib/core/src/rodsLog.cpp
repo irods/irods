@@ -335,13 +335,13 @@ rodsErrorName( int errorValue, char **subName ) {
     if ( subName ) {
         int subCode = errorValue - ( testVal * 1000 );
         *subName = subCode && errorValue < 0 ?
-            strdup( strerror( -subCode ) ) :
-            strdup( "" );
+                   strdup( strerror( -subCode ) ) :
+                   strdup( "" );
     }
 
     const std::map<const int, const std::string>::const_iterator search = irods_error_map.find( testVal * 1000 );
     if ( search == irods_error_map.end() ) {
-        return( "Unknown iRODS error" );
+        return ( "Unknown iRODS error" );
     }
     return search->second.c_str();
 }

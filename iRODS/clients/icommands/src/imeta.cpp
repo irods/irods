@@ -184,12 +184,12 @@ showDataObj( char *name, char *attrName, int wild ) {
             v3 += attrName;
             v3 += "'";
         }
-        condVal[2] = const_cast<char*>(v3.c_str());
+        condVal[2] = const_cast<char*>( v3.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -293,7 +293,7 @@ showColl( char *name, char *attrName, int wild ) {
     v1 += fullName;
     v1 += "'";
 
-    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -312,7 +312,7 @@ showColl( char *name, char *attrName, int wild ) {
             v2 += attrName;
             v2 += "'";
         }
-        condVal[1] = const_cast<char*>(v2.c_str());
+        condVal[1] = const_cast<char*>( v2.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
 
@@ -393,7 +393,7 @@ showResc( char *name, char *attrName, int wild ) {
     v1 =  "='";
     v1 += name;
     v1 += "'";
-    condVal[0] = const_cast<char*>(v1.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -412,7 +412,7 @@ showResc( char *name, char *attrName, int wild ) {
             v2 += attrName;
             v2 += "'";
         }
-        condVal[1] = const_cast<char*>(v2.c_str());
+        condVal[1] = const_cast<char*>( v2.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
 
@@ -528,12 +528,12 @@ showUser( char *name, char *attrName, int wild ) {
             v3 += attrName;
             v3 += "'";
         }
-        condVal[2] = const_cast<char*>(v3.c_str());
+        condVal[2] = const_cast<char*>( v3.c_str() );
         genQueryInp.sqlCondInp.len++;
     }
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     genQueryInp.maxRows = 10;
     genQueryInp.continueInx = 0;
@@ -629,8 +629,8 @@ int queryDataObj( char *cmdToken[] ) {
         v2 += s.str();
     }
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     cmdIx = 5;
     condIx = 2;
@@ -640,16 +640,16 @@ int queryDataObj( char *cmdToken[] ) {
         cmdIx++;
         std::stringstream s1;
         s1 << "='" << cmdToken[cmdIx] << "'";
-        vstr.push_back(s1.str());
-        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
+        vstr.push_back( s1.str() );
+        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
         condIx++;
 
         i2a[condIx] = COL_META_DATA_ATTR_VALUE;
         std::stringstream s2;
         s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
-        vstr.push_back(s2.str());
+        vstr.push_back( s2.str() );
         cmdIx += 3;
-        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
+        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
         condIx++;
         genQueryInp.sqlCondInp.len += 2;
     }
@@ -735,8 +735,8 @@ int queryCollection( char *cmdToken[] ) {
         v2 += s.str();
     }
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     cmdIx = 5;
     condIx = 2;
@@ -746,16 +746,16 @@ int queryCollection( char *cmdToken[] ) {
         cmdIx++;
         std::stringstream s1;
         s1 << "='" << cmdToken[cmdIx] << "'";
-        vstr.push_back(s1.str());
-        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
+        vstr.push_back( s1.str() );
+        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
         condIx++;
 
         i2a[condIx] = COL_META_COLL_ATTR_VALUE;
         std::stringstream s2;
         s2 << cmdToken[cmdIx + 1] << " '" << cmdToken[cmdIx + 2] << "'";
-        vstr.push_back(s2.str());
+        vstr.push_back( s2.str() );
         cmdIx += 3;
-        condVal[condIx] = const_cast<char*>(vstr.back().c_str());
+        condVal[condIx] = const_cast<char*>( vstr.back().c_str() );
         condIx++;
         genQueryInp.sqlCondInp.len += 2;
     }
@@ -830,8 +830,8 @@ int queryResc( char *attribute, char *op, char *value ) {
     v2 += value;
     v2 += "'";
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;
@@ -902,8 +902,8 @@ int queryUser( char *attribute, char *op, char *value ) {
     v2 += value;
     v2 += "'";
 
-    condVal[0] = const_cast<char*>(v1.c_str());
-    condVal[1] = const_cast<char*>(v2.c_str());
+    condVal[0] = const_cast<char*>( v1.c_str() );
+    condVal[1] = const_cast<char*>( v2.c_str() );
 
     genQueryInp.sqlCondInp.inx = i2a;
     genQueryInp.sqlCondInp.value = condVal;

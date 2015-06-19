@@ -1426,11 +1426,11 @@ main( int argc, char **argv ) {
         std::string key;
 
         if ( strlen( cmdToken[1] ) == 0 ) {
-            std::getline(std::cin, password);
-            cmdToken[1] = const_cast<char*>(password.c_str());
+            std::getline( std::cin, password );
+            cmdToken[1] = const_cast<char*>( password.c_str() );
 
-            std::getline(std::cin, key);
-            cmdToken[2] = const_cast<char*>(key.c_str());
+            std::getline( std::cin, key );
+            cmdToken[2] = const_cast<char*>( key.c_str() );
         }
 
         if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
