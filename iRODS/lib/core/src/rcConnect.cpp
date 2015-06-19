@@ -126,7 +126,7 @@ rcComm_t* _rcConnect(
         if ( getIrodsErrno( status ) == SYS_SOCK_READ_TIMEDOUT ) {
             /* timed out. try again */
             rodsLog( LOG_ERROR,
-                     "_rcConnect: connectToRhost timedout retrying" );
+                     "_rcConnect: connectToRhost timed out, retrying" );
             status = connectToRhost( conn, connectCnt, reconnFlag );
         }
     }

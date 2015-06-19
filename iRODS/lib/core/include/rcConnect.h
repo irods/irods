@@ -32,7 +32,7 @@ struct thread_context;
 
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
-#define RECONN_NOTUSED	1	/* this has been depricated */
+#define RECONN_NOTUSED	1	/* this has been deprecated */
 #define RECONN_TIMEOUT	200
 
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */

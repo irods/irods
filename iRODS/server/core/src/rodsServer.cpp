@@ -133,7 +133,6 @@ int irodsWinMain( int argc, char **argv )
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
-    char *tmpStr;
 
     ProcessType = SERVER_PT;	/* I am a server */
 
@@ -143,14 +142,11 @@ int irodsWinMain( int argc, char **argv )
         irods::log( PASSMSG( "failed to read server configuration", result ) );
     }
 
-    tmpStr = getenv( SP_LOG_LEVEL );
-    if ( tmpStr != NULL ) {
-        int i;
-        i = atoi( tmpStr );
-        rodsLogLevel( i );
+    if ( const char* log_level = getenv( SP_LOG_LEVEL ) ) {
+        rodsLogLevel( atoi( log_level ) );
     }
     else {
-        rodsLogLevel( LOG_NOTICE ); /* default */
+        rodsLogLevel( LOG_NOTICE );
     }
 
 #ifdef SYSLOG
@@ -216,24 +212,6 @@ int irodsWinMain( int argc, char **argv )
     signal( SIGHUP, serverExit );
     signal( SIGTERM, serverExit );
 #endif
-#endif
-    /* log the server timeout */
-
-#ifndef _WIN32
-    /* Initialize ServerTimeOut */
-    if ( getenv( "ServerTimeOut" ) != NULL ) {
-        int serverTimeOut;
-        serverTimeOut = atoi( getenv( "ServerTimeOut" ) );
-        if ( serverTimeOut < MIN_AGENT_TIMEOUT_TIME ) {
-            rodsLog( LOG_NOTICE,
-                     "ServerTimeOut %d is less than min of %d",
-                     serverTimeOut, MIN_AGENT_TIMEOUT_TIME );
-            serverTimeOut = MIN_AGENT_TIMEOUT_TIME;
-        }
-        rodsLog( LOG_NOTICE,
-                 "ServerTimeOut has been set to %d seconds",
-                 serverTimeOut );
-    }
 #endif
 
     serverMain( logDir );
@@ -987,11 +965,9 @@ initServerMain( rsComm_t *svrComm ) {
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
         int re_pid = RODS_FORK();
         if ( re_pid == 0 ) {//RODS_FORK() == 0 ) { /* child */
-            char *reServerOption = NULL;
 
             close( svrComm->sock );
-            reServerOption = getenv( "reServerOption" );
-            std::vector<std::string> args = setExecArg( reServerOption );
+            std::vector<std::string> args = setExecArg( getenv( "reServerOption" ) );
             std::vector<char *> av;
             av.push_back( "irodsReServer" );
             for ( std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++ ) {
