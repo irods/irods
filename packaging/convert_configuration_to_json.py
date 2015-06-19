@@ -239,7 +239,7 @@ def convert_irodsenv():
                     try:
                         new_key = legacy_key_map[columns[0]]
                     except KeyError:
-                        print_debug("skipping invalid key ["+columns[0]+"]")
+                        print_debug("skipping invalid key [" + columns[0] + "]")
                         continue
                     new_value = columns[1].strip('\'')
                     if new_key in should_be_integers:
@@ -367,7 +367,7 @@ def convert_serverconfig_and_irodsconfig():
                     try:
                         new_key = legacy_key_map[columns[0]]
                     except KeyError:
-                        print_debug("skipping invalid key ["+columns[0]+"]")
+                        print_debug("skipping invalid key [" + columns[0] + "]")
                         continue
                     new_value = columns[1]
                     if columns[0] in ['catalog_database_type', 'DBUsername']:
@@ -421,7 +421,7 @@ def convert_serverconfig_and_irodsconfig():
                     try:
                         new_key = legacy_key_map[columns[0]]
                     except KeyError:
-                        print_debug("skipping invalid key ["+columns[0]+"]")
+                        print_debug("skipping invalid key [" + columns[0] + "]")
                         continue
                     new_value = columns[2].strip('";\'')  # clean up semicolon and quotes
                     if (new_value == ''):
@@ -489,6 +489,7 @@ def convert_serverconfig_and_irodsconfig():
             print_debug('writing [' + new_database_config_file + '] end')
         else:
             print_debug('resource server - skipping database_config.json')
+
 
 def convert_legacy_configuration_to_json():
     print_debug('Converting Legacy iRODS Configuration Files...')

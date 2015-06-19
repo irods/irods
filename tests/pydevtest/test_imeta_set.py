@@ -175,11 +175,12 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
 
 class Test_ImetaQu(ResourceBase, unittest.TestCase):
+
     def helper_imeta_qu_comparison_2748(self, irods_object_option_flag):
         attribute = 'helper_imeta_qu_comparison_2748_attribute'
         object_name_base = 'helper_imeta_qu_comparison_2748_base_name'
         for i in range(10):
-            object_name = object_name_base+str(i)
+            object_name = object_name_base + str(i)
             value = str(i)
             if irods_object_option_flag == '-C':
                 self.admin.assert_icommand(['imkdir', object_name])
@@ -193,8 +194,8 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
         rc, stdout, stderr = self.admin.run_icommand(['imeta', 'qu', irods_object_option_flag, attribute, '<=', '8', 'and', attribute, '>=', '2'])
         assert rc == 0, rc
         assert stderr == '', stderr
-        all_objects = set([object_name_base+str(i) for i in range(0, 10)])
-        should_find = set([object_name_base+str(i) for i in range(2, 9)])
+        all_objects = set([object_name_base + str(i) for i in range(0, 10)])
+        should_find = set([object_name_base + str(i) for i in range(2, 9)])
         should_not_find = all_objects - should_find
         for c in should_find:
             assert c in stdout, c + ' not found in ' + stdout

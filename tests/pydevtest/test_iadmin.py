@@ -1065,4 +1065,5 @@ acSetNumThreads() {
         self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_izonereport_key_sanitization(self):
-            self.admin.assert_icommand("izonereport | grep key | grep -v XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", 'STDOUT_SINGLELINE', '"irods_encryption_key_size": 32,', use_unsafe_shell=True)
+        self.admin.assert_icommand("izonereport | grep key | grep -v XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                                   'STDOUT_SINGLELINE', '"irods_encryption_key_size": 32,', use_unsafe_shell=True)

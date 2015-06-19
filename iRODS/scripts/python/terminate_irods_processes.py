@@ -9,7 +9,7 @@ import sys
 #
 
 if __name__ == '__main__':
-    try :
+    try:
         irods_controller = IrodsController()
         irods_controller.stop()
     except BaseException as e:
