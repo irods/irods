@@ -625,26 +625,6 @@ if [ "$1" == "docs" ] ; then
         ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
         echo "Detected python module 'roman' [$ROMANLOCATION]"
     fi
-##### commented out - not currently building doxygen for iRODS 4.0+
-#     DOXYGEN=`which doxygen`
-#     if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
-#         if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-#             PREFLIGHT="$PREFLIGHT doxygen"
-#         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-#             PREFLIGHT="$PREFLIGHT doxygen"
-#         elif [ "$DETECTEDOS" == "SuSE" ] ; then
-#             PREFLIGHT="$PREFLIGHT doxygen"
-#         elif [ "$DETECTEDOS" == "Solaris" ] ; then
-#             PREFLIGHT="$PREFLIGHT doxygen"
-#         elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-#             PREFLIGHT="$PREFLIGHT doxygen"
-#         else
-#             PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org"
-#         fi
-#     else
-#         DOXYGENVERSION=`doxygen --version`
-#         echo "Detected doxygen [$DOXYGEN] v[$DOXYGENVERSION]"
-#     fi
     confirm_preflight_prerequisites
     set -e
 
@@ -1458,20 +1438,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
     mv $TMPFILE ./packaging/irods-icommands.list
     sed -e "s,TEMPLATE_IRODSVERSION,$IRODSVERSION," ./packaging/irods-icommands.list > $TMPFILE
     mv $TMPFILE ./packaging/irods-icommands.list
-
-
-#    set +e
-#    # generate microservice developers tutorial in pdf format
-#    echo "${text_green}${text_bold}Building iRODS Microservice Developers Tutorial${text_reset}"
-#    cd $BUILDDIR/examples/microservices
-#    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
-#    if [ "$?" != "0" ] ; then
-#        echo "${text_red}#######################################################" 1>&2
-#        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
-#        echo "#######################################################${text_reset}" 1>&2
-#        exit 1
-#    fi
-#    set -e
 
     # generate tgz file for inclusion in coverage package
     if [ "$COVERAGE" == "1" ] ; then

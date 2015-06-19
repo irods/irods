@@ -13,7 +13,7 @@ Release Date: 2015-06-18
   - Fix for cleaning up temporary files during installation
 
   - Run-in-Place installations
-  
+
     - Fix preflight checks
 
     - Fix for stopping server and killing processes
