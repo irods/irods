@@ -1232,8 +1232,8 @@ sub stopIrods
         system( "python $scripttoplevel/iRODS/scripts/python/terminate_irods_processes.py" );
         # remove shared memory mutex and semaphore
         # this will be handled more cleanly when servers can be gracefully shutdown
-        system( "rm -f /var/run/shm/*re_cache_*iRODS*" ); # ubuntu
-        system( "rm -f /dev/shm/*re_cache_*iRODS*" );     # centos, suse, arch
+        system( "rm -f /var/run/shm/*irods_re_cache*" ); # ubuntu
+        system( "rm -f /dev/shm/*irods_re_cache*" );     # centos, suse, arch
 
         return 1;
 }
