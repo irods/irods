@@ -5,7 +5,7 @@ import imp
 import os
 
 top_level_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-packaging_path = top_level_dir + "/packaging"
+packaging_path = os.path.join(top_level_dir, 'packaging')
 module_tuple = imp.find_module('server_config', [packaging_path])
 imp.load_module('server_config', *module_tuple)
 import server_config
@@ -24,9 +24,11 @@ def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
-def get_current_schema_version(cfg):
-    dbtype = cfg.get('catalog_database_type')
-    result = cfg.exec_sql_cmd( "select option_value \
+def get_current_schema_version(server_config_object=None, **kwargs):
+    if server_config_object == None:
+        server_config_object = server_config.ServerConfig(**kwargs)
+    dbtype = server_config_object.get('catalog_database_type')
+    result = server_config_object.exec_sql_cmd( "select option_value \
                                 from R_GRID_CONFIGURATION \
                                 where namespace='database' \
                                 and option_name='schema_version';")
@@ -38,7 +40,7 @@ def get_current_schema_version(cfg):
     if dbtype == 'oracle':
         err_idx = 1
 
-    print_debug(cfg.combined_config_dict)
+    print_debug(server_config_object.combined_config_dict)
     print_debug(result)
 
     sql_output_lines = result[1].decode('utf-8').split('\n')
@@ -64,9 +66,6 @@ def get_current_schema_version(cfg):
     return current_schema_version
 
 
-# get config
-cfg = server_config.ServerConfig()
-# get current version
-current_schema_version = get_current_schema_version(cfg)
-# print
-print(current_schema_version)
+if __name__ == '__main__':
+    # print current version
+    print(get_current_schema_version())

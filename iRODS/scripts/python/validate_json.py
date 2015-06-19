@@ -1,81 +1,97 @@
 from __future__ import print_function
 import json
 import sys
-
-if len(sys.argv) != 3:
-    sys.exit('Usage: {0} <configuration_file> <schema_url>'.format(sys.argv[0]))
-
-config_file = sys.argv[1]
-schema_uri = sys.argv[2]
-
-
-def print_error(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-try:
-    import requests
-except ImportError:
-    print_error('ERROR: python module [requests] required')
-    sys.exit(1)
+import requests
 
 try:
     import jsonschema
+    import requests
 except ImportError:
-    print_error('WARNING: Validation Failed for [%s] -- jsonschema not installed' % config_file)
-    sys.exit(0)
+    pass
 
-try:
-    e = jsonschema.exceptions
-except AttributeError:
-    print_error('WARNING: Validation Failed for [%s] -- jsonschema too old v[%s]' %
-                (config_file, jsonschema.__version__))
-    sys.exit(0)
-
-try:
-    # load configuration file
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-    # load the schema url
-    response = requests.get(schema_uri)
-    # check response values
+def validate(config_file, schema_uri, verbose=False):
     try:
-        # modern requests
-        schema = json.loads(response.text)
+        e = jsonschema.exceptions
     except AttributeError:
-        # requests pre-v1.0.0
-        response.encoding = 'utf8'
-        schema = json.loads(response.content)
+        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(config_file, jsonschema.__version__))
+    except NameError:
+        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema not installed'.format(config_file))
 
-    # validate
-    jsonschema.validate(config, schema)
-except (jsonschema.exceptions.RefResolutionError) as e:
-    # could not resolve recursive schema $ref
-    print_error('WARNING: Validation Failed for [%s]' % config_file)
-    print_error('       : against [%s]' % schema_uri)
-    print_error("  {0}: {1}".format(e.__class__.__name__, e))
-    sys.exit(0)
-except (ValueError) as e:
-    # most network errors and 404s
-    print_error('WARNING: Validation Failed for [%s]' % config_file)
-    print_error('       : against [%s]' % schema_uri)
-    print_error("  {0}: {1}".format(e.__class__.__name__, e))
-    sys.exit(0)
-except (
-        jsonschema.exceptions.ValidationError,
-        jsonschema.exceptions.SchemaError
-) as e:
-    print_error('ERROR: Validation Failed for [%s]' % config_file)
-    print_error('     : against [%s]' % schema_uri)
-    print_error("  {0}: {1}".format(e.__class__.__name__, e))
-    sys.exit(1)
-except Exception as e:
-    print_error('ERROR: Validation Failed for [%s]' % config_file)
-    print_error('     : against [%s]' % schema_uri)
-    print_error("  {0}: {1}".format(e.__class__.__name__, e))
-    sys.exit(1)
-except:
-    sys.exit(1)
+    try:
+        # load configuration file
+        with open(config_file, 'r') as f:
+            config_dict = json.load(f)
+    except BaseException as e:
+        raise RuntimeError('\n\t'.join([
+            'WARNING: Validation Failed for [{0}]:'.format(config_file),
+            'against [{0}]'.format(schema_uri),
+            '{0}: {1}'.format(e.__class__.__name__, e)]))
+    validate_dict(config_dict, schema_uri, name=config_file, verbose=verbose)
 
-else:
-    print("Validating [" + sys.argv[1] + "]... Success")
-    sys.exit(0)
+def validate_dict(config_dict, schema_uri, name=None, verbose=False):
+    try:
+        # load the schema url
+        try:
+            response = requests.get(schema_uri)
+        except NameError:
+            if name != None:
+                raise RuntimeWarning('WARNING: Validation failed for {0} -- requests not installed'.format(name))
+            else:
+                raise RuntimeWarning('WARNING: Validation failed -- requests not installed')
+
+
+        # check response values
+        try:
+            # modern requests
+            schema = json.loads(response.text)
+        except AttributeError:
+            # requests pre-v1.0.0
+            response.encoding = 'utf8'
+            schema = json.loads(response.content)
+
+        # validate
+        jsonschema.validate(config_dict, schema)
+    except (
+            jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
+            ValueError                                  # most network errors and 404s
+    ) as e:
+        raise RuntimeWarning('\n\t'.join([
+            'WARNING: Validation Failed for [{0}]:'.format(config_file),
+            'against [{0}]'.format(schema_uri),
+            '{0}: {1}'.format(e.__class__.__name__, e)]))
+    except (
+            jsonschema.exceptions.ValidationError,
+            jsonschema.exceptions.SchemaError,
+            BaseException
+    ) as e:
+        raise RuntimeError('\n\t'.join([
+            'ERROR: Validation Failed for [{0}]:',
+            'against [{1}]',
+            '{2}: {3}']).format(
+                config_file,
+                schema_uri,
+                e.__class__.__name__,
+                e))
+    except:
+        raise RuntimeError
+
+    if verbose and name:
+        print("Validating [{0}]... Success".format(name))
+
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print('Usage: {0} <configuration_file> <schema_url>'.format(sys.argv[0]),
+                file=sys.stderr)
+        sys.exit(1)
+
+    config_file = sys.argv[1]
+    schema_uri = sys.argv[2]
+
+    try:
+        validate(config_file, schema_uri, verbose=True)
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
+    except RuntimeWarning as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)

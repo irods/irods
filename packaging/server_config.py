@@ -12,14 +12,18 @@ def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
-def is_binary_installation():
-    return os.path.isfile(os.path.join(get_install_dir(), 'packaging', 'binary_installation.flag'))
+def is_binary_installation(install_dir=None):
+    if install_dir == None:
+        install_dir = get_install_dir()
+    return os.path.isfile(os.path.join(install_dir, 'packaging', 'binary_installation.flag'))
 
 
-def get_config_dir():
-    if is_binary_installation():
-        return '/etc/irods'
-    return os.path.join(get_install_dir(), 'iRODS', 'server', 'config')
+def get_config_dir(install_dir=None):
+    if install_dir == None:
+        install_dir = get_install_dir()
+    if is_binary_installation(install_dir):
+        return os.path.join(os.path.abspath(os.sep), 'etc', 'irods')
+    return os.path.join(install_dir, 'iRODS', 'server', 'config')
 
 
 def load_odbc_ini(filename):
@@ -43,15 +47,27 @@ def load_odbc_ini(filename):
 
 class ServerConfig(object):
 
-    def __init__(self):
+    def __init__(self, install_dir=None, config_dir=None, server_config_path=None, database_config_path=None):
         self.combined_config_dict = {}
 
-        config_files = ['server_config.json', 'database_config.json']
+        if install_dir == None:
+            install_dir = get_install_dir()
+        self.install_dir = install_dir
+
+        if config_dir == None:
+            config_dir = get_config_dir(self.install_dir)
+        self.config_dir = config_dir
+
+        if server_config_path == None:
+            server_config_path = os.path.join(config_dir, 'server_config.json')
+        if database_config_path == None:
+            database_config_path = os.path.join(config_dir, 'database_config.json')
+
+        config_files = [server_config_path, database_config_path]
         for file_ in config_files:
-            fullpath = os.path.join(get_config_dir(), file_)
-            if not os.path.isfile(fullpath):
-                raise RuntimeError('Missing {0}\n{1}'.format(fullpath, os.listdir(get_config_dir())))
-            self.capture(fullpath)
+            if not os.path.isfile(file_):
+                raise RuntimeError('Missing {0}'.format(file_))
+            self.capture(file_)
 
         self.capture(os.path.join(os.environ['HOME'], '.odbc.ini'), '=')
 
@@ -88,7 +104,7 @@ class ServerConfig(object):
     def exec_pgsql_file(self, sql_filename):
         fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_postgres.sh'
         if not os.path.isfile(fbp):
-            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_postgres.sh'
+            fbp = self.install_dir + '/plugins/database/packaging/find_bin_postgres.sh'
         p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
@@ -126,7 +142,7 @@ class ServerConfig(object):
     def exec_mysql_file(self, sql_filename):
         fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_mysql.sh'
         if not os.path.isfile(fbp):
-            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_mysql.sh'
+            fbp = self.install_dir + '/plugins/database/packaging/find_bin_mysql.sh'
         p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
@@ -173,7 +189,7 @@ port={db_port}
     def exec_oracle_file(self, sql_filename):
         fbp = os.path.dirname(os.path.realpath(__file__)) + '/find_bin_oracle.sh'
         if not os.path.isfile(fbp):
-            fbp = get_install_dir() + '/plugins/database/packaging/find_bin_oracle.sh'
+            fbp = self.install_dir + '/plugins/database/packaging/find_bin_oracle.sh'
         p = subprocess.Popen(fbp, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:

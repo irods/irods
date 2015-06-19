@@ -363,6 +363,7 @@ f 644 root root ${IRODS_HOME}/scripts/python/get_db_schema_version.py ./iRODS/sc
 f 644 root root ${IRODS_HOME}/scripts/python/validate_json.py ./iRODS/scripts/python/validate_json.py
 f 644 root root ${IRODS_HOME}/scripts/python/kill_pid.py ./iRODS/scripts/python/kill_pid.py
 f 644 root root ${IRODS_HOME}/scripts/python/terminate_irods_processes.py ./iRODS/scripts/python/terminate_irods_processes.py
+f 644 root root ${IRODS_HOME}/scripts/python/irods_control.py ./iRODS/scripts/python/irods_control.py
 d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
