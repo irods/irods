@@ -16,7 +16,6 @@ class Test_Irodsctl(unittest.TestCase):
         lib.assert_command([irodsctl_fullpath, 'stop'], 'STDOUT_SINGLELINE', 'Stopping iRODS server')
 
         possible_shm_locations = ['/var/run/shm', '/dev/shm']
-        all_shared_files = []
         for l in possible_shm_locations:
             try:
                 files = os.listdir(l)
