@@ -1235,28 +1235,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
         cd $BUILDDIR/iRODS
     fi
 
-    rm -f ./config/config.mk
-    rm -f ./config/platform.mk
-
-
-    # handle issue with IRODS_HOME being overwritten by the configure script
-    if [ "$RUNINPLACE" == "1" ] ; then
-        irodsctl_irods_home=`./scripts/find_irods_home.sh runinplace`
-    else
-        irodsctl_irods_home=`./scripts/find_irods_home.sh`
-    fi
-    # wrapper script
-    set_tmpfile
-    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > $TMPFILE
-    rsync -c $TMPFILE ./irodsctl
-    rm -f $TMPFILE
-    chmod 755 ./irodsctl
-    # perl file
-    set_tmpfile
-    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./scripts/perl/irodsctl.pl > $TMPFILE
-    rsync -c $TMPFILE ./scripts/perl/irodsctl.pl
-    rm -f $TMPFILE
-
     # detect irods_home_directory
     detected_irods_home=`./scripts/find_irods_home.sh`
     if [ "$RUNINPLACE" == "1" ] ; then

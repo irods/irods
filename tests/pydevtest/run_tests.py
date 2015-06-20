@@ -25,7 +25,8 @@ def restart_irods_server():
 
 
 def run_devtesty():
-    run_irodsctl_with_arg('devtesty')
+    print('devtesty is currently disabled', file=sys.stderr)
+    #run_irodsctl_with_arg('devtesty')
 
 
 def run_fastswap_test():

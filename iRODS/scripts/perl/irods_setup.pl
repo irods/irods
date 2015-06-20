@@ -42,6 +42,7 @@ if( scalar(@ARGV) > 1 ) {
 $IRODS_HOME = cwd( );   # Might not be actual iRODS home.  Fixed below.
 
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
+my $pythonScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "python" );
 
 # iRODS configuration directory
 $configDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
@@ -93,7 +94,6 @@ push @INC, $configDir;
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
-my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
 
 
 # Get the path to Perl.  We'll use it for running other Perl scripts.
@@ -1268,7 +1268,7 @@ sub startIrods()
                 return 2;
         }
 
-        $output = `$perl $irodsctl start`;
+        $output = `python $pythonScriptsDir/irods_control.py start`;
 
         if ( $? != 0 )
         {
@@ -1356,7 +1356,7 @@ sub stopIrods
         }
         if ( ! $found )
         {
-                system( "python $scripttoplevel/iRODS/scripts/python/terminate_irods_processes.py" );
+                system( "python $pythonScriptsDir/terminate_irods_processes.py" );
                 printStatus( "    There are no iRODS servers running.\n" );
                 return 1;
         }
@@ -1374,9 +1374,9 @@ sub stopIrods
 
     # no regard for PIDs
     # iRODS must kill all owned processes for packaging purposes
-    system( "python $scripttoplevel/iRODS/scripts/python/terminate_irods_processes.py" );
+    system( "python $pythonScriptsDir/terminate_irods_processes.py" );
 
-        return 1;
+    return 1;
 }
 
 
