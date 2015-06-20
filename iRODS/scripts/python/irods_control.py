@@ -135,7 +135,7 @@ class IrodsController(object):
         if p.returncode != 0:
             raise IrodsControllerError('\n\t'.join([
                     'iRODS server failed to start.',
-                    out.decode(sys.stdout.encoding)]))
+                    out.decode()]))
 
         if self.verbose:
             print('Waiting for iRODS server to start...')
@@ -343,7 +343,7 @@ def get_pids_executing_binary_file(binary_file_path):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
     out, _ = p.communicate()
-    out = out.decode(sys.stdout.encoding) if p.returncode == 0 else ''
+    out = out.decode() if p.returncode == 0 else ''
     partitioned_out = out.rpartition(':')
     if not partitioned_out[1] :
         return []
