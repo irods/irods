@@ -331,7 +331,7 @@ def start_irods_server(env=None):
     assert_command(
         '{0} graceful_start'.format(
             os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl')),
-        'STDOUT_SINGLELINE', 'Starting iRODS server', env=env)
+        'STDOUT_SINGLELINE', 'Success', env=env)
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(
             'ils', 'STDOUT_SINGLELINE', admin_session.zone_name)
