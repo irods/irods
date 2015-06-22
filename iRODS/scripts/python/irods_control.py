@@ -114,8 +114,9 @@ class IrodsController(object):
                             verbose=self.verbose)
                 except RuntimeWarning as e:
                     if self.verbose:
-                        print(e, file=sys.stderr)
+                        print('', e, file=sys.stderr)
             elif self.verbose:
+                print()
                 print(  'Preflight Check problem:',
                         'JSON Configuration Validation failed.',
                         sep='\n\t', file=sys.stderr)
