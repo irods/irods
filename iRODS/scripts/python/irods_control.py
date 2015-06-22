@@ -328,7 +328,7 @@ class IrodsController(object):
                 self.get_rule_engine_executable(),
                 self.get_xmsg_server_executable(),
                 self.get_agent_executable()]
-        return {b: get_pids_executing_binary_file(b) for b in binaries}
+        return dict([(b, get_pids_executing_binary_file(b)) for b in binaries])
 
 def load_json_config_file(filepath, permissive=False):
     if os.path.exists(filepath):
