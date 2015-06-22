@@ -53,7 +53,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
 
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
-                 "mvFileUtil: NULL srcPath or targPath incp" );
+                 "mvFileUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
@@ -96,7 +96,7 @@ int
 initCondForMv( dataObjCopyInp_t *dataObjRenameInp ) {
     if ( dataObjRenameInp == NULL ) {
         rodsLog( LOG_ERROR,
-                 "initCondForMv: NULL dataObjRenameInp incp" );
+                 "initCondForMv: NULL dataObjRenameInp input" );
         return USER__NULL_INPUT_ERR;
     }
 

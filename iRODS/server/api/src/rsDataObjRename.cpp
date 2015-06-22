@@ -464,7 +464,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
     return status;
 }
 
-/* moveMountedCollObj - move a mounted collecion obj to a normal obj */
+/* moveMountedCollObj - move a mounted collection obj to a normal obj */
 int
 moveMountedCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                     int srcType, dataObjInp_t *destDataObjInp ) {

@@ -51,8 +51,8 @@
  *         target path.
  *    \li int \b srcDataObjInp.oprType - The operation type.
  *        Valid values are:
- *      \n RENAME_DATA_OBJ  - renmame a data object.
- *      \n RENAME_COLL  - renmame a collection.
+ *      \n RENAME_DATA_OBJ  - rename a data object.
+ *      \n RENAME_COLL  - rename a collection.
  *      \n 0 - The object type is unknown. Just rename it.
  *
  * \return integer
