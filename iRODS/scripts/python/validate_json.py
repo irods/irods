@@ -1,22 +1,18 @@
 from __future__ import print_function
 import json
 import sys
-import requests
 
 try:
     import jsonschema
+except ImportError:
+    pass
+
+try:
     import requests
 except ImportError:
     pass
 
 def validate(config_file, schema_uri, verbose=False):
-    try:
-        e = jsonschema.exceptions
-    except AttributeError:
-        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(config_file, jsonschema.__version__))
-    except NameError:
-        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema not installed'.format(config_file))
-
     try:
         # load configuration file
         with open(config_file, 'r') as f:
@@ -30,14 +26,21 @@ def validate(config_file, schema_uri, verbose=False):
 
 def validate_dict(config_dict, schema_uri, name=None, verbose=False):
     try:
+        e = jsonschema.exceptions
+    except AttributeError:
+        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(config_file, jsonschema.__version__))
+    except NameError:
+        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema not installed'.format(config_file))
+
+    try:
         # load the schema url
         try:
             response = requests.get(schema_uri)
         except NameError:
             if name != None:
-                raise RuntimeWarning('WARNING: Validation failed for {0} -- requests not installed'.format(name))
+                raise RuntimeError('WARNING: Validation failed for {0} -- requests not installed'.format(name))
             else:
-                raise RuntimeWarning('WARNING: Validation failed -- requests not installed')
+                raise RuntimeError('WARNING: Validation failed -- requests not installed')
 
 
         # check response values
@@ -94,4 +97,4 @@ if __name__ == '__main__':
         sys.exit(1)
     except RuntimeWarning as e:
         print(e, file=sys.stderr)
-        sys.exit(1)
+        sys.exit(0)
