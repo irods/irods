@@ -10,6 +10,7 @@ import subprocess
 import time
 import psutil
 import glob
+import itertools
 from optparse import OptionParser
 from contextlib import closing
 import get_db_schema_version
@@ -83,7 +84,7 @@ class IrodsController(object):
                         dir=self.get_log_directory())
                 os.close(test_file_handle)
                 os.unlink(test_file_name)
-            except IOError:
+            except (IOError, OSError):
                 raise IrodsControllerError('\n\t'.join([
                         'Configuration problem:',
                         'The server log directory, \'{0}\'',
@@ -382,19 +383,22 @@ def delete_cache_files_by_pid(pid, verbose=False):
             'run',
             'shm',
             '*irods_re_cache*pid{0}_*'.format(pid)))
+        delete_cache_files_by_name(*ubuntu_cache)
         other_linux_cache = glob.glob(os.path.join(
             get_root_directory(),
             'dev',
             'shm',
             '*irods_re_cache*pid{0}_*'.format(pid)))
-        for path in ubuntu_cache + other_linux_cache:
+        delete_cache_files_by_name(*other_linux_cache)
+
+def delete_cache_files_by_name(*paths):
+        for path in paths:
             try:
                 os.unlink(path)
-            except IOError:
+            except (IOError, OSError):
                 if verbose:
                     print('\tError deleting cache file: {0}'.format(path),
                             file=sys.stderr)
-
 
 def parse_options():
 
