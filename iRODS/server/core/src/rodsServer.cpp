@@ -34,7 +34,9 @@
 #include "initServer.hpp"
 #include "procLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rsGlobal.hpp"	/* server global */
+#include "rsGlobal.hpp" /* server global */
+#include "locks.hpp"
+#include "sharedmemory.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -56,14 +58,14 @@ agentProc_t *BadReqHead = NULL;
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-boost::mutex		  ConnectedAgentMutex;
-boost::mutex		  BadReqMutex;
-boost::thread*		  ReadWorkerThread[NUM_READ_WORKER_THR];
-boost::thread*		  SpawnManagerThread;
-boost::thread*		  PurgeLockFileThread; // JMC - backport 4612
+boost::mutex              ConnectedAgentMutex;
+boost::mutex              BadReqMutex;
+boost::thread*            ReadWorkerThread[NUM_READ_WORKER_THR];
+boost::thread*            SpawnManagerThread;
+boost::thread*            PurgeLockFileThread; // JMC - backport 4612
 
-boost::mutex		  ReadReqCondMutex;
-boost::mutex		  SpawnReqCondMutex;
+boost::mutex              ReadReqCondMutex;
+boost::mutex              SpawnReqCondMutex;
 boost::condition_variable ReadReqCond;
 boost::condition_variable SpawnReqCond;
 
@@ -134,7 +136,7 @@ int irodsWinMain( int argc, char **argv )
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
 
-    ProcessType = SERVER_PT;	/* I am a server */
+    ProcessType = SERVER_PT;    /* I am a server */
 
     // capture server properties
     irods::error result = irods::server_properties::getInstance().capture();
@@ -157,18 +159,18 @@ int irodsWinMain( int argc, char **argv )
     ServerBootTime = time( 0 );
     while ( ( c = getopt( argc, argv, "uvVqsh" ) ) != EOF ) {
         switch ( c ) {
-        case 'u':		/* user command level. without serverized */
+        case 'u':               /* user command level. without serverized */
             uFlag = 1;
             break;
         case 'D':   /* user specified a log directory */
             logDir = strdup( optarg );
             break;
-        case 'v':		/* verbose Logging */
+        case 'v':               /* verbose Logging */
             snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_NOTICE );
             putenv( tmpStr1 );
             rodsLogLevel( LOG_NOTICE );
             break;
-        case 'V':		/* very Verbose */
+        case 'V':               /* very Verbose */
             snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_DEBUG1 );
             putenv( tmpStr1 );
             rodsLogLevel( LOG_DEBUG1 );
@@ -178,11 +180,11 @@ int irodsWinMain( int argc, char **argv )
             putenv( tmpStr1 );
             rodsLogLevel( LOG_ERROR );
             break;
-        case 's':		/* log SQL commands */
+        case 's':               /* log SQL commands */
             snprintf( tmpStr2, 100, "%s=%d", SP_LOG_SQL, 1 );
             putenv( tmpStr2 );
             break;
-        case 'h':		/* help */
+        case 'h':               /* help */
             usage( argv[0] );
             exit( 0 );
         default:
@@ -201,7 +203,7 @@ int irodsWinMain( int argc, char **argv )
 #ifndef _WIN32
     signal( SIGTTIN, SIG_IGN );
     signal( SIGTTOU, SIG_IGN );
-    signal( SIGCHLD, SIG_DFL );	/* SIG_IGN causes autoreap. wait get nothing */
+    signal( SIGCHLD, SIG_DFL ); /* SIG_IGN causes autoreap. wait get nothing */
     signal( SIGPIPE, SIG_IGN );
 #ifdef osx_platform
     signal( SIGINT, ( sig_t ) serverExit );
@@ -249,10 +251,10 @@ serverize( char *logDir ) {
 
     free( logFile );
 #ifndef windows_platform
-    if ( fork() ) {	/* parent */
+    if ( fork() ) {     /* parent */
         exit( 0 );
     }
-    else {	/* child */
+    else {      /* child */
         if ( setsid() < 0 ) {
             rodsLog( LOG_NOTICE,
                      "serverize: setsid failed, errno = %d\n", errno );
@@ -456,6 +458,9 @@ serverMain( char *logDir ) {
 
     }
 
+    resetMutex();
+    removeSharedMemory();
+
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
     return 0;
@@ -561,13 +566,13 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     startupPack = &connReq->startupPack;
 
 #ifndef windows_platform
-    childPid = fork();	/* use fork instead of vfork because of multi-thread
-			 * env */
+    childPid = fork();  /* use fork instead of vfork because of multi-thread
+                         * env */
 
     if ( childPid < 0 ) {
         return SYS_FORK_ERROR - errno;
     }
-    else if ( childPid == 0 ) {	/* child */
+    else if ( childPid == 0 ) { /* child */
         agentProc_t *tmpAgentProc;
         close( SvrSock );
 
@@ -596,7 +601,7 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
 
         execAgent( newSock, startupPack );
     }
-    else {			/* parent */
+    else {                      /* parent */
         queConnectedAgentProc( childPid, connReq, agentProcHead );
     }
 #else
