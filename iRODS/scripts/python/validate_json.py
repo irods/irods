@@ -28,9 +28,15 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
     try:
         e = jsonschema.exceptions
     except AttributeError:
-        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(config_file, jsonschema.__version__))
+        if name != None:
+            raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(name, jsonschema.__version__))
+        else:
+            raise RuntimeWarning('WARNING: Validation failed -- jsonschema too old v[{1}]'.format(jsonschema.__version__))
     except NameError:
-        raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema not installed'.format(config_file))
+        if name != None:
+            raise RuntimeWarning('WARNING: Validation failed for {0} -- jsonschema not installed'.format(name))
+        else:
+            raise RuntimeWarning('WARNING: Validation failed -- jsonschema not installed')
 
     try:
         # load the schema url
