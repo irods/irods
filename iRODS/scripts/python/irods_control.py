@@ -13,6 +13,7 @@ import glob
 import itertools
 from optparse import OptionParser
 from contextlib import closing
+from six import reraise
 import get_db_schema_version
 import validate_json
 
@@ -32,11 +33,6 @@ class IrodsController(object):
         self.static_execution_environment = static_execution_environment
         self.verbose = verbose
 
-        #get the fully qualified domain name
-        #(no, really, getfqdn() is insufficient)
-        self.hostname = socket.getaddrinfo(
-                socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
-
         #load the configuration to ensure it exists
         load_json_config_file(self.get_server_config_path())
         load_json_config_file(self.get_version_path())
@@ -45,90 +41,94 @@ class IrodsController(object):
     #environment into the standard execution environment. If you instead
     #wish to replace the environment wholesale, set insert_behavior to False.
     def start(self, execution_environment={}, insert_behavior=True):
+        server_config_dict = load_json_config_file(
+                self.get_server_config_path())
+        version_dict = load_json_config_file(self.get_version_path())
+
+        new_execution_environment = {}
+        for key, value in execution_environment.items():
+            new_execution_environment[key] = value
+
+        if insert_behavior:
+            for key, value in self.static_execution_environment.items():
+                if key not in new_execution_environment:
+                    new_execution_environment[key] = value
+            if 'irodsHomeDir' not in new_execution_environment:
+                new_execution_environment['irodsHomeDir'] = self.get_irods_directory()
+            if 'irodsConfigDir' not in new_execution_environment:
+                new_execution_environment['irodsConfigDir'] = self.get_config_directory()
+            if 'PWD' not in new_execution_environment:
+                new_execution_environment['PWD'] = self.get_server_bin_directory()
+
+        for key, value in os.environ.items():
+            if key not in new_execution_environment:
+                new_execution_environment[key] = value
+
+        if not os.path.exists(self.get_server_executable()):
+            raise IrodsControllerError('\n\t'.join([
+                    'Configuration problem:',
+                    'The \'{0}\' application could not be found.  Have the'.format(
+                        os.path.basename(self.get_server_executable())),
+                    'iRODS servers been compiled?']),
+                sys.exc_info()[2])
+
+        try :
+            (test_file_handle, test_file_name) = tempfile.mkstemp(
+                    dir=self.get_log_directory())
+            os.close(test_file_handle)
+            os.unlink(test_file_name)
+        except (IOError, OSError):
+            reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
+                    'Configuration problem:',
+                    'The server log directory, \'{0}\''.format(
+                        self.get_log_directory()),
+                    'is not writeable.  Please change its permissions',
+                    'and retry.'])),
+                sys.exc_info()[2])
+
+        if (os.path.exists(self.get_database_config_path()) and
+                not self.check_database_schema_version()):
+            raise IrodsControllerError('\n\t'.join([
+                    'Preflight Check problem:',
+                    'Database Schema in the database is ahead',
+                    'of {0} - Please upgrade.'.format(
+                        os.path.basename(self.get_version_path()))]))
+
+        validation_uri_prefix = '/'.join([
+            server_config_dict['schema_validation_base_uri'],
+            'v{0}'.format(version_dict['configuration_schema_version'])])
+        server_config_validation_uri = '/'.join([
+                validation_uri_prefix,
+                os.path.basename(self.get_server_config_path())])
+        if server_config_validation_uri:
+            try :
+                validate_json.validate_dict(
+                        server_config_dict,
+                        server_config_validation_uri,
+                        name=os.path.basename(self.get_server_config_path()),
+                        verbose=self.verbose)
+            except validate_json.ValidationWarning as e:
+                if self.verbose:
+                    print('', e, file=sys.stderr)
+            except validate_json.ValidationError as e:
+                reraise(IrodsControllerError, e)
+        elif self.verbose:
+            print(  '\nPreflight Check problem:',
+                    'JSON Configuration Validation failed.',
+                    sep='\n\t', file=sys.stderr)
+
         if self.verbose:
             print('Starting iRODS server...', end=' ')
 
         try :
-            server_config_dict = load_json_config_file(
-                    self.get_server_config_path())
-            version_dict = load_json_config_file(self.get_version_path())
-
-            new_execution_environment = {}
-            for key, value in execution_environment.items():
-                new_execution_environment[key] = value
-
-            if insert_behavior:
-                for key, value in self.static_execution_environment.items():
-                    if key not in new_execution_environment:
-                        new_execution_environment[key] = value
-                if 'irodsHomeDir' not in new_execution_environment:
-                    new_execution_environment['irodsHomeDir'] = self.get_irods_directory()
-                if 'irodsConfigDir' not in new_execution_environment:
-                    new_execution_environment['irodsConfigDir'] = self.get_config_directory()
-                if 'PWD' not in new_execution_environment:
-                    new_execution_environment['PWD'] = self.get_server_bin_directory()
-
-            for key, value in os.environ.items():
-                if key not in new_execution_environment:
-                    new_execution_environment[key] = value
-
-            if not os.path.exists(self.get_server_executable()):
-                raise IrodsControllerError('\n\t'.join([
-                        'Configuration problem:',
-                        'The \'{0}\' application could not be found.  Have the',
-                        'iRODS servers been compiled?']).format(
-                            os.path.basename(self.get_server_executable())))
-
-            try :
-                (test_file_handle, test_file_name) = tempfile.mkstemp(
-                        dir=self.get_log_directory())
-                os.close(test_file_handle)
-                os.unlink(test_file_name)
-            except (IOError, OSError):
-                raise IrodsControllerError('\n\t'.join([
-                        'Configuration problem:',
-                        'The server log directory, \'{0}\'',
-                        'is not writeable.  Please change its permissions',
-                        'and retry.']).format(
-                            self.get_log_directory()))
-
-            if (os.path.exists(self.get_database_config_path()) and
-                    not self.check_database_schema_version()):
-                raise RuntimeError('\n\t'.join([
-                        'Preflight Check problem:',
-                        'Database Schema in the database is ahead',
-                        'of {0} - Please upgrade.']).format(
-                            os.path.basename(self.get_version_path())))
-
-            validation_uri_prefix = '/'.join([
-                server_config_dict['schema_validation_base_uri'],
-                'v{0}'.format(version_dict['configuration_schema_version'])])
-            server_config_validation_uri = '/'.join([
-                    validation_uri_prefix,
-                    os.path.basename(self.get_server_config_path())])
-            if server_config_validation_uri:
-                try :
-                    validate_json.validate_dict(
-                            server_config_dict,
-                            server_config_validation_uri,
-                            name=os.path.basename(self.get_server_config_path()),
-                            verbose=self.verbose)
-                except RuntimeWarning as e:
-                    if self.verbose:
-                        print('', e, file=sys.stderr)
-            elif self.verbose:
-                print()
-                print(  'Preflight Check problem:',
-                        'JSON Configuration Validation failed.',
-                        sep='\n\t', file=sys.stderr)
-
             irods_port = int(server_config_dict['zone_port'])
             with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
                 try :
                     s.bind(('127.0.0.1', irods_port))
                 except socket.error:
-                    raise IrodsControllerError(
-                            'Could not bind port {0}.'.format(irods_port))
+                    reraise(IrodsControllerError,
+                        IrodsControllerError('Could not bind port {0}.'.format(irods_port)),
+                        sys.exc_info()[2])
 
             p = subprocess.Popen(
                 [self.get_server_executable()],
@@ -159,10 +159,10 @@ class IrodsController(object):
         except IrodsControllerError as e:
             if self.verbose:
                 print('Failure')
-            raise e
+            reraise(IrodsControllerError, e, sys.exc_info()[2])
 
         if self.verbose:
-            print('Success!')
+            print('Success')
 
     def stop(self):
         if self.verbose:
@@ -185,10 +185,10 @@ class IrodsController(object):
         except IrodsControllerError as e:
             if self.verbose:
                 print('Failure')
-            raise e
+            reraise(IrodsControllerError, e, sys.exc_info()[2])
 
         if self.verbose:
-            print('Success!')
+            print('Success')
 
     def restart(self, execution_environment={}, insert_behavior=True):
         self.stop()
@@ -338,7 +338,8 @@ def load_json_config_file(filepath, permissive=False):
         return {}
     else:
         raise IrodsControllerError(
-                'Configuration file {0} does not exist.'.format(filepath))
+            'Configuration file {0} does not exist.'.format(
+                filepath))
 
 def get_default_top_level_directory():
     script_directory = os.path.dirname(os.path.abspath(
@@ -348,27 +349,40 @@ def get_default_top_level_directory():
                 os.path.dirname(
                     script_directory)))
 
+#get the fully qualified domain name
+#(no, really, getfqdn() is insufficient)
+def get_hostname():
+    return socket.getaddrinfo(
+            socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
+
 def get_root_directory():
     return os.path.abspath(os.sep)
 
 def get_pids_executing_binary_file(binary_file_path):
-    # get fuser listing of pids
-    p = subprocess.Popen(['fuser', binary_file_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+    # get lsof listing of pids
+    p = subprocess.Popen(['lsof', '-F', 'pf', binary_file_path],
+            stdout=subprocess.PIPE)
     out, _ = p.communicate()
     out = out.decode() if p.returncode == 0 else ''
-    partitioned_out = out.rpartition(':')
-    if not partitioned_out[1] :
-        return []
-    pid_strings = partitioned_out[2].split()
+    parsed_out = parse_formatted_lsof_output(out)
     try:
         # we only want pids in executing state
-        return [int(pid[:-1]) for pid in pid_strings if pid[-1] == 'e']
-    except ValueError:
-        raise IrodsControllerError('\n\t'.join([
-                'non-conforming fuser output:',
-                '{0}']).format(fuser_output))
+        return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
+    except (ValueError, KeyError):
+        reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
+                'non-conforming lsof output:',
+                '{0}'.format(out)])),
+            sys.exc_info()[2])
+
+def parse_formatted_lsof_output(output):
+    parsed_output = []
+    if output.strip():
+        for line in output.split():
+            if line[0] == output[0]:
+                parsed_output.append({})
+            parsed_output[-1][line[0]] = line[1:]
+    return parsed_output
+
 
 def kill_pid(pid):
     p = psutil.Process(pid)
