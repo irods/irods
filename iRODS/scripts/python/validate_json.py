@@ -13,16 +13,13 @@ try:
 except ImportError:
     pass
 
-
 class ValidationError(Exception):
     pass
-
 
 class ValidationWarning(Warning):
     pass
 
-
-def validate(config_file, schema_uri, verbose=False):
+def load_and_validate(config_file, schema_uri, verbose=False):
     try:
         # load configuration file
         with open(config_file, 'r') as f:
@@ -34,7 +31,7 @@ def validate(config_file, schema_uri, verbose=False):
             '{0}: {1}'.format(e.__class__.__name__, e)])),
                           sys.exc_info()[2])
     validate_dict(config_dict, schema_uri, name=config_file, verbose=verbose)
-
+    return config_dict
 
 def validate_dict(config_dict, schema_uri, name=None, verbose=False):
     if name is None:

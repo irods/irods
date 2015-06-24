@@ -41,10 +41,6 @@ class IrodsController(object):
     # environment into the standard execution environment. If you instead
     # wish to replace the environment wholesale, set insert_behavior to False.
     def start(self, execution_environment={}, insert_behavior=True):
-        server_config_dict = load_json_config_file(
-            self.get_server_config_path())
-        version_dict = load_json_config_file(self.get_version_path())
-
         new_execution_environment = {}
         for key, value in execution_environment.items():
             new_execution_environment[key] = value
@@ -86,42 +82,23 @@ class IrodsController(object):
                     'and retry.'])),
                     sys.exc_info()[2])
 
-        if (os.path.exists(self.get_database_config_path()) and
-                not self.check_database_schema_version()):
-            raise IrodsControllerError('\n\t'.join([
-                'Preflight Check problem:',
-                'Database Schema in the database is ahead',
-                'of {0} - Please upgrade.'.format(
-                    os.path.basename(self.get_version_path()))]))
+        config_dicts = self.load_and_validate_config_files()
 
-        validation_uri_prefix = '/'.join([
-            server_config_dict['schema_validation_base_uri'],
-            'v{0}'.format(version_dict['configuration_schema_version'])])
-        server_config_validation_uri = '/'.join([
-            validation_uri_prefix,
-            os.path.basename(self.get_server_config_path())])
-        if server_config_validation_uri:
-            try:
-                validate_json.validate_dict(
-                    server_config_dict,
-                    server_config_validation_uri,
-                    name=os.path.basename(self.get_server_config_path()),
-                    verbose=self.verbose)
-            except validate_json.ValidationWarning as e:
-                if self.verbose:
-                    print('', e, file=sys.stderr)
-            except validate_json.ValidationError as e:
-                irods_six.reraise(IrodsControllerError, e)
-        elif self.verbose:
-            print('\nPreflight Check problem:',
-                  'JSON Configuration Validation failed.',
-                  sep='\n\t', file=sys.stderr)
+        if self.get_database_config_path() in config_dicts:
+            schema_version_in_file = config_dicts[self.get_version_path()]['catalog_schema_version']
+            if not self.check_database_schema_version(
+                    schema_version_in_file=schema_version_in_file):
+                raise IrodsControllerError('\n\t'.join([
+                    'Preflight Check problem:',
+                    'Database Schema in the database is ahead',
+                    'of {0} - Please upgrade.'.format(
+                        os.path.basename(self.get_version_path()))]))
 
         if self.verbose:
             print('Starting iRODS server...', end=' ')
 
         try:
-            irods_port = int(server_config_dict['zone_port'])
+            irods_port = int(config_dicts[self.get_server_config_path()]['zone_port'])
             with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
                 try:
                     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -208,23 +185,89 @@ class IrodsController(object):
                           sep='\n\t')
         return process_map
 
-    def check_database_schema_version(self):
-        schema_version_in_db = int(
-            get_db_schema_version.get_current_schema_version(
-                install_dir=self.get_top_level_directory(),
-                config_dir=self.get_config_directory(),
-                server_config_path=self.get_server_config_path(),
-                database_config_path=self.get_database_config_path()))
-        version_dict = load_json_config_file(self.get_version_path())
-        schema_version_in_file = int(version_dict['catalog_schema_version'])
-        if int(schema_version_in_db) > schema_version_in_file:
+    def load_and_validate_config_files(self):
+        config_files = [
+                self.get_server_config_path(),
+                self.get_version_path(),
+                self.get_hosts_config_path(),
+                self.get_host_access_control_config_path(),
+                get_irods_environment_path()]
+        if os.path.exists(self.get_database_config_path()):
+            config_files.append(self.get_database_config_path())
+
+        config_dicts = dict([(path, load_json_config_file(path)) for path in config_files])
+
+        try :
+            server_config_dict = config_dicts[self.get_server_config_path()]
+            base_uri = server_config_dict['schema_validation_base_uri']
+        except KeyError:
+            base_uri = None
+            if self.verbose:
+                print(  '{0} did not contain \'{1}\''.format(
+                    self.get_server_config_path(),
+                    'schema_validation_base_uri'),
+                    file=sys.stderr)
+
+        try :
+            version_dict = config_dicts[self.get_version_path()]
+            uri_version = version_dict['configuration_schema_version']
+        except KeyError:
+            uri_version = None
+            if self.verbose:
+                print(  '{0} did not contain \'{1}\''.format(
+                    self.get_version_path(),
+                    'configuration_schema_version'),
+                    file=sys.stderr)
+
+        if base_uri and uri_version:
+            validation_uri_prefix = '/'.join([
+                    base_uri,
+                    'v{0}'.format(uri_version)])
+
+            for path, json_dict in config_dicts.items():
+                schema_uri = '/'.join([
+                    validation_uri_prefix,
+                    os.path.basename(path)])
+                try :
+                    validate_json.validate_dict(
+                            json_dict,
+                            schema_uri,
+                            name=path,
+                            verbose=self.verbose)
+                except validate_json.ValidationWarning as e:
+                    if self.verbose:
+                        print(e, file=sys.stderr)
+                except validate_json.ValidationError as e:
+                    irods_six.reraise(IrodsControllerError, e, sys.exc_info()[2])
+        elif self.verbose:
+            print(  'Preflight Check problem:',
+                    'JSON Configuration Validation failed.',
+                    sep='\n\t', file=sys.stderr)
+        return config_dicts
+
+    def check_database_schema_version(self,
+            schema_version_in_db=None,
+            schema_version_in_file=None):
+
+        if schema_version_in_db is None:
+            schema_version_in_db = int(
+                get_db_schema_version.get_current_schema_version(
+                    install_dir=self.get_top_level_directory(),
+                    config_dir=self.get_config_directory(),
+                    server_config_path=self.get_server_config_path(),
+                    database_config_path=self.get_database_config_path()))
+        if schema_version_in_file is None:
+            version_dict = load_json_config_file(self.get_version_path())
+            schema_version_in_file = int(version_dict['catalog_schema_version'])
+
+        if int(schema_version_in_db) > int(schema_version_in_file):
             if self.verbose:
                 print(
                     'catalog_schema_version in database [{0}]'.format(
-                        schema_version_in_db),
-                    'catalog_schema_version in {1} [{2}]'.format(
-                        os.path.basename(self.get_version_path()),
-                        schema_version_in_file),
+                        int(schema_version_in_db)),
+                    'catalog_schema_version in {0} [{1}]'.format(
+                        self.get_version_path(),
+                        int(schema_version_in_file)),
                     sep='\n', file=sys.stderr)
             return False
         if self.verbose:
@@ -277,6 +320,16 @@ class IrodsController(object):
             self.get_config_directory(),
             'database_config.json')
 
+    def get_hosts_config_path(self):
+        return os.path.join(
+            self.get_config_directory(),
+            'hosts_config.json')
+
+    def get_host_access_control_config_path(self):
+        return os.path.join(
+            self.get_config_directory(),
+            'host_access_control_config.json')
+
     def get_icommands_test_directory(self):
         return os.path.join(
             self.get_irods_directory(),
@@ -323,26 +376,32 @@ class IrodsController(object):
             self.get_server_bin_directory(),
             'irodsAgent')
 
-    def get_processes_by_binary(self):
-        binaries = [
-            self.get_server_executable(),
-            self.get_rule_engine_executable(),
-            self.get_xmsg_server_executable(),
-            self.get_agent_executable()]
+    def get_processes_by_binary(self, binaries=None):
+        if binaries is None:
+            binaries = [
+                self.get_server_executable(),
+                self.get_rule_engine_executable(),
+                self.get_xmsg_server_executable(),
+                self.get_agent_executable()]
         return dict([(b, get_pids_executing_binary_file(b)) for b in binaries])
 
-
-def load_json_config_file(filepath, permissive=False):
-    if os.path.exists(filepath):
-        with open(filepath) as f:
-            return json.load(f)
-    elif permissive:
-        return {}
+def load_json_config_file(path):
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            try :
+                return json.load(f)
+            except ValueError as e:
+                irods_six.reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
+                            'JSON load failed for [{0}]:'.format(
+                                path),
+                            'Invalid JSON.',
+                            '{0}: {1}'.format(
+                                e.__class__.__name__, e)])),
+                        sys.exc_info()[2])
     else:
         raise IrodsControllerError(
-            'Configuration file {0} does not exist.'.format(
-                filepath))
-
+            'File {0} does not exist.'.format(
+                path))
 
 def get_default_top_level_directory():
     script_directory = os.path.dirname(os.path.abspath(
@@ -354,21 +413,26 @@ def get_default_top_level_directory():
 
 # get the fully qualified domain name
 #(no, really, getfqdn() is insufficient)
-
-
 def get_hostname():
     return socket.getaddrinfo(
         socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
 
-
 def get_root_directory():
     return os.path.abspath(os.sep)
 
+def get_home_directory():
+    return os.path.expanduser('~')
+
+def get_irods_environment_path():
+    return os.path.join(
+        get_home_directory(),
+        '.irods',
+        'irods_environment.json')
 
 def get_pids_executing_binary_file(binary_file_path):
     # get lsof listing of pids
     p = subprocess.Popen(['lsof', '-F', 'pf', binary_file_path],
-                         stdout=subprocess.PIPE)
+            stdout=subprocess.PIPE)
     out, _ = p.communicate()
     out = out.decode() if p.returncode == 0 else ''
     parsed_out = parse_formatted_lsof_output(out)
@@ -381,7 +445,6 @@ def get_pids_executing_binary_file(binary_file_path):
                 '{0}'.format(out)])),
                 sys.exc_info()[2])
 
-
 def parse_formatted_lsof_output(output):
     parsed_output = []
     if output.strip():
@@ -391,13 +454,11 @@ def parse_formatted_lsof_output(output):
             parsed_output[-1][line[0]] = line[1:]
     return parsed_output
 
-
 def kill_pid(pid):
     p = psutil.Process(pid)
     p.suspend()
     p.terminate()
     p.kill()
-
 
 def delete_cache_files_by_pid(pid, verbose=False):
     ubuntu_cache = glob.glob(os.path.join(
@@ -414,7 +475,6 @@ def delete_cache_files_by_pid(pid, verbose=False):
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*other_linux_cache)
 
-
 def delete_cache_files_by_name(*paths):
     for path in paths:
         try:
@@ -423,7 +483,6 @@ def delete_cache_files_by_name(*paths):
             if verbose:
                 print('\tError deleting cache file: {0}'.format(path),
                       file=sys.stderr)
-
 
 def parse_options():
     parser = optparse.OptionParser()
