@@ -21,6 +21,18 @@ import time
 import configuration
 
 
+def re_shm_exists():
+    possible_shm_locations = ['/var/run/shm', '/dev/shm']
+    for l in possible_shm_locations:
+        try:
+            files = os.listdir(l)
+            for f in files:
+                if 'irods' in f.lower():
+                    return f
+        except OSError:
+            pass
+    return False
+
 def update_json_file_from_dict(filename, update_dict):
     with open(filename) as f:
         env = json.load(f)
