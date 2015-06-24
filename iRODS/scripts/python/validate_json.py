@@ -1,7 +1,7 @@
 from __future__ import print_function
 import json
 import sys
-from six import reraise
+import irods_six
 
 try:
     import jsonschema
@@ -28,11 +28,11 @@ def validate(config_file, schema_uri, verbose=False):
         with open(config_file, 'r') as f:
             config_dict = json.load(f)
     except BaseException as e:
-        reraise(ValidationError, ValidationError('\n\t'.join([
-                'WARNING: Validation Failed for [{0}]:'.format(config_file),
-                'against [{0}]'.format(schema_uri),
-                '{0}: {1}'.format(e.__class__.__name__, e)])),
-                sys.exc_info()[2])
+        irods_six.reraise(ValidationError, ValidationError('\n\t'.join([
+            'WARNING: Validation Failed for [{0}]:'.format(config_file),
+            'against [{0}]'.format(schema_uri),
+            '{0}: {1}'.format(e.__class__.__name__, e)])),
+                          sys.exc_info()[2])
     validate_dict(config_dict, schema_uri, name=config_file, verbose=verbose)
 
 
@@ -42,12 +42,12 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
     try:
         e = jsonschema.exceptions
     except AttributeError:
-        reraise(ValidationWarning, ValidationWarning(
+        irods_six.reraise(ValidationWarning, ValidationWarning(
                 'WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(
                     name, jsonschema.__version__)),
             sys.exc_info()[2])
     except NameError:
-        reraise(ValidationWarning, ValidationWarning(
+        irods_six.reraise(ValidationWarning, ValidationWarning(
                 'WARNING: Validation failed for {0} -- jsonschema not installed'.format(
                     name)),
             sys.exc_info()[2])
@@ -57,7 +57,7 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
         try:
             response = requests.get(schema_uri)
         except NameError:
-            reraise(ValidationError, ValidationError(
+            irods_six.reraise(ValidationError, ValidationError(
                     'WARNING: Validation failed for {0} -- requests not installed'.format(
                         name)),
                 sys.exc_info()[2])
@@ -77,7 +77,7 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
             jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
             ValueError                                  # most network errors and 404s
     ) as e:
-        reraise(ValidationWarning, ValidationWarning('\n\t'.join([
+        irods_six.reraise(ValidationWarning, ValidationWarning('\n\t'.join([
                 'WARNING: Validation Failed for [{0}]:'.format(name),
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
@@ -87,7 +87,7 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
             jsonschema.exceptions.SchemaError,
             BaseException
     ) as e:
-        reraise(ValidationError,  ValidationError('\n\t'.join([
+        irods_six.reraise(ValidationError,  ValidationError('\n\t'.join([
                 'ERROR: Validation Failed for [{0}]:'.format(name),
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),

@@ -11,9 +11,9 @@ import time
 import psutil
 import glob
 import itertools
-from optparse import OptionParser
-from contextlib import closing
-from six import reraise
+import optparse
+import contextlib
+import irods_six
 import get_db_schema_version
 import validate_json
 
@@ -21,9 +21,7 @@ import validate_json
 class IrodsControllerError(Exception):
     pass
 
-
 class IrodsController(object):
-
     def __init__(self,
                  top_level_directory=None,
                  config_directory=None,
@@ -80,7 +78,7 @@ class IrodsController(object):
             os.close(test_file_handle)
             os.unlink(test_file_name)
         except (IOError, OSError):
-            reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
+            irods_six.reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
                     'Configuration problem:',
                     'The server log directory, \'{0}\''.format(
                         self.get_log_directory()),
@@ -113,7 +111,7 @@ class IrodsController(object):
                 if self.verbose:
                     print('', e, file=sys.stderr)
             except validate_json.ValidationError as e:
-                reraise(IrodsControllerError, e)
+                irods_six.reraise(IrodsControllerError, e)
         elif self.verbose:
             print('\nPreflight Check problem:',
                   'JSON Configuration Validation failed.',
@@ -124,12 +122,12 @@ class IrodsController(object):
 
         try:
             irods_port = int(server_config_dict['zone_port'])
-            with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
                 try:
                     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     s.bind(('127.0.0.1', irods_port))
                 except socket.error:
-                    reraise(IrodsControllerError,
+                    irods_six.reraise(IrodsControllerError,
                             IrodsControllerError('Could not bind port {0}.'.format(irods_port)),
                             sys.exc_info()[2])
 
@@ -147,7 +145,7 @@ class IrodsController(object):
 
             retry_count = 100
             while True:
-                with closing(socket.socket(
+                with contextlib.closing(socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM)) as s:
                     if s.connect_ex(('127.0.0.1', irods_port)) == 0:
                         if get_pids_executing_binary_file(
@@ -162,7 +160,7 @@ class IrodsController(object):
         except IrodsControllerError as e:
             if self.verbose:
                 print('Failure')
-            reraise(IrodsControllerError, e, sys.exc_info()[2])
+            irods_six.reraise(IrodsControllerError, e, sys.exc_info()[2])
 
         if self.verbose:
             print('Success')
@@ -188,7 +186,7 @@ class IrodsController(object):
         except IrodsControllerError as e:
             if self.verbose:
                 print('Failure')
-            reraise(IrodsControllerError, e, sys.exc_info()[2])
+            irods_six.reraise(IrodsControllerError, e, sys.exc_info()[2])
 
         if self.verbose:
             print('Success')
@@ -378,7 +376,7 @@ def get_pids_executing_binary_file(binary_file_path):
         # we only want pids in executing state
         return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
     except (ValueError, KeyError):
-        reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
+        irods_six.reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
                 'non-conforming lsof output:',
                 '{0}'.format(out)])),
                 sys.exc_info()[2])
@@ -428,8 +426,7 @@ def delete_cache_files_by_name(*paths):
 
 
 def parse_options():
-
-    parser = OptionParser()
+    parser = optparse.OptionParser()
 
     parser.add_option('-q', '--quiet',
                       dest='verbose', action='store_false',
