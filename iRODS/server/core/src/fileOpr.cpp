@@ -286,7 +286,7 @@ int chkEmptyDir(
     // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
     irods::error readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
-    while ( readdir_err.ok() && 0 == readdir_err.code() ) {
+    while ( readdir_err.ok() && 0 == readdir_err.code() && myFileDirent ) {
         // =-=-=-=-=-=-=-
         // handle relative paths
         if ( strcmp( myFileDirent->d_name, "." ) == 0 ||

@@ -116,7 +116,7 @@ int _rsFileRmdir(
 
         // read the directory via resource plugin and either handle files or recurse into another directory
         irods::error readdir_err = fileReaddir( _comm, coll_obj, &myFileDirent );
-        while ( readdir_err.ok() && 0 == readdir_err.code() ) {
+        while ( readdir_err.ok() && 0 == readdir_err.code() && myFileDirent ) {
             struct stat statbuf;
             char myPath[MAX_NAME_LEN];
 

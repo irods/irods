@@ -248,7 +248,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
 
         status = specCollReaddir( rsComm, specCollInx, &rodsDirent );
 
-        if ( status < 0 ) {
+        if ( status < 0 || !rodsDirent ) {
             break;
         }
 
