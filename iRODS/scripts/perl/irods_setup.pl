@@ -1266,16 +1266,17 @@ sub getIrodsServerPid()
         $currentPort = $IRODS_PORT;
         my $processFile   = $tmpDir . "/irodsServer" . "." . $currentPort;
 
-        open( PIDFILE, "<$processFile" );
-        my $line;
         my $parentPid="NotFound";
-        foreach $line (<PIDFILE>)
-        {
-                my $i = index($line, " ");
-                $parentPid=substr($line,0,$i);
+        if (open( PIDFILE, '<', $processFile )) {
+            my $line;
+            foreach $line (<PIDFILE>)
+            {
+                    my $i = index($line, " ");
+                    $parentPid=substr($line,0,$i);
+            }
+            close( PIDFILE );
         }
-        close( PIDFILE );
-        return ( $parentPid);
+        return $parentPid;
 }
 
 
