@@ -13,14 +13,11 @@ import lib
 
 
 class TestControlPlane(unittest.TestCase):
-
     def test_pause_and_resume(self):
-        # test pause
         lib.assert_command('irods-grid pause --all', 'STDOUT_SINGLELINE', 'pausing')
 
         # need a time-out assert icommand for ils here
 
-        # resume the server
         lib.assert_command('irods-grid resume --all', 'STDOUT_SINGLELINE', 'resuming')
 
         # Make sure server is actually responding
@@ -28,14 +25,16 @@ class TestControlPlane(unittest.TestCase):
         lib.assert_command('irods-grid status --all', 'STDOUT_SINGLELINE', 'hosts')
 
     def test_status(self):
-        # test grid status
         lib.assert_command('irods-grid status --all', 'STDOUT_SINGLELINE', 'hosts')
 
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown(self):
-        # test shutdown
+        assert lib.re_shm_exists()
+
         lib.assert_command('irods-grid shutdown --all', 'STDOUT_SINGLELINE', 'shutting down')
         time.sleep(2)
         lib.assert_command('ils', 'STDERR_SINGLELINE', 'USER_SOCK_CONNECT_ERR')
+
+        assert not lib.re_shm_exists(), lib.re_shm_exists()
 
         lib.start_irods_server()
