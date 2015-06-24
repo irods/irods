@@ -126,6 +126,7 @@ class IrodsController(object):
             irods_port = int(server_config_dict['zone_port'])
             with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
                 try:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     s.bind(('127.0.0.1', irods_port))
                 except socket.error:
                     reraise(IrodsControllerError,
