@@ -176,7 +176,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.anon.assert_icommand('iget -t ' + ticket + ' ' + data_obj + ' -', 'STDERR')
         self.admin.assert_icommand('iticket mod ' + ticket + ' remove group ' + group)
         self.admin.assert_icommand('iadmin rfg ' + group + ' ' + self.user.username)
-        self.admin.assert_icommand('iadmin rmgroup ' + group)
+        self.admin.assert_icommand(['iadmin', 'rmgroup', group])
 
     def ticket_group_put(self, ticket, data_obj, filepath):
         group = 'group'

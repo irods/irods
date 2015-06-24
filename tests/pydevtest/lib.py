@@ -40,20 +40,16 @@ def update_json_file_from_dict(filename, update_dict):
     with open(filename, 'w') as f:
         json.dump(env, f, indent=4)
 
-
 def get_hostname():
     return socket.gethostname()
 
-
 def get_irods_top_level_dir():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 def get_irods_config_dir():
     if os.path.isfile('/etc/irods/server_config.json'):
         return '/etc/irods'
     return os.path.join(get_irods_top_level_dir(), 'iRODS/server/config')
-
 
 def get_core_re_dir():
     top_lvl = get_irods_top_level_dir()
@@ -62,7 +58,6 @@ def get_core_re_dir():
         return '/etc/irods'
     return os.path.join(get_irods_config_dir(), 'reConfigs')
 
-
 def create_directory_of_small_files(directory_name_suffix, file_count):
     if not os.path.exists(directory_name_suffix):
         os.mkdir(directory_name_suffix)
@@ -70,29 +65,24 @@ def create_directory_of_small_files(directory_name_suffix, file_count):
         with open('{0}/{1}'.format(directory_name_suffix, i), 'w') as f:
             f.write("iglkg3fqfhwpwpo-" + "A" * i)
 
-
 def create_local_testfile(filename):
     filepath = os.path.abspath(filename)
     with open(filepath, 'wb') as f:
         f.write('TESTFILE -- [' + filepath + ']')
     return filepath
 
-
 def create_local_largefile(filename):
     filepath = os.path.abspath(filename)
     os.system('dd if=/dev/zero of=' + filepath + ' bs=1M count=64')
     return filepath
 
-
 def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
 
-
 def cat(fname, string, times=None):
     with file(fname, 'a') as f:
         f.write(string)
-
 
 def make_file(f_name, f_size, source='/dev/zero'):
     if f_size == 0:
@@ -104,13 +94,11 @@ def make_file(f_name, f_size, source='/dev/zero'):
         sys.stderr.write(output[1] + '\n')
         raise OSError(output[0], "call to dd returned non-zero")
 
-
 def ils_output_to_entries(stdout):
     raw = stdout.strip().split('\n')
     collection = raw[0]
     entries = [entry.strip() for entry in raw[1:]]
     return entries
-
 
 def get_vault_path(session):
     cmdout = session.run_icommand(
@@ -120,13 +108,11 @@ def get_vault_path(session):
             cmdout[2], 'iquest wrote to stderr when called from get_vault_path()')
     return cmdout[1].rstrip('\n')
 
-
 def get_vault_session_path(session):
     return os.path.join(get_vault_path(session),
                         "home",
                         session.username,
                         session._session_id)
-
 
 def make_large_local_tmp_dir(dir_name, file_count, file_size):
     os.mkdir(dir_name)
@@ -137,7 +123,6 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
     assert len(local_files) == file_count, "dd loop did not make all " + \
         str(file_count) + " files"
     return local_files
-
 
 @contextlib.contextmanager
 def file_backed_up(filename):
@@ -151,14 +136,12 @@ def file_backed_up(filename):
         else:
             shutil.copyfile(f.name, filename)
 
-
 def prepend_string_to_file(string, filename):
     with open(filename, 'r') as f:
         contents = f.read()
     with open(filename, 'w') as f:
         f.write(string)
         f.write(contents)
-
 
 def get_log_path(log_source):
     log_prefix_dict = {
@@ -180,15 +163,12 @@ def get_log_path(log_source):
     log_file_path = stdout.rstrip()
     return log_file_path
 
-
 def get_log_size(log_source):
     return os.stat(get_log_path(log_source)).st_size
-
 
 def write_to_log(log_source, message):
     with open(get_log_path(log_source), 'a') as f:
         f.write(message)
-
 
 def count_occurrences_of_string_in_log(log_source, string, start_index=0):
     with open(get_log_path(log_source)) as f:
@@ -200,7 +180,6 @@ def count_occurrences_of_string_in_log(log_source, string, start_index=0):
             i = m.find(string, i + 1)
         m.close()
         return n
-
 
 def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=False, env=None, cwd=None):
     if not use_unsafe_shell and isinstance(command_arg, basestring):
@@ -215,7 +194,6 @@ def run_command(command_arg, check_rc=False, stdin_string='', use_unsafe_shell=F
             raise subprocess.CalledProcessError(
                 rc, command_arg, stdout + '\n\n' + stderr)
     return rc, stdout, stderr
-
 
 def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_SINGLELINE',
@@ -285,7 +263,6 @@ def check_run_command_output(command_arg, stdout, stderr, check_type='EMPTY', ex
         return False
     assert False, check_type
 
-
 def extract_function_kwargs(func, kwargs):
     args = func.func_code.co_varnames[:func.func_code.co_argcount]
     args_dict = {}
@@ -294,14 +271,11 @@ def extract_function_kwargs(func, kwargs):
             args_dict[k] = v
     return args_dict
 
-
 def assert_command(*args, **kwargs):
     return _assert_helper(*args, should_fail=False, **kwargs)
 
-
 def assert_command_fail(*args, **kwargs):
     return _assert_helper(*args, should_fail=True, **kwargs)
-
 
 def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_fail=False, **kwargs):
     run_command_arg_dict = extract_function_kwargs(run_command, kwargs)
@@ -332,12 +306,10 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
     assert result
     return rc, stdout, stderr
 
-
 def stop_irods_server():
     hostname = get_hostname()
     assert_command(
         ['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT_SINGLELINE', hostname)
-
 
 def start_irods_server(env=None):
     assert_command(
@@ -348,11 +320,9 @@ def start_irods_server(env=None):
         admin_session.assert_icommand(
             'ils', 'STDOUT_SINGLELINE', admin_session.zone_name)
 
-
 def restart_irods_server(env=None):
     stop_irods_server()
     start_irods_server(env=env)
-
 
 def make_environment_dict(username, hostname, zone_name):
     irods_home = os.path.join('/', zone_name, 'home', username)
@@ -386,7 +356,6 @@ def make_environment_dict(username, hostname, zone_name):
         })
     return environment
 
-
 def json_object_hook_ascii_list(l):
     rv = []
     for i in l:
@@ -396,7 +365,6 @@ def json_object_hook_ascii_list(l):
             i = json_object_hook_ascii_list(i)
         rv.append(i)
     return rv
-
 
 def json_object_hook_ascii_dict(d):
     rv = {}
@@ -410,20 +378,16 @@ def json_object_hook_ascii_dict(d):
         rv[k] = v
     return rv
 
-
 def open_and_load_json_ascii(filename):
     with open(filename) as f:
         return json.load(f, object_hook=json_object_hook_ascii_dict)
 
-
 def get_service_account_environment_file_contents():
     return open_and_load_json_ascii(os.path.expanduser('~/.irods/irods_environment.json'))
-
 
 def make_session_for_existing_user(username, password, hostname, zone):
     env_dict = make_environment_dict(username, hostname, zone)
     return IrodsSession(env_dict, password, False)
-
 
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()
@@ -432,7 +396,6 @@ def make_session_for_existing_admin():
     env_dict = make_environment_dict(
         username, configuration.ICAT_HOSTNAME, zone_name)
     return IrodsSession(env_dict, configuration.PREEXISTING_ADMIN_PASSWORD, False)
-
 
 def mkuser_and_return_session(user_type, username, password, hostname):
     service_env = get_service_account_environment_file_contents()
@@ -447,7 +410,6 @@ def mkuser_and_return_session(user_type, username, password, hostname):
         env_dict = make_environment_dict(username, hostname, zone_name)
         return IrodsSession(env_dict, password, manage_data)
 
-
 def mkgroup_and_add_users(group_name, usernames):
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand(['iadmin', 'mkgroup', group_name])
@@ -455,28 +417,14 @@ def mkgroup_and_add_users(group_name, usernames):
             admin_session.assert_icommand(
                 ['iadmin', 'atg', group_name, username])
 
-
-def rmgroup(group_name):
-    with make_session_for_existing_admin() as admin_session:
-        admin_session.assert_icommand(['iadmin', 'rmgroup', group_name])
-
-
-def rmuser(username):
-    with make_session_for_existing_admin() as admin_session:
-        admin_session.assert_icommand(['iadmin', 'rmuser', username])
-
-
 def get_os_distribution():
     return platform.linux_distribution()[0]
-
 
 def get_os_distribution_version_major():
     return platform.linux_distribution()[1].split('.')[0]
 
-
 def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
     class SessionsMixin(object):
-
         def setUp(self):
             with make_session_for_existing_admin() as admin_session:
                 self.admin_sessions = [mkuser_and_return_session('rodsadmin', name, password, get_hostname())
@@ -494,9 +442,7 @@ def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_lis
             super(SessionsMixin, self).tearDown()
     return SessionsMixin
 
-
 class IrodsSession(object):
-
     def __init__(self, environment_file_contents, password, manage_irods_data):
         self._environment_file_contents = environment_file_contents
         self._password = password
