@@ -26,11 +26,9 @@ irods::error usage(T& ostream) {
     ostream << "usage:  'irods-grid action [ option ] target'" << std::endl;
     ostream << "action: ( required ) status, pause, resume, shutdown" << std::endl;
     ostream << "option: --force-after=seconds or --wait-forever" << std::endl;
-    ostream << "target: ( required ) --all, --hosts=\"<fqdn1>, <fqdn2>, ...\"" << std::endl;
+    ostream << "target: ( required ) --all, --hosts=<fqdn1>,<fqdn2>,..." << std::endl;
 
-    return ERROR(
-               SYS_INVALID_INPUT_PARAM,
-               "usage" );
+    return ERROR( SYS_INVALID_INPUT_PARAM, "usage" );
 
 } // usage
 
