@@ -3,8 +3,6 @@
 #ifndef GET_RODS_ENV_H__
 #define GET_RODS_ENV_H__
 
-#define PRINT_RODS_ENV_STR "PRINT_IRODS_ENV"
-
 typedef struct {
     char rodsUserName[NAME_LEN];
     char rodsHost[NAME_LEN];

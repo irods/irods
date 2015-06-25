@@ -137,7 +137,6 @@ extern "C" {
 
     static
     int capture_string_property(
-        const int                      _msg_lvl,
         irods::environment_properties& _props,
         const std::string&             _key,
         char*                          _val ) {
@@ -148,17 +147,12 @@ extern "C" {
                                prop_str );
         if ( !ret.ok() ) {
             rodsLog(
-                _msg_lvl,
+                LOG_ERROR,
                 "%s is not defined",
                 _key.c_str() );
-            return -1;
+            return ret.code();
         }
         else {
-            rodsLog(
-                _msg_lvl,
-                "%s - %s",
-                _key.c_str(),
-                prop_str.c_str() );
             strncpy(
                 _val,
                 prop_str.c_str(),
@@ -170,7 +164,6 @@ extern "C" {
 
     static
     int capture_integer_property(
-        const int                      _msg_lvl,
         irods::environment_properties& _props,
         const std::string&             _key,
         int&                           _val ) {
@@ -179,16 +172,11 @@ extern "C" {
                                _val );
         if ( !ret.ok() ) {
             rodsLog(
-                _msg_lvl,
+                LOG_ERROR,
                 "%s is not defined",
                 _key.c_str() );
             return ret.code();
         }
-        rodsLog(
-            _msg_lvl,
-            "%s - %d",
-            _key.c_str(),
-            _val );
 
         return 0;
 
@@ -214,13 +202,6 @@ extern "C" {
             // return  ret.code();
         }
 
-        int msg_lvl = LOG_DEBUG;
-        if ( getenv( PRINT_RODS_ENV_STR ) &&
-                atoi( getenv( PRINT_RODS_ENV_STR ) ) ) {
-            msg_lvl = LOG_NOTICE;
-            unsetenv( PRINT_RODS_ENV_STR );
-        }
-
         // default auth scheme
         snprintf(
             _env->rodsAuthScheme,
@@ -228,134 +209,112 @@ extern "C" {
             "native" );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
             configFileName );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_USER_NAME_KW,
             _env->rodsUserName );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_HOST_KW,
             _env->rodsHost );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_XMSG_HOST_KW,
             _env->xmsgHost );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_HOME_KW,
             _env->rodsHome );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_CWD_KW,
             _env->rodsCwd );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW,
             _env->rodsAuthScheme );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_PORT_KW,
             _env->rodsPort );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_XMSG_PORT_KW,
             _env->xmsgPort );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
             _env->rodsDefResource );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_ZONE_KW,
             _env->rodsZone );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW,
             _env->rodsClientServerPolicy );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW,
             _env->rodsClientServerNegotiation );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW,
             _env->rodsEncryptionKeySize );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW,
             _env->rodsEncryptionSaltSize );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW,
             _env->rodsEncryptionNumHashRounds );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW,
             _env->rodsEncryptionAlgorithm );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW,
             _env->rodsDefaultHashScheme );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_MATCH_HASH_POLICY_KW,
             _env->rodsMatchHashPolicy );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_GSI_SERVER_DN_KW,
             _env->rodsServerDn );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_DEBUG_KW,
             _env->rodsDebug );
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
-                         msg_lvl,
                          props,
                          irods::CFG_IRODS_LOG_LEVEL_KW,
                          _env->rodsLogLevel );
@@ -366,7 +325,6 @@ extern "C" {
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
         status = capture_string_property(
-                     msg_lvl,
                      props,
                      irods::CFG_IRODS_AUTHENTICATION_FILE_KW,
                      _env->rodsAuthFile );
@@ -379,86 +337,72 @@ extern "C" {
 
         // legacy ssl environment variables
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
             _env->irodsSSLCACertificatePath );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
             _env->irodsSSLCACertificateFile );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_VERIFY_SERVER,
             _env->irodsSSLVerifyServer );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
             _env->irodsSSLCertificateChainFile );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
             _env->irodsSSLCertificateKeyFile );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
 
         // control plane variables
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
             _env->irodsCtrlPlaneKey );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
             _env->irodsCtrlPlaneEncryptionNumHashRounds );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
             _env->irodsCtrlPlaneEncryptionAlgorithm );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
             _env->irodsCtrlPlanePort );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
             _env->irodsMaxSizeForSingleBuffer );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
             _env->irodsDefaultNumberTransferThreads );
 
         capture_integer_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
 
         capture_string_property(
-            msg_lvl,
             props,
             irods::CFG_IRODS_PLUGINS_HOME_KW,
             _env->irodsPluginHome );
