@@ -432,8 +432,9 @@ def get_irods_environment_path():
 def get_pids_executing_binary_file(binary_file_path):
     # get lsof listing of pids
     p = subprocess.Popen(['lsof', '-F', 'pf', binary_file_path],
-            stdout=subprocess.PIPE)
-    out, _ = p.communicate()
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
     out = out.decode() if p.returncode == 0 else ''
     parsed_out = parse_formatted_lsof_output(out)
     try:
@@ -441,9 +442,10 @@ def get_pids_executing_binary_file(binary_file_path):
         return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
     except (ValueError, KeyError):
         irods_six.reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
-                'non-conforming lsof output:',
-                '{0}'.format(out)])),
-                sys.exc_info()[2])
+            'non-conforming lsof output:',
+            '{0}'.format(out),
+            '{0}'.format(err)])),
+                          sys.exc_info()[2])
 
 def parse_formatted_lsof_output(output):
     parsed_output = []
