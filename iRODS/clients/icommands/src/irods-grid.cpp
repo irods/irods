@@ -19,12 +19,14 @@
 #include "irods_buffer_encryption.hpp"
 #include "server_control_plane_command.hpp"
 #include "irods_buffer_encryption.hpp"
+#include "irods_exception.hpp"
 
-irods::error usage() {
-    std::cout << "usage:  'irods-grid action [ option ] target'" << std::endl;
-    std::cout << "action: ( required ) status, pause, resume, shutdown" << std::endl;
-    std::cout << "option: --force-after=seconds or --wait-forever" << std::endl;
-    std::cout << "target: ( required ) --all, --hosts=\"<fqdn1>, <fqdn2>, ...\"" << std::endl;
+template <typename T>
+irods::error usage(T& ostream) {
+    ostream << "usage:  'irods-grid action [ option ] target'" << std::endl;
+    ostream << "action: ( required ) status, pause, resume, shutdown" << std::endl;
+    ostream << "option: --force-after=seconds or --wait-forever" << std::endl;
+    ostream << "target: ( required ) --all, --hosts=\"<fqdn1>, <fqdn2>, ...\"" << std::endl;
 
     return ERROR(
                SYS_INVALID_INPUT_PARAM,
@@ -63,12 +65,12 @@ irods::error parse_program_options(
         po::notify( vm );
     }
     catch ( po::error& _e ) {
-        std::cout << std::endl
+        std::cerr << std::endl
                   << "Error: "
                   << _e.what()
                   << std::endl
                   << std::endl;
-        return usage();
+        return usage(std::cerr);
 
     }
 
@@ -84,11 +86,11 @@ irods::error parse_program_options(
             cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
 
             if ( cmd_map.end() == cmd_map.find( action ) ) {
-                std::cout << "invalid subcommand ["
+                std::cerr << "invalid subcommand ["
                           << action
                           << "]"
                           << std::endl;
-                return usage();
+                return usage(std::cerr);
 
             }
 
@@ -99,7 +101,7 @@ irods::error parse_program_options(
         }
     }
     else {
-        return usage();
+        return usage(std::cout);
 
     }
 
@@ -135,14 +137,14 @@ irods::error parse_program_options(
             boost::split(
                 hosts,
                 vm[ "hosts" ].as<std::string>(),
-                boost::is_any_of( "," ),
+                boost::is_any_of( ", " ),
                 boost::token_compress_on );
         }
         catch ( const boost::bad_function_call& ) {
             return ERROR( BAD_FUNCTION_CALL, "Boost threw bad_function_call." );
         }
         catch ( const boost::bad_any_cast& ) {
-            return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"force-after\"] to std::string failed." );
+            return ERROR( INVALID_ANY_CAST, "Attempt to cast vm[\"hosts\"] to std::string failed." );
         }
 
         for ( size_t i = 0;
@@ -156,7 +158,7 @@ irods::error parse_program_options(
 
     }
     else {
-        return usage();
+        return usage(std::cerr);
 
     }
 
@@ -253,9 +255,7 @@ irods::error decrypt_response(
 } // decrypt_response
 
 std::string format_grid_status(
-    const std::string& _status ) {
-
-
+    const std::string& _status) {
     std::string status = "{\n    \"hosts\": [\n";
     status += _status;
     status += "]    \n}";
@@ -266,8 +266,7 @@ std::string format_grid_status(
     }
     else {
         // possible error message
-        return _status;
-
+        THROW( -1, std::string("server responded with an error\n") + _status );
     }
 
     json_error_t j_err;
@@ -277,24 +276,22 @@ std::string format_grid_status(
                       &j_err );
     if ( !obj ) {
         if ( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
-            return _status;
+            THROW( -1, std::string("server paused error\n") + _status );
         }
 
-        std::string msg( "json_loads failed [" );
-        msg += j_err.text;
-        msg += "]";
-        std::cout << msg << std::endl;
-        return "";
+        THROW( -1, std::string("json_loads failed\n") + j_err.text );
     }
 
     char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
     json_decref( obj );
+    status = tmp_buf;
+    free( tmp_buf );
 
-    return tmp_buf;
+    return status;
 
 } // format_grid_status
 
-irods::error get_and_verify_client_environment( 
+irods::error get_and_verify_client_environment(
     rodsEnv& _env ) {
     _getRodsEnv( _env );
 
@@ -304,7 +301,7 @@ irods::error get_and_verify_client_environment(
         have_error = true;
         msg += "irods_server_control_plane_key";
     }
-    
+
     if( 0 == _env.irodsCtrlPlaneEncryptionNumHashRounds ) {
         have_error = true;
         msg += ", irods_server_control_plane_encryption_num_hash_rounds";
@@ -357,7 +354,7 @@ int main(
               cmd,
               data_to_send );
     if ( !ret.ok() ) {
-        std::cout << ret.result()
+        std::cerr << ret.result()
                   << std::endl;
         return ret.code();
 
@@ -414,7 +411,7 @@ int main(
                   rep_str );
         if ( !ret.ok() ) {
             irods::error err = PASS( ret );
-            std::cout << err.result()
+            std::cerr << err.result()
                       << std::endl;
             return 1;
 
@@ -422,12 +419,15 @@ int main(
 
         if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
             if ( irods::SERVER_CONTROL_STATUS == cmd.command ) {
-                rep_str = format_grid_status( rep_str );
-
+                try {
+                    rep_str = format_grid_status( rep_str );
+                    std::cout << rep_str << std::endl;
+                } catch ( const irods::exception& e_ ) {
+                    std::cerr << e_.message_stack()[0];
+                }
+            } else {
+                std::cout << rep_str << std::endl;
             }
-
-            std::cout << rep_str << std::endl;
-
         }
 
     }
