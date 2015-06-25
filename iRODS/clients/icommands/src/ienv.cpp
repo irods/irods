@@ -11,18 +11,11 @@ void usage();
 
 int
 main( int argc, char **argv ) {
-
     signal( SIGPIPE, SIG_IGN );
 
-    int status;
-    rodsEnv myEnv;
+    char* optStr = "h";
     rodsArguments_t myRodsArgs;
-    char *optStr;
-
-
-    optStr = "h";
-
-    status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
+    int status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
 
     if ( status < 0 ) {
         printf( "Use -h for help\n" );
@@ -34,20 +27,17 @@ main( int argc, char **argv ) {
         exit( 0 );
     }
 
-    rodsLogLevel( LOG_NOTICE );
-
     rodsLog( LOG_NOTICE, "Release Version = %s, API Version = %s",
              RODS_REL_VERSION, RODS_API_VERSION );
 
-    setenv( PRINT_RODS_ENV_STR, "1", 0 );
-    status = getRodsEnv( &myEnv );
+    status = printRodsEnv( stdout );
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
         exit( 1 );
     }
 
-    exit( 0 );
+    return 0;
 }
 
 void

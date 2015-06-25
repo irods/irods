@@ -754,6 +754,65 @@ extern "C" {
         return 0;
     }
 
+    int printRodsEnv( 
+        FILE*    _fout ) {
+        if( !_fout ) {
+            fprintf( 
+                stderr,
+                "printRodsEnv :: null input param(s)\n" );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+
+        irods::environment_properties& props =
+            irods::environment_properties::getInstance();
+        irods::error ret = props.capture_if_needed();
+        if ( !ret.ok() ) {
+            fprintf(
+                stderr,
+                "%s",
+                PASS( ret ).result().c_str() );
+            return ret.code();
+        }
+
+        irods::environment_properties::iterator itr;
+        for(
+            itr  = props.begin();
+            itr != props.end();
+            ++itr ) {
+
+            try {
+                int val = boost::any_cast< int >( itr->second );
+                fprintf(
+                    _fout,
+                    "%s - %d\n",
+                    itr->first.c_str(),
+                    val );
+                continue;
+            }
+            catch ( const boost::bad_any_cast& ) {
+            }
+
+            try {
+                std::string val = boost::any_cast< std::string >( itr->second );
+                fprintf(
+                    _fout,
+                    "%s - %s\n",
+                    itr->first.c_str(),
+                    val.c_str() );
+                continue;
+            }
+            catch ( const boost::bad_any_cast& ) {
+                fprintf(
+                    stderr,
+                    "failed to cast %s",
+                    itr->first.c_str() );
+            }
+
+        } // for itr
+
+    } // printRodsEnv
+
+
     /* build a couple default values from others if appropriate */
     int
     createRodsEnvDefaults( rodsEnv *rodsEnvArg ) {

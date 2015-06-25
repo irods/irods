@@ -160,7 +160,7 @@ namespace irods {
 
             }
             else if ( JSON_OBJECT == type ) {
-                irods::lookup_table< boost::any > lt;
+                object_t lt;
                 irods::error err = parse_json_object(
                                        val,
                                        lt );

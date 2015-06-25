@@ -73,6 +73,14 @@ namespace irods {
 
             } // get with path
 
+            object_t::iterator begin() {
+                return root_.begin();
+            }
+
+            object_t::iterator end() {
+                return root_.end();
+            }
+
         private:
             error load_json_object(
                 const std::string& ); // file name

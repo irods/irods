@@ -16,6 +16,9 @@ namespace irods {
     class environment_properties {
 
         public:
+            /// @brief  type alias for iterating over configuration properties
+            typedef configuration_parser::object_t::iterator iterator;
+
             /// @brief path for legacy environemnt file
             static const std::string LEGACY_ENV_FILE;
 
@@ -70,6 +73,15 @@ namespace irods {
                     return SUCCESS();
                 }
             }
+
+            iterator begin() {
+                return config_props_.begin();
+            }
+
+            iterator end() {
+                return config_props_.end();
+            }
+
 
         private:
             // Disable constructors
