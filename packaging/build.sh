@@ -165,7 +165,7 @@ if [ "$IRODS_FTP_BUILD" != "" ] ; then
 fi
 
 # detect lack of submodules, and exit
-if [ ! -e ${SCRIPTPATH}/../irods_schema_configuration/v1 -o ! -e ${SCRIPTPATH}/../irods_schema_messaging/v1 ] ; then
+if [ ! -e ${SCRIPTPATH}/../irods_schema_messaging/v1 ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Missing Submodules... Try:" 1>&2
     echo "      git submodule init; git submodule update" 1>&2
