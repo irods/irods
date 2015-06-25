@@ -142,15 +142,55 @@ class IrodsController(object):
         if self.verbose:
             print('Success')
 
-    def stop(self):
+    def stop(self, timeout=10):
         if self.verbose:
             print('Stopping iRODS server...', end=' ')
         try:
             process_map = self.get_processes_by_binary()
-            if not [k for k, v in process_map.items() if v]:
+            if not process_map[self.get_server_executable()]:
                 if self.verbose:
                     print('No iRODS servers running.', file=sys.stderr, end=' ')
             else:
+                p = None
+                try:
+                    p = subprocess.Popen(
+                            [   'irods-grid',
+                                'shutdown',
+                                '--hosts={0}'.format(get_hostname())],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+                    retry_count = timeout
+                    while True:
+                        process_map = self.get_processes_by_binary()
+                        if not [pids for _, pids in process_map.items() if pids]:
+                            break
+                        if p.returncode is not None and p.returncode != 0:
+                            raise IrodsControllerError('\n'.join([
+                                    'The irods-grid shutdown command returned',
+                                    'with non-zero error code {0}.'.format(
+                                        p.returncode)]))
+                        if retry_count <= 0:
+                            raise IrodsControllerError('\n'.join([
+                                    'The iRODS server did not stop',
+                                    'gracefully in {0} seconds.'.format(
+                                        timeout)]))
+                        retry_count = retry_count - 1
+                        time.sleep(1)
+                        continue
+
+                except Exception as e:
+                    if self.verbose:
+                        print(  'Error encountered in graceful shutdown.',
+                                e,
+                                sep='\n', file=sys.stderr)
+                if p is not None and p.returncode is not None:
+                    kill_pid(p.pid)
+
+            if [pids for _, pids in process_map.items() if pids]:
+                if self.verbose:
+                    print(  'iRODS executables remaining after shutdown.',
+                            'Killing forcefully...',
+                            sep='\n', file=sys.stderr)
                 for pid in process_map[self.get_server_executable()]:
                     kill_pid(pid)
                     delete_cache_files_by_pid(pid)
@@ -525,7 +565,7 @@ def parse_options():
                       help='Number of days to use the same log file')
 
     parser.add_option('--rule-engine-server-options',
-                      dest='rule_engine_server_options', metavar='"OPTIONS..."',
+                      dest='rule_engine_server_options', metavar='OPTIONS...',
                       help='Options to be passed to the rule engine server')
 
     parser.add_option('--reconnect',
