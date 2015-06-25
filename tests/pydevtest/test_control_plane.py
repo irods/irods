@@ -27,6 +27,11 @@ class TestControlPlane(unittest.TestCase):
     def test_status(self):
         lib.assert_command('irods-grid status --all', 'STDOUT_SINGLELINE', 'hosts')
 
+    def test_hosts_separator(self):
+        for s in [',', ', ']:
+            hosts_string = s.join([lib.get_hostname()]*2)
+            lib.assert_command(['irods-grid', 'status', '--hosts', hosts_string], 'STDOUT_SINGLELINE', lib.get_hostname())
+
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown(self):
         assert lib.re_shm_exists()
