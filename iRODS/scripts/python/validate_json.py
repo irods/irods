@@ -26,7 +26,7 @@ def load_and_validate(config_file, schema_uri, verbose=False):
             config_dict = json.load(f)
     except BaseException as e:
         irods_six.reraise(ValidationError, ValidationError('\n\t'.join([
-            'WARNING: Validation Failed for [{0}]:'.format(config_file),
+            'ERROR: Validation Failed for [{0}]:'.format(config_file),
             'against [{0}]'.format(schema_uri),
             '{0}: {1}'.format(e.__class__.__name__, e)])),
                           sys.exc_info()[2])
