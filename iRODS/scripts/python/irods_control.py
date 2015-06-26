@@ -154,29 +154,27 @@ class IrodsController(object):
                 p = None
                 try:
                     p = subprocess.Popen(
-                            [   'irods-grid',
-                                'shutdown',
-                                '--hosts={0}'.format(get_hostname())],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-                    retry_count = timeout
-                    while True:
+                            ['irods-grid',
+                             'shutdown',
+                             '--hosts={0}'.format(get_hostname())],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+                    start_time = time.time()
+                    while time.time() < start_time + timeout:
                         process_map = self.get_processes_by_binary()
                         if not [pids for _, pids in process_map.items() if pids]:
                             break
+                        p.poll()
                         if p.returncode is not None and p.returncode != 0:
                             raise IrodsControllerError('\n'.join([
                                     'The irods-grid shutdown command returned',
                                     'with non-zero error code {0}.'.format(
                                         p.returncode)]))
-                        if retry_count <= 0:
-                            raise IrodsControllerError('\n'.join([
-                                    'The iRODS server did not stop',
-                                    'gracefully in {0} seconds.'.format(
-                                        timeout)]))
-                        retry_count = retry_count - 1
-                        time.sleep(1)
-                        continue
+                        time.sleep(0.3)
+                    else:
+                        raise IrodsControllerError('\n'.join([
+                            'The iRODS server did not stop',
+                            'gracefully in {0} seconds.'.format(timeout)]))
 
                 except Exception as e:
                     if self.verbose:
