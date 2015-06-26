@@ -166,10 +166,15 @@ class IrodsController(object):
                             break
                         p.poll()
                         if p.returncode is not None and p.returncode != 0:
+                            out, err = p.communicate()
                             raise IrodsControllerError('\n'.join([
                                     'The irods-grid shutdown command returned',
                                     'with non-zero error code {0}.'.format(
-                                        p.returncode)]))
+                                        p.returncode),
+                                    'irods_grid stdout:',
+                                    '{0}'.format(out),
+                                    'irods_grid stderr:',
+                                    '{0}'.format(err)]))
                         time.sleep(0.3)
                     else:
                         raise IrodsControllerError('\n'.join([
@@ -181,8 +186,13 @@ class IrodsController(object):
                         print(  'Error encountered in graceful shutdown.',
                                 e,
                                 sep='\n', file=sys.stderr)
-                if p is not None and p.returncode is not None:
-                    kill_pid(p.pid)
+                if p is not None:
+                    p.poll()
+                    if p.returncode is None:
+                        try:
+                            kill_pid(p.pid)
+                        except psutil.NoSuchProcess:
+                            pass
 
             if [pids for _, pids in process_map.items() if pids]:
                 if self.verbose:
@@ -190,13 +200,19 @@ class IrodsController(object):
                             'Killing forcefully...',
                             sep='\n', file=sys.stderr)
                 for pid in process_map[self.get_server_executable()]:
-                    kill_pid(pid)
+                    try:
+                        kill_pid(pid)
+                    except psutil.NoSuchProcess:
+                        pass
                     delete_cache_files_by_pid(pid)
                 # irodsServers can spawn new processes while we're killing them
                 process_map = self.get_processes_by_binary()
                 for binary, pids in process_map.items():
                     for pid in pids:
-                        kill_pid(pid)
+                        try:
+                            kill_pid(pid)
+                        except psutil.NoSuchProcess:
+                            pass
                         delete_cache_files_by_pid(pid)
         except IrodsControllerError as e:
             if self.verbose:
