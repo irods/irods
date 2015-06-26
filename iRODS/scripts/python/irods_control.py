@@ -168,7 +168,7 @@ class IrodsController(object):
                         if p.returncode is not None and p.returncode != 0:
                             out, err = p.communicate()
                             raise IrodsControllerError('\n'.join([
-                                    'The irods-grid shutdown command returned',
+                                    'The irods-grid shutdown command returned '
                                     'with non-zero error code {0}.'.format(
                                         p.returncode),
                                     'irods_grid stdout:',
@@ -178,7 +178,7 @@ class IrodsController(object):
                         time.sleep(0.3)
                     else:
                         raise IrodsControllerError('\n'.join([
-                            'The iRODS server did not stop',
+                            'The iRODS server did not stop '
                             'gracefully in {0} seconds.'.format(timeout)]))
 
                 except Exception as e:
