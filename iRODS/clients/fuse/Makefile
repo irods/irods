@@ -50,14 +50,15 @@ BINS =		\
 		$(binDir)/irodsFs \
 
 LIB_OBJS =	\
+		$(objDir)/iFuseCmdLineOpt.o \
 		$(objDir)/iFuseOper.o \
-		$(objDir)/iFuseLib.o \
-		$(objDir)/iFuseLib.Conn.o \
-		$(objDir)/iFuseLib.Desc.o \
-		$(objDir)/iFuseLib.FileCache.o \
-		$(objDir)/iFuseLib.Lock.o \
-		$(objDir)/iFuseLib.PathCache.o \
-		$(objDir)/iFuseLib.Utils.o
+		$(objDir)/iFuse.BufferedFS.o \
+		$(objDir)/iFuse.Lib.o \
+		$(objDir)/iFuse.Lib.Conn.o \
+		$(objDir)/iFuse.Lib.Fd.o \
+		$(objDir)/iFuse.Lib.Util.o \
+		$(objDir)/iFuse.Lib.RodsClientAPI.o \
+		$(objDir)/iFuse.FS.o
 
 INCLUDES +=	-I$(incDir) -I$(reIncDir) 
 
