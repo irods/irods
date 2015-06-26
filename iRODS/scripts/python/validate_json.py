@@ -103,7 +103,7 @@ if __name__ == '__main__':
     schema_uri = sys.argv[2]
 
     try:
-        validate(config_file, schema_uri, verbose=True)
+        load_and_validate(config_file, schema_uri, verbose=True)
     except ValidationError as e:
         print(e, file=sys.stderr)
         sys.exit(1)
