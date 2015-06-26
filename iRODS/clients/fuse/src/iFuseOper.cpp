@@ -1,1026 +1,718 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-
+/*** This code is rewritten by Illyoung Choi (iychoi@email.arizona.edu)    ***
+ *** funded by iPlantCollaborative (www.iplantcollaborative.org).          ***/
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include "irodsFs.hpp"
 #include "iFuseOper.hpp"
+#include "iFuse.BufferedFS.hpp"
+#include "iFuse.FS.hpp"
+#include "iFuse.Lib.Fd.hpp"
+#include "iFuse.Lib.Conn.hpp"
+#include "iFuse.Lib.Util.hpp"
 #include "miscUtil.h"
 #include "sockComm.h"
 
-PathCacheTable *pctable = initPathCache();
+static int makeRodsPath(const char *path, char *iRodsPath) {
+    return parseRodsPathStr((char *) (path + 1), iFuseLibGetRodsEnv(), iRodsPath);
+}
 
-int
-irodsGetattr( const char *path, struct stat *stbuf ) {
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
+void *iFuseInit(struct fuse_conn_info *conn) {
+    UNUSED(conn);
+    
+    iFuseLibInit();
+    iFuseFsInit();
+    iFuseBufferedFSInit();
+    return NULL;
+}
 
-#ifdef CACHE_FUSE_PATH
+void iFuseDestroy(void *data) {
+    UNUSED(data);
+    
+    iFuseBufferedFSDestroy();
+    iFuseFsDestroy();
+    iFuseLibDestroy();
+}
 
-    /*if (lookupPathNotExist( (char *) path) == 1) {
-        rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", path);
-        return -ENOENT;
-    }*/
-
-    pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-    if ( NULL != tmpPathCache ) {
-        LOCK_STRUCT( *tmpPathCache );
-        rodsLog( LOG_DEBUG, "irodsGetattr: a match for path %s", path );
-        if ( tmpPathCache->fileCache != NULL ) {
-            LOCK_STRUCT( *( tmpPathCache->fileCache ) );
-            if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
-                status = updatePathCacheStatFromFileCache( tmpPathCache );
-                UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                if ( status < 0 ) {
-                    clearPathFromCache( pctable, ( char * ) path );
-                }
-                else {
-                    *stbuf = tmpPathCache->stbuf;
-                    UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                    UNLOCK_STRUCT( *tmpPathCache );
-                    return 0;
-                }
-            }
-            UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
+int iFuseGetAttr(const char *path, struct stat *stbuf) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseGetAttr: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsGetAttr(iRodsPath, stbuf);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseGetAttr: iFuseBufferedFsGetAttr of %s error", iRodsPath);
         }
-        UNLOCK_STRUCT( *tmpPathCache );
+    } else {
+        status = iFuseFsGetAttr(iRodsPath, stbuf);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseGetAttr: iFuseFsGetAttr of %s error", iRodsPath);
+        }
     }
-#endif
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
-    status = _irodsGetattr( iFuseConn, path, stbuf );
-    unuseIFuseConn( iFuseConn );
-#ifdef CACHE_FUSE_PATH
-    if ( status == -ENOENT ) {
-        pathNotExist( pctable, ( char * ) path );
+    return status;
+}
+
+int iFuseOpen(const char *path, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+    int flag = fi->flags;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseOpen: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
     }
-    else {
-        /* don't set file cache */
-        pathExist( pctable, ( char * ) path, NULL, stbuf, &tmpPathCache );
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsOpen(iRodsPath, &iFuseFd, flag);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseOpen: cannot open file descriptor for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    } else {
+        status = iFuseFsOpen(iRodsPath, &iFuseFd, flag);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseOpen: cannot open file descriptor for %s error", iRodsPath);
+            return -ENOENT;
+        }
     }
-#endif
+    
+    fi->fh = (uint64_t)iFuseFd;
+    return 0;
+}
+
+int iFuseClose(const char *path, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+
+    assert(fi->fh != 0);
+    
+    iFuseFd = (iFuseFd_t *)fi->fh;
+    
+    assert(iFuseFd->fd > 0);
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseClose: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsClose(iFuseFd);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseClose: cannot close file descriptor for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    } else {
+        status = iFuseFsClose(iFuseFd);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseClose: cannot close file descriptor for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    }
+    
+    return 0;
+}
+
+int iFuseFlush(const char *path, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+    
+    assert(fi->fh != 0);
+    
+    iFuseFd = (iFuseFd_t *)fi->fh;
+    
+    assert(iFuseFd->fd > 0);
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseFlush: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsFlush(iFuseFd);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseFlush: cannot flush file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    }
+    
+    return status;
+}
+
+int iFuseFsync(const char *path, int isdatasync, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+    
+    UNUSED(isdatasync);
+    assert(fi->fh != 0);
+    
+    iFuseFd = (iFuseFd_t *)fi->fh;
+    
+    assert(iFuseFd->fd > 0);
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseFsync: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsFlush(iFuseFd);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseFsync: cannot flush file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    }
+    
+    return status;
+}
+
+int iFuseRead(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+
+    assert(buf != NULL);
+    assert(size > 0);
+    assert(offset >= 0);
+    assert(fi->fh != 0);
+    
+    iFuseFd = (iFuseFd_t *)fi->fh;
+    
+    assert(iFuseFd->fd > 0);
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseRead: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsRead(iFuseFd, buf, offset, size);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseRead: cannot read file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    } else {
+        status = iFuseFsRead(iFuseFd, buf, offset, size);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseRead: cannot read file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    }
+    
+    return status;
+}
+
+int iFuseWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+
+    iFuseFd = (iFuseFd_t *)fi->fh;
+    
+    assert(iFuseFd->fd > 0);
+
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseWrite: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    if(iFuseLibGetOption()->bufferedFS) {
+        status = iFuseBufferedFsWrite(iFuseFd, buf, offset, size);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseWrite: cannot write file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    } else {
+        status = iFuseFsWrite(iFuseFd, buf, offset, size);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseWrite: cannot write file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    }
 
     return status;
 }
 
-int
-_irodsGetattr( iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf ) {
-    int status;
-    dataObjInp_t dataObjInp;
-    rodsObjStat_t *rodsObjStatOut = NULL;
-
-    rodsLog( LOG_DEBUG, "_irodsGetattr: %s", path );
-
-    memset( stbuf, 0, sizeof( struct stat ) );
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv, dataObjInp.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsGetattr: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
+int iFuseCreate(const char *path, mode_t mode, dev_t) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseCreate: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
         return -ENOTDIR;
     }
-    status = rcObjStat( iFuseConn->conn, &dataObjInp, &rodsObjStatOut );
-    if ( status < 0 ) {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rcObjStat( iFuseConn->conn, &dataObjInp, &rodsObjStatOut );
-        }
-        if ( status < 0 ) {
-            if ( status != USER_FILE_DOES_NOT_EXIST ) {
-                rodsLogError( LOG_ERROR, status,
-                              "irodsGetattr: rcObjStat of %s error", path );
-            }
-            return -ENOENT;
-        }
-    }
-
-
-    if ( rodsObjStatOut->objType == COLL_OBJ_T ) {
-        fillDirStat( stbuf,
-                     atoi( rodsObjStatOut->createTime ), atoi( rodsObjStatOut->modifyTime ),
-                     atoi( rodsObjStatOut->modifyTime ) );
-    }
-    else if ( rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
-
-        freeRodsObjStat( rodsObjStatOut );
-        return -ENOENT;
-    }
-    else {
-        fillFileStat( stbuf, rodsObjStatOut->dataMode, rodsObjStatOut->objSize,
-                      atoi( rodsObjStatOut->createTime ), atoi( rodsObjStatOut->modifyTime ),
-                      atoi( rodsObjStatOut->modifyTime ) );
-    }
-
-    freeRodsObjStat( rodsObjStatOut );
-
-    return 0;
-}
-
-int
-irodsReadlink( const char *path, char *buf, size_t size ) {
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-    int l1descInx;
-    dataObjInp_t dataObjOpenInp;
-    openedDataObjInp_t dataObjReadInp;
-    bytesBuf_t dataObjReadOutBBuf;
-    char collPath[MAX_NAME_LEN];
-
-    rodsLog( LOG_DEBUG, "irodsReadlink: %s", path );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ), &MyRodsEnv, collPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsReaddir: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
-
-    memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
-
-    rstrcpy( dataObjOpenInp.objPath, collPath, MAX_NAME_LEN );
-    dataObjOpenInp.openFlags = O_RDONLY;
-
-    status = rcDataObjOpen( iFuseConn->conn, &dataObjOpenInp );
-
-    if ( status < 0 ) {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rcDataObjOpen( iFuseConn->conn, &dataObjOpenInp );
-        }
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "irodsReadlink: rcDataObjOpen of %s error. status = %d", collPath, status );
-            unuseIFuseConn( iFuseConn );
-            return -ENOENT;
-        }
-    }
-
-    l1descInx = status;
-
-    memset( &dataObjReadInp, 0, sizeof( dataObjReadInp ) );
-    memset( &dataObjReadOutBBuf, 0, sizeof( bytesBuf_t ) );
-
-    dataObjReadInp.l1descInx = l1descInx;
-    dataObjReadInp.len = size - 1;
-    status = rcDataObjRead( iFuseConn->conn, &dataObjReadInp, &dataObjReadOutBBuf );
-
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "irodsReadlink: rcDataObjRead of %s error. status = %d", collPath, status );
-        unuseIFuseConn( iFuseConn );
-        return -ENOENT;
-    }
-
-    memcpy( buf, dataObjReadOutBBuf.buf, status );
-    buf[status] = '\0';
-    rcDataObjClose( iFuseConn->conn, &dataObjReadInp );
-    unuseIFuseConn( iFuseConn );
-
-    return 0;
-}
-
-int
-irodsReaddir( const char *path, void *buf, fuse_fill_dir_t filler,
-              off_t offset, struct fuse_file_info *fi ) {
-    char collPath[MAX_NAME_LEN];
-    collHandle_t collHandle;
-    collEnt_t collEnt;
-    int status;
-#ifdef CACHE_FUSE_PATH
-    struct stat stbuf;
-    pathCache_t *tmpPathCache;
-#endif
-    /* don't know why we need this. the example have them */
-    ( void ) offset;
-    ( void ) fi;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsReaddir: %s", path );
-
-    filler( buf, ".", NULL, 0 );
-    filler( buf, "..", NULL, 0 );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ), &MyRodsEnv, collPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsReaddir: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
-    status = rclOpenCollection( iFuseConn->conn, collPath, 0, &collHandle );
-
-    if ( status < 0 ) {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rclOpenCollection( iFuseConn->conn, collPath, 0,
-                                        &collHandle );
-        }
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "irodsReaddir: rclOpenCollection of %s error. status = %d",
-                     collPath, status );
-            unuseIFuseConn( iFuseConn );
-            return -ENOENT;
-        }
-    }
-    while ( ( status = rclReadCollection( iFuseConn->conn, &collHandle, &collEnt ) )
-            >= 0 ) {
-        char myDir[MAX_NAME_LEN], mySubDir[MAX_NAME_LEN];
-#ifdef CACHE_FUSE_PATH
-        char childPath[MAX_NAME_LEN];
-
-        bzero( &stbuf, sizeof( struct stat ) );
-#endif
-        if ( collEnt.objType == DATA_OBJ_T ) {
-            filler( buf, collEnt.dataName, NULL, 0 );
-#ifdef CACHE_FUSE_PATH
-            if ( strcmp( path, "/" ) == 0 ) {
-                snprintf( childPath, MAX_NAME_LEN, "/%s", collEnt.dataName );
-            }
-            else {
-                snprintf( childPath, MAX_NAME_LEN, "%s/%s",
-                          path, collEnt.dataName );
-            }
-            if ( lookupPathExist( pctable, ( char * ) childPath, &tmpPathCache ) != 1 ) {
-                fillFileStat( &stbuf, collEnt.dataMode, collEnt.dataSize,
-                              atoi( collEnt.createTime ), atoi( collEnt.modifyTime ),
-                              atoi( collEnt.modifyTime ) );
-                pathExist( pctable, childPath, NULL, &stbuf, &tmpPathCache );
-            }
-#endif
-        }
-        else if ( collEnt.objType == COLL_OBJ_T ) {
-            splitPathByKey( collEnt.collName, myDir, MAX_NAME_LEN, mySubDir, MAX_NAME_LEN, '/' );
-            if ( mySubDir[0] != '\0' ) {
-                filler( buf, mySubDir, NULL, 0 );
-#ifdef CACHE_FUSE_PATH
-                if ( strcmp( path, "/" ) == 0 ) {
-                    snprintf( childPath, MAX_NAME_LEN, "/%s", mySubDir );
-                }
-                else {
-                    snprintf( childPath, MAX_NAME_LEN, "%s/%s", path, mySubDir );
-                }
-                if ( lookupPathExist( pctable, ( char * ) childPath, &tmpPathCache ) != 1 ) {
-                    fillDirStat( &stbuf,
-                                 atoi( collEnt.createTime ), atoi( collEnt.modifyTime ),
-                                 atoi( collEnt.modifyTime ) );
-                    pathExist( pctable, childPath, NULL, &stbuf, &tmpPathCache );
-                }
-#endif
-            }
-        }
-    }
-    rclCloseCollection( &collHandle );
-    unuseIFuseConn( iFuseConn );
-
-    return 0;
-}
-
-int
-irodsMknod( const char *path, mode_t mode, dev_t ) {
-    pathCache_t *tmpPathCache = NULL;
-    struct stat stbuf;
-    int status = -1;
-    char cachePath[MAX_NAME_LEN];
-    char objPath[MAX_NAME_LEN];
-    iFuseConn_t *iFuseConn = NULL;
-    fileCache_t *fileCache = NULL;
-    /* iFuseDesc_t *desc = NULL; */
-
-    rodsLog( LOG_DEBUG, "irodsMknod: %s", path );
-
-    if ( irodsGetattr( path, &stbuf ) >= 0 ) {
-        return -EEXIST;
-    }
-
-    int localFd = irodsMknodWithCache( ( char * )path, mode, cachePath );
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv, objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "dataObjCreateByFusePath: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-
-    status = getAndUseIFuseConn( &iFuseConn );
-    if ( status < 0 ) {
-        status = dataObjCreateByFusePath( iFuseConn->conn,
-                                          mode, objPath );
-
-        if ( status < 0 ) {
-            if ( isReadMsgError( status ) ) {
-                ifuseReconnect( iFuseConn );
-                status = dataObjCreateByFusePath( iFuseConn->conn, mode, objPath );
-            }
-            if ( status < 0 ) {
-                rodsLogError( LOG_ERROR, status,
-                              "irodsMknod: rcDataObjCreate of %s error", path );
-                unuseIFuseConn( iFuseConn );
-                if ( localFd >= 0 ) {
-                    close( localFd );
-                }
-                return -ENOENT;
-            }
-        }
-    }
-    fileCache = addFileCache( localFd, objPath, ( char * ) path, cachePath, mode, 0, HAVE_NEWLY_CREATED_CACHE );
-    stbuf.st_mode = mode;
-    pathExist( pctable, ( char * ) path, fileCache, &stbuf, &tmpPathCache );
-
-    unuseIFuseConn( iFuseConn );
-
-    return 0;
-}
-
-int
-irodsMkdir( const char *path, mode_t ) {
-    collInp_t collCreateInp;
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsMkdir: %s", path );
-
-    memset( &collCreateInp, 0, sizeof( collCreateInp ) );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv,
-                               collCreateInp.collName );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsMkdir: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    getAndUseIFuseConn( &iFuseConn );
-    status = rcCollCreate( iFuseConn->conn, &collCreateInp );
-
-    if ( status < 0 ) {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rcCollCreate( iFuseConn->conn, &collCreateInp );
-        }
-        unuseIFuseConn( iFuseConn );
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "irodsMkdir: rcCollCreate of %s error", path );
-            return -ENOENT;
-        }
-#ifdef CACHE_FUSE_PATH
-    }
-    else {
-        struct stat stbuf;
-        uint mytime = time( 0 );
-        bzero( &stbuf, sizeof( struct stat ) );
-        fillDirStat( &stbuf, mytime, mytime, mytime );
-        pathExist( pctable, ( char * ) path, NULL, &stbuf, NULL );
-#endif
-        unuseIFuseConn( iFuseConn );
-    }
-
-    return 0;
-}
-
-int
-irodsUnlink( const char *path ) {
-    dataObjInp_t dataObjInp;
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsUnlink: %s", path );
-
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv,
-                               dataObjInp.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsUnlink: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
-
-    getAndUseIFuseConn( &iFuseConn );
-    status = rcDataObjUnlink( iFuseConn->conn, &dataObjInp );
-    if ( status >= 0 ) {
-#ifdef CACHE_FUSE_PATH
-        pathNotExist( pctable, ( char * ) path );
-#endif
-        status = 0;
-    }
-    else {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rcDataObjUnlink( iFuseConn->conn, &dataObjInp );
-        }
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "irodsUnlink: rcDataObjUnlink of %s error", path );
-            status = -ENOENT;
-        }
-    }
-    unuseIFuseConn( iFuseConn );
-
-    clearKeyVal( &dataObjInp.condInput );
-
-    return status;
-}
-
-int
-irodsRmdir( const char *path ) {
-    collInp_t collInp;
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsRmdir: %s", path );
-
-    memset( &collInp, 0, sizeof( collInp ) );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv,
-                               collInp.collName );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsRmdir: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    addKeyVal( &collInp.condInput, FORCE_FLAG_KW, "" );
-
-    getAndUseIFuseConn( &iFuseConn );
-    RECONNECT_IF_NECESSARY( status, iFuseConn, rcRmColl( iFuseConn->conn, &collInp, 0 ) );
-    if ( status >= 0 ) {
-#ifdef CACHE_FUSE_PATH
-        pathNotExist( pctable, ( char * ) path );
-#endif
-        status = 0;
-    }
-    else {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsRmdir: rcRmColl of %s error", path );
-        status = -ENOENT;
-    }
-
-    unuseIFuseConn( iFuseConn );
-
-    clearKeyVal( &collInp.condInput );
-
-    return status;
-}
-
-int
-irodsSymlink( const char *to, const char *from ) {
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-    int l1descInx;
-    dataObjInp_t dataObjOpenInp;
-    openedDataObjInp_t dataObjWriteInp;
-    bytesBuf_t dataObjWriteOutBBuf;
-    char collPath[MAX_NAME_LEN];
-    struct stat stbuf;
-
-    rodsLog( LOG_DEBUG, "irodsSymlink: %s to %s", from, to );
-
-    status = parseRodsPathStr( ( char * )( from + 1 ), &MyRodsEnv, collPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsReaddir: parseRodsPathStr of %s error", from );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    iFuseConn = getAndUseConnByPath( ( char * ) from, &status );
-    status = _irodsGetattr( iFuseConn, ( char * ) from, &stbuf );
-
-    memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
-    rstrcpy( dataObjOpenInp.objPath, collPath, MAX_NAME_LEN );
-    if ( status != -ENOENT ) {
-        if ( status < 0 ) {
-            return status;
-        }
-        dataObjOpenInp.dataSize = 0;
-
-        status = rcDataObjTruncate( iFuseConn->conn, &dataObjOpenInp );
-
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "irodsReadlink: rcDataObjTruncate of %s error. status = %d", collPath, status );
-            unuseIFuseConn( iFuseConn );
-            return -ENOENT;
-        }
-    }
-
-    memset( &dataObjOpenInp, 0, sizeof( dataObjOpenInp ) );
-    rstrcpy( dataObjOpenInp.objPath, collPath, MAX_NAME_LEN );
-    dataObjOpenInp.openFlags = O_WRONLY | O_CREAT;
-    dataObjOpenInp.createMode = S_IFLNK;
-
-    status = rcDataObjOpen( iFuseConn->conn, &dataObjOpenInp );
-
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "irodsSymlink: rcDataObjOpen of %s error. status = %d", collPath, status );
-        unuseIFuseConn( iFuseConn );
+    
+    status = iFuseFsCreate(iRodsPath, mode);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseCreate: cannot create a file for %s error", iRodsPath);
         return -ENOENT;
     }
-
-    l1descInx = status;
-
-    memset( &dataObjWriteInp, 0, sizeof( dataObjWriteInp ) );
-    memset( &dataObjWriteOutBBuf, 0, sizeof( bytesBuf_t ) );
-
-    dataObjWriteInp.l1descInx = l1descInx;
-    dataObjWriteInp.len = strlen( to );
-
-    dataObjWriteOutBBuf.len = strlen( to );
-    dataObjWriteOutBBuf.buf = strdup( to );
-
-    status = rcDataObjWrite( iFuseConn->conn, &dataObjWriteInp, &dataObjWriteOutBBuf );
-    free( dataObjWriteOutBBuf.buf );
-
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "irodsSymlink: rcDataObjWrite of %s error. status = %d", collPath, status );
-        unuseIFuseConn( iFuseConn );
-        return -ENOENT;
-    }
-
-    rcDataObjClose( iFuseConn->conn, &dataObjWriteInp );
-    unuseIFuseConn( iFuseConn );
-
+    
     return 0;
 }
 
-int
-irodsRename( const char *from, const char *to ) {
-    dataObjCopyInp_t dataObjRenameInp;
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsRename: %s to %s", from, to );
-
-    /* test rcDataObjRename */
-
-    memset( &dataObjRenameInp, 0, sizeof( dataObjRenameInp ) );
-
-    status = parseRodsPathStr( ( char * )( from + 1 ) , &MyRodsEnv,
-                               dataObjRenameInp.srcDataObjInp.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsRename: parseRodsPathStr of %s error", from );
-        /* use ENOTDIR for this type of error */
+int iFuseUnlink(const char *path) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseUnlink: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
         return -ENOTDIR;
     }
-
-    status = parseRodsPathStr( ( char * )( to + 1 ) , &MyRodsEnv,
-                               dataObjRenameInp.destDataObjInp.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsRename: parseRodsPathStr of %s error", to );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
+    
+    status = iFuseFsUnlink(iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseUnlink: cannot delete a file for %s error", iRodsPath);
+        return status;
     }
-
-    char *toIrodsPath = strdup( dataObjRenameInp.destDataObjInp.objPath );
-
-    addKeyVal( &dataObjRenameInp.destDataObjInp.condInput, FORCE_FLAG_KW, "" );
-
-    dataObjRenameInp.srcDataObjInp.oprType =
-        dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
-
-    getAndUseIFuseConn( &iFuseConn );
-    /*    rodsLog (LOG_ERROR, "irodsrename: %s -> %s conn: %p", from, to, iFuseConn);*/
-
-    status = rcDataObjRename( iFuseConn->conn, &dataObjRenameInp );
-
-    if ( status == CAT_NAME_EXISTS_AS_DATAOBJ ||
-            status == SYS_DEST_SPEC_COLL_SUB_EXIST ) {
-        rcDataObjUnlink( iFuseConn->conn, &dataObjRenameInp.destDataObjInp );
-        status = rcDataObjRename( iFuseConn->conn, &dataObjRenameInp );
-    }
-
-    if ( status >= 0 ) {
-#ifdef CACHE_FUSE_PATH
-        status = renameLocalPath( pctable, ( char * ) from, ( char * ) to, ( char * ) toIrodsPath );
-#endif
-    }
-    else {
-        if ( isReadMsgError( status ) ) {
-            ifuseReconnect( iFuseConn );
-            status = rcDataObjRename( iFuseConn->conn, &dataObjRenameInp );
-        }
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status,
-                          "irodsRename: rcDataObjRename of %s to %s error", from, to );
-            status = -ENOENT;
-        }
-    }
-    unuseIFuseConn( iFuseConn );
-    free( toIrodsPath );
-
-    return status;
-}
-
-int
-irodsLink( const char *from, const char *to ) {
-    rodsLog( LOG_DEBUG, "irodsLink: %s to %s", from, to );
+    
     return 0;
 }
 
-int
-irodsChmod( const char *path, mode_t mode ) {
-    int status;
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
-    dataObjInfo_t dataObjInfo;
-    char dataMode[SHORT_STR_LEN];
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsChmod: %s", path );
-
-    pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-
-    if ( NULL != tmpPathCache ) {
-        LOCK_STRUCT( *tmpPathCache );
-        if ( tmpPathCache->fileCache != NULL ) {
-            LOCK_STRUCT( *tmpPathCache->fileCache );
-            if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
-                /* has not actually been created yet */
-                tmpPathCache->fileCache->mode = mode;
-                UNLOCK_STRUCT( *tmpPathCache->fileCache );
-                UNLOCK_STRUCT( *tmpPathCache );
-                return 0;
-            }
-            UNLOCK_STRUCT( *tmpPathCache->fileCache );
-        }
-        UNLOCK_STRUCT( *tmpPathCache );
-        if ( tmpPathCache->stbuf.st_nlink != 1 ) {
-            rodsLog( LOG_NOTICE,
-                     "irodsChmod: modification of the mode of non file object is currently not supported", path );
-            return 0;
-        }
-    }
-
-
-    memset( &regParam, 0, sizeof( regParam ) );
-    snprintf( dataMode, SHORT_STR_LEN, "%d", mode );
-    addKeyVal( &regParam, DATA_MODE_KW, dataMode );
-    addKeyVal( &regParam, ALL_KW, "" );
-
-    memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
-
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv,
-                               dataObjInfo.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsChmod: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    modDataObjMetaInp.regParam = &regParam;
-    modDataObjMetaInp.dataObjInfo = &dataObjInfo;
-
-    getAndUseIFuseConn( &iFuseConn );
-    RECONNECT_IF_NECESSARY( status, iFuseConn, rcModDataObjMeta( iFuseConn->conn, &modDataObjMetaInp ) );
-    if ( status >= 0 ) {
-#ifdef CACHE_FUSE_PATH
-        pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-        if ( NULL != tmpPathCache ) {
-            LOCK_STRUCT( *tmpPathCache );
-            tmpPathCache->stbuf.st_mode &= 0xfffffe00;
-            tmpPathCache->stbuf.st_mode |= ( mode & 0777 );
-            UNLOCK_STRUCT( *tmpPathCache );
-        }
-#endif
-        status = 0;
-    }
-    else {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsChmod: rcModDataObjMeta failure" );
-        status = -ENOENT;
-    }
-
-    unuseIFuseConn( iFuseConn );
-    clearKeyVal( &regParam );
-
-    return status;
-}
-
-int
-irodsChown( const char *path, uid_t, gid_t ) {
-    rodsLog( LOG_DEBUG, "irodsChown: %s", path );
+int iFuseLink(const char *from, const char *to) {
+    UNUSED(from);
+    UNUSED(to);
+    
     return 0;
 }
 
-int
-irodsTruncate( const char *path, off_t size ) {
-    dataObjInp_t dataObjInp;
-    int status;
-    iFuseConn_t *iFuseConn = NULL;
-
-    rodsLog( LOG_DEBUG, "irodsTruncate: %s", path );
-
-    pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-    if ( tmpPathCache != NULL ) {
-        LOCK_STRUCT( *tmpPathCache );
-        if ( tmpPathCache->fileCache != NULL ) {
-            LOCK_STRUCT( *tmpPathCache->fileCache );
-            if ( tmpPathCache->fileCache->state == HAVE_NEWLY_CREATED_CACHE ) {
-                status = truncate( tmpPathCache->fileCache->fileCachePath, size );
-                if ( status >= 0 ) {
-                    updatePathCacheStatFromFileCache( tmpPathCache );
-                    UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                    UNLOCK_STRUCT( *tmpPathCache );
-                    return 0;
-                }
-            }
-            UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-        }
-        UNLOCK_STRUCT( *tmpPathCache );
-    }
-
-
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv, dataObjInp.objPath );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status, "irodsTruncate: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    dataObjInp.dataSize = size;
-
-    getAndUseIFuseConn( &iFuseConn );
-    RECONNECT_IF_NECESSARY( status, iFuseConn, rcDataObjTruncate( iFuseConn->conn, &dataObjInp ) );
-    if ( status >= 0 ) {
-
-        pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-        if ( tmpPathCache != NULL ) {
-            LOCK_STRUCT( *tmpPathCache );
-            tmpPathCache->stbuf.st_size = size;
-            UNLOCK_STRUCT( *tmpPathCache );
-        }
-        status = 0;
-    }
-    else {
-        rodsLogError( LOG_ERROR, status,
-                      "irodsTruncate: rcDataObjTruncate of %s error", path );
-        status = -ENOENT;
-    }
-    unuseIFuseConn( iFuseConn );
-
-    return status;
-}
-
-int
-irodsFlush( const char *path, struct fuse_file_info * ) {
-    rodsLog( LOG_DEBUG, "irodsFlush: %s", path );
-    return 0;
-}
-
-int
-irodsUtimens( const char *path, const struct timespec[2] ) {
-    rodsLog( LOG_DEBUG, "irodsUtimens: %s", path );
-    return 0;
-}
-
-int
-irodsOpen( const char *path, struct fuse_file_info *fi ) {
-    dataObjInp_t dataObjInp;
-    int status;
-    int fd;
-    iFuseConn_t *iFuseConn = NULL;
-    iFuseDesc_t *desc = NULL;
-    struct stat stbuf;
-    char cachePath[MAX_NAME_LEN];
-    char objPath[MAX_NAME_LEN];
-    int flags = fi->flags;
-
-    rodsLog( LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags );
-
-    pathCache_t *tmpPathCache = matchPathCache( pctable, path );
-    if ( tmpPathCache != NULL ) {
-        LOCK_STRUCT( *tmpPathCache );
-        if ( tmpPathCache->fileCache != NULL ) {
-            LOCK_STRUCT( *( tmpPathCache->fileCache ) );
-            if ( tmpPathCache->fileCache->state != NO_FILE_CACHE ) {
-                rodsLog( LOG_DEBUG, "irodsOpen: a match for %s", path );
-                desc = newIFuseDesc( tmpPathCache->fileCache->objPath, ( char * ) path, tmpPathCache->fileCache, &status );
-                if ( status < 0 ) {
-                    UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                    UNLOCK_STRUCT( *tmpPathCache );
-                    rodsLogError( LOG_ERROR, status, "irodsOpen: create descriptor of %s error", dataObjInp.objPath );
-                    return status;
-                }
-                fi->fh = desc->index;
-                if ( tmpPathCache->fileCache->iFd == 0 ) {
-                    tmpPathCache->fileCache->iFd = open( tmpPathCache->fileCache->fileCachePath, O_RDWR );
-                }
-                UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-                UNLOCK_STRUCT( *tmpPathCache );
-                return 0;
-            }
-            UNLOCK_STRUCT( *( tmpPathCache->fileCache ) );
-        }
-        UNLOCK_STRUCT( *tmpPathCache );
-    }
-
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
-    dataObjInp.openFlags = flags;
-
-    status = parseRodsPathStr( ( char * )( path + 1 ) , &MyRodsEnv, objPath );
-    rstrcpy( dataObjInp.objPath, objPath, MAX_NAME_LEN );
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status, "irodsOpen: parseRodsPathStr of %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    iFuseConn = getAndUseConnByPath( ( char * ) path, &status );
-    /* status = getAndUseIFuseConn( &iFuseConn ); */
-    if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status, "irodsOpen: cannot get connection for %s error", path );
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    /* do only O_RDONLY (0) */
-    status = _irodsGetattr( iFuseConn, path, &stbuf );
-    if ( ( flags & ( O_WRONLY | O_RDWR ) ) != 0 || status < 0 || stbuf.st_size > MAX_READ_CACHE_SIZE ) {
-        fd = rcDataObjOpen( iFuseConn->conn, &dataObjInp );
-        unuseIFuseConn( iFuseConn );
-
-        if ( fd < 0 ) {
-            rodsLogError( LOG_ERROR, status, "irodsOpen: rcDataObjOpen of %s error, status = %d", path, fd );
-            return -ENOENT;
-        }
-
-        fileCache_t *fileCache = addFileCache( fd, objPath, ( char * ) path, NULL, stbuf.st_mode, stbuf.st_size, NO_FILE_CACHE );
-        tmpPathCache  = matchPathCache( pctable, path );
-        if ( tmpPathCache != NULL ) {
-            LOCK_STRUCT( *tmpPathCache );
-            addFileCacheForPath( tmpPathCache, fileCache );
-            UNLOCK_STRUCT( *tmpPathCache );
-        }
-        else {
-            pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
-        }
-        desc = newIFuseDesc( objPath, ( char * ) path, fileCache, &status );
-        if ( desc == NULL ) {
-            rodsLogError( LOG_ERROR, status, "irodsOpen: allocIFuseDesc of %s error", path );
-            return -ENOENT;
-        }
-    }
-    else {
-        rodsLog( LOG_DEBUG, "irodsOpenWithReadCache: caching %s", path );
-        if ( ( status = getFileCachePath( path, cachePath ) ) < 0 ) {
-            unuseIFuseConn( iFuseConn );
-            return status;
-        }
-        /* get the file to local cache */
-        dataObjInp.dataSize = stbuf.st_size;
-
-        status = rcDataObjGet( iFuseConn->conn, &dataObjInp, cachePath );
-        unuseIFuseConn( iFuseConn );
-
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status, "irodsOpenWithReadCache: rcDataObjGet of %s error", dataObjInp.objPath );
-            return status;
-        }
-
-        int fd = open( cachePath, O_RDWR );
-
-        fileCache_t *fileCache = addFileCache( fd, objPath, ( char * ) path, cachePath, stbuf.st_mode, stbuf.st_size, HAVE_READ_CACHE );
-        tmpPathCache = matchPathCache( pctable, path );
-        if ( tmpPathCache != NULL ) {
-            LOCK_STRUCT( *tmpPathCache );
-            addFileCacheForPath( tmpPathCache, fileCache );
-            UNLOCK_STRUCT( *tmpPathCache );
-        }
-        else {
-            pathExist( pctable, ( char * ) path, fileCache, &stbuf, NULL );
-        }
-        desc = newIFuseDesc( objPath, ( char * ) path, fileCache, &status );
-        if ( status < 0 ) {
-            rodsLogError( LOG_ERROR, status, "irodsOpen: create descriptor of %s error", dataObjInp.objPath );
-            return status;
-        }
-    }
-
-    fi->fh = desc->index;
-
-    return 0;
-}
-
-int
-irodsRead( const char *path, char *buf, size_t size, off_t offset,
-           struct fuse_file_info *fi ) {
-    int descInx;
-    int status;
-
-    rodsLog( LOG_DEBUG, "irodsRead: %s", path );
-
-    descInx = fi->fh;
-
-    if ( checkFuseDesc( descInx ) < 0 ) {
-        return -EBADF;
-    }
-
-    status = _ifuseRead( &IFuseDesc[descInx], buf, size, offset );
-
-    return status;
-}
-
-int
-irodsWrite( const char *path, const char *buf, size_t size, off_t offset,
-            struct fuse_file_info *fi ) {
-    int descInx;
-    int status;
-
-    rodsLog( LOG_DEBUG, "irodsWrite: %s", path );
-
-    descInx = fi->fh;
-
-    if ( checkFuseDesc( descInx ) < 0 ) {
-        return -EBADF;
-    }
-
-    status = _ifuseWrite( &IFuseDesc[descInx], ( char * )buf, size, offset );
-    unlockDesc( descInx );
-
-    return status;
-}
-
-int
-irodsStatfs( const char *path, struct statvfs *stbuf ) {
-    int status;
-
-    rodsLog( LOG_DEBUG, "irodsStatfs: %s", path );
-
-    if ( stbuf == NULL ) {
+int iFuseStatfs(const char *path, struct statvfs *stbuf) {
+    int status = 0;
+    
+    UNUSED(path);
+    
+    if (stbuf == NULL) {
         return 0;
     }
-
-
-    /* just fake some number */
+    
     status = statvfs( "/", stbuf );
     if ( status < 0 ) {
         // error cond?
     }
-
-    stbuf->f_bsize = FILE_BLOCK_SZ;
+    
+    stbuf->f_bsize = FILE_BLOCK_SIZE;
     stbuf->f_blocks = 2000000000;
     stbuf->f_bfree = stbuf->f_bavail = 1000000000;
     stbuf->f_files = 200000000;
     stbuf->f_ffree = stbuf->f_favail = 100000000;
     stbuf->f_fsid = 777;
     stbuf->f_namemax = MAX_NAME_LEN;
-
+    
     return 0;
 }
 
-int
-irodsRelease( const char *path, struct fuse_file_info *fi ) {
-    int descInx;
-    int status, myError;
+int iFuseOpenDir(const char *path, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseDir_t *iFuseDir = NULL;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseOpenDir: makeRodsPath of %s error", path);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsOpenDir(iRodsPath, &iFuseDir);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseOpenDir: cannot open a directory for %s error", iRodsPath);
+        return status;
+    }
+    
+    fi->fh = (uint64_t)iFuseDir;
+    return 0;
+}
 
-    rodsLog( LOG_DEBUG, "irodsRelease: %s", path );
+int iFuseCloseDir(const char *path, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseDir_t *iFuseDir = NULL;
 
-    descInx = fi->fh;
+    assert(fi->fh != 0);
+    
+    iFuseDir = (iFuseDir_t *)fi->fh;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseCloseDir: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsCloseDir(iFuseDir);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseCloseDir: cannot close a directory for %s error", iRodsPath);
+        return -ENOENT;
+    }
+    
+    return 0;
+}
 
-    /* if (checkFuseDesc (descInx) < 0) {
-        return -EBADF;
-    } */
+int iFuseReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseDir_t *iFuseDir = NULL;
 
-    status = ifuseClose( &IFuseDesc[descInx] );
+    assert(buf != NULL);
+    assert(fi->fh != 0);
+    
+    iFuseDir = (iFuseDir_t *)fi->fh;
+    
+    assert(iFuseDir->handle != NULL);
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseReadDir: makeRodsPath of %s error", iRodsPath);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    
+    filler(buf, ".", NULL, 0);
+    filler(buf, "..", NULL, 0);
+    
+    status = iFuseFsReadDir(iFuseDir, filler, buf, offset);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseReadDir: cannot read directory for %s error", iRodsPath);
+        return status;
+    }
+    
+    return 0;
+}
 
-    if ( status < 0 ) {
-        if ( ( myError = getErrno( status ) ) > 0 ) {
-            return -myError;
+int iFuseMakeDir(const char *path, mode_t mode) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    struct stat stbuf;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseMakeDir: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    bzero(&stbuf, sizeof(struct stat));
+    status = iFuseFsGetAttr(iRodsPath, &stbuf);
+    if (status >= 0) {
+        return -EEXIST;
+    }
+    
+    status = iFuseFsMakeDir(iRodsPath, mode);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseMakeDir: cannot create a directory for %s error", iRodsPath);
+        return -ENOENT;
+    }
+    
+    return 0;
+}
+
+int iFuseRemoveDir(const char *path) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseRemoveDir: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsRemoveDir(iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseRemoveDir: cannot delete a directory for %s error", iRodsPath);
+        return status;
+    }
+    
+    return 0;
+}
+
+int iFuseRename(const char *from, const char *to) {
+    int status = 0;
+    char iRodsFromPath[MAX_NAME_LEN];
+    char iRodsToPath[MAX_NAME_LEN];
+    struct stat stbuf;
+    
+    bzero(iRodsFromPath, MAX_NAME_LEN);
+    status = makeRodsPath(from, iRodsFromPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseRename: makeRodsPath of %s error", iRodsFromPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    bzero(iRodsToPath, MAX_NAME_LEN);
+    status = makeRodsPath(to, iRodsToPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseRename: makeRodsPath of %s error", iRodsToPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    bzero(&stbuf, sizeof(struct stat));
+    status = iFuseFsGetAttr(iRodsToPath, &stbuf);
+    if (status >= 0) {
+        status = iFuseFsUnlink(iRodsToPath);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseUnlink: cannot delete a file for %s error", iRodsToPath);
+            return status;
         }
-        else {
+    }
+    
+    status = iFuseFsRename(iRodsFromPath, iRodsToPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseFsRename: cannot rename a file or a directory for %s to %s error", iRodsFromPath, iRodsToPath);
+        return status;
+    }
+    
+    return 0;
+}
+
+int iFuseTruncate(const char *path, off_t size) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseTruncate: makeRodsPath of %s error", path);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsTruncate(iRodsPath, size);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseTruncate: cannot truncate a file for %s error", iRodsPath);
+        return status;
+    }
+    
+    return 0;
+}
+
+int iFuseSymlink(const char *to, const char *from) {
+    int status = 0;
+    char iRodsFromPath[MAX_NAME_LEN];
+    char iRodsToPath[MAX_NAME_LEN];
+    struct stat stbuf;
+    iFuseFd_t *iFuseFd = NULL;
+    
+    bzero(iRodsFromPath, MAX_NAME_LEN);
+    status = makeRodsPath(from, iRodsFromPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseSymlink: makeRodsPath of %s error", iRodsFromPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    bzero(iRodsToPath, MAX_NAME_LEN);
+    status = makeRodsPath(to, iRodsToPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseSymlink: makeRodsPath of %s error", iRodsToPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    bzero(&stbuf, sizeof(struct stat));
+    status = iFuseFsGetAttr(iRodsFromPath, &stbuf);
+    if (status >= 0) {
+        status = iFuseFsTruncate(iRodsFromPath, 0);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseSymlink: cannot truncate a file for %s error", iRodsFromPath);
+            return status;
+        }
+    } else if(status == -ENOENT) {
+        status = iFuseFsCreate(iRodsFromPath, S_IFLNK);
+        if (status < 0) {
+            rodsLogError(LOG_ERROR, status, 
+                    "iFuseSymlink: cannot create a file for %s error", iRodsFromPath);
             return -ENOENT;
         }
     }
-    else {
-        return 0;
+    
+    status = iFuseFsOpen(iRodsFromPath, &iFuseFd, O_WRONLY);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseSymlink: cannot open file descriptor for %s error", iRodsFromPath);
+        return -ENOENT;
     }
-}
+    
+    status = iFuseFsWrite(iFuseFd, iRodsToPath, 0, strlen(iRodsToPath));
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseSymlink: cannot write file content for %s error", iRodsToPath);
+        iFuseFsClose(iFuseFd);
+        return -ENOENT;
+    }
 
-int
-irodsFsync( const char *path, int, struct fuse_file_info * ) {
-    rodsLog( LOG_DEBUG, "irodsFsync: %s", path );
+    status = iFuseFsClose(iFuseFd);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseSymlink: cannot close file descriptor for %s error", iRodsFromPath);
+        return -ENOENT;
+    }
+    
     return 0;
 }
 
+int iFuseReadLink(const char *path, char *buf, size_t size) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    iFuseFd_t *iFuseFd = NULL;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseReadLink: makeRodsPath of %s error", iRodsPath);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsOpen(iRodsPath, &iFuseFd, O_RDONLY);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseReadLink: cannot open file descriptor for %s error", iRodsPath);
+        return -ENOENT;
+    }
+    
+    status = iFuseFsRead(iFuseFd, buf, 0, size - 1);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseReadLink: cannot read file content for %s error", iRodsPath);
+        iFuseFsClose(iFuseFd);
+        return -ENOENT;
+    }
+    
+    buf[status] = 0;
 
+    status = iFuseFsClose(iFuseFd);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseReadLink: cannot close file descriptor for %s error", iRodsPath);
+        return -ENOENT;
+    }
+    
+    return 0;
+}
 
+int iFuseChmod(const char *path, mode_t mode) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = makeRodsPath(path, iRodsPath);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status,
+                "iFuseChmod: makeRodsPath of %s error", path);
+        // use ENOTDIR for this type of error
+        return -ENOTDIR;
+    }
+    
+    status = iFuseFsChmod(iRodsPath, mode);
+    if (status < 0) {
+        rodsLogError(LOG_ERROR, status, 
+                "iFuseChmod: cannot change mode of a file for %s error", iRodsPath);
+        return status;
+    }
+    
+    return 0;
+}
 
+int iFuseChown(const char *path, uid_t uid, gid_t gid) {
+    UNUSED(path);
+    UNUSED(uid);
+    UNUSED(gid);
+    
+    return 0;
+}
 
+int iFuseUtimens(const char *path, const struct timespec ts[2]) {
+    UNUSED(path);
+    UNUSED(ts);
+    
+    return 0;
+}
