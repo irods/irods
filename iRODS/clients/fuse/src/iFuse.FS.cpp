@@ -96,7 +96,7 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
     iFuseConnLock(iFuseConn);
     
     status = iFuseRodsClientObjStat(iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
-    if ((status < 0 && status != USER_FILE_DOES_NOT_EXIST) || rodsObjStatOut == NULL) {
+    if (status < 0 && status != USER_FILE_DOES_NOT_EXIST) {
         if (isReadMsgError(status)) {
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseConnReconnect of %s error, status = %d",
@@ -106,7 +106,7 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
                 return -ENOENT;
             } else {
                 status = iFuseRodsClientObjStat(iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
-                if ((status < 0 && status != USER_FILE_DOES_NOT_EXIST) || rodsObjStatOut == NULL) {
+                if (status < 0 && status != USER_FILE_DOES_NOT_EXIST) {
                     rodsLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseRodsClientObjStat of %s error, status = %d",
                         iRodsPath, status);
                     iFuseConnUnlock(iFuseConn);
@@ -127,29 +127,33 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
         return -ENOENT;
     }
     
-    if(rodsObjStatOut != NULL) {
-        if (rodsObjStatOut->objType == COLL_OBJ_T) {
-            _fillDirStat(stbuf,
-                    atoi(rodsObjStatOut->createTime), 
-                    atoi(rodsObjStatOut->modifyTime),
-                    atoi(rodsObjStatOut->modifyTime));
-
-            status = 0;
-        } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-            status = -ENOENT;
-        } else {
-            _fillFileStat(stbuf, 
-                    rodsObjStatOut->dataMode, 
-                    rodsObjStatOut->objSize,
-                    atoi(rodsObjStatOut->createTime), 
-                    atoi(rodsObjStatOut->modifyTime),
-                    atoi(rodsObjStatOut->modifyTime));
-
-            status = 0;
-        }
-        
-        freeRodsObjStat(rodsObjStatOut);
+    if(rodsObjStatOut == NULL) {
+        iFuseConnUnlock(iFuseConn);
+        iFuseConnUnuse(iFuseConn);
+        return -ENOENT;
     }
+    
+    if (rodsObjStatOut->objType == COLL_OBJ_T) {
+        _fillDirStat(stbuf,
+                atoi(rodsObjStatOut->createTime), 
+                atoi(rodsObjStatOut->modifyTime),
+                atoi(rodsObjStatOut->modifyTime));
+
+        status = 0;
+    } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+        status = -ENOENT;
+    } else {
+        _fillFileStat(stbuf, 
+                rodsObjStatOut->dataMode, 
+                rodsObjStatOut->objSize,
+                atoi(rodsObjStatOut->createTime), 
+                atoi(rodsObjStatOut->modifyTime),
+                atoi(rodsObjStatOut->modifyTime));
+
+        status = 0;
+    }
+
+    freeRodsObjStat(rodsObjStatOut);
 
     iFuseConnUnlock(iFuseConn);
     iFuseConnUnuse(iFuseConn);
