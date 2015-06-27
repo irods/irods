@@ -145,7 +145,7 @@ int iFuseRodsClientDataObjClose(rcComm_t *conn, openedDataObjInp_t *dataObjClose
     return status;
 }
 
-int iFuseRodsClientOpenCollection( rcComm_t *conn, char *collection, int flag, collHandle_t *collHandle ) {
+int iFuseRodsClientOpenCollection(rcComm_t *conn, char *collection, int flag, collHandle_t *collHandle) {
     iFuseRodsClientOperation_t *oper = _startOperationTimeout(conn);
     int status;
     
