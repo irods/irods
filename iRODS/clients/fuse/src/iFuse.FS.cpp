@@ -96,7 +96,7 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
     iFuseConnLock(iFuseConn);
     
     status = iFuseRodsClientObjStat(iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
-    if (status < 0 && status != USER_FILE_DOES_NOT_EXIST) {
+    if ((status < 0 && status != USER_FILE_DOES_NOT_EXIST) || rodsObjStatOut == NULL) {
         if (isReadMsgError(status)) {
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseConnReconnect of %s error, status = %d",
@@ -106,7 +106,7 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
                 return -ENOENT;
             } else {
                 status = iFuseRodsClientObjStat(iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
-                if (status < 0 && status != USER_FILE_DOES_NOT_EXIST) {
+                if ((status < 0 && status != USER_FILE_DOES_NOT_EXIST) || rodsObjStatOut == NULL) {
                     rodsLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseRodsClientObjStat of %s error, status = %d",
                         iRodsPath, status);
                     iFuseConnUnlock(iFuseConn);
@@ -127,29 +127,27 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
         return -ENOENT;
     }
     
-    if(rodsObjStatOut != NULL) {
-        if (rodsObjStatOut->objType == COLL_OBJ_T) {
-            _fillDirStat(stbuf,
-                    atoi(rodsObjStatOut->createTime), 
-                    atoi(rodsObjStatOut->modifyTime),
-                    atoi(rodsObjStatOut->modifyTime));
+    if (rodsObjStatOut->objType == COLL_OBJ_T) {
+        _fillDirStat(stbuf,
+                atoi(rodsObjStatOut->createTime), 
+                atoi(rodsObjStatOut->modifyTime),
+                atoi(rodsObjStatOut->modifyTime));
 
-            status = 0;
-        } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-            status = -ENOENT;
-        } else {
-            _fillFileStat(stbuf, 
-                    rodsObjStatOut->dataMode, 
-                    rodsObjStatOut->objSize,
-                    atoi(rodsObjStatOut->createTime), 
-                    atoi(rodsObjStatOut->modifyTime),
-                    atoi(rodsObjStatOut->modifyTime));
+        status = 0;
+    } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+        status = -ENOENT;
+    } else {
+        _fillFileStat(stbuf, 
+                rodsObjStatOut->dataMode, 
+                rodsObjStatOut->objSize,
+                atoi(rodsObjStatOut->createTime), 
+                atoi(rodsObjStatOut->modifyTime),
+                atoi(rodsObjStatOut->modifyTime));
 
-            status = 0;
-        }
-
-        freeRodsObjStat(rodsObjStatOut);
+        status = 0;
     }
+
+    freeRodsObjStat(rodsObjStatOut);
 
     iFuseConnUnlock(iFuseConn);
     iFuseConnUnuse(iFuseConn);
@@ -239,7 +237,7 @@ int iFuseFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
     rodsLog(LOG_DEBUG, "iFuseFsRead: iFuseRodsClientDataObjLseek %s, offset: %lld", iFuseFd->iRodsPath, (long long)off);
     
     status = iFuseRodsClientDataObjLseek(iFuseConn->conn, &dataObjLseekInp, &dataObjLseekOut);
-    if (status < 0) {
+    if (status < 0 || dataObjLseekOut == NULL) {
         if (isReadMsgError(status)) {
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, status, "iFuseFsRead: iFuseConnReconnect of %s error, status = %d",
@@ -250,7 +248,7 @@ int iFuseFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
                 return status;
             } else {
                 status = iFuseRodsClientDataObjLseek(iFuseConn->conn, &dataObjLseekInp, &dataObjLseekOut);
-                if (status < 0) {
+                if (status < 0 || dataObjLseekOut == NULL) {
                     rodsLogError(LOG_ERROR, status, "iFuseFsRead: iFuseRodsClientDataObjLseek of %s error, status = %d",
                         iFuseFd->iRodsPath, status);
                     iFuseConnUnlock(iFuseConn);
@@ -278,7 +276,7 @@ int iFuseFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
         pthread_mutex_unlock(&g_FSConsecutiveOpLock);
         return -ENOENT;
     }
-    
+
     if (dataObjLseekOut != NULL) {
         free(dataObjLseekOut);
         dataObjLseekOut = NULL;
@@ -379,7 +377,7 @@ int iFuseFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size) {
     rodsLog(LOG_DEBUG, "iFuseFsWrite: iFuseRodsClientDataObjLseek %s, offset: %lld", iFuseFd->iRodsPath, (long long)off);
     
     status = iFuseRodsClientDataObjLseek(iFuseConn->conn, &dataObjLseekInp, &dataObjLseekOut);
-    if (status < 0) {
+    if (status < 0 || dataObjLseekOut == NULL) {
         if (isReadMsgError(status)) {
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, status, "iFuseFsWrite: iFuseConnReconnect of %s error, status = %d",
@@ -390,7 +388,7 @@ int iFuseFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size) {
                 return status;
             } else {
                 status = iFuseRodsClientDataObjLseek(iFuseConn->conn, &dataObjLseekInp, &dataObjLseekOut);
-                if (status < 0) {
+                if (status < 0 || dataObjLseekOut == NULL) {
                     rodsLogError(LOG_ERROR, status, "iFuseFsWrite: iFuseRodsClientDataObjLseek of %s error, status = %d",
                         iFuseFd->iRodsPath, status);
                     iFuseConnUnlock(iFuseConn);
