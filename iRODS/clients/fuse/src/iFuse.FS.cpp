@@ -127,27 +127,29 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
         return -ENOENT;
     }
     
-    if (rodsObjStatOut->objType == COLL_OBJ_T) {
-        _fillDirStat(stbuf,
-                atoi(rodsObjStatOut->createTime), 
-                atoi(rodsObjStatOut->modifyTime),
-                atoi(rodsObjStatOut->modifyTime));
+    if(rodsObjStatOut != NULL) {
+        if (rodsObjStatOut->objType == COLL_OBJ_T) {
+            _fillDirStat(stbuf,
+                    atoi(rodsObjStatOut->createTime), 
+                    atoi(rodsObjStatOut->modifyTime),
+                    atoi(rodsObjStatOut->modifyTime));
 
-        status = 0;
-    } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-        status = -ENOENT;
-    } else {
-        _fillFileStat(stbuf, 
-                rodsObjStatOut->dataMode, 
-                rodsObjStatOut->objSize,
-                atoi(rodsObjStatOut->createTime), 
-                atoi(rodsObjStatOut->modifyTime),
-                atoi(rodsObjStatOut->modifyTime));
+            status = 0;
+        } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+            status = -ENOENT;
+        } else {
+            _fillFileStat(stbuf, 
+                    rodsObjStatOut->dataMode, 
+                    rodsObjStatOut->objSize,
+                    atoi(rodsObjStatOut->createTime), 
+                    atoi(rodsObjStatOut->modifyTime),
+                    atoi(rodsObjStatOut->modifyTime));
 
-        status = 0;
+            status = 0;
+        }
+        
+        freeRodsObjStat(rodsObjStatOut);
     }
-
-    freeRodsObjStat(rodsObjStatOut);
 
     iFuseConnUnlock(iFuseConn);
     iFuseConnUnuse(iFuseConn);
@@ -267,6 +269,15 @@ int iFuseFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
         }
     }
     
+    if(dataObjLseekOut == NULL) {
+        rodsLogError(LOG_ERROR, status, "iFuseFsRead: iFuseRodsClientDataObjLseek failed on seek %s error, offset = %lu, requested = %lu",
+                iFuseFd->iRodsPath, dataObjLseekOut->offset, off);
+        iFuseConnUnlock(iFuseConn);
+        iFuseFdUnlock(iFuseFd);
+        pthread_mutex_unlock(&g_FSConsecutiveOpLock);
+        return -ENOENT;
+    }
+    
     if(dataObjLseekOut->offset != off) {
         rodsLogError(LOG_ERROR, status, "iFuseFsRead: iFuseRodsClientDataObjLseek failed on seek %s error, offset = %lu, requested = %lu",
                 iFuseFd->iRodsPath, dataObjLseekOut->offset, off);
@@ -277,10 +288,8 @@ int iFuseFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
         return -ENOENT;
     }
 
-    if (dataObjLseekOut != NULL) {
-        free(dataObjLseekOut);
-        dataObjLseekOut = NULL;
-    }
+    free(dataObjLseekOut);
+    dataObjLseekOut = NULL;
     
     bzero(&dataObjReadInp, sizeof ( openedDataObjInp_t));
     bzero(&dataObjReadOutBBuf, sizeof ( bytesBuf_t));
@@ -407,6 +416,15 @@ int iFuseFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size) {
         }
     }
     
+    if(dataObjLseekOut == NULL) {
+        rodsLogError(LOG_ERROR, status, "iFuseFsWrite: iFuseRodsClientDataObjLseek failed on seek %s error, offset = %lu, requested = %lu",
+                iFuseFd->iRodsPath, dataObjLseekOut->offset, off);
+        iFuseConnUnlock(iFuseConn);
+        iFuseFdUnlock(iFuseFd);
+        pthread_mutex_unlock(&g_FSConsecutiveOpLock);
+        return -ENOENT;
+    }
+    
     if(dataObjLseekOut->offset != off) {
         rodsLogError(LOG_ERROR, status, "iFuseFsWrite: iFuseRodsClientDataObjLseek failed on seek %s error, offset = %lu, requested = %lu",
                 iFuseFd->iRodsPath, dataObjLseekOut->offset, off);
@@ -416,11 +434,9 @@ int iFuseFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size) {
         pthread_mutex_unlock(&g_FSConsecutiveOpLock);
         return -ENOENT;
     }
-    
-    if (dataObjLseekOut != NULL) {
-        free(dataObjLseekOut);
-        dataObjLseekOut = NULL;
-    }
+
+    free(dataObjLseekOut);
+    dataObjLseekOut = NULL;
     
     bzero(&dataObjWriteInp, sizeof ( openedDataObjInp_t));
     bzero(&dataObjWriteInpBBuf, sizeof ( bytesBuf_t));
