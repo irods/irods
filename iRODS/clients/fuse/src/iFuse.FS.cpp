@@ -127,29 +127,29 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
         return -ENOENT;
     }
     
-    assert(rodsObjStatOut != NULL);
-    
-    if (rodsObjStatOut->objType == COLL_OBJ_T) {
-        _fillDirStat(stbuf,
-                atoi(rodsObjStatOut->createTime), 
-                atoi(rodsObjStatOut->modifyTime),
-                atoi(rodsObjStatOut->modifyTime));
-        
-        status = 0;
-    } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-        status = -ENOENT;
-    } else {
-        _fillFileStat(stbuf, 
-                rodsObjStatOut->dataMode, 
-                rodsObjStatOut->objSize,
-                atoi(rodsObjStatOut->createTime), 
-                atoi(rodsObjStatOut->modifyTime),
-                atoi(rodsObjStatOut->modifyTime));
-        
-        status = 0;
-    }
+    if(rodsObjStatOut != NULL) {
+        if (rodsObjStatOut->objType == COLL_OBJ_T) {
+            _fillDirStat(stbuf,
+                    atoi(rodsObjStatOut->createTime), 
+                    atoi(rodsObjStatOut->modifyTime),
+                    atoi(rodsObjStatOut->modifyTime));
 
-    freeRodsObjStat(rodsObjStatOut);
+            status = 0;
+        } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+            status = -ENOENT;
+        } else {
+            _fillFileStat(stbuf, 
+                    rodsObjStatOut->dataMode, 
+                    rodsObjStatOut->objSize,
+                    atoi(rodsObjStatOut->createTime), 
+                    atoi(rodsObjStatOut->modifyTime),
+                    atoi(rodsObjStatOut->modifyTime));
+
+            status = 0;
+        }
+
+        freeRodsObjStat(rodsObjStatOut);
+    }
 
     iFuseConnUnlock(iFuseConn);
     iFuseConnUnuse(iFuseConn);
