@@ -142,72 +142,89 @@ class IrodsController(object):
         if self.verbose:
             print('Success')
 
-    def stop(self, timeout=10):
-        if self.verbose:
-            print('Stopping iRODS server...', end=' ')
-        try:
-            process_map = self.get_processes_by_binary()
-            if not process_map[self.get_server_executable()]:
-                if self.verbose:
-                    print('No iRODS servers running.', file=sys.stderr, end=' ')
-            else:
-                p = None
-                try:
-                    p = subprocess.Popen(
-                            ['irods-grid',
-                             'shutdown',
-                             '--hosts={0}'.format(get_hostname())],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-                    start_time = time.time()
-                    while time.time() < start_time + timeout:
-                        process_map = self.get_processes_by_binary()
-                        if not [pids for _, pids in process_map.items() if pids]:
-                            break
-                        p.poll()
-                        if p.returncode is not None and p.returncode != 0:
-                            out, err = p.communicate()
-                            raise IrodsControllerError('\n'.join([
-                                    'The irods-grid shutdown command returned '
-                                    'with non-zero error code {0}.'.format(
-                                        p.returncode),
-                                    'irods_grid stdout:',
-                                    '{0}'.format(out),
-                                    'irods_grid stderr:',
-                                    '{0}'.format(err)]))
-                        time.sleep(0.3)
-                    else:
-                        raise IrodsControllerError('\n'.join([
-                            'The iRODS server did not stop '
-                            'gracefully in {0} seconds.'.format(timeout)]))
+    def irods_grid_shutdown(self, timeout=20):
+        p = subprocess.Popen(
+            ['irods-grid',
+             'shutdown',
+             '--hosts={0}'.format(get_hostname())],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        start_time = time.time()
+        while time.time() < start_time + timeout:
+            p.poll()
+            if p.returncode is not None:
+                if p.returncode == 0:
+                    break
+                else:
+                    out, err = p.communicate()
+                    raise IrodsControllerError('\n'.join([
+                        'The irods-grid shutdown command returned '
+                        'with non-zero error code {0}.'.format(
+                            p.returncode),
+                        'irods_grid stdout:',
+                        '{0}'.format(out),
+                        'irods_grid stderr:',
+                        '{0}'.format(err)]))
+            time.sleep(0.3)
+        else:
+            try:
+                if p.poll() is None:
+                    p.kill()
+            except OSError:
+                pass
+            raise IrodsControllerError(
+                'The call to "irods-grid shutdown" did not complete within'
+                ' {0} seconds.'.format(timeout))
 
+        # "irods-grid shutdown" is non-blocking
+        while time.time() < start_time + timeout:
+            if self.get_binary_to_pids_dict([self.get_server_executable()]):
+                time.sleep(0.3)
+            else:
+                break
+        else:
+            raise IrodsControllerError(
+                'The iRODS server did not stop within {0} seconds of '
+                'receiving the "shutdown" command.'.format(timeout))
+
+    def stop(self, timeout=20):
+        if self.verbose:
+            print('Stopping iRODS server... ', end='')
+        try:
+            if self.get_binary_to_pids_dict([self.get_server_executable()]):
+                try:
+                    self.irods_grid_shutdown(timeout=timeout)
                 except Exception as e:
                     if self.verbose:
-                        print(  'Error encountered in graceful shutdown.',
-                                e,
-                                sep='\n', file=sys.stderr)
-                if p is not None:
-                    p.poll()
-                    if p.returncode is None:
-                        try:
-                            kill_pid(p.pid)
-                        except psutil.NoSuchProcess:
-                            pass
-
-            if [pids for _, pids in process_map.items() if pids]:
+                        print('Error encountered in graceful shutdown.', e,
+                              sep='\n', file=sys.stderr)
+            else:
                 if self.verbose:
-                    print(  'iRODS executables remaining after shutdown.',
-                            'Killing forcefully...',
-                            sep='\n', file=sys.stderr)
-                for pid in process_map[self.get_server_executable()]:
+                    print('No iRODS servers running. ', file=sys.stderr, end='')
+
+            # kill servers first to stop spawning of other processes
+            server_pids_dict = self.get_binary_to_pids_dict([self.get_server_executable()])
+            if server_pids_dict:
+                if self.verbose:
+                    print('iRODS server processes remain after "irods-grid shutdown".',
+                          format_binary_to_pids_dict(server_pids_dict),
+                          'Killing forcefully...',
+                          sep='\n', file=sys.stderr)
+                for pid in server_pids_dict[self.get_server_executable()]:
                     try:
                         kill_pid(pid)
                     except psutil.NoSuchProcess:
                         pass
                     delete_cache_files_by_pid(pid)
-                # irodsServers can spawn new processes while we're killing them
-                process_map = self.get_processes_by_binary()
-                for binary, pids in process_map.items():
+
+            binary_to_pids_dict = self.get_binary_to_pids_dict()
+            if binary_to_pids_dict:
+                if self.verbose:
+                    print('iRODS child processes remain after "irods-grid shutdown".',
+                          format_binary_to_pids_dict(binary_to_pids_dict),
+                          'Killing forcefully...',
+                          sep='\n', file=sys.stderr)
+                for binary, pids in binary_to_pids_dict.items():
                     for pid in pids:
                         try:
                             kill_pid(pid)
@@ -222,22 +239,21 @@ class IrodsController(object):
         if self.verbose:
             print('Success')
 
-    def restart(self, execution_environment={}, insert_behavior=True):
+    def restart(self, execution_environment=None, insert_behavior=True):
+        if execution_environment is None:
+            execution_environment = {}
         self.stop()
         self.start(execution_environment=execution_environment,
                    insert_behavior=insert_behavior)
 
     def status(self):
-        process_map = self.get_processes_by_binary()
+        binary_to_pids_dict = self.get_binary_to_pids_dict()
         if self.verbose:
-            if not [binary for binary, pids in process_map.items() if pids]:
+            if not binary_to_pids_dict:
                 print('No iRODS servers running.')
             else:
-                for binary, pids in process_map.items():
-                    print('{0} :'.format(os.path.basename(binary)),
-                          *['Process {0}'.format(pid) for pid in pids],
-                          sep='\n\t')
-        return process_map
+                print(format_binary_to_pids_dict(binary_to_pids_dict))
+        return binary_to_pids_dict
 
     def load_and_validate_config_files(self):
         config_files = [
@@ -430,14 +446,27 @@ class IrodsController(object):
             self.get_server_bin_directory(),
             'irodsAgent')
 
-    def get_processes_by_binary(self, binaries=None):
+    def get_binary_to_pids_dict(self, binaries=None):
         if binaries is None:
             binaries = [
                 self.get_server_executable(),
                 self.get_rule_engine_executable(),
                 self.get_xmsg_server_executable(),
                 self.get_agent_executable()]
-        return dict([(b, get_pids_executing_binary_file(b)) for b in binaries])
+        d = {}
+        for b in binaries:
+            pids = get_pids_executing_binary_file(b)
+            if pids:
+                d[b] = pids
+        return d
+
+def format_binary_to_pids_dict(d):
+    l = []
+    for binary, pids in d.items():
+        l.append('\n  '.join(
+            ['{0} :'.format(os.path.basename(binary))] +
+            ['Process {0}'.format(pid) for pid in pids]))
+    return '\n'.join(l)
 
 def load_json_config_file(path):
     if os.path.exists(path):
