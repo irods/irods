@@ -307,8 +307,8 @@ def _assert_helper(command_arg, check_type='EMPTY', expected_results='', should_
     return rc, stdout, stderr
 
 def stop_irods_server():
-    hostname = get_hostname()
-    assert_command(['irods-grid', 'shutdown', '--hosts', hostname], 'STDOUT_SINGLELINE', hostname)
+    assert_command([os.path.join(get_irods_top_level_dir(), 'iRODS/irodsctl'), 'stop'],
+                   'STDOUT_SINGLELINE', 'Success')
 
 def start_irods_server(env=None):
     def is_jsonschema_available():
