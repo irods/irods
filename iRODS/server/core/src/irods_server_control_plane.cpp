@@ -249,17 +249,18 @@ namespace irods {
 
     } // forward_server_control_command
 
-    static error kill_re_server( ) {
-        int re_pid = 0;
+    static error kill_server( 
+        const std::string& _pid_prop ) {
+        int svr_pid = 0;
         // no error case, resource servers have no re server
         error ret = get_server_property< int > (
-                        irods::RE_PID_KW,
-                        re_pid );
+                        _pid_prop,
+                        svr_pid );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        std::stringstream pid_str; pid_str << re_pid;
+        std::stringstream pid_str; pid_str << svr_pid;
         std::vector<std::string> args;
         args.push_back( pid_str.str() );
 
@@ -275,7 +276,7 @@ namespace irods {
 
         return SUCCESS();
 
-    } // kill_re_server
+    } // kill_server
 
     static error server_operation_shutdown(
         const std::string& _wait_option,
@@ -346,7 +347,13 @@ namespace irods {
         } // while
 
         // kill the rule engine server
-        ret = kill_re_server( );
+        ret = kill_server( irods::RE_PID_KW );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+        }
+
+        // kill the xmessage server
+        ret = kill_server( irods::XMSG_PID_KW );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
         }
@@ -456,8 +463,12 @@ namespace irods {
                         irods::RE_PID_KW,
                         re_pid );
 
-        int my_pid = getpid();
         int xmsg_pid = 0;
+        ret = get_server_property< int > (
+                  irods::XMSG_PID_KW,
+                  xmsg_pid );
+       
+        int my_pid = getpid();
 
         json_t* obj = json_object();
         if ( !obj ) {

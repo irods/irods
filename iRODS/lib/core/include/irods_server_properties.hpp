@@ -27,6 +27,9 @@ namespace irods {
 /// @brief kw for storing the process id of the rule engine server
     static const std::string RE_PID_KW( "rule_engine_process_id" );
 
+/// @brief kw for storing the process id of the xmessage server
+    static const std::string XMSG_PID_KW( "x_message_process_id" );
+
 /// @brief kw for storing client user name
     static const std::string CLIENT_USER_NAME_KW( "client_user_name" );
 

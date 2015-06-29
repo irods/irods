@@ -969,7 +969,7 @@ initServerMain( rsComm_t *svrComm ) {
     getReHost( &reServerHost );
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
         int re_pid = RODS_FORK();
-        if ( re_pid == 0 ) {//RODS_FORK() == 0 ) { /* child */
+        if ( re_pid == 0 ) { // child
 
             close( svrComm->sock );
             std::vector<std::string> args = setExecArg( getenv( "reServerOption" ) );
@@ -999,7 +999,8 @@ initServerMain( rsComm_t *svrComm ) {
     rodsServerHost_t *xmsgServerHost = NULL;
     getXmsgHost( &xmsgServerHost );
     if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {
-        if ( RODS_FORK() == 0 ) { /* child */
+        int xmsg_pid = RODS_FORK();
+        if ( 0 == xmsg_pid ) { // child
             char *av[NAME_LEN];
 
             close( svrComm->sock );
@@ -1008,6 +1009,11 @@ initServerMain( rsComm_t *svrComm ) {
             av[0] = "irodsXmsgServer";
             execv( av[0], av );
             exit( 1 );
+        }
+        else {
+            irods::server_properties &props =
+                irods::server_properties::getInstance();
+            props.set_property<int>( irods::XMSG_PID_KW, xmsg_pid );
         }
     }
 #endif
