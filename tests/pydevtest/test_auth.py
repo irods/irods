@@ -22,9 +22,9 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
                                                           lib.get_hostname())
 
     def tearDown(self):
-        super(Test_OSAuth_Only, self).tearDown()
         self.auth_session.__exit__()
         self.admin.assert_icommand(['iadmin', 'rmuser', self.auth_session.username])
+        super(Test_OSAuth_Only, self).tearDown()
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_authentication_OSAuth(self):
@@ -52,16 +52,15 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 
 
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
-
     def setUp(self):
         super(Test_Auth, self).setUp()
         self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irodsauthuser', 'iamnotasecret',
                                                           lib.get_hostname())
 
     def tearDown(self):
-        super(Test_Auth, self).tearDown()
         self.auth_session.__exit__()
         self.admin.assert_icommand(['iadmin', 'rmuser', self.auth_session.username])
+        super(Test_Auth, self).tearDown()
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
