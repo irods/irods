@@ -28,7 +28,7 @@ def re_shm_exists():
             files = os.listdir(l)
             for f in files:
                 if 'irods' in f.lower():
-                    return f
+                    return os.path.join(l, f)
         except OSError:
             pass
     return False
