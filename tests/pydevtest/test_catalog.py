@@ -39,7 +39,7 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
                                ['WARNING: Validation Failed', 'ValueError: No JSON object could be decoded'], desired_rc=0)
         else:
             lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://example.org/badurl',
-                               'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
+                               'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0)
 
         # good URL
         self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
@@ -48,7 +48,7 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
                                'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
         else:
             lib.assert_command('python ../../iRODS/scripts/python/validate_json.py out.txt https://schemas.irods.org/configuration/v2/zone_bundle.json',
-                               'STDERR_MULTILINE', ['WARNING: Validation Failed', 'jsonschema not installed'], desired_rc=0)
+                               'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0)
 
         # cleanup
         os.remove('out.txt')
