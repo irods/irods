@@ -257,7 +257,9 @@ namespace irods {
                         _pid_prop,
                         svr_pid );
         if ( !ret.ok() ) {
-            return PASS( ret );
+            // if the property does not exist then the server
+            // in question is not running
+            return SUCCESS();
         }
 
         std::stringstream pid_str; pid_str << svr_pid;
