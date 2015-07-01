@@ -115,7 +115,7 @@ def get_vault_session_path(session):
                         session._session_id)
 
 def make_large_local_tmp_dir(dir_name, file_count, file_size):
-    os.mkdir(dir_name)
+    os.makedirs(dir_name)
     for i in range(file_count):
         make_file(os.path.join(dir_name, "junk" + str(i).zfill(4)),
                   file_size)
@@ -123,6 +123,34 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
     assert len(local_files) == file_count, "dd loop did not make all " + \
         str(file_count) + " files"
     return local_files
+
+def make_deep_local_tmp_dir(root_name, depth=10, files_per_level=50, file_size=100):
+    # output
+    directories = {}
+
+    current_dir_name = root_name
+    for d in range(depth):
+        # make subdir and files
+        files = make_large_local_tmp_dir(current_dir_name, files_per_level, file_size)
+        
+        # add to output
+        directories[current_dir_name] = files
+        
+        # next level down
+        current_dir_name = os.path.join(current_dir_name, 'sub'+str(d))
+
+    return directories
+
+def files_in_ils_output(ils_out):
+    for item in ils_out:
+        # strip collections
+        if not item.startswith('C- /'):
+            yield item
+
+def files_in_dir(path):
+    for file in os.listdir(path):
+        if os.path.isfile(os.path.join(path, file)):
+            yield file
 
 @contextlib.contextmanager
 def file_backed_up(filename):
