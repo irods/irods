@@ -778,7 +778,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         else if ( is_directory( p ) ) {
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
-                status = mkColl( conn, targColl );
+            	status = mkCollR (conn, targColl, myTargPath.outPath);
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
