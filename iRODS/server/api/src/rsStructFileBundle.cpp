@@ -92,6 +92,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     int l1descInx;
     char* dataType = 0; // JMC - backport 4664
     openedDataObjInp_t dataObjCloseInp;
+    memset( &dataObjCloseInp, 0, sizeof(dataObjCloseInp) );
 
     // =-=-=-=-=-=-=-
     // create an empty data obj
@@ -392,4 +393,3 @@ remoteStructFileBundle( rsComm_t *rsComm,
     status = rcStructFileBundle( rodsServerHost->conn, structFileBundleInp );
     return status;
 }
-
