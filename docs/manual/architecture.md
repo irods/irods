@@ -661,6 +661,16 @@ A new subcommand for iadmin allows an administrator to rebalance a coordinating 
 
 For other coordinating resource types, rebalance can be defined as appropriate.  For coordinating resources with no concept of "balanced", the rebalance operation is a "no op" and performs no work.
 
+### Reliability
+
+By default, a storage resource will be used until it throws an error due to having no free space remaining.  You can prevent this hard stop with iRODS rules that may do some checking ahead of time.
+
+When a storage resource receives a 'create' operation, the resource will vote zero (0) if there is not enough available free space for the incoming write request.  With this vote of zero, the storage resource's parent coordinating resource will not consider that storage resource eligible for writing.  If there is no parent coordinating resource then the error will propagate back to the client.
+
+If a vote of zero is encountered when writing to a random or round robin coordinating resource, the next child resource will be chosen until either no children are left or a successful vote has been discovered.
+
+If a vote of zero is encountered when writing to a replication coordinating resource, the child resource that voted zero (because of a full disk) will simply not receive a replica and an error will be reported (due to the policy of a replication resource to write to all of its children).
+
 ## Pluggable Authentication
 
 The authentication methods are now contained in plugins.  By default, similar to iRODS 3.3 and prior, iRODS comes with native iRODS challenge/response (password) enabled.  However, enabling an additional authentication mechanism is as simple as adding a file to the proper directory.  The server does not need to be restarted.
