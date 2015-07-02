@@ -1084,7 +1084,7 @@ check_package_installed() {
 
 # for --run-in-place, also declare the runtime dependencies here
 # (otherwise, these would be picked up by the package managers)
-if [ "RUNINPLACE" == "1" ] ; then
+if [ "$RUNINPLACE" == "1" ] ; then
 
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         # all os
