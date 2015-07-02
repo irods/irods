@@ -876,7 +876,7 @@ else
     echo "Detected unixODBC library [$UNIXODBC]"
 fi
 
-LIBFUSEDEV=`find /usr/include /usr/local/Cellar /usr/local/include -name fuse.h 2> /dev/null | $GREPCMD -v linux`
+LIBFUSEDEV=`find /usr/include /usr/local/include -name fuse.h 2> /dev/null | $GREPCMD -v linux`
 if [ "$LIBFUSEDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libfuse-dev"
@@ -886,6 +886,8 @@ if [ "$LIBFUSEDEV" == "" ] ; then
         PREFLIGHT="$PREFLIGHT fuse-devel"
 #    elif [ "$DETECTEDOS" == "Solaris" ] ; then
 #        No libfuse packages in pkgutil
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        : # using --run-in-place, nothing to install
     else
         PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/fuse/files/fuse-2.X/"
     fi
@@ -1138,7 +1140,19 @@ if [ "$RUNINPLACE" == "1" ] ; then
         check_package_installed "rpm -q" "libtool"
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         # externals
-        check_package_installed "brew list" "osxfuse"
+        MACVERSION=$( echo "$DETECTEDOSVERSION" | awk -F\. '{print $2}' )
+        if [ "$MACVERSION" -lt "10" ] ; then
+            check_package_installed "brew list" "osxfuse"
+        else
+            MACFUSE=$( find /usr/local -name fuse.h 2> /dev/null )
+            if [ "$MACFUSE" == "" ] ; then
+                echo "${text_red}#######################################################" 1>&2
+                echo "$SCRIPTNAME requires some software to be installed" 1>&2
+                echo "  OSXFUSE from http://osxfuse.github.io/" 1>&2
+                echo "#######################################################${text_reset}" 1>&2
+                exit 1
+            fi
+        fi
         check_package_installed "brew list" "mysql"
         check_package_installed "brew list" "pcre"
     fi
