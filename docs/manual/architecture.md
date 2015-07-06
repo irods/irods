@@ -701,7 +701,7 @@ The SSL parameters are tunable via the following `irods_environment.json` variab
 
 The only valid value for 'irods_client_server_negotiation' at this time is 'request_server_negotiation'.  Anything else will not begin the negotiation stage and default to using a TCP connection.
 
-The possible values for irodsClientServerPolicy include:
+The possible values for 'irods_client_server_policy' include:
 
 - CS_NEG_REQUIRE: This side of the connection requires an SSL connection
 - CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
