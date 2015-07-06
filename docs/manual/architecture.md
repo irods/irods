@@ -707,6 +707,12 @@ The possible values for 'irods_client_server_policy' include:
 - CS_NEG_DONT_CARE: This side of the connection will connect either with or without SSL
 - CS_NEG_REFUSE: (default) This side of the connection refuses to connect via SSL
 
+On the server side, the `core.re` has a default value of 'CS_NEG_DONT_CARE' in the acPreConnect() rule:
+
+~~~
+acPreConnect(*OUT) { *OUT="CS_NEG_DONT_CARE"; }
+~~~
+
 In order for a connection to be made, the client and server have to agree on the type of connection they will share.  When both sides choose `CS_NEG_DONT_CARE`, iRODS shows an affinity for security by connecting via SSL.  Additionally, it is important to note that all servers in an iRODS Zone are required to share the same SSL credentials (certificates, keys, etc.).  Maintaining per-route certificates is not supported at this time.
 
 The remaining parameters are standard SSL parameters and made available through the EVP library included with OpenSSL.  You can read more about these remaining parameters at [https://www.openssl.org/docs/crypto/evp.html](https://www.openssl.org/docs/crypto/evp.html).
