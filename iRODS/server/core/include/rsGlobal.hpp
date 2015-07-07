@@ -37,7 +37,7 @@ int RescGrpInit = 0;    /* whether initRescGrp has been called */
 fileDesc_t FileDesc[NUM_FILE_DESC];
 l1desc_t L1desc[NUM_L1_DESC];
 specCollDesc_t SpecCollDesc[NUM_SPEC_COLL_DESC];
-collHandle_t CollHandle[NUM_COLL_HANDLE];
+std::vector<collHandle_t> CollHandle;
 
 /* global Rule Engine File Initialization String */
 

@@ -70,6 +70,29 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.assertTrue(len(vault_files_post_irm) == 0,
                         msg="Files not removed from vault:\n" + str(vault_files_post_irm))
 
+    def test_irm_rf_nested_coll(self):
+        # test settings
+        depth = 50
+        files_per_level = 5
+        file_size = 5
+        
+        # make local nested dirs
+        coll_name = "test_irm_r_nested_coll"
+        local_dir = os.path.join(self.testing_tmp_dir, coll_name)        
+        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+
+        # iput dir
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
+        
+        # force remove collection
+        self.user0.assert_icommand("irm -rf {coll_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("ils {coll_name}".format(**locals()), 'STDERR_SINGLELINE', "does not exist")
+
+        # make sure no files are left in the vault
+        user_vault_dir = os.path.join(lib.get_vault_session_path(self.user0), coll_name)
+        cmd_out = lib.run_command('find {user_vault_dir} -type f'.format(**locals()))
+        self.assertEqual(cmd_out[1], '')
+
     def test_imv_r(self):
         base_name_source = "test_imv_r_dir_source"
         file_names = set(self.iput_r_large_collection(

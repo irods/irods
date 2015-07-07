@@ -540,32 +540,31 @@ convL3descInx( int l3descInx ) {
     }
 }
 
-int
-initCollHandle() {
-    memset( CollHandle, 0, sizeof( CollHandle ) );
-    return 0;
-}
-
-int
-allocCollHandle() {
-    int i;
-
-    for ( i = 0; i < NUM_COLL_HANDLE; i++ ) {
-        if ( CollHandle[i].inuseFlag <= FD_FREE ) {
-            CollHandle[i].inuseFlag = FD_INUSE;
-            return i;
-        };
+int allocCollHandle() {
+    // look for a free collHandle_t
+    for (std::vector<collHandle_t>::iterator it = CollHandle.begin(); it != CollHandle.end(); ++it) {
+    	if (it->inuseFlag <= FD_FREE) {
+    		it->inuseFlag = FD_INUSE;
+    		return it - CollHandle.begin();
+    	}
     }
 
-    rodsLog( LOG_NOTICE,
-             "allocCollHandle: out of CollHandle" );
+    // if none found make a new one
+    collHandle_t my_coll_handle;
+    memset(&my_coll_handle, 0, sizeof(collHandle_t));
 
-    return SYS_OUT_OF_FILE_DESC;
+    // mark as in use
+    my_coll_handle.inuseFlag = FD_INUSE;
+
+    // add to vector
+    CollHandle.push_back(my_coll_handle);
+
+    // return index
+    return CollHandle.size() - 1;
 }
 
-int
-freeCollHandle( int handleInx ) {
-    if ( handleInx < 0 || handleInx >= NUM_COLL_HANDLE ) {
+int freeCollHandle( int handleInx ) {
+    if ( handleInx < 0 || handleInx >= CollHandle.size() ) {
         rodsLog( LOG_NOTICE,
                  "freeCollHandle: handleInx %d out of range", handleInx );
         return SYS_FILE_DESC_OUT_OF_RANGE;

@@ -102,8 +102,6 @@ freeSpecCollDesc( int specCollInx );
 int
 initL1desc();
 int
-initCollHandle();
-int
 allocCollHandle();
 int
 freeCollHandle( int handleInx );

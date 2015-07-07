@@ -17,7 +17,7 @@ rsReadCollection( rsComm_t*, int *handleInxInp,
 
     int handleInx = *handleInxInp;
 
-    if ( handleInx < 0 || handleInx >= NUM_COLL_HANDLE ||
+    if ( handleInx < 0 || handleInx >= CollHandle.size() ||
             CollHandle[handleInx].inuseFlag != FD_INUSE ) {
         rodsLog( LOG_NOTICE,
                  "rsReadCollection: handleInx %d out of range",

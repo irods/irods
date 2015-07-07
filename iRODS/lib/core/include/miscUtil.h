@@ -92,7 +92,7 @@ typedef struct QueryHandle {
 #define NO_TRIM_REPL_FG            0x10 // don't trim the replica
 #define INCLUDE_CONDINPUT_IN_QUERY 0x20 // include the cond in condInput in the query
 
-typedef struct CollHandle {
+typedef struct {
     collState_t state;
     int inuseFlag;
     int flags;

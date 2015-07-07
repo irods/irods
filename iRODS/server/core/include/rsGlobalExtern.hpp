@@ -35,7 +35,7 @@ extern int RescGrpInit;
 extern fileDesc_t FileDesc[NUM_FILE_DESC];
 extern l1desc_t L1desc[NUM_L1_DESC];
 extern specCollDesc_t SpecCollDesc[NUM_SPEC_COLL_DESC];
-extern collHandle_t CollHandle[NUM_COLL_HANDLE];
+extern std::vector<collHandle_t> CollHandle;;
 
 /* global Rule Engine File Initialization String */
 

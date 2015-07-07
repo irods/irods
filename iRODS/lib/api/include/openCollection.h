@@ -11,8 +11,6 @@
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
 
-#define NUM_COLL_HANDLE	40
-
 #if defined(RODS_SERVER)
 #define RS_OPEN_COLLECTION rsOpenCollection
 /* prototype for the server handler */
