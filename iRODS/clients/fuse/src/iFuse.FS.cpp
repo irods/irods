@@ -86,7 +86,7 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
     status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseConnGetAndUse of %s error", iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     bzero(stbuf, sizeof ( struct stat));
@@ -176,7 +176,7 @@ int iFuseFsOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsOpen: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     status = iFuseFdOpen(iFuseFd, iFuseConn, iRodsPath, openFlag);
@@ -519,7 +519,7 @@ int iFuseFsCreate(const char *iRodsPath, mode_t mode) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsCreate: iFuseConnGetAndUse of %s error", iRodsPath);
         pthread_mutex_unlock(&g_FSConsecutiveOpLock);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -633,7 +633,7 @@ int iFuseFsUnlink(const char *iRodsPath) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsUnlink: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -700,7 +700,7 @@ int iFuseFsOpenDir(const char *iRodsPath, iFuseDir_t **iFuseDir) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsOpenDir: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     status = iFuseDirOpen(iFuseDir, iFuseConn, iRodsPath);
@@ -793,7 +793,7 @@ int iFuseFsMakeDir(const char *iRodsPath, mode_t mode) {
     status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsMakeDir: iFuseConnGetAndUse of %s error", iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -849,7 +849,7 @@ int iFuseFsRemoveDir(const char *iRodsPath) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsRemoveDir: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -932,7 +932,7 @@ int iFuseFsRename(const char *iRodsFromPath, const char *iRodsToPath) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsRename: iFuseConnGetAndUse of %s to %s error", 
                 iRodsFromPath, iRodsToPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -1000,7 +1000,7 @@ int iFuseFsTruncate(const char *iRodsPath, off_t size) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsTruncate: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
@@ -1061,7 +1061,7 @@ int iFuseFsChmod(const char *iRodsPath, mode_t mode) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseFsChmod: iFuseConnGetAndUse of %s error", 
                 iRodsPath);
-        return -EREMOTEIO;
+        return -EIO;
     }
     
     iFuseConnLock(iFuseConn);
