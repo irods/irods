@@ -92,10 +92,10 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
         getZoneServerId( "", ServerID ); /* get our local zone SID */
         len = strlen( ServerID );
         digest = ( unsigned char* )malloc( RESPONSE_LEN + 2 );
+        memset( digest, 0, RESPONSE_LEN + 2 );
         if ( len <= 0 ) {
             rodsLog( LOG_DEBUG,
                      "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server_config.json", status );
-            memset( digest, 0, RESPONSE_LEN );
         }
         else {
             strncpy( md5Buf + CHALLENGE_LEN, ServerID, len );
