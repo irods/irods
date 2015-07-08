@@ -3,6 +3,7 @@ from __future__ import print_function
 import commands
 import contextlib
 import datetime
+import hashlib
 import itertools
 import json
 import mmap
@@ -20,6 +21,17 @@ import time
 
 import configuration
 
+
+def md5_hex_file(filename):
+    block_size = pow(2, 20)
+    md5 = hashlib.md5()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(block_size)
+            if not data:
+                break
+            md5.update(data)
+        return md5.hexdigest()
 
 def re_shm_exists():
     possible_shm_locations = ['/var/run/shm', '/dev/shm']
@@ -146,10 +158,10 @@ def make_deep_local_tmp_dir(root_name, depth=10, files_per_level=50, file_size=1
     for d in range(depth):
         # make subdir and files
         files = make_large_local_tmp_dir(current_dir_name, files_per_level, file_size)
-        
+
         # add to output
         directories[current_dir_name] = files
-        
+
         # next level down
         current_dir_name = os.path.join(current_dir_name, 'sub'+str(d))
 
@@ -609,15 +621,19 @@ class IrodsSession(object):
             kwargs['env'] = environment
 
     def _log_run_icommand(self, arg):
-        valid_icommands = ['iinit', 'ienv', 'ihelp', 'ils', 'icd',
-                           'imkdir', 'ichmod', 'imeta', 'iget', 'iput',
-                           'imv', 'icp', 'irepl', 'iquest', 'irm',
-                           'irmtrash', 'iexit', 'ilsresc', 'imiscsvrinfo',
-                           'iuserinfo', 'ipwd', 'ierror', 'iexecmd', 'ips',
-                           'iqstat', 'ichksum', 'itrim', 'iphymv', 'ibun',
-                           'iphybun', 'ireg', 'imcoll', 'irsync', 'ixmsg',
-                           'irule', 'iqdel', 'iticket', 'iapitest', 'iscan',
-                           'isysmeta', 'iadmin', 'ifsck', 'izonereport', 'irods-grid']
+        valid_icommands = ['iadmin', 'iapitest', 'ibun', 'icd',
+                            'ichksum', 'ichmod', 'icp', 'ienv',
+                            'ierror', 'iexecmd', 'iexit', 'ifsck',
+                            'iget', 'ihelp', 'iinit', 'ils',
+                            'ilsresc', 'imcoll', 'imeta',
+                            'imiscsvrinfo', 'imkdir', 'imv',
+                            'iphybun', 'iphymv', 'ips', 'iput',
+                            'ipwd', 'iqdel', 'iqstat', 'iquest',
+                            'ireg', 'irepl', 'irm', 'irmtrash',
+                            'irodsFs', 'irods-grid', 'irsync',
+                            'irule', 'iscan', 'isysmeta', 'iticket',
+                            'itrim', 'iuserinfo', 'ixmsg',
+                            'izonereport' ]
 
         if isinstance(arg, basestring):
             icommand = shlex.split(arg)[0]

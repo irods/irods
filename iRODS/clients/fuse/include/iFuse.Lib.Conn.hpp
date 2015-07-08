@@ -45,6 +45,7 @@ int iFuseConnUnuse(iFuseConn_t *iFuseConn);
 int iFuseConnReconnect(iFuseConn_t *iFuseConn);
 void iFuseConnLock(iFuseConn_t *iFuseConn);
 void iFuseConnUnlock(iFuseConn_t *iFuseConn);
+int _freeConn(iFuseConn_t *iFuseConn);
+int _newConn(iFuseConn_t **iFuseConn);
 
 #endif	/* IFUSE_LIB_CONN_HPP */
-
