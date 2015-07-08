@@ -417,6 +417,7 @@ int iFuseBufferedFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseBufferedFsGetAttr: iFuseFsGetAttr of %s error, status = %d",
                 iRodsPath, status);
+        return status;
     }
     
     pthread_mutex_lock(&g_BufferCacheLock);
@@ -451,7 +452,7 @@ int iFuseBufferedFsOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "iFuseBufferedFsOpen: iFuseFsOpen of %s error, status = %d",
                 iRodsPath, status);
-        return -ENOENT;
+        return status;
     }
     
     return status;
