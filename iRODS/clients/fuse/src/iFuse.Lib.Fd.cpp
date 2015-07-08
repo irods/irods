@@ -58,7 +58,7 @@ static int _closeFd(iFuseFd_t *iFuseFd) {
 
         status = iFuseRodsClientDataObjClose(iFuseFd->conn->conn, &dataObjCloseInp);
         if (status < 0) {
-            if (isReadMsgError(status)) {
+            if (iFuseRodsClientReadMsgError(status)) {
                 // reconnect and retry 
                 if(iFuseConnReconnect(iFuseFd->conn) < 0) {
                     rodsLogError(LOG_ERROR, status, "iFuseFdClose: iFuseConnReconnect of %s (%d) error",
@@ -250,7 +250,7 @@ int iFuseFdOpen(iFuseFd_t **iFuseFd, iFuseConn_t *iFuseConn, const char* iRodsPa
     
     fd = iFuseRodsClientDataObjOpen(iFuseConn->conn, &dataObjOpenInp);
     if (fd <= 0) {
-        if (isReadMsgError(fd)) {
+        if (iFuseRodsClientReadMsgError(fd)) {
             // reconnect and retry 
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, fd, "iFuseFdOpen: iFuseConnReconnect of %s error, status = %d",
@@ -326,7 +326,7 @@ int iFuseDirOpen(iFuseDir_t **iFuseDir, iFuseConn_t *iFuseConn, const char* iRod
     
     status = iFuseRodsClientOpenCollection(iFuseConn->conn, (char*) iRodsPath, 0, &collHandle);
     if (status < 0) {
-        if (isReadMsgError(status)) {
+        if (iFuseRodsClientReadMsgError(status)) {
             // reconnect and retry 
             if(iFuseConnReconnect(iFuseConn) < 0) {
                 rodsLogError(LOG_ERROR, status, "iFuseDirOpen: iFuseConnReconnect of %s error, status = %d",

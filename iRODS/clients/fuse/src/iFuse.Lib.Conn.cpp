@@ -442,7 +442,10 @@ int iFuseConnReconnect(iFuseConn_t *iFuseConn) {
     
     pthread_mutex_lock(&iFuseConn->lock);
     
+    rodsLog(LOG_DEBUG, "iFuseConnReconnect: disconnecting - %lu", iFuseConn->connId);
     _disconnect(iFuseConn);
+    
+    rodsLog(LOG_DEBUG, "iFuseConnReconnect: connecting - %lu", iFuseConn->connId);
     status = _connect(iFuseConn);
     
     pthread_mutex_unlock(&iFuseConn->lock);

@@ -110,6 +110,20 @@ void iFuseRodsClientDestroy() {
     pthread_mutex_destroy(&g_RodsClientAPILock);
 }
 
+int iFuseRodsClientReadMsgError(int status) {
+    int irodsErr = getIrodsErrno( status );
+
+    // SYS_PACK_INSTRUCT_FORMAT_ERR can be returned when network is suddenly disconnected
+    if (irodsErr == SYS_READ_MSG_BODY_LEN_ERR ||
+            irodsErr == SYS_HEADER_READ_LEN_ERR ||
+            irodsErr == SYS_HEADER_WRITE_LEN_ERR ||
+            irodsErr == SYS_PACK_INSTRUCT_FORMAT_ERR) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 rcComm_t *iFuseRodsClientConnect(const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone, int reconnFlag, rErrMsg_t *errMsg) {
     return rcConnect(rodsHost, rodsPort, userName, rodsZone, reconnFlag, errMsg);
 }
