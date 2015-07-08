@@ -71,7 +71,6 @@ if __name__ == '__main__':
     parser.add_option('--run_specific_test', metavar='dotted name')
     parser.add_option('--run_python_suite', action='store_true')
     parser.add_option('--include_auth_tests', action='store_true')
-    parser.add_option('--include_fuse_tests', action='store_true')
     parser.add_option('--run_devtesty', action='store_true')
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
     parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
@@ -91,11 +90,9 @@ if __name__ == '__main__':
         test_identifiers.extend(['test_xmsg', 'test_iadmin', 'test_mso_suite', 'test_resource_types', 'test_catalog', 'test_rulebase',
                                  'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_irsync', 'test_control_plane',
-                                 'test_iticket', 'test_irodsctl'])
+                                 'test_iticket', 'test_irodsctl', 'test_fuse'])
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
-    if options.include_fuse_tests:
-        test_identifiers.append('test_fuse')
 
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
