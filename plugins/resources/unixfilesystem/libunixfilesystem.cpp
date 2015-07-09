@@ -1010,7 +1010,8 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // handle error cases
-            if ( NULL != tmp_dirent ) {
+            if ( ( result = ASSERT_ERROR( tmp_dirent != NULL, -1, "End of directory list reached." ) ).ok() ) {
+
                 // =-=-=-=-=-=-=-
                 // alloc dirent as necessary
                 if ( !( *_dirent_ptr ) ) {
@@ -1024,27 +1025,18 @@ extern "C" {
                     irods::log( ERROR( status, "direntToRodsDirent failed." ) );
                 }
 
+
 #if defined(solaris_platform)
                 rstrcpy( ( *_dirent_ptr )->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
 #endif
             }
-            else if( !tmp_dirent && !errno ) {
-                // we have reached the end of the directory iteration
-                free(*_dirent_ptr);
-                (*_dirent_ptr) = 0;
-
-                result = SUCCESS();
-            }
             else {
                 // =-=-=-=-=-=-=-
                 // cache status in out variable
-                free(*_dirent_ptr);
-                (*_dirent_ptr) = 0;
-
                 int status = UNIX_FILE_READDIR_ERR - errno;
                 if ( ( result = ASSERT_ERROR( errno == 0, status, "Readdir error, status = %d, errno= \"%s\".",
                                               status, strerror( errno ) ) ).ok() ) {
-                    result.code( UNIX_FILE_READDIR_ERR );
+                    result.code( -1 );
                 }
             }
         }

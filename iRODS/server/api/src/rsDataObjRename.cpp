@@ -575,7 +575,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     l3descInx = l3Opendir( rsComm, srcDataObjInfo );
     fileReaddirInp.fileInx = l3descInx;
     rsMkCollR( rsComm, "/", destDataObjInp->objPath );
-    while ( rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) >= 0 && rodsDirent ) {
+    while ( rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) >= 0 ) {
         if ( rodsDirent == NULL ) {
             savedStatus = SYS_INTERNAL_NULL_INPUT_ERR;
             break;

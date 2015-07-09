@@ -1743,7 +1743,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the api call to read the directory
         int status = rsFileReaddir( _ctx.comm(), &fileReaddirInp, _dirent_ptr );
-        if ( status < 0 ) {
+        if ( status < -1 ) {
             return ERROR( status, "tar_file_readdir_plugin - failed in call to rsFileReaddir" );
         }
 
