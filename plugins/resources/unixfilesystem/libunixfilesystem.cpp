@@ -1014,7 +1014,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // alloc dirent as necessary
                 if ( !( *_dirent_ptr ) ) {
-                    ( *_dirent_ptr ) = new rodsDirent_t;
+                    ( *_dirent_ptr ) = ( rodsDirent_t* ) malloc( sizeof( rodsDirent_t ) );
                 }
 
                 // =-=-=-=-=-=-=-
@@ -1030,7 +1030,7 @@ extern "C" {
             }
             else if( !tmp_dirent && !errno ) {
                 // we have reached the end of the directory iteration
-                delete (*_dirent_ptr);
+                free(*_dirent_ptr);
                 (*_dirent_ptr) = 0;
 
                 result = SUCCESS();
@@ -1038,7 +1038,7 @@ extern "C" {
             else {
                 // =-=-=-=-=-=-=-
                 // cache status in out variable
-                delete (*_dirent_ptr);
+                free(*_dirent_ptr);
                 (*_dirent_ptr) = 0;
 
                 int status = UNIX_FILE_READDIR_ERR - errno;
