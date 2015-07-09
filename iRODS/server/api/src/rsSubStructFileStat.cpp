@@ -90,13 +90,13 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
 
         // =-=-=-=-=-=-=-
         // convert unix stat struct to an irods stat struct
-        *_stat_out = new rodsStat_t;
+        *_stat_out = (rodsStat_t*) malloc( sizeof( rodsStat_t ) );
         int status = statToRodsStat( *_stat_out, &my_stat );
 
         // =-=-=-=-=-=-=-
         // manage error if necessary
         if ( status < 0 ) {
-            delete( *_stat_out );
+            free( *_stat_out );
             *_stat_out = NULL;
         }
 

@@ -986,7 +986,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // alloc dirent as necessary
                 if ( !( *_dirent_ptr ) ) {
-                    ( *_dirent_ptr ) = new rodsDirent_t;
+                    ( *_dirent_ptr ) = ( rodsDirent_t* )malloc( sizeof( rodsDirent_t ) );
                 }
 
                 // =-=-=-=-=-=-=-
