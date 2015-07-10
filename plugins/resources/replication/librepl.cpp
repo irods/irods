@@ -267,7 +267,7 @@ extern "C" {
         else if ( object_list.size() > 0 ) {
             // get the child list
             child_list_t child_list;
-            ret = _ctx.prop_map().get<child_list_t>( child_list_prop, child_list );
+            ret = _ctx.prop_map().get<child_list_t>( write_child_list_prop, child_list );
             if ( ret.ok() ) {
                 // get the root resource name as well as the child hierarchy string
                 std::string root_resc;
@@ -1317,14 +1317,15 @@ extern "C" {
     /// operating.
     irods::error replCreateChildReplList(
         irods::resource_plugin_context& _ctx,
-        const redirect_map_t& _redirect_map ) {
+        const redirect_map_t& _redirect_map,
+        const std::string     _child_list_prop ) {
         irods::error result = SUCCESS();
         irods::error ret;
 
         // Check for an existing child list property. If it exists assume it is correct and do nothing.
         // This assumes that redirect always resolves to the same child. Is that ok? - hcj
         child_list_t repl_vector;
-        ret = _ctx.prop_map().get<child_list_t>( child_list_prop, repl_vector );
+        ret = _ctx.prop_map().get<child_list_t>( _child_list_prop, repl_vector );
         if ( !ret.ok() ) {
 
             // loop over all of the children in the map except the first (selected) and add them to a vector
@@ -1341,7 +1342,7 @@ extern "C" {
             }
 
             // add the resulting vector as a property of the resource
-            irods::error ret = _ctx.prop_map().set<child_list_t>( child_list_prop, repl_vector );
+            irods::error ret = _ctx.prop_map().set<child_list_t>( _child_list_prop, repl_vector );
             if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -1355,9 +1356,11 @@ extern "C" {
     /// @brief Selects a child from the vector of parsers based on host access
     irods::error replSelectChild(
         irods::resource_plugin_context& _ctx,
-        const redirect_map_t& _redirect_map,
-        irods::hierarchy_parser* _out_parser,
-        float* _out_vote ) {
+        const redirect_map_t&           _redirect_map,
+        const std::string&              _child_list_prop,
+        const std::string&              _hierarchy_prop,
+        irods::hierarchy_parser*        _out_parser,
+        float*                          _out_vote ) {
         irods::error result = SUCCESS();
         irods::error ret;
 
@@ -1368,7 +1371,7 @@ extern "C" {
         *_out_parser = parser;
         *_out_vote = vote;
         if ( vote != 0.0 ) {
-            ret = replCreateChildReplList( _ctx, _redirect_map );
+            ret = replCreateChildReplList( _ctx, _redirect_map, _child_list_prop );
             if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -1376,7 +1379,7 @@ extern "C" {
                 result = PASSMSG( msg.str(), ret );
             }
             else {
-                ret = _ctx.prop_map().set<irods::hierarchy_parser>( hierarchy_prop, parser );
+                ret = _ctx.prop_map().set<irods::hierarchy_parser>( _hierarchy_prop, parser );
                 if ( !ret.ok() ) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1429,12 +1432,14 @@ extern "C" {
     }
 
     /// @brief Determines which child should be used for the specified operation
-    irods::error replRedirect(
+    irods::error repl_redirect_impl(
         irods::resource_plugin_context& _ctx,
-        const std::string*             _operation,
-        const std::string*             _curr_host,
-        irods::hierarchy_parser*      _inout_parser,
-        float*                         _out_vote ) {
+        const std::string*              _operation,
+        const std::string*              _curr_host,
+        const std::string&              _child_list_prop,
+        const std::string&              _hierarchy_prop,
+        irods::hierarchy_parser*        _inout_parser,
+        float*                          _out_vote ) {
         irods::error result = SUCCESS();
         irods::error ret;
         irods::hierarchy_parser parser = *_inout_parser;
@@ -1465,7 +1470,7 @@ extern "C" {
         }
 
         // foreach child parser determine the best to access based on host
-        else if ( !( ret = replSelectChild( _ctx, redirect_map, _inout_parser, _out_vote ) ).ok() ) {
+        else if ( !( ret = replSelectChild( _ctx, redirect_map, _child_list_prop, _hierarchy_prop, _inout_parser, _out_vote ) ).ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to select an appropriate child.";
@@ -1474,11 +1479,71 @@ extern "C" {
 
         else if ( irods::WRITE_OPERATION  == ( *_operation ) ||
                   irods::CREATE_OPERATION == ( *_operation ) ) {
-            result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_operation ), "failed to set opetion_type property" );
+            result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_operation ), "failed to set operation_type property" );
         }
 
         return result;
-    }
+
+    } // repl_redirect_impl
+
+    irods::error replRedirect(
+        irods::resource_plugin_context& _ctx,
+        const std::string*             _operation,
+        const std::string*             _curr_host,
+        irods::hierarchy_parser*       _inout_parser,
+        float*                         _out_vote ) {
+        irods::error ret;
+        // recreate the child list for a write operation as the
+        // initial voting may have resulted in a child voting 0
+        // for the initial operation ( e.g. READ ).  if the repl
+        // node decided to replicate the data object, a new
+        // child list should be created for that operation ( WRITE )
+        // issue #2789
+        float vote = 0.0;
+        std::string tmp_hier_prop = hierarchy_prop + "_tmp";
+        std::string op = irods::CREATE_OPERATION;
+        if( irods::CREATE_OPERATION != *_operation ) {
+            op = irods::WRITE_OPERATION;
+        }
+
+        // NOTE:: we need a copy of the upstream parser to preserve the
+        // hierarchy.  otherwise we will only generate partial hierarchies
+        irods::hierarchy_parser parser = (*_inout_parser);
+        ret = repl_redirect_impl(
+                               _ctx,
+                               &op,
+                               _curr_host,
+                               write_child_list_prop,
+                               tmp_hier_prop,
+                               &parser,
+                               &vote );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        if( 0.0 == vote ) {
+            std::string hier;
+            parser.str( hier );
+            rodsLog(
+                LOG_ERROR,
+                "replRedirect - vote of 0 on create operation for [%s]", hier.c_str() );
+        }
+
+        ret = repl_redirect_impl(
+                  _ctx,
+                  _operation,
+                  _curr_host,
+                  child_list_prop,
+                  hierarchy_prop,
+                  _inout_parser,
+                  _out_vote );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        return SUCCESS();
+
+    } // replRedirect
 
     // =-=-=-=-=-=-=-
     // replRebalance - code which would rebalance the subtree

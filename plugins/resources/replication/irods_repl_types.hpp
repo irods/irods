@@ -25,6 +25,7 @@ typedef std::multimap<float, irods::hierarchy_parser, child_comp> redirect_map_t
 
 // define some constants
 const std::string child_list_prop = "child_list";
+const std::string write_child_list_prop = "write_child_list";
 const std::string object_list_prop = "object_list";
 const std::string need_pdmo_prop = "Need_PDMO";
 const std::string hierarchy_prop = "hierarchy";
