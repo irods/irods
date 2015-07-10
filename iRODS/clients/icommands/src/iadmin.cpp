@@ -1822,7 +1822,7 @@ usage( char *subOpt ) {
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
-        "The 'host' field is the DNS host name, for example 'datastar.sdsc.edu',",
+        "The 'host' field is the DNS host name, for example 'offsite.example.org',",
         "this is displayed as 'resc_net', the resource network address.",
         " ",
         "Setting the resource status to '" RESC_DOWN "' will cause iRODS to ignore that",
