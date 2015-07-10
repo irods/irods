@@ -762,6 +762,58 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
         self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
 
+    def test_weighted_passthrough__2789(self):
+
+        ### write=1.0;read=1.0
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=1.0'")
+
+        filename = "some_local_file_A.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        self.admin.assert_icommand('icp {0} {1}'.format(self.testfile,filename))
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixA',filename])
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
+        self.admin.assert_icommand("irm -f " + filename)
+
+        self.admin.assert_icommand("iput " + filepath)
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixA',filename])
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
+
+        # repave a copy in the vault to differentiate
+        vaultpath = os.path.join(lib.get_irods_top_level_dir(), "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
+
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "THISISBROEKN")
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
+        self.admin.assert_icommand("irm -f " + filename)
+
+
+        ### write=0.9;read=0.0
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=0.9;read=0.0'")
+
+        filename = "some_local_file_B.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        self.admin.assert_icommand('icp {0} {1}'.format(self.testfile,filename))
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixA',filename])
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
+        self.admin.assert_icommand("irm -f " + filename)
+
+        self.admin.assert_icommand("iput " + filepath)
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixA',filename])
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', ['unixB',filename])
+
+        # repave a copy in the vault to differentiate
+        vaultpath = os.path.join(lib.get_irods_top_level_dir(), "unixBVault/home/" + self.admin.username, os.path.basename(self.admin._session_id), filename)
+        subprocess.check_call("echo 'THISISBROEKN' | cat > %s" % (vaultpath), shell=True)
+
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=2.0'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "THISISBROEKN")
+        self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
+        self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
+        self.admin.assert_icommand("irm -f " + filename)
 
 class Test_Resource_Deferred(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
