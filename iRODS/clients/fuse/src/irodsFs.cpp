@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     iFuseCmdOptsAdd("-odirect_io");
 #if defined macintosh || defined Macintosh || defined __APPLE__
     // always run in single threaded mode (this is because osxfuse has an issue of use of pthread)
-    iFuseCmdOptsAdd("-os");
+    iFuseCmdOptsAdd("-o-s");
 #endif
     
     iFuseGetOption(&myiFuseOpt);
