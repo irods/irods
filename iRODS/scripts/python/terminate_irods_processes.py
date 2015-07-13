@@ -37,6 +37,10 @@ def parse_formatted_lsof_output(output):
             parsed_output[-1][line[0]] = line[1:]
     return parsed_output
 
+p = subprocess.Popen(['which', 'lsof'])
+p.wait()
+if p.returncode != 0:
+    print('lsof not in path', file=sys.stderr)
 top_level_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 for binary in ["irodsServer", "irodsReServer", "irodsXmsgServer", "irodsAgent"]:
     full_path = os.path.join(top_level_dir, "iRODS/server/bin/"+binary)
