@@ -5,11 +5,14 @@
 #ifndef IFUSE_LIB_UTIL_HPP
 #define	IFUSE_LIB_UTIL_HPP
 
+#include <time.h>
+
 #ifndef UNUSED
 #define UNUSED(expr) (void)(expr)
 #endif
 
 time_t iFuseLibGetCurrentTime();
+void iFuseLibGetStrCurrentTime(char *buff);
 double IFuseLibDiffTimeSec(time_t end, time_t beginning);
 
 #endif	/* IFUSE_LIB_UTIL_HPP */

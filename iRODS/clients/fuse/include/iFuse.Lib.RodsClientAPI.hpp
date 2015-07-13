@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 #include "rodsClient.h"
+#include "iFuse.Lib.Util.hpp"
 
 #define IFUSE_RODSCLIENTAPI_TIMEOUT_SEC     (30)
 
@@ -14,6 +15,22 @@ void iFuseRodsClientInit();
 void iFuseRodsClientDestroy();
 
 int iFuseRodsClientReadMsgError(int status);
+
+#define iFuseRodsClientLog \
+    { \
+    char logtimes[100]; \
+    iFuseLibGetStrCurrentTime(logtimes); \
+    rodsLog(LOG_DEBUG, "%s", logtimes); \
+    } \
+    rodsLog
+            
+#define iFuseRodsClientLogError \
+    { \
+    char logtimes[100]; \
+    iFuseLibGetStrCurrentTime(logtimes); \
+    rodsLog(LOG_DEBUG, "%s", logtimes); \
+    } \
+    rodsLogError
 
 rcComm_t *iFuseRodsClientConnect(const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone, int reconnFlag, rErrMsg_t *errMsg);
 int iFuseRodsClientLogin(rcComm_t *conn);
