@@ -460,6 +460,8 @@ void iFuseConnLock(iFuseConn_t *iFuseConn) {
     assert(iFuseConn != NULL);
     
     pthread_mutex_lock(&iFuseConn->lock);
+
+    rodsLog(LOG_DEBUG, "iFuseConnLock: connection locked - %lu", iFuseConn->connId);
 }
 
 /*
@@ -469,4 +471,6 @@ void iFuseConnUnlock(iFuseConn_t *iFuseConn) {
     assert(iFuseConn != NULL);
     
     pthread_mutex_unlock(&iFuseConn->lock);
+
+    rodsLog(LOG_DEBUG, "iFuseConnUnlock: connection unlocked - %lu", iFuseConn->connId);
 }
