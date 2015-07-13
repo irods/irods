@@ -34,7 +34,7 @@ static void* _timeoutChecker(void* param) {
     
     UNUSED(param);
     
-    rodsLog(LOG_DEBUG, "_timeoutChecker: timeout checker is running");
+    iFuseRodsClientLog(LOG_DEBUG, "_timeoutChecker: timeout checker is running");
     
     while(g_TimeoutCheckerRunning) {
         pthread_mutex_lock(&g_RodsClientAPILock);

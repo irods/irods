@@ -12,6 +12,7 @@
 #include "parseCommandLine.h"
 #include "iFuse.Lib.hpp"
 #include "iFuseOper.hpp"
+#include "iFuse.Lib.RodsClientAPI.hpp"
 #include "iFuseCmdLineOpt.hpp"
 
 static struct fuse_operations irodsOper;
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 
     status = getRodsEnv(&myRodsEnv);
     if (status < 0) {
-        rodsLogError(LOG_ERROR, status, "main: getRodsEnv error. ");
+        iFuseRodsClientLogError(LOG_ERROR, status, "main: getRodsEnv error. ");
         exit(1);
     }
 
