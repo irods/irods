@@ -23,7 +23,7 @@
  *
  * \note   This microservice sends e-mail using the mail command in the unix system. No attachments are supported. The sender of the e-mail is the unix user-id running the irodsServer.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xtoAddr - a msParam of type STR_MS_T which is an address of the receiver.
  * \param[in] xsubjectLine - a msParam of type STR_MS_T which is a subject of the message.
@@ -139,7 +139,7 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
  *
  * \note   This microservice sends contents of the buffer rei->ruleExecOut->stdoutBuf.buf as email.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xtoAddr - a msParam of type STR_MS_T which is the address of the receiver.
  * \param[in] xsubjectLine - a msParam of type STR_MS_T which is the subject of the message.

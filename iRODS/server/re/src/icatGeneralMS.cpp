@@ -20,7 +20,7 @@
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[out] timeOutParam - a msParam of type STR_MS_T
  * \param[in] typeInParam - a msParam of type STR_MS_T
@@ -75,7 +75,7 @@ msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t*
  *
  * \note This is run via an admin rule
  *
- * \usage See clients/icommands/test/rules3.0/ and https://wiki.irods.org/index.php/Quotas
+ * \usage See clients/icommands/test/rules/ and https://wiki.irods.org/index.php/Quotas
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -117,7 +117,7 @@ msiQuota( ruleExecInfo_t *rei ) {
  *
  * \note  This microservice sets the resource as part of a workflow execution.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xrescName - is a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -161,7 +161,7 @@ int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -206,7 +206,7 @@ int msiCheckOwner( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xperm - a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -254,7 +254,7 @@ int msiCheckPermission( msParam_t* xperm, ruleExecInfo_t *rei ) {
  * \since 3.0
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inObjName - name of Object. A param of type STR_MS_T
  * \param[in] inOperation - type of Operation that will be performed. A param of type STR_MS_T.
@@ -348,7 +348,7 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
  * automatically committed into the iCAT Database as part of the
  * normal operations (in the 'C' code).
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -404,7 +404,7 @@ msiCommit( ruleExecInfo_t *rei ) {
  * In other cases, iCAT updates and inserts are automatically
  * rolled-back as part of the normal operations (in the 'C' code).
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -462,7 +462,7 @@ msiRollback( ruleExecInfo_t *rei ) {
  *    For admin mode, add MOD_ADMIN_MODE_PREFIX to the access level string,
  *    e.g: msiSetACL("default", "admin:read", "rods", *path)
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
  *    is only relevant if set with accessLevel set to "inherit".
@@ -587,7 +587,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  *
  * \note See 'iadmin help rum'.  Do not call this directly.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a

@@ -73,7 +73,7 @@ extern "C" {
      * \since 3.0
      *
      *
-     * \usage See clients/icommands/test/rules3.0/
+     * \usage See clients/icommands/test/rules/
      *
      * \param[in] inRequestPath - a STR_MS_T request string to external resource
      * \param[in] inFileMode - a STR_MS_T mode of cache file creation

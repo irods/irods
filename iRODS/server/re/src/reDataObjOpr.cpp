@@ -27,7 +27,7 @@
  * \since 2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -138,7 +138,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as msKeyValStr.
  *  msKeyValStr -  This is the special msKeyValStr
@@ -245,7 +245,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam - inpParam is a msParam of type INT_MS_T or STR_MS_T.
  * \param[out] outParam - outParam is a msParam of type INT_MS_T.
@@ -332,7 +332,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a msParam of type DataObjLseekInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or DOUBLE_MS_T or a STR_MS_T which would be the offset.
@@ -492,7 +492,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a msParam of type DataObjReadInp_MS_T or INT_MS_T or STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or STR_MS_T which would be the length.
@@ -600,7 +600,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  *
  * \note Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a msParam of type DataObjWriteInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type BUF_LEN_MS_T or a STR_MS_T, the input is inpOutBuf and the length of the buffer in the BBuf.
@@ -744,7 +744,7 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T which would be taken as msKeyValStr.
  *    msKeyValStr -  This is the special msKeyValStr
@@ -857,7 +857,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  * the status of the operation. In the Rule, the resource is provided as part
  * of the call instead of as an input through a *parameter.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -991,7 +991,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a DataObjCopyInp_MS_T or
  *    DataObjInp_MS_T which is the source DataObjInp or
@@ -1137,7 +1137,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
@@ -1294,7 +1294,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -1427,7 +1427,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -1539,7 +1539,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
@@ -1653,7 +1653,7 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A taObjCopyInp_MS_T or STR_MS_T which would be taken as the src dataObj path.
  * \param[in] inpParam2 - Optional - A DataObjInp_MS_T which is the destination
@@ -1753,7 +1753,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resourceName.
@@ -1860,7 +1860,7 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which
  *    would be taken as dataObj path.
@@ -1945,7 +1945,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - This is the special msKeyValStr
@@ -2055,7 +2055,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken
  *    as object path. The path can be a data object or a collection path.
@@ -2162,7 +2162,7 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[out] outParam - a RodsObjStat_MS_T containing the rodsObjStat_t struct of the object.
@@ -2241,7 +2241,7 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
  * mode because of the logistic difficulty with the microservice getting the
  * checksum values of the local file.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode
@@ -2398,7 +2398,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since 2.4
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a STR_MS_T which specifies the source collection path.
  * \param[in] inpParam2 - a STR_MS_T which specifies the target collection path.
@@ -2599,7 +2599,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a ExecCmd_MS_T or
  *    a STR_MS_T which specify the command (cmd) to execute.
@@ -2716,7 +2716,7 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
  * \note  This call does not require client interaction, which means
  *  it can be used through rcExecMyRule (irule) or internally by the server.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the irods path of the
  *      collection to replicate.
@@ -2846,7 +2846,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
  *        file (inpParam1) into a target collection (inpParam2).  The content of
  *        the target collection is stored on the physical resource (inpParam3).
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or
  *              a STR_MS_T which would be taken as dataObj path.
@@ -2989,7 +2989,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *        (inpParam1) from a target collection (inpParam2). The content of the
  *        target collection is stored on the physical resource (inpParam3).
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
@@ -3106,7 +3106,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *        store these files on tape. This microservice has the same functionality
  *        as the iphybun command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
  * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource. If one wants to modify

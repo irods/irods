@@ -17,9 +17,9 @@ import resource_suite
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
-    global rules30dir
+    global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
-    rules30dir = currentdir + "/../../iRODS/clients/icommands/test/rules3.0/"
+    rulesdir = currentdir + "/../../iRODS/clients/icommands/test/rules/"
     conf_dir = lib.get_core_re_dir()
 
     def setUp(self):
@@ -30,7 +30,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
         progname = __file__
-        dir_w = rules30dir + ".."
+        dir_w = rulesdir + ".."
         self.rods_session.assert_icommand('icd')  # to get into the home directory (for testallrules assumption)
         self.rods_session.assert_icommand('iadmin mkuser devtestuser rodsuser')
         self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' +
@@ -340,11 +340,11 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
             return True
 
-        for rulefile in filter(filter_rulefiles, sorted(os.listdir(rules30dir))):
+        for rulefile in filter(filter_rulefiles, sorted(os.listdir(rulesdir))):
             def make_test(rulefile):
                 def test(self):
                     self.rods_session.assert_icommand("icd")
-                    self.rods_session.assert_icommand("irule -vF " + rules30dir + rulefile,
+                    self.rods_session.assert_icommand("irule -vF " + rulesdir + rulefile,
                                                       'STDOUT_SINGLELINE', "completed successfully")
                 return test
 
@@ -371,7 +371,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.run_icommand(['iput', src_file, test_coll])
 
         # first rsync rule test
-        self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
+        self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
 
         # modify the source and try again
         for i in range(1, 5):
@@ -382,7 +382,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             self.rods_session.run_icommand(['iput', '-f', src_file, test_coll])
 
             # sync test
-            self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
+            self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
 
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', test_coll])
@@ -392,7 +392,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         rulefile = 'rulemsiPhyBundleColl.r'
 
         # rule test
-        self.rods_session.assert_icommand("irule -F " + rules30dir + rulefile, 'STDOUT_SINGLELINE',
+        self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE',
                                           "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
 
         # look for the bundle
@@ -409,7 +409,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         assert os.path.isfile(bundlefile)
 
         # now try as a normal user (expect err msg)
-        self.user0.assert_icommand("irule -F " + rules30dir + rulefile, 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
+        self.user0.assert_icommand("irule -F " + rulesdir + rulefile, 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
 
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', bundle_path])

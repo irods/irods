@@ -25,7 +25,7 @@ int _makeQuery( char *sel, char *cond, char **sql );
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
  * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
@@ -107,7 +107,7 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
  *
  * \note Takes a SQL-like iRODS query (no FROM clause) and returns a table structure. Use #msiGetMoreRows to get all rows.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] genQueryInParam - a msParam of type GenQueryInp_MS_T
  * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
@@ -167,7 +167,7 @@ int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ru
  *
  * \note The resulting continueInx can be used to determine whether there are remaining rows to retrieve from the generated query.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] genQueryOutParam - Required - of type GenQueryOut_MS_T.
  * \param[out] continueInx - a INT_MS_T containing the new continuation index (after the query).
@@ -233,7 +233,7 @@ _makeQuery( char *sel, char *cond, char **sql ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] selectListParam - a STR_MS_T containing the parameters.
  * \param[in] conditionsParam - a STR_MS_T containing the conditions.
@@ -487,7 +487,7 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
  * \note This microservice sets up a genQueryInp_t data structure needed by calls to rsGenQuery().
  *    To be used before #msiExecGenQuery and #msiGetMoreRows.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] selectListStr - Required - a STR_MS_T containing the parameters.
  * \param[in] condStr - Required - a STR_MS_T containing the conditions
@@ -584,7 +584,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] where - Required - a STR_MS_T containing the parameters.
  * \param[in] genQueryInpParam - Required - a GenQueryInp_MS_T containing the parameters and conditions.
@@ -688,7 +688,7 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  *       Followed with #msiExecGenQuery, #msiAddSelectFieldToGenQuery allows to take the
  *       results of other microservices to build and execute queries within a rule.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] select - Required - A STR_MS_T with the select field.
  * \param[in] function - Optional - A STR_MS_T with the function. Valid values are [MIN|MAX|SUM|AVG|COUNT]
@@ -796,7 +796,7 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
  *       To be used with #msiAddSelectFieldToGenQuery and #msiExecGenQuery to build queries from the
  *       results of other microservices or actions within an iRODS rule.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see wiki.irods.org/index.php/icatAttributes).
  * \param[in] opr - Required - A STR_MS_T with the operator.
@@ -908,7 +908,7 @@ msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *opr, msParam_t *valu
  * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
  *       The results can be formatted with an optional C-style format string the same way it is done in iquest.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] queryOut - Required - A GenQueryOut_MS_T.
  * \param[in] format - Optional - A STR_MS_T with a C-style format string, like in iquest.

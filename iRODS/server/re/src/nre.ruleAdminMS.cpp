@@ -32,7 +32,7 @@
  * \note   Lists the currently loaded dollar variable mappings from the rule
  *  engine memory. The list is written to stdout in ruleExecOut.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -95,7 +95,7 @@ int _admShowDVM( ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx ) {
  * \note   This microservice lists the currently loaded microServices and action
  * name mappings from the rule engine memory. The list is written to stdout in ruleExecOut.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] - is a msParam (not used for anything, a dummy parameter)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -159,7 +159,7 @@ int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx )
  * 'server/config/reConfigs' or any file in the server local file system and
  * puts them into a DVM structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inDvmFileNameParam - a msParam of type STR_MS_T
  * \param[in] outCoreDVMapStruct - a msParam of type RuleStruct_MS_T
@@ -236,7 +236,7 @@ int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t
  * \note  This is a microservice that reads the contents of a DVM structure and writes them as
  * a new DVM base set in the iCAT.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inDvmBaseNameParam - a msParam of type STR_MS_T, the name of the target database
  * \param[in] inCoreDVMapStruct - a msParam of type RuleStruct_MS_T
@@ -297,7 +297,7 @@ int msiAdmInsertDVMapsFromStructIntoDB( msParam_t *inDvmBaseNameParam, msParam_t
  *
  * \note  This is a microservice that queries the iCAT for DVM with a given base name and version number and populates a DVM rule structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inDvmBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
  * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
@@ -379,7 +379,7 @@ msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersio
  * \note  This is a microservice that writes into a given file the contents of a given DVM structure.
  * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inDvmFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
  * \param[in] inCoreDVMapStruct - a msParam of type RuleStruct_MS_T
@@ -441,7 +441,7 @@ msiAdmWriteDVMapsFromStructIntoFile( msParam_t *inDvmFileNameParam, msParam_t *i
  * 'server/config/reConfigs' or any file in the server local file system and
  * puts them into a FNM structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inFnmFileNameParam - a msParam of type STR_MS_T
  * \param[in] outCoreFNMapStruct - a msParam of type RuleStruct_MS_T
@@ -523,7 +523,7 @@ int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inFnmFileNameParam, msParam_t
  * \note  This is a microservice that reads the contents of a FNM structure and writes them as
  * a new FNM base set in the iCAT.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inFnmBaseNameParam - a msParam of type STR_MS_T, the name of the target database
  * \param[in] inCoreFNMapStruct - a msParam of type RuleStruct_MS_T
@@ -584,7 +584,7 @@ int msiAdmInsertFNMapsFromStructIntoDB( msParam_t *inFnmBaseNameParam, msParam_t
  *
  * \note  This is a microservice that queries the iCAT for FNM with a given base name and version number and populates a FNM rule structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inFnmBaseNameParam - a msParam of type STR_MS_T, the name of the base being queried
  * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
@@ -667,7 +667,7 @@ msiGetFNMapsFromDBIntoStruct( msParam_t *inFnmBaseNameParam, msParam_t *inVersio
  * \note  This is a microservice that writes into a given file the contents of a given FNM structure.
  * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inFnmFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
  * \param[in] inCoreFNMapStruct - a msParam of type RuleStruct_MS_T
@@ -729,7 +729,7 @@ msiAdmWriteFNMapsFromStructIntoFile( msParam_t *inFnmFileNameParam, msParam_t *i
  * 'server/config/reConfigs' or any file in the server local file system and
  * puts them into a microservice structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inMsrvcFileNameParam - a msParam of type STR_MS_T
  * \param[in] outCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
@@ -807,7 +807,7 @@ int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam
  * \note  This is a microservice that reads the contents of a microservice structure and writes them as
  * a new microservice base set in the iCAT.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] - a msParam of type STR_MS_T, the name of the target database
  * \param[in] inCoreMsrvcStruct - a msParam of type RuleStruct_MS_T
@@ -865,7 +865,7 @@ int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t*, msParam_t* inCoreMsrvcStruct
  *
  * \note  This is a microservice that queries the iCAT for microservices with a given base name and version number and populates a microservice rule structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inStatus - a msParam of type INT_MS_T or an integer stored in STR_MS_T, normally 1 if microservice is available, 0 otherwise.
  * \param[out] outCoreMsrvcStruct - a msParam of type MsrvcStruct_MS_T
@@ -950,7 +950,7 @@ msiGetMSrvcsFromDBIntoStruct( msParam_t *inStatus, msParam_t *outCoreMsrvcStruct
  * \note  This is a microservice that writes into a given file the contents of a given microservice structure.
  * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inMsrvcFileNameParam - a msParam of type STR_MS_T, the name of the file to be written
  * \param[in] inCoreMsrvcStruct - a msParam of type MsrvcStruct_MS_T

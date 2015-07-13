@@ -20,7 +20,7 @@
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stdout buffer.
@@ -68,7 +68,7 @@ msiGetStdoutInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stderr buffer.
@@ -132,7 +132,7 @@ msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A STR_MS_T which specifies the message to log.
  * \param[out] outParam - An INT_MS_T containing the status.
@@ -205,7 +205,7 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] keyStr - a STR_MS_T key to be added to msKeyValStr.
  * \param[in] valStr - a STR_MS_T value to be added to msKeyValStr.
@@ -255,7 +255,7 @@ msiAddKeyValToMspStr( msParam_t *keyStr, msParam_t *valStr,
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpPath - a STR_MS_T which specifies the pathname to split.
  * \param[out] outParentColl - a STR_MS_T to hold the returned parent path.
@@ -328,7 +328,7 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
  * \since 2.3
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpVar - A STR_MS_T which specifies the name of the session
  *             variable to output. The input session variable should NOT start
@@ -454,7 +454,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[out] lengthOut - a STR_MS_T to hold the returned string length.
@@ -524,7 +524,7 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[out] stringOut - a STR_MS_T to hold the string without the last char.
@@ -596,7 +596,7 @@ msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[in] offset - a STR_MS_T which specifies the position of the
@@ -729,7 +729,7 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - A STR_MS_T which specifies the status error to add to the error stack.
  * \param[in] inpParam2 - A STR_MS_T which specifies the message to add to the error stack.

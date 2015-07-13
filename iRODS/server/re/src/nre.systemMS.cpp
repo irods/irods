@@ -49,7 +49,7 @@ fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedRe
  *    The delayCondition is given as a tagged condition. In this case, there are two
  *    conditions that are specified.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] mPA - mPA is a msParam of type STR_MS_T which is a delayCondition about when to execute the body.
  *  		   These are tagged with the following tags:
@@ -202,7 +202,7 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
  *    remote iRODS server. The execution is done immediately and synchronously with
  *    the result returning back from the call.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] mPD - a msParam of type STR_MS_T which is a host name of the server where the body need to be executed.
  * \param[in] mPA - a msParam of type STR_MS_T which is a delayCondition about when to execute the body.
@@ -423,7 +423,7 @@ doForkExec( char *prog, char *arg1 ) {
  *    of the rule are not retried upon this failure. It is useful when you want to fail
  *    but no recovery initiated.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \DolVarDependence none
  * \DolVarModified none
@@ -481,7 +481,7 @@ checkFilePerms( char *fileName ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] memoryParam - the buffer to free
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -555,7 +555,7 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] secPtr - secPtr is a msParam of type STR_MS_T which is seconds
  * \param[in] microsecPtr - microsecPrt is a msParam of type STR_MS_T which is microseconds
@@ -605,7 +605,7 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
  *   alternatives and succeed in as many as possible. Then by firing that rule under this
  *   microservice all alternatives are tried.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] actionParam - a msParam of type STR_MS_T which is the name of an action to be executed.
  * \param[in] reiSaveFlagParam - a msParam of type STR_MS_T which is 0 or 1 value used to
@@ -661,7 +661,7 @@ msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
  * \note If we have arithmetic MSs in the future we should use DOUBLE_MS_T instead of strings.
  *       Default output format is in seconds, use 'human' as the third input param for human readable format.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a STR_MS_T containing the start date (system time in seconds)
  * \param[in] inpParam2 - a STR_MS_T containing the end date (system time in seconds)
@@ -754,7 +754,7 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
  *
  * \note Default output format is system time in seconds, use 'human' as input param for human readable format.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[out] outParam - a STR_MS_T containing the time
  * \param[in] inpParam - Optional - a STR_MS_T containing the desired output format
@@ -818,7 +818,7 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
  *
  * \note Expects an input date in the form: YYYY-MM-DD-hh.mm.ss
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam - a STR_MS_T containing the input date
  * \param[out] outParam - a STR_MS_T containing the timestamp
@@ -890,7 +890,7 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
  *
  * \note For easily passing parameters to microservices that require a BUF_LEN_MS_T
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] str_msp - a STR_MS_T
  * \param[out] buf_msp - a BUF_LEN_MS_T
@@ -1026,7 +1026,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
  *  while the value is the module where the microservice belongs.
  *  Standard non-module microservices are listed as "core".
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[out] outKVPairs - A KeyValPair_MS_T containing the results.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -1117,7 +1117,7 @@ msiListEnabledMS(
  * \note Default output format is system time in seconds. Use 'human' as input
  *       parameter for human readable format.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[out] outParam - a STR_MS_T containing the time
  * \param[in] inpParam - Optional - a STR_MS_T containing the desired output format (human)

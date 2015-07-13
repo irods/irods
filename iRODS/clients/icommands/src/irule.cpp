@@ -736,7 +736,7 @@ usage() {
         "     (string parameters must be quoted)",
         "     (your shell may require escaping and/or single quotes)",
         " ",
-        "Example rules are given in:   clients/icommands/test/rules3.0/",
+        "Example rules are given in:   clients/icommands/test/rules/",
         " ",
         "In either form, the 'rule' that is processed is either a rule name or a",
         "rule definition (which may be a complete rule or a subset).",

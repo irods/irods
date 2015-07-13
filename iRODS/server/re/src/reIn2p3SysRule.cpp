@@ -484,7 +484,7 @@ int checkHostAccessControl(
  *  based on the information in the host based access configuration file:
  *  HOST_ACCESS_CONTROL_FILE
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -572,7 +572,7 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
  *    in the OUTPUT_MON_PERF file and will also be put in the iCAT in the
  *    near future.
  *
- * \usage See clients/icommands/test/rules3.0/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] verb - a msParam of type STR_MS_T defining verbose mode:
  *    \li "default" - not verbose
@@ -777,7 +777,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
  * \note  This microservice removes the servers' metrics older than the
  *    number of hours in "timespan".
  *
- * \usage See clients/icommands/test/rules3.0/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] inpParam1 - Required - a msParam of type STR_MS_T defining the timespan in hours.
  *    "default" is equal to 24 hours.
@@ -903,7 +903,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *        runq_wght*runq_load + disk_wght*disk_space + netin_wght*net_input +
  *        netout_wght*net_output
  *
- * \usage See clients/icommands/test/rules3.0/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
+ * \usage See clients/icommands/test/rules/ and https://wiki.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] cpu_wght - Required - a msParam of type STR_MS_T defining relative CPU weighting.
  * \param[in] mem_wght - Required - a msParam of type STR_MS_T defining relative memory weighting

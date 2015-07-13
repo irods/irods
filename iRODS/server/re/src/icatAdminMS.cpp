@@ -32,7 +32,7 @@
  * If that succeeds it invokes the "acCreateDefaultCollections" rule (which calls other rules and msi routines).
  * Then, if they all succeed, the "msiCommit" function is called to save persistent state information.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -90,7 +90,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xparColl - a msParam of type STR_MS_T
  * \param[in] xchildName - a msParam of type STR_MS_T
@@ -165,7 +165,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xparColl - a msParam of type STR_MS_T
  * \param[in] xchildName - a msParam of type STR_MS_T
@@ -244,7 +244,7 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -301,7 +301,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] msParam - a msParam of type STR_MS_T, the name of the group
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -364,7 +364,7 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
@@ -413,7 +413,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  * \note Should not be used outside of the rules defined in core.irb.
  * This is called via an 'iadmin' command.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
@@ -466,7 +466,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * another rule to change the mode back to non-strict).
  * See core.irb.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] msParam - a msParam of type STR_MS_T - can have value 'STRICT'
  * \param[in,out] - The RuleExecInfo structure that is automatically
@@ -532,7 +532,7 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
  * \note  This microservice sets a disk usage quota for a given user or group.
  *          If no resource name is provided the quota will apply across all resources.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] type - a STR_MS_T - Can be either "user" or "group"
  * \param[in] name - a STR_MS_T with the name of the user or group

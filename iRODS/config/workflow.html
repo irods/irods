@@ -72,7 +72,7 @@
   <div class="memdoc">
     <dl class="user"><dt><b>Description:</b></dt><dd>No action.</dd></dl> 
     <dl class="note"><dt><b>Note:</b></dt><dd>This microservice is a placeholder, with no operation being performed (no-op).</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -83,7 +83,7 @@
   </div>
   <div class="memdoc">
     <dl class="user"><dt><b>Description:</b></dt><dd>Tells the rule engine not to retry any other applicable rules for this action.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -94,7 +94,7 @@
   </div>
   <div class="memdoc">
     <dl class="user"><dt><b>Description:</b></dt><dd>Succeed immediately.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -105,7 +105,7 @@
   </div>
   <div class="memdoc">
     <dl class="user"><dt><b>Description:</b></dt><dd>Fail immediately. Recovery and retries are possible.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -129,7 +129,7 @@
     capturing all possible return values as regular integers. The
     “errorcode” microservice can be used to achieve this by putting
     the action whose return value needs to be captured in <span class="grammar">action</span>.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -157,7 +157,7 @@
     type string or integer which is 0 or 1, whether the “apply all rule”
     condition applies only to the action or is recursively done at all
     levels of invocation of every rule inside the execution.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -174,7 +174,7 @@
     <span class="grammar">actions</span> will
     be executed. If the check fails, then the second <span class="grammar">actions</span>
     will be executed.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -188,7 +188,7 @@
     <dl class="note"><dt><b>Note:</b></dt><dd>The <span class="grammar">expr</span> is a
     condition that will be checked on each loop iteration. The <span class="grammar">actions</span>
     are the body of the while loop and will be executed as long as the condition evaluates to true.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -201,7 +201,7 @@
     <dl class="user"><dt><b>Description:</b></dt><dd>The for loop in the rule language.</dd></dl> 
     <dl class="note"><dt><b>Note:</b></dt><dd>It is similar to the for
     construct in C.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -219,7 +219,7 @@
     the loop. The <span class="grammar">var</span>
     specifies the variable that has the list (the same variable name is
     used in the body of the loop to denote an item of the list!).</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -231,7 +231,7 @@
   <div class="memdoc">
     <dl class="user"><dt><b>Description:</b></dt><dd>Breaks out of while, for and
     foreach loops.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -244,7 +244,7 @@
     <dl class="user"><dt><b>Description:</b></dt><dd>The "=" operator assigns a value to a variable.</dd></dl> 
     <dl class="note"><dt><b>Note:</b></dt><dd>It can be used to
     assign values to * and $ variables.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -267,7 +267,7 @@
     supported. The second <span class="grammar">expr</span>
     is a parameter of type string which is the string to be written into the named
     buffer.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -290,7 +290,7 @@
     supported. The second <span class="grammar">expr</span>
     is a parameter of type string which is the string to be written into the named
     buffer.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -365,7 +365,7 @@
     
     
     
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 
@@ -387,7 +387,7 @@
     to execute the body. If there is no delay condition, the execution
     is done immediately and synchronously with the result returning back
     from the call.</dd></dl> 
-    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules/</dd></dl>
   </div>
 </div>
 

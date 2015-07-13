@@ -31,7 +31,7 @@ static   rodsEnv myRodsXmsgEnv;
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[out] outConnParam - a msParam of type RcComm_MS_T which is a connection descriptor.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -93,7 +93,7 @@ int msiXmsgServerConnect( msParam_t* outConnParam, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inGgetXmsgTicketInpParam - a msParam of type GetXmsgTicketInp_MS_T which is actually an integer giving expiration time.
@@ -171,7 +171,7 @@ int msiXmsgCreateStream( msParam_t* inConnParam,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inMsgNumber - a msParam of type uint or STR_MS_T which is a message serial number.
  * \param[in] inMsgType - a msParam of type uint or STR_MS_T which is currently 0 (SINGLE_MSG_TICKET) or 1 (MULTI_MSG_TICKET).
@@ -278,7 +278,7 @@ int msiCreateXmsgInp( msParam_t* inMsgNumber,
  *
  * \note Sends an Xmsg packet created by #msiCreateXmsgInp using the connection made by #msiXmsgServerConnect
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inSendXmsgInpParam - a msParam of type SendXmsgInp_MS_T outSendXmsgInpParam from inSendXmsgInpParam.
@@ -346,7 +346,7 @@ int msiSendXmsg( msParam_t* inConnParam,
  *
  * \note  Uses the connection made by #msiXmsgServerConnect.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in] inTicketNumber - a msParam of type XmsgTicketInfo_MS_T or STR_MS_T or unit which is outXmsgTicketInfoParam from msiXmsgCreateStream or outXmsgTicketInfoParam->rcvTicket (a string which the sender passes to the receiver).
@@ -436,7 +436,7 @@ int msiRcvXmsg( msParam_t* inConnParam,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inConnParam - a msParam of type RcComm_MS_T which is a connection descriptor obtained by msiXmsgServerConnect.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically

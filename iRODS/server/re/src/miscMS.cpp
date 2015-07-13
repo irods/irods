@@ -31,7 +31,7 @@
  *
  * \note  Use this only internally as data object information has to be in rei.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -225,7 +225,7 @@ msitest3( msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam - a STR_MS_T containing the target object's path
  * \param[out] outParam - an INT_MS_T containing the status

@@ -232,11 +232,11 @@ runCmd( "iput $dir_w/misc/email.tag test/email2.tag");
 
 runCmd( "ls > foo1" );
 
-# get listing of example rules in ./rules3.0
+# get listing of example rules in ./rules
 my @rules;
 my $rulefile;
 my $ssb=0;
-@rules = <rules3.0/*>;
+@rules = <rules/*>;
 
 # loop through all
 foreach $rulefile (@rules) 
@@ -351,7 +351,7 @@ foreach $rulefile (@rules)
     runCmd( "irule -F $rulefile" );
 }
 
-#runCmd( "irule -F rules3.0/rulegenerateBagIt.r" );
+#runCmd( "irule -F rules/rulegenerateBagIt.r" );
 
 
 

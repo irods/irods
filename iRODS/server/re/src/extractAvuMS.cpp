@@ -36,7 +36,7 @@ extern char *__loc1;
  *  any value between re1 and re2 in a metadata buffer can be
  *  associated with keyword kw.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] bufParam - a msParam of type BUF_LEN_MS_T
  * \param[out] tagParam - a return msParam of type TagStruct_MS_T
@@ -179,7 +179,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
  * corresponding string in the match string with a string that matches a sub-string value: '\<t\>.*\</t\>'.
  * The service is used for processing a tagged structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inTagParam - a msParam of type STR_MS_T
  * \param[in] inStrParam - a msParam of type STR_MS_T
@@ -271,7 +271,7 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
  *  between them is associated with the keyword.
  *  A.l  <key,value> pairs found are stored in keyValPair_t structure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] bufParam - a msParam of type BUF_MS_T
  * \param[in] tagParam - a msParam of type TagStruct_MS_T
@@ -402,7 +402,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
  *  \li -C for collection
  *  \li -u for user
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
  * \param[in] objParam - a msParam of type STR_MS_T
@@ -475,7 +475,7 @@ msiAssociateKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  *  \li -C for collection
  *  \li -u for user
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
  * \param[in] objParam - a msParam of type STR_MS_T
@@ -535,7 +535,7 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] objParam  - a msParam of type STR_MS_T, the path of the iRODS object
  * \param[out] typeParam - a msParam of type STR_MS_T, will be set by this microservice
@@ -603,7 +603,7 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
  *  \li -C for collection
  *  \li -u for user
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
  * \param[in] objParam - a msParam of type STR_MS_T

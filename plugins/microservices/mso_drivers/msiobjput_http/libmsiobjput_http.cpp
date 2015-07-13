@@ -21,7 +21,7 @@
  * \since 3.0
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inMSOPath - a STR_MS_T path string to external resource
  * \param[in] inCacheFilename - a STR_MS_T cache file containing data to be written out

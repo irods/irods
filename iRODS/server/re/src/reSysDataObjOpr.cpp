@@ -36,7 +36,7 @@
  *
  * \note This function is mandatory even no defaultResc is specified (null) and should be executed right after the screening function msiSetNoDirectRescInp.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xdefaultRescList - Required - a msParam of type STR_MS_T which is a list
  *    of %-delimited resourceNames. It is a resource to use if no resource is input.
@@ -116,7 +116,7 @@ msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
  *
  * \note This microservice is optional, but if used, should be the first function to execute because it screens the resource input.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xrescList - InpParam is a xrescList of type STR_MS_T which is a list of %-delimited resourceNames e.g., resc1%resc2%resc3.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -210,7 +210,7 @@ msiSetNoDirectRescInp( msParam_t *xrescList, ruleExecInfo_t *rei ) {
  * one resource can be input using the character "%" as separator.
  * e.g., resc1%resc2%resc3. The most preferred resource should be at the top of the list.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xpreferredRescList - a msParam of type STR_MS_T, comma-delimited list of resources
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -283,7 +283,7 @@ msiSetDataObjPreferredResc( msParam_t *xpreferredRescList, ruleExecInfo_t *rei )
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xavoidResc - a msParam of type STR_MS_T - the name of the resource to avoid
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -335,7 +335,7 @@ msiSetDataObjAvoidResc( msParam_t *xavoidResc, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xsortScheme - input sorting scheme.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -384,7 +384,7 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -448,7 +448,7 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  * \note  Always returns success since it is only doing an attempt;
  *   that is, failure is common and not really a failure.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -555,7 +555,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xcacheResc - The resource name in which to cache the object
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -625,7 +625,7 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
  *  resources in the resource group. A "null" input means a single copy will be made in
  *  one of the resources in the resource group.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  *
  * \param[in] xcacheResc -
@@ -705,7 +705,7 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
  *
  * \note The msiSetNumThreads function must be present or no thread will be used for all transfer.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xsizePerThrInMbStr - The number of threads is computed
  *    using: numThreads = fileSizeInMb / sizePerThrInMb + 1 where sizePerThrInMb
@@ -868,7 +868,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -907,7 +907,7 @@ msiDeleteDisallowed( ruleExecInfo_t *rei ) {
  * \author
  * \date
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -946,7 +946,7 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -983,7 +983,7 @@ msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
  *
  * \warning This microservice can create a security problem if used incorrectly.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1019,7 +1019,7 @@ msiNoChkFilePathPerm( ruleExecInfo_t *rei ) {
  *
  * \warning This microservice can create a security problem if set to anything other than DISALLOW_PATH_REG and used incorrectly.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xchkType - Required - a msParam of type STR_MS_T which defines the check type to set. Valid values are DO_CHK_PATH_PERM_STR, NO_CHK_PATH_PERM_STR, CHK_NON_VAULT_PATH_PERM_STR and DISALLOW_PATH_REG_STR.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -1076,7 +1076,7 @@ msiSetChkFilePathPerm( msParam_t *xchkType, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1112,7 +1112,7 @@ msiNoTrashCan( ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xoprList - Only 2 operations are allowed - "read" - read files;
  * "query" - browse some system level metadata. More than one operation can be
@@ -1245,7 +1245,7 @@ setApiPerm( int apiNumber, int proxyPerm, int clientPerm ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xaddUserName - This msParam specifies whether the userName should
  *      be added to the physical path. e.g. $vaultPath/$userName/$logicalPath.
@@ -1348,7 +1348,7 @@ msiSetGraftPathScheme( msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
  *
  * \author - Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1409,7 +1409,7 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xnumProc - a STR_MS_T representing number of processes
  *     - this value can be "default" or an integer
@@ -1472,7 +1472,7 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
  * \since 2.3
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xflag - Required - a msParam of type STR_MS_T.
  *     \li "on" - enable Resource Quota enforcement
@@ -1523,7 +1523,7 @@ msiSetRescQuotaPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
  *
  * \note  Can be called by client through irule
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inpParam1 - a STR_MS_T with the id of the object (can be null if unknown, the next param will then be used)
  * \param[in] inpParam2 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path
@@ -1638,7 +1638,7 @@ msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2,
  * \since 2.4
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] xflag - Required - a msParam of type STR_MS_T.
  *     \li "on" - enable execution of acPostProcForPut.
@@ -1691,7 +1691,7 @@ msiSetBulkPutPostProcPolicy( msParam_t *xflag, ruleExecInfo_t *rei ) {
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] sysMetadata - A STR_MS_T which specifies the system metadata to be modified.
  *            Allowed values are: "datatype", "comment", "expirytime". If one wants to modify

@@ -21,7 +21,7 @@
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inKVPair - This msParam is of type KeyValPair_PI which is a KeyValPair List.
  * \param[in] inKey - This msParam is of type STR_MS_T which is a key.
@@ -77,7 +77,7 @@ int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ru
  *         run the query:  "SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE 'foo%'".
  *         The result is printed using #msiPrintKeyValPair, which prints each row as an attribute-value pair.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] where - a msParam of type STR_MS_T which is either stderr or stdout.
  * \param[in] inkvpair - a msParam of type KeyValPair_PI which is a KeyValPair list (structure).
@@ -142,7 +142,7 @@ int msiPrintKeyValPair( msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *r
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
  * \param[out] outKeyValPairP - a msParam of type KeyValPair_MS_T which is a keyValuePair structure.
@@ -211,7 +211,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
  * \since 3.0
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
  * \param[out] outStrArrayP - a msParam of type StrArray_MS_T which is a structure of array of string.
@@ -268,7 +268,7 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
  * \since pre-2.1
  *
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in] inSAParam - a msParam of type strArr_MS_T which is an array of strings.
  * \param[out] outStr - a msParam of type STR_MS_T which a string with %-separators.
@@ -324,7 +324,7 @@ int msiStrArray2String( msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t 
  *
  * \note A new keyValPair_t is created if inKeyValPair is NULL.
  *
- * \usage See clients/icommands/test/rules3.0/
+ * \usage See clients/icommands/test/rules/
  *
  * \param[in,out] inKeyValPair - Optional - a KeyValPair_MS_T
  * \param[in] key - Required - A STR_MS_T containing the key
