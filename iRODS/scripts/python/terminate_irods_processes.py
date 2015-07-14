@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import psutil
+import itertools
 
 #
 # This script finds iRODS processes owned by the current user,
@@ -37,10 +38,20 @@ def parse_formatted_lsof_output(output):
             parsed_output[-1][line[0]] = line[1:]
     return parsed_output
 
-p = subprocess.Popen(['which', 'lsof'])
-p.wait()
+p = subprocess.Popen(['which', 'lsof'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+out, err = p.communicate()
 if p.returncode != 0:
-    print('lsof not in path', file=sys.stderr)
+    print('\n\t'.join([
+            'Call to \'which lsof\' failed:',
+            'Return code: {0}'.format(p.returncode),
+            '\n\t\t'.join(itertools.chain(['Standard output:'], out.splitlines())),
+            '\n\t\t'.join(itertools.chain(['Error output:'], err.splitlines()))]),
+        'Please ensure lsof is installed and in your path.',
+        file=sys.stderr, sep='\n')
+    sys.exit(1)
+
 top_level_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 for binary in ["irodsServer", "irodsReServer", "irodsXmsgServer", "irodsAgent"]:
     full_path = os.path.join(top_level_dir, "iRODS/server/bin/"+binary)
