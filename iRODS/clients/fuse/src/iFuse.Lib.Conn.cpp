@@ -233,6 +233,7 @@ static void* _connChecker(void* param) {
             if(g_InUseConn[i] != NULL) {
                 if(IFuseLibDiffTimeSec(currentTime, g_InUseConn[i]->lastKeepAliveTime) >= g_connKeepAliveSec) {
                     _keepAlive(g_InUseConn[i]);
+                    g_InUseConn[i]->lastKeepAliveTime = currentTime;
                 }
             }
         }
@@ -240,6 +241,7 @@ static void* _connChecker(void* param) {
         if(g_InUseStatConn != NULL) {
             if(IFuseLibDiffTimeSec(currentTime, g_InUseStatConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
                 _keepAlive(g_InUseStatConn);
+                g_InUseStatConn->lastKeepAliveTime = currentTime;
             }
         }
         
