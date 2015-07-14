@@ -17,7 +17,6 @@ import irods_six
 import get_db_schema_version
 import validate_json
 
-
 class IrodsControllerError(Exception):
     pass
 
@@ -108,17 +107,10 @@ class IrodsController(object):
                             IrodsControllerError('Could not bind port {0}.'.format(irods_port)),
                             sys.exc_info()[2])
 
-            p = subprocess.Popen(
+            execute_command(
                 [self.get_server_executable()],
                 cwd=self.get_server_bin_directory(),
-                env=new_execution_environment,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT)
-            out, _ = p.communicate()
-            if p.returncode != 0:
-                raise IrodsControllerError('\n\t'.join([
-                    'iRODS server failed to start.',
-                    out.decode()]))
+                env=new_execution_environment)
 
             retry_count = 100
             while True:
@@ -143,28 +135,15 @@ class IrodsController(object):
             print('Success')
 
     def irods_grid_shutdown(self, timeout=20):
-        p = subprocess.Popen(
-            ['irods-grid',
-             'shutdown',
-             '--hosts={0}'.format(get_hostname())],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+        args = ['irods-grid', 'shutdown', '--hosts={0}'.format(get_hostname())]
+        kwargs = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+        p = execute_command_nonblocking(args, **kwargs)
         start_time = time.time()
         while time.time() < start_time + timeout:
-            p.poll()
-            if p.returncode is not None:
-                if p.returncode == 0:
-                    break
-                else:
-                    out, err = p.communicate()
-                    raise IrodsControllerError('\n'.join([
-                        'The irods-grid shutdown command returned '
-                        'with non-zero error code {0}.'.format(
-                            p.returncode),
-                        'irods_grid stdout:',
-                        '{0}'.format(out),
-                        'irods_grid stderr:',
-                        '{0}'.format(err)]))
+            if p.poll() is not None:
+                out, err = p.communicate()
+                check_command_return(args, out.decode(), err.decode(), p.returncode, **kwargs)
+                break
             time.sleep(0.3)
         else:
             try:
@@ -512,13 +491,60 @@ def get_irods_environment_path():
         '.irods',
         'irods_environment.json')
 
+def execute_command_nonblocking(args, **kwargs):
+    try :
+        return subprocess.Popen(args, **kwargs)
+    except OSError as e:
+        irods_six.reraise(IrodsControllerError,
+            IrodsControllerError('\n'.join([
+                'Call to open process with {0} failed:'.format(
+                    args),
+                indent(
+                    'Could not find the requested executable \'{0}\'; '
+                    'please ensure \'{0}\' is installed and in the path.'.format(
+                        args[0]))])),
+            sys.exc_info()[2])
+
+def execute_command_permissive(args, **kwargs):
+    if 'stdout' not in kwargs:
+        kwargs['stdout'] = subprocess.PIPE
+    if 'stderr' not in kwargs:
+        kwargs['stderr'] = subprocess.PIPE
+
+    p = execute_command_nonblocking(args, **kwargs)
+
+    out, err = [t.decode() for t in p.communicate()]
+    return (out, err, p.returncode)
+
+def check_command_return(args, out, err, returncode, **kwargs):
+    if returncode is not None and returncode != 0:
+        raise IrodsControllerError('\n'.join([
+            'Call to open process with {0} returned an error:'.format(
+                args),
+            indent(
+                'Options passed to Popen:',
+                indent(['{0}: {1}'.format(k, v) for k, v in kwargs.items()]),
+                'Return code: {0}'.format(returncode),
+                'Standard output:',
+                indent(out),
+                'Error output:',
+                indent(err))]))
+
+def execute_command(args, **kwargs):
+    if 'stdout' not in kwargs:
+        kwargs['stdout'] = subprocess.PIPE
+    if 'stderr' not in kwargs:
+        kwargs['stderr'] = subprocess.PIPE
+
+    out, err, returncode = execute_command_permissive(args, **kwargs)
+    check_command_return(args, out, err, returncode, **kwargs)
+
+    return (out, err)
+
 def get_pids_executing_binary_file(binary_file_path):
-    # get lsof listing of pids
-    p = subprocess.Popen(['lsof', '-F', 'pf', binary_file_path],
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    out = out.decode() if p.returncode == 0 else ''
+    out, err, returncode = execute_command_permissive(
+            ['lsof', '-F', 'pf', binary_file_path])
+    out = out if returncode == 0 else ''
     parsed_out = parse_formatted_lsof_output(out)
     try:
         # we only want pids in executing state
@@ -568,6 +594,10 @@ def delete_cache_files_by_name(*paths):
             if verbose:
                 print('\tError deleting cache file: {0}'.format(path),
                       file=sys.stderr)
+
+def indent(*text):
+    return '\n'.join([
+        '\t{0}'.format('\n\t'.join(lines.splitlines())) for lines in text])
 
 def parse_options():
     parser = optparse.OptionParser()
