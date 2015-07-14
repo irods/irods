@@ -23,11 +23,10 @@ def get_pids_executing_binary_file(binary_file_path):
         # we only want pids in executing state
         return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
     except (ValueError, KeyError):
-        raise IrodsControllerError('\n\t'.join([
+        raise Exception('\n\t'.join([
             'non-conforming lsof output:',
             '{0}'.format(out),
-            '{0}'.format(err)]),
-            sys.exc_info()[2])
+            '{0}'.format(err)]))
 
 def parse_formatted_lsof_output(output):
     parsed_output = []
