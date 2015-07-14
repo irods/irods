@@ -20,6 +20,7 @@ typedef struct IFuseOpt {
     bool bufferedFS;
     int maxConn;
     int connTimeoutSec;
+    int connKeepAliveSec;
     char *mountpoint;
     iFuseExtendedOpt_t *extendedOpts;
 } iFuseOpt_t;

@@ -15,11 +15,13 @@
 
 #define IFUSE_FREE_CONN_CHECK_PERIOD    10
 #define IFUSE_FREE_CONN_TIMEOUT_SEC     (60*5)
+#define IFUSE_FREE_CONN_KEEPALIVE_SEC     (60*3)
 
 typedef struct IFuseConn {
     unsigned long connId;
     rcComm_t *conn;
     time_t actTime;
+    time_t lastKeepAliveTime;
     int inuseCnt;
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;

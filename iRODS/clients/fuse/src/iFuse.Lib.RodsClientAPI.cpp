@@ -141,6 +141,10 @@ int iFuseRodsClientDisconnect(rcComm_t *conn) {
     return rcDisconnect(conn);
 }
 
+int iFuseRodsClientMakeRodsPath(const char *path, char *iRodsPath) {
+    return parseRodsPathStr((char *) (path + 1), iFuseLibGetRodsEnv(), iRodsPath);
+}
+
 int iFuseRodsClientDataObjOpen(rcComm_t *conn, dataObjInp_t *dataObjInp) {
     iFuseRodsClientOperation_t *oper = _startOperationTimeout(conn);
     int status;
