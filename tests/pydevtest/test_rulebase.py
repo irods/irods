@@ -21,6 +21,34 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Rulebase, self).tearDown()
 
+    def test_msiDataObjWrite__2795(self):
+        rule_file = "test_rule_file.r"
+        rule_string = """
+test_msiDataObjWrite__2795 {
+  ### write a string to a file in irods
+  msiDataObjCreate("*TEST_ROOT" ++ "/test_file.txt","null",*FD);
+  msiDataObjWrite(*FD,"this_is_a_test_string",*LEN);
+  msiDataObjClose(*FD,*Status);
+
+}
+
+INPUT *TEST_ROOT=\""""+self.admin.session_collection+"""\"
+OUTPUT ruleExecOut
+"""
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        test_file = self.admin.session_collection+'/test_file.txt'
+
+        self.admin.assert_icommand('irule -F ' + rule_file)
+        self.admin.assert_icommand('ils -l','STDOUT_SINGLELINE','test_file')
+        self.admin.assert_icommand('iget -f '+test_file)
+
+        with open("test_file.txt", 'r') as f:
+            file_contents = f.read()
+
+        assert( not file_contents.endswith('\0') )
+
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         # create new resources
         hostname = socket.gethostname()
