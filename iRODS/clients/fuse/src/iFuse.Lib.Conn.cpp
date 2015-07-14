@@ -27,6 +27,7 @@ static unsigned long g_connIDGen;
 
 static int g_maxConnNum = IFUSE_MAX_NUM_CONN;
 static int g_connTimeoutSec = IFUSE_FREE_CONN_TIMEOUT_SEC;
+static int g_connKeepAliveSec = IFUSE_FREE_CONN_KEEPALIVE_SEC;
 
 /*
  * Lock order : 
@@ -176,22 +177,73 @@ static int _freeAllConn() {
     return 0;
 }
 
-static void* _freeConnCollector(void* param) {
+static void _keepAlive(iFuseConn_t *iFuseConn) {
+    int status = 0;
+    char iRodsPath[MAX_NAME_LEN];
+    dataObjInp_t dataObjInp;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+    
+    bzero(iRodsPath, MAX_NAME_LEN);
+    status = iFuseRodsClientMakeRodsPath("/", iRodsPath);
+    if (status < 0) {
+        iFuseRodsClientLogError(LOG_ERROR, status,
+                "_keepAlive: iFuseRodsClientMakeRodsPath of %s error", iRodsPath);
+        return;
+    }
+    
+    iFuseRodsClientLog(LOG_DEBUG, "_keepAlive: %s", iRodsPath);
+    
+    bzero(&dataObjInp, sizeof ( dataObjInp_t));
+    rstrcpy(dataObjInp.objPath, iRodsPath, MAX_NAME_LEN);
+    
+    iFuseConnLock(iFuseConn);
+    
+    status = iFuseRodsClientObjStat(iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
+    if (status < 0) {
+        iFuseRodsClientLogError(LOG_ERROR, status, "_keepAlive: iFuseRodsClientObjStat of %s error, status = %d",
+            iRodsPath, status);
+        iFuseConnUnlock(iFuseConn);
+        return;
+    }
+    
+    if(rodsObjStatOut != NULL) {
+        freeRodsObjStat(rodsObjStatOut);
+    }
+    
+    iFuseConnUnlock(iFuseConn);
+}
+
+static void* _connChecker(void* param) {
     std::list<iFuseConn_t*> removeList;
     std::list<iFuseConn_t*>::iterator it_conn;
     iFuseConn_t *iFuseConn;
     time_t currentTime;
+    int i;
     
     UNUSED(param);
     
-    iFuseRodsClientLog(LOG_DEBUG, "_freeConnCollector: collector is running");
+    iFuseRodsClientLog(LOG_DEBUG, "_connChecker: collector is running");
     
     while(g_FreeConnCollectorRunning) {
         pthread_mutex_lock(&g_ConnectedConnLock);
         
         currentTime = iFuseLibGetCurrentTime();
         
-        //iFuseRodsClientLog(LOG_DEBUG, "_freeConnCollector: checking");
+        for(i=0;i<g_maxConnNum;i++) {
+            if(g_InUseConn[i] != NULL) {
+                if(IFuseLibDiffTimeSec(currentTime, g_InUseConn[i]->lastKeepAliveTime) >= g_connKeepAliveSec) {
+                    _keepAlive(g_InUseConn[i]);
+                }
+            }
+        }
+
+        if(g_InUseStatConn != NULL) {
+            if(IFuseLibDiffTimeSec(currentTime, g_InUseStatConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
+                _keepAlive(g_InUseStatConn);
+            }
+        }
+        
+        //iFuseRodsClientLog(LOG_DEBUG, "_freeConnCollector: checking idle connections");
         
         // iterate free conn list to check timedout connections
         for(it_conn=g_FreeConn.begin();it_conn!=g_FreeConn.end();it_conn++) {
@@ -239,6 +291,10 @@ void iFuseConnInit() {
         g_connTimeoutSec = iFuseLibGetOption()->connTimeoutSec;
     }
     
+    if(iFuseLibGetOption()->connKeepAliveSec > 0) {
+        g_connKeepAliveSec = iFuseLibGetOption()->connKeepAliveSec;
+    }
+    
     pthread_mutexattr_settype(&g_ConnectedConnLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_ConnectedConnLock, &g_ConnectedConnLockAttr);
     
@@ -252,7 +308,7 @@ void iFuseConnInit() {
     
     g_FreeConnCollectorRunning = true;
     
-    pthread_create(&g_FreeConnCollector, NULL, _freeConnCollector, NULL);
+    pthread_create(&g_FreeConnCollector, NULL, _connChecker, NULL);
 }
 
 /*

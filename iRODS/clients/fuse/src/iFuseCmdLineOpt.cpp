@@ -22,6 +22,7 @@ void iFuseCmdOptsInit() {
     g_Opt.bufferedFS = true;
     g_Opt.maxConn = IFUSE_MAX_NUM_CONN;
     g_Opt.connTimeoutSec = IFUSE_FREE_CONN_TIMEOUT_SEC;
+    g_Opt.connKeepAliveSec = IFUSE_FREE_CONN_KEEPALIVE_SEC;
 }
 
 void iFuseCmdOptsDestroy() {
@@ -87,6 +88,12 @@ void iFuseCmdOptsParse(int argc, char **argv) {
         } else if(strcmp("-oconntimeout", argv[i]) == 0) {
             if(argc > i+1) {
                 g_Opt.connTimeoutSec = atoi(argv[i+1]);
+                argv[i+1] = "-Z";
+            }
+            argv[i] = "-Z";
+        } else if(strcmp("-oconnkeepalive", argv[i]) == 0) {
+            if(argc > i+1) {
+                g_Opt.connKeepAliveSec = atoi(argv[i+1]);
                 argv[i+1] = "-Z";
             }
             argv[i] = "-Z";

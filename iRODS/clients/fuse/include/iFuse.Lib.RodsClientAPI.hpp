@@ -36,6 +36,7 @@ rcComm_t *iFuseRodsClientConnect(const char *rodsHost, int rodsPort, const char 
 int iFuseRodsClientLogin(rcComm_t *conn);
 int iFuseRodsClientDisconnect(rcComm_t *conn);
 
+int iFuseRodsClientMakeRodsPath(const char *path, char *iRodsPath);
 
 int iFuseRodsClientDataObjOpen(rcComm_t *conn, dataObjInp_t *dataObjInp);
 int iFuseRodsClientDataObjClose(rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp);
