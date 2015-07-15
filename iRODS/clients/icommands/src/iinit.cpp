@@ -109,7 +109,7 @@ main( int argc, char **argv ) {
     }
 
     if ( myRodsArgs.longOption == True ) {
-        rodsLogLevel( LOG_NOTICE );
+        printRodsEnv( stdout );
     }
 
     status = getRodsEnv( &my_env );

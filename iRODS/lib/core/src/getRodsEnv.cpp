@@ -29,6 +29,7 @@
 #include "getRodsEnv.h"
 #include "rodsLog.h"
 #include "irods_log.hpp"
+#include "irods_version.h"
 #include "irods_environment_properties.hpp"
 #include "irods_configuration_keywords.hpp"
 
@@ -718,6 +719,13 @@ extern "C" {
             return ret.code();
         }
 
+        fprintf(
+            _fout,
+            "irods_version - %d.%d.%d",
+            IRODS_VERSION_MAJOR,
+            IRODS_VERSION_MINOR,
+            IRODS_VERSION_PATCHLEVEL);
+
         irods::environment_properties::iterator itr;
         for(
             itr  = props.begin();
@@ -753,6 +761,8 @@ extern "C" {
             }
 
         } // for itr
+
+        return 0;
 
     } // printRodsEnv
 

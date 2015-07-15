@@ -41,10 +41,6 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.username)
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.zone_name)
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.default_resource)
-        res = self.admin.run_icommand(['ils', '-V'])
-        assert res[1].count('irods_host') == 1
-        assert res[1].count('irods_port') == 1
-        assert res[1].count('irods_default_resource') == 1
 
         # begin original devtest
         self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
@@ -611,7 +607,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT_SINGLELINE', "relVersion")
         self.admin.assert_icommand("iuserinfo", 'STDOUT_SINGLELINE', "name: " + username)
-        self.admin.assert_icommand("ienv", 'STDOUT_SINGLELINE', "Release Version")
+        self.admin.assert_icommand("ienv", 'STDOUT_SINGLELINE', "irods_version")
         self.admin.assert_icommand("icd " + irodshome)
         self.admin.assert_icommand("ipwd", 'STDOUT_SINGLELINE', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT_SINGLELINE', "ils")
