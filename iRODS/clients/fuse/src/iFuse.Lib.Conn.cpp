@@ -235,6 +235,7 @@ static void* _connChecker(void* param) {
             if(g_InUseConn[i] != NULL) {
                 if(IFuseLibDiffTimeSec(currentTime, g_InUseConn[i]->lastKeepAliveTime) >= g_connKeepAliveSec) {
                     _keepAlive(g_InUseConn[i]);
+                    g_InUseConn[i]->lastKeepAliveTime = currentTime;
                 }
             }
         }
@@ -242,6 +243,7 @@ static void* _connChecker(void* param) {
         if(g_InUseStatConn != NULL) {
             if(IFuseLibDiffTimeSec(currentTime, g_InUseStatConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
                 _keepAlive(g_InUseStatConn);
+                g_InUseStatConn->lastKeepAliveTime = currentTime;
             }
         }
         
@@ -540,6 +542,8 @@ void iFuseConnLock(iFuseConn_t *iFuseConn) {
     assert(iFuseConn != NULL);
     
     pthread_mutex_lock(&iFuseConn->lock);
+
+    rodsLog(LOG_DEBUG, "iFuseConnLock: connection locked - %lu", iFuseConn->connId);
 }
 
 /*
@@ -549,4 +553,6 @@ void iFuseConnUnlock(iFuseConn_t *iFuseConn) {
     assert(iFuseConn != NULL);
     
     pthread_mutex_unlock(&iFuseConn->lock);
+
+    rodsLog(LOG_DEBUG, "iFuseConnUnlock: connection unlocked - %lu", iFuseConn->connId);
 }
