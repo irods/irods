@@ -85,12 +85,12 @@ def create_local_largefile(filename):
 
 
 def touch(fname, times=None):
-    with file(fname, 'a'):
+    with open(fname, 'a'):
         os.utime(fname, times)
 
 
 def cat(fname, string, times=None):
-    with file(fname, 'a') as f:
+    with open(fname, 'a') as f:
         f.write(string)
 
 
