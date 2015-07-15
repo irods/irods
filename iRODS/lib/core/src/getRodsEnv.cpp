@@ -147,7 +147,7 @@ extern "C" {
                                prop_str );
         if ( !ret.ok() ) {
             rodsLog(
-                LOG_ERROR,
+                LOG_DEBUG,
                 "%s is not defined",
                 _key.c_str() );
             return ret.code();
@@ -172,7 +172,7 @@ extern "C" {
                                _val );
         if ( !ret.ok() ) {
             rodsLog(
-                LOG_ERROR,
+                LOG_DEBUG,
                 "%s is not defined",
                 _key.c_str() );
             return ret.code();
