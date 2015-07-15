@@ -21,7 +21,7 @@ typedef struct IFuseRodsClientOperation {
 } iFuseRodsClientOperation_t;
 
 static pthread_mutex_t g_RodsClientAPILock;
-static pthread_mutexattr_t g_RodsClientAPIAttr;
+static pthread_mutexattr_t g_RodsClientAPILockAttr;
 static std::list<iFuseRodsClientOperation_t*> g_Operations;
 static pthread_t g_TimeoutChecker;
 static bool g_TimeoutCheckerRunning;
@@ -91,8 +91,9 @@ static void _endOperationTimeout(iFuseRodsClientOperation_t *oper) {
  * Initialize iFuse Rods Client
  */
 void iFuseRodsClientInit() {
-    pthread_mutexattr_settype(&g_RodsClientAPIAttr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&g_RodsClientAPILock, &g_RodsClientAPIAttr);
+    pthread_mutexattr_init(&g_RodsClientAPILockAttr);
+    pthread_mutexattr_settype(&g_RodsClientAPILockAttr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&g_RodsClientAPILock, &g_RodsClientAPILockAttr);
     
     g_TimeoutCheckerRunning = true;
     
@@ -108,6 +109,7 @@ void iFuseRodsClientDestroy() {
     pthread_join(g_TimeoutChecker, NULL);
     
     pthread_mutex_destroy(&g_RodsClientAPILock);
+    pthread_mutexattr_destroy(&g_RodsClientAPILockAttr);
 }
 
 int iFuseRodsClientReadMsgError(int status) {

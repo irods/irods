@@ -390,6 +390,7 @@ static int _releaseAllCache() {
  * Initialize buffer cache manager
  */
 void iFuseBufferedFSInit() {
+    pthread_mutexattr_init(&g_BufferCacheLockAttr);
     pthread_mutexattr_settype(&g_BufferCacheLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_BufferCacheLock, &g_BufferCacheLockAttr);
 }
@@ -401,6 +402,7 @@ void iFuseBufferedFSDestroy() {
     _releaseAllCache();
     
     pthread_mutex_destroy(&g_BufferCacheLock);
+    pthread_mutexattr_destroy(&g_BufferCacheLockAttr);
 }
 
 int iFuseBufferedFsGetAttr(const char *iRodsPath, struct stat *stbuf) {

@@ -59,6 +59,7 @@ static int _fillDirStat(struct stat *stbuf, uint ctime, uint mtime, uint atime) 
  * Initialize buffer cache manager
  */
 void iFuseFsInit() {
+    pthread_mutexattr_init(&g_FSConsecutiveOpLockAttr);
     pthread_mutexattr_settype(&g_FSConsecutiveOpLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_FSConsecutiveOpLock, &g_FSConsecutiveOpLockAttr);
 }
@@ -68,6 +69,7 @@ void iFuseFsInit() {
  */
 void iFuseFsDestroy() {
     pthread_mutex_destroy(&g_FSConsecutiveOpLock);
+    pthread_mutexattr_destroy(&g_FSConsecutiveOpLockAttr);
 }
 
 int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {

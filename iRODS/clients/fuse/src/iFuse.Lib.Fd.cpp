@@ -117,6 +117,7 @@ static int _freeFd(iFuseFd_t *iFuseFd) {
     _closeFd(iFuseFd);
     
     pthread_mutex_destroy(&iFuseFd->lock);
+    pthread_mutexattr_destroy(&iFuseFd->lockAttr);
     
     if(iFuseFd->iRodsPath != NULL) {
         free(iFuseFd->iRodsPath);
@@ -133,6 +134,7 @@ static int _freeDir(iFuseDir_t *iFuseDir) {
     _closeDir(iFuseDir);
     
     pthread_mutex_destroy(&iFuseDir->lock);
+    pthread_mutexattr_destroy(&iFuseDir->lockAttr);
     
     if(iFuseDir->iRodsPath != NULL) {
         free(iFuseDir->iRodsPath);
@@ -186,6 +188,7 @@ static int _closeAllDir() {
  * Initialize file descriptor manager
  */
 void iFuseFdInit() {
+    pthread_mutexattr_init(&g_AssignedFdLockAttr);
     pthread_mutexattr_settype(&g_AssignedFdLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_AssignedFdLock, &g_AssignedFdLockAttr);
     
@@ -196,6 +199,7 @@ void iFuseFdInit() {
  * Initialize directory descriptor manager
  */
 void iFuseDirInit() {
+    pthread_mutexattr_init(&g_AssignedDirLockAttr);
     pthread_mutexattr_settype(&g_AssignedDirLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_AssignedDirLock, &g_AssignedDirLockAttr);
     
@@ -211,6 +215,7 @@ void iFuseFdDestroy() {
     _closeAllFd();
     
     pthread_mutex_destroy(&g_AssignedFdLock);
+    pthread_mutexattr_destroy(&g_AssignedFdLockAttr);
 }
 
 /*
@@ -222,6 +227,7 @@ void iFuseDirDestroy() {
     _closeAllDir();
     
     pthread_mutex_destroy(&g_AssignedDirLock);
+    pthread_mutexattr_destroy(&g_AssignedDirLockAttr);
 }
 
 /*
@@ -292,6 +298,7 @@ int iFuseFdOpen(iFuseFd_t **iFuseFd, iFuseConn_t *iFuseConn, const char* iRodsPa
     tmpIFuseDesc->iRodsPath = strdup(iRodsPath);
     tmpIFuseDesc->openFlag = openFlag;
     
+    pthread_mutexattr_init(&tmpIFuseDesc->lockAttr);
     pthread_mutexattr_settype(&tmpIFuseDesc->lockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&tmpIFuseDesc->lock, &tmpIFuseDesc->lockAttr);
     
@@ -375,6 +382,7 @@ int iFuseDirOpen(iFuseDir_t **iFuseDir, iFuseConn_t *iFuseConn, const char* iRod
     
     memcpy(tmpIFuseDesc->handle, &collHandle, sizeof(collHandle_t));
     
+    pthread_mutexattr_init(&tmpIFuseDesc->lockAttr);
     pthread_mutexattr_settype(&tmpIFuseDesc->lockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&tmpIFuseDesc->lock, &tmpIFuseDesc->lockAttr);
     

@@ -116,6 +116,7 @@ static int _newConn(iFuseConn_t **iFuseConn) {
     
     iFuseRodsClientLog(LOG_DEBUG, "_newConn: creating a new connection - %lu", tmpIFuseConn->connId);
     
+    pthread_mutexattr_init(&tmpIFuseConn->lockAttr);
     pthread_mutexattr_settype(&tmpIFuseConn->lockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&tmpIFuseConn->lock, &tmpIFuseConn->lockAttr);
 
@@ -134,6 +135,7 @@ static int _freeConn(iFuseConn_t *iFuseConn) {
     _disconnect(iFuseConn);
 
     pthread_mutex_destroy(&iFuseConn->lock);
+    pthread_mutexattr_destroy(&iFuseConn->lockAttr);
 
     free(iFuseConn);
     return 0;
@@ -295,6 +297,7 @@ void iFuseConnInit() {
         g_connKeepAliveSec = iFuseLibGetOption()->connKeepAliveSec;
     }
     
+    pthread_mutexattr_init(&g_ConnectedConnLockAttr);
     pthread_mutexattr_settype(&g_ConnectedConnLockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&g_ConnectedConnLock, &g_ConnectedConnLockAttr);
     
@@ -324,6 +327,7 @@ void iFuseConnDestroy() {
     pthread_join(g_FreeConnCollector, NULL);
     
     pthread_mutex_destroy(&g_ConnectedConnLock);
+    pthread_mutexattr_destroy(&g_ConnectedConnLockAttr);
     
     free(g_InUseConn);
 }
