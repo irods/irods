@@ -72,6 +72,8 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int allFlag;
     int verifyFlag;
     int forceFlag;
+    
+    char* inp_chksum = getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW );
 
     if ( getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL ) {
         allFlag = 1;
@@ -142,6 +144,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                          outChksumStr );
         }
         else {
+            addKeyVal( &tmpDataObjInfo->condInput, ORIG_CHKSUM_KW, inp_chksum );
             status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo, outChksumStr );
         }
 
