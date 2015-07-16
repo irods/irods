@@ -140,6 +140,8 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return CHKSUM_EMPTY_IN_STRUCT_ERR;
     }
 
+    addKeyVal( &dataObjInp->condInput, ORIG_CHKSUM_KW, fileChksumStr );
+
     status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
                                &dataObjInfoHead );
 
@@ -155,7 +157,6 @@ rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     freeAllDataObjInfo( dataObjInfoHead );
-
     status = dataObjChksumStr && strcmp( dataObjChksumStr, fileChksumStr ) == 0 ?
              0 : SYS_SVR_TO_CLI_GET_ACTION;
 
@@ -174,6 +175,8 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                  "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing" );
         return CHKSUM_EMPTY_IN_STRUCT_ERR;
     }
+    
+    addKeyVal( &dataObjInp->condInput, ORIG_CHKSUM_KW, fileChksumStr );
 
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
@@ -213,7 +216,6 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     freeAllDataObjInfo( dataObjInfoHead );
-
     if ( dataObjChksumStr != NULL &&
             strcmp( dataObjChksumStr, fileChksumStr ) == 0 ) {
         free( dataObjChksumStr );

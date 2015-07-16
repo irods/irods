@@ -17,7 +17,7 @@
 using namespace boost::filesystem;
 
 #include "irods_log.hpp"
-
+#include "irods_hasher_factory.hpp"
 
 static int CurrentTime = 0;
 int
@@ -193,11 +193,21 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
     else if ( strlen( srcPath->chksum ) > 0 ) {
+        // =-=-=-=-=-=-=-
+        // extract scheme from checksum string
+        std::string scheme;
+        irods::error ret = irods::get_hash_scheme_from_checksum( 
+                               srcPath->chksum,
+                               scheme );
+        if ( !ret.ok() ) {
+            printf( "%s", ret.results().c_str() );
+        }
+
         /* src has a checksum value */
         status = rcChksumLocFile( targPath->outPath,
                                   RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  env.rodsDefaultHashScheme );
+                                  scheme.c_str() );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncDataToFileUtil: rcChksumLocFile error for %s, status = %d",
@@ -338,10 +348,20 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
     else if ( strlen( targPath->chksum ) > 0 ) {
+        // =-=-=-=-=-=-=-
+        // extract scheme from checksum string
+        std::string scheme;
+        irods::error ret = irods::get_hash_scheme_from_checksum( 
+                               targPath->chksum,
+                               scheme );
+        if ( !ret.ok() ) {
+            printf( "%s", ret.results().c_str() );
+        }
+
         /* src has a checksum value */
         status = rcChksumLocFile( srcPath->outPath, RSYNC_CHKSUM_KW,
                                   &dataObjOprInp->condInput,
-                                  env.rodsDefaultHashScheme );
+                                  scheme.c_str() );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,
                           "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
@@ -350,6 +370,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
+
             if ( chksum == NULL || strcmp( chksum, targPath->chksum ) != 0 ) {
                 if ( chksum != NULL && myRodsArgs->verifyChecksum == True ) {
                     addKeyVal( &dataObjOprInp->condInput, VERIFY_CHKSUM_KW,
