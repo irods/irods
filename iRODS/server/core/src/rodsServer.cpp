@@ -62,7 +62,10 @@ boost::mutex              ConnectedAgentMutex;
 boost::mutex              BadReqMutex;
 boost::thread*            ReadWorkerThread[NUM_READ_WORKER_THR];
 boost::thread*            SpawnManagerThread;
+
+#if RODS_CAT // JMC - backport 4612
 boost::thread*            PurgeLockFileThread; // JMC - backport 4612
+#endif
 
 boost::mutex              ReadReqCondMutex;
 boost::mutex              SpawnReqCondMutex;
@@ -326,6 +329,7 @@ serverMain( char *logDir ) {
     }
 
 
+    uint64_t return_code = 0;
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
     try {
@@ -463,21 +467,22 @@ serverMain( char *logDir ) {
 #endif
         }
 
+#if RODS_CAT // JMC - backport 4612
         try {
             PurgeLockFileThread->join();
         }
         catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in serverMain." );
         }
+#endif /* RODS_CAT */
+
         procChildren( &ConnectedAgentHead );
         stopProcConnReqThreads();
 
     }
     catch ( const irods::exception& e_ ) {
-        const char* what = e_.what();
-        std::cerr << what << std::endl;
-        return e_.code();
-
+        rodsLog( LOG_ERROR, "Exception caught in server loop\n%s", e_.what() );
+        return_code = e_.code();
     }
 
     resetMutex();
@@ -485,7 +490,7 @@ serverMain( char *logDir ) {
 
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
-    return 0;
+    return return_code;
 
 }
 
