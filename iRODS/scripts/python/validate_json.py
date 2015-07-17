@@ -1,7 +1,12 @@
 from __future__ import print_function
-import json
+import logging
+import pprint
 import sys
+
+import json
 import irods_six
+
+import irods_logging
 
 try:
     import jsonschema
@@ -19,7 +24,8 @@ class ValidationError(Exception):
 class ValidationWarning(Warning):
     pass
 
-def load_and_validate(config_file, schema_uri, verbose=False):
+def load_and_validate(config_file, schema_uri):
+    l = logging.getLogger(__name__)
     try:
         # load configuration file
         with open(config_file, 'r') as f:
@@ -30,10 +36,11 @@ def load_and_validate(config_file, schema_uri, verbose=False):
             'against [{0}]'.format(schema_uri),
             '{0}: {1}'.format(e.__class__.__name__, e)])),
                           sys.exc_info()[2])
-    validate_dict(config_dict, schema_uri, name=config_file, verbose=verbose)
+    validate_dict(config_dict, schema_uri, name=config_file)
     return config_dict
 
-def validate_dict(config_dict, schema_uri, name=None, verbose=False):
+def validate_dict(config_dict, schema_uri, name=None):
+    l = logging.getLogger(__name__)
     if name is None:
         name = schema_uri.rpartition('/')[2]
     try:
@@ -52,6 +59,7 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
     try:
         # load the schema url
         try:
+            l.debug('Loading schema from %s', schema_uri)
             response = requests.get(schema_uri)
         except NameError:
             irods_six.reraise(ValidationError, ValidationError(
@@ -69,6 +77,8 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
             schema = json.loads(response.content)
 
         # validate
+        l.debug('Validating %s against json schema:', name)
+        l.debug(pprint.pformat(schema))
         jsonschema.validate(config_dict, schema)
     except (
             jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
@@ -90,23 +100,26 @@ def validate_dict(config_dict, schema_uri, name=None, verbose=False):
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
                 sys.exc_info()[2])
 
-    if verbose and name:
-        print("Validating [{0}]... Success".format(name))
+    l.info("Validating [%s]... Success", name)
 
 if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.NOTSET)
+    l = logging.getLogger(__name__)
+
+    irods_logging.register_tty_handler(sys.stdout, logging.INFO, logging.WARNING)
+    irods_logging.register_tty_handler(sys.stderr, logging.WARNING, None)
     if len(sys.argv) != 3:
-        print('Usage: {0} <configuration_file> <schema_url>'.format(sys.argv[0]),
-              file=sys.stderr)
+        l.error('Usage: %s <configuration_file> <schema_url>', sys.argv[0])
         sys.exit(1)
 
     config_file = sys.argv[1]
     schema_uri = sys.argv[2]
 
     try:
-        load_and_validate(config_file, schema_uri, verbose=True)
+        load_and_validate(config_file, schema_uri)
     except ValidationError as e:
-        print(e, file=sys.stderr)
+        l.error('Encounterd an error in validation.', exc_info=True)
         sys.exit(1)
     except ValidationWarning as e:
-        print(e, file=sys.stderr)
-        sys.exit(0)
+        l.warning('Encountered a warning in validation.', exc_info=True)
+    sys.exit(0)

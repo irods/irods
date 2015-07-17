@@ -273,6 +273,8 @@ END_POSTREMOVE
 
 f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json
 
+d 755 root root ${IRODS_HOME_DIR}/log -
+
 d 755 root root ${IRODS_HOME_DIR}/tests -
 d 755 root root ${IRODS_HOME_DIR}/tests/pydevtest -
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
@@ -366,6 +368,7 @@ f 644 root root ${IRODS_HOME}/scripts/python/validate_json.py ./iRODS/scripts/py
 f 644 root root ${IRODS_HOME}/scripts/python/kill_pid.py ./iRODS/scripts/python/kill_pid.py
 f 644 root root ${IRODS_HOME}/scripts/python/terminate_irods_processes.py ./iRODS/scripts/python/terminate_irods_processes.py
 f 644 root root ${IRODS_HOME}/scripts/python/irods_control.py ./iRODS/scripts/python/irods_control.py
+f 644 root root ${IRODS_HOME}/scripts/python/irods_logging.py ./iRODS/scripts/python/irods_logging.py
 f 644 root root ${IRODS_HOME}/scripts/python/irods_six.py ./iRODS/scripts/python/irods_six.py
 d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
