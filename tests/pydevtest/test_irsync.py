@@ -11,9 +11,8 @@ import shutil
 import configuration
 from resource_suite import ResourceBase
 import lib
+import copy
 
-
-@unittest.skip("TURN ON WHEN READY")
 class Test_iRsync(ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -31,6 +30,43 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         lib.make_file(filepath, 1)
         self.admin.assert_icommand('iput ' + filepath)
         self.admin.assert_icommand('irsync -l ' + filepath + ' i:file')
+
+    def test_irsync_checksum_behavior(self):
+        # set user0's checksum scheme to MD5 to mismatch with server scheme
+        user0_env_backup = copy.deepcopy(self.user0.environment_file_contents)
+
+        self.user0.environment_file_contents['irods_default_hash_scheme'] = 'MD5'
+        self.user0.environment_file_contents['irods_match_hash_policy'] = 'compatible'
+
+        # test settings
+        depth = 1
+        files_per_level = 5
+        file_size = 1024*1024*40
+
+        # make local nested dirs
+        base_name = 'test_irsync_checksum_behavior'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+
+        # sync dir to coll
+        self.user0.assert_icommand("irsync -r -K {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("ichksum -r -K {base_name}".format(**locals()), "STDOUT_SINGLELINE", "Total checksum performed = 5, Failed checksum = 0")
+        self.user0.assert_icommand("irsync -v -r -K -l {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB --- a match no sync required")
+
+        self.user0.assert_icommand("irm -f {base_name}/junk0001".format(**locals()), "EMPTY")
+        self.user0.assert_icommand_fail("ils -L {base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001")
+
+        self.user0.assert_icommand("irsync -v -r -K -l {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001   41943040   N")
+        self.user0.assert_icommand("irsync -v -r -K {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB ")
+        self.user0.assert_icommand("irsync -v -r -K -l {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB --- a match no sync required")
+
+        lib.assert_command("rm -f {local_dir}/junk0001".format(**locals()), "EMPTY")
+
+        self.user0.assert_icommand("irsync -v -r -K -l i:{base_name} {local_dir}".format(**locals()), "STDOUT_SINGLELINE", "junk0001   41943040   N")
+        self.user0.assert_icommand("irsync -v -r -K i:{base_name} {local_dir}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB ")
+        self.user0.assert_icommand("irsync -v -r -K -l i:{base_name} {local_dir}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB --- a match no sync required")
+
+        self.user0.environment_file_contents = user0_env_backup
 
     def test_irsync_r_nested_dir_to_coll(self):
         # test settings
