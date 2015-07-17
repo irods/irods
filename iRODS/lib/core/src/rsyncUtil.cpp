@@ -200,7 +200,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
                                srcPath->chksum,
                                scheme );
         if ( !ret.ok() ) {
-            printf( "%s", ret.results().c_str() );
+            printf( "%s", ret.result().c_str() );
         }
 
         /* src has a checksum value */
@@ -355,7 +355,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
                                targPath->chksum,
                                scheme );
         if ( !ret.ok() ) {
-            printf( "%s", ret.results().c_str() );
+            printf( "%s", ret.result().c_str() );
         }
 
         /* src has a checksum value */
