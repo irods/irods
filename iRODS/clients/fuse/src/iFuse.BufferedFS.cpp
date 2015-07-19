@@ -220,6 +220,8 @@ static int _readBlock(iFuseFd_t *iFuseFd, char *buf, unsigned int blockID) {
         if (status < 0) {
             iFuseRodsClientLogError(LOG_ERROR, status, "_readBlock: iFuseFsRead of %s error, status = %d",
                     iFuseFd->iRodsPath, status);
+            free(blockBuffer);
+            _freeBufferCache(iFuseBufferCache);
             pthread_mutex_unlock(&g_BufferCacheLock);
             return -ENOENT;
         }
