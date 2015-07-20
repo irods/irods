@@ -34,11 +34,19 @@ class Test_ireg_Suite(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand("iadmin addchildtoresc r_resc m_resc")
         self.admin.assert_icommand("iadmin addchildtoresc m_resc l_resc")
+        
+        # make local test dir
+        self.testing_tmp_dir = '/tmp/irods-test-ireg'
+        shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
+        os.mkdir(self.testing_tmp_dir)
 
     def tearDown(self):
-        self.admin.assert_icommand('irm -f ' + self.admin.home_collection + '/file0')
-        self.admin.assert_icommand('irm -f ' + self.admin.home_collection + '/file1')
-        self.admin.assert_icommand('irm -f ' + self.admin.home_collection + '/file3')
+        # remove local test dir
+        shutil.rmtree(self.testing_tmp_dir)
+
+        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file0')
+        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file1')
+        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file3')
 
         self.admin.assert_icommand("irmtrash -M")
         self.admin.assert_icommand("iadmin rmchildfromresc m_resc l_resc")
@@ -63,3 +71,51 @@ class Test_ireg_Suite(resource_suite.ResourceBase, unittest.TestCase):
                                    '/file2 ' + self.admin.home_collection + '/file2', 'STDERR_SINGLELINE', 'ERROR: regUtil: reg error for')
 
         self.admin.assert_icommand("ireg -R demoResc " + ABSPATHTESTDIR + '/file3 ' + self.admin.home_collection + '/file3')
+    
+    def test_ireg_dir_exclude_from(self):
+        # test settings
+        depth = 10
+        files_per_level = 10
+        file_size = 100
+
+        # make a local test dir under /tmp/
+        test_dir_name = 'test_ireg_dir_exclude_from'
+        local_dir = os.path.join(self.testing_tmp_dir, test_dir_name)
+        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        
+        # arbitrary list of files to exclude
+        excluded = set(['junk0001', 'junk0002', 'junk0003'])
+
+        # make exclusion file
+        exclude_file_path = os.path.join(self.testing_tmp_dir, 'exclude.txt')
+        with open(exclude_file_path, 'w') as exclude_file:
+            for filename in excluded:
+                print >>exclude_file, filename
+
+        # register local dir
+        target_collection = self.admin.home_collection + '/' + test_dir_name
+        self.admin.assert_icommand("ireg --exclude-from {exclude_file_path} -C {local_dir} {target_collection}".format(**locals()), "EMPTY")
+
+        # compare files at each level
+        for dir, files in local_dirs.iteritems():
+            subcollection = dir.replace(local_dir, target_collection, 1)
+
+            # run ils on subcollection
+            self.admin.assert_icommand(['ils', subcollection], 'STDOUT_SINGLELINE')
+            ils_out = lib.ils_output_to_entries(self.admin.run_icommand(['ils', subcollection])[1])
+              
+            # compare irods objects with local files, minus the excluded ones
+            local_files = set(files)
+            rods_files = set(lib.files_in_ils_output(ils_out))
+            self.assertSetEqual(rods_files, local_files - excluded,
+                            msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
+                            "Extra files:\n" + str(rods_files - local_files))
+
+        # unregister collection
+        self.admin.assert_icommand("irm -rfU {target_collection}".format(**locals()))
+
+        # remove local test dir and exclusion file
+        os.remove(exclude_file_path)
+        shutil.rmtree(local_dir)
+
+
