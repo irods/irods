@@ -23,6 +23,13 @@ def print_debug(*args, **kwargs):
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def format_cmd_result(result):
+    return '''
+return code: [{}]
+stdout:
+{}
+stderr:
+{}'''.format(result[0], result[1].decode('utf-8'), result[2].decode('utf-8'))
 
 def get_current_schema_version(cfg):
     dbtype = cfg.get('catalog_database_type')
@@ -51,14 +58,14 @@ def get_current_schema_version(cfg):
             break
     else:
         raise RuntimeError(
-            'get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
+            'get_current_schema_version: failed to find result line for schema_version\n\n{}'.format(format_cmd_result(result)))
 
     try:
         current_schema_version = int(sql_output_lines[result_line])
     except ValueError:
         print('Failed to convert [' + sql_output_lines[result_line] + '] to an int')
         raise RuntimeError(
-            'get_current_schema_version: failed to parse schema_version\n\n' + '\n'.join(sql_output_lines))
+            'get_current_schema_version: failed to parse schema_version\n\n{}'.format(format_cmd_result(result)))
     print_debug('current_schema_version: {0}'.format(current_schema_version))
 
     return current_schema_version
