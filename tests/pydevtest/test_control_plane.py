@@ -12,7 +12,7 @@ import configuration
 import lib
 
 
-class TestControlPlane(unittest.TestCase):
+class Test_ControlPlane(unittest.TestCase):
     def test_pause_and_resume(self):
         lib.assert_command('irods-grid pause --all', 'STDOUT_SINGLELINE', 'pausing')
 
@@ -37,4 +37,11 @@ class TestControlPlane(unittest.TestCase):
 
         assert not lib.re_shm_exists(), lib.re_shm_exists()
 
+        lib.start_irods_server()
+
+    def test_shutdown_local_server(self):
+        initial_size_of_server_log = lib.get_log_size('server')
+        lib.assert_command(['irods-grid', 'shutdown', '--hosts', lib.get_hostname()], 'STDOUT_SINGLELINE', 'shutting down')
+        time.sleep(10) # server gives control plane the all-clear before printing done message
+        assert 1 == lib.count_occurrences_of_string_in_log('server', 'iRODS Server is done', initial_size_of_server_log)
         lib.start_irods_server()
