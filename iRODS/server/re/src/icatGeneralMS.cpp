@@ -340,10 +340,8 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
  *
  * \since pre-2.1
  *
- * \author Wayne Schroeder
- *
  * \note This is used to commit changes (in any) into the iCAT
- * database as part of a rule and microservice chain.  See core.irb
+ * database as part of a rule and microservice chain.  See core.re
  * for examples.  In other cases, iCAT updates and inserts are
  * automatically committed into the iCAT Database as part of the
  * normal operations (in the 'C' code).
@@ -397,12 +395,10 @@ msiCommit( ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author Wayne Schroeder
- *
  * \note This is used to not-commit changes into the iCAT database as
- * part of a rule and microservice chain.  See core.irb for examples.
+ * part of a rule and microservice chain.  See core.re for examples.
  * In other cases, iCAT updates and inserts are automatically
- * rolled-back as part of the normal operations (in the 'C' code).
+ * rolled-back as part of the normal operations.
  *
  * \usage See clients/icommands/test/rules/
  *

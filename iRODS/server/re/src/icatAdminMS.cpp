@@ -23,7 +23,7 @@
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \note From the irods wiki: https://wiki.irods.org/index.php/Rules
@@ -87,7 +87,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -162,7 +162,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -241,7 +241,7 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -298,7 +298,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -361,7 +361,7 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -410,7 +410,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * This is called via an 'iadmin' command.
  *
  * \usage See clients/icommands/test/rules/
@@ -461,10 +461,10 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
  * \since pre-2.1
  *
  *
- * \note Should not be used outside of the rules defined in core.irb.
+ * \note Should not be used outside of the rules defined in core.re.
  * Once set STRICT, strict mode remains in force (users can't call it in
  * another rule to change the mode back to non-strict).
- * See core.irb.
+ * See core.re.
  *
  * \usage See clients/icommands/test/rules/
  *

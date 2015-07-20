@@ -443,8 +443,6 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  *
  * \since pre-2.1
  *
- * \author Wayne Schroeder
- *
  * \note  Always returns success since it is only doing an attempt;
  *   that is, failure is common and not really a failure.
  *

@@ -2147,7 +2147,7 @@ int chl_gen_query_access_control_setup_impl(
         /*
         If the caller is making this STRICT, then allow the change as
                this will be an initial acAclPolicy call which is setup in
-               core.irb.  But don't let users override this admin setting
+               core.re.  But don't let users override this admin setting
                via their own calls to the msiAclPolicy; once it is STRICT,
                it stays strict.
              */
