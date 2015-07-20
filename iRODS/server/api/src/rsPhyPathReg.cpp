@@ -1224,6 +1224,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
     memset( &fileStatInp, 0, sizeof( fileStatInp ) );
     rstrcpy( fileStatInp.fileName, filename, MAX_NAME_LEN );
     rstrcpy( fileStatInp.addr.hostAddr, location.c_str(), NAME_LEN );
+    rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
     status = rsFileStat( rsComm, &fileStatInp, &stbuf );
     if ( status != 0 ) {
         if ( status != UNIX_FILE_STAT_ERR - ENOENT ) {
@@ -1238,6 +1239,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
     memset( &fileOpenInp, 0, sizeof( fileOpenInp ) );
     rstrcpy( fileOpenInp.fileName, filename, MAX_NAME_LEN );
     rstrcpy( fileOpenInp.addr.hostAddr, location.c_str(), NAME_LEN );
+    rstrcpy( fileOpenInp.resc_hier_, resc_hier, MAX_NAME_LEN );
     fileOpenInp.flags = O_RDONLY;
     fd = rsFileOpen( rsComm, &fileOpenInp );
     if ( fd < 0 ) {
