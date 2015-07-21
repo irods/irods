@@ -201,7 +201,7 @@ class IrodsController(object):
                         kill_pid(pid)
                     except psutil.NoSuchProcess:
                         pass
-                    elete_cache_files_by_pid(pid)
+                    delete_cache_files_by_pid(pid)
 
             binary_to_pids_dict = self.get_binary_to_pids_dict()
             if binary_to_pids_dict:
@@ -230,10 +230,6 @@ class IrodsController(object):
         self.stop()
         self.start(execution_environment=execution_environment,
                    insert_behavior=insert_behavior)
-
-    def setup(self):
-        l = logging.getLogger(__name__)
-        l.debug('Calling setup on IrodsController')
 
     def status(self):
         l = logging.getLogger(__name__)
