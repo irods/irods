@@ -9,10 +9,13 @@ import os
 import time
 
 import configuration
+from resource_suite import ResourceBase
 import lib
+import copy
 
+SessionsMixin = lib.make_sessions_mixin([('otherrods','pass')], [])
 
-class Test_ControlPlane(unittest.TestCase):
+class TestControlPlane(SessionsMixin, unittest.TestCase):
     def test_pause_and_resume(self):
         lib.assert_command('irods-grid pause --all', 'STDOUT_SINGLELINE', 'pausing')
 
@@ -45,3 +48,20 @@ class Test_ControlPlane(unittest.TestCase):
         time.sleep(10) # server gives control plane the all-clear before printing done message
         assert 1 == lib.count_occurrences_of_string_in_log('server', 'iRODS Server is done', initial_size_of_server_log)
         lib.start_irods_server()
+
+    def test_invalid_client_environment(self):
+        env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
+
+        if 'irods_server_control_plane_port' in self.admin_sessions[0].environment_file_contents:
+            del self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port']
+        if 'irods_server_control_plane_key' in self.admin_sessions[0].environment_file_contents:
+            del self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key']
+        if 'irods_server_control_plane_encryption_num_hash_rounds' in self.admin_sessions[0].environment_file_contents:
+            del self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds']
+        if 'irods_server_control_plane_port' in self.admin_sessions[0].environment_file_contents:
+            del self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm']
+
+        self.admin_sessions[0].assert_icommand('irods-grid status --all', 'STDERR_SINGLELINE', 'USER_INVALID_CLIENT_ENVIRONMENT') 
+
+        self.admin_sessions[0].environment_file_contents = env_backup
+
