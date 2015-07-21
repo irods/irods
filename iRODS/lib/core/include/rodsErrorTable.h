@@ -270,6 +270,7 @@ NEW_ERROR(USER_INPUT_STRING_ERR,                       -360000);
 NEW_ERROR(USER_INVALID_RESC_INPUT,                     -361000);
 NEW_ERROR(USER_NOT_ALLOWED_TO_EXEC_CMD,                -370000);
 NEW_ERROR(USER_HASH_TYPE_MISMATCH,                     -380000);
+NEW_ERROR(USER_INVALID_CLIENT_ENVIRONMENT,             -390000);
 /** @} */
 
 /* 500,000 to 800,000 - file driver error */

@@ -289,6 +289,42 @@ std::string format_grid_status(
 
 } // format_grid_status
 
+irods::error get_and_verify_client_environment( 
+    rodsEnv& _env ) {
+    _getRodsEnv( _env );
+
+    bool have_error = false;
+    std::string msg = "missing environment entries: ";
+    if( 0 == strlen( _env.irodsCtrlPlaneKey ) ) {
+        have_error = true;
+        msg += "irods_server_control_plane_key";
+    }
+    
+    if( 0 == _env.irodsCtrlPlaneEncryptionNumHashRounds ) {
+        have_error = true;
+        msg += ", irods_server_control_plane_encryption_num_hash_rounds";
+    }
+
+    if( 0 == _env.irodsCtrlPlaneEncryptionAlgorithm ) {
+        have_error = true;
+        msg += ", irods_server_control_plane_encryption_algorithm";
+    }
+
+    if( 0 == _env.irodsCtrlPlanePort ) {
+        have_error = true;
+        msg += ", irods_server_control_plane_port";
+    }
+
+    if( have_error ) {
+        return ERROR(
+                   USER_INVALID_CLIENT_ENVIRONMENT,
+                   msg );
+    }
+
+    return SUCCESS();
+
+} // verify_client_environment
+
 int main(
     int   _argc,
     char* _argv[] ) {
@@ -303,9 +339,12 @@ int main(
 
     }
 
-    // fetch client environment for proper port
     rodsEnv env;
-    _getRodsEnv( env );
+    irods::error err = get_and_verify_client_environment( env );
+    if( !err.ok() ) {
+        std::cerr << err.result();
+        return 1;
+    }
 
     irods::buffer_crypt::array_t data_to_send;
     ret = prepare_command_for_transport(
@@ -333,7 +372,7 @@ int main(
         }
         catch ( const zmq::error_t& ) {
             std::cerr << "ZeroMQ encountered an error connecting to a socket.\n";
-            return -1;
+            return 1;
         }
 
         // copy binary encoding into a zmq message for transport
@@ -347,7 +386,7 @@ int main(
         }
         catch ( const zmq::error_t& ) {
             std::cerr << "ZeroMQ encountered an error receiving a message.\n";
-            return -1;
+            return 1;
         }
 
 
@@ -358,7 +397,7 @@ int main(
         }
         catch ( const zmq::error_t& ) {
             std::cerr << "ZeroMQ encountered an error receiving a message.\n";
-            return -1;
+            return 1;
         }
 
         // decrypt the response
@@ -372,7 +411,7 @@ int main(
             irods::error err = PASS( ret );
             std::cerr << err.result()
                       << std::endl;
-            return -1;
+            return 1;
 
         }
 
@@ -392,7 +431,7 @@ int main(
     }
     catch ( const zmq::error_t& ) {
         std::cerr << "ZeroMQ encountered an error.\n";
-        return -1;
+        return 1;
 
     }
 
