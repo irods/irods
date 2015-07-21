@@ -250,6 +250,7 @@
 #define USER_INVALID_RESC_INPUT                     -361000
 #define USER_NOT_ALLOWED_TO_EXEC_CMD                -370000
 #define USER_HASH_TYPE_MISMATCH                     -380000
+#define USER_INVALID_CLIENT_ENVIRONMENT             -390000
 /** @} */
 
 /* 500,000 to 800,000 - file driver error */
