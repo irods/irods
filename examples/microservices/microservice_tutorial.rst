@@ -20,7 +20,6 @@ To run this tutorial:
 #. Download iRODS binary package and Development Tools from http://www.irods.org/download
 #. Install iRODS
 #. Install the iRODS Development Tools
-#. Install package libboost1.xx-dev
 #. If you want to run the curl based example, install the libcurl and libcurl-dev packages
 
 After installing the iRODS dev tools, make a test directory on your system and copy the contents of /usr/share/irods/examples/microservices into it. This will be our current working directory for the rest of the tutorial.
