@@ -206,13 +206,15 @@ boost-headers : $(BOOSTVERSIONMAKE)
 $(BOOSTEPMLIST) : boost-headers
 	@echo "d 755 root root /usr/include/irods/boost -" > $(BOOSTEPMLIST)
 	@for d in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type d); do \
-		if [ $$(find -L $$d -regex ".*\\.[ih]\\(pp\\)?$$") ]; then \
+		header_list=`find -L $$d -regex '.*\.[ih]\(pp\)?$$'`; \
+		if [ "$$header_list" ] ; then \
 			echo $$d | sed "s/.*$(BOOSTVERSION)\\(.*\\)/d 755 root root \\/usr\\/include\\/irods\\/boost\\1 -/" >> $(BOOSTEPMLIST); \
 		fi \
 	done
 	@find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type f -regex ".*\\.[ih]\\(pp\\)?$$" | sed "s/\\(.*$(BOOSTVERSION)\\(.*\\)\\)/f 644 root root \\/usr\\/include\\/irods\\/boost\\2 .\\/external\\/\\1/" >> $(BOOSTEPMLIST)
 	@for l in $$(find $(BOOSTVERSION)/libs $(BOOSTVERSION)/boost -type l); do \
-		if [ $$(find -L $$l -regex ".*\\.[ih]\\(pp\\)?$$") ]; then \
+		header_list=`find -L $$l -regex '.*\.[ih]\(pp\)?$$'`; \
+		if [ "$$header_list" ] ; then \
 			ls -l $$l | sed "s/.*$(BOOSTVERSION)/l 777 root root \\/usr\\/include\\/irods\\/boost/" | sed "s/ -> / /" >> $(BOOSTEPMLIST); \
 		fi \
 	done
