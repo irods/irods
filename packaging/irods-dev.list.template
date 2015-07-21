@@ -18,6 +18,67 @@ $LIBDIR=/usr/lib
 # Setting environment variables for EPM
 # =-=-=-=-=-=-=-
 
+%if DEBICAT
+$DEB=true
+$ICAT=true
+
+%elseif DEBRESOURCE
+$DEB=true
+$RESOURCE=true
+
+%elseif REDHATRPMICAT
+$REDHAT=true
+$RPM=true
+$ICAT=true
+
+%elseif SUSERPMICAT
+$SUSE=true
+$RPM=true
+$ICAT=true
+
+%elseif REDHATRPMRESOURCE
+$REDHAT=true
+$RPM=true
+$RESOURCE=true
+
+%elseif SUSERPMRESOURCE
+$SUSE=true
+$RPM=true
+$RESOURCE=true
+
+%elseif ARCHICAT
+$ARCH=true
+$ICAT=true
+
+%elseif ARCHRESOURCE
+$ARCH=true
+$RESOURCE=true
+
+%elseif OSXICAT
+$OSX=true
+$ICAT=true
+
+%elseif OSXRESOURCE
+$OSX=true
+$RESOURCE=true
+
+%endif
+
+
+%if DEB
+%requires libssl-dev
+%endif
+
+%if REDHAT
+%requires openssl-devel
+%endif
+
+%if SUSE
+%requires libopenssl-devel
+%endif
+
+
+
 
 %format all
 
