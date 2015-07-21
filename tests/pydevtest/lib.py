@@ -571,7 +571,7 @@ class IrodsSession(object):
                            'iqstat', 'ichksum', 'itrim', 'iphymv', 'ibun',
                            'iphybun', 'ireg', 'imcoll', 'irsync', 'ixmsg',
                            'irule', 'iqdel', 'iticket', 'iapitest', 'iscan',
-                           'isysmeta', 'iadmin', 'ifsck', 'izonereport']
+                           'isysmeta', 'iadmin', 'ifsck', 'izonereport', 'irods-grid']
 
         if isinstance(arg, basestring):
             icommand = shlex.split(arg)[0]
