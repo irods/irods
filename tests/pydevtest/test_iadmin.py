@@ -371,7 +371,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkuser " + testuser1 + " rodsuser")  # add rodsuser
         # should be listed
         self.admin.assert_icommand("iadmin lu", 'STDOUT_SINGLELINE', [testuser1 + "#" + self.admin.zone_name])
-        self.admin.assert_icommand_fail("iadmin rmuser notauser")  # bad remove
+        self.admin.assert_icommand("iadmin rmuser notauser", 'STDERR_SINGLELINE', 'CAT_INVALID_USER')  # bad remove
         self.admin.assert_icommand("iadmin rmuser " + testuser1)  # good remove
         # should be gone
         self.admin.assert_icommand_fail("iadmin lu", 'STDOUT_SINGLELINE', [testuser1 + "#" + self.admin.zone_name])
@@ -825,7 +825,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc repl")
 
     def test_rule_engine_2242(self):
-        self.admin.assert_icommand_fail("irule -F rule1_2242.r", 'STDOUT_SINGLELINE', "failmsg")
+        self.admin.assert_icommand("irule -F rule1_2242.r", 'STDERR_SINGLELINE', "Operation not permitted")
         self.admin.assert_icommand("irule -F rule2_2242.r", "EMPTY")
 
     def test_hosts_config(self):
@@ -1056,13 +1056,13 @@ acSetNumThreads() {
                 os.unlink(trigger_file)
 
     def test_storageadmin_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes storageadmin", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand("iadmin mkuser nopes storageadmin", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_domainadmin_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes domainadmin", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand("iadmin mkuser nopes domainadmin", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_rodscurators_role(self):
-        self.admin.assert_icommand_fail("iadmin mkuser nopes rodscurators", 'STDOUT_SINGLELINE', "CAT_INVALID_USER_TYPE")
+        self.admin.assert_icommand("iadmin mkuser nopes rodscurators", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
     def test_izonereport_key_sanitization(self):
         self.admin.assert_icommand("izonereport | grep key | grep -v XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
