@@ -22,6 +22,10 @@ class ColorFormatter(logging.Formatter):
             color_seq = self.COLOR_SEQ_TEMPLATE.format(fore_color_int=fore_color_int)
         return '{0}{1}{2}'.format(color_seq, message, self.RESET_SEQ)
 
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
 class LessThanFilter(logging.Filter, object):
     def __init__(self, exclusive_maximum, name=""):
         super(LessThanFilter, self).__init__(name)
@@ -29,6 +33,16 @@ class LessThanFilter(logging.Filter, object):
 
     def filter(self, record):
         return 1 if record.levelno < self.max_level else 0
+
+class DeferInfoToDebugFilter(logging.Filter, object):
+    def __init__(self, name=""):
+        super(DeferInfoToDebugFilter, self).__init__(name)
+
+    def filter(self, record):
+        if record.levelno == logging.INFO:
+            record.levelno = logging.DEBUG
+            record.levelname = 'DEBUG'
+        return 1
 
 def register_tty_handler(stream, minlevel, maxlevel):
     logging_handler = logging.StreamHandler(stream)

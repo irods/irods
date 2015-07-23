@@ -694,8 +694,8 @@ def parse_options():
     return parser.parse_args()
 
 def main():
+    logging.getLogger().setLevel(logging.NOTSET)
     l = logging.getLogger(__name__)
-    logging.getLogger().setLevel(logging.DEBUG)
 
     irods_logging.register_tty_handler(sys.stderr, logging.WARNING, None)
     irods_logging.register_file_handler(get_log_path())
@@ -767,5 +767,8 @@ def main():
     return 0
 
 
+logging.getLogger(__name__).addHandler(irods_logging.NullHandler())
+logging.getLogger('requests.packages.urllib3.connectionpool').addFilter(irods_logging.DeferInfoToDebugFilter())
+logging.getLogger('urllib3.connectionpool').addFilter(irods_logging.DeferInfoToDebugFilter())
 if __name__ == '__main__':
     sys.exit(main())
