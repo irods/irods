@@ -757,12 +757,11 @@ extern "C" {
     /* build a couple default values from others if appropriate */
     int
     createRodsEnvDefaults( rodsEnv *rodsEnvArg ) {
-        if ( strlen( rodsEnvArg->rodsHome ) == 0 ) {
-            if ( strlen( rodsEnvArg->rodsUserName ) > 0 &&
-                    strlen( rodsEnvArg->rodsZone ) > 0 ) {
-                snprintf( rodsEnvArg->rodsHome,  MAX_NAME_LEN, "/%s/home/%s",
-                          rodsEnvArg->rodsZone, rodsEnvArg->rodsUserName );
-            }
+        if ( strlen( rodsEnvArg->rodsHome ) == 0 &&
+                strlen( rodsEnvArg->rodsUserName ) > 0 &&
+                strlen( rodsEnvArg->rodsZone ) > 0 ) {
+            snprintf( rodsEnvArg->rodsHome,  MAX_NAME_LEN, "/%s/home/%s",
+                        rodsEnvArg->rodsZone, rodsEnvArg->rodsUserName );
             rodsLog( LOG_NOTICE, "created irodsHome=%s", rodsEnvArg->rodsHome );
         }
         if ( strlen( rodsEnvArg->rodsCwd ) == 0 &&
