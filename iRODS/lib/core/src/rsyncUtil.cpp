@@ -329,7 +329,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLogError(
             LOG_ERROR,
             ret,
-            "rsyncDataToFileUtil: getRodsEnv failed" );
+            "rsyncFileToData: getRodsEnv failed" );
         return ret;
     }
 
@@ -340,6 +340,33 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     if ( targPath->objState == NOT_EXIST_ST ) {
         putFlag = 1;
+		if( True == myRodsArgs->verifyChecksum ) {
+			status = rcChksumLocFile(
+			             srcPath->outPath,
+						 RSYNC_CHKSUM_KW,
+					     &dataObjOprInp->condInput,
+					     env.rodsDefaultHashScheme );
+			if ( status < 0 ) {
+				rodsLogError(
+				    LOG_ERROR,
+					status,
+					"rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
+					srcPath->outPath,
+					status );
+				return status;
+			}
+			else {
+				chksum = getValByKey(
+				             &dataObjOprInp->condInput,
+							 RSYNC_CHKSUM_KW );
+				if ( chksum != NULL ) {
+					addKeyVal(
+					    &dataObjOprInp->condInput,
+						VERIFY_CHKSUM_KW,
+						chksum );
+				}
+			}
+		}
     }
     else if ( myRodsArgs->sizeFlag == True ) {
         /* sync by size */
