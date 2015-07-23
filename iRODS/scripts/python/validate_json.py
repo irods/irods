@@ -1,9 +1,9 @@
 from __future__ import print_function
+import json
 import logging
 import pprint
 import sys
 
-import json
 import irods_six
 
 import irods_logging
@@ -57,31 +57,12 @@ def validate_dict(config_dict, schema_uri, name=None):
             sys.exc_info()[2])
 
     try:
-        # load the schema url
-        try:
-            l.debug('Loading schema from %s', schema_uri)
-            response = requests.get(schema_uri)
-        except NameError:
-            irods_six.reraise(ValidationError, ValidationError(
-                    'WARNING: Validation failed for {0} -- requests not installed'.format(
-                        name)),
-                sys.exc_info()[2])
-
-        # check response values
-        try:
-            # modern requests
-            schema = json.loads(response.text)
-        except AttributeError:
-            # requests pre-v1.0.0
-            response.encoding = 'utf8'
-            schema = json.loads(response.content)
-
-        # validate
+        schema = get_initial_schema(schema_uri)
         l.debug('Validating %s against json schema:', name)
         l.debug(pprint.pformat(schema))
         jsonschema.validate(config_dict, schema)
-    except (
-            jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
+
+    except (jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
             ValueError                                  # most network errors and 404s
     ) as e:
         irods_six.reraise(ValidationWarning, ValidationWarning('\n\t'.join([
@@ -89,8 +70,7 @@ def validate_dict(config_dict, schema_uri, name=None):
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
                 sys.exc_info()[2])
-    except (
-            jsonschema.exceptions.ValidationError,
+    except (jsonschema.exceptions.ValidationError,
             jsonschema.exceptions.SchemaError,
             BaseException
     ) as e:
@@ -101,6 +81,46 @@ def validate_dict(config_dict, schema_uri, name=None):
                 sys.exc_info()[2])
 
     l.info("Validating [%s]... Success", name)
+
+def get_initial_schema(schema_uri):
+    l = logging.getLogger(__name__)
+    l.debug('Loading schema from %s', schema_uri)
+    url_scheme = irods_six.moves.urllib.parse.urlparse(schema_uri).scheme
+    l.debug('Parsed URL: %s', schema_uri)
+    scheme_dispatch = {
+        'file': get_initial_schema_from_file,
+        'http': get_initial_schema_from_web,
+        'https': get_initial_schema_from_web,
+    }
+
+    try:
+        return scheme_dispatch[url_scheme](schema_uri)
+    except KeyError:
+        raise ValidationError('ERROR: Invalid schema url: {}'.format(schema_uri))
+
+def get_initial_schema_from_web(schema_uri):
+    try:
+        response = requests.get(schema_uri)
+    except NameError:
+        irods_six.reraise(ValidationError, ValidationError(
+            'WARNING: Validation failed for {0} -- requests not installed'.format(
+                name)),
+                          sys.exc_info()[2])
+
+    # check response values
+    try:
+        # modern requests
+        schema = json.loads(response.text)
+    except AttributeError:
+        # requests pre-v1.0.0
+        response.encoding = 'utf8'
+        schema = json.loads(response.content)
+    return schema
+
+def get_initial_schema_from_file(schema_uri):
+    with open(schema_uri[7:]) as f:
+        schema = json.load(f)
+    return schema
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.NOTSET)
