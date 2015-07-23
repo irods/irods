@@ -50,6 +50,8 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r -K {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("ils -L {base_name}".format(**locals()), "STDOUT_SINGLELINE", "ec8bb3b24d5b0f1b5bdf8c8f0f541ee6")
+
         self.user0.assert_icommand("ichksum -r -K {base_name}".format(**locals()), "STDOUT_SINGLELINE", "Total checksum performed = 5, Failed checksum = 0")
         self.user0.assert_icommand("irsync -v -r -K -l {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB --- a match no sync required")
 
