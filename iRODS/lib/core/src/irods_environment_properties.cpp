@@ -89,9 +89,7 @@ namespace irods {
         std::string json_file( IRODS_HOME_DIRECTORY );
         std::string json_session_file( IRODS_HOME_DIRECTORY );
         std::string env_var = to_env( CFG_IRODS_ENVIRONMENT_FILE_KW );
-        char* irods_env = getenv(
-                              to_env(
-                                  CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );
+        char* irods_env = getenv(env_var.c_str());
         if ( irods_env && strlen( irods_env ) > 0 ) {
             json_file = irods_env;
             // "cwd" is used in this case instead of the ppid given the

@@ -199,50 +199,6 @@ initRcatServerHostByFile() {
         return ret.code();
     }
 
-    object_t env_obj;
-    ret = props.get_property <
-          object_t > (
-              irods::CFG_ENVIRONMENT_VARIABLES_KW,
-              env_obj );
-
-    if ( ret.ok() ) {
-        object_t::iterator itr;
-        for ( itr = env_obj.begin();
-                itr != env_obj.end();
-                ++itr ) {
-            std::string val;
-            try {
-                val = boost::any_cast <
-                      std::string > (
-                          itr->second );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "initRcatServerHostByFile - failed to cast env var entry to string" );
-                continue;
-            }
-
-            setenv(
-                itr->first.c_str(), // variable
-                val.c_str(),        // value
-                1 );                // overwrite
-            rodsLog(
-                LOG_DEBUG,
-                "environment setting [%s]=[%s]",
-                itr->first.c_str(),
-                getenv( itr->first.c_str() ) );
-
-        }
-
-    }
-    else {
-        rodsLog(
-            LOG_NOTICE,
-            "initRcatServerHostByFile - did not get [%s] property",
-            irods::CFG_ENVIRONMENT_VARIABLES_KW.c_str() );
-    }
-
     array_t prop_arr;
     ret = props.get_property <
           array_t > (

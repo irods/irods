@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -14,6 +15,7 @@ import socket
 import stat
 import subprocess
 import time
+import tempfile
 
 import configuration
 import lib
@@ -431,14 +433,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         for i in range(30):
             path = root_dir + "/rebalance_testfile_" + str(i)
             output = commands.getstatusoutput('dd if=/dev/zero of=' + path + ' bs=1M count=1')
-            print output[1]
+            print(output[1])
             assert output[0] == 0, "dd did not successfully exit"
 
         # get initial object count
         initial_output = self.admin.run_icommand('iadmin lr demoResc')[1]
         objcount_line = initial_output.splitlines()[-1]
         initial_objcount = int(objcount_line.split(":")[-1].strip())
-        print "initial: " + str(initial_objcount)
+        print("initial: " + str(initial_objcount))
 
         # put the new files
         self.admin.assert_icommand("iput -r " + root_dir)
@@ -453,7 +455,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # expected object count
         expected_objcount = initial_objcount + 19
         # 19 = 30 initial - 11 (1 and 10 through 19) deleted files
-        print "expected: " + str(expected_objcount)
+        print("expected: " + str(expected_objcount))
         self.admin.assert_icommand("iadmin lr demoResc", 'STDOUT_SINGLELINE', "resc_objcount: " + str(expected_objcount))
 
     def test_rebalance_for_repl_node(self):
@@ -944,14 +946,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         assert(-1 == result.find("userNameClient"))
 
     def test_server_config_environment_variables(self):
-        # set log level to get all the things
-        env = os.environ.copy()
-        env['spLogLevel'] = '11'
 
         server_config_filename = lib.get_irods_config_dir() + "/server_config.json"
         with lib.file_backed_up(server_config_filename):
 
-            # set a random environment value to find in the log
+            # set an arbitrary environment value to find in the log
             with open(server_config_filename) as f:
                 server_config = json.load(f)
             the_value = 'THIS_IS_THE_VALUE'
@@ -959,16 +958,20 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             lib.update_json_file_from_dict(server_config_filename, server_config)
 
             # bounce the server to get the new env variable
-            lib.restart_irods_server(env=env)
-
-            self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', self.admin.zone_name)
+            lib.restart_irods_server()
 
             # look for the error "unable to read session variable $userNameClient."
-            _, out, _ = lib.run_command('grep "{0}" ../../iRODS/server/log/rodsLog.*'.format(the_value), use_unsafe_shell=True)
-
+            env_script = tempfile.NamedTemporaryFile(mode='w', dir='../../iRODS/server/bin/cmd', delete=False)
+            env_script.write('#!/bin/sh\nenv\n')
+            env_script.flush()
+            env_script.close()
+            os.chmod(env_script.name, 0700)
+            self.admin.assert_icommand('irule \'msiExecCmd("{0}", "", "", "", "", *param); '
+                    'msiGetStdoutInExecCmdOut(*param, *out); '
+                    'writeLine("stdout", "*out")\' null ruleExecOut'.format(os.path.basename(env_script.name)),
+                'STDOUT_SINGLELINE', the_value)
+            os.unlink(env_script.name)
         lib.restart_irods_server()
-
-        assert the_value in out
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"

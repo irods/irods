@@ -48,24 +48,6 @@ class IrodsController(object):
     def start(self, execution_environment={}, insert_behavior=True):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
-        new_execution_environment = {}
-        for key, value in execution_environment.items():
-            new_execution_environment[key] = value
-
-        if insert_behavior:
-            for key, value in self.static_execution_environment.items():
-                if key not in new_execution_environment:
-                    new_execution_environment[key] = value
-            if 'irodsHomeDir' not in new_execution_environment:
-                new_execution_environment['irodsHomeDir'] = self.get_irods_directory()
-            if 'irodsConfigDir' not in new_execution_environment:
-                new_execution_environment['irodsConfigDir'] = self.get_config_directory()
-            if 'PWD' not in new_execution_environment:
-                new_execution_environment['PWD'] = self.get_server_bin_directory()
-
-        for key, value in os.environ.items():
-            if key not in new_execution_environment:
-                new_execution_environment[key] = value
 
         if not os.path.exists(self.get_server_executable()):
             raise IrodsControllerError('\n\t'.join([
@@ -89,7 +71,26 @@ class IrodsController(object):
                     'and retry.'])),
                     sys.exc_info()[2])
 
-        config_dicts = self.load_and_validate_config_files()
+        new_execution_environment = {}
+
+        if insert_behavior:
+            for key, value in os.environ.items():
+                new_execution_environment[key] = value
+            new_execution_environment['irodsConfigDir'] = self.get_config_directory()
+            new_execution_environment['PWD'] = self.get_server_bin_directory()
+            for key, value in self.static_execution_environment.items():
+                new_execution_environment[key] = value
+
+        for key, value in execution_environment.items():
+            new_execution_environment[key] = value
+
+        config_dicts = self.load_and_validate_config_files(new_execution_environment, insert_behavior)
+
+        if insert_behavior:
+            if 'environment_variables' in config_dicts[self.get_server_config_path()]:
+                for key, value in config_dicts[self.get_server_config_path()]['environment_variables'].items():
+                    if key not in new_execution_environment:
+                        new_execution_environment[key] = value
 
         if self.get_database_config_path() in config_dicts:
             schema_version_in_file = config_dicts[self.get_version_path()]['catalog_schema_version']
@@ -147,12 +148,17 @@ class IrodsController(object):
         l = logging.getLogger(__name__)
         args = ['irods-grid', 'shutdown', '--hosts={0}'.format(get_hostname())]
         kwargs = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+        if 'IRODS_ENVIRONMENT_FILE' not in os.environ:
+            server_config = load_json_config_file(self.get_server_config_path())
+            if 'environment_variables' in server_config and 'IRODS_ENVIRONMENT_FILE' in server_config['environment_variables']:
+                kwargs['env'] = copy.copy(os.environ)
+                kwargs['env']['IRODS_ENVIRONMENT_FILE'] = server_config['environment_variables']['IRODS_ENVIRONMENT_FILE']
         p = execute_command_nonblocking(args, **kwargs)
         start_time = time.time()
         while time.time() < start_time + timeout:
             if p.poll() is not None:
                 out, err = communicate_and_log(p, args)
-                check_command_return(args, out.decode(), err.decode(), p.returncode, **kwargs)
+                check_command_return(args, out, err, p.returncode, **kwargs)
                 break
             time.sleep(0.3)
         else:
@@ -241,14 +247,13 @@ class IrodsController(object):
             l.info(format_binary_to_pids_dict(binary_to_pids_dict))
         return binary_to_pids_dict
 
-    def load_and_validate_config_files(self):
+    def load_and_validate_config_files(self, execution_environment=None, insert_behavior=True):
         l = logging.getLogger(__name__)
         config_files = [
                 self.get_server_config_path(),
                 self.get_version_path(),
                 self.get_hosts_config_path(),
-                self.get_host_access_control_config_path(),
-                get_irods_environment_path()]
+                self.get_host_access_control_config_path()]
         if os.path.exists(self.get_database_config_path()):
             config_files.append(self.get_database_config_path())
         else:
@@ -258,6 +263,16 @@ class IrodsController(object):
         for path in config_files:
             l.debug('Loading %s into dictionary', path)
             config_dicts[path] = load_json_config_file(path)
+
+        if execution_environment is not None and 'IRODS_ENVIRONMENT_FILE' in execution_environment:
+            irods_environment_path = execution_environment['IRODS_ENVIRONMENT_FILE']
+        elif insert_behavior and 'environment_variables' in config_dicts[self.get_server_config_path()] and 'IRODS_ENVIRONMENT_FILE' in config_dicts[self.get_server_config_path()]['environment_variables']:
+            irods_environment_path = config_dicts[self.get_server_config_path()]['environment_variables']['IRODS_ENVIRONMENT_FILE']
+        else:
+            irods_environment_path = get_irods_environment_path()
+
+        l.debug('Loading %s into dictionary', irods_environment_path)
+        config_dicts[irods_environment_path] = load_json_config_file(irods_environment_path)
 
         l.debug('Attempting to construct schema URI...')
         try :
@@ -284,7 +299,8 @@ class IrodsController(object):
                     'v{0}'.format(uri_version)])
             l.debug('Successfully constructed schema URI.')
 
-            for path, json_dict in config_dicts.items():
+            for path in config_files:
+                json_dict = config_dicts[path]
                 schema_uri = '/'.join([
                     validation_uri_prefix,
                     os.path.basename(path)])
@@ -298,6 +314,22 @@ class IrodsController(object):
                     l.warning('Error encountered in validate_json', exc_info=True)
                 except validate_json.ValidationError as e:
                     irods_six.reraise(IrodsControllerError, e, sys.exc_info()[2])
+
+            json_dict = config_dicts[irods_environment_path]
+            schema_uri = '/'.join([
+                validation_uri_prefix,
+                os.path.basename(get_irods_environment_path())])
+            l.debug('Attempting to validate %s against %s', irods_environment_path, schema_uri)
+            try :
+                validate_json.validate_dict(
+                        json_dict,
+                        schema_uri,
+                        name=irods_environment_path)
+            except validate_json.ValidationWarning as e:
+                l.warning('Error encountered in validate_json', exc_info=True)
+            except validate_json.ValidationError as e:
+                irods_six.reraise(IrodsControllerError, e, sys.exc_info()[2])
+
         else:
             l.debug('Failed to construct schema URI')
             l.warning('%s\n%s',
@@ -517,7 +549,8 @@ def execute_command_nonblocking(args, **kwargs):
         kwargs_without_env['env'] = 'HIDDEN'
         l.debug(pprint.pformat(kwargs_without_env))
     else :
-        l.debug(pprint.pformat(kwargs))
+        kwargs_without_env = kwargs
+    l.debug(pprint.pformat(kwargs_without_env))
     try :
         return subprocess.Popen(args, **kwargs)
     except OSError as e:
@@ -544,12 +577,17 @@ def execute_command_permissive(args, **kwargs):
 
 def check_command_return(args, out, err, returncode, **kwargs):
     if returncode is not None and returncode != 0:
+        if 'env' in kwargs:
+            kwargs_without_env = copy.copy(kwargs)
+            kwargs_without_env['env'] = 'HIDDEN'
+        else :
+            kwargs_without_env = kwargs
         raise IrodsControllerError('\n'.join([
             'Call to open process with {0} returned an error:'.format(
                 args),
             indent(
                 'Options passed to Popen:',
-                indent(['{0}: {1}'.format(k, v) for k, v in kwargs.items()]),
+                indent(*['{0}: {1}'.format(k, v) for k, v in kwargs_without_env.items()]),
                 'Return code: {0}'.format(returncode),
                 'Standard output:',
                 indent(out),
@@ -644,9 +682,7 @@ def indent(*text, **kwargs):
         ''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())])
             for lines in text])
 
-def parse_options():
-    parser = optparse.OptionParser()
-
+def add_options(parser):
     parser.add_option('-q', '--quiet',
                       dest='verbose', action='store_false',
                       help='Silence verbose output')
@@ -691,6 +727,11 @@ def parse_options():
                       help='Causes the server to attempt a reconnect after '
                       'timeout (ten minutes)')
 
+
+def parse_options():
+    parser = optparse.OptionParser()
+    add_options(parser)
+
     return parser.parse_args()
 
 def main():
@@ -728,7 +769,7 @@ def main():
     operation = arguments[0]
     if operation not in operations_dict:
         l.error('irodsctl accepts the following positional arguments:')
-        l.error(indent(operations_dict.keys()))
+        l.error(indent(*operations_dict.keys()))
         l.error('but \'%s\' was provided.', operation)
         l.error('Exiting...')
         return 1
