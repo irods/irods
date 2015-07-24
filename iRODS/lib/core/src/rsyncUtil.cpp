@@ -329,7 +329,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLogError(
             LOG_ERROR,
             ret,
-            "rsyncFileToData: getRodsEnv failed" );
+            "rsyncFileToDataUtil: getRodsEnv failed" );
         return ret;
     }
 
