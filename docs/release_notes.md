@@ -1,24 +1,86 @@
 # Release Notes
 
+## 4.1.4
+
+Release Date: 2015-08-05
+
+### Bug Fixes
+
+ - Fixes for fuse [#2401] [#2509] [#2783]
+
+ - Fix for imeta addw bind variable problem [#2682]
+
+ - Fix shared memory and mutex file cleanup [#2751] [#2752]
+
+ - Fix for perl warning [#2760]
+
+ - Use single quotes for safety/readability [#2764]
+
+ - Fix for using fuser (not available on MacOSX) - replace with lsof [#2772] [#2775] [#2794]
+
+ - Fix irsync recursion [#2779]
+
+ - Fix run-in-place detection [#2781] [#2784]
+
+ - Fix unitialized values [#2782] [#2788]
+
+ - Fix memory allocation mismatch [#2785]
+
+ - Fix for passthru resource using read=0.0 [#2789]
+
+ - Fix for irods-grid when environment properties are missing [#2792]
+
+ - Fix for extra NULL character written by msiDataObjWrite [#2795]
+
+ - Fix for get_db_schema_version.py stderr [#2799]
+
+ - Fix irods_setup.pl detection [#2800]
+
+ - Fix irsync checksums [#2802] [#2810]
+
+ - Fix for ireg with --exclude-path option [#2804]
+
+ - Fix control plane shutdown on resource server [#2807]
+
+ - Add openssl development package dependency [#2808]
+
+ - Add file:// URIs to schema validation [#2811]
+
+ - Fix for cross zone icp/iput as different users [#2813]
+
+ - Fixes for iphymv [#2815] [#2820] [#2821]
+
+ - Fix for isysmeta output alignment [#2819]
+
+ - Fix for data objects in the root dir (/) [#2823]
+
+ - Fix for custom control plane key and port during setup [#2824]
+
+ - Fix for checksum calculations on MacOSX [#2826]
+
+ - Fix for iget parallel transfer [#2828]
+
+ [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.4)
+
 ## 4.1.3
 
 Release Date: 2015-06-18
 
 ### Bug Fixes
 
-  - Fix upgrading with obfuscated password
+  - Fix upgrading with obfuscated password [#2749]
 
-  - Fix imeta query comparison bug
+  - Fix imeta query comparison bug [#2748]
 
-  - Fix for cleaning up temporary files during installation
+  - Fix for cleaning up temporary files during installation [#2745]
 
   - Run-in-Place installations
 
-    - Fix preflight checks
+    - Fix preflight checks [#2744]
 
-    - Fix for stopping server and killing processes
+    - Fix for stopping server and killing processes [#2746]
 
-    - Fix for finding database binary tool
+    - Fix for finding database binary tool [#2747]
 
 [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.3)
 
@@ -28,9 +90,9 @@ Release Date: 2015-06-05
 
 ### Bug Fixes
 
-  - Fix information leakage in izonereport
+  - Fix information leakage in izonereport [#2732]
 
-  - Fix misuse of uid for gid in configuration conversion script
+  - Fix misuse of uid for gid in configuration conversion script [#2733] [#2734]
 
 [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.2)
 
@@ -40,11 +102,11 @@ Release Date: 2015-06-02
 
 ### Bug Fixes
 
-  - Hardening of upgrade process against bad input
+  - Hardening of upgrade process against bad input [#2725] [#2727]
 
-  - Fix for incomplete development package
+  - Fix for incomplete development package [#2724]
 
-  - Fix for removing package-manager-marked config files
+  - Fix for removing package-manager-marked config files [#2723]
 
 [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.1)
 
