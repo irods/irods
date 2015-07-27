@@ -183,13 +183,23 @@ def file_backed_up(filename):
     with tempfile.NamedTemporaryFile(prefix=os.path.basename(filename)) as f:
         shutil.copyfile(filename, f.name)
         try:
-            yield
-        except:
-            shutil.copyfile(f.name, filename)
-            raise
-        else:
+            yield filename
+        finally:
             shutil.copyfile(f.name, filename)
 
+@contextlib.contextmanager
+def directory_deleter(dirname):
+    try:
+        yield dirname
+    finally:
+        shutil.rmtree(dirname)
+
+def is_jsonschema_installed():
+    try:
+        import jsonschema
+        return True
+    except ImportError:
+        return False
 
 def prepend_string_to_file(string, filename):
     with open(filename, 'r') as f:
