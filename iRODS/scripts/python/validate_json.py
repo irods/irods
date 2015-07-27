@@ -8,7 +8,6 @@ if len(sys.argv) != 3:
 config_file = sys.argv[1]
 schema_uri = sys.argv[2]
 
-
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -31,11 +30,21 @@ except AttributeError:
                 (config_file, jsonschema.__version__))
     sys.exit(0)
 
-try:
-    # load configuration file
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-    # load the schema url
+def get_initial_schema(schema_uri):
+    url_scheme = schema_uri.partition(':')[0]
+    scheme_dispatch = {
+        'file': get_initial_schema_from_file,
+        'http': get_initial_schema_from_web,
+        'https': get_initial_schema_from_web,
+    }
+
+    try:
+        return scheme_dispatch[url_scheme](schema_uri)
+    except KeyError:
+        print('ERROR: Invalid schema url: {}'.format(schema_uri))
+        sys.exit(1)
+
+def get_initial_schema_from_web(schema_uri):
     response = requests.get(schema_uri)
     # check response values
     try:
@@ -45,7 +54,19 @@ try:
         # requests pre-v1.0.0
         response.encoding = 'utf8'
         schema = json.loads(response.content)
+    return schema
 
+def get_initial_schema_from_file(schema_uri):
+    with open(schema_uri[7:]) as f:
+        schema = json.load(f)
+    return schema
+
+try:
+    # load configuration file
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    schema = get_initial_schema(schema_uri)
     # validate
     jsonschema.validate(config, schema)
 except (jsonschema.exceptions.RefResolutionError) as e:

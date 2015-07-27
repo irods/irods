@@ -1034,7 +1034,8 @@ sub startIrods
         }
 
         # Make sure the configurations are validated
-        if ( $SCHEMA_VALIDATION_BASE_URI =~ /^https?:\/\// )
+        if (   $SCHEMA_VALIDATION_BASE_URI =~ /^https?:\/\//
+            || $SCHEMA_VALIDATION_BASE_URI =~ /^file:\/\// )
         {
             if ( 0 == preflight_json_check( ) )
             {
