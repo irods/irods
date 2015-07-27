@@ -259,7 +259,7 @@ Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS se
 
 #### Set the iRODS SSL environment
 
-The server expects to have these `irods_environment.json` properties set on startup:
+The server expects to have the following irods service account's `irods_environment.json` properties set on startup:
 
 ~~~
 'irods_ssl_certificate_chain_file': '/etc/irods/chain.pem',
