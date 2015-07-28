@@ -287,6 +287,9 @@ queryCollInColl( queryHandle_t *queryHandle, char *collection,
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
+    snprintf( collQCond, MAX_NAME_LEN, "%s", "<>'/'");
+    addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond );
+
     if ( ( flags & RECUR_QUERY_FG ) != 0 ) {
         genAllInCollQCond( collection, collQCond );
         addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond );
