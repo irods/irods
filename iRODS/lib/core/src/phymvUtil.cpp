@@ -22,6 +22,13 @@ phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        if ( strcmp("/", rodsPathInp->srcPath[i].outPath) == 0) {
+            rodsLog(LOG_ERROR,
+                    "phymvUtil: '/' does not specify a zone; "
+                    "physical move only makes sense within a zone.");
+            savedStatus = USER_INPUT_PATH_ERR;
+            continue;
+        }
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
             if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
