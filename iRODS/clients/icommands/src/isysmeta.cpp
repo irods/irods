@@ -39,6 +39,9 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                             printf( "%s: %s: %s\n", descriptions[j], tResult,
                                     localTime );
                         }
+                        else if ( strstr( descriptions[j], "resc_group_name" ) != 0 ) {
+                            // skip resource group
+                        }
                         else {
                             printf( "%s: %s\n", descriptions[j], tResult );
                         }
@@ -73,10 +76,10 @@ doLs( rcComm_t *Conn, char *objPath, int longOption ) {
     char *columnNames[] = {
         "data_name",
         "data_id", "coll_id", "data_repl_num", "data_version",
-        "data_type_name", "data_size", "resc_group_name", "resc_name",
-        "data_path ", "data_owner_name", "data_owner_zone",
+        "data_type_name", "data_size", "resc_name",
+        "data_path", "data_owner_name", "data_owner_zone",
         "data_repl_status", "data_status",
-        "data_checksum ", "data_expiry_ts (expire time)",
+        "data_checksum", "data_expiry_ts (expire time)",
         "data_map_id", "r_comment", "create_ts", "modify_ts"
     };
 
