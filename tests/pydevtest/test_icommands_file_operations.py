@@ -102,15 +102,15 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         depth = 50
         files_per_level = 5
         file_size = 5
-        
+
         # make local nested dirs
         coll_name = "test_irm_r_nested_coll"
-        local_dir = os.path.join(self.testing_tmp_dir, coll_name)        
+        local_dir = os.path.join(self.testing_tmp_dir, coll_name)
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
-        
+
         # force remove collection
         self.user0.assert_icommand("irm -rf {coll_name}".format(**locals()), "EMPTY")
         self.user0.assert_icommand("ils {coll_name}".format(**locals()), 'STDERR_SINGLELINE', "does not exist")
