@@ -12,17 +12,17 @@ PREEXISTING_ADMIN_PASSWORD = 'rods'
 # TODO: allow for arbitrary number of remote zones
 
 class FEDERATION(object):
-    LOCAL_IRODS_VERSION = (4, 1, 0)
-    REMOTE_IRODS_VERSION = (4, 1, 0)
+    LOCAL_IRODS_VERSION = (4, 2, 0)
+    REMOTE_IRODS_VERSION = (4, 2, 0)
     RODSUSER_NAME_PASSWORD_LIST = [('zonehopper', '53CR37')]
     RODSADMIN_NAME_PASSWORD_LIST = []
     IRODS_DIR = '/var/lib/irods/iRODS'
     LOCAL_ZONE = 'dev'
-    REMOTE_ZONE = '403'
-    REMOTE_HOST = 'irods403'
+    REMOTE_ZONE = 'buntest'
+    REMOTE_HOST = 'buntest'
     REMOTE_RESOURCE = 'demoResc'
     REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
-    TEST_FILE_SIZE = 4096   # 4MB
-    LARGE_FILE_SIZE = 67108864  # 64MB
+    TEST_FILE_SIZE = 4*1024*1024
+    LARGE_FILE_SIZE = 64*1024*1024
     TEST_FILE_COUNT = 300
     MAX_THREADS = 16

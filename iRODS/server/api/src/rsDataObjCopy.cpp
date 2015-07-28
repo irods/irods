@@ -203,7 +203,7 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
     else {
         if ( srcDataObjInfo != NULL ) {
             destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
-                                         srcDataObjInfo->rescHier, destDataObjInfo->rescHier, 0 );
+                                         destDataObjInfo->rescHier, srcDataObjInfo->rescHier, 0 );
 
         }
 
