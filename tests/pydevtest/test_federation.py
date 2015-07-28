@@ -21,7 +21,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
     def setUp(self):
         # make local test directory
-        self.local_test_dir_path = os.path.abspath('federation_test_stuff.tmp')
+        self.local_test_dir_path = '/tmp/federation_test_stuff'
         os.mkdir(self.local_test_dir_path)
 
         # load federation settings in dictionary (all lower case)
@@ -486,6 +486,106 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -f {local_home_collection}/{filename}".format(**parameters))
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
+        os.remove(filepath)
+
+    def test_icp_large(self):
+        # test settings
+        remote_zone = self.config['remote_zone']
+        local_zone = self.config['local_zone']
+        test_session = self.user_sessions[0]
+        user_name = test_session.username
+        local_home_collection = test_session.home_collection
+        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
+
+        # make test file
+        filename = 'icp_test_file'
+        filesize = self.config['large_file_size']
+        filepath = os.path.join(self.local_test_dir_path, filename)
+        lib.make_file(filepath, filesize)
+
+        # checksum local file
+        orig_md5 = commands.getoutput('md5sum ' + filepath)
+
+        # put file in local collection
+        test_session.assert_icommand(
+            "iput {filepath} {local_home_collection}/".format(**locals()))
+
+        # remove local file
+        os.remove(filepath)
+
+        # copy file to remote home collection
+        test_session.assert_icommand(
+            "icp {local_home_collection}/{filename} {remote_home_collection}/".format(**locals()))
+
+        # file should show up in remote zone
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**locals()), 'STDOUT_SINGLELINE', filename)
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**locals()), 'STDOUT_SINGLELINE', str(filesize))
+
+        # get file back from remote zone
+        test_session.assert_icommand(
+            "iget {remote_home_collection}/{filename} {filepath}".format(**locals()))
+
+        # compare checksums
+        new_md5 = commands.getoutput('md5sum ' + filepath)
+        self.assertEqual(orig_md5, new_md5)
+
+        # cleanup
+        test_session.assert_icommand(
+            "irm -f {local_home_collection}/{filename}".format(**locals()))
+        test_session.assert_icommand(
+            "irm -f {remote_home_collection}/{filename}".format(**locals()))
+        os.remove(filepath)
+
+    def test_icp_f_large(self):
+        # test settings
+        remote_zone = self.config['remote_zone']
+        local_zone = self.config['local_zone']
+        test_session = self.user_sessions[0]
+        user_name = test_session.username
+        local_home_collection = test_session.home_collection
+        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
+
+        # make test file
+        filename = 'icp_test_file'
+        filesize = self.config['large_file_size']
+        filepath = os.path.join(self.local_test_dir_path, filename)
+        lib.make_file(filepath, filesize)
+
+        # checksum local file
+        orig_md5 = commands.getoutput('md5sum ' + filepath)
+
+        # put file in local collection
+        test_session.assert_icommand(
+            "iput {filepath} {local_home_collection}/".format(**locals()))
+
+        # remove local file
+        os.remove(filepath)
+
+        # copy file to remote home collection
+        test_session.assert_icommand(
+            "icp -f {local_home_collection}/{filename} {remote_home_collection}/".format(**locals()))
+
+        # file should show up in remote zone
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**locals()), 'STDOUT_SINGLELINE', filename)
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**locals()), 'STDOUT_SINGLELINE', str(filesize))
+
+        # get file back from remote zone
+        test_session.assert_icommand(
+            "iget {remote_home_collection}/{filename} {filepath}".format(**locals()))
+
+        # compare checksums
+        new_md5 = commands.getoutput('md5sum ' + filepath)
+        self.assertEqual(orig_md5, new_md5)
+
+        # cleanup
+        test_session.assert_icommand(
+            "irm -f {local_home_collection}/{filename}".format(**locals()))
+        test_session.assert_icommand(
+            "irm -f {remote_home_collection}/{filename}".format(**locals()))
         os.remove(filepath)
 
     def test_icp_r(self):

@@ -300,7 +300,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
     initReiWithDataObjInp( &rei, rsComm, &doinp );
 
-    if ( destRescHier != NULL ) {
+    if (destRescHier && strlen(destRescHier)) {
 
         // get resource (hierarchy) location
         std::string location;
@@ -339,7 +339,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         }
     }
 
-    if ( destRescHier != NULL && srcRescHier != NULL ) {
+    if (destRescHier && strlen(destRescHier) && srcRescHier && strlen(srcRescHier)) {
         if ( numDestThr > 0 && strcmp( destRescHier, srcRescHier ) == 0 ) {
             return numDestThr;
         }

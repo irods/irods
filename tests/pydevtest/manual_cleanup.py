@@ -4,7 +4,7 @@ import sys
 import lib
 import configuration
 
-test_user_list = ['alice', 'bobby', 'otherrods']
+test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper']
 test_resc_list = ['pydevtest_AnotherResc', 'pydevtest_TestResc']
 
 # make admin session
@@ -19,14 +19,18 @@ for user_name in test_user_list:
     # get permission on user's collection
     sess.run_icommand('ichmod -rM own {admin_name} /{zone_name}/home/{user_name}'.format(**locals()))
     
-    # remove test coll
+    # remove test data in user's home collection
     res = sess.run_icommand('ils /{zone_name}/home/{user_name}'.format(**locals()))
-    try:
-        test_coll = res[1].split()[2]
-        sess.run_icommand('irm -rf {test_coll}'.format(**locals()))
-    except IndexError:
-        sys.exc_clear()
-    
+    entries = res[1].split()
+    if len(entries) > 1:
+        for entry in entries[1:]:
+            # collection
+            if entry.startswith('/'):
+                sess.run_icommand('irm -rf {entry}'.format(**locals()))
+            # data object
+            elif entry != 'C-':
+                sess.run_icommand('irm -f /{zone_name}/home/{user_name}/{entry}'.format(**locals()))
+
     # remove user
     sess.run_icommand('iadmin rmuser {user_name}'.format(**locals()))
 
