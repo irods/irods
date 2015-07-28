@@ -289,7 +289,7 @@ std::string format_grid_status(
 
 } // format_grid_status
 
-irods::error get_and_verify_client_environment( 
+irods::error get_and_verify_client_environment(
     rodsEnv& _env ) {
     _getRodsEnv( _env );
 
@@ -299,13 +299,13 @@ irods::error get_and_verify_client_environment(
         have_error = true;
         msg += "irods_server_control_plane_key";
     }
-    
+
     if( 0 == _env.irodsCtrlPlaneEncryptionNumHashRounds ) {
         have_error = true;
         msg += ", irods_server_control_plane_encryption_num_hash_rounds";
     }
 
-    if( 0 == _env.irodsCtrlPlaneEncryptionAlgorithm ) {
+    if( 0 == strlen( _env.irodsCtrlPlaneEncryptionAlgorithm ) ) {
         have_error = true;
         msg += ", irods_server_control_plane_encryption_algorithm";
     }
