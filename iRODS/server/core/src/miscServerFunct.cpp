@@ -153,7 +153,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                                       proto );
         if ( portalSock < 0 ) {
             rodsLog( LOG_NOTICE,
-                     "setupSrvPortalForParaOpr: createSrvPortal error, ststus = %d",
+                     "setupSrvPortalForParaOpr: createSrvPortal error, status = %d",
                      portalSock );
             myDataObjPutOut->status = portalSock;
             return portalSock;
