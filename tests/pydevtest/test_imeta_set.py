@@ -173,6 +173,49 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         command_str = '''imeta qu -d a in "1'{0}'v"'''.format("'1'" * num_extra_bind_vars)
         self.admin.assert_icommand(command_str, 'STDOUT_SINGLELINE', self.testfile)
 
+    def test_imeta_addw(self):
+        base_name = "file_";
+        for i in range(5):
+            object_name = base_name + str(i)
+            self.admin.assert_icommand(['iput', self.testfile, object_name])
+        
+        self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
+
+        attribute = 'test_imeta_addw_attribute'
+        value = 'test_imeta_addw_value'
+        wild = base_name+"%"
+        self.admin.assert_icommand(['imeta', 'addw', '-d', wild, attribute, value], 'STDOUT_SINGLELINE', 'AVU added to 5 data-objects')
+
+        for i in range(5):
+            object_name = base_name + str(i)
+            self.admin.assert_icommand('imeta ls -d %s' % (object_name), 'STDOUT_SINGLELINE', ['attribute: ' + attribute])
+            self.admin.assert_icommand('imeta ls -d %s' % (object_name), 'STDOUT_SINGLELINE', ['value: ' + value])
+
+    def test_imeta_addw_for_other_user(self):
+        base_name = "file_";
+        for i in range(5):
+            object_name = base_name + str(i)
+            self.admin.assert_icommand(['iput', self.testfile, object_name])
+        
+        self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
+
+        attribute = 'test_imeta_addw_attribute'
+        value = 'test_imeta_addw_value'
+        wild = self.admin.session_collection+'/'+base_name+"%"
+        self.user0.assert_icommand(['imeta', 'addw', '-d', wild, attribute, value], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
+
+    def test_imeta_addw_for_other_user_by_admin(self):
+        base_name = "file_";
+        for i in range(5):
+            object_name = base_name + str(i)
+            self.user0.assert_icommand(['iput', self.testfile, object_name])
+        
+        self.user0.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
+
+        attribute = 'test_imeta_addw_attribute'
+        value = 'test_imeta_addw_value'
+        wild = self.user0.session_collection+'/'+base_name+"%"
+        self.admin.assert_icommand(['imeta', 'addw', '-d', wild, attribute, value], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
 
 class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
