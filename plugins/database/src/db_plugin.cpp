@@ -315,6 +315,150 @@ _updateObjCountOfResources(
     return result;
 }
 
+// =-=-=-=-=-=-=-
+// @brief determine if user had write permission to data object
+irods::error determine_user_has_modify_metadata_access(
+    const std::string& _data_name,
+    const std::string& _collection,
+    const std::string& _user_name,
+    const std::string& _zone ) {
+
+    int status = 0;
+
+    rodsLog(
+        LOG_DEBUG,  
+        "%s :: [%s] [%s] [%s] [%s]",
+        __FUNCTION__,
+        _data_name.c_str(),
+        _collection.c_str(),
+        _user_name.c_str(),
+        _zone.c_str() );
+
+    // get the number of data object to which this will apply
+    rodsLong_t num_data_objects = -1;
+    {
+        std::vector<std::string> bind_vars;
+        bind_vars.push_back( _data_name );
+        bind_vars.push_back( _collection );
+        status = cmlGetIntegerValueFromSql(
+                     "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+                      &num_data_objects,
+                      bind_vars,
+                      &icss );
+        if( 0 != status ) {
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       status,
+                       "failed to get object count" );
+        }
+
+        if( 0 == num_data_objects ) {
+            std::string msg = "no data objects found for collection ";
+            msg += _collection;
+            msg += " and object name ";
+            msg += _data_name;
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       CAT_NO_ROWS_FOUND,
+                       msg );
+        }
+    }
+
+    // get the baseline 'access needed' value from the token table
+    rodsLong_t access_needed = -1;
+    { 
+        std::vector<std::string> bind_vars;
+        int status = cmlGetIntegerValueFromSql(
+                         "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
+			 &access_needed,
+                         bind_vars,
+                         &icss );
+        if( status < 0 ) {
+            return ERROR(
+                       status,
+                       "query for modify metadata token_id failed" );
+        }
+    }
+
+    // reproduce the creation of access permission entries
+    // of "ACCESS_VIEW_ONE" and "ACCESS_VIEW_TWO"
+    rodsLong_t access_permission = -1;
+    {
+#if ORA_ICAT
+        std::string query = "select min(max_access_type_id) from ( select max(access_type_id) max_access_type_id from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) group by data_id )";
+#else
+        std::string query = "select min(max_access_type_id) from ( select max(access_type_id) max_access_type_id from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) as foo group by data_id ) as bar";
+#endif
+        std::vector<std::string> bind_vars;
+        bind_vars.push_back( _data_name.c_str() );
+        bind_vars.push_back( _collection.c_str() );
+        bind_vars.push_back( _user_name.c_str() );
+        bind_vars.push_back( _zone.c_str() );
+        status = cmlGetIntegerValueFromSql(
+	             query.c_str(),
+	             &access_permission,
+                     bind_vars,
+                     &icss );
+        if ( status == CAT_NO_ROWS_FOUND ) {
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       CAT_NO_ACCESS_PERMISSION,
+                       "access denied" );
+        }
+
+        if ( access_permission < access_needed ) {
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       CAT_NO_ACCESS_PERMISSION,
+                       "access denied" );
+        }
+    }
+
+    // reproduce the count of access permission entries in "ACCESS_VIEW_TWO"
+    rodsLong_t access_permission_count = -1;
+    {
+#if ORA_ICAT
+        std::string query = "select count( max ) from ( select max(access_type_id) max from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) group by data_id )";
+#else
+        std::string query = "select count( max ) from ( select max(access_type_id) max from ( select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name = ? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id ) as foo group by data_id ) as baz";
+#endif
+        std::vector<std::string> bind_vars;
+        bind_vars.push_back( _data_name.c_str() );
+        bind_vars.push_back( _collection.c_str() );
+        bind_vars.push_back( _user_name.c_str() );
+        bind_vars.push_back( _zone.c_str() );
+        status = cmlGetIntegerValueFromSql(
+	             query.c_str(),
+	             &access_permission_count,
+                     bind_vars,
+                     &icss );
+        if( 0 != status ) {
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       status,
+                       "query for access permission count failed" );
+        }
+
+        if( num_data_objects > access_permission_count ) {
+            std::stringstream msg;
+            msg << "access denined - num_data_objects "
+                << num_data_objects
+                << " > access_permission_count "
+                << access_permission_count;
+            _rollback( "chlAddAVUMetadataWild" );
+            return ERROR(
+                       CAT_NO_ACCESS_PERMISSION,
+                       msg.str() );
+        }
+    }
+
+    // return number of data objects, keeping the semantics of the
+    // original imeta addw operation
+    return CODE( num_data_objects );
+
+} // user_has_modify_metadata_access
+
+
 /*
  * removeMetaMapAndAVU - remove AVU (user defined metadata) for an object,
  *   the metadata mapping information, if any.  Optionally, also remove
@@ -9799,292 +9943,46 @@ checkLevel:
 
         }
 
+        #if 0 // future usage
         // =-=-=-=-=-=-=-
         // get a postgres object from the context
-        /*irods::postgres_object_ptr pg;
+        irods::postgres_object_ptr pg;
         ret = make_db_ptr( _ctx.fco(), pg );
         if ( !ret.ok() ) {
             return PASS( ret );
 
-        }*/
+        }
 
         // =-=-=-=-=-=-=-
         // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-        rodsLong_t status, status2;
+        icatSessionStruct icss;
+        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
+        #endif
+
+        rodsLong_t status;//, status2;
         rodsLong_t seqNum;
-        int numObjects;
-        int nAccess = 0;
-        static int accessNeeded = ACCESS_MAX;
-        rodsLong_t iVal;
         char collection[MAX_NAME_LEN];
         char objectName[MAX_NAME_LEN];
         char myTime[50];
         char seqNumStr[MAX_NAME_LEN];
-        int itype;
-
-        itype = convertTypeOption( _type );
-        if ( itype != 1 ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "invalid type" );    /* only -d for now */
-        }
 
         status = splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
+
         if ( strlen( collection ) == 0 ) {
             snprintf( collection, sizeof( collection ), "%s", PATH_SEPARATOR );
             snprintf( objectName, sizeof( objectName ), "%s", _name );
         }
 
-        /*
-          The following SQL is somewhat complicated, but evaluates the access
-          permissions in steps to reduce the complexity and so it can scale
-          well.  Altho there are multiple SQL calls, including creating two
-          views, the scaling burden is placed on the DBMS, so it should
-          perform well even for many thousands of objects at a time.
-        */
+        ret = determine_user_has_modify_metadata_access(
+                  objectName,
+                  collection,
+                  _ctx.comm()->clientUser.userName,
+                  _ctx.comm()->clientUser.rodsZone );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }                 
 
-        /* Get the count of the objects to compare with later */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 1" );
-        }
-        {
-            std::vector<std::string> bindVars;
-            bindVars.push_back( objectName );
-            bindVars.push_back( collection );
-            status = cmlGetIntegerValueFromSql(
-                         "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
-                         &iVal, bindVars, &icss );
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadataWild get count failure %d",
-                     status );
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR( status, "select failure" );
-        }
-        numObjects = iVal;
-        if ( numObjects == 0 ) {
-            return ERROR( CAT_NO_ROWS_FOUND, "no objects found" );
-        }
-
-        /*
-           Create a view with all the access permissions for this user, or
-           groups this user is a member of, for all the matching data-objects.
-        */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 2" );
-        }
-#if ORA_ICAT
-        /* For Oracle, we cannot use views with bind-variables, so use a
-           table instead. */
-        status =  cmlExecuteNoAnswerSql( "purge recyclebin",
-                                         &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (drop table ACCESS_VIEW_ONE) failure %d",
-                     status );
-        }
-        status =  cmlExecuteNoAnswerSql( "drop table ACCESS_VIEW_ONE",
-                                         &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (drop table ACCESS_VIEW_ONE) failure %d",
-                     status );
-        }
-
-        status =  cmlExecuteNoAnswerSql( "create table ACCESS_VIEW_ONE (access_type_id integer, data_id integer)",
-                                         &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create table ACCESS_VIEW_ONE) failure %d",
-                     status );
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR( status, "(create table ACCESS_VIEW_ONE) failure" );
-        }
-
-        cllBindVars[cllBindVarCount++] = objectName;
-        cllBindVars[cllBindVarCount++] = collection;
-        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
-        status =  cmlExecuteNoAnswerSql(
-                      "insert into ACCESS_VIEW_ONE (access_type_id, data_id) (select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id)",
-                      &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_NO_ACCESS_PERMISSION;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
-                     status );
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR( status, "create view failure" );
-        }
-#else
-        cllBindVars[cllBindVarCount++] = objectName;
-        cllBindVars[cllBindVarCount++] = collection;
-        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.userName;
-        cllBindVars[cllBindVarCount++] = _ctx.comm()->clientUser.rodsZone;
-        status =  cmlExecuteNoAnswerSql(
-                      "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
-                      &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_NO_ACCESS_PERMISSION;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
-                     status );
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR( status, "create view failure" );
-        }
-#endif
-
-        /* Create another view for min below (sub select didn't work).  This
-           is the set of access permisions per matching data-object, the best
-           permision values (for example, if user has write and has
-           group-based read, this will be 'write').
-        */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 3" );
-        }
-#if (defined ORA_ICAT || defined MY_ICAT)
-        status =  cmlExecuteNoAnswerSql(
-                      "create or replace view ACCESS_VIEW_TWO as select max(access_type_id) max from ACCESS_VIEW_ONE group by data_id",
-                      &icss );
-#else
-        status =  cmlExecuteNoAnswerSql(
-                      "create or replace view ACCESS_VIEW_TWO as select max(access_type_id) from ACCESS_VIEW_ONE group by data_id",
-                      &icss );
-#endif
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_NO_ACCESS_PERMISSION;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
-                     status );
-            _rollback( "chlAddAVUMetadataWild" );
-            return ERROR( status, "(create view) failure" );
-        }
-
-        if ( accessNeeded >= ACCESS_MAX ) { /* not initialized yet */
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 4" );
-            }
-            {
-                std::vector<std::string> bindVars;
-                status = cmlGetIntegerValueFromSql(
-                             "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
-                             &iVal, bindVars, &icss );
-            }
-            if ( status == 0 ) {
-                accessNeeded = iVal;
-            }
-        }
-
-        /* Get the minimum access permissions for the whole set of
-         * data-objects that match */
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 5" );
-        }
-        iVal = -1;
-        {
-            std::vector<std::string> bindVars;
-            status = cmlGetIntegerValueFromSql(
-                         "select min(max) from ACCESS_VIEW_TWO",
-                         &iVal, bindVars, &icss );
-        }
-
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            status = CAT_NO_ACCESS_PERMISSION;
-        }
-
-        if ( status == 0 ) {
-            if ( iVal < accessNeeded ) {
-                status = CAT_NO_ACCESS_PERMISSION;
-            }
-        }
-
-        /* Get the count of the access permissions for the set of
-         * data-objects, since if there are completely missing access
-         * permissions (NULL) they won't show up in the above query */
-        if ( status == 0 ) {
-            if ( logSQL != 0 ) {
-                rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 6" );
-            }
-            {
-                std::vector<std::string> bindVars;
-                status = cmlGetIntegerValueFromSql(
-                             "select count(*) from ACCESS_VIEW_TWO",
-                             &iVal, bindVars, &icss );
-            }
-            if ( status == 0 ) {
-                nAccess = iVal;
-
-                if ( numObjects > nAccess ) {
-                    status = CAT_NO_ACCESS_PERMISSION;
-                }
-            }
-        }
-
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 7" );
-        }
-#if ORA_ICAT
-        status2 =  cmlExecuteNoAnswerSql(
-                       "drop table ACCESS_VIEW_ONE",
-                       &icss );
-        if ( status2 == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status2 = 0;
-        }
-        if ( status2 == 0 ) {
-            status2 =  cmlExecuteNoAnswerSql(
-                           "drop view ACCESS_VIEW_TWO",
-                           &icss );
-            if ( status2 == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-                status2 = 0;
-            }
-        }
-#else
-        status2 =  cmlExecuteNoAnswerSql(
-                       "drop view ACCESS_VIEW_TWO, ACCESS_VIEW_ONE",
-                       &icss );
-        if ( status2 == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status2 = 0;
-        }
-#endif
-
-        if ( status2 != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlAddAVUMetadataWild cmlExecuteNoAnswerSql (drop view (or table)) failure %d",
-                     status2 );
-        }
-
-        if ( status != 0 ) {
-            return ERROR( status, "(drop view (or table)) failure" );
-        }
-
-        /*
-           Now the easy part, set up the AVU and associate it with the data-objects
-        */
+        // user has write access, set up the AVU and associate it with the data-objects
         status = findOrInsertAVU( _attribute, _value, _units );
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
@@ -10106,7 +10004,12 @@ checkLevel:
             rodsLog( LOG_SQL, "chlAddAVUMetadataWild SQL 8" );
         }
         status =  cmlExecuteNoAnswerSql(
-                      "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? group by DM.data_id",
+                      "insert into R_OBJT_METAMAP \
+                       (object_id, meta_id, create_ts, modify_ts) \
+                       select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, \
+                       R_COLL_MAIN CM where DM.data_name like ? \
+                       and DM.coll_id=CM.coll_id and CM.coll_name like ? \
+                       group by DM.data_id",
                       &icss );
         if ( status != 0 ) {
             rodsLog( LOG_NOTICE,
@@ -10141,7 +10044,7 @@ checkLevel:
             return ERROR( status, "commit failure" );
         }
 
-        return CODE( numObjects );
+        return CODE( ret.code() );
 
     } // db_add_avu_metadata_wild_op
 
