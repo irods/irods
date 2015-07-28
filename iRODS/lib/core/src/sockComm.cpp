@@ -1359,7 +1359,7 @@ irods::error sendVersion(
 
 irods::error sendRodsMsg(
     irods::network_object_ptr _ptr,
-    char*               _msg_type,
+    const char*         _msg_type,
     bytesBuf_t*         _msg_buf,
     bytesBuf_t*         _bs_buf,
     bytesBuf_t*         _error_buf,
@@ -1379,7 +1379,7 @@ irods::error sendRodsMsg(
     // make the call to the "write body" interface
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >(
+    ret_err = net->call< const char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >(
                   irods::NETWORK_OP_WRITE_BODY,
                   ptr,
                   _msg_type,

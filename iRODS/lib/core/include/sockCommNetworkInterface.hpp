@@ -26,7 +26,7 @@ irods::error writeMsgHeader(
     msgHeader_t* );                 // header structure
 irods::error sendRodsMsg(
     irods::network_object_ptr, // network object,
-    char*,                          // message type
+    const char*,                    // message type
     bytesBuf_t*,                    // message buffer
     bytesBuf_t*,                    // stream buffer
     bytesBuf_t*,                    // error buffer

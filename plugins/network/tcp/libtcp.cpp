@@ -366,7 +366,7 @@ extern "C" {
     //
     irods::error tcp_send_rods_msg(
         irods::plugin_context& _ctx,
-        char*                   _msg_type,
+        const char*             _msg_type,
         bytesBuf_t*             _msg_buf,
         bytesBuf_t*             _stream_bbuf,
         bytesBuf_t*             _error_buf,
