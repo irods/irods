@@ -20,15 +20,15 @@ typedef struct RodsPath {
     objStat_t objState;
     rodsLong_t size;
     uint objMode;
-    char inPath[MAX_NAME_LEN];	 /* input from commnad line */
+    char inPath[MAX_NAME_LEN];	 /* input from command line */
     char outPath[MAX_NAME_LEN];	 /* the path after parsing the inPath */
     char dataId[NAME_LEN];
     char chksum[NAME_LEN];
     rodsObjStat_t *rodsObjStat;
 } rodsPath_t;
 
-/* This is the struct for a command line path input. Normall it containers
- * one or more source inpput paths and 0 or 1 destination path */
+/* This is the struct for a command line path input. Normally it contains
+ * one or more source input paths and 0 or 1 destination paths */
 
 typedef struct RodsPathInp {
     int numSrc;
