@@ -188,6 +188,11 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     # isysmeta
     ###################
 
+    def test_isysmeta_no_resc_group__2819(self):
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # basic listing
+        self.admin.assert_icommand_fail("isysmeta ls -l "+self.testfile, 'STDOUT_SINGLELINE',
+                                   "resc_group_name:")  # should not exist
+
     def test_isysmeta_init_set_and_reset(self):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "pydevtest_testfile.txt")  # basic listing
         self.admin.assert_icommand("isysmeta ls pydevtest_testfile.txt", 'STDOUT_SINGLELINE',
