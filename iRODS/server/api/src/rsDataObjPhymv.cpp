@@ -14,9 +14,102 @@
 #include "reSysDataObjOpr.hpp"
 #include "dataObjCreate.h"
 #include "getRemoteZoneResc.h"
+#include "physPath.hpp"
+#include "fileClose.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
+#include "irods_resource_backport.hpp"
+
+
+irods::error test_source_replica_for_write_permissions(
+    rsComm_t*      _comm,
+    dataObjInfo_t* _data_obj_info ) {
+	if( !_comm || !_data_obj_info ) {
+        return ERROR(
+		           SYS_INTERNAL_NULL_INPUT_ERR,
+				   "null _data_obj_info or _comm" );
+	}
+
+    std::string location;
+    irods::error ret = irods::get_loc_for_hier_string(
+	                       _data_obj_info->rescHier,
+						   location );
+    if ( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+	// test the source hier to determine if we have write access to the data
+	// stored.  if not then we cannot unlink that replica and should throw an
+	// error.
+	fileOpenInp_t open_inp;
+	memset(
+	    &open_inp, 0,
+		sizeof( open_inp ) );
+    open_inp.mode = getDefFileMode();
+    open_inp.flags = O_WRONLY;
+    rstrcpy(
+	    open_inp.resc_name_,
+		_data_obj_info->rescName,
+		MAX_NAME_LEN );
+    rstrcpy(
+	    open_inp.resc_hier_,
+		_data_obj_info->rescHier,
+		MAX_NAME_LEN );
+    rstrcpy(
+	    open_inp.objPath,
+		_data_obj_info->objPath,
+		MAX_NAME_LEN );
+    rstrcpy(
+	    open_inp.addr.hostAddr,
+		location.c_str(),
+		NAME_LEN );
+    rstrcpy(
+	    open_inp.fileName,
+		_data_obj_info->filePath,
+		MAX_NAME_LEN );
+    rstrcpy(
+	    open_inp.in_pdmo,
+		_data_obj_info->in_pdmo,
+		MAX_NAME_LEN );
+
+    // kv passthru
+    copyKeyVal(
+        &_data_obj_info->condInput,
+        &open_inp.condInput );
+
+    int l3_idx = rsFileOpen( _comm, &open_inp );
+	clearKeyVal( &open_inp.condInput );
+    if( l3_idx < 0 ) {
+		std::string msg = "unable to open ";
+		msg += _data_obj_info->objPath;
+		msg += " for unlink";
+		addRErrorMsg(
+		    &_comm->rError,
+			SYS_USER_NO_PERMISSION,
+			msg.c_str() );
+		return ERROR(
+		           SYS_USER_NO_PERMISSION,
+				   msg );
+	}
+
+	
+    fileCloseInp_t close_inp;
+	memset( &close_inp, 0, sizeof( close_inp ) );
+	close_inp.fileInx = l3_idx;
+	int status = rsFileClose( _comm, &close_inp );
+    if( status < 0 ) {
+		std::string msg = "failed to close ";
+		msg += _data_obj_info->objPath;
+		return ERROR(
+		           status,
+				   msg );
+    }
+
+	return SUCCESS();
+
+} // test_source_replica_for_write_permissions
+
 
 /* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
  * a data object from one resource to another.
@@ -74,10 +167,14 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // determine hierarchy string
-    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+	char* resc_hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if ( NULL == resc_hier_kw ) {
         std::string       hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                           dataObjInp, hier );
+        irods::error ret = irods::resolve_resource_hierarchy(
+		                       irods::OPEN_OPERATION,
+							   rsComm,
+                               dataObjInp,
+							   hier );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -90,14 +187,19 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
-        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+        addKeyVal(
+		    &dataObjInp->condInput,
+			RESC_HIER_STR_KW,
+			hier.c_str() );
 
     } // if keyword
+
+
 
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
     memset( *transStat, 0, sizeof( transferStat_t ) );
 
-    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+    if( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
@@ -107,14 +209,24 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         accessPerm = ACCESS_DELETE_OBJECT;
     }
 
-    /* query rcat for resource info and sort it */
-    status = getRescForCreate( rsComm, dataObjInp, resc_name );
-    if ( status < 0 ) {
+    // query rcat for resource info and sort it
+    status = getRescForCreate(
+	             rsComm,
+				 dataObjInp,
+				 resc_name );
+    if( status < 0 ) {
         return status;
     }
 
-    initReiWithDataObjInp( &rei, rsComm, dataObjInp );
-    status = applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
+    initReiWithDataObjInp(
+	    &rei,
+		rsComm,
+		dataObjInp );
+    status = applyRule(
+	             "acSetMultiReplPerResc",
+				 NULL,
+				 &rei,
+				 NO_SAVE_REI );
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
         multiCopyFlag = 1;
     }
@@ -122,18 +234,35 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         multiCopyFlag = 0;
     }
 
-    /* query rcat for dataObjInfo and sort it */
-    status = getDataObjInfo( rsComm, dataObjInp, &dataObjInfoHead,
-                             accessPerm, 1 );
+    // query rcat for dataObjInfo and sort it
+    status = getDataObjInfo(
+	             rsComm,
+				 dataObjInp,
+				 &dataObjInfoHead,
+                 accessPerm, 1 );
 
     if ( status < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath );
+        rodsLog(
+		    LOG_NOTICE,
+            "rsDataObjPhymv: getDataObjInfo for %s",
+			dataObjInp->objPath );
         return status;
     }
 
-    status = resolveInfoForPhymv( &dataObjInfoHead, &oldDataObjInfoHead, resc_name, &dataObjInp->condInput, multiCopyFlag );
+    irods::error ret = test_source_replica_for_write_permissions(
+	                       rsComm,
+	                       dataObjInfoHead );
+	if( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+		return ret.code();
+	}
 
+    status = resolveInfoForPhymv(
+	             &dataObjInfoHead,
+				 &oldDataObjInfoHead,
+				 resc_name,
+				 &dataObjInp->condInput,
+				 multiCopyFlag );
     if ( status < 0 ) {
         freeAllDataObjInfo( dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
@@ -145,8 +274,13 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
 
-    status = _rsDataObjPhymv( rsComm, dataObjInp, dataObjInfoHead, resc_name.c_str(),
-                              *transStat, multiCopyFlag );
+    status = _rsDataObjPhymv(
+	             rsComm,
+				 dataObjInp,
+				 dataObjInfoHead,
+				 resc_name.c_str(),
+                 *transStat,
+				 multiCopyFlag );
 
     freeAllDataObjInfo( dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
