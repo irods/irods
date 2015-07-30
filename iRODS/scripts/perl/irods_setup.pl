@@ -869,8 +869,10 @@ sub configureIrodsUser
                 chmod( 0600, $userIrodsFile . ".orig" );
         }
 
-    # populate the irods environment for this server instance
-    printToFile( $userIrodsFile,
+        # capture confiugration values from server_config.json
+
+        # populate the irods environment for this server instance
+        printToFile( $userIrodsFile,
         "{\n" .
         "    \"irods_host\": \"$thisHost\",\n" .
         "    \"irods_port\": $IRODS_PORT,\n" .
@@ -887,10 +889,10 @@ sub configureIrodsUser
         "    \"irods_encryption_algorithm\": \"AES-256-CBC\",\n" .
         "    \"irods_default_hash_scheme\": \"SHA256\",\n" .
         "    \"irods_match_hash_policy\": \"compatible\",\n" .
-        "    \"irods_server_control_plane_port\": 1248,\n" .
-        "    \"irods_server_control_plane_key\": \"TEMPORARY__32byte_ctrl_plane_key\",\n" .
-        "    \"irods_server_control_plane_encryption_num_hash_rounds\": 16,\n" .
-        "    \"irods_server_control_plane_encryption_algorithm\": \"AES-256-CBC\",\n" .
+        "    \"irods_server_control_plane_port\": $CONTROL_PLANE_PORT,\n" .
+        "    \"irods_server_control_plane_key\": \"$CONTROL_PLANE_KEY\",\n" .
+        "    \"irods_server_control_plane_encryption_num_hash_rounds\": $CONTROL_PLANE_NUM_HASH_ROUNDS,\n" .
+        "    \"irods_server_control_plane_encryption_algorithm\": \"$CONTROL_PLANE_ALGORITHM\",\n" .
         "    \"irods_maximum_size_for_single_buffer_in_megabytes\": 32,\n" .
         "    \"irods_default_number_of_transfer_threads\": 4,\n" .
         "    \"irods_transfer_buffer_size_for_parallel_transfer_in_megabytes\": 4\n" .

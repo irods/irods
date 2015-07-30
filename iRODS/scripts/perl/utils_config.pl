@@ -63,6 +63,12 @@ sub load_server_config {
     $IRODS_ADMIN_PASSWORD = undef;
     $IRODS_ICAT_HOST = undef;
     $SCHEMA_VALIDATION_BASE_URI = undef;
+
+    $CONTROL_PLANE_PORT = undef;
+    $CONTROL_PLANE_KEY = undef;
+    $CONTROL_PLANE_NUM_HASH_ROUNDS = undef;
+    $CONTROL_PLANE_ALGORITHM = undef;
+
     # load specific variables
     $data = load_json_file($filename);
     $IRODS_ADMIN_NAME = $data->{'zone_user'};
@@ -76,6 +82,12 @@ sub load_server_config {
     $IRODS_ADMIN_PASSWORD = $data->{'admin_password'};
     $IRODS_ICAT_HOST = $data->{'icat_host'};
     $SCHEMA_VALIDATION_BASE_URI = $data->{'schema_validation_base_uri'};
+
+    $CONTROL_PLANE_PORT = $data->{'server_control_plane_port'};
+    $CONTROL_PLANE_KEY =  $data->{'server_control_plane_key'};
+    $CONTROL_PLANE_NUM_HASH_ROUNDS =  $data->{'server_control_plane_encryption_num_hash_rounds'};
+    $CONTROL_PLANE_ALGORITHM =  $data->{'server_control_plane_encryption_algorithm'};
+
     # return
     return 1;
 }
