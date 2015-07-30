@@ -54,6 +54,13 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     char *lockType = NULL; // JMC - backport 4604
     int lockFd = -1; // JMC - backport 4604
 
+    irods::error ret = validate_logical_path(
+	                       dataObjInp->objPath );
+	if( !ret.ok() ) {
+		irods::log( PASS( ret ) );
+		return ret.code();
+	}
+
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
     remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
