@@ -39,6 +39,14 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                             "Extra files in vault:\n" + str(vault_files - set(local_files)))
         return (local_dir, local_files)
 
+    def iput_to_root_collection(self):
+        filename = 'original.txt'
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand('iput ' + filename + ' /nopes', 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+
+    def imkdir_to_root_collection(self):
+        self.admin.assert_icommand('imkdir /nopes', 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+
     def test_icommand_help_and_error_codes(self):
         icmds = ['iput', 'iget']
         for i in icmds:
