@@ -558,6 +558,7 @@ sub createDatabaseAndTables
                 }
 
                 # Now apply the site-defined iCAT tables, if any
+                my $extendedIcatDir = "$scripttoplevel/iRODS/server/icat/src";
                 my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtTables.sql" );
                 if (-e $sqlPath) {
                     printStatus( "    Inserting iCAT Extension tables...\n" );
@@ -1856,64 +1857,7 @@ sub Postgres_CreateDatabase()
         #
         # These files should already exist, but may not include the line
         # setting the database name.  Update or create the files.
-        if ( $DATABASE_ODBC_TYPE =~ /unix/i )
-        {
-                printStatus( "Updating Postgres UNIX ODBC odbc.ini configuration...\n" );
-                printLog( "\nUpdating Postgres UNIX ODBC odbc.ini configuration\n" );
-
-                # Update 'odbc.ini'.
-                my $ini = File::Spec->catfile( $databaseEtcDir, "odbc.ini" );
-                if ( ! -e $ini )
-                {
-                        # The file doesn't exist.  Create it and presume
-                        # that the driver is in the Postgres/lib directory
-                        # where it should be.
-                        #
-                        # Since the iRODS Postgres installation always
-                        # creates this file, that we are creating it now
-                        # probably means Postgres was installed (incompletely)
-                        # previously.  Chances are good that this will not
-                        # be sufficient and something else is wrong too.
-                        my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
-
-                        printToFile( $ini,
-                                "[postgres]\n" .
-                                "Driver=$libPath\n" .
-                                "Debug=0\n" .
-                                "CommLog=0\n" .
-                                "Servername=$DATABASE_HOST\n" .
-                                "Database=$DB_NAME\n" .
-                                "ReadOnly=no\n" .
-                                "Ksqo=0\n" .
-                                "Port=$DATABASE_PORT\n" );
-                        $databaseRestartNeeded = 1;
-                }
-                else
-                {
-                        # The file exists.  Either it was created by the
-                        # iRODS installation script, or Postgres was
-                        # previosly installed.  Make sure there is a
-                        # 'Database' name set in the file.
-                        $status = Postgres_updateODBC( $ini, "postgres",
-                                "Database", $DB_NAME );
-                        if ( $status == 0 )
-                        {
-                                # Problem.  Message already output.
-                                return 0;
-                        }
-                        if ( $status == 1 )
-                        {
-                                # ODBC config file was changed.
-                                $databaseRestartNeeded = 1;
-                        }
-                        else
-                        {
-                                printStatus( "    Skipped.  Configuration already uptodate.\n" );
-                                printLog( "    Skipped.  Configuration already uptodate.\n" );
-                        }
-                }
-        }
-        elsif ( $DATABASE_ODBC_TYPE =~ /post/i )
+        if ( $DATABASE_ODBC_TYPE =~ /post/i )
         {
                 printStatus( "Updating Postgres ODBC odbcinst.ini configuration...\n" );
                 printLog( "\nUpdating Postgres ODBC odbcinst.ini configuration\n" );
