@@ -27,6 +27,8 @@
 #define TRIM_MATCHED_OBJ_INFO           0x4
 #define TRIM_UNMATCHED_OBJ_INFO         0x8
 
+irods::error validate_logical_path(const std::string&);
+    
 int
 getDataObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput );

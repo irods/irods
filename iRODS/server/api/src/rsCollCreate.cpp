@@ -17,53 +17,11 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "physPath.hpp"
+#include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
-
-
-// =-=-=-=-=-=-=-
-/// @brief function which determines if a collection is created at the root level
-irods::error validate_collection_path(
-    const std::string& _path ) {
-    // =-=-=-=-=-=-=-
-    // set up a default error structure
-    std::stringstream msg;
-    msg << "a valid zone name does not appear at the root of the collection path [";
-    msg << _path;
-    msg << "]";
-    irods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-
-    // =-=-=-=-=-=-=-
-    // loop over the ZoneInfo linked list and see if the path
-    // has a root collection which matches any zone
-    zoneInfo_t* zone_info = ZoneInfoHead;
-    while ( zone_info ) {
-        // =-=-=-=-=-=-=-
-        // build a root zone name
-        std::string zone_name( "/" );
-        zone_name += zone_info->zoneName;
-
-        // =-=-=-=-=-=-=-
-        // if the zone name appears at the root
-        // then this is a good path
-        size_t pos = _path.find( zone_name );
-        if ( 0 == pos ) {
-            ret_val = SUCCESS();
-            zone_info = 0;
-        }
-        else {
-            zone_info = zone_info->next;
-
-        }
-
-    } // while
-
-    return ret_val;
-
-} // validate_collection_path
-
 
 int
 rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
@@ -76,7 +34,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     dataObjInfo_t *dataObjInfo = NULL;
 #endif
 
-    irods::error ret = validate_collection_path( collCreateInp->collName );
+    irods::error ret = validate_logical_path( collCreateInp->collName );
     if ( !ret.ok() ) {
         irods::log( ret );
         return SYS_INVALID_INPUT_PARAM;
