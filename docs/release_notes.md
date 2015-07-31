@@ -2,7 +2,7 @@
 
 ## 4.1.4
 
-Release Date: 2015-07-31
+Release Date: 2015-08-05
 
 ### Bug Fixes
 
@@ -55,6 +55,10 @@ Release Date: 2015-07-31
  - Fix for data objects in the root dir (/) [#2823]
 
  - Fix for custom control plane key and port during setup [#2824]
+
+ - Fix for checksum calculations on MacOSX [#2826]
+
+ - Fix for iget parallel transfer [#2828]
 
  [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.4)
 
