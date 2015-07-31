@@ -14,8 +14,7 @@
 #include <fstream>
 #include "irods_stacktrace.hpp"
 
-
-#define HASH_BUF_SZ      (4 * 1024)
+#define HASH_BUF_SZ (1024*1024)
 
 int chksumLocFile(
     char*       _file_name,
@@ -133,7 +132,7 @@ int chksumLocFile(
     if ( !in_file.is_open() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLogError(
-            LOG_NOTICE,
+            LOG_ERROR,
             status,
             "chksumLocFile - fopen failed for %s, status = %d",
             _file_name,
@@ -141,18 +140,27 @@ int chksumLocFile(
         return status;
     }
 
-    char buffer_read[ HASH_BUF_SZ ];
-    std::streamsize bytes_read = in_file.readsome(
-                                     buffer_read,
-                                     HASH_BUF_SZ );
-    while ( bytes_read > 0 ) {
-        hasher.update(
-            std::string(
-                buffer_read,
-                bytes_read ) );
-        bytes_read = in_file.readsome(
-                         buffer_read,
-                         HASH_BUF_SZ );
+    std::string buffer_read;
+    buffer_read.resize( HASH_BUF_SZ );
+
+    while ( in_file.read( &buffer_read[0], HASH_BUF_SZ ) ) {
+        hasher.update( buffer_read );
+    }
+
+    if ( in_file.eof() ) {
+        if ( in_file.gcount() > 0 ) {
+            buffer_read.resize( in_file.gcount() );
+            hasher.update( buffer_read );
+        }
+    } else {
+        status = UNIX_FILE_READ_ERR - errno;
+        rodsLogError(
+                     LOG_ERROR,
+                     status,
+                     "chksumLocFile - read() failed for %s, status = %d",
+                     _file_name,
+                     status );
+        return status;
     }
 
     // =-=-=-=-=-=-=-
