@@ -422,7 +422,7 @@ int iFuseReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offs
     
     iFuseDir = (iFuseDir_t *)fi->fh;
     
-    assert(iFuseDir->handle != NULL);
+    assert(iFuseDir->handle >= 0);
     
     bzero(iRodsPath, MAX_NAME_LEN);
     status = iFuseRodsClientMakeRodsPath(path, iRodsPath);

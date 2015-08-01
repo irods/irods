@@ -728,7 +728,7 @@ int iFuseFsCloseDir(iFuseDir_t *iFuseDir) {
     
     assert(iFuseDir != NULL);
     assert(iFuseDir->iRodsPath != NULL);
-    assert(iFuseDir->handle != NULL);
+    assert(iFuseDir->handle >= 0);
     
     iFuseRodsClientLog(LOG_DEBUG, "iFuseFsCloseDir: %s", iFuseDir->iRodsPath);
     
@@ -749,11 +749,11 @@ int iFuseFsCloseDir(iFuseDir_t *iFuseDir) {
 int iFuseFsReadDir(iFuseDir_t *iFuseDir, iFuseDirFiller filler, void *buf, off_t offset) {
     int status = 0;
     iFuseConn_t *iFuseConn = NULL;
-    collEnt_t collEnt;
+    collEnt_t *collEnt = NULL;
     
     assert(iFuseDir != NULL);
     assert(iFuseDir->iRodsPath != NULL);
-    assert(iFuseDir->handle != NULL);
+    assert(iFuseDir->handle >= 0);
     
     UNUSED(offset);
     
@@ -764,20 +764,19 @@ int iFuseFsReadDir(iFuseDir_t *iFuseDir, iFuseDirFiller filler, void *buf, off_t
     iFuseDirLock(iFuseDir);
     iFuseConnLock(iFuseConn);
     
-    bzero(&collEnt, sizeof ( collEnt_t));
-    
     while ((status = iFuseRodsClientReadCollection(iFuseConn->conn, iFuseDir->handle, &collEnt)) >= 0) {
-        if (collEnt.objType == DATA_OBJ_T) {
-            filler(buf, collEnt.dataName, NULL, 0);
-        } else if (collEnt.objType == COLL_OBJ_T) {
+        if (collEnt->objType == DATA_OBJ_T) {
+            filler(buf, collEnt->dataName, NULL, 0);
+        } else if (collEnt->objType == COLL_OBJ_T) {
             char myDir[MAX_NAME_LEN];
             char mySubDir[MAX_NAME_LEN];
             
-            splitPathByKey(collEnt.collName, myDir, MAX_NAME_LEN, mySubDir, MAX_NAME_LEN, '/');
+            splitPathByKey(collEnt->collName, myDir, MAX_NAME_LEN, mySubDir, MAX_NAME_LEN, '/');
             if (mySubDir[0] != '\0') {
                 filler(buf, mySubDir, NULL, 0);
             }
         }
+        freeCollEnt(collEnt);
     }
     
     iFuseConnUnlock(iFuseConn);

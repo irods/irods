@@ -21,7 +21,7 @@ typedef struct IFuseFd {
 
 typedef struct IFuseDir {
     unsigned long ddId;
-    collHandle_t *handle;
+    int handle;
     iFuseConn_t *conn;
     char *iRodsPath;
     pthread_mutexattr_t lockAttr;
