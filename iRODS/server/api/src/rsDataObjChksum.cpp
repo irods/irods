@@ -60,7 +60,7 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
                                    &dataObjInfoHead );
     }
     freeAllDataObjInfo( dataObjInfoHead );
-    rodsLog( LOG_NOTICE, "rsDataObjChksum - returning status %d", status );
+    rodsLog( LOG_DEBUG, "rsDataObjChksum - returning status %d", status );
     return status;
 }
 
@@ -72,7 +72,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int allFlag;
     int verifyFlag;
     int forceFlag;
-    
+
     char* inp_chksum = getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW );
 
     if ( getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL ) {
@@ -238,7 +238,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-    rodsLog( LOG_NOTICE, "dataObjChksumAndRegInfo - rsModDataObjMeta status %d", status );
+    rodsLog( LOG_DEBUG, "dataObjChksumAndRegInfo - rsModDataObjMeta status %d", status );
     clearKeyVal( &regParam );
 
     return status;
