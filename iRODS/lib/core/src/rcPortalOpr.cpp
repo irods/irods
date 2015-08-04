@@ -560,7 +560,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz );
+    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
@@ -725,7 +725,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
-    dataObjReadInpBBuf.buf = malloc( trans_buff_sz );
+    dataObjReadInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjReadInpBBuf.len = dataObjReadInp.len = trans_buff_sz;
     dataObjReadInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
@@ -1586,7 +1586,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     size_t trans_buff_sz = rods_env.irodsTransBufferSizeForParaTrans * 1024 * 1024;
 
     bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz );
+    dataObjWriteInpBBuf.buf = malloc( trans_buff_sz + 1 );
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = irodsFd;
 
