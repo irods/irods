@@ -21,6 +21,15 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Rulebase, self).tearDown()
 
+    def test_client_server_negotiation__2564(self):
+        corefile = lib.get_core_re_dir() + "/core.re"
+        with lib.file_backed_up(corefile):
+            time.sleep(2)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file('\nacPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }\n', corefile)
+            time.sleep(2)  # remove once file hash fix is commited #2279
+
+            self.admin.assert_icommand( 'ils','STDERR_SINGLELINE','CLIENT_NEGOTIATION_ERROR')
+
     def test_msiDataObjWrite__2795(self):
         rule_file = "test_rule_file.r"
         rule_string = """
