@@ -197,10 +197,10 @@ Here are the basic steps to configure the server:
 
 #### Generate a new RSA key
 
-Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -idea options to genrsa):
+Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -idea options to genrsa) and make sure it has at least 1024 bits (the default is 512):
 
 ~~~
-irods@hostname:~/ $ openssl genrsa -out server.key
+irods@hostname:~/ $ openssl genrsa -out server.key 1024
 ~~~
 
 #### Acquire a certificate for the server
