@@ -8,6 +8,7 @@ import socket
 import time  # remove once file hash fix is commited #2279
 import lib
 import time
+import copy
 
 import configuration
 from resource_suite import ResourceBase
@@ -24,11 +25,20 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def test_client_server_negotiation__2564(self):
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
+            client_update = {
+                'irods_client_server_policy': 'CS_NEG_REFUSE'
+            }
+
+            session_env_backup = copy.deepcopy(self.admin.environment_file_contents)
+            self.admin.environment_file_contents.update(client_update)
+
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file('\nacPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }\n', corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             self.admin.assert_icommand( 'ils','STDERR_SINGLELINE','CLIENT_NEGOTIATION_ERROR')
+
+            self.admin.environment_file_contents = session_env_backup
 
     def test_msiDataObjWrite__2795(self):
         rule_file = "test_rule_file.r"
