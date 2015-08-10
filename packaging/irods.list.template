@@ -72,6 +72,9 @@ $RESOURCE=true
 %requires openssl
 %endif
 
+%if CENTOS7
+%requires openssl
+%endif
 
 
 %if DEB
