@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*** This code is rewritten by Illyoung Choi (iychoi@email.arizona.edu)    ***
  *** funded by iPlantCollaborative (www.iplantcollaborative.org).          ***/
-#ifndef I_FUSE_OPER_HPP_
-#define I_FUSE_OPER_HPP_
+#ifndef IFUSE_OPER_HPP
+#define IFUSE_OPER_HPP
 
 #include <sys/statvfs.h>
 
@@ -43,4 +43,4 @@ extern "C" {
 }
 #endif
 
-#endif	/* I_FUSE_OPER_HPP_ */
+#endif	/* IFUSE_OPER_HPP */

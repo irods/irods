@@ -200,6 +200,7 @@ int iFuseFsOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag) {
 int iFuseFsClose(iFuseFd_t *iFuseFd) {
     int status = 0;
     iFuseConn_t *iFuseConn = NULL;
+    char *iRodsPath;
     
     assert(iFuseFd != NULL);
     assert(iFuseFd->iRodsPath != NULL);
@@ -209,13 +210,17 @@ int iFuseFsClose(iFuseFd_t *iFuseFd) {
     
     iFuseConn = iFuseFd->conn;
     
+    iRodsPath = strdup(iFuseFd->iRodsPath);
+    
     status = iFuseFdClose(iFuseFd);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsClose: iFuseFdClose of %s error, status = %d",
-                iFuseFd->iRodsPath, status);
+                iRodsPath, status);
+        free(iRodsPath);
         return -ENOENT;
     }
 
+    free(iRodsPath);
     iFuseConnUnuse(iFuseConn);
     return 0;
 }
@@ -725,6 +730,7 @@ int iFuseFsOpenDir(const char *iRodsPath, iFuseDir_t **iFuseDir) {
 int iFuseFsCloseDir(iFuseDir_t *iFuseDir) {
     int status = 0;
     iFuseConn_t *iFuseConn = NULL;
+    char *iRodsPath;
     
     assert(iFuseDir != NULL);
     assert(iFuseDir->iRodsPath != NULL);
@@ -734,14 +740,17 @@ int iFuseFsCloseDir(iFuseDir_t *iFuseDir) {
     
     iFuseConn = iFuseDir->conn;
     
+    iRodsPath = strdup(iFuseDir->iRodsPath);
+    
     status = iFuseDirClose(iFuseDir);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsCloseDir: iFuseDirClose of %s error, status = %d",
-                iFuseDir->iRodsPath, status);
-        iFuseConnUnlock(iFuseConn);
+                iRodsPath, status);
+        free(iRodsPath);
         return -ENOENT;
     }
 
+    free(iRodsPath);
     iFuseConnUnuse(iFuseConn);
     return 0;
 }

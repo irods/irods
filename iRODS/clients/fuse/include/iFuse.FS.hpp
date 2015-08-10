@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*** This code is rewritten by Illyoung Choi (iychoi@email.arizona.edu)    ***
  *** funded by iPlantCollaborative (www.iplantcollaborative.org).          ***/
-#ifndef IFUSE_BASEOPS_HPP
-#define	IFUSE_BASEOPS_HPP
+#ifndef IFUSE_FS_HPP
+#define	IFUSE_FS_HPP
 
 #include "iFuse.Lib.hpp"
 #include "iFuse.Lib.Fd.hpp"
