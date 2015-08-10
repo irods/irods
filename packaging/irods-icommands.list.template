@@ -61,6 +61,11 @@ $RESOURCE=true
 %requires openssl
 %endif
 
+%if CENTOS7
+%requires openssl
+%endif
+
+
 %if DEB
 %requires libc6
 %requires libssl1.0.0

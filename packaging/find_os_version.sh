@@ -7,7 +7,7 @@ if [ "$DETECTEDOS" == "Ubuntu" ] ; then
 elif [ "$DETECTEDOS" == "Debian" ] ; then
     OSVERSION=`cat /etc/debian_version | awk -F= '{print $1}'`
 elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    OSVERSION=`awk '{print $3}' /etc/redhat-release`
+    OSVERSION=`awk '{for(i=1;i<NF&&$i!="release";++i); print $++i}' /etc/redhat-release`
 elif [ "$DETECTEDOS" == "SuSE" ] ; then
     OSVERSION=`grep VERSION /etc/SuSE-release | awk '{print $3}'`
 elif [ "$DETECTEDOS" == "Solaris" ] ; then
