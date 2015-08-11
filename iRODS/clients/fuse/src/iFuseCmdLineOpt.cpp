@@ -20,6 +20,7 @@ void iFuseCmdOptsInit() {
     bzero(&g_Opt, sizeof(iFuseOpt_t));
     
     g_Opt.bufferedFS = true;
+    g_Opt.preload = true;
     g_Opt.maxConn = IFUSE_MAX_NUM_CONN;
     g_Opt.connTimeoutSec = IFUSE_FREE_CONN_TIMEOUT_SEC;
     g_Opt.connKeepAliveSec = IFUSE_FREE_CONN_KEEPALIVE_SEC;
@@ -78,6 +79,10 @@ void iFuseCmdOptsParse(int argc, char **argv) {
     for(i=0;i<argc;i++) {
         if(strcmp("-onocache", argv[i]) == 0) {
             g_Opt.bufferedFS = false;
+            g_Opt.preload = false;
+            argv[i] = "-Z";
+        } else if(strcmp("-onopreload", argv[i]) == 0) {
+            g_Opt.preload = false;
             argv[i] = "-Z";
         } else if(strcmp("-omaxconn", argv[i]) == 0) {
             if(argc > i+1) {

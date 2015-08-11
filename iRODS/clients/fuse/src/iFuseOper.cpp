@@ -8,6 +8,7 @@
 #include <time.h>
 #include <assert.h>
 #include "iFuseOper.hpp"
+#include "iFuse.Preload.hpp"
 #include "iFuse.BufferedFS.hpp"
 #include "iFuse.FS.hpp"
 #include "iFuse.Lib.Fd.hpp"
@@ -22,12 +23,14 @@ void *iFuseInit(struct fuse_conn_info *conn) {
     iFuseLibInit();
     iFuseFsInit();
     iFuseBufferedFSInit();
+    iFusePreloadInit();
     return NULL;
 }
 
 void iFuseDestroy(void *data) {
     UNUSED(data);
     
+    iFusePreloadDestroy();
     iFuseBufferedFSDestroy();
     iFuseFsDestroy();
     iFuseLibDestroy();
@@ -79,11 +82,20 @@ int iFuseOpen(const char *path, struct fuse_file_info *fi) {
     }
     
     if(iFuseLibGetOption()->bufferedFS) {
-        status = iFuseBufferedFsOpen(iRodsPath, &iFuseFd, flag);
-        if (status < 0) {
-            iFuseRodsClientLogError(LOG_ERROR, status, 
-                    "iFuseOpen: cannot open file descriptor for %s error", iRodsPath);
-            return -ENOENT;
+        if(iFuseLibGetOption()->preload) {
+            status = iFusePreloadOpen(iRodsPath, &iFuseFd, flag);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseOpen: cannot open file descriptor for %s error", iRodsPath);
+                return -ENOENT;
+            }
+        } else {
+            status = iFuseBufferedFsOpen(iRodsPath, &iFuseFd, flag);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseOpen: cannot open file descriptor for %s error", iRodsPath);
+                return -ENOENT;
+            }
         }
     } else {
         status = iFuseFsOpen(iRodsPath, &iFuseFd, flag);
@@ -119,11 +131,20 @@ int iFuseClose(const char *path, struct fuse_file_info *fi) {
     }
     
     if(iFuseLibGetOption()->bufferedFS) {
-        status = iFuseBufferedFsClose(iFuseFd);
-        if (status < 0) {
-            iFuseRodsClientLogError(LOG_ERROR, status, 
-                    "iFuseClose: cannot close file descriptor for %s error", iRodsPath);
-            return -ENOENT;
+        if(iFuseLibGetOption()->preload) {
+            status = iFusePreloadClose(iFuseFd);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseClose: cannot close file descriptor for %s error", iRodsPath);
+                return -ENOENT;
+            }
+        } else {
+            status = iFuseBufferedFsClose(iFuseFd);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseClose: cannot close file descriptor for %s error", iRodsPath);
+                return -ENOENT;
+            }
         }
     } else {
         status = iFuseFsClose(iFuseFd);
@@ -226,11 +247,20 @@ int iFuseRead(const char *path, char *buf, size_t size, off_t offset, struct fus
     }
     
     if(iFuseLibGetOption()->bufferedFS) {
-        status = iFuseBufferedFsRead(iFuseFd, buf, offset, size);
-        if (status < 0) {
-            iFuseRodsClientLogError(LOG_ERROR, status, 
-                    "iFuseRead: cannot read file content for %s error", iRodsPath);
-            return -ENOENT;
+        if(iFuseLibGetOption()->preload) {
+            status = iFusePreloadRead(iFuseFd, buf, offset, size);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseRead: cannot read file content for %s error", iRodsPath);
+                return -ENOENT;
+            }
+        } else {
+            status = iFuseBufferedFsRead(iFuseFd, buf, offset, size);
+            if (status < 0) {
+                iFuseRodsClientLogError(LOG_ERROR, status, 
+                        "iFuseRead: cannot read file content for %s error", iRodsPath);
+                return -ENOENT;
+            }
         }
     } else {
         status = iFuseFsRead(iFuseFd, buf, offset, size);

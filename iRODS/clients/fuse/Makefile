@@ -52,6 +52,7 @@ BINS =		\
 LIB_OBJS =	\
 		$(objDir)/iFuseCmdLineOpt.o \
 		$(objDir)/iFuseOper.o \
+		$(objDir)/iFuse.Preload.o \
 		$(objDir)/iFuse.BufferedFS.o \
 		$(objDir)/iFuse.Lib.o \
 		$(objDir)/iFuse.Lib.Conn.o \
