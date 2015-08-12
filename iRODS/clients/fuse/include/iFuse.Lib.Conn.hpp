@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include "rodsClient.h"
 
-#define IFUSE_MAX_NUM_CONN	5
+#define IFUSE_MAX_NUM_CONN	20
 
 #define IFUSE_CONN_TYPE_FOR_FILE_IO      0
 #define IFUSE_CONN_TYPE_FOR_STATUS       1
