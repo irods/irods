@@ -40,15 +40,15 @@ int iFuseRodsClientMakeRodsPath(const char *path, char *iRodsPath);
 
 int iFuseRodsClientDataObjOpen(rcComm_t *conn, dataObjInp_t *dataObjInp);
 int iFuseRodsClientDataObjClose(rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp);
-int iFuseRodsClientOpenCollection(rcComm_t *conn, collInp_t *openCollInp);
-int iFuseRodsClientCloseCollection(rcComm_t *conn, int handleInxInp);
+int iFuseRodsClientOpenCollection( rcComm_t *conn, char *collection, int flag, collHandle_t *collHandle );
+int iFuseRodsClientCloseCollection(collHandle_t *collHandle);
 int iFuseRodsClientObjStat(rcComm_t *conn, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsObjStatOut);
 int iFuseRodsClientDataObjLseek(rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp, fileLseekOut_t **dataObjLseekOut);
 int iFuseRodsClientDataObjRead(rcComm_t *conn, openedDataObjInp_t *dataObjReadInp, bytesBuf_t *dataObjReadOutBBuf);
 int iFuseRodsClientDataObjWrite(rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp, bytesBuf_t *dataObjWriteInpBBuf);
 int iFuseRodsClientDataObjCreate(rcComm_t *conn, dataObjInp_t *dataObjInp);
 int iFuseRodsClientDataObjUnlink(rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp);
-int iFuseRodsClientReadCollection(rcComm_t *conn, int handleInxInp, collEnt_t **collEnt);
+int iFuseRodsClientReadCollection(rcComm_t *conn, collHandle_t *collHandle, collEnt_t *collEnt);
 int iFuseRodsClientCollCreate(rcComm_t *conn, collInp_t *collCreateInp);
 int iFuseRodsClientRmColl(rcComm_t *conn, collInp_t *rmCollInp, int vFlag);
 int iFuseRodsClientDataObjRename(rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp);

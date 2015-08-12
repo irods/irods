@@ -165,22 +165,17 @@ int iFuseRodsClientDataObjClose(rcComm_t *conn, openedDataObjInp_t *dataObjClose
     return status;
 }
 
-int iFuseRodsClientOpenCollection(rcComm_t *conn, collInp_t *openCollInp) {
+int iFuseRodsClientOpenCollection(rcComm_t *conn, char *collection, int flag, collHandle_t *collHandle) {
     iFuseRodsClientOperation_t *oper = _startOperationTimeout(conn);
     int status;
     
-    status = rcOpenCollection(conn, openCollInp);
+    status = rclOpenCollection(conn, collection, flag, collHandle);
     _endOperationTimeout(oper);
     return status;
-} 
+}
 
-int iFuseRodsClientCloseCollection(rcComm_t *conn, int handleInxInp) {
-    iFuseRodsClientOperation_t *oper = _startOperationTimeout(conn);
-    int status;
-    
-    status = rcCloseCollection(conn, handleInxInp);
-    _endOperationTimeout(oper);
-    return status;
+int iFuseRodsClientCloseCollection(collHandle_t *collHandle) {
+    return rclCloseCollection(collHandle);
 }
 
 int iFuseRodsClientObjStat(rcComm_t *conn, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsObjStatOut) {
@@ -237,11 +232,11 @@ int iFuseRodsClientDataObjUnlink(rcComm_t *conn, dataObjInp_t *dataObjUnlinkInp)
     return status;
 }
 
-int iFuseRodsClientReadCollection(rcComm_t *conn, int handleInxInp, collEnt_t **collEnt) {
+int iFuseRodsClientReadCollection(rcComm_t *conn, collHandle_t *collHandle, collEnt_t *collEnt) {
     iFuseRodsClientOperation_t *oper = _startOperationTimeout(conn);
     int status;
     
-    status = rcReadCollection(conn, handleInxInp, collEnt);
+    status = rclReadCollection(conn, collHandle, collEnt);
     _endOperationTimeout(oper);
     return status;
 }

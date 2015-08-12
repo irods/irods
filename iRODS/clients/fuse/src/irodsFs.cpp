@@ -54,52 +54,50 @@ int main(int argc, char **argv) {
     irodsOper.flush = iFuseFlush;
     irodsOper.mknod = iFuseCreate;
     irodsOper.fsync = iFuseFsync;
-    
+
     optStr = "Zhdo:";
 
     status = parseCmdLineOpt(argc, argv, optStr, 1, &myRodsArgs);
     if (status < 0) {
         printf("Use -h for help.\n");
-        exit(1);
+        return 1;
     }
 
     if (myRodsArgs.help == True) {
         usage();
-        exit(0);
+        return 0;
     }
     if (myRodsArgs.version == True) {
         printf("Version: %s", RODS_REL_VERSION);
-        exit(0);
+        return 0;
     }
 
     status = getRodsEnv(&myRodsEnv);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "main: getRodsEnv error. ");
-        exit(1);
+        return 1;
     }
 
-    srandom((unsigned int) time(0) % getpid());
-
     iFuseCmdOptsInit();
-    
+
     iFuseCmdOptsParse(argc, argv);
     iFuseCmdOptsAdd("-odirect_io");
-    
+
     iFuseGetOption(&myiFuseOpt);
-    
+
     iFuseLibSetRodsEnv(&myRodsEnv);
     iFuseLibSetOption(&myiFuseOpt);
-    
+
     iFuseGenCmdLineForFuse(&fuse_argc, &fuse_argv);
     status = fuse_main(fuse_argc, fuse_argv, &irodsOper, NULL);
     iFuseReleaseCmdLineForFuse(fuse_argc, fuse_argv);
-    
+
     iFuseCmdOptsDestroy();
-    
+
     if (status < 0) {
-        exit(3);
+        return 3;
     } else {
-        exit(0);
+        return 0;
     }
 }
 
