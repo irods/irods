@@ -578,6 +578,10 @@ int iFuseConnUnuse(iFuseConn_t *iFuseConn) {
             assert(0);
         }
     }
+    
+    pthread_mutex_unlock(&iFuseConn->lock);
+    pthread_mutex_unlock(&g_ConnectedConnLock);
+    return 0;
 }
 
 /*
