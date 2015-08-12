@@ -195,7 +195,7 @@ int _startPreload(iFusePreload_t *iFusePreload, unsigned int blockID, iFuseFd_t 
     
     status = pthread_create(&iFusePreloadPBlock->thread, &iFusePreloadPBlock->threadAttr, _preloadTask, (void*)iFusePreloadPBlock);
     if(status != 0) {
-        iFuseRodsClientLogError(LOG_ERROR, status, "_startPreload: failed to create a thread for %s of block id %ud, status = %d",
+        iFuseRodsClientLogError(LOG_ERROR, status, "_startPreload: failed to create a thread for %s of block id %u, status = %d",
                 iFusePreload->iRodsPath, blockID, status);
         _freePreloadPBlock(iFusePreloadPBlock);
         return -1;

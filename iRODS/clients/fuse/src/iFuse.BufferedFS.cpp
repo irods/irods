@@ -550,7 +550,7 @@ int iFuseBufferedFsReadBlock(iFuseFd_t *iFuseFd, char *buf, unsigned int blockID
     assert(iFuseFd != NULL);
     assert(buf != NULL);
     
-    iFuseRodsClientLog(LOG_DEBUG, "iFuseBufferedFsReadBlock: %s, blockID: %ud", iFuseFd->iRodsPath, blockID);
+    iFuseRodsClientLog(LOG_DEBUG, "iFuseBufferedFsReadBlock: %s, blockID: %u", iFuseFd->iRodsPath, blockID);
     
     pthread_mutex_lock(&g_BufferCacheLock);
     
