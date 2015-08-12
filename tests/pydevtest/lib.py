@@ -96,15 +96,16 @@ def cat(fname, string, times=None):
     with open(fname, 'a') as f:
         f.write(string)
 
-def make_file(f_name, f_size, source='/dev/zero'):
-    if f_size == 0:
-        touch(f_name)
+def make_file(f_name, f_size, contents='zero'):
+    assert contents in ['arbitrary', 'random', 'zero']
+    if contents == 'arbitrary' or f_size == 0:
+        subprocess.check_call(['truncate', '-s', str(f_size), f_name])
         return
-    output = commands.getstatusoutput(
-        'dd if="' + source + '" of="' + f_name + '" count=1 bs=' + str(f_size))
-    if output[0] != 0:
-        sys.stderr.write(output[1] + '\n')
-        raise OSError(output[0], "call to dd returned non-zero")
+
+    source = {'zero': '/dev/zero',
+              'random': '/dev/urandom'}[contents]
+
+    subprocess.check_call(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
 
 def ils_output_to_entries(stdout):
     raw = stdout.strip().split('\n')
