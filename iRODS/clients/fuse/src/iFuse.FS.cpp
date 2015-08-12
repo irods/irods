@@ -15,6 +15,12 @@
 #include "iFuse.Lib.Util.hpp"
 #include "sockComm.h"
 
+#ifdef _MYSQL_ICAT_DRIVER_PATCH_
+#warning _MYSQL_ICAT_DRIVER_PATCH_ is set. This may degrade performance in filesystem operations but solves an inconsistent content issue on MYSQL iCAT database driver.
+#else
+#warning _MYSQL_ICAT_DRIVER_PATCH_ is not set. This will increase performance in filesystem operations but may cause an inconsistent content issue on MYSQL iCAT database driver.
+#endif
+
 static pthread_mutexattr_t g_FSConsecutiveOpLockAttr;
 static pthread_mutex_t g_FSConsecutiveOpLock;
 
@@ -85,7 +91,11 @@ int iFuseFsGetAttr(const char *iRodsPath, struct stat *stbuf) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+#ifdef _MYSQL_ICAT_DRIVER_PATCH_
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_ONETIMEUSE);
+#else
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
+#endif
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsGetAttr: iFuseConnGetAndUse of %s error", iRodsPath);
         return -EIO;
@@ -180,7 +190,11 @@ int iFuseFsOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag) {
     // obtain a connection for a file
     // must be released lock after use
     // while the file is opened, connection is in-use status.
+#ifdef _MYSQL_ICAT_DRIVER_PATCH_
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_ONETIMEUSE);
+#else
     status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_FILE_IO);
+#endif
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsOpen: iFuseConnGetAndUse of %s error",
                 iRodsPath);
@@ -528,7 +542,7 @@ int iFuseFsCreate(const char *iRodsPath, mode_t mode) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsCreate: iFuseConnGetAndUse of %s error", iRodsPath);
         pthread_mutex_unlock(&g_FSConsecutiveOpLock);
@@ -642,7 +656,7 @@ int iFuseFsUnlink(const char *iRodsPath) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsUnlink: iFuseConnGetAndUse of %s error",
                 iRodsPath);
@@ -709,7 +723,11 @@ int iFuseFsOpenDir(const char *iRodsPath, iFuseDir_t **iFuseDir) {
     // obtain a connection for a file
     // must be released lock after use
     // while the file is opened, connection is in-use status.
+#ifdef _MYSQL_ICAT_DRIVER_PATCH_
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_ONETIMEUSE);
+#else
     status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_FILE_IO);
+#endif
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsOpenDir: iFuseConnGetAndUse of %s error",
                 iRodsPath);
@@ -807,7 +825,7 @@ int iFuseFsMakeDir(const char *iRodsPath, mode_t mode) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsMakeDir: iFuseConnGetAndUse of %s error", iRodsPath);
         return -EIO;
@@ -862,7 +880,7 @@ int iFuseFsRemoveDir(const char *iRodsPath) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsRemoveDir: iFuseConnGetAndUse of %s error",
                 iRodsPath);
@@ -945,7 +963,7 @@ int iFuseFsRename(const char *iRodsFromPath, const char *iRodsToPath) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsRename: iFuseConnGetAndUse of %s to %s error",
                 iRodsFromPath, iRodsToPath);
@@ -1013,7 +1031,7 @@ int iFuseFsTruncate(const char *iRodsPath, off_t size) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsTruncate: iFuseConnGetAndUse of %s error",
                 iRodsPath);
@@ -1074,7 +1092,7 @@ int iFuseFsChmod(const char *iRodsPath, mode_t mode) {
 
     // temporarily obtain a connection
     // must be marked unused and release lock after use
-    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_STATUS);
+    status = iFuseConnGetAndUse(&iFuseConn, IFUSE_CONN_TYPE_FOR_SHORTOP);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsChmod: iFuseConnGetAndUse of %s error",
                 iRodsPath);
