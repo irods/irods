@@ -11,7 +11,8 @@
 #define IFUSE_MAX_NUM_CONN	20
 
 #define IFUSE_CONN_TYPE_FOR_FILE_IO      0
-#define IFUSE_CONN_TYPE_FOR_STATUS       1
+#define IFUSE_CONN_TYPE_FOR_SHORTOP      1
+#define IFUSE_CONN_TYPE_FOR_ONETIMEUSE   2
 
 #define IFUSE_FREE_CONN_CHECK_PERIOD    10
 #define IFUSE_FREE_CONN_TIMEOUT_SEC     (60*5)
@@ -19,6 +20,7 @@
 
 typedef struct IFuseConn {
     unsigned long connId;
+    int type;
     rcComm_t *conn;
     time_t actTime;
     time_t lastKeepAliveTime;

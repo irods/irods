@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <list>
+#include <map>
 #include "iFuse.Lib.hpp"
 #include "iFuse.Lib.RodsClientAPI.hpp"
 #include "iFuse.Lib.Conn.hpp"
@@ -16,9 +17,10 @@
 
 static pthread_mutex_t g_ConnectedConnLock;
 static pthread_mutexattr_t g_ConnectedConnLockAttr;
-static iFuseConn_t* g_InUseStatConn;
+static iFuseConn_t* g_InUseShortopConn;
 static iFuseConn_t** g_InUseConn;
-static iFuseConn_t* g_FreeStatConn;
+static std::map<unsigned long, iFuseConn_t*> g_InUseOnetimeuseConn;
+static iFuseConn_t* g_FreeShortopConn;
 static std::list<iFuseConn_t*> g_FreeConn;
 
 static pthread_t g_FreeConnCollector;
@@ -143,6 +145,7 @@ static int _freeConn(iFuseConn_t *iFuseConn) {
 
 static int _freeAllConn() {
     iFuseConn_t *tmpIFuseConn;
+    std::map<unsigned long, iFuseConn_t*>::iterator it_connmap;
     int i;
 
     pthread_mutex_lock(&g_ConnectedConnLock);
@@ -155,9 +158,9 @@ static int _freeAllConn() {
         _freeConn(tmpIFuseConn);
     }
 
-    if(g_FreeStatConn != NULL) {
-        _freeConn(g_FreeStatConn);
-        g_FreeStatConn = NULL;
+    if(g_FreeShortopConn != NULL) {
+        _freeConn(g_FreeShortopConn);
+        g_FreeShortopConn = NULL;
     }
 
     // disconnect all inuse connections
@@ -169,11 +172,21 @@ static int _freeAllConn() {
         }
     }
 
-    if(g_InUseStatConn != NULL) {
-        _freeConn(g_InUseStatConn);
-        g_InUseStatConn = NULL;
+    if(g_InUseShortopConn != NULL) {
+        _freeConn(g_InUseShortopConn);
+        g_InUseShortopConn = NULL;
     }
+    
+    while(!g_InUseOnetimeuseConn.empty()) {
+        it_connmap = g_InUseOnetimeuseConn.begin();
+        if(it_connmap != g_InUseOnetimeuseConn.end()) {
+            tmpIFuseConn = it_connmap->second;
+            g_InUseOnetimeuseConn.erase(it_connmap);
 
+            _freeConn(tmpIFuseConn);
+        }
+    }
+    
     pthread_mutex_unlock(&g_ConnectedConnLock);
 
     return 0;
@@ -218,6 +231,7 @@ static void _keepAlive(iFuseConn_t *iFuseConn) {
 static void* _connChecker(void* param) {
     std::list<iFuseConn_t*> removeList;
     std::list<iFuseConn_t*>::iterator it_conn;
+    std::map<unsigned long, iFuseConn_t*>::iterator it_connmap;
     iFuseConn_t *iFuseConn;
     time_t currentTime;
     int i;
@@ -240,13 +254,22 @@ static void* _connChecker(void* param) {
             }
         }
 
-        if(g_InUseStatConn != NULL) {
-            if(IFuseLibDiffTimeSec(currentTime, g_InUseStatConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
-                _keepAlive(g_InUseStatConn);
-                g_InUseStatConn->lastKeepAliveTime = currentTime;
+        if(g_InUseShortopConn != NULL) {
+            if(IFuseLibDiffTimeSec(currentTime, g_InUseShortopConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
+                _keepAlive(g_InUseShortopConn);
+                g_InUseShortopConn->lastKeepAliveTime = currentTime;
             }
         }
+        
+        for(it_connmap=g_InUseOnetimeuseConn.begin();it_connmap!=g_InUseOnetimeuseConn.end();it_connmap++) {
+            iFuseConn = it_connmap->second;
 
+            if(IFuseLibDiffTimeSec(currentTime, iFuseConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
+                _keepAlive(iFuseConn);
+                iFuseConn->lastKeepAliveTime = currentTime;
+            }
+        }
+        
         //iFuseRodsClientLog(LOG_DEBUG, "_freeConnCollector: checking idle connections");
 
         // iterate free conn list to check timedout connections
@@ -266,10 +289,10 @@ static void* _connChecker(void* param) {
             _freeConn(iFuseConn);
         }
 
-        if(g_FreeStatConn != NULL) {
-            if(IFuseLibDiffTimeSec(currentTime, g_FreeStatConn->actTime) >= g_connTimeoutSec) {
-                _freeConn(g_FreeStatConn);
-                g_FreeStatConn = NULL;
+        if(g_FreeShortopConn != NULL) {
+            if(IFuseLibDiffTimeSec(currentTime, g_FreeShortopConn->actTime) >= g_connTimeoutSec) {
+                _freeConn(g_FreeShortopConn);
+                g_FreeShortopConn = NULL;
             }
         }
 
@@ -350,24 +373,24 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
 
     pthread_mutex_lock(&g_ConnectedConnLock);
 
-    if(connType == IFUSE_CONN_TYPE_FOR_STATUS) {
-        if(g_InUseStatConn != NULL) {
-            pthread_mutex_lock(&g_InUseStatConn->lock);
-            g_InUseStatConn->actTime = iFuseLibGetCurrentTime();
-            g_InUseStatConn->inuseCnt++;
-            pthread_mutex_unlock(&g_InUseStatConn->lock);
+    if(connType == IFUSE_CONN_TYPE_FOR_SHORTOP) {
+        if(g_InUseShortopConn != NULL) {
+            pthread_mutex_lock(&g_InUseShortopConn->lock);
+            g_InUseShortopConn->actTime = iFuseLibGetCurrentTime();
+            g_InUseShortopConn->inuseCnt++;
+            pthread_mutex_unlock(&g_InUseShortopConn->lock);
 
-            *iFuseConn = g_InUseStatConn;
+            *iFuseConn = g_InUseShortopConn;
             pthread_mutex_unlock(&g_ConnectedConnLock);
             return 0;
         }
 
-        // not in inusestatconn
+        // not in inuseshortopconn
         // check free conn
-        if (g_FreeStatConn != NULL) {
+        if (g_FreeShortopConn != NULL) {
             // reuse existing connection
-            tmpIFuseConn = g_FreeStatConn;
-            g_FreeStatConn = NULL;
+            tmpIFuseConn = g_FreeShortopConn;
+            g_FreeShortopConn = NULL;
 
             pthread_mutex_lock(&tmpIFuseConn->lock);
             tmpIFuseConn->actTime = iFuseLibGetCurrentTime();
@@ -376,7 +399,7 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
 
             *iFuseConn = tmpIFuseConn;
 
-            g_InUseStatConn = tmpIFuseConn;
+            g_InUseShortopConn = tmpIFuseConn;
 
             pthread_mutex_unlock(&g_ConnectedConnLock);
             return 0;
@@ -390,15 +413,16 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
             return status;
         }
 
+        tmpIFuseConn->type = IFUSE_CONN_TYPE_FOR_SHORTOP;
         tmpIFuseConn->actTime = iFuseLibGetCurrentTime();
         tmpIFuseConn->inuseCnt++;
 
-        g_InUseStatConn = tmpIFuseConn;
+        g_InUseShortopConn = tmpIFuseConn;
         *iFuseConn = tmpIFuseConn;
 
         pthread_mutex_unlock(&g_ConnectedConnLock);
         return 0;
-    } else {
+    } else if(connType == IFUSE_CONN_TYPE_FOR_FILE_IO) {
         // Decide whether creating a new connection or reuse one of existing connections
         targetIndex = -1;
         for(i=0;i<g_maxConnNum;i++) {
@@ -433,6 +457,7 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
                     return status;
                 }
 
+                tmpIFuseConn->type = IFUSE_CONN_TYPE_FOR_FILE_IO;
                 tmpIFuseConn->actTime = iFuseLibGetCurrentTime();
                 tmpIFuseConn->inuseCnt++;
 
@@ -472,6 +497,26 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
             pthread_mutex_unlock(&g_ConnectedConnLock);
             return 0;
         }
+    } else if(connType == IFUSE_CONN_TYPE_FOR_ONETIMEUSE) {
+        // create new
+        status = _newConn(&tmpIFuseConn);
+        if (status < 0) {
+            _freeConn(tmpIFuseConn);
+            pthread_mutex_unlock(&g_ConnectedConnLock);
+            return status;
+        }
+
+        tmpIFuseConn->type = IFUSE_CONN_TYPE_FOR_ONETIMEUSE;
+        tmpIFuseConn->actTime = iFuseLibGetCurrentTime();
+        tmpIFuseConn->inuseCnt++;
+
+        g_InUseOnetimeuseConn[tmpIFuseConn->connId] = tmpIFuseConn;
+        *iFuseConn = tmpIFuseConn;
+
+        pthread_mutex_unlock(&g_ConnectedConnLock);
+        return 0;
+    } else {
+        assert(0);
     }
 }
 
@@ -480,6 +525,7 @@ int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType) {
  */
 int iFuseConnUnuse(iFuseConn_t *iFuseConn) {
     int i;
+    std::map<unsigned long, iFuseConn_t*>::iterator it_connmap;
 
     assert(iFuseConn != NULL);
 
@@ -493,12 +539,17 @@ int iFuseConnUnuse(iFuseConn_t *iFuseConn) {
 
     if(iFuseConn->inuseCnt == 0) {
         // move to free list
-        if(g_InUseStatConn == iFuseConn) {
-            g_InUseStatConn = NULL;
-
-            assert(g_FreeStatConn == NULL);
-            g_FreeStatConn = iFuseConn;
-        } else {
+        if(iFuseConn->type == IFUSE_CONN_TYPE_FOR_SHORTOP) {
+            assert(g_InUseShortopConn == iFuseConn);
+            assert(g_FreeShortopConn == NULL);
+            
+            g_InUseShortopConn = NULL;
+            g_FreeShortopConn = iFuseConn;
+            
+            pthread_mutex_unlock(&iFuseConn->lock);
+            pthread_mutex_unlock(&g_ConnectedConnLock);
+            return 0;
+        } else if(iFuseConn->type == IFUSE_CONN_TYPE_FOR_FILE_IO) {
             for(i=0;i<g_maxConnNum;i++) {
                 if(g_InUseConn[i] == iFuseConn) {
                     g_InUseConn[i] = NULL;
@@ -507,12 +558,26 @@ int iFuseConnUnuse(iFuseConn_t *iFuseConn) {
             }
 
             g_FreeConn.push_back(iFuseConn);
+            
+            pthread_mutex_unlock(&iFuseConn->lock);
+            pthread_mutex_unlock(&g_ConnectedConnLock);
+            return 0;
+        } else if(iFuseConn->type == IFUSE_CONN_TYPE_FOR_ONETIMEUSE) {
+            it_connmap = g_InUseOnetimeuseConn.find(iFuseConn->connId);
+            if(it_connmap != g_InUseOnetimeuseConn.end()) {
+                // has it - remove
+                g_InUseOnetimeuseConn.erase(it_connmap);
+            }
+            
+            pthread_mutex_unlock(&iFuseConn->lock);
+            pthread_mutex_unlock(&g_ConnectedConnLock);
+            
+            _freeConn(iFuseConn);
+            return 0;
+        } else {
+            assert(0);
         }
     }
-
-    pthread_mutex_unlock(&iFuseConn->lock);
-    pthread_mutex_unlock(&g_ConnectedConnLock);
-    return 0;
 }
 
 /*
