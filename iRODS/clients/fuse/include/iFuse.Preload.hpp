@@ -29,7 +29,7 @@ typedef struct IFusePreloadPBlock {
 typedef struct IFusePreload {
     unsigned long fdId;
     char *iRodsPath;
-    std::list<iFusePreloadPBlock_t*> pblocks;
+    std::list<iFusePreloadPBlock_t*> *pblocks;
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;
 } iFusePreload_t;

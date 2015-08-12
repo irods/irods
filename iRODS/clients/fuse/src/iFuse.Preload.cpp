@@ -36,7 +36,7 @@ static int _newPreloadPBlock(const char *iRodsPath, iFusePreloadPBlock_t **iFuse
         *iFusePreloadPBlock = NULL;
         return SYS_MALLOC_ERR;
     }
-
+    
     tmpIFusePreloadPBlock->fd = NULL;
     tmpIFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_INIT;
     
@@ -61,6 +61,9 @@ static int _newPreload(iFusePreload_t **iFusePreload) {
         *iFusePreload = NULL;
         return SYS_MALLOC_ERR;
     }
+    
+    // we must use new keyword instead of calloc since it contains c++ stl list object
+    tmpIFusePreload->pblocks = new std::list<iFusePreloadPBlock_t*>();
     
     pthread_mutexattr_init(&tmpIFusePreload->lockAttr);
     pthread_mutexattr_settype(&tmpIFusePreload->lockAttr, PTHREAD_MUTEX_RECURSIVE);
@@ -103,11 +106,15 @@ static int _freePreload(iFusePreload_t *iFusePreload) {
     
     assert(iFusePreload != NULL);
     
-    while(!iFusePreload->pblocks.empty()) {
-        iFusePreloadPBlock = iFusePreload->pblocks.front();
-        iFusePreload->pblocks.pop_front();
+    if(iFusePreload->pblocks != NULL) {
+        while(!iFusePreload->pblocks->empty()) {
+            iFusePreloadPBlock = iFusePreload->pblocks->front();
+            iFusePreload->pblocks->pop_front();
+
+            _freePreloadPBlock(iFusePreloadPBlock);
+        }
         
-        _freePreloadPBlock(iFusePreloadPBlock);
+        delete iFusePreload->pblocks;
     }
     
     if(iFusePreload->iRodsPath != NULL) {
@@ -167,6 +174,8 @@ static void* _preloadTask(void* param) {
     pthread_mutex_lock(&iFusePreloadPBlock->lock);
     iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED;
     pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+    
+    return NULL;
 }
 
 int _startPreload(iFusePreload_t *iFusePreload, unsigned int blockID, iFuseFd_t *iFuseFd) {
@@ -194,7 +203,7 @@ int _startPreload(iFusePreload_t *iFusePreload, unsigned int blockID, iFuseFd_t 
 
     pthread_mutex_lock(&iFusePreload->lock);
     
-    iFusePreload->pblocks.push_back(iFusePreloadPBlock);
+    iFusePreload->pblocks->push_back(iFusePreloadPBlock);
     
     pthread_mutex_unlock(&iFusePreload->lock);
     return status;
@@ -241,7 +250,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
     pthread_mutex_lock(&iFusePreload->lock);
     
     // check loaded
-    for(it_preloadpblock=iFusePreload->pblocks.begin();it_preloadpblock!=iFusePreload->pblocks.end();it_preloadpblock++) {
+    for(it_preloadpblock=iFusePreload->pblocks->begin();it_preloadpblock!=iFusePreload->pblocks->end();it_preloadpblock++) {
         iFusePreloadPBlock = *it_preloadpblock;
 
         if(blockID == iFusePreloadPBlock->blockID) {
@@ -263,7 +272,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         if(!removeList.empty()) {
             iFusePreloadPBlock = removeList.front();
             removeList.pop_front();
-            iFusePreload->pblocks.remove(iFusePreloadPBlock);
+            iFusePreload->pblocks->remove(iFusePreloadPBlock);
 
             iFuseFd = iFusePreloadPBlock->fd;
             iFusePreloadPBlock->fd = NULL;
@@ -287,7 +296,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         }
     }
     
-    for(it_preloadpblock=iFusePreload->pblocks.begin();it_preloadpblock!=iFusePreload->pblocks.end();it_preloadpblock++) {
+    for(it_preloadpblock=iFusePreload->pblocks->begin();it_preloadpblock!=iFusePreload->pblocks->end();it_preloadpblock++) {
         iFusePreloadPBlock = *it_preloadpblock;
 
         if(blockID == iFusePreloadPBlock->blockID) {
@@ -310,7 +319,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
             if(!removeList.empty()) {
                 iFusePreloadPBlock = removeList.front();
                 removeList.pop_front();
-                iFusePreload->pblocks.remove(iFusePreloadPBlock);
+                iFusePreload->pblocks->remove(iFusePreloadPBlock);
                 
                 iFuseFd = iFusePreloadPBlock->fd;
                 iFusePreloadPBlock->fd = NULL;
@@ -339,7 +348,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
     while(!removeList.empty()) {
         iFusePreloadPBlock = removeList.front();
         removeList.pop_front();
-        iFusePreload->pblocks.remove(iFusePreloadPBlock);
+        iFusePreload->pblocks->remove(iFusePreloadPBlock);
         _freePreloadPBlock(iFusePreloadPBlock);
     }
     
