@@ -189,6 +189,13 @@ static void* _preloadTask(void* param) {
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "_preloadTask: iFuseBufferedFsReadBlock of %s error, status = %d",
                 iFusePreloadPBlock->fd->iRodsPath, status);
+        free(blockBuffer);
+        free(iFusePreloadThreadParam);
+            
+        pthread_mutex_lock(&iFusePreloadPBlock->lock);
+        iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_FAILED;
+        pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+        return NULL;
     }
     
     free(blockBuffer);
@@ -306,6 +313,14 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
                 iFuseRodsClientLog(LOG_DEBUG, "_readPreload: waiting for a preload thread of %s, blockID: %u", iFusePreload->iRodsPath, blockID);
                 
                 pthread_join(iFusePreloadPBlock->thread, NULL);
+                
+                if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED) {
+                    // fall through
+                } else {
+                    // failed
+                    pthread_mutex_unlock(&iFusePreload->lock);
+                    return -1;
+                }
             } else if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED) {
                 // fall through
             } else {
