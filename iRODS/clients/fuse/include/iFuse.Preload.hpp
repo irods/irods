@@ -15,6 +15,7 @@
 #define IFUSE_PRELOAD_PBLOCK_STATUS_INIT       0
 #define IFUSE_PRELOAD_PBLOCK_STATUS_RUNNING    1
 #define IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED  2
+#define IFUSE_PRELOAD_PBLOCK_STATUS_FAILED     3
 
 typedef struct IFusePreloadPBlock {
     iFuseFd_t *fd;
@@ -33,6 +34,11 @@ typedef struct IFusePreload {
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;
 } iFusePreload_t;
+
+typedef struct IFusePreloadThreadParam {
+    iFusePreload_t *preload;
+    iFusePreloadPBlock_t *pblock;
+} iFusePreloadThreadParam_t;
 
 void iFusePreloadInit();
 void iFusePreloadDestroy();
