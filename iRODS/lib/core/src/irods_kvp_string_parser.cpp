@@ -71,10 +71,17 @@ namespace irods {
         kvp_map_t&         _kvp,
         const std::string& _assoc,
         const std::string& _delim ) {
+        std::string::size_type pos = _string.find( _assoc );
+        if( std::string::npos == pos || _string.empty() ) { 
+            return ERROR(
+			           INVALID_KVP_STRING,
+					   _string );
+        }
+
         // =-=-=-=-=-=-=-
         // test for the delim first, if there is none then
         // short circuit, test for association and place in map
-        size_t pos = _string.find( _delim );
+        pos = _string.find( _delim );
         if ( std::string::npos == pos ) {
             // =-=-=-=-=-=-=-
             // no delim, look for association
@@ -82,21 +89,21 @@ namespace irods {
             if ( std::string::npos == pos ) {
                 // =-=-=-=-=-=-=-
                 // no association, just add to the map
-                rodsLog(
-                    LOG_DEBUG,
-                    "parse_kvp_string :: no kvp found [%s]",
-                    _string.c_str() );
-                return ERROR( -1, "" );
-
+                return ERROR(
+				           INVALID_KVP_STRING,
+						   _string );
             }
             else {
                 // =-=-=-=-=-=-=-
                 // association found, break it into a kvp
                 // and place it in the map
-                return parse_token_into_kvp(
-                           _string,
-                           _kvp,
-                           _assoc );
+                error ret = parse_token_into_kvp(
+                                 _string,
+                                 _kvp,
+                                 _assoc );
+				if( !ret.ok() ) {
+					return PASS( ret );
+				}
             }
 
         } // if no delim found
@@ -112,12 +119,16 @@ namespace irods {
             token_list.clear();
         }
         BOOST_FOREACH( std::string & token, token_list ) {
+			if( token.empty() ) {
+				continue;
+			}
+
             // =-=-=-=-=-=-=-
             // now that the string is broken into tokens we need to
             // extract the key and value to put them into the map
             error ret = parse_token_into_kvp( token, _kvp, _assoc );
 			if( !ret.ok() ) {
-                // FIXME in a separate issue - return PASS( ret );
+				return PASS( ret );
 			}
         }
 
