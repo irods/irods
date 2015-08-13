@@ -357,7 +357,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
                     pthread_mutex_unlock(&iFusePreload->lock);
                     return -1;
                 }
-            } else {
+            } else if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_CREATION_FAILED) {
                 // failed
                 pthread_mutex_unlock(&iFusePreload->lock);
                 return -1;
