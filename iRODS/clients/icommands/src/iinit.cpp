@@ -16,6 +16,7 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_environment_properties.hpp"
+#include "irods_kvp_string_parser.hpp"
 
 #include "boost/lexical_cast.hpp"
 
@@ -323,19 +324,16 @@ main( int argc, char **argv ) {
 
         // =-=-=-=-=-=-=-
         // build a context string which includes the ttl and password
-        std::stringstream ttl_str;
-        ttl_str << ttl;
-        std::string context = irods::AUTH_TTL_KEY      +
-                              irods::kvp_association() +
-                              ttl_str.str()            +
-                              irods::kvp_delimiter()   +
-                              irods::AUTH_PASSWORD_KEY +
-                              irods::kvp_association() +
-                              password;
+        std::stringstream ttl_str;  ttl_str << ttl;
+		irods::kvp_map_t ctx_map;
+		ctx_map[ irods::AUTH_TTL_KEY ] = ttl_str.str();
+		ctx_map[ irods::AUTH_PASSWORD_KEY ] = password;
+		std::string ctx_str = irods::escaped_kvp_string(
+		                          ctx_map);
         // =-=-=-=-=-=-=-
         // pass the context with the ttl as well as an override which
         // demands the pam authentication plugin
-        status = clientLogin( Conn, context.c_str(), irods::AUTH_PAM_SCHEME.c_str() );
+        status = clientLogin( Conn, ctx_str.c_str(), irods::AUTH_PAM_SCHEME.c_str() );
         if ( status != 0 ) {
             return 8;
         }
