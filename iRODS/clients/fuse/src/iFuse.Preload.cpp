@@ -40,9 +40,6 @@ static int _newPreloadPBlock(const char *iRodsPath, iFusePreloadPBlock_t **iFuse
     tmpIFusePreloadPBlock->fd = NULL;
     tmpIFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_INIT;
     
-    pthread_attr_init(&tmpIFusePreloadPBlock->threadAttr);
-    pthread_attr_setdetachstate(&tmpIFusePreloadPBlock->threadAttr, PTHREAD_CREATE_JOINABLE);
-    
     pthread_mutexattr_init(&tmpIFusePreloadPBlock->lockAttr);
     pthread_mutexattr_settype(&tmpIFusePreloadPBlock->lockAttr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&tmpIFusePreloadPBlock->lock, &tmpIFusePreloadPBlock->lockAttr);
@@ -89,8 +86,6 @@ static int _freePreloadPBlock(iFusePreloadPBlock_t *iFusePreloadPBlock) {
     }
     
     iFusePreloadPBlock->blockID = 0;
-    
-    pthread_attr_destroy(&iFusePreloadPBlock->threadAttr);
     
     pthread_mutex_unlock(&iFusePreloadPBlock->lock);
     
@@ -231,7 +226,7 @@ int _startPreload(iFusePreload_t *iFusePreload, unsigned int blockID, iFuseFd_t 
     iFusePreloadThreadParam->preload = iFusePreload;
     iFusePreloadThreadParam->pblock = iFusePreloadPBlock;
     
-    status = pthread_create(&iFusePreloadPBlock->thread, &iFusePreloadPBlock->threadAttr, _preloadTask, (void*)iFusePreloadThreadParam);
+    status = pthread_create(&iFusePreloadPBlock->thread, NULL, _preloadTask, (void*)iFusePreloadThreadParam);
     if(status != 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "_startPreload: failed to create a thread for %s of block id %u, status = %d",
                 iFusePreload->iRodsPath, blockID, status);

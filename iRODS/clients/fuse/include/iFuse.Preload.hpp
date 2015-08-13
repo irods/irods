@@ -21,7 +21,6 @@ typedef struct IFusePreloadPBlock {
     iFuseFd_t *fd;
     unsigned int blockID;
     int status;
-    pthread_attr_t threadAttr;
     pthread_t thread;
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;
