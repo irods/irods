@@ -1,0 +1,4 @@
+{
+    "irods_authuser_name" : "irodsauthuser",
+    "irods_authuser_password" : ";=iamnotasecret"
+}

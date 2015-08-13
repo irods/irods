@@ -282,6 +282,7 @@ d 755 root root ${IRODS_HOME_DIR}/tests -
 d 755 root root ${IRODS_HOME_DIR}/tests/pydevtest -
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.r
+f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.json
 f 755 root root ${IRODS_HOME_DIR}/tests/pydevtest/rulebase_fastswap_test_2276.sh ./tests/pydevtest/rulebase_fastswap_test_2276.sh
 f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
 f 755 root root ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh

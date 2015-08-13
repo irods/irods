@@ -66,18 +66,18 @@ extern "C" {
         if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
             if ( ( result = ASSERT_ERROR( _comm, SYS_INVALID_INPUT_PARAM, "Null comm pointer." ) ).ok() ) {
                 if ( ( result = ASSERT_ERROR( _context, SYS_INVALID_INPUT_PARAM, "Null context pointer." ) ).ok() ) {
-
-                    // =-=-=-=-=-=-=-
-                    // simply cache the context string for a rainy day...
-                    // or to pass to the auth client call later.
-                    irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<irods::pam_auth_object >( _ctx.fco() );
-                    ptr->context( _context );
-
                     // =-=-=-=-=-=-=-
                     // parse the kvp out of the _resp->username string
                     irods::kvp_map_t kvp;
-                    irods::error ret = irods::parse_kvp_string( _context, kvp );
+                    irods::error ret = irods::parse_escaped_kvp_string( _context, kvp );
                     if ( ( result = ASSERT_PASS( ret, "Failed to parse the key-value pairs." ) ).ok() ) {
+						// =-=-=-=-=-=-=-
+						// simply cache the context string for a rainy day...
+						// or to pass to the auth client call later.
+						irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast<
+						                                     irods::pam_auth_object>(
+						                                         _ctx.fco() );
+						ptr->context(_context);
 
                         std::string password = kvp[ irods::AUTH_PASSWORD_KEY ];
                         std::string ttl_str  = kvp[ irods::AUTH_TTL_KEY ];
@@ -122,14 +122,12 @@ extern "C" {
 
                             // =-=-=-=-=-=-=-
                             // rebuilt and reset context string
-                            std::string context = irods::AUTH_TTL_KEY        +
-                                                  irods::kvp_association()  +
-                                                  ttl_str                    +
-                                                  irods::kvp_delimiter()    +
-                                                  irods::AUTH_PASSWORD_KEY  +
-                                                  irods::kvp_association()  +
-                                                  new_password;
-                            ptr->context( context );
+							irods::kvp_map_t ctx_map;
+							ctx_map[irods::AUTH_TTL_KEY] = ttl_str;
+							ctx_map[irods::AUTH_PASSWORD_KEY] = new_password;
+                            std::string ctx_str = irods::escaped_kvp_string(
+		                                              ctx_map);
+                            ptr->context( ctx_str );
 
                         }
 
@@ -184,11 +182,19 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // append the auth scheme and user name
-        context += irods::kvp_delimiter()   +
-                   irods::AUTH_USER_KEY      +
-                   irods::kvp_association() +
-                   ptr->user_name();
+        // expand the context string then append the auth scheme
+		// and user name, then reencode into a string
+	    irods::kvp_map_t ctx_map;
+		irods::error ret = irods::parse_escaped_kvp_string(
+		                       context,
+		                       ctx_map);
+		if( !ret.ok() ) {
+			return PASS(ret);
+		}
+
+        ctx_map[irods::AUTH_USER_KEY]=ptr->user_name();
+		std::string ctx_str = irods::escaped_kvp_string(
+								  ctx_map);
 
         // =-=-=-=-=-=-=-
         // error check string size against MAX_NAME_LEN
@@ -203,8 +209,8 @@ extern "C" {
         authPluginReqInp_t req_in;
         strncpy(
             req_in.context_,
-            context.c_str(),
-            context.size() + 1 );
+            ctx_str.c_str(),
+            ctx_str.size() + 1 );
 
         // =-=-=-=-=-=-=-
         // copy the auth scheme to the req in struct
@@ -319,7 +325,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the server host handle
         rodsServerHost_t* server_host = 0;
-        int status = getAndConnRcatHost( _ctx.comm(), MASTER_RCAT, ( const char* )_ctx.comm()->clientUser.rodsZone, &server_host );
+        int status = getAndConnRcatHost(
+		                 _ctx.comm(),
+						 MASTER_RCAT,
+						 ( const char* )_ctx.comm()->clientUser.rodsZone,
+						 &server_host );
         if ( status < 0 ) {
             return ERROR( status, "getAndConnRcatHost failed." );
         }
@@ -328,7 +338,7 @@ extern "C" {
         // simply cache the context string for a rainy day...
         // or to pass to the auth client call later.
         irods::pam_auth_object_ptr ptr = boost::dynamic_pointer_cast <
-                                         irods::pam_auth_object > ( _ctx.fco() );
+                                             irods::pam_auth_object > ( _ctx.fco() );
         std::string context = ptr->context( );
 
         // =-=-=-=-=-=-=-
@@ -382,9 +392,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // parse the kvp out of the _resp->username string
         irods::kvp_map_t kvp;
-        irods::error ret = irods::parse_kvp_string(
+        irods::error ret = irods::parse_escaped_kvp_string(
                                context,
-                               kvp );
+                               kvp);
         if ( !ret.ok() ) {
             return PASS( ret );
         }

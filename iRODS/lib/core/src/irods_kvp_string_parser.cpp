@@ -105,7 +105,7 @@ namespace irods {
         // otherwise parse the string into tokens split by the delimiter
         std::list< std::string > token_list;;
         try {
-            boost::split( token_list, _string, boost::is_any_of( _delim ), boost::token_compress_on );
+            boost::split( token_list, _string, boost::is_any_of( _delim ) );
         }
         catch ( const boost::bad_function_call& ) {
             rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
@@ -116,6 +116,9 @@ namespace irods {
             // now that the string is broken into tokens we need to
             // extract the key and value to put them into the map
             error ret = parse_token_into_kvp( token, _kvp, _assoc );
+			if( !ret.ok() ) {
+                // FIXME in a separate issue - return PASS( ret );
+			}
         }
 
         return SUCCESS();

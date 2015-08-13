@@ -54,8 +54,12 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Auth, self).setUp()
-        self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irodsauthuser', 'iamnotasecret',
-                                                          lib.get_hostname())
+        cfg_file = os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/test_framework_configuration.json')
+        with open(cfg_file,'r') as f:
+            cfg = json.load(f)
+            auth_user = cfg['irods_authuser_name']
+            auth_pass = cfg['irods_authuser_password']
+            self.auth_session = lib.mkuser_and_return_session('rodsuser', auth_user, auth_pass, lib.get_hostname())
 
     def tearDown(self):
         self.auth_session.__exit__()
