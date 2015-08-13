@@ -25,6 +25,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <string>
 #include <openssl/md5.h>
@@ -1373,13 +1374,19 @@ getUnixGroupname( int gid, char *groupname, int groupname_len ) {
    Return 64 semi-random bytes terminated by a null.
  */
 int get64RandomBytes( char *buf ) {
-    getRandomBytes( buf, 64 );
-    for ( int i = 0; i < 64; i++ ) {
-        if ( buf[i] == '\0' ) {
-            buf[i] = 1;  /* make sure no nulls before end of 'string'*/
-        }
-    }
-    buf[64] = '\0';
+    // hex encode to prevent troublesome values
+	std::string enc_str;
+	static boost::mt19937 generator( std::time( 0 ) ^ ( getpid() << 16 ) );
+	static boost::uniform_int<unsigned char> byte_range( 0, 0xff );
+	static boost::variate_generator<boost::mt19937, boost::uniform_int<unsigned char> > random_byte( generator, byte_range );
+	for( size_t i = 0; i < 64; ++i ) {
+	    std::stringstream tmp_str;
+        tmp_str << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_byte() );
+        enc_str += tmp_str.str(); 
+	}
+
+    snprintf( buf, 64, "%s", enc_str.c_str() );
+
     return 0;
 }
 
