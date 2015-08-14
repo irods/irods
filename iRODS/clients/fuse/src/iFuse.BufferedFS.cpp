@@ -618,7 +618,10 @@ int iFuseBufferedFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
             curSize = blockSize - inBlockOffset;
         }
 
-        assert(curSize > 0);
+        if(curSize == 0) {
+            // eof
+            break;
+        }
 
         iFuseRodsClientLog(LOG_DEBUG, "iFuseBufferedFsRead: block read of %s - offset %lld, size %lld", iFuseFd->iRodsPath, (long long)curOffset, (long long)curSize);
 

@@ -574,7 +574,10 @@ int iFusePreloadRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
                 curSize = blockSize - inBlockOffset;
             }
 
-            assert(curSize > 0);
+            if(curSize == 0) {
+                // eof
+                break;
+            }
 
             // copy
             memcpy(buf + readSize, blockBuffer + inBlockOffset, curSize);
