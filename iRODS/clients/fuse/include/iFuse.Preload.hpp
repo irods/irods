@@ -17,12 +17,12 @@
 #define IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED            2
 #define IFUSE_PRELOAD_PBLOCK_STATUS_TASK_FAILED          3
 #define IFUSE_PRELOAD_PBLOCK_STATUS_CREATION_FAILED      4
-#define IFUSE_PRELOAD_PBLOCK_STATUS_JOINED               5
 
 typedef struct IFusePreloadPBlock {
     iFuseFd_t *fd;
     unsigned int blockID;
     int status;
+    bool threadJoined;
     pthread_t thread;
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;

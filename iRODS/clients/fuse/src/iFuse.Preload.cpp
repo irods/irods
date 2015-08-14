@@ -77,14 +77,16 @@ static int _freePreloadPBlock(iFusePreloadPBlock_t *iFusePreloadPBlock) {
             iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_INIT ||
             iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED ||
             iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_TASK_FAILED) {
-        pthread_join(iFusePreloadPBlock->thread, NULL);
+        if(!iFusePreloadPBlock->threadJoined) {
+            pthread_join(iFusePreloadPBlock->thread, NULL);
+            
+            pthread_mutex_lock(&iFusePreloadPBlock->lock);
 
-        pthread_mutex_lock(&iFusePreloadPBlock->lock);
+            // set to joined
+            iFusePreloadPBlock->threadJoined = true;
 
-        // set to joined
-        iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_JOINED;
-
-        pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+            pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+        }
     }
     
     pthread_mutex_lock(&iFusePreloadPBlock->lock);
@@ -303,16 +305,18 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
                 iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_INIT ||
                 iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED ||
                 iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_TASK_FAILED) {
-            iFuseRodsClientLog(LOG_DEBUG, "_readPreload: waiting for a preload thread of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
-            
-            pthread_join(iFusePreloadPBlock->thread, NULL);
+            if(!iFusePreloadPBlock->threadJoined) {
+                iFuseRodsClientLog(LOG_DEBUG, "_readPreload: waiting for a preload thread of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
 
-            pthread_mutex_lock(&iFusePreloadPBlock->lock);
+                pthread_join(iFusePreloadPBlock->thread, NULL);
 
-            // set to joined
-            iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_JOINED;
+                pthread_mutex_lock(&iFusePreloadPBlock->lock);
 
-            pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+                // set to joined
+                iFusePreloadPBlock->threadJoined = true;
+
+                pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+            }
         }
     }
     
@@ -326,7 +330,8 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         removeList.pop_front();
         iFusePreload->pblocks->remove(iFusePreloadPBlock);
         if(iFusePreloadPBlock->fd != NULL &&
-                iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_JOINED) {
+                iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED &&
+                iFusePreloadPBlock->threadJoined) {
             // reusable
             recycleList.push_back(iFusePreloadPBlock);
         } else {
@@ -354,42 +359,40 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         iFusePreloadPBlock = *it_preloadpblock;
 
         if(blockID == iFusePreloadPBlock->blockID) {
-            if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_RUNNING || 
-                    iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_INIT ||
+            
+            if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_INIT ||
+                    iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_RUNNING || 
                     iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED ||
                     iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_TASK_FAILED) {
-                iFuseRodsClientLog(LOG_DEBUG, "_readPreload: waiting for a preload thread of %s, blockID: %u", iFusePreload->iRodsPath, blockID);
-                
-                pthread_join(iFusePreloadPBlock->thread, NULL);
-            
-                pthread_mutex_lock(&iFusePreloadPBlock->lock);
+                if(!iFusePreloadPBlock->threadJoined) {
+                    iFuseRodsClientLog(LOG_DEBUG, "_readPreload: waiting for a preload thread of %s, blockID: %u", iFusePreload->iRodsPath, blockID);
 
-                // set to joined
-                iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_JOINED;
-            
-                pthread_mutex_unlock(&iFusePreloadPBlock->lock);
-                
-                if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED) {
-                    // fall through
-                } else {
-                    // failed
-                    free(pblockExistance);
-                    pthread_mutex_unlock(&iFusePreload->lock);
-                    return -1;
+                    pthread_join(iFusePreloadPBlock->thread, NULL);
+
+                    pthread_mutex_lock(&iFusePreloadPBlock->lock);
+
+                    // set to joined
+                    iFusePreloadPBlock->threadJoined = true;
+
+                    pthread_mutex_unlock(&iFusePreloadPBlock->lock);
                 }
-            } else if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_CREATION_FAILED) {
-                // failed
-                free(pblockExistance);
-                pthread_mutex_unlock(&iFusePreload->lock);
-                return -1;
             }
             
-            pthread_mutex_lock(&iFusePreloadPBlock->lock);
+            if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_COMPLETED &&
+                    iFusePreloadPBlock->threadJoined) {
+                pthread_mutex_lock(&iFusePreloadPBlock->lock);
 
-            iFuseRodsClientLog(LOG_DEBUG, "_readPreload: reading a block from preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, blockID);
-            readSize = iFuseBufferedFsReadBlock(iFusePreloadPBlock->fd, buf, blockID);
-            
-            pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+                if(iFusePreloadPBlock->fd != NULL) {
+                    iFuseRodsClientLog(LOG_DEBUG, "_readPreload: reading a block from preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, blockID);
+                    readSize = iFuseBufferedFsReadBlock(iFusePreloadPBlock->fd, buf, blockID);
+                } else {
+                    readSize = -1;
+                }
+
+                pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+            } else {
+                readSize = -1;
+            }
         }
     }
     
