@@ -175,6 +175,7 @@ int iFuseRodsClientOpenCollection(rcComm_t *conn, char *collection, int flag, co
 }
 
 int iFuseRodsClientCloseCollection(collHandle_t *collHandle) {
+    //Note : rclCloseCollection has a memory leak on clearDataObjSqlResult call.
     return rclCloseCollection(collHandle);
 }
 

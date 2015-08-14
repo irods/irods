@@ -354,11 +354,13 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
                     // fall through
                 } else {
                     // failed
+                    free(pblockExistance);
                     pthread_mutex_unlock(&iFusePreload->lock);
                     return -1;
                 }
             } else if(iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_CREATION_FAILED) {
                 // failed
+                free(pblockExistance);
                 pthread_mutex_unlock(&iFusePreload->lock);
                 return -1;
             }
@@ -406,6 +408,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         _freePreloadPBlock(iFusePreloadPBlock);
     }
     
+    free(pblockExistance);
     pthread_mutex_unlock(&iFusePreload->lock);
     return readSize;
 }
@@ -553,10 +556,12 @@ int iFusePreloadRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
                     iFuseRodsClientLogError(LOG_ERROR, status, "iFusePreloadRead: iFuseBufferedFsRead of %s error, status = %d",
                             iFuseFd->iRodsPath, status);
                     pthread_mutex_unlock(&g_PreloadLock);
+                    free(blockBuffer);
                     return -ENOENT;
                 }
                 
                 pthread_mutex_unlock(&g_PreloadLock);
+                free(blockBuffer);
                 return status;
             } else if(status == 0) {
                 // eof
@@ -583,15 +588,16 @@ int iFusePreloadRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
                 break;
             }
         }
-
-        free(blockBuffer);
         
         pthread_mutex_unlock(&g_PreloadLock);
+        free(blockBuffer);
         return readSize;
     }
     
     // no preloaded data
     pthread_mutex_unlock(&g_PreloadLock);
+    
+    free(blockBuffer);
     
     status = iFuseBufferedFsRead(iFuseFd, buf, off, size);
     if (status < 0) {
