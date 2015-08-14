@@ -257,6 +257,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
     int status = 0;
     size_t readSize = 0;
     std::list<iFusePreloadPBlock_t*> removeList;
+    std::list<iFusePreloadPBlock_t*> recycleList;
     std::list<iFusePreloadPBlock_t*>::iterator it_preloadpblock;
     iFusePreloadPBlock_t *iFusePreloadPBlock = NULL;
     iFuseFd_t *iFuseFd = NULL;
@@ -278,8 +279,12 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         if(blockID == iFusePreloadPBlock->blockID) {
             // has block
             hasBlock = true;
-        } else if(blockID > iFusePreloadPBlock->blockID) {
+        } else if(blockID > iFusePreloadPBlock->blockID ||
+                blockID + (IFUSE_PRELOAD_PBLOCK_NUM * 2) < iFusePreloadPBlock->blockID) {
             // remove old blocks
+            // if block id is less than current block id
+            // or block id is far larger than current block id (for backward read)
+            
             iFuseRodsClientLog(LOG_DEBUG, "_readPreload: found old preloaded data of %s, blockID: %u, cur blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID, blockID);
             removeList.push_back(iFusePreloadPBlock);
         } else {
@@ -311,16 +316,30 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         }
     }
     
+    // find reusable pblocks -> moves to recycleList
+    // release old pblocks
+    while(!removeList.empty()) {
+        iFusePreloadPBlock = removeList.front();
+        
+        iFuseRodsClientLog(LOG_DEBUG, "_readPreload: removing preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
+        
+        removeList.pop_front();
+        iFusePreload->pblocks->remove(iFusePreloadPBlock);
+        if(iFusePreloadPBlock->fd != NULL &&
+                iFusePreloadPBlock->status == IFUSE_PRELOAD_PBLOCK_STATUS_JOINED) {
+            // reusable
+            recycleList.push_back(iFusePreloadPBlock);
+        } else {
+            _freePreloadPBlock(iFusePreloadPBlock);
+        }
+    }
+    
     if(!hasBlock) {
         iFuseFd = NULL;
-        if(!removeList.empty()) {
-            iFusePreloadPBlock = removeList.front();
+        if(!recycleList.empty()) {
+            iFusePreloadPBlock = recycleList.front();
+            recycleList.pop_front();
             
-            iFuseRodsClientLog(LOG_DEBUG, "_readPreload: removing preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
-            
-            removeList.pop_front();
-            iFusePreload->pblocks->remove(iFusePreloadPBlock);
-
             iFuseFd = iFusePreloadPBlock->fd;
             iFusePreloadPBlock->fd = NULL;
 
@@ -378,13 +397,9 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         if(!pblockExistance[i]) {
             // start preload
             iFuseFd = NULL;
-            if(!removeList.empty()) {
-                iFusePreloadPBlock = removeList.front();
-                
-                iFuseRodsClientLog(LOG_DEBUG, "_readPreload: removing preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
-                
-                removeList.pop_front();
-                iFusePreload->pblocks->remove(iFusePreloadPBlock);
+            if(!recycleList.empty()) {
+                iFusePreloadPBlock = recycleList.front();
+                recycleList.pop_front();
                 
                 iFuseFd = iFusePreloadPBlock->fd;
                 iFusePreloadPBlock->fd = NULL;
@@ -397,14 +412,10 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
         }
     }
     
-    // iterate remove list
-    while(!removeList.empty()) {
-        iFusePreloadPBlock = removeList.front();
-        
-        iFuseRodsClientLog(LOG_DEBUG, "_readPreload: removing preloaded data of %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
-        
+    // release entries in recycleList that will not be used
+    while(!recycleList.empty()) {
+        iFusePreloadPBlock = recycleList.front();
         removeList.pop_front();
-        iFusePreload->pblocks->remove(iFusePreloadPBlock);
         _freePreloadPBlock(iFusePreloadPBlock);
     }
     
