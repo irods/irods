@@ -175,13 +175,6 @@ int iFuseRodsClientOpenCollection(rcComm_t *conn, char *collection, int flag, co
 }
 
 int iFuseRodsClientCloseCollection(collHandle_t *collHandle) {
-    // Note : rclCloseCollection has a memory leak on clearDataObjSqlResult call.
-    // free manually
-    if(collHandle->dataObjSqlResult.resc_hier.value != NULL) {
-        free(collHandle->dataObjSqlResult.resc_hier.value);
-        collHandle->dataObjSqlResult.resc_hier.value = NULL;
-    }
-    
     return rclCloseCollection(collHandle);
 }
 
