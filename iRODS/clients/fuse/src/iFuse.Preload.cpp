@@ -282,7 +282,7 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
             // has block
             hasBlock = true;
         } else if(blockID > iFusePreloadPBlock->blockID ||
-                blockID + (IFUSE_PRELOAD_PBLOCK_NUM * 2) < iFusePreloadPBlock->blockID) {
+                blockID + IFUSE_PRELOAD_PBLOCK_NUM < iFusePreloadPBlock->blockID) {
             // remove old blocks
             // if block id is less than current block id
             // or block id is far larger than current block id (for backward read)

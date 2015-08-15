@@ -233,7 +233,6 @@ static void* _connChecker(void* param) {
     std::list<iFuseConn_t*>::iterator it_conn;
     std::map<unsigned long, iFuseConn_t*>::iterator it_connmap;
     iFuseConn_t *iFuseConn;
-    time_t currentTime;
     int i;
 
     UNUSED(param);
@@ -243,30 +242,28 @@ static void* _connChecker(void* param) {
     while(g_FreeConnCollectorRunning) {
         pthread_mutex_lock(&g_ConnectedConnLock);
 
-        currentTime = iFuseLibGetCurrentTime();
-
         for(i=0;i<g_maxConnNum;i++) {
             if(g_InUseConn[i] != NULL) {
-                if(IFuseLibDiffTimeSec(currentTime, g_InUseConn[i]->lastKeepAliveTime) >= g_connKeepAliveSec) {
+                if(IFuseLibDiffTimeSec(iFuseLibGetCurrentTime(), g_InUseConn[i]->lastKeepAliveTime) >= g_connKeepAliveSec) {
                     _keepAlive(g_InUseConn[i]);
-                    g_InUseConn[i]->lastKeepAliveTime = currentTime;
+                    g_InUseConn[i]->lastKeepAliveTime = iFuseLibGetCurrentTime();
                 }
             }
         }
 
         if(g_InUseShortopConn != NULL) {
-            if(IFuseLibDiffTimeSec(currentTime, g_InUseShortopConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
+            if(IFuseLibDiffTimeSec(iFuseLibGetCurrentTime(), g_InUseShortopConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
                 _keepAlive(g_InUseShortopConn);
-                g_InUseShortopConn->lastKeepAliveTime = currentTime;
+                g_InUseShortopConn->lastKeepAliveTime = iFuseLibGetCurrentTime();
             }
         }
         
         for(it_connmap=g_InUseOnetimeuseConn.begin();it_connmap!=g_InUseOnetimeuseConn.end();it_connmap++) {
             iFuseConn = it_connmap->second;
 
-            if(IFuseLibDiffTimeSec(currentTime, iFuseConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
+            if(IFuseLibDiffTimeSec(iFuseLibGetCurrentTime(), iFuseConn->lastKeepAliveTime) >= g_connKeepAliveSec) {
                 _keepAlive(iFuseConn);
-                iFuseConn->lastKeepAliveTime = currentTime;
+                iFuseConn->lastKeepAliveTime = iFuseLibGetCurrentTime();
             }
         }
         
@@ -276,7 +273,7 @@ static void* _connChecker(void* param) {
         for(it_conn=g_FreeConn.begin();it_conn!=g_FreeConn.end();it_conn++) {
             iFuseConn = *it_conn;
 
-            if(IFuseLibDiffTimeSec(currentTime, iFuseConn->actTime) >= g_connTimeoutSec) {
+            if(IFuseLibDiffTimeSec(iFuseLibGetCurrentTime(), iFuseConn->actTime) >= g_connTimeoutSec) {
                 removeList.push_back(iFuseConn);
             }
         }
@@ -290,7 +287,7 @@ static void* _connChecker(void* param) {
         }
 
         if(g_FreeShortopConn != NULL) {
-            if(IFuseLibDiffTimeSec(currentTime, g_FreeShortopConn->actTime) >= g_connTimeoutSec) {
+            if(IFuseLibDiffTimeSec(iFuseLibGetCurrentTime(), g_FreeShortopConn->actTime) >= g_connTimeoutSec) {
                 _freeConn(g_FreeShortopConn);
                 g_FreeShortopConn = NULL;
             }

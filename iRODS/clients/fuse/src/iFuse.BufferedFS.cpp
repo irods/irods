@@ -498,7 +498,6 @@ int iFuseBufferedFsClose(iFuseFd_t *iFuseFd) {
 
     iFuseRodsClientLog(LOG_DEBUG, "iFuseBufferedFsClose: %s", iFuseFd->iRodsPath);
     
-    
     if((iFuseFd->openFlag & O_ACCMODE) != O_RDONLY) {
         // flush if necessary
         status = _flushDelta(iFuseFd);
