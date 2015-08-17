@@ -61,6 +61,10 @@ static int _newPreload(iFusePreload_t **iFusePreload) {
     
     // we must use new keyword instead of calloc since it contains c++ stl list object
     tmpIFusePreload->pblocks = new std::list<iFusePreloadPBlock_t*>();
+    if(tmpIFusePreload->pblocks == NULL) {
+        *iFusePreload = NULL;
+        return SYS_MALLOC_ERR;
+    }
     
     pthread_mutexattr_init(&tmpIFusePreload->lockAttr);
     pthread_mutexattr_settype(&tmpIFusePreload->lockAttr, PTHREAD_MUTEX_RECURSIVE);
@@ -170,6 +174,15 @@ static void* _preloadTask(void* param) {
     iFusePreload = iFusePreloadThreadParam->preload;
     iFusePreloadPBlock = iFusePreloadThreadParam->pblock;
     
+    if(blockBuffer == NULL) {
+        free(iFusePreloadThreadParam);
+        
+        pthread_mutex_lock(&iFusePreloadPBlock->lock);
+        iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_TASK_FAILED;
+        pthread_mutex_unlock(&iFusePreloadPBlock->lock);
+        return NULL;
+    }
+    
     iFuseRodsClientLog(LOG_DEBUG, "_preloadTask: preloading %s, blockID: %u", iFusePreload->iRodsPath, iFusePreloadPBlock->blockID);
     
     if(iFusePreloadPBlock->fd == NULL) {
@@ -234,6 +247,10 @@ int _startPreload(iFusePreload_t *iFusePreload, unsigned int blockID, iFuseFd_t 
     iFusePreloadPBlock->status = IFUSE_PRELOAD_PBLOCK_STATUS_RUNNING;
     
     iFusePreloadThreadParam = (iFusePreloadThreadParam_t*) calloc(1, sizeof(iFusePreloadThreadParam_t));
+    if(iFusePreloadThreadParam == NULL) {
+        return SYS_MALLOC_ERR;
+    }
+    
     iFusePreloadThreadParam->preload = iFusePreload;
     iFusePreloadThreadParam->pblock = iFusePreloadPBlock;
     
@@ -270,6 +287,10 @@ int _readPreload(iFusePreload_t *iFusePreload, char *buf, unsigned int blockID) 
     assert(iFusePreload != NULL);
     assert(buf != NULL);
 
+    if(pblockExistance == NULL) {
+        return SYS_MALLOC_ERR;
+    }
+    
     bzero(pblockExistance, IFUSE_PRELOAD_PBLOCK_NUM * sizeof(bool));
     
     pthread_mutex_lock(&iFusePreload->lock);

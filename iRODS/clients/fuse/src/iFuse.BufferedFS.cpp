@@ -224,6 +224,11 @@ static int _readBlock(iFuseFd_t *iFuseFd, char *buf, unsigned int blockID) {
         
         // read from server
         blockBuffer = (char*)calloc(1, IFUSE_BUFFER_CACHE_BLOCK_SIZE);
+        if(blockBuffer == NULL) {
+            _freeBufferCache(iFuseBufferCache);
+            return SYS_MALLOC_ERR;
+        }
+        
         status = iFuseFsRead(iFuseFd, blockBuffer, blockStartOffset, IFUSE_BUFFER_CACHE_BLOCK_SIZE);
         if (status < 0) {
             iFuseRodsClientLogError(LOG_ERROR, status, "_readBlock: iFuseFsRead of %s error, status = %d",
@@ -306,6 +311,10 @@ static int _writeBlock(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t si
             off_t endOffset = (off + size) > (iFuseBufferCache->offset + iFuseBufferCache->size) ? (off + size) : (iFuseBufferCache->offset + iFuseBufferCache->size);
             size_t newSize = endOffset - startOffset;
             char *newBuf = (char*)calloc(1, newSize);
+            if(newBuf == NULL) {
+                pthread_mutex_unlock(&g_BufferCacheLock);
+                return SYS_MALLOC_ERR;
+            }
 
             assert(newSize > 0);
             assert((iFuseBufferCache->offset - startOffset) >= 0);
@@ -326,6 +335,11 @@ static int _writeBlock(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t si
             char *bufFlush = iFuseBufferCache->buffer;
             off_t offFlush = iFuseBufferCache->offset;
             size_t sizeFlush = iFuseBufferCache->size;
+            
+            if(newBuf == NULL) {
+                pthread_mutex_unlock(&g_BufferCacheLock);
+                return SYS_MALLOC_ERR;
+            }
             
             // discrete
             // apply delta to caches
@@ -352,6 +366,10 @@ static int _writeBlock(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t si
         }
     } else {
         char *newBuf = (char*)calloc(1, size);
+        if(newBuf == NULL) {
+            pthread_mutex_unlock(&g_BufferCacheLock);
+            return SYS_MALLOC_ERR;
+        }
         
         // no delta
         status = _newBufferCache(&iFuseBufferCache);
@@ -584,6 +602,9 @@ int iFuseBufferedFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size) {
     size_t remain = 0;
     off_t curOffset = 0;
     char *blockBuffer = (char*)calloc(1, IFUSE_BUFFER_CACHE_BLOCK_SIZE);
+    if(blockBuffer == NULL) {
+        return SYS_MALLOC_ERR;
+    }
 
     assert(iFuseFd != NULL);
     assert(buf != NULL);
