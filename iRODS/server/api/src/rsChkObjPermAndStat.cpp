@@ -62,7 +62,6 @@ _rsChkObjPermAndStat( rsComm_t *rsComm,
 #endif
 }
 
-
 int
 chkCollForBundleOpr( rsComm_t *rsComm,
                      chkObjPermAndStat_t *chkObjPermAndStatInp ) {
@@ -221,6 +220,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         if ( curCopyGood == False ) {
             status = replDataObjForBundle( rsComm, curCollEnt->collName,
                                            curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
+            freeCollEntForChkColl( curCollEnt );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "chkCollForBundleOpr:%s does not have a good copy in %s",
@@ -261,6 +261,9 @@ saveCollEntForChkColl( collEnt_t *collEnt ) {
     }
     if ( collEnt->resource != NULL ) {
         collEnt->resource = strdup( collEnt->resource );
+    }
+    if ( collEnt->resc_hier != NULL ) {
+        collEnt->resc_hier = strdup( collEnt->resc_hier );
     }
     return 0;
 }

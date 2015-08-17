@@ -835,6 +835,7 @@ clearCollSqlResult( collSqlResult_t *collSqlResult ) {
     return 0;
 }
 
+
 int
 clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult == NULL ) {
@@ -871,6 +872,9 @@ clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult->resource.value != NULL ) {
         free( dataObjSqlResult->resource.value );
     }
+    if ( dataObjSqlResult->resc_hier.value != NULL ) {
+        free( dataObjSqlResult->resc_hier.value );
+    }
     if ( dataObjSqlResult->phyPath.value != NULL ) {
         free( dataObjSqlResult->phyPath.value );
     }
@@ -880,7 +884,9 @@ clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult->replNum.value != NULL ) {
         free( dataObjSqlResult->replNum.value );
     }
-
+    if ( dataObjSqlResult->dataType.value != NULL ) {
+	    free( dataObjSqlResult->dataType.value );
+    }
     memset( dataObjSqlResult, 0, sizeof( dataObjSqlResult_t ) );
 
     return 0;
@@ -1627,6 +1633,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
         outCollEnt->resource = rodsObjStat->specColl->resource;
         outCollEnt->ownerName = rodsObjStat->ownerName;
         outCollEnt->replStatus = NEWLY_CREATED_COPY;
+        outCollEnt->resc_hier = rodsObjStat->specColl->rescHier;
     }
     else {
         value = dataObjSqlResult->resource.value;

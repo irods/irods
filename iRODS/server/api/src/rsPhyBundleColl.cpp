@@ -634,6 +634,7 @@ replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
     if ( outCacheObjInfo != NULL ) {
         memset( outCacheObjInfo, 0, sizeof( dataObjInfo_t ) );
     }
+
     memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( &transStat, 0, sizeof( transStat ) );
 
