@@ -82,6 +82,7 @@ static int _closeFd(iFuseFd_t *iFuseFd) {
     iFuseFd->conn = NULL;
     iFuseFd->fd = 0;
     iFuseFd->openFlag = 0;
+    iFuseFd->lastFilePointer = -1;
     
     pthread_mutex_unlock(&iFuseFd->lock);
     return status;
@@ -316,6 +317,7 @@ int iFuseFdOpen(iFuseFd_t **iFuseFd, iFuseConn_t *iFuseConn, const char* iRodsPa
     tmpIFuseDesc->fd = fd;
     tmpIFuseDesc->iRodsPath = strdup(iRodsPath);
     tmpIFuseDesc->openFlag = openFlag;
+    tmpIFuseDesc->lastFilePointer = -1;
     
     pthread_mutexattr_init(&tmpIFuseDesc->lockAttr);
     pthread_mutexattr_settype(&tmpIFuseDesc->lockAttr, PTHREAD_MUTEX_RECURSIVE);

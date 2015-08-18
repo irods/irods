@@ -15,6 +15,7 @@ typedef struct IFuseFd {
     iFuseConn_t *conn;
     char *iRodsPath;
     int openFlag;
+    off_t lastFilePointer;
     pthread_mutexattr_t lockAttr;
     pthread_mutex_t lock;
 } iFuseFd_t;
