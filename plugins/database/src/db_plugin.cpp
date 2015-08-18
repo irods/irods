@@ -326,7 +326,7 @@ irods::error determine_user_has_modify_metadata_access(
     int status = 0;
 
     rodsLog(
-        LOG_DEBUG,  
+        LOG_DEBUG,
         "%s :: [%s] [%s] [%s] [%s]",
         __FUNCTION__,
         _data_name.c_str(),
@@ -366,7 +366,7 @@ irods::error determine_user_has_modify_metadata_access(
 
     // get the baseline 'access needed' value from the token table
     rodsLong_t access_needed = -1;
-    { 
+    {
         std::vector<std::string> bind_vars;
         int status = cmlGetIntegerValueFromSql(
                          "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
@@ -3878,7 +3878,7 @@ extern "C" {
                     rstrcat( tSQL, "," , MAX_SQL_SIZE );
                 }
                 rstrcat( tSQL, colNames[i] , MAX_SQL_SIZE );
-                rstrcat( tSQL, "=?", MAX_SQL_SIZE );
+                rstrcat( tSQL, "=? ", MAX_SQL_SIZE );
                 cllBindVars[j++] = theVal;
             }
         }
@@ -9980,7 +9980,7 @@ checkLevel:
                   _ctx.comm()->clientUser.rodsZone );
         if( !ret.ok() ) {
             return PASS( ret );
-        }                 
+        }
 
         // user has write access, set up the AVU and associate it with the data-objects
         status = findOrInsertAVU( _attribute, _value, _units );
