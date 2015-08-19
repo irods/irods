@@ -678,7 +678,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     if ( statementNumber < 0 ) {
         rodsLog( LOG_ERROR,
                  "cllExecSqlWithResult: too many concurrent statements" );
-        return -2;
+        return CAT_STATEMENT_TABLE_FULL;
     }
 
     myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
