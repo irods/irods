@@ -730,7 +730,7 @@
 #define BAD_FUNCTION_CALL                    -1823000
 #define CLIENT_NEGOTIATION_ERROR             -1824000
 #define SERVER_NEGOTIATION_ERROR             -1825000
-#define INVALID_KVP_STRING                   -1825000
+#define INVALID_KVP_STRING                   -1826000
 /** @} */
 
 
