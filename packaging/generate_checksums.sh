@@ -27,7 +27,7 @@ echo "Generated: "`date`
 
 # is this a directory?
 if [ -d "$1" ] ; then
-    for FILENAME in `find $1`
+    for FILENAME in `find $1 | sort`
     do
         checksum_file $FILENAME
     done
