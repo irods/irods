@@ -60,11 +60,15 @@ work. Type in:
 
 and do the normal login.
 
-4) The 2.0 irodsFs caches small files in the local disk to improve 
-performance. By default, the cached files are put in the /tmp/fuseCache
-directory. The env variable "FuseCacheDir" can be used to change the
-default cache directory. This env varible much be set before starting
-irodsFs (step 5).
+4) The irodsFs uses block-based file content transfer. Regardless of physical file 
+blocks of iRODS, the irodsFs divides the file content into fixed sized blocks 
+logically and requests content reads or writes to iRODS in the block level. 
+Hence, small reads or writes will be buffered and cached in memory temporarily. 
+Block size is set to 1MB by default. To change block size, you will need to 
+change the value of a definition of "IFUSE_BUFFER_CACHE_BLOCK_SIZE" 
+in iFuse.BufferedFS.hpp file. 
+To turn off this memory cache and buffered I/O, pass "-onocache" to command line 
+argument.
 
 5) Mount the home collection to the local directory by typing in:
 ./irodsFs /usr/tmp/fmount
