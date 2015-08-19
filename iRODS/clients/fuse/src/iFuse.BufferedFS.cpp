@@ -465,7 +465,8 @@ int iFuseBufferedFsClose(iFuseFd_t *iFuseFd) {
     int status = 0;
     std::map<unsigned long, iFuseBufferCache_t*>::iterator it_cachemap;
     iFuseBufferCache_t *iFuseBufferCache = NULL;
-
+    char *iRodsPath;
+    
     assert(iFuseFd != NULL);
 
     iFuseRodsClientLog(LOG_DEBUG, "iFuseBufferedFsClose: %s", iFuseFd->iRodsPath);
@@ -493,14 +494,18 @@ int iFuseBufferedFsClose(iFuseFd_t *iFuseFd) {
     }
 
     pthread_mutex_unlock(&g_BufferCacheLock);
-
+    
+    iRodsPath = strdup(iFuseFd->iRodsPath);
+    
     status = iFuseFsClose(iFuseFd);
     if (status < 0) {
         iFuseRodsClientLogError(LOG_ERROR, status, "iFuseBufferedFsClose: iFuseFsClose of %s error, status = %d",
-                iFuseFd->iRodsPath, status);
+                iRodsPath, status);
+        free(iRodsPath);
         return -ENOENT;
     }
-
+    
+    free(iRodsPath);
     return status;
 }
 
