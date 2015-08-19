@@ -21,10 +21,16 @@ typedef struct IFuseBufferCache {
 void iFuseBufferedFSInit();
 void iFuseBufferedFSDestroy();
 
+size_t getBufferCacheBlockSize();
+unsigned int getBlockID(off_t off);
+off_t getBlockStartOffset(unsigned int blockID);
+off_t getInBlockOffset(off_t off);
+
 int iFuseBufferedFsGetAttr(const char *iRodsPath, struct stat *stbuf);
 int iFuseBufferedFsOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag);
 int iFuseBufferedFsClose(iFuseFd_t *iFuseFd);
 int iFuseBufferedFsFlush(iFuseFd_t *iFuseFd);
+int iFuseBufferedFsReadBlock(iFuseFd_t *iFuseFd, char *buf, unsigned int blockID);
 int iFuseBufferedFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size);
 int iFuseBufferedFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size);
 

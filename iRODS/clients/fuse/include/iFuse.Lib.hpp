@@ -18,6 +18,7 @@ typedef struct IFuseOpt {
     bool debug;
     bool foreground;
     bool bufferedFS;
+    bool preload;
     int maxConn;
     int connTimeoutSec;
     int connKeepAliveSec;
