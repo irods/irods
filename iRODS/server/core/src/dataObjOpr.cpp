@@ -165,7 +165,7 @@ getDataObjInfo(
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
     if ( status < 0 ) {
         if ( status != CAT_NO_ROWS_FOUND ) {
@@ -1111,7 +1111,7 @@ chkOrphanFile(
 
     // =-=-=-=-=-=-=-
     // invoke genquery
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
     // =-=-=-=-=-=-=-
     // remove the agent-agent conn flag
@@ -1122,6 +1122,7 @@ chkOrphanFile(
     clearGenQueryInp( &genQueryInp );
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
+			freeGenQueryOut( &genQueryOut );
             rsComm->perfStat.orphanCnt ++;
             return 1;
         }
@@ -1131,6 +1132,7 @@ chkOrphanFile(
                      filePath, status, rescName );
             /* we have unexpected query error. Assume the file is not
              * orphan */
+			freeGenQueryOut( &genQueryOut );
             return status;
         }
     }

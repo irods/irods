@@ -637,6 +637,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         rodsLog( LOG_ERROR,
                  "rsMvCollToTrash: rsQueryDataObjInCollReCur error for %s, stat=%d",
                  rmCollInp->collName, status );
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 

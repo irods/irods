@@ -151,10 +151,12 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // hopefully there are no dirty data objects
             // and this is the typical code path
+			freeGenQueryOut( &gen_out );
             return SUCCESS();
 
         }
         else if ( status < 0 || 0 == gen_out ) {
+			freeGenQueryOut( &gen_out );
             return ERROR( status, "genQuery failed." );
 
         }
@@ -163,6 +165,7 @@ namespace irods {
         // extract result
         sqlResult_t* data_id_results = getSqlResultByInx( gen_out, COL_D_DATA_ID );
         if ( !data_id_results ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        SYS_INTERNAL_NULL_INPUT_ERR,
                        "null resc_hier result" );
@@ -181,6 +184,8 @@ namespace irods {
             _results.push_back( data_id );
 
         } // for i
+			
+        freeGenQueryOut( &gen_out );
 
         return SUCCESS();
 
@@ -254,6 +259,7 @@ namespace irods {
         int status = rsGenQuery( _comm, &gen_inp, &gen_out );
         clearGenQueryInp( &gen_inp );
         if ( status < 0 || 0 == gen_out ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        status,
                        "genQuery failed." );
@@ -263,6 +269,7 @@ namespace irods {
         // extract result
         sqlResult_t* data_name_result = getSqlResultByInx( gen_out, COL_DATA_NAME );
         if ( !data_name_result ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        UNMATCHED_KEY_OR_INDEX,
                        "null data_name sql result" );
@@ -272,6 +279,7 @@ namespace irods {
         // get its value
         char* data_name_ptr = &data_name_result->value[ 0 ];//data_name_result->len ];
         if ( !data_name_ptr ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        SYS_INTERNAL_NULL_INPUT_ERR,
                        "null data_name_ptr result" );
@@ -282,6 +290,7 @@ namespace irods {
         // extract result
         sqlResult_t* coll_name_result = getSqlResultByInx( gen_out, COL_COLL_NAME );
         if ( !coll_name_result ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        UNMATCHED_KEY_OR_INDEX,
                        "null coll_name sql result" );
@@ -291,6 +300,7 @@ namespace irods {
         // get its value
         char* coll_name_ptr = &coll_name_result->value[ 0 ];//coll_name_result->len ];
         if ( !coll_name_ptr ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        SYS_INTERNAL_NULL_INPUT_ERR,
                        "null coll_name_ptr result" );
@@ -301,6 +311,7 @@ namespace irods {
         // extract result
         sqlResult_t* resc_hier_result = getSqlResultByInx( gen_out, COL_D_RESC_HIER );
         if ( !resc_hier_result ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        UNMATCHED_KEY_OR_INDEX,
                        "null resc_hier sql result" );
@@ -310,6 +321,7 @@ namespace irods {
         // get its value
         char* resc_hier_ptr = &resc_hier_result->value[ 0 ];//resc_hier_result->len ];
         if ( !resc_hier_ptr ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        SYS_INTERNAL_NULL_INPUT_ERR,
                        "null resc_hier_ptr result" );
@@ -319,6 +331,7 @@ namespace irods {
         // extract result
         sqlResult_t* data_mode_result = getSqlResultByInx( gen_out, COL_DATA_MODE );
         if ( !data_mode_result ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        UNMATCHED_KEY_OR_INDEX,
                        "null data_mode sql result" );
@@ -328,6 +341,7 @@ namespace irods {
         // get its value
         char* data_mode_ptr = &data_mode_result->value[ 0 ];//data_mode_result->len ];
         if ( !data_mode_ptr ) {
+			freeGenQueryOut( &gen_out );
             return ERROR(
                        SYS_INTERNAL_NULL_INPUT_ERR,
                        "null data_mode_ptr result" );
@@ -341,6 +355,7 @@ namespace irods {
         _resc_hier = resc_hier_ptr;
         _data_mode = atoi( data_mode_ptr );
 
+        freeGenQueryOut( &gen_out );
         return SUCCESS();
 
     } // get_source_data_object_attributes

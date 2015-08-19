@@ -47,12 +47,10 @@ checkCollAccessPerm( rsComm_t *rsComm, char *collection, char *accessPerm ) {
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
     clearGenQueryInp( &genQueryInp );
-    if ( status >= 0 ) {
-        freeGenQueryOut( &genQueryOut );
-    }
+    freeGenQueryOut( &genQueryOut );
 
     return status;
 }
@@ -158,7 +156,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
         addKeyVal( &genQueryInp->condInput, ACCESS_PERMISSION_KW, accStr );
         /* have to set it to 1 because it only check the first one */
         genQueryInp->maxRows = 1;
-        status =  rsGenQuery( rsComm, genQueryInp, genQueryOut );
+        status = rsGenQuery( rsComm, genQueryInp, genQueryOut );
         rmKeyVal( &genQueryInp->condInput, USER_NAME_CLIENT_KW );
         rmKeyVal( &genQueryInp->condInput, RODS_ZONE_CLIENT_KW );
         rmKeyVal( &genQueryInp->condInput, ACCESS_PERMISSION_KW );
@@ -179,7 +177,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
             /* fall back to the general-query call which used before this
                specific-query was added (post 3.3.1) */
             genQueryInp->maxRows = MAX_SQL_ROWS;
-            status =  rsGenQuery( rsComm, genQueryInp, genQueryOut );
+            status = rsGenQuery( rsComm, genQueryInp, genQueryOut );
         }
 
     }
@@ -208,7 +206,7 @@ rsQueryCollInColl( rsComm_t *rsComm, char *collection,
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, genQueryInp, genQueryOut );
+    status = rsGenQuery( rsComm, genQueryInp, genQueryOut );
 
     return status;
 }
@@ -291,7 +289,7 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status >= 0 ) {
         *rodsObjStatOut = ( rodsObjStat_t * ) malloc( sizeof( rodsObjStat_t ) );
         memset( *rodsObjStatOut, 0, sizeof( rodsObjStat_t ) );

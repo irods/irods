@@ -206,6 +206,7 @@ namespace irods {
                              status );
                 }
 
+                freeGenQueryOut( &genQueryOut );
                 clearGenQueryInp( &genQueryInp );
                 return ERROR( status, "genQuery failed." );
 
@@ -236,6 +237,7 @@ namespace irods {
 
         } // while
 
+        freeGenQueryOut( &genQueryOut );
         clearGenQueryInp( &genQueryInp );
 
         // =-=-=-=-=-=-=-

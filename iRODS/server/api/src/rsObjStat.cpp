@@ -297,8 +297,9 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          MAX_NAME_LEN );
             }
         }
-        freeGenQueryOut( &genQueryOut );
     }
+
+    freeGenQueryOut( &genQueryOut );
 
     return status;
 }

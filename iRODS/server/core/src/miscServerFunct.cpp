@@ -3078,6 +3078,7 @@ irods::error get_current_resource_object_count(
     if ( CAT_NO_ROWS_FOUND == status ) {
         // =-=-=-=-=-=-=-
         // hopefully this resource is empty
+		freeGenQueryOut( &gen_out );
         return SUCCESS();
 
     }
@@ -3110,6 +3111,7 @@ irods::error get_current_resource_object_count(
 
     } // while
 
+    freeGenQueryOut( &gen_out );
     clearGenQueryInp( &gen_inp );
 
     // =-=-=-=-=-=-=-
