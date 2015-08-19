@@ -400,9 +400,6 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
 
     if ( status < 0 ) {
-        clearGenQueryOut( *genQueryOut );
-        free( *genQueryOut );
-        *genQueryOut = NULL;
         if ( status != CAT_NO_ROWS_FOUND ) {
             rodsLog( LOG_NOTICE,
                      "_rsGenQuery: genQuery status = %d", status );

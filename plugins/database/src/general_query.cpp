@@ -2303,16 +2303,18 @@ extern "C" int chl_gen_query_impl(
         if ( genQueryInp.condInput.len > 0 ) {
             status = checkCondInputAccess( genQueryInp, statementNum, icss, 0 );
             if ( status != 0 ) {
+                result->continueInx = statementNum+1; // provide index to close statement
                 return status;
             }
         }
-        result->continueInx = statementNum + 1;
+
         if ( debug ) {
             printf( "statement number =%d\n", statementNum );
         }
         needToGetNextRow = 0;
     }
     else {
+
         statementNum = genQueryInp.continueInx - 1;
         needToGetNextRow = 1;
         if ( genQueryInp.maxRows <= 0 ) { /* caller is closing out the query */
