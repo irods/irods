@@ -1413,6 +1413,10 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                              ( rcComm_t * ) queryHandle->conn, genQueryInp, &genQueryOut );
             }
             if ( status < 0 ) {
+                collHandle->rowInx = 0;
+				genQueryInp->continueInx = 0;
+				collSqlResult->continueInx = 0;
+				freeGenQueryOut( &genQueryOut );
                 return status;
             }
             else {
@@ -1500,7 +1504,6 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     if ( outCollEnt == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
-
     prevdataId = collHandle->prevdataId;
     memset( outCollEnt, 0, sizeof( collEnt_t ) );
     outCollEnt->objType = DATA_OBJ_T;
@@ -1523,6 +1526,10 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                              ( rcComm_t * ) queryHandle->conn, genQueryInp, &genQueryOut );
             }
             if ( status < 0 ) {
+                collHandle->rowInx = 0;
+				genQueryInp->continueInx = 0;
+				dataObjSqlResult->continueInx = 0;
+                freeGenQueryOut( &genQueryOut );
                 return status;
             }
             else {
