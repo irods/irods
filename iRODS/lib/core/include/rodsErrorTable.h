@@ -443,6 +443,7 @@ NEW_ERROR(CAT_BIND_VARIABLE_LIMIT_EXCEEDED,            -856000); // JMC - backpo
 NEW_ERROR(CAT_INVALID_CHILD,                           -857000);
 NEW_ERROR(CAT_INVALID_OBJ_COUNT,                       -858000); // hcj
 NEW_ERROR(CAT_INVALID_RESOURCE_NAME,                   -859000); // JMC
+NEW_ERROR(CAT_STATEMENT_TABLE_FULL,                    -860000); // JMC
 /** @} */
 
 /* 880,000 to 889,000  Deprecated  */
