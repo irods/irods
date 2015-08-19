@@ -63,6 +63,25 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.admin.assert_icommand("iput -f " + filename)  # put file
         self.admin.assert_icommand("iput -fR " + self.testresc + " " + filename, 'STDERR_SINGLELINE', 'HIERARCHY_ERROR')  # fail
 
+    def test_get_null_perms__2833(self):
+        base_name = 'test_dir_for_perms'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        local_files = lib.make_large_local_tmp_dir(local_dir, 30, 10)
+        self.admin.assert_icommand(['iput', '-r', local_dir])
+        rods_files = lib.ils_output_to_entries(self.admin.run_icommand(['ils', base_name])[1])
+
+        test_dir = 'test_get_null_perms__2833_dir'
+        self.admin.assert_icommand(['ichmod','-r','null',self.admin.username,base_name])
+        self.admin.assert_icommand(['ichmod','read',self.admin.username,base_name+'/'+rods_files[-1]])
+        self.admin.assert_icommand(['iget','-r',base_name,test_dir],'STDERR_SINGLELINE','CAT_NO_ACCESS_PERMISSION')
+
+        assert os.path.isfile(os.path.join(test_dir,'junk0029'))
+
+        self.admin.assert_icommand(['ichmod','-r','own',self.admin.username,base_name])
+        lib.run_command(['rm','-rf',test_dir])
+
+
+
     def test_iput_r(self):
         self.iput_r_large_collection(self.user0, "test_iput_r_dir", file_count=1000, file_size=100)
 
