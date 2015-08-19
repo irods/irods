@@ -504,12 +504,15 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
         freeGenQueryOut( &genQueryOut );
         if ( genQueryInp.continueInx  > 0 ) {
             /* More to come */
-            status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
+            status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
         }
         else {
             break;
         }
     }
+   
+    clearGenQueryInp( &genQueryInp ); 
+	freeGenQueryOut( &genQueryOut );
     /* deleteEnv(env, 3); */
     return 0;
 }
@@ -558,6 +561,9 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
         continueInx = genQueryInp.continueInx =  genQueryOut->continueInx;
         freeGenQueryOut( &genQueryOut );
     }
+    
+    clearGenQueryInp( &genQueryInp ); 
+	freeGenQueryOut( &genQueryOut );
     return 0;
 }
 
@@ -605,6 +611,9 @@ readDVMapStructFromDB( char *dvmBaseName, char *versionStr, rulevardef_t *inDvmS
             break;
         }
     }
+    
+	freeGenQueryOut( &genQueryOut );
+    clearGenQueryInp( &genQueryInp ); 
     inDvmStrct->MaxNumOfDVars = l;
     return 0;
 }
@@ -646,12 +655,14 @@ readFNMapStructFromDB( char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnm
         freeGenQueryOut( &genQueryOut );
         if ( genQueryInp.continueInx  > 0 ) {
             /* More to come */
-            status =  rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
+            status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
         }
         else {
             break;
         }
     }
+    freeGenQueryOut( &genQueryOut );
+    clearGenQueryInp( &genQueryInp ); 
     inFnmStrct->MaxNumOfFMaps = l;
     return 0;
 }
@@ -718,6 +729,8 @@ readMsrvcStructFromDB( int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t
             break;
         }
     }
+    freeGenQueryOut( &genQueryOut );
+    clearGenQueryInp( &genQueryInp ); 
     inMsrvcStrct->MaxNumOfMsrvcs = l;
     return 0;
 }

@@ -37,7 +37,7 @@ svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
     genQueryInp.maxRows = 0;;
     genQueryInp.continueInx = genQueryOut->continueInx;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, &junk );
+    status = rsGenQuery( rsComm, &genQueryInp, &junk );
 
     return status;
 }
@@ -61,7 +61,7 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr );
     addInxIval( &genQueryInp.selectInp, COL_COLL_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status >= 0 ) {
         sqlResult_t *dataIdRes;
 
@@ -74,9 +74,9 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
         if ( dataId != NULL ) {
             *dataId = strtoll( dataIdRes->value, 0, 0 );
         }
-        freeGenQueryOut( &genQueryOut );
     }
 
+    freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     return status;
 }
@@ -173,9 +173,9 @@ getPhyPath(
         strncpy( _resource,  root_resc.c_str(),   root_resc.size() );
         strncpy( _resc_hier, resc_hier.c_str(),   resc_hier.size() );
 
-        freeGenQueryOut( &gen_out );
     }
 
+    freeGenQueryOut( &gen_out );
     clearGenQueryInp( &gen_inp );
 
     return status;
@@ -212,7 +212,7 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr );
     addInxIval( &genQueryInp.selectInp, COL_COLL_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( status >= 0 ) {
         sqlResult_t *collIdRes;
 
@@ -226,9 +226,9 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
         if ( collId != NULL ) {
             *collId = strtoll( collIdRes->value, 0, 0 );
         }
-        freeGenQueryOut( &genQueryOut );
     }
 
+    freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     return status;
 }
@@ -245,7 +245,7 @@ isUser( rsComm_t *rsComm, char *objName ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_USER_NAME, tmpStr );
     addInxIval( &genQueryInp.selectInp, COL_USER_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     return status;
@@ -263,7 +263,7 @@ isResc( rsComm_t *rsComm, char *objName ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, tmpStr );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     return status;
@@ -446,7 +446,7 @@ getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_TOKEN_NAME, tmpStr2 );
     addInxIval( &genQueryInp.selectInp, COL_TOKEN_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         sqlResult_t *tokenIdRes;
@@ -459,8 +459,8 @@ getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
             return UNMATCHED_KEY_OR_INDEX;
         }
         status = atoi( tokenIdRes->value );
-        freeGenQueryOut( &genQueryOut );
     }
+    freeGenQueryOut( &genQueryOut );
     return status;
 }
 
@@ -480,7 +480,7 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
     addInxVal( &genQueryInp.sqlCondInp, COL_USER_ZONE, tmpStr2 );
     addInxIval( &genQueryInp.selectInp, COL_USER_ID, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         sqlResult_t *userIdRes;
@@ -493,8 +493,8 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
             return UNMATCHED_KEY_OR_INDEX;
         }
         status = atoi( userIdRes->value );
-        freeGenQueryOut( &genQueryOut );
     }
+    freeGenQueryOut( &genQueryOut );
     return status;
 }
 
@@ -525,10 +525,10 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
     addInxVal( &genQueryInp.sqlCondInp, COL_DATA_ACCESS_USER_ID, t2 );
     addInxVal( &genQueryInp.sqlCondInp, COL_DATA_ACCESS_TYPE, t3 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
-        freeGenQueryOut( &genQueryOut );
         return 1;
     }
     else {
@@ -555,10 +555,10 @@ checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operI
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_ACCESS_USER_ID, t2 );
     addInxVal( &genQueryInp.sqlCondInp, COL_COLL_ACCESS_TYPE, t4 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
-        freeGenQueryOut( &genQueryOut );
         return 1;
     }
     else {
@@ -585,10 +585,10 @@ checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId 
     addInxVal( &genQueryInp.sqlCondInp, COL_RESC_ACCESS_USER_ID, t2 );
     addInxVal( &genQueryInp.sqlCondInp, COL_RESC_ACCESS_TYPE, t4 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
-        freeGenQueryOut( &genQueryOut );
         return 1;
     }
     else {
@@ -657,13 +657,14 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
 
     addInxIval( &genQueryInp.selectInp, COL_DATA_REPL_NUM, 1 );
     genQueryInp.maxRows = 2;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     clearGenQueryInp( &genQueryInp );
     if ( status >= 0 ) {
         int intReplNum;
         sqlResult_t *replNum;
         if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
                 NULL ) {
+            freeGenQueryOut( &genQueryOut );
             rodsLog( LOG_ERROR,
                      "checkDupReplica: getSqlResultByInx COL_DATA_REPL_NUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -673,6 +674,7 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
         return intReplNum;
     }
     else {
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 }
@@ -700,8 +702,9 @@ getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     addInxIval( &genQueryInp.selectInp, COL_DATA_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_SIZE, 1 );
 
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     if ( genQueryOut == NULL || status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
         clearGenQueryInp( &genQueryInp );
         if ( status == CAT_NO_ROWS_FOUND ) {
             return 0;
@@ -714,7 +717,7 @@ getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     freeGenQueryOut( &genQueryOut );
     /* clear result */
     genQueryInp.maxRows = 0;
-    status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     clearGenQueryInp( &genQueryInp );
 
     return totalRowCount;

@@ -611,6 +611,7 @@ initZone( rsComm_t *rsComm ) {
     clearGenQueryInp( &genQueryInp );
 
     if ( status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
         rodsLog( LOG_NOTICE,
                  "initZone: rsGenQuery error, status = %d", status );
         return status;

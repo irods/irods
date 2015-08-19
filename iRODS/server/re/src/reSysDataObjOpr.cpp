@@ -513,6 +513,8 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     genQueryOut_t *genQueryOut = NULL;
     status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     if ( status != 0 || genQueryOut == NULL ) {
+		freeGenQueryOut( &genQueryOut );
+		clearGenQueryInp( &genQueryInp );
         return 0;
     }
 

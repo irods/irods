@@ -998,6 +998,8 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             break;
         }
     }
+
+	freeGenQueryOut( &genQueryOut );
     clearGenQueryInp( &genQueryInp );
 
     return savedStatus;
