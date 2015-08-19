@@ -82,6 +82,7 @@ static int _closeFd(iFuseFd_t *iFuseFd) {
     iFuseFd->conn = NULL;
     iFuseFd->fd = 0;
     iFuseFd->openFlag = 0;
+    iFuseFd->lastFilePointer = -1;
     
     pthread_mutex_unlock(&iFuseFd->lock);
     return status;
@@ -96,7 +97,26 @@ static int _closeDir(iFuseDir_t *iFuseDir) {
 
     if(iFuseDir->handle != NULL && iFuseDir->conn != NULL) {
         iFuseConnLock(iFuseDir->conn);
-        iFuseRodsClientCloseCollection(iFuseDir->handle);
+        status = iFuseRodsClientCloseCollection(iFuseDir->handle);
+        if (status < 0) {
+            if (iFuseRodsClientReadMsgError(status)) {
+                // reconnect and retry 
+                if(iFuseConnReconnect(iFuseDir->conn) < 0) {
+                    iFuseRodsClientLogError(LOG_ERROR, status, "iFuseDirClose: iFuseConnReconnect of %s error",
+                        iFuseDir->iRodsPath);
+                } else {
+                    status = iFuseRodsClientCloseCollection(iFuseDir->handle);
+                    if (status < 0) {
+                        iFuseRodsClientLogError(LOG_ERROR, status, "iFuseDirClose: iFuseRodsClientCloseCollection of %s error",
+                            iFuseDir->iRodsPath);
+                    }
+                }
+            } else {
+                iFuseRodsClientLogError(LOG_ERROR, status, "iFuseDirClose: iFuseRodsClientCloseCollection of %s error",
+                    iFuseDir->iRodsPath);
+            }
+        }
+
         iFuseConnUnlock(iFuseDir->conn);
     }
     
@@ -297,6 +317,7 @@ int iFuseFdOpen(iFuseFd_t **iFuseFd, iFuseConn_t *iFuseConn, const char* iRodsPa
     tmpIFuseDesc->fd = fd;
     tmpIFuseDesc->iRodsPath = strdup(iRodsPath);
     tmpIFuseDesc->openFlag = openFlag;
+    tmpIFuseDesc->lastFilePointer = -1;
     
     pthread_mutexattr_init(&tmpIFuseDesc->lockAttr);
     pthread_mutexattr_settype(&tmpIFuseDesc->lockAttr, PTHREAD_MUTEX_RECURSIVE);
