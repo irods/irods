@@ -2,8 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*** This code is written by Illyoung Choi (iychoi@email.arizona.edu)      ***
  *** funded by iPlantCollaborative (www.iplantcollaborative.org).          ***/
-#ifndef IFUSE_LIB_BUFFERED_FS_HPP
-#define	IFUSE_LIB_BUFFERED_FS_HPP
+#ifndef IFUSE_BUFFEREDFS_HPP
+#define	IFUSE_BUFFEREDFS_HPP
 
 #include <pthread.h>
 #include "iFuse.Lib.Fd.hpp"
@@ -28,5 +28,5 @@ int iFuseBufferedFsFlush(iFuseFd_t *iFuseFd);
 int iFuseBufferedFsRead(iFuseFd_t *iFuseFd, char *buf, off_t off, size_t size);
 int iFuseBufferedFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size);
 
-#endif	/* IFUSE_LIB_BUFFERED_FS_HPP */
+#endif	/* IFUSE_BUFFEREDFS_HPP */
 
