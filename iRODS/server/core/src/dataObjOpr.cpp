@@ -167,16 +167,25 @@ getDataObjInfo(
 
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
 
-    clearGenQueryInp( &genQueryInp );
-
     if ( status < 0 ) {
         if ( status != CAT_NO_ROWS_FOUND ) {
             rodsLog( LOG_NOTICE,
                      "getDataObjInfo: rsGenQuery error, status = %d",
                      status );
         }
+
+		genQueryInp.continueInx = genQueryOut->continueInx;
+		genQueryInp.maxRows = 0;
+		freeGenQueryOut( &genQueryOut );
+		rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+
+		freeGenQueryOut( &genQueryOut );
+        clearGenQueryInp( &genQueryInp );
+
         return status;
     }
+
+	clearGenQueryInp( &genQueryInp );
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,
