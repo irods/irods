@@ -295,7 +295,7 @@ class ChunkyDevTest(ResourceBase):
         # <-- FAILING - REASON FOR SKIPPING
         self.admin.assert_icommand("ireg -KR " + self.testresc + " /tmp/sfile2 " + irodshome + "/foo5")
         commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2r")
-        self.admin.assert_icommand("ireg -KR " + self.anotherresc + " --repl /tmp/sfile2r  " + irodshome + "/foo5")
+        self.admin.assert_icommand("ireg -KkR " + self.anotherresc + " --repl /tmp/sfile2r  " + irodshome + "/foo5")
         self.admin.assert_icommand("iget -fK " + irodshome + "/foo5 " + dir_w + "/foo5")
         output = commands.getstatusoutput("diff /tmp/sfile2  " + dir_w + "/foo5")
         print "output is [" + str(output) + "]"
