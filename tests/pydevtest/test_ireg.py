@@ -9,6 +9,7 @@ import os
 import datetime
 import socket
 
+import configuration
 import lib
 import resource_suite
 
