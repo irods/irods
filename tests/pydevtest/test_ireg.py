@@ -17,11 +17,10 @@ RODSHOME = lib.get_irods_top_level_dir() + "/iRODS/"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 
-
-class Test_ireg(resource_suite.ResourceBase, unittest.TestCase):
-
+@unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Registers files on remote resources')
+class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
-        super(Test_ireg, self).setUp()
+        super(Test_Ireg, self).setUp()
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file0')
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file1')
         shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file2')
@@ -58,7 +57,7 @@ class Test_ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         os.remove(ABSPATHTESTDIR + '/file2')
 
-        super(Test_ireg, self).tearDown()
+        super(Test_Ireg, self).tearDown()
 
     def test_ireg_files(self):
         self.admin.assert_icommand("ireg -R l_resc " + ABSPATHTESTDIR + '/file0 ' + self.admin.home_collection + '/file0')
@@ -130,5 +129,3 @@ class Test_ireg(resource_suite.ResourceBase, unittest.TestCase):
         # remove local test dir and exclusion file
         os.remove(exclude_file_path)
         shutil.rmtree(local_dir)
-
-
