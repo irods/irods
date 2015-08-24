@@ -1386,6 +1386,7 @@ int get64RandomBytes( char *buf ) {
 	}
 
     snprintf( buf, 64, "%s", enc_str.c_str() );
+    buf[64] = '\0';
 
     return 0;
 }
