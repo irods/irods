@@ -490,33 +490,25 @@ doTicketOp( const char *arg1, const char *arg2, const char *arg3,
 
 void
 makeTicket( char *newTicket ) {
-    int ticket_len = 15;
-    char buf1[100], buf2[20];
-    get64RandomBytes( buf1 );
+    const int ticket_len = 15;
+    // random_bytes must be (unsigned char[]) to guarantee that following
+    // modulo result is positive (i.e. in [0, 61])
+    unsigned char random_bytes[ticket_len];
+    getRandomBytes( random_bytes, ticket_len );
 
-    /*
-     Set up an array of characters that are allowed in the result.
-    */
-    char characterSet_len = 26 + 26 + 10;
-    char characterSet[26 + 26 + 10];
-    int j = 0;
-    for ( char i = 0; i < 26; i++ ) {
-        characterSet[j++] = 'A' + i;
-    }
-    for ( char i = 0; i < 26; i++ ) {
-        characterSet[j++] = 'a' + i;
-    }
-    for ( char i = 0; i < 10; i++ ) {
-        characterSet[j++] = '0' + i;
-    }
+    const char characterSet[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G',
+    'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+    'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
+    '7', '8', '9'};
 
-    for ( int i = 0; i < ticket_len; i++ ) {
-        int ix = buf1[i] % characterSet_len;
-        buf2[i] = characterSet[ix];
+    for ( int i = 0; i < ticket_len; ++i ) {
+        const int ix = random_bytes[i] % sizeof(characterSet);
+        newTicket[i] = characterSet[ix];
     }
-    buf2[ticket_len] = '\0';
-    strncpy( newTicket, buf2, 20 );
-    printf( "ticket:%s\n", buf2 );
+    newTicket[ticket_len] = '\0';
+    printf( "ticket:%s\n", newTicket );
 }
 
 /*
