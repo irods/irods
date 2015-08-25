@@ -432,9 +432,7 @@ f 755 root root ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
 
 d 755 root root ${IRODS_HOME}/clients -
 d 755 root root ${IRODS_HOME}/clients/icommands -
-d 755 root root ${IRODS_HOME}/clients/icommands/bin -
 
-f 644 root root ${IRODS_HOME}/clients/icommands/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
 
 # igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
 f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
