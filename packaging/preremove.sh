@@ -21,7 +21,7 @@ elif [ $# -eq 2 ] ; then
   # old resource
   PACKAGER_COMMAND="upgrade"
 elif [ $# -eq 4 ] ; then
-  # upgrade from 4.0.2 
+  # upgrade from 4.0.2
   PACKAGER_COMMAND="upgrade"
 else
   echo "ERROR: Unspecified state for preremove.sh - [$#]"
@@ -164,15 +164,6 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 	elif [ "$DETECTEDOS" == "SuSE" ] ; then
 	    /sbin/chkconfig --del irods
 	fi
-
-	# =-=-=-=-=-=-=-
-	# remove icommands symlinks
-	for file in `ls ${IRODS_HOME}/clients/icommands/bin/`
-	do
-		if [ -e /usr/bin/$file ]; then
-	        rm /usr/bin/$file
-		fi
-	done
 
 fi
 
