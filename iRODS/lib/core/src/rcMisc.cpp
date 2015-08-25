@@ -1372,22 +1372,20 @@ getUnixGroupname( int gid, char *groupname, int groupname_len ) {
 
 /*
    Return 64 semi-random bytes terminated by a null.
+   hex encodes 32 random bytes to prevent troublesome values
  */
 int get64RandomBytes( char *buf ) {
-    // hex encode to prevent troublesome values
-	std::string enc_str;
-	static boost::mt19937 generator( std::time( 0 ) ^ ( getpid() << 16 ) );
-	static boost::uniform_int<unsigned char> byte_range( 0, 0xff );
-	static boost::variate_generator<boost::mt19937, boost::uniform_int<unsigned char> > random_byte( generator, byte_range );
-	for( size_t i = 0; i < 64; ++i ) {
-	    std::stringstream tmp_str;
-        tmp_str << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_byte() );
-        enc_str += tmp_str.str(); 
-	}
+    const int num_random_bytes = 32;
+    const int num_hex_bytes = 2 * num_random_bytes;
+    unsigned char random_bytes[num_random_bytes];
+    getRandomBytes( random_bytes, sizeof(random_bytes) );
 
-    snprintf( buf, 64, "%s", enc_str.c_str() );
-    buf[64] = '\0';
+    std::stringstream ss;
+    for ( size_t i = 0; i < sizeof(random_bytes); ++i ) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_bytes[i] );
+    }
 
+    snprintf( buf, num_hex_bytes+1, "%s", ss.str().c_str() );
     return 0;
 }
 
