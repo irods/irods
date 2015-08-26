@@ -15,12 +15,12 @@ Overview
 
 This test suite is based on the Python unittest framework.  It uses inheritance to provide an extensible mechanism for coverage for the plugin model that underpins iRODS.  This is best explained with a short example from the resource tests.
 
-The file test_irods_resource_types.py provides many classes, one of which is the Test_Random_Resource.  The Test_Random_Resource class defines the resource standup and teardown steps that should run before and after each test in the class.  Mostly, this involves a shuffling of the default "demoResc" resource and replacing it with a resource of the type being tested.  For coordinating resources, this could be a multilevel hierarchy that requires the creation and wiring up of multiple parent and children resources (as well as their teardown, in reverse).  The intent is to provide test coverage for the composite nature of the resource model.
+The file test_resource_types.py provides many classes, one of which is the Test_Resource_Random.  The Test_Resource_Random class defines the resource standup and teardown steps that should run before and after each test in the class.  Mostly, this involves a shuffling of the default "demoResc" resource and replacing it with a resource of the type being tested.  For coordinating resources, this could be a multilevel hierarchy that requires the creation and wiring up of multiple parent and children resources (as well as their teardown, in reverse).  The intent is to provide test coverage for the composite nature of the resource model.
 
-The Test_Random_Resource class, defined in test_irods_resource_types.py, only has to override the tests that would fail because the intended behavior of the new resource type is different from the behavior defined in the base class's test.  In addition, any new test functionality can also be defined in Test_Random_Resource.
+The Test_Resource_Random class, defined in test_resource_types.py, only has to override the tests that would fail because the intended behavior of the new resource type is different from the behavior defined in the base class's test.  In addition, any new test functionality can also be defined in Test_Resource_Random.
 
 
-  class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
+  class Test_Resource_Random(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 inherits from
   class ResourceSuite(ResourceBase):
   and
@@ -28,7 +28,7 @@ inherits from
 which both inherit from
   class ResourceBase(object):
 
-Test_Random_Resource defines...
+Test_Resource_Random defines...
 
 @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
 def test_ireg_as_rodsuser_in_vault(self):
@@ -44,7 +44,7 @@ Run the test suite as irods
 
 The following command will run the entire test suite and take a few seconds for each test.  This could take a couple hours to run on a relatively modern machine:
 
-  python run_tests.py --run_python_suite --include_auth_tests --include_fuse_tests --run_devtesty
+  python run_tests.py --run_python_suite --include_auth_tests --run_devtesty
 
 The following command will run specific tests
 
