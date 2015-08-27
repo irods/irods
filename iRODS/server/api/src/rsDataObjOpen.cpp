@@ -71,20 +71,16 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                                    rsComm,
                                    dataObjInp,
                                    hier );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjInp->objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
-            }
+            if ( ret.ok() ) {
+				// =-=-=-=-=-=-=-
+				// we resolved the redirect and have a host, set the hier str for subsequent
+				// api calls, etc.
+				addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
-            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+			}
 
         } // if keyword
+
         l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
 
     }
