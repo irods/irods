@@ -1215,10 +1215,23 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     rodsEnv rods_env;
     status = getRodsEnv( &rods_env );
 
-    if ( status >= 0 && strlen( rods_env.rodsClientServerNegotiation ) > 0 ) {
+    size_t cs_neg_len = strlen( rods_env.rodsClientServerNegotiation );
+    if ( status >= 0 &&  cs_neg_len > 0 ) {
+		size_t opt_sz  = sizeof( startupPack.option );
+        size_t opt_len = strlen( startupPack.option );
+		if( ( opt_sz - opt_len )  < cs_neg_len ) {
+			rodsLogError(
+			    LOG_ERROR,
+				SYS_BAD_INPUT,
+				"sendStartupPack :: insufficient room in option string - %d vs %d",
+				opt_sz,
+				opt_sz - opt_len );
+			return SYS_BAD_INPUT;
+        }
+
         strncat( startupPack.option,
                  rods_env.rodsClientServerNegotiation,
-                 strlen( rods_env.rodsClientServerNegotiation ) );
+                 opt_sz - opt_len );
     }
 
     /* always use XML_PROT for the startupPack */
