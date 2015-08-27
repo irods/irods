@@ -353,3 +353,49 @@ int iFuseRodsClientModDataObjMeta(rcComm_t *conn, modDataObjMeta_t *modDataObjMe
     _endOperationTimeout(oper);
     return status;
 }
+
+void iFuseRodsClientLogToFile(int level, const char *formatStr, ...) {
+    va_list args;
+    va_start(args, formatStr);
+    
+    FILE *logFile;
+    
+    logFile = fopen(IFUSE_RODSCLIENTAPI_LOG_OUT_FILE_PATH, "a");
+    if(logFile != NULL) {
+        if(level == 7) {
+            // debug
+            fprintf(logFile, "DEBUG: ");
+        } else {
+            fprintf(logFile, "errorLevel : %d\n", level);
+        }
+        vfprintf(logFile, formatStr, args);
+        fprintf(logFile, "\n");
+        
+        fclose(logFile);
+    }
+    
+    va_end(args);
+}
+
+void iFuseRodsClientLogErrorToFile(int level, int errCode, char *formatStr, ...) {
+    va_list args;
+    va_start(args, formatStr);
+    
+    FILE *logFile;
+    
+    logFile = fopen(IFUSE_RODSCLIENTAPI_LOG_OUT_FILE_PATH, "a");
+    if(logFile != NULL) {
+        if(level == 7) {
+            // debug
+            fprintf(logFile, "DEBUG - ERROR_CODE(%d): ", errCode);
+        } else {
+            fprintf(logFile, "errorLevel : %d, errorCode : %d\n", level, errCode);
+        }
+        vfprintf(logFile, formatStr, args);
+        fprintf(logFile, "\n");
+        
+        fclose(logFile);
+    }
+    
+    va_end(args);
+}
