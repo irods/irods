@@ -493,9 +493,11 @@ int iFusePreloadOpen(const char *iRodsPath, iFuseFd_t **iFuseFd, int openFlag) {
         iFusePreload->fdId = (*iFuseFd)->fdId;
         iFusePreload->iRodsPath = strdup(iRodsPath);
 
-        // start preload thread
-        for(i=0;i<IFUSE_PRELOAD_PBLOCK_NUM;i++) {
-            _startPreload(iFusePreload, i, NULL);
+        // start preload thread - only when the file is opened for read
+        if((openFlag & O_ACCMODE) == O_RDONLY || (openFlag & O_ACCMODE) == O_RDWR) {
+            for(i=0;i<IFUSE_PRELOAD_PBLOCK_NUM;i++) {
+                _startPreload(iFusePreload, i, NULL);
+            }
         }
         
         pthread_mutex_lock(&g_PreloadLock);

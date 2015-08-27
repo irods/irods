@@ -539,6 +539,25 @@ int iFuseFsWrite(iFuseFd_t *iFuseFd, const char *buf, off_t off, size_t size) {
     return status;
 }
 
+int iFuseFsFlush(iFuseFd_t *iFuseFd) {
+    int status = 0;
+    
+    assert(iFuseFd != NULL);
+    assert(iFuseFd->iRodsPath != NULL);
+    assert(iFuseFd->fd > 0);
+
+    iFuseRodsClientLog(LOG_DEBUG, "iFuseFsFlush: %s", iFuseFd->iRodsPath);
+
+    status = iFuseFdReopen(iFuseFd);
+    if (status < 0) {
+        iFuseRodsClientLogError(LOG_ERROR, status, "iFuseFsClose: iFuseFdReopen of %s error, status = %d",
+                iFuseFd->iRodsPath, status);
+        return -ENOENT;
+    }
+
+    return 0;
+}
+
 int iFuseFsCreate(const char *iRodsPath, mode_t mode) {
     int status = 0;
     dataObjInp_t dataObjInp;

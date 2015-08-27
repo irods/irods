@@ -572,6 +572,13 @@ int iFuseBufferedFsFlush(iFuseFd_t *iFuseFd) {
         }
     }
     
+    status = iFuseFsFlush(iFuseFd);
+    if (status < 0) {
+        iFuseRodsClientLogError(LOG_ERROR, status, "iFuseBufferedFsFlush: iFuseFsFlush of %s error, status = %d",
+                iFuseFd->iRodsPath, status);
+        return -ENOENT;
+    }
+    
     return status;
 }
 

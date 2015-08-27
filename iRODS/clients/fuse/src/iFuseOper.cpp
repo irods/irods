@@ -185,6 +185,13 @@ int iFuseFlush(const char *path, struct fuse_file_info *fi) {
                     "iFuseFlush: cannot flush file content for %s error", iRodsPath);
             return -ENOENT;
         }
+    } else {
+        status = iFuseFsFlush(iFuseFd);
+        if (status < 0) {
+            iFuseRodsClientLogError(LOG_ERROR, status, 
+                    "iFuseFlush: cannot flush file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
     }
     
     return status;
@@ -213,6 +220,13 @@ int iFuseFsync(const char *path, int isdatasync, struct fuse_file_info *fi) {
     
     if(iFuseLibGetOption()->bufferedFS) {
         status = iFuseBufferedFsFlush(iFuseFd);
+        if (status < 0) {
+            iFuseRodsClientLogError(LOG_ERROR, status, 
+                    "iFuseFsync: cannot flush file content for %s error", iRodsPath);
+            return -ENOENT;
+        }
+    } else {
+        status = iFuseFsFlush(iFuseFd);
         if (status < 0) {
             iFuseRodsClientLogError(LOG_ERROR, status, 
                     "iFuseFsync: cannot flush file content for %s error", iRodsPath);
