@@ -82,9 +82,14 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand('iticket delete ' + ticket)
 
     def ticket_put_on(self, ticket_target, data_obj, filepath):
-        ticket = 'ticket'
+        ticket = 'faketicket'
         self.ticket_put_fail(ticket, data_obj, filepath)
-        self.admin.assert_icommand('iticket create write ' + ticket_target + ' ' + ticket)
+        _, out, _ = self.admin.assert_icommand(['iticket', 'create', 'write', ticket_target], 'STDOUT_SINGLELINE', 'ticket:')
+        ticket = out.rpartition(':')[2].rstrip('\n')
+        assert len(ticket) == 15, ticket
+        ticket_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        for c in ticket:
+            assert c in ticket_chars, c
         self.admin.assert_icommand('iticket mod ' + ticket + ' write-file 0')
         self.admin.assert_icommand('iticket ls', 'STDOUT')
         self.ticket_put(ticket, data_obj, filepath)
