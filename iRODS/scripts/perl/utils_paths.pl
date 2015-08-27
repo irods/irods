@@ -41,7 +41,11 @@ if ( ! -e "$scripttoplevel/packaging/binary_installation.flag" )
 #
 $perlScriptsDir   = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 
-$icommandsBinDir  = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "bin" );
+if ($RUNINPLACE == 1) {
+    $icommandsBinDir  = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "bin" );
+} else {
+    $icommandsBinDir  = "/usr/bin";
+}
 $icommandsTestDir = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "test" );
 
 $serverBinDir     = File::Spec->catdir( $IRODS_HOME, "server",  "bin" );
