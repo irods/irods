@@ -879,7 +879,7 @@ void usageMain() {
         "Tickets are another way to provide access to iRODS data-objects (files) or",
         "collections (directories or folders).  The 'iticket' command allows you",
         "to create, modify, list, and delete tickets.  When you create a ticket",
-        "its 16 character string is given to you which you can share with others.",
+        "its 15 character string is given to you which you can share with others.",
         "This is less secure than normal iRODS login-based access control, but",
         "is useful in some situations.  See the 'ticket-based access' page on",
         "irods.org for more information.",
