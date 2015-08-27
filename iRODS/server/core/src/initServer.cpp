@@ -1172,7 +1172,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
                  NAME_LEN );
         rstrcpy( rsComm->cliVersion.apiVersion, startupPack->apiVersion,
                  NAME_LEN );
-        rstrcpy( rsComm->option, startupPack->option, NAME_LEN );
+        rstrcpy( rsComm->option, startupPack->option, LONG_NAME_LEN );
     }
     else {      /* have to depend on env variable */
         tmpStr = getenv( SP_NEW_SOCK );
@@ -1279,11 +1279,11 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
                      SP_OPTION );
         }
         else {
-            rstrcpy( rsComm->option, tmpStr, NAME_LEN );
+            rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
         }
 #else
         if ( tmpStr != NULL ) {
-            rstrcpy( rsComm->option, tmpStr, NAME_LEN );
+            rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
         }
 #endif
 

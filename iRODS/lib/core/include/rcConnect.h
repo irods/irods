@@ -153,7 +153,7 @@ typedef struct {
     userInfo_t clientUser;
     rodsEnv myEnv;	/* the local user */
     version_t cliVersion;      /* the client's version */
-    char option[NAME_LEN];
+    char option[LONG_NAME_LEN];
     procLogFlag_t procLogFlag;
     rError_t rError;
     portalOpr_t *portalOpr;

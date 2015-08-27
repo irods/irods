@@ -241,7 +241,7 @@ typedef struct startupPack {
     char clientRodsZone[NAME_LEN];
     char relVersion[NAME_LEN];
     char apiVersion[NAME_LEN];
-    char option[NAME_LEN];
+    char option[LONG_NAME_LEN];
 } startupPack_t;
 
 /* env variable for the client protocol */
