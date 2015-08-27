@@ -89,6 +89,7 @@ int main(int argc, char **argv) {
     iFuseLibSetOption(&myiFuseOpt);
 
     iFuseGenCmdLineForFuse(&fuse_argc, &fuse_argv);
+    iFuseRodsClientLog(LOG_DEBUG, "main: iRods Fuse gets started.");
     status = fuse_main(fuse_argc, fuse_argv, &irodsOper, NULL);
     iFuseReleaseCmdLineForFuse(fuse_argc, fuse_argv);
 

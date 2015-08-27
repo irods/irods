@@ -11,26 +11,47 @@
 
 #define IFUSE_RODSCLIENTAPI_TIMEOUT_SEC     (30)
 
+//#define IFUSE_RODSCLIENTAPI_LOG_PRINT_TIME
+//#define IFUSE_RODSCLIENTAPI_LOG_OUT_TO_FILE
+#define IFUSE_RODSCLIENTAPI_LOG_OUT_FILE_PATH   "/tmp/irods_debug.out"
+
 void iFuseRodsClientInit();
 void iFuseRodsClientDestroy();
 
 int iFuseRodsClientReadMsgError(int status);
 
-#define iFuseRodsClientLog \
+#ifdef IFUSE_RODSCLIENTAPI_LOG_OUT_TO_FILE
+#   define iFuseRodsClientLogBase       iFuseRodsClientLogToFile
+#   define iFuseRodsClientLogErrorBase  iFuseRodsClientLogErrorToFile 
+#else
+#   define iFuseRodsClientLogBase       rodsLog
+#   define iFuseRodsClientLogErrorBase  rodsLogError
+#endif // IFUSE_RODSCLIENTAPI_LOG_OUT_TO_FILE
+
+
+#ifdef IFUSE_RODSCLIENTAPI_LOG_PRINT_TIME
+#   define iFuseRodsClientLog \
     { \
     char logtimes[100]; \
     iFuseLibGetStrCurrentTime(logtimes); \
-    rodsLog(LOG_DEBUG, "%s", logtimes); \
+    iFuseRodsClientLogBase(LOG_DEBUG, "%s", logtimes); \
     } \
-    rodsLog
-            
-#define iFuseRodsClientLogError \
+    iFuseRodsClientLogBase
+#else
+#   define iFuseRodsClientLog   iFuseRodsClientLogBase
+#endif // IFUSE_RODSCLIENTAPI_LOG_PRINT_TIME
+
+#ifdef IFUSE_RODSCLIENTAPI_LOG_PRINT_TIME
+#   define iFuseRodsClientLogError \
     { \
     char logtimes[100]; \
     iFuseLibGetStrCurrentTime(logtimes); \
-    rodsLog(LOG_DEBUG, "%s", logtimes); \
+    iFuseRodsClientLogBase(LOG_DEBUG, "%s", logtimes); \
     } \
-    rodsLogError
+    iFuseRodsClientLogErrorBase
+#else
+#   define iFuseRodsClientLogError  iFuseRodsClientLogErrorBase
+#endif // IFUSE_RODSCLIENTAPI_LOG_PRINT_TIME
 
 rcComm_t *iFuseRodsClientConnect(const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone, int reconnFlag, rErrMsg_t *errMsg);
 int iFuseRodsClientLogin(rcComm_t *conn);
@@ -54,6 +75,9 @@ int iFuseRodsClientRmColl(rcComm_t *conn, collInp_t *rmCollInp, int vFlag);
 int iFuseRodsClientDataObjRename(rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp);
 int iFuseRodsClientDataObjTruncate(rcComm_t *conn, dataObjInp_t *dataObjInp);
 int iFuseRodsClientModDataObjMeta(rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
+
+void iFuseRodsClientLogToFile(int level, const char *formatStr, ...);
+void iFuseRodsClientLogErrorToFile(int level, int errCode, char *formatStr, ...);
 
 #endif	/* IFUSE_LIB_RODSCLIENTAPI_HPP */
 
