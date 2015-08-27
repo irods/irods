@@ -518,25 +518,14 @@ int iFusePreloadClose(iFuseFd_t *iFuseFd) {
     std::map<unsigned long, iFusePreload_t*>::iterator it_preloadmap;
     iFusePreload_t *iFusePreload = NULL;
     char *iRodsPath;
+    unsigned long fdId;
     
     assert(iFuseFd != NULL);
     
     iFuseRodsClientLog(LOG_DEBUG, "iFusePreloadClose: %s", iFuseFd->iRodsPath);
     
-    pthread_mutex_lock(&g_PreloadLock);
-    
-    it_preloadmap = g_PreloadMap.find(iFuseFd->fdId);
-    if(it_preloadmap != g_PreloadMap.end()) {
-        // has it
-        iFusePreload = it_preloadmap->second;
-        g_PreloadMap.erase(it_preloadmap);
-
-        _freePreload(iFusePreload);
-    }
-    
-    pthread_mutex_unlock(&g_PreloadLock);
-    
     iRodsPath = strdup(iFuseFd->iRodsPath);
+    fdId = iFuseFd->fdId;
     
     status = iFuseBufferedFsClose(iFuseFd);
     if (status < 0) {
@@ -547,6 +536,20 @@ int iFusePreloadClose(iFuseFd_t *iFuseFd) {
     }
     
     free(iRodsPath);
+    
+    pthread_mutex_lock(&g_PreloadLock);
+    
+    it_preloadmap = g_PreloadMap.find(fdId);
+    if(it_preloadmap != g_PreloadMap.end()) {
+        // has it
+        iFusePreload = it_preloadmap->second;
+        g_PreloadMap.erase(it_preloadmap);
+
+        _freePreload(iFusePreload);
+    }
+    
+    pthread_mutex_unlock(&g_PreloadLock);
+    
     return status;
 }
 
