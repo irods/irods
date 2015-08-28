@@ -414,10 +414,6 @@ _rsDataObjCreateWithResc(
     dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
-    
-	// the creation of a new data object for write should trigger the 
-	// acPostProcForPut PEP on close 
-	L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
 
     status = getFilePathName( rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp );
 
