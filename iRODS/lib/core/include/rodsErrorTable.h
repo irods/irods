@@ -64,6 +64,7 @@ enum IRODS_ERROR_ENUM
  * @{
  */
 NEW_ERROR(SYS_SOCK_OPEN_ERR,                           -1000)
+NEW_ERROR(SYS_SOCK_LISTEN_ERR,                         -1100)
 NEW_ERROR(SYS_SOCK_BIND_ERR,                           -2000)
 NEW_ERROR(SYS_SOCK_ACCEPT_ERR,                         -3000)
 NEW_ERROR(SYS_HEADER_READ_LEN_ERR,                     -4000)
@@ -211,8 +212,7 @@ NEW_ERROR(SYS_THREAD_ENCOUNTERED_INTERRUPT,            -156000)
 NEW_ERROR(SYS_THREAD_RESOURCE_ERR,                     -157000)
 NEW_ERROR(SYS_BAD_INPUT,                               -158000)
 NEW_ERROR(SYS_PORT_RANGE_EXHAUSTED,                    -159000)
-NEW_ERROR(SYS_SOCK_LISTEN_ERROR,                       -160000)
-NEW_ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,              -161000)
+NEW_ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,              -160000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */

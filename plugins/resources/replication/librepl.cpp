@@ -1705,7 +1705,7 @@ irods::error repl_file_rebalance(
                             child_name );
         if(!get_ret.ok() ) {
             irods::log(PASS(get_ret));
-            continue; // XXXX - error out?
+            continue;
         }
 
         dist_child_result_t results;

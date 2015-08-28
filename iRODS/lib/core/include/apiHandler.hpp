@@ -15,7 +15,11 @@
 #include "packStruct.h"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"
+#include "irods_stacktrace.hpp"
 #include "boost/shared_ptr.hpp"
+#include "boost/any.hpp"
+
+#include <functional>
 
 namespace irods {
 
@@ -42,15 +46,123 @@ namespace irods {
         int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
                                         * stream. 1 ==> we have an output byte stream
                                         */
-        funcPtr        svrHandler;     /* the server handler. should be defined NULL for
+        boost::any     svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
+		
+        const char *   operation_name;
 
-        void ( *clearInStruct )( void* ); // free input struct function
+        std::function<void( void* )> clearInStruct;	// free input struct function
+
+        int(*call_wrapper)(...);        // wraps the api call for type casting 
 
     }; // struct apidef_t
 
+    template < typename... types_t >
+    class api_call_adaptor {
+        std::function<int(types_t...)> fcn_;
+    public:
+        api_call_adaptor( std::function<int(types_t...)> _fcn ): fcn_(_fcn) {
+        }
+
+        irods::error operator()( irods::plugin_context&, types_t... _t ) {
+            int ret = fcn_( _t... );
+            if( ret >= 0 ) {
+                return CODE( ret );
+            }
+            else {
+                return ERROR( ret, "fail" );
+            }
+        }
+
+    }; // class api_call_adaptor
+
+
     class api_entry : public irods::plugin_base {
         public:
+            /// =-=-=-=-=-=-=-
+            /// @brief adaptor from old api sig to new plugin sig
+            template<typename... types_t>
+                error add_operation(
+                        const std::string& _op,
+                        std::function<int(types_t...)> _f ) {
+                    if ( _op.empty() ) {
+                        std::stringstream msg;
+                        msg << "empty operation key [" << _op << "]";
+                        return ERROR(
+                                SYS_INVALID_INPUT_PARAM,
+                                msg.str() );
+                    }
+
+                    operation_name = _op;
+                    operations_[operation_name] = _f;
+
+                    return SUCCESS();
+
+                } // add_operation
+
+            template<typename... types_t>
+                int call_handler(
+                    types_t... _t ) {
+                    using namespace std;
+                    if( !operations_.has_entry(operation_name) ) {
+                        rodsLog(
+                            LOG_ERROR,
+                            "missing api operation [%s]",
+                            operation_name.c_str() );
+                        return SYS_INVALID_INPUT_PARAM;
+                    }
+
+                    try {
+                        typedef std::function<int(types_t...)> fcn_t;
+                        fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
+                        #ifdef ENABLE_RE
+                        ruleExecInfo_t rei;
+                        memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
+                        dynamic_operation_execution_manager<
+                            default_re_ctx,
+                            default_ms_ctx,
+                            DONT_AUDIT_RULE > rex_mgr(
+                                shared_ptr<
+                                    rule_engine_context_manager<
+                                        default_re_ctx,
+                                        default_ms_ctx,
+                                        DONT_AUDIT_RULE> >(
+                                            new rule_engine_context_manager<
+                                                default_re_ctx,
+                                                default_ms_ctx,
+                                                DONT_AUDIT_RULE >(
+                                                    re_plugin_globals->global_re_mgr, &rei)));
+
+                        std::function<error(irods::plugin_context&,types_t...)> adapted_fcn(
+                                ( api_call_adaptor<types_t...>(fcn) ) );
+
+                        irods::plugin_property_map prop_map;
+                        irods::plugin_context ctx(NULL,prop_map);
+                        irods::error op_err = rex_mgr.call(
+                                                  "api_instance",
+                                                  operation_name,
+                                                  adapted_fcn,
+                                                  ctx,
+                                                  _t...);
+                        return op_err.code();
+                        #else
+                        return fcn(_t...);
+                        #endif
+                    }
+                    catch( const boost::bad_any_cast& ) {
+                        std::string msg( "failed for call - " );
+                        msg += operation_name;
+                        irods::log( ERROR(
+                                    INVALID_ANY_CAST,
+                                    msg ) );
+                        return INVALID_ANY_CAST;
+                    }
+
+                    return 0;
+
+                } // call_handler
+
+
             // =-=-=-=-=-=-=-
             // ctors
             api_entry(
@@ -61,10 +173,6 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // operators
             api_entry& operator=( const api_entry& );
-
-            // =-=-=-=-=-=-=-
-            // lazy loader for plugin operations
-            irods::error delay_load( void* _h );
 
             // =-=-=-=-=-=-=-
             // attributes
@@ -85,17 +193,16 @@ namespace irods {
             int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
                                         * stream. 1 ==> we have an output byte stream
                                         */
-            funcPtr        svrHandler;     /* the server handler. should be defined NULL for
-                                        * client */
+            funcPtr        call_wrapper; // wraps the api call for type casting 
             std::string    in_pack_key;
             std::string    out_pack_key;
             std::string    in_pack_value;
             std::string    out_pack_value;
-            std::string    fcn_name_;
+            std::string    operation_name;
 
             lookup_table< std::string>   extra_pack_struct;
 
-            boost::function<void( void* )> clearInStruct;		//free input struct function
+            std::function<void( void* )> clearInStruct;		//free input struct function
 
     }; // class api_entry
 

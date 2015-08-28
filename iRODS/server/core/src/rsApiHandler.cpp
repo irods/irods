@@ -36,7 +36,6 @@ int rsApiHandler(
     int apiInx;
     int status = 0;
     char *myInStruct = NULL;
-    funcPtr myHandler = NULL;
     void *myOutStruct = NULL;
     bytesBuf_t myOutBsBBuf;
     int retVal = 0;
@@ -123,8 +122,8 @@ int rsApiHandler(
 
     /* ready to call the handler functions */
 
-    myHandler = RsApiTable[apiInx]->svrHandler;
-    if ( !myHandler ) {
+    irods::api_entry_ptr api_entry = RsApiTable[apiInx];
+    if ( !api_entry.get() ) {
         rodsLog( LOG_ERROR, "Null handler encountered for api number %d in rsApiHandler.", apiNumber );
         return SYS_API_INPUT_ERR;
     }
@@ -150,20 +149,39 @@ int rsApiHandler(
     };
 
     if ( numArg == 0 ) {
-        retVal = ( *myHandler )( rsComm );
+        retVal = api_entry->call_wrapper(
+                     api_entry.get(),
+                     rsComm );
     }
     else if ( numArg == 1 ) {
-        retVal = ( *myHandler )( rsComm, myArgv[0] );
+        retVal = api_entry->call_wrapper(
+                     api_entry.get(),
+                     rsComm,
+                     myArgv[0] );
     }
     else if ( numArg == 2 ) {
-        retVal = ( *myHandler )( rsComm, myArgv[0], myArgv[1] );
+        retVal = api_entry->call_wrapper(
+                     api_entry.get(),
+                     rsComm,
+                     myArgv[0],
+                     myArgv[1] );
     }
     else if ( numArg == 3 ) {
-        retVal = ( *myHandler )( rsComm, myArgv[0], myArgv[1], myArgv[2] );
+        retVal = api_entry->call_wrapper(
+                     api_entry.get(),
+                     rsComm,
+                     myArgv[0],
+                     myArgv[1],
+                     myArgv[2] );
     }
     else if ( numArg == 4 ) {
-        retVal = ( *myHandler )( rsComm, myArgv[0], myArgv[1], myArgv[2],
-                                 myArgv[3] );
+        retVal = api_entry->call_wrapper(
+                     api_entry.get(),
+                     rsComm,
+                     myArgv[0],
+                     myArgv[1],
+                     myArgv[3],
+                     myArgv[3]);
     }
 
     if ( retVal != SYS_NO_HANDLER_REPLY_MSG ) {
