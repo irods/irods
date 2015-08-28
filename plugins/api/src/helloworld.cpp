@@ -33,6 +33,26 @@ typedef struct {
 
 extern "C" {
 
+    int call_helloInp_helloOut(
+        irods::api_entry* _api,
+        rsComm_t*         _comm,
+        helloInp_t*       _inp,
+        helloOut_t**      _out ) {
+        return _api->call_handler<
+                   rsComm_t*,
+                   helloInp_t*,
+                   helloOut_t** >(
+                       _comm,
+                       _inp,
+                       _out );
+    }
+
+#ifdef RODS_SERVER
+    #define CALL_HELLOINP_HELLO_OUT call_helloInp_helloOut 
+#else
+    #define CALL_HELLOINP_HELLO_OUT NULL 
+#endif
+
     // =-=-=-=-=-=-=-
     // api function to be referenced by the entry
     int rs_hello_world( rsComm_t*, helloInp_t* _inp, helloOut_t** _out ) {
@@ -63,14 +83,16 @@ extern "C" {
                                 "HelloInp_PI", 0,
                                 "HelloOut_PI", 0,
                                 0, // null fcn ptr, handled in delay_load
-                                0  // null clear fcn
+								"hello_world",
+                                0,  // null clear fcn
+                                (funcPtr)CALL_HELLOINP_HELLO_OUT
                               };
         // =-=-=-=-=-=-=-
         // create an api object
         irods::api_entry* api = new irods::api_entry( def );
 
 #ifdef RODS_SERVER
-        api->fcn_name_ = "rs_hello_world";
+        api->operation_name = "rs_hello_world";
 #endif // RODS_SERVER
 
         // =-=-=-=-=-=-=-

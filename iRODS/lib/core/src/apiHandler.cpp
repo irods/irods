@@ -15,7 +15,7 @@ namespace irods {
 // public - ctor
     api_entry::api_entry(
         apidef_t& _def ) :
-        plugin_base( "this", "that" ),
+        plugin_base( "api_instance", "api_context" ),
         apiNumber( _def.apiNumber ),
         apiVersion( _def.apiVersion ),
         clientUserAuth( _def.clientUserAuth ),
@@ -24,8 +24,10 @@ namespace irods {
         inBsFlag( _def.inBsFlag ),
         outPackInstruct( _def.outPackInstruct ),
         outBsFlag( _def.outBsFlag ),
-        svrHandler( _def.svrHandler ),
-        clearInStruct( _def.clearInStruct ) {
+        clearInStruct( _def.clearInStruct ),
+        call_wrapper(_def.call_wrapper),
+        operation_name(_def.operation_name) {
+        operations_[ _def.operation_name ] = _def.svrHandler;
     } // ctor
 
 // =-=-=-=-=-=-=-
@@ -41,7 +43,13 @@ namespace irods {
         inBsFlag( _rhs.inBsFlag ),
         outPackInstruct( _rhs.outPackInstruct ),
         outBsFlag( _rhs.outBsFlag ),
-        svrHandler( _rhs.svrHandler ),
+        call_wrapper(_rhs.call_wrapper),
+        in_pack_key(_rhs.in_pack_key),
+        out_pack_key(_rhs.out_pack_key),
+        in_pack_value(_rhs.in_pack_value),
+        out_pack_value(_rhs.out_pack_value),
+        operation_name(_rhs.operation_name),
+        extra_pack_struct(_rhs.extra_pack_struct),
         clearInStruct( _rhs.clearInStruct ) {
     } // cctor
 
@@ -52,6 +60,7 @@ namespace irods {
         if ( this == &_rhs ) {
             return *this;
         }
+        plugin_base::operator=(_rhs);
         apiNumber       = _rhs.apiNumber;
         apiVersion      = _rhs.apiVersion;
         clientUserAuth  = _rhs.clientUserAuth;
@@ -60,29 +69,8 @@ namespace irods {
         inBsFlag        = _rhs.inBsFlag;
         outPackInstruct = _rhs.outPackInstruct;
         outBsFlag       = _rhs.outBsFlag;
-        svrHandler      = _rhs.svrHandler;
         return *this;
     } // assignment op
-
-
-// =-=-=-=-=-=-=-
-// public - load operations from the plugin
-    error api_entry::delay_load( void* _h ) {
-        if ( !fcn_name_.empty() ) {
-            svrHandler = ( funcPtr )dlsym( _h, fcn_name_.c_str() );
-            if ( !svrHandler ) {
-                std::string msg( "dlerror was empty" );
-                char* err = dlerror();
-                if ( err ) {
-                    msg = err;
-                }
-
-                return ERROR( PLUGIN_ERROR, msg.c_str() );
-            }
-        }
-
-        return SUCCESS();
-    }
 
 // =-=-=-=-=-=-=-
 // public - ctor for api entry table
@@ -205,7 +193,7 @@ namespace irods {
                         LOG_DEBUG,
                         "init_api_table :: adding %d - [%s] - [%s]",
                         entry->apiNumber,
-                        entry->fcn_name_.c_str(),
+                        entry->operation_name.c_str(),
                         name.c_str() );
 
                     // =-=-=-=-=-=-=-

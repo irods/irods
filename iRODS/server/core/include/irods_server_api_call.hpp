@@ -21,7 +21,8 @@ namespace irods {
             return SYS_UNMATCHED_API_NUM;
         }
 
-        return table[_api_index].get()->svrHandler(
+        return table[_api_index].get()->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input,
                    _input_buffer,
@@ -41,7 +42,8 @@ namespace irods {
             return SYS_UNMATCHED_API_NUM;
         }
 
-        return table[_api_index]->svrHandler(
+        return table[_api_index]->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input,
                    _output );
@@ -59,7 +61,8 @@ namespace irods {
         if ( !has_entry ) {
             return SYS_UNMATCHED_API_NUM;
         }
-        return table[_api_index]->svrHandler(
+        return table[_api_index]->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input,
                    _input_buffer,
@@ -77,7 +80,8 @@ namespace irods {
         if ( !has_entry ) {
             return SYS_UNMATCHED_API_NUM;
         }
-        return table[_api_index]->svrHandler(
+        return table[_api_index]->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input,
                    _input_buffer );
@@ -95,7 +99,8 @@ namespace irods {
         if ( !has_entry ) {
             return SYS_UNMATCHED_API_NUM;
         }
-        return table[_api_index]->svrHandler(
+        return table[_api_index]->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input,
                    _output,
@@ -112,7 +117,8 @@ namespace irods {
         if ( !has_entry ) {
             return SYS_UNMATCHED_API_NUM;
         }
-        return table[_api_index]->svrHandler(
+        return table[_api_index]->call_wrapper(
+                   table[_api_index].get(),
                    _comm,
                    _input );
     }

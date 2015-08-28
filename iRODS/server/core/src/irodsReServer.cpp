@@ -58,6 +58,8 @@ main( int argc, char **argv ) {
     char *ruleExecId = NULL;
     int jobType = 0;
 
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     ProcessType = RE_SERVER_PT;
 
     //capture server properties

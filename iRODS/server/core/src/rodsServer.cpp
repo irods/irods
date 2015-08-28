@@ -973,7 +973,7 @@ initServerMain( rsComm_t *svrComm ) {
         rodsLog( LOG_ERROR,
                  "initServerMain: listen failed, errno: %d",
                  errno );
-        return SYS_SOCK_LISTEN_ERROR;
+        return SYS_SOCK_LISTEN_ERR;
     }
 
     rodsLog( LOG_NOTICE,
@@ -1006,7 +1006,8 @@ initServerMain( rsComm_t *svrComm ) {
             irods::set_server_property<int>( irods::RE_PID_KW, re_pid );
         }
     }
-    else if ( unsigned char *shared = prepareServerSharedMemory() ) {
+    
+    if ( unsigned char *shared = prepareServerSharedMemory() ) {
         copyCache( &shared, SHMMAX, &ruleEngineConfig );
         detachSharedMemory();
     }

@@ -139,6 +139,19 @@ extern irods::resource_manager resc_mgr;
 
     } // rsSetRoundRobinContext
 
+    int call_setRoundRobinContext_in(
+        irods::api_entry*          _api,
+        rsComm_t*                  _comm,
+        setRoundRobinContextInp_t* _inp ) {
+        return _api->call_handler<
+                   rsComm_t*,
+                   setRoundRobinContextInp_t*>(
+                       _comm,
+                       _inp );
+    }
+    #define CALL_setRoundRobinContext_IN call_setRoundRobinContext_in
+#else
+    #define CALL_setRoundRobinContext_IN NULL
 #endif // RODS_SERVER
 
     // =-=-=-=-=-=-=-
@@ -154,7 +167,9 @@ extern irods::resource_manager resc_mgr;
                                 LOCAL_USER_AUTH,
                                 "SetRoundRobinContextInp_PI", 0,
                                 NULL, 0,
-                                0, 0
+                                0, // null fcn ptr
+								"set_round_robin_context",
+								(funcPtr)CALL_setRoundRobinContext_IN
                               }; // null fcn ptr, handled in delay_load
         // =-=-=-=-=-=-=-
         // create an api object
@@ -163,7 +178,7 @@ extern irods::resource_manager resc_mgr;
         // =-=-=-=-=-=-=-
         // assign the fcn which will handle the api call
 #ifdef RODS_SERVER
-        api->fcn_name_ = "set_round_robin_context";
+        api->operation_name = "set_round_robin_context";
 
 #endif // RODS_SERVER
 

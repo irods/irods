@@ -808,10 +808,7 @@ irods::error passthru_file_rebalance(
         return PASS( result );
     }
 
-    return SUCCESS(); // XXXX - jmc
-    return update_resource_object_count(
-               _ctx.comm(),
-               _ctx.prop_map() );
+    return SUCCESS();
 
 } // passthru_file_rebalance
 

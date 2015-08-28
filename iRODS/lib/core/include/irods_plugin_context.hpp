@@ -44,6 +44,13 @@ namespace irods {
 
             } // ctor
 
+            plugin_context(
+                rsComm_t* _comm,
+                irods::plugin_property_map& _prop_map ) :
+                comm_( _comm ),
+                prop_map_( _prop_map ) {
+            }
+
             // =-=-=-=-=-=-=-
             // dtor
             virtual ~plugin_context() {

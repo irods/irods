@@ -73,7 +73,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_get_l1desc.o  \
 		$(svrCoreObjDir)/readServerConfig.o \
 		$(svrCoreObjDir)/irods_server_control_plane.o \
-		$(svrCoreObjDir)/irods_server_state.o
+		$(svrCoreObjDir)/irods_server_state.o \
+		$(svrCoreObjDir)/irods_api_calling_functions.o
 
 DB_IFACE_OBJS = \
 		$(svrCoreObjDir)/irods_database_factory.o \
