@@ -3,7 +3,7 @@
 # =-=-=-=-=-=-=-
 %product iRODS MySQL Database Plugin
 %copyright 2014-2015, The University of North Carolina at Chapel Hill
-%vendor Renaissance Computing Institute <info@irods-consortium.org>
+%vendor Renaissance Computing Institute <info@irods.org>
 %license LICENSE
 %readme README
 %description The integrated Rule-Oriented Data System
