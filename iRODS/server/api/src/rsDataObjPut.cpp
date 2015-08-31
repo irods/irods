@@ -310,6 +310,7 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
     memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
     dataObjCloseInp.l1descInx = l1descInx;
     L1desc[l1descInx].oprStatus = bytesWritten;
+    L1desc[l1descInx].oprType = PUT_OPR;
     status = rsDataObjClose( rsComm, &dataObjCloseInp );
     if ( status < 0 ) {
         rodsLog( LOG_DEBUG,

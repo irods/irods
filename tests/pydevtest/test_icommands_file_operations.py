@@ -556,3 +556,26 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 'ERROR: phymvUtil: \'/\' does not specify a zone; physical move only makes sense within a zone.')
         self.admin.assert_icommand('iadmin rmresc test1')
         self.admin.assert_icommand('iadmin rmresc test2')
+
+    def test_iput_bulk_check_acpostprocforput__2841(self):
+        # prepare test directory
+        number_of_files = 5
+        dirname = self.admin.local_session_dir + '/files'
+        corefile = lib.get_core_re_dir() + "/core.re"
+        # files less than 4200000 were failing to trigger the writeLine
+        for filesize in range(5000, 6000000, 500000):
+            files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
+            # manipulate core.re and check the server log
+            with lib.file_backed_up(corefile):
+                initial_size_of_server_log = lib.get_log_size('server')
+                rules_to_prepend = '''
+acBulkPutPostProcPolicy { msiSetBulkPutPostProcPolicy("on"); }
+acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"); }
+            '''
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                lib.prepend_string_to_file(rules_to_prepend, corefile)
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                self.admin.assert_icommand(['iput', '-frb', dirname])
+                assert number_of_files == lib.count_occurrences_of_string_in_log(
+                    'server', 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
+                shutil.rmtree(dirname)
