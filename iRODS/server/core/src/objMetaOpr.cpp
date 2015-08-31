@@ -416,12 +416,13 @@ removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
            local host isn't.
         */
         modAVUMetadataInp_t modAVUMetadataInp;
+        memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
         modAVUMetadataInp.arg0 = "rm";
         modAVUMetadataInp.arg1 = objType;
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
-        modAVUMetadataInp.arg5 = "";
+        modAVUMetadataInp.arg5 = NULL;
         int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
         if ( status < 0 ) {
             return status;
