@@ -1,6 +1,8 @@
 #include "rodsClient.h"
 #include "irods_parse_command_line_options.hpp"
 #include "boost/program_options.hpp"
+#include "boost/filesystem.hpp"
+namespace fs = boost::filesystem;
 
 #include <vector>
 #include <string>
@@ -338,6 +340,16 @@ static int build_irods_path_structure(
 
 } // build_irods_path_structure
 
+void set_sp_option( const char* _exec ) {
+    if( !_exec ) {
+        return;
+    }
+
+    fs::path p( _exec );
+    setenv( SP_OPTION, p.filename().c_str(), 1 );
+
+} // set_sp_option
+
 // single C-friendly interface for the above two functions
 int parse_opts_and_paths(
     int               _argc,
@@ -348,6 +360,11 @@ int parse_opts_and_paths(
     int               _dst_type,
     int               _flag,
     rodsPathInp_t*    _rods_paths ) {
+    if( !_argv || !_argv[0] ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    set_sp_option( _argv[0] );
 
     path_list_t paths;
     int p_err = parse_program_options(
