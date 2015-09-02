@@ -1221,7 +1221,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
         if ( status >= 0 &&  cs_neg_len > 0 ) {
             size_t opt_sz  = sizeof( startupPack.option );
             size_t opt_len = strlen( startupPack.option );
-            if( ( opt_sz - opt_len )  < cs_neg_len ) {
+            if( ( opt_sz - opt_len ) <= cs_neg_len ) {
                 rodsLogError(
                     LOG_ERROR,
                     SYS_BAD_INPUT,
