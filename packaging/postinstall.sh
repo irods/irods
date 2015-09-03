@@ -29,8 +29,8 @@ fi
 # detect operating system
 DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
 
-# get database password from pre-4.1 installations
-if [ "$UPGRADE_FLAG" == "true" ] ; then
+# get database password from pre-4.1 icat installations
+if [ "$UPGRADE_FLAG" == "true" ] && [ "$SERVER_TYPE" == "icat" ] ; then
   MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $3}'`
   if [ ! -f /etc/irods/database_config.json ] ; then
     DSPASS_INPUT_FILE=`su - $MYACCTNAME -c 'mktemp -t dspass_input.XXXXXX'`
@@ -104,7 +104,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
 
 
     # convert any legacy configuration files
-    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/convert_configuration_to_json.py"
+    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/convert_configuration_to_json.py $SERVER_TYPE"
     # update the configuration files
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_configuration_schema.py"
 
