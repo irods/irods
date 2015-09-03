@@ -94,6 +94,7 @@ while [ "$STATUS" != "complete" ] ; do
   echo ""
 
 done
+mkdir -p $( dirname $SETUP_RESOURCE_FLAG )
 touch $SETUP_RESOURCE_FLAG
 echo "==================================================================="
 

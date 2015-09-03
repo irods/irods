@@ -318,7 +318,15 @@ should_be_integers.append('server_port_range_end')
 should_be_integers.append('db_port')
 
 
-def convert_serverconfig_and_irodsconfig():
+def convert_serverconfig_and_irodsconfig(argv):
+
+    #
+    # read arguments
+    #
+    if (argv[0] == None):
+        raise ValueError('first parameter server_type must be \'icat\' or \'resource\'')
+    server_type = argv[0]
+
     #
     # legacy and new file names
     #
@@ -333,7 +341,7 @@ def convert_serverconfig_and_irodsconfig():
 
     if (not already_converted(legacy_server_config_fullpath, new_server_config_file)
             or
-            not already_converted(legacy_server_config_fullpath, new_database_config_file)):
+            (server_type == "icat" and not already_converted(legacy_server_config_fullpath, new_database_config_file))):
 
         #
         # read the templates
@@ -459,9 +467,10 @@ def convert_serverconfig_and_irodsconfig():
             server_config['zone_name'] = irods_config['irods_zone_name']
 
         # update database password from preinstall script result file
-        with open(get_install_dir() + '/plaintext_database_password.txt', 'r') as f:
-            db_password = f.read().replace('\n', '').strip()
-        database_config[legacy_key_map['DBPassword']] = db_password
+        if (server_type == 'icat'):
+            with open(get_install_dir() + '/plaintext_database_password.txt', 'r') as f:
+                db_password = f.read().replace('\n', '').strip()
+            database_config[legacy_key_map['DBPassword']] = db_password
 
         #
         # write out new files
@@ -478,7 +487,7 @@ def convert_serverconfig_and_irodsconfig():
         print_debug('writing [' + new_server_config_file + '] end')
 
         # new database_config file
-        if server_config['icat_host'] == 'localhost' or server_config['icat_host'] == socket.gethostname():
+        if (server_type == 'icat'):
             print_debug('writing [' + new_database_config_file + '] begin')
             with open(new_database_config_file, 'w') as fh:
                 json.dump(database_config, fh, sort_keys=True, indent=4)
@@ -490,8 +499,7 @@ def convert_serverconfig_and_irodsconfig():
         else:
             print_debug('resource server - skipping database_config.json')
 
-
-def convert_legacy_configuration_to_json():
+def convert_legacy_configuration_to_json(argv):
     print_debug('Converting Legacy iRODS Configuration Files...')
     # convert irodsHost to hosts_config.json
     convert_irodshost()
@@ -500,13 +508,13 @@ def convert_legacy_configuration_to_json():
     # convert .irodsEnv to irods_environment.json
     convert_irodsenv()
     # convert server.config to server_config.json
-    convert_serverconfig_and_irodsconfig()
+    convert_serverconfig_and_irodsconfig(argv)
 
 
-def main():
+def main(argv):
     print_debug('-------------------- DEBUG IS ON --------------------')
-    convert_legacy_configuration_to_json()
+    convert_legacy_configuration_to_json(argv)
     print_debug('-------------------- DEBUG IS ON --------------------')
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
