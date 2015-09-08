@@ -709,7 +709,7 @@ The remaining parameters are standard SSL parameters and made available through 
 
 ## Pluggable Database
 
-The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.  MySQL is not available on CentOS 5, as the required set of `lib_mysqludf_preg` functions are not currently available on that OS.
+The iRODS metadata catalog is now installed and managed by separate plugins.  The TEMPLATE_IRODSVERSION release has PostgreSQL, MySQL, and Oracle database plugins available and tested.
 
 The particular type of database is encoded in `/etc/irods/database_config.json` with the following directive:
 
