@@ -44,6 +44,7 @@
       Add the following to your /etc/sysconfig/iptables:
 
         -A INPUT -m state --state NEW -m tcp -p tcp --dport 1247 -j ACCEPT
+        -A INPUT -m state --state NEW -m tcp -p tcp --dport 1248 -j ACCEPT
         -A INPUT -m state --state NEW -m tcp -p tcp --dport 20000:20199 -j ACCEPT
         -A INPUT -m state --state NEW -m udp -p udp --dport 20000:20199 -j ACCEPT
 
