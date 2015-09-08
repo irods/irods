@@ -1,5 +1,45 @@
 # Release Notes
 
+## 4.1.6
+
+Release Date: 2015-10-01
+
+ - Fix for startupPack [#2862]
+
+ - Fix for resource server upgrade [#2863]
+
+ - Fix for inconsistent runtime library links [#2867]
+
+ - Fixes for impostor plugin development use cases [#2868] [#2876]
+
+ - Documentation regarding default ports [#2870]
+
+ - Fix for submodules in source tarball [#2871]
+
+ - Fix for pre-built Debian external packages [#2873]
+
+ - Fix for atomic metadata on empty files [#2875]
+
+ - Fix for int overflow [#2880] [#2881]
+
+ - Fix for recovery from failed installation [#2883]
+
+ - Fix for replication resource voting mechanism [#2884]
+
+ - Fixes for federated remote() microservice call [#2888] [#2903] [#2904]
+
+ - Documentation for delay() and remote() microservices [#2901]
+
+ - Documentation for msiPhyPathReg [#2906]
+
+ - Fixes for edge cases related to rsDataObjClose [#2907] [#2908] [#2909]
+
+ - Fix for hierarchy voting during replication [#2910]
+
+ - Fix for better exception handling [#2914]
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.6)
+
 ## 4.1.5
 
 Release Date: 2015-09-02
