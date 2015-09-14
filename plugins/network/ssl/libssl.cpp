@@ -878,7 +878,7 @@ extern "C" {
                                 if ( ( result = ASSERT_PASS( ret, "Read message header failed." ) ).ok() ) {
 
                                     // =-=-=-=-=-=-=-
-                                    // call inteface to read message body
+                                    // call interface to read message body
                                     bytesBuf_t msg_buf;
                                     ret = readMsgBody( ssl_obj, &msg_header, &msg_buf, 0, 0, XML_PROT, NULL );
                                     if ( ( result = ASSERT_PASS( ret, "Read message body failed." ) ).ok() ) {
