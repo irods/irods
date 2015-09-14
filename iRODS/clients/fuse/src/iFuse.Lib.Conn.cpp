@@ -301,6 +301,77 @@ static void* _connChecker(void* param) {
     return NULL;
 }
 
+int iFuseConnTest() {
+    int status;
+    rodsEnv *myRodsEnv = iFuseLibGetRodsEnv();
+    rcComm_t *conn;
+    rErrMsg_t errMsg;
+    
+    //check host
+    if(myRodsEnv == NULL) {
+        iFuseRodsClientLog(LOG_ERROR, "Cannot read rods environment");
+        fprintf(stderr, "Cannot read rods environment\n");
+        return -1;
+    }
+    
+    if(myRodsEnv->rodsHost == NULL || strlen(myRodsEnv->rodsHost) == 0) {
+        iFuseRodsClientLog(LOG_ERROR, "iRODS Host is not configured in rods environment");
+        fprintf(stderr, "iRODS Host is not configured in rods environment\n");
+        return -1;
+    }
+    
+    if(myRodsEnv->rodsPort <= 0) {
+        iFuseRodsClientLog(LOG_ERROR, "iRODS Port is not configured in rods environment");
+        fprintf(stderr, "iRODS Port is not configured in rods environment\n");
+        return -1;
+    }
+    
+    if(myRodsEnv->rodsUserName == NULL || strlen(myRodsEnv->rodsUserName) == 0) {
+        iFuseRodsClientLog(LOG_ERROR, "iRODS User Account is not configured in rods environment");
+        fprintf(stderr, "iRODS User Account is not configured in rods environment\n");
+        return -1;
+    }
+    
+    if(myRodsEnv->rodsZone == NULL || strlen(myRodsEnv->rodsZone) == 0) {
+        iFuseRodsClientLog(LOG_ERROR, "iRODS Zone is not configured in rods environment");
+        fprintf(stderr, "iRODS Zone is not configured in rods environment\n");
+        return -1;
+    }
+    
+    iFuseRodsClientLog(LOG_DEBUG, "checkICatHost: make a test connection to iRODS host - %s:%d", myRodsEnv->rodsHost, myRodsEnv->rodsPort);
+    
+    conn = iFuseRodsClientConnect(myRodsEnv->rodsHost, myRodsEnv->rodsPort,
+                myRodsEnv->rodsUserName, myRodsEnv->rodsZone, NO_RECONN, &errMsg);
+    if (conn == NULL) {
+        // failed
+        iFuseRodsClientLogError(LOG_ERROR, errMsg.status,
+                "checkICatHost: iFuseRodsClientConnect failure %s", errMsg.msg);
+        fprintf(stderr, "Cannot connect to iRODS Host - %s:%d error - %s\n", myRodsEnv->rodsHost, myRodsEnv->rodsPort, errMsg.msg);
+        if (errMsg.status < 0) {
+            return errMsg.status;
+        } else {
+            return -1;
+        }
+    }
+    
+    iFuseRodsClientLog(LOG_DEBUG, "checkICatHost: logging in to iRODS - account %s", myRodsEnv->rodsUserName);
+
+    status = iFuseRodsClientLogin(conn);
+    if (status != 0) {
+        iFuseRodsClientDisconnect(conn);
+        conn = NULL;
+
+        // failed
+        iFuseRodsClientLog(LOG_ERROR, "iFuseRodsClientLogin failure, status = %d", status);
+        fprintf(stderr, "Cannot log in to iRODS - account %s\n", myRodsEnv->rodsUserName);
+        return -1;
+    }
+    
+    iFuseRodsClientDisconnect(conn);
+    conn = NULL;
+    return 0;
+}
+
 /*
  * Initialize Conn Manager
  */

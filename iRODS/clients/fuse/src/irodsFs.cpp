@@ -11,6 +11,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "iFuse.Lib.hpp"
+#include "iFuse.Lib.Conn.hpp"
 #include "iFuseOper.hpp"
 #include "iFuse.Lib.RodsClientAPI.hpp"
 #include "iFuseCmdLineOpt.hpp"
@@ -18,6 +19,7 @@
 static struct fuse_operations irodsOper;
 
 static void usage();
+static int checkICatHost(rodsEnv *env);
 
 int main(int argc, char **argv) {
     int status;
@@ -77,7 +79,7 @@ int main(int argc, char **argv) {
         iFuseRodsClientLogError(LOG_ERROR, status, "main: getRodsEnv error. ");
         return 1;
     }
-
+    
     iFuseCmdOptsInit();
 
     iFuseCmdOptsParse(argc, argv);
@@ -88,7 +90,17 @@ int main(int argc, char **argv) {
     iFuseLibSetRodsEnv(&myRodsEnv);
     iFuseLibSetOption(&myiFuseOpt);
 
+    // check iRODS iCAT host connectivity
+    status = iFuseConnTest();
+    if(status != 0) {
+        iFuseRodsClientLogError(LOG_ERROR, status, "iRods Fuse abort: cannot connect to iCAT");
+        fprintf(stderr, "iRods Fuse abort: cannot connect to iCAT\n");
+        iFuseCmdOptsDestroy();
+        return 1;
+    }
+    
     iFuseGenCmdLineForFuse(&fuse_argc, &fuse_argv);
+    
     iFuseRodsClientLog(LOG_DEBUG, "main: iRods Fuse gets started.");
     status = fuse_main(fuse_argc, fuse_argv, &irodsOper, NULL);
     iFuseReleaseCmdLineForFuse(fuse_argc, fuse_argv);
