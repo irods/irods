@@ -169,14 +169,10 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         }
         if ( status >= 0 ) {
-            int status2;
-            status2 = applyRuleForPostProcForWrite( rsComm, dataObjInpBBuf,
-                                                    dataObjInp->objPath );
-            if ( status2 >= 0 ) {
+            status = applyRuleForPostProcForWrite(
+                    rsComm, dataObjInpBBuf, dataObjInp->objPath );
+            if ( status >= 0 ) {
                 status = 0;
-            }
-            else {
-                status = status2;
             }
         }
         return status;

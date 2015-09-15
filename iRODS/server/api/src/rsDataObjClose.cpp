@@ -30,6 +30,7 @@
 #include "fileClose.h"
 #include "fileStat.h"
 #include "getRescQuota.h"
+#include "miscServerFunct.hpp"
 
 
 // =-=-=-=-=-=-=-
@@ -37,8 +38,8 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_file_object.hpp"
-#include "irods_serialization.hpp"
 #include "irods_exception.hpp"
+#include "irods_serialization.hpp"
 #include "irods_server_api_call.hpp"
 
 
@@ -292,6 +293,7 @@ _rsDataObjClose(
             L1desc[l1descInx].oprType != REPLICATE_DEST &&
             L1desc[l1descInx].oprType != PHYMV_DEST &&
             L1desc[l1descInx].oprType != COPY_DEST ) {
+
         /* no write */
         // =-=-=-=-=-=-=-
         // JMC - backport 4537
@@ -303,6 +305,18 @@ _rsDataObjClose(
                               "_rsDataObjClose: trimDataObjInfo error for %s",
                               L1desc[l1descInx].dataObjInfo->objPath );
             }
+        }
+
+        try {
+            applyMetadataFromKVP(rsComm, L1desc[l1descInx].dataObjInp);
+            applyACLFromKVP(rsComm, L1desc[l1descInx].dataObjInp);
+        }
+        catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, "%s", e.what() );
+            if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
+            }
+            return e.code();
         }
 
         return status;
@@ -573,73 +587,18 @@ _rsDataObjClose(
             return status;
         }
 
-        if ( const char* serialized_acl = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
-            std::vector<std::vector<std::string> > deserialized_acl;
-            try {
-                deserialized_acl = irods::deserialize_acl( serialized_acl );
-            }
-            catch ( const irods::exception& e ) {
-                rodsLog( LOG_ERROR, "%s", e.what() );
-                if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
-                    rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
-                }
-                return e.code();
-            }
-            for ( std::vector<std::vector<std::string> >::const_iterator iter = deserialized_acl.begin(); iter != deserialized_acl.end(); ++iter ) {
-                modAccessControlInp_t modAccessControlInp;
-                modAccessControlInp.recursiveFlag = 0;
-                modAccessControlInp.accessLevel = strdup( ( *iter )[0].c_str() );
-                modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
-                modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
-                parseUserName( ( *iter )[1].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
-                modAccessControlInp.path = strdup( L1desc[l1descInx].dataObjInfo->objPath );
-                int status = rsModAccessControl( rsComm, &modAccessControlInp );
-                clearModAccessControlInp( &modAccessControlInp );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "rsModAccessControl failed in _rsDataObjClose with status %d", status );
-                    if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
-                        rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
-                    }
-                    return status;
-                }
-            }
+
+        try {
+            applyACLFromKVP(rsComm, L1desc[l1descInx].dataObjInp);
+            applyMetadataFromKVP(rsComm, L1desc[l1descInx].dataObjInp);
         }
-
-        if ( const char* serialized_metadata = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
-            std::vector<std::string> deserialized_metadata;
-            try {
-                deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
+        catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, "%s", e.what() );
+            if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
+                rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
             }
-            catch ( const irods::exception& e ) {
-                rodsLog( LOG_ERROR, "%s", e.what() );
-                if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
-                    rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
-                }
-                return e.code();
-            }
-            for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
-                modAVUMetadataInp_t modAVUMetadataInp;
-                memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
-
-                modAVUMetadataInp.arg0 = strdup( "add" );
-                modAVUMetadataInp.arg1 = strdup( "-d" );
-                modAVUMetadataInp.arg2 = strdup( L1desc[l1descInx].dataObjInfo->objPath );
-                modAVUMetadataInp.arg3 = strdup( deserialized_metadata[i].c_str() );
-                modAVUMetadataInp.arg4 = strdup( deserialized_metadata[i + 1].c_str() );
-                modAVUMetadataInp.arg5 = strdup( deserialized_metadata[i + 2].c_str() );
-
-                int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
-                clearModAVUMetadataInp( &modAVUMetadataInp );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR, "rsModAVUMetadata failed in _rsDataObjClose with status %d", status );
-                    if ( L1desc[l1descInx].dataObjInp->oprType == PUT_OPR ) {
-                        rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
-                    }
-                    return status;
-                }
-            }
+            return e.code();
         }
-
 
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
             /* update quota overrun */

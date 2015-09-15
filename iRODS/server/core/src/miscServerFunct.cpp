@@ -20,11 +20,14 @@
 #include "dataObjClose.h"
 #include "dataObjWrite.h"
 #include "dataObjRead.h"
+#include "modAVUMetadata.h"
 #include "genQuery.h"
 #include "rcPortalOpr.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"
 #include "reFuncDefs.hpp"
+#include <string>
+#include <vector>
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <openssl/md5.h>
@@ -40,9 +43,11 @@ char *__loc1;
 #include "irods_network_factory.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_client_server_negotiation.hpp"
+#include "irods_exception.hpp"
+#include "irods_serialization.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_threads.hpp"
 #include "irods_home_directory.hpp"
+#include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 
 #include <iomanip>
@@ -3395,3 +3400,46 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
     return ret;
 
 } // add_global_re_params_to_kvp
+
+void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
+    if ( const char* serialized_metadata = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
+        std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
+        for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
+            modAVUMetadataInp_t modAVUMetadataInp;
+            memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+
+            modAVUMetadataInp.arg0 = strdup( "add" );
+            modAVUMetadataInp.arg1 = strdup( "-d" );
+            modAVUMetadataInp.arg2 = strdup( dataObjInp->objPath );
+            modAVUMetadataInp.arg3 = strdup( deserialized_metadata[i].c_str() );
+            modAVUMetadataInp.arg4 = strdup( deserialized_metadata[i + 1].c_str() );
+            modAVUMetadataInp.arg5 = strdup( deserialized_metadata[i + 2].c_str() );
+
+            int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
+            clearModAVUMetadataInp( &modAVUMetadataInp );
+            if ( status < 0 ) {
+                THROW( status, "rsModAVUMetadata failed in applyMetadataFromKVP" );
+            }
+        }
+    }
+}
+
+void applyACLFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
+    if ( const char* serialized_acl = getValByKey( &dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
+        std::vector<std::vector<std::string> > deserialized_acl = irods::deserialize_acl( serialized_acl );
+        for ( std::vector<std::vector<std::string> >::const_iterator iter = deserialized_acl.begin(); iter != deserialized_acl.end(); ++iter ) {
+            modAccessControlInp_t modAccessControlInp;
+            modAccessControlInp.recursiveFlag = 0;
+            modAccessControlInp.accessLevel = strdup( ( *iter )[0].c_str() );
+            modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
+            modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
+            parseUserName( ( *iter )[1].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+            modAccessControlInp.path = strdup( dataObjInp->objPath );
+            int status = rsModAccessControl( rsComm, &modAccessControlInp );
+            clearModAccessControlInp( &modAccessControlInp );
+            if ( status < 0 ) {
+                THROW( status, "rsModAccessControl failed in applyACLFromKVP" );
+            }
+        }
+    }
+}

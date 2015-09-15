@@ -167,6 +167,9 @@ irods::error get_script_output_single_line(
 
 irods::error add_global_re_params_to_kvp_for_dynpep(
     keyValPair_t& _kvp );
+
+void applyMetadataFromKVP( rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+void applyACLFromKVP( rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 #endif // __cplusplus
 
 
