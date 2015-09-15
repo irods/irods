@@ -123,6 +123,10 @@ d 755 root root ${LIBDIR}/irods/externals -
 
 
 f 644 root root ${LIBDIR}/libRodsAPIs.a ./iRODS/lib/core/obj/libRodsAPIs.a
+f 644 root root ${LIBDIR}/libirods_client_core.a ./libirods_client_core.a
+f 644 root root ${LIBDIR}/libirods_client_api_table.a ./libirods_client_api_table.a
+f 644 root root ${LIBDIR}/libirods_client_plugins.a ./libirods_client_plugins.a
+
 f 644 root root ${LIBDIR}/libirods_client.a ./libirods_client.a
 f 644 root root ${LIBDIR}/libirods_client_api.a ./libirods_client_api.a
 f 644 root root ${LIBDIR}/libirods_server.a ./libirods_server.a

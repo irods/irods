@@ -12,9 +12,7 @@ VERSION.json
 build/
 changelog.gz
 examples/microservices/microservice_tutorial.pdf
-libirods_client.a
-libirods_client_api.a
-libirods_server.a
+*.a
 man/
 iRODS/.client_cflags
 iRODS/.client_ldflags

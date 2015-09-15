@@ -63,6 +63,15 @@ $LIBDIR=/usr/lib
 # Full File Listing
 # =-=-=-=-=-=-=-
 
+f 755 root root ${LIBDIR}/libirods_client_core.so.1.0.0 ./libirods_client_core.so.1.0.0
+l 777 root root ${LIBDIR}/libirods_client_core.so libirods_client_core.so.1
+
+f 755 root root ${LIBDIR}/libirods_client_api_table.so.1.0.0 ./libirods_client_api_table.so.1.0.0
+l 777 root root ${LIBDIR}/libirods_client_api_table.so libirods_client_api_table.so.1
+
+f 755 root root ${LIBDIR}/libirods_client_plugins.so.1.0.0 ./libirods_client_plugins.so.1.0.0
+l 777 root root ${LIBDIR}/libirods_client_plugins.so libirods_client_plugins.so.1
+
 f 755 root root ${LIBDIR}/libirods_client.so.1.0.0 ./libirods_client.so.1.0.0
 l 777 root root ${LIBDIR}/libirods_client.so libirods_client.so.1
 
