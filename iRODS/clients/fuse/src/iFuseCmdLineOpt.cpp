@@ -122,6 +122,11 @@ void iFuseCmdOptsParse(int argc, char **argv) {
                         fprintf(stderr, "use_ino fuse option not supported, ignoring\n");
                         break;
                     }
+                    if (!strcmp("nonempty", optarg)) {
+                        // fuse nonempty option
+                        g_Opt.nonempty = true;
+                        break;
+                    }
                     bzero(buff, MAX_NAME_LEN);
                     sprintf(buff, "-o%s", optarg);
                     iFuseCmdOptsAdd(buff);
@@ -230,6 +235,15 @@ void iFuseGenCmdLineForFuse(int *fuse_argc, char ***fuse_argv) {
 
         if(g_Opt.debug) {
             fprintf(stdout, "foreground : %d\n", g_Opt.foreground);
+        }
+    }
+    
+    if(g_Opt.nonempty) {
+        argv[i] = strdup("-nonempty");
+        i++;
+
+        if(g_Opt.debug) {
+            fprintf(stdout, "nonempty : %d\n", g_Opt.nonempty);
         }
     }
 
