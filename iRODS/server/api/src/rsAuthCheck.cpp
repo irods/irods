@@ -45,7 +45,7 @@ rsAuthCheck( rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     // due to backward compatibility reasons, an unsanitized binary string is sent
 	// as the 'response' portion of the KVP which may cause the parser to fail.  we
 	// evade the error and manually extract the reponse as necessary
-    std::string::size_type schem_key_pos = response.find( irods::AUTH_RESPONSE_KEY );
+    std::string::size_type schem_key_pos = response.find( irods::AUTH_SCHEME_KEY );
     bool have_auth_scheme_key = schem_key_pos != std::string::npos;
     if ( have_auth_scheme_key ) {
 		irods::kvp_map_t kvp;
