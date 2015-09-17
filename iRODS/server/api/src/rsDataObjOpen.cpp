@@ -354,7 +354,7 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             status = 0;
         }
         else if ( dataObjInfo->dataSize != UNKNOWN_FILE_SZ &&
-                  dataObjInfo->dataSize < single_buff_sz ) {
+                  dataObjInfo->dataSize <= single_buff_sz ) {
             status = 0;
         }
         else {
