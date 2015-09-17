@@ -192,6 +192,10 @@ extern "C" {
     const std::string CHILD_VECTOR_PROP( "round_robin_child_vector" );
 
     /// =-=-=-=-=-=-=-
+    /// @brief token to index the next child property
+    const std::string OPERATION_PROP( "round_robin_operation" );
+
+    /// =-=-=-=-=-=-=-
     /// @brief build a sorted list of children based on hints in the context
     ///        string for them and their positoin in the child map
     // NOTE :: this assumes the order in the icat dictates the order of the RR.
@@ -895,38 +899,58 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // if file modified is successful then we will update the next
-        // child in the round robin within the database
-        std::string name;
-        _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
+        // get the operation property, if it is a create op then we need
+        // to update the next child in the context string
+        std::string operation;
+        err = _ctx.prop_map().get< std::string >(
+                  OPERATION_PROP,
+                  operation );
+        if( err.ok() && irods::CREATE_OPERATION == operation ) {
+            // =-=-=-=-=-=-=-
+            // update the next_child appropriately as the above succeeded
+            err = update_next_child_resource( _ctx.prop_map() );
+            if ( !err.ok() ) {
+                return PASSMSG( "update_next_child_resource failed", err );
+            }
 
-        std::string next_child;
-        _ctx.prop_map().get< std::string >( NEXT_CHILD_PROP, next_child );
+            // =-=-=-=-=-=-=-
+            // if file modified is successful then we will update the next
+            // child in the round robin within the database
+            std::string name;
+            _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
 
-        setRoundRobinContextInp_t inp;
-        snprintf( inp.resc_name_, sizeof( inp.resc_name_ ), "%s", name.c_str() );
-        snprintf( inp.context_, sizeof( inp.context_ ), "%s", next_child.c_str() );
-        int status = irods::server_api_call(
-                         SET_RR_CTX_AN,
-                         _ctx.comm(),
-                         &inp,
-                         NULL,
-                         ( void** ) NULL,
-                         NULL );
+            std::string next_child;
+            _ctx.prop_map().get< std::string >( NEXT_CHILD_PROP, next_child );
 
-        if ( status < 0 ) {
-            std::stringstream msg;
-            msg << "failed to update round robin context for [";
-            msg << name << "] with context [" << next_child << "]";
-            return ERROR(
-                       status,
-                       msg.str() );
+            setRoundRobinContextInp_t inp;
+            snprintf(
+                inp.resc_name_,
+                sizeof( inp.resc_name_ ),
+                "%s", name.c_str() );
+            snprintf(
+                inp.context_,
+                sizeof( inp.context_ ),
+                "%s", next_child.c_str() );
+            int status = irods::server_api_call(
+                             SET_RR_CTX_AN,
+                             _ctx.comm(),
+                             &inp,
+                             NULL,
+                             ( void** ) NULL,
+                             NULL );
 
-        }
-        else {
-            return SUCCESS();
+            if ( status < 0 ) {
+                std::stringstream msg;
+                msg << "failed to update round robin context for [";
+                msg << name << "] with context [" << next_child << "]";
+                return ERROR(
+                           status,
+                           msg.str() );
+            }
 
-        }
+        } // if get prop
+
+        return SUCCESS();
 
     } // round_robin_file_modified
 
@@ -1030,24 +1054,45 @@ extern "C" {
         // check incoming parameters
         irods::error err = round_robin_check_params< irods::file_object >( _ctx );
         if ( !err.ok() ) {
-            return PASSMSG( "round_robin_redirect - bad resource context", err );
+            return PASSMSG(
+                       "round_robin_redirect - bad resource context", err );
         }
         if ( !_opr ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null operation" );
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "round_robin_redirect - null operation" );
         }
         if ( !_curr_host ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null host" );
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "round_robin_redirect - null host" );
         }
         if ( !_out_parser ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing hier parser" );
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "round_robin_redirect - null outgoing hier parser" );
         }
         if ( !_out_vote ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing vote" );
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "round_robin_redirect - null outgoing vote" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // set operation property for use in file_modifed for
+        // determining and storing the next child when appropriate
+        err = _ctx.prop_map().set< std::string >(
+                  OPERATION_PROP,
+                  *_opr );
+        if( !err.ok() ) {
+            return PASS( err );
         }
 
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< 
+                                              irods::file_object >( 
+                                                  _ctx.fco() );
         std::string hier = file_obj->resc_hier( );
 
         // =-=-=-=-=-=-=-
@@ -1135,14 +1180,6 @@ extern "C" {
 
             std::string new_hier;
             _out_parser->str( new_hier );
-
-            // =-=-=-=-=-=-=-
-            // update the next_child appropriately as the above succeeded
-            err = update_next_child_resource( _ctx.prop_map() );
-            if ( !err.ok() ) {
-                return PASSMSG( "update_next_child_resource failed", err );
-
-            }
 
             return SUCCESS();
         }
