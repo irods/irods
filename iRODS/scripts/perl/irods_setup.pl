@@ -929,6 +929,16 @@ sub configureIrodsUser
                 printError( "        ", $output );
                 printLog( "\nCannot open connection to iRODS server.\n" );
                 printLog( "    ", $output );
+                # scrub password from templated sql setup file
+                ($status,$icatsetupvaluesfile) = run( "find $scripttoplevel -name icatSetupValues.sql" );
+                chomp($icatsetupvaluesfile);
+                unlink($icatsetupvaluesfile);
+                # scrub password from server_config.json
+                run( "python $scripttoplevel/packaging/update_json.py $serverConfigFile string admin_password XXXXXXXXXX" );
+                ($status,$tmpfile) = run( "mktemp -t irods_tmp_server_config.XXXXXX" );
+                chomp($tmpfile);
+                run( "sed -e '/admin_password/d' $serverConfigFile > $tmpfile" );
+                move($tmpfile, $serverConfigFile);
                 cleanAndExit( 1 );
         }
 
