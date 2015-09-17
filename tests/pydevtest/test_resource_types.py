@@ -352,6 +352,36 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixB1Vault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
+    def test_next_child_iteration__2884(self):
+        filename="foobar"
+        lib.make_file( filename, 100 )
+       
+        # extract the next resource in the rr from the context string 
+        _, out, _ =self.admin.assert_icommand('ilsresc -l rrResc', 'STDOUT_SINGLELINE', 'demoResc')
+        for line in out.split('\n'):
+            if 'context:' in line:
+                _, _, next_resc = line.partition('context:')
+                next_resc = next_resc.strip()
+       
+        # determine the 'other' resource 
+        resc_set = set(['unixB1', 'unixB2'])
+        remaining_set = resc_set - set([next_resc])
+        resc_remaining = remaining_set.pop()
+
+        # resources listed should be 'next_resc'
+        self.admin.assert_icommand('iput ' + filename + ' file0')  # put file
+        self.admin.assert_icommand('ils -L file0', 'STDOUT_SINGLELINE', next_resc)  # put file
+        
+        # resources listed should be 'resc_remaining'
+        self.admin.assert_icommand('iput ' + filename + ' file1')  # put file
+        self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', resc_remaining)  # put file
+        
+        # resources listed should be 'next_resc' once again
+        self.admin.assert_icommand('iput ' + filename + ' file2')  # put file
+        self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', next_resc)  # put file
+
+        os.remove(filename)
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
