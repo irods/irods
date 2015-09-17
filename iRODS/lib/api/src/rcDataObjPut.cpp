@@ -132,7 +132,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             }
         }
     }
-    else if ( dataObjInp->dataSize < single_buff_sz ) {
+    else if ( dataObjInp->dataSize <= single_buff_sz ) {
         addKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW, "" );
         status = fillBBufWithFile( conn, &dataObjInpBBuf, locFilePath,
                                    dataObjInp->dataSize );
@@ -254,4 +254,3 @@ _rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
 
     return status;
 }
-
