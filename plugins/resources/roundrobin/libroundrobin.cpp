@@ -1079,7 +1079,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // set operation property for use in file_modifed for
+        // set operation property for use in file_modified for
         // determining and storing the next child when appropriate
         err = _ctx.prop_map().set< std::string >(
                   OPERATION_PROP,
@@ -1090,8 +1090,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< 
-                                              irods::file_object >( 
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<
+                                              irods::file_object >(
                                                   _ctx.fco() );
         std::string hier = file_obj->resc_hier( );
 
