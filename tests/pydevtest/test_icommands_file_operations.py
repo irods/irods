@@ -4,6 +4,7 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 import os
+import tempfile
 import time
 import shutil
 
@@ -556,3 +557,9 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
                 assert number_of_files == lib.count_occurrences_of_string_in_log(
                     'server', 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
                 shutil.rmtree(dirname)
+
+    def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
+        self.admin.environment_file_contents['irods_maximum_size_for_single_buffer_in_megabytes'] = 2000
+        with tempfile.NamedTemporaryFile(prefix='test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880') as f:
+            lib.make_file(f.name, 2000*1000*1000, contents='arbitrary')
+            self.admin.assert_icommand(['iput', f.name, '-v'], 'STDOUT_SINGLELINE', '0 thr')
