@@ -580,11 +580,9 @@ class IrodsSession(object):
         self._log_run_icommand(arg)
         self._write_environment_file()
         if 'env' not in kwargs:
-            environment = os.environ.copy()
-            environment['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
-            environment[
-                'IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
-            kwargs['env'] = environment
+            kwargs['env'] = os.environ.copy()
+        kwargs['env']['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
+        kwargs['env']['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
 
     def _log_run_icommand(self, arg):
         valid_icommands = ['iadmin', 'iapitest', 'ibun', 'icd',
