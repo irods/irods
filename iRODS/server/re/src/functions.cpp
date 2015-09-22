@@ -1865,7 +1865,7 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
     rstrcpy( tmpStr, params[0]->text, LONG_NAME_LEN );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
 
-    i = copyTaggedValue( params[1]->text, "ZONE", execMyRuleInp.zoneName, NAME_LEN );
+    i = copyTaggedValue( params[1]->text, "ZONE", execMyRuleInp.addr.zoneName, NAME_LEN );
 
     if ( strlen( params[3]->text ) == 0 ) {
         snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", params[2]->text );
