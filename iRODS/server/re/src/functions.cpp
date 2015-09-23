@@ -1865,6 +1865,7 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
     rstrcpy( tmpStr, params[0]->text, LONG_NAME_LEN );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
 
+    i = copyTaggedValue( params[1]->text, "ZONE", execMyRuleInp.addr.zoneName, NAME_LEN );
 
     if ( strlen( params[3]->text ) == 0 ) {
         snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", params[2]->text );
@@ -1873,7 +1874,7 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
         snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s", params[2]->text, params[3]->text );
     }
     addKeyVal( &execMyRuleInp.condInput, "execCondition", params[1]->text );
-
+    
     rei->msParamArray = newMsParamArray();
     int ret = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
     if ( ret != 0 ) {
