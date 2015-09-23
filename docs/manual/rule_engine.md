@@ -18,19 +18,18 @@ The `delay` microservice is invoked with the following syntax:
 
 ~~~c
 delay("hints") {
-        microservice-chains_part1 ::: recovery-microservice-chains_part1;
-        microservice-chains_part2 ::: recovery-microservice-chains_part2;
-        microservice-chains_part3 ::: recovery-microservice-chains_part3;
+        microservice-chain_part1 ::: recovery-microservice-chain_part1;
+        microservice-chain_part2 ::: recovery-microservice-chain_part2;
+        microservice-chain_part3 ::: recovery-microservice-chain_part3;
         .
         .
         .
-        microservice-chains_partn ::: recovery-microservice-chains_partn;
+        microservice-chain_partN ::: recovery-microservice-chain_partN;
    }
 ~~~
 
-"hints" are of the form:
+"hints" (required) are of the form:
 
-  - `EA` - Execution Address - Hostname on which the delayed execution should be performed.
   - `ET` - Execution Time - Absolute time (without time zones) when the delayed execution should be performed. The input can be incremental time given in:
     - `nnnn` - an integer - assumed to be in seconds
     - `nnnnU` - `nnnn` is an integer, `U` is the unit (s-seconds, m-minutes, h-hours, d-days, y-years)
@@ -54,39 +53,72 @@ delay("hints") {
             - `DOUBLE UNTIL <time>`
             - `DOUBLE UNTIL SUCCESS OR UNTIL <time>`
             - `DOUBLE UNTIL SUCCESS OR nnnn TIMES`
-            - `DOUBLE UNTIL SUCCESS UPTO <time>`
 
-Example: `<PLUSET>1m</PLUSET><EF>20m</EF>` means begin in 1 minute and repeat every 20 minutes after that.
+### Examples
+
+This example will queue the chain of microservices to begin in 1 minute and repeat every 20 minutes forever:
+
+~~~c
+delay("<PLUSET>1m</PLUSET><EF>20m</EF>") {
+    writeLine("serverLog", " -- Delayed Execution");
+}
+~~~
+
+This example will queue the chain of microservices to begin in 1 minute and repeat every 20 minutes forever:
+
+~~~c
+delay("<PLUSET>1m</PLUSET><EF>20m</EF>") {
+    writeLine("serverLog", " -- Delayed Execution");
+}
+~~~
+
 
 ## Remote execution
 
 A microservice chain can be executed on a remote iRODS server. This gives the flexibility to 'park' microservices where it is most optimal. For example, if there is a microservice which needs considerable computational power, then performing it at a compute-intensive site would be appropriate. Similarly, if one is computing checksums, performing it at the server where the data is located would be more appropriate.
 
+### Syntax
+
 The `remote` microservice is invoked with the following syntax:
 
 ~~~c
 remote("host","hints") {
-        microservice-chains_part1 ::: recovery-microservice-chains_part1;
-        microservice-chains_part2 ::: recovery-microservice-chains_part2;
-        microservice-chains_part3 ::: recovery-microservice-chains_part3;
+        microservice-chain_part1 ::: recovery-microservice-chain_part1;
+        microservice-chain_part2 ::: recovery-microservice-chain_part2;
+        microservice-chain_part3 ::: recovery-microservice-chain_part3;
         .
         .
         .
-        microservice-chains_partn ::: recovery-microservice-chains_partn;
+        microservice-chain_partN ::: recovery-microservice-chain_partN;
    }
 ~~~
 
-"host" is the hostname on which the remote execution should be performed.
+"host" (required) is the hostname on which the remote execution should be performed.
 
-"hints" are of the same form as the `delay` execution syntax above, but can also be "null".
+"hints" (required) are of the form:
 
-Example:
+  - `ZONE` - Remote Zone - The name of the Zone in which the "host" is located.
+
+### Examples
+
+This example will execute the chain of microservices on the host "resource.example.org" in the local Zone:
 
 ~~~c
-remote("other.example.org","null") {
-    msiDataObjChksum(*ObjName, "verifyChecksum", *Status);
+remote("resource.example.org","") {
+    writeLine("serverLog", " -- Remote Execution in Local Zone");
 }
 ~~~
+
+This example will execute the chain of microservices on the host "farawayicat.example.org" in the remote Zone named "DifferentZone":
+
+~~~c
+remote("farawayicat.example.org","<ZONE>DifferentZone</ZONE>") {
+    writeLine("serverLog", " -- Remote Zone Execution");
+}
+~~~
+
+The best practice for using both `delay()` and `remote()` [depends on the use case](best_practices.md#using-both-delay-and-remote-execution).
+
 
 <!--
 ..
