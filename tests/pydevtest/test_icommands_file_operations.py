@@ -561,5 +561,5 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
         self.admin.environment_file_contents['irods_maximum_size_for_single_buffer_in_megabytes'] = 2000
         with tempfile.NamedTemporaryFile(prefix='test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880') as f:
-            lib.make_file(f.name, 2000*1000*1000, contents='arbitrary')
+            lib.make_file(f.name, 800*1000*1000, contents='arbitrary')
             self.admin.assert_icommand(['iput', f.name, '-v'], 'STDOUT_SINGLELINE', '0 thr')
