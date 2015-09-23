@@ -92,6 +92,17 @@ Modifying the "StrictACL" setting in the iRODS server's `core.re` file will appl
 
 This error can occur when the iRODS user is unknown or invalid in some way (for instance, no password has been defined for the user, or the user does not exist in that Zone).  This error is most common while debugging configuration issues with Zone Federation.
 
+## Rule Engine Variables
+
+The rule engine variable scoping rules are summarized as:
+
+  1. All input and output variables have global scope
+  2. All local variables have rule scope
+  3. Except:
+    1. The iterator variables of `foreach()` have the scope of the `foreach()` block
+    2. Variables assigned by an assignment in a `let` expression have the scope of the `let` expression
+    3. Variables assigned by a pattern match in a match expression have the scope of the corresponding alternative of match expression
+
 ## Using 3.x iCommands with a 4.0+ iRODS Server
 
 3.x iCommands retain basic functionality when speaking with a 4.0+ iRODS Server.
