@@ -705,6 +705,7 @@
  *  ERROR Code Range 1,800,000 to 1,899,000
  * @{
  */
+
 #define KEY_NOT_FOUND                        -1800000
 #define KEY_TYPE_MISMATCH                    -1801000
 #define CHILD_EXISTS                         -1802000
@@ -732,6 +733,8 @@
 #define CLIENT_NEGOTIATION_ERROR             -1824000
 #define SERVER_NEGOTIATION_ERROR             -1825000
 #define INVALID_KVP_STRING                   -1826000
+#define PLUGIN_ERROR_MISSING_SHARED_OBJECT   -1827000
+
 /** @} */
 
 
@@ -827,4 +830,3 @@
 /** @} */
 
 #endif /* RODS_ERROR_TABLE_H__ */
-

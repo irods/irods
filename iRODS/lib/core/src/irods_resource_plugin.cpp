@@ -291,19 +291,22 @@ namespace irods {
                   _context );
         if ( ret.ok() && resc ) {
             _plugin.reset( resc );
-
         }
         else {
-            rodsLog(
-                LOG_DEBUG,
-                "loading impostor resource for [%s] of type [%s] with context [%s]",
-                _inst_name.c_str(),
-                _plugin_name.c_str(),
-                _context.c_str() );
-            _plugin.reset(
-                new impostor_resource(
-                    "impostor_resource", "" ) );
-
+            if ( ret.code() == PLUGIN_ERROR_MISSING_SHARED_OBJECT ) {
+                rodsLog(
+                    LOG_DEBUG,
+                    "loading impostor resource for [%s] of type [%s] with context [%s] and load_plugin message [%s]",
+                    _inst_name.c_str(),
+                    _plugin_name.c_str(),
+                    _context.c_str(),
+                    ret.result().c_str());
+                _plugin.reset(
+                    new impostor_resource(
+                        "impostor_resource", "" ) );
+            } else {
+                return PASS( ret );
+            }
         }
 
         return SUCCESS();
@@ -311,6 +314,3 @@ namespace irods {
     } // load_resource_plugin
 
 }; // namespace irods
-
-
-
