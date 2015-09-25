@@ -146,8 +146,7 @@ namespace irods {
                        const std::string& _instance_name,
                        const std::string& _context ) {
 
-        // =-=-=-=-=-=-=-
-        // static assertion to determine if the PluginType supports the delay_load interface properly
+        namespace fs = boost::filesystem;
         BOOST_STATIC_ASSERT( class_has_delay_load< PluginType >::value );
 
         // Generate the shared lib name
@@ -160,6 +159,23 @@ namespace irods {
             msg << " - Failed to generate an appropriate shared library name for plugin: \"";
             msg << _plugin_name << "\".";
             return PASSMSG( msg.str(), ret );
+        }
+
+        try {
+            if ( !fs::exists( so_name ) ) {
+                std::string msg( "shared library does not exist [" );
+                msg += so_name;
+                msg += "]";
+                return ERROR( PLUGIN_ERROR_MISSING_SHARED_OBJECT, msg );
+            }
+        }
+        catch ( const fs::filesystem_error& _e ) {
+            std::string msg( "boost filesystem exception when checking existence of [" );
+            msg += so_name;
+            msg += "] with message [";
+            msg += _e.what();
+            msg += "]";
+            return ERROR( PLUGIN_ERROR_MISSING_SHARED_OBJECT, msg );
         }
 
         // =-=-=-=-=-=-=-

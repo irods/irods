@@ -1070,3 +1070,47 @@ acSetNumThreads() {
     def test_izonereport_key_sanitization(self):
         self.admin.assert_icommand("izonereport | grep key | grep -v XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                                    'STDOUT_SINGLELINE', '"irods_encryption_key_size": 32,', use_unsafe_shell=True)
+
+    def test_imposter_resource_debug_logging(self):
+        server_config_filename = os.path.join(lib.get_irods_config_dir(), 'server_config.json')
+        with lib.file_backed_up(server_config_filename):
+            server_config_update = {
+                'environment_variables': {
+                    'spLogLevel': '11'
+                }
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+            lib.restart_irods_server()
+
+            name_of_bogus_resource = 'name_of_bogus_resource'
+            name_of_missing_plugin = 'name_of_missing_plugin'
+            self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_missing_plugin], 'STDOUT_SINGLELINE', name_of_missing_plugin)
+
+            initial_size_of_server_log = lib.get_log_size('server')
+            self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
+
+            debug_message = 'DEBUG: loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
+            debug_message_count = lib.count_occurrences_of_string_in_log('server', debug_message, start_index=initial_size_of_server_log)
+            assert 1 == debug_message_count, debug_message_count
+
+        self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
+        lib.restart_irods_server()
+
+    def test_dlopen_failure_error_message(self):
+        plugin_dir = os.path.join(lib.get_irods_top_level_dir(), 'plugins', 'resources')
+        name_of_corrupt_plugin = 'name_of_corrupt_plugin'
+        name_of_corrupt_so = 'lib' + name_of_corrupt_plugin + '.so'
+        path_of_corrupt_so = os.path.join(plugin_dir, name_of_corrupt_so)
+        lib.make_file(path_of_corrupt_so, 500)
+
+        name_of_bogus_resource = 'name_of_bogus_resource'
+        self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_corrupt_plugin], 'STDOUT_SINGLELINE', name_of_corrupt_plugin)
+
+        initial_size_of_server_log = lib.get_log_size('server')
+        self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
+
+        assert 0 < lib.count_occurrences_of_string_in_log('server', 'dlerror', start_index=initial_size_of_server_log)
+        assert 0 < lib.count_occurrences_of_string_in_log('server', 'PLUGIN_ERROR', start_index=initial_size_of_server_log)
+
+        self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
+        os.remove(path_of_corrupt_so)
