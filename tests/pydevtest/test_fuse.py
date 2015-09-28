@@ -131,10 +131,17 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
                 yield name, make_test(f, s)
 
     def test_irodsFs_bonnie(self):
-        if os.path.isfile('/usr/sbin/bonnie++'):
-            bonnie = '/usr/sbin/bonnie++'
+        bonnie_locations = ['/usr/local/sbin/bonnie++',
+                            '/usr/local/bin/bonnie++',
+                            '/usr/sbin/bonnie++',
+                            '/usr/bin/bonnie++',
+        ]
+        for l in bonnie_locations:
+            if os.path.isfile(l):
+                bonnie = l
+                break
         else:
-            bonnie = '/usr/bin/bonnie++'
+            assert False, 'bonnie++ binary not found'
 
         rc, out, err = lib.run_command([bonnie, '-r', '1', '-c', '2', '-n', '10', '-d', self.mount_point])
 
