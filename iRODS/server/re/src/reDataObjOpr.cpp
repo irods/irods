@@ -323,7 +323,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
 /**
  * \fn msiDataObjLseek (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief  This a microservice performs a low-level (file) seek of an opened data object.
+ * \brief  This microservice performs a low-level (file) seek of an opened data object.
  *
  * \module core
  *
@@ -591,7 +591,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
 /**
  * \fn msiDataObjWrite (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief  This a microservice performs a low-level write to an opened data object
+ * \brief  This microservice performs a low-level write to an opened data object
  *
  * \module core
  *
@@ -853,7 +853,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
  *
  * \note  Can be called by client through irule
  *
- * \note The replica is physically stored in the ‘tgReplResc’ Resource. *Junk contains
+ * \note The replica is physically stored in the 'tgReplResc' Resource. *Junk contains
  * the status of the operation. In the Rule, the resource is provided as part
  * of the call instead of as an input through a *parameter.
  *
@@ -2115,14 +2115,14 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
     if ( ( rei->status = parseMspForCondInp( inpParam2, &myDataObjInp->condInput,
                          DEST_RESC_NAME_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPhymv: input inpParam2 error. status = %d", rei->status );
+                            "msiPhyPathReg: input inpParam2 error. status = %d", rei->status );
         return rei->status;
     }
 
     if ( ( rei->status = parseMspForCondInp( inpParam3, &myDataObjInp->condInput,
                          FILE_PATH_KW ) ) < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiDataObjPhymv: input inpParam3 error. status = %d", rei->status );
+                            "msiPhyPathReg: input inpParam3 error. status = %d", rei->status );
         return rei->status;
     }
 
@@ -3066,7 +3066,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     }
     else {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiTarFileExtract: Unsupported input Param2 type %s",
+                            "msiTarFileCreate: Unsupported input Param2 type %s",
                             inpParam2->type );
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
         return rei->status;

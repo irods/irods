@@ -304,9 +304,9 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
  *
  * argc and argv should be the usual values directly from the main ()
  * routine.
- * optind - diectly from the getopt call if the path inputs are directly
+ * optind - directly from the getopt call if the path inputs are directly
  * behind the input options or equal to (optind + n) where
- * where n is number of arguements before the path inputs.
+ * where n is number of arguments before the path inputs.
  *
  * rodsPathInp - The output struct.
  * typedef struct RodsPathInp {
@@ -411,7 +411,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
  * oprType -
  *      MOVE_OPR - do not create the target coll or dir because rename will
  *        take care of it.
- *      RSYNC_OPR - udes the destPath and the targPath if the src is a
+ *      RSYNC_OPR - uses the destPath and the targPath if the src is a
  *        collection
  *      All other oprType will be treated as normal.
  */

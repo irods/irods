@@ -3884,7 +3884,7 @@ extern "C" {
         }
 
         if ( j == 0 ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "invalid arguement" );
+            return ERROR( CAT_INVALID_ARGUMENT, "invalid argument" );
         }
 
         rstrcat( tSQL, "where rule_exec_id=?", MAX_SQL_SIZE );
@@ -10133,7 +10133,7 @@ checkLevel:
 
         itype = convertTypeOption( _type );
         if ( itype == 0 ) {
-            return ERROR( CAT_INVALID_ARGUMENT, "invalid type arguement" );
+            return ERROR( CAT_INVALID_ARGUMENT, "invalid type argument" );
         }
 
         if ( itype == 1 ) {
