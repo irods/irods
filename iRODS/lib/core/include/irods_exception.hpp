@@ -1,6 +1,3 @@
-
-
-
 #ifndef IRODS_EXCEPTION_HPP
 #define IRODS_EXCEPTION_HPP
 
@@ -15,7 +12,7 @@ namespace irods {
     class exception : public std::exception {
         public:
             exception(
-                const uint64_t     _code,
+                const int64_t     _code,
                 const std::string& _message,
                 const std::string& _file_name,
                 const uint32_t     _line_number,
@@ -26,7 +23,7 @@ namespace irods {
             virtual const char* what() const throw();
 
             // accessors
-            uint64_t    code() const { return code_; }
+            int64_t    code() const { return code_; }
             std::vector< std::string > message_stack() const { return message_stack_; }
             std::string file_name() const { return file_name_; }
             uint32_t    line_number() const { return line_number_; }
@@ -37,7 +34,7 @@ namespace irods {
             void add_message( const std::string& _m ) { message_stack_.push_back( _m ); }
 
         private:
-            uint64_t                   code_;
+            int64_t                   code_;
             std::vector< std::string > message_stack_;
             uint32_t                   line_number_;
             std::string                function_name_;
@@ -54,6 +51,3 @@ namespace irods {
 #define RE_THROW( _msg, _excep ) ( _excp.add_message( _msg ); throw;
 
 #endif // IRODS_EXCEPTION_HPP
-
-
-
