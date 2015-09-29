@@ -2,6 +2,26 @@
 
 Some of the commonly encountered iRODS errors along with troubleshooting steps are discussed below.
 
+## Debugging Levels
+
+Some settings within iRODS can be useful when developing for iRODS or when working through diagnosing unexpected server-side behavior.  The following environment variables can be set in the service account and require a server restart to take effect (`iRODS/irodsctl restart`):
+
+- `spLogLevel=N` - This will send to the rodsLog all log messages of `N` or more severe (`1`, or `LOG_SYS_FATAL` is most severe).  Increasing the log level will increase the number of messages written to rodsLog.  Setting `spLogLevel` to `8` or more will show the wireline XML packing instructions.  This can also be set in the service account's `irods_environment.json` file as `irods_log_level`.
+
+ | Verbosity       | spLogLevel   |
+ | --------------- | ------------ |
+ | LOG_DEBUG1      | 10           |
+ | LOG_DEBUG2      |  9           |
+ | LOG_DEBUG3      |  8 (XML)     |
+ | LOG_DEBUG       |  7           |
+ | LOG_WARN        |  6           |
+ | LOG_NOTICE      |  5 (default) |
+ | LOG_ERROR       |  3           |
+ | LOG_SYS_WARNING |  2           |
+ | LOG_SYS_FATAL   |  1           |
+
+- `spLogSql=1` - This will send to the rodsLog the bind variables, the SQL query, and the return values going to and coming from the database.  This needs to be set on the iCAT server.  Setting this on a resource server will have no effect.
+
 
 ## iRODS Server is down
 
