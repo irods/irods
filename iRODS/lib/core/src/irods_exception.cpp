@@ -1,13 +1,10 @@
-
-
-
 #include "irods_exception.hpp"
 #include "irods_stacktrace.hpp"
 
 namespace irods {
 
     exception::exception(
-        const uint64_t     _code,
+        const int64_t     _code,
         const std::string& _message,
         const std::string& _file_name,
         const uint32_t     _line_number,
@@ -70,7 +67,3 @@ namespace irods {
     } // what
 
 }; // namespace irods
-
-
-
-
