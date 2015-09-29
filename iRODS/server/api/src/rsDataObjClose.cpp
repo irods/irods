@@ -68,6 +68,15 @@ irsDataObjClose(
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
+    // sanity check for in-flight l1 descriptor
+    if( !L1desc[l1descInx].dataObjInp ) {
+        rodsLog(
+            LOG_ERROR,
+            "invalid dataObjInp for index %d",
+            l1descInx );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     if ( outDataObjInfo != NULL ) {
         *outDataObjInfo = NULL;
     }
