@@ -3402,6 +3402,12 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 } // add_global_re_params_to_kvp
 
 void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
+    if ( !rsComm ) {
+        THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm passed in" );
+    }
+    if ( !dataObjInp ) {
+        THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null dataObjInp passed in" );
+    }
     if ( const char* serialized_metadata = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
         std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
         for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
@@ -3418,13 +3424,19 @@ void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
             int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
             clearModAVUMetadataInp( &modAVUMetadataInp );
             if ( status < 0 ) {
-                THROW( status, "rsModAVUMetadata failed in applyMetadataFromKVP" );
+                THROW( status, "rsModAVUMetadata failed" );
             }
         }
     }
 }
 
 void applyACLFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
+    if ( !rsComm ) {
+        THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm passed in" );
+    }
+    if ( !dataObjInp ) {
+        THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null dataObjInp passed in" );
+    }
     if ( const char* serialized_acl = getValByKey( &dataObjInp->condInput, ACL_INCLUDED_KW ) ) {
         std::vector<std::vector<std::string> > deserialized_acl = irods::deserialize_acl( serialized_acl );
         for ( std::vector<std::vector<std::string> >::const_iterator iter = deserialized_acl.begin(); iter != deserialized_acl.end(); ++iter ) {
@@ -3438,7 +3450,7 @@ void applyACLFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
             int status = rsModAccessControl( rsComm, &modAccessControlInp );
             clearModAccessControlInp( &modAccessControlInp );
             if ( status < 0 ) {
-                THROW( status, "rsModAccessControl failed in applyACLFromKVP" );
+                THROW( status, "rsModAccessControl failed" );
             }
         }
     }
