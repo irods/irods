@@ -12,6 +12,7 @@ extern "C" {
     /// @brief Signal handler for seg faults
     static void segv_handler(
         int signal ) {
+        std::cerr << "Caught signal [" << signal << "]. Dumping stacktrace and exiting" << std::endl;
         irods::stacktrace st;
         st.trace();
         st.dump();
