@@ -2,7 +2,7 @@
 
 ## 4.1.6
 
-Release Date: 2015-09-30
+Release Date: 2015-10-01
 
  - Fix for startupPack [#2862]
 
