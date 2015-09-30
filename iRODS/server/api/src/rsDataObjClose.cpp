@@ -81,7 +81,7 @@ irsDataObjClose(
     if( !L1desc[l1descInx].dataObjInp ) {
         rodsLog(
             LOG_ERROR,
-            "invalid dataObjInp for index %d",
+            "rsDataObjClose: invalid dataObjInp for index %d",
             l1descInx );
         return SYS_INVALID_INPUT_PARAM;
     }
