@@ -68,6 +68,15 @@ irsDataObjClose(
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
+    // ensure that l1 descriptor is in use before closing
+    if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
+        rodsLog(
+            LOG_ERROR,
+            "rsDataObjClose: l1descInx %d out of range",
+            l1descInx );
+        return BAD_INPUT_DESC_INDEX;
+    }
+
     // sanity check for in-flight l1 descriptor
     if( !L1desc[l1descInx].dataObjInp ) {
         rodsLog(
