@@ -181,9 +181,9 @@ usage( FILE* _fout ) {
         " -I  redirect connection - redirect the connection to connect directly",
         "       to the resource server.",
         " -k  checksum - calculate a checksum on the data server-side, and store",
-        "       it in the catalog"
+        "       it in the catalog.",
         " -K  verify checksum - calculate and verify the checksum on the data, both",
-        "       client-side and server-side, without storing in the catalog.",
+        "       client-side and server-side, and store it in the catalog.",
         " --link - ignore symlink.",
         " -n  replNum  - the replica to be replaced, typically not needed",
         " -N  numThreads - the number of threads to use for the transfer. A value of",
