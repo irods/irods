@@ -14,7 +14,7 @@ import subprocess
 
 import configuration
 from resource_suite import ResourceBase
-import lib
+import session
 
 
 class ChunkyDevTest(ResourceBase):
@@ -121,7 +121,7 @@ class ChunkyDevTest(ResourceBase):
 
     def test_iput_ibun_gzip_bzip2_from_devtest(self):
         # build expected variables with similar devtest names
-        with lib.make_session_for_existing_admin() as rods_admin:
+        with session.make_session_for_existing_admin() as rods_admin:
             rods_admin.assert_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         progname = __file__
@@ -494,7 +494,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(myldir)
 
     def test_phybun_from_devtest(self):
-        with lib.make_session_for_existing_admin() as rods_admin:
+        with session.make_session_for_existing_admin() as rods_admin:
             rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         # build expected variables with similar devtest names

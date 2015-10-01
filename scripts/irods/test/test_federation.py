@@ -10,9 +10,9 @@ import tempfile
 import commands
 
 import configuration
-import lib
+import session
 
-SessionsMixin = lib.make_sessions_mixin(
+SessionsMixin = session.make_sessions_mixin(
     configuration.FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, configuration.FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
 
 
@@ -44,7 +44,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         with tempfile.NamedTemporaryFile() as f:
             filename = os.path.basename(f.name)
             filesize = configuration.FEDERATION.TEST_FILE_SIZE
-            lib.make_file(f.name, filesize, 'arbitrary')
+            session.make_file(f.name, filesize, 'arbitrary')
             remote_home_collection = test_session.remote_home_collection(
                 configuration.FEDERATION.REMOTE_ZONE)
 
@@ -130,7 +130,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'iput_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -163,7 +163,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'iput_test_file'
         filesize = self.config['large_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -195,7 +195,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'iput_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -215,7 +215,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -232,7 +232,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'iget_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -273,7 +273,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'iget_test_file'
         filesize = self.config['large_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -320,7 +320,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'iget_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -351,7 +351,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
-    @unittest.skipIf(lib.get_irods_version() < (4, 0, 3) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
+    @unittest.skipIf(session.get_irods_version() < (4, 0, 3) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
     def test_iget_from_bundle(self):
         '''
         WIP
@@ -362,12 +362,12 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         file_count = 20
         file_size = 4
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, file_count, file_size)
 
         # make session for existing *remote* user
         user, password = 'rods', 'rods'
-        remote_session = lib.make_session_for_existing_user(
+        remote_session = session.make_session_for_existing_user(
             user, password, configuration.FEDERATION.REMOTE_HOST, configuration.FEDERATION.REMOTE_ZONE)
 
         # test specific parameters
@@ -406,7 +406,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'irm_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -442,7 +442,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'irm_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -462,7 +462,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -485,7 +485,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'icp_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -545,7 +545,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'icp_test_file'
         filesize = self.config['large_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # checksum local file
         orig_md5 = commands.getoutput('md5sum ' + filepath)
@@ -596,7 +596,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'icp_test_file'
         filesize = self.config['large_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # checksum local file
         orig_md5 = commands.getoutput('md5sum ' + filepath)
@@ -640,7 +640,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'icp_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -668,7 +668,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -699,7 +699,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'imv_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -739,7 +739,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -759,7 +759,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -775,7 +775,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -803,7 +803,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -829,7 +829,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'irsync_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -860,7 +860,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
-    @unittest.skipIf(lib.get_irods_version() < (4, 0, 0) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
+    @unittest.skipIf(session.get_irods_version() < (4, 0, 0) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
     def test_irsync_passthru_3016(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
@@ -869,7 +869,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         filename = 'irsync_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -960,7 +960,7 @@ class Test_Admin_Commands(unittest.TestCase):
 
     def setUp(self):
         # make session with existing admin account
-        self.admin_session = lib.make_session_for_existing_admin()
+        self.admin_session = session.make_session_for_existing_admin()
 
         # load federation settings in dictionary (all lower case)
         self.config = {}
@@ -1016,7 +1016,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
         super(Test_Microservices, self).tearDown()
 
-    @unittest.skipIf(lib.get_irods_version() < (4, 1, 0), 'Fixed in 4.1.0')
+    @unittest.skipIf(session.get_irods_version() < (4, 1, 0), 'Fixed in 4.1.0')
     def test_msirmcoll(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
@@ -1024,7 +1024,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
         # make test dir
         dir_name = 'msiRmColl_test_dir'
         dir_path = os.path.join(self.local_test_dir_path, dir_name)
-        local_files = lib.make_large_local_tmp_dir(
+        local_files = session.make_large_local_tmp_dir(
             dir_path, self.config['test_file_count'], self.config['test_file_size'])
 
         # test specific parameters
@@ -1044,7 +1044,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
 
         # files should be there
-        rods_files = set(lib.ils_output_to_entries(
+        rods_files = set(session.ils_output_to_entries(
             test_session.run_icommand(['ils', "{remote_home_collection}/{dir_name}".format(**parameters)])[1]))
         self.assertTrue(set(local_files) == rods_files)
 
@@ -1072,7 +1072,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
         filename = 'delay_msiobjstat_test_file'
         filesize = self.config['test_file_size']
         filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        session.make_file(filepath, filesize)
 
         # test specific parameters
         parameters = self.config.copy()

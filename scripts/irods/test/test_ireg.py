@@ -10,11 +10,11 @@ import datetime
 import socket
 
 import configuration
-import lib
+import session
 import resource_suite
 
 
-RODSHOME = lib.get_irods_top_level_dir() + "/iRODS/"
+RODSHOME = session.get_irods_top_level_dir() + "/iRODS/"
 ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
 
@@ -76,7 +76,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         filename = 'regfile.txt'
         filename2 = filename+'2'
         os.system('rm -f {0} {1}'.format(filename, filename2))
-        lib.make_file(filename, 234)
+        session.make_file(filename, 234)
         os.system('cp {0} {1}'.format(filename, filename2))
         self.admin.assert_icommand('ireg -Kk -R {0} {1} {2}'.format(self.testresc, os.path.abspath(filename), self.admin.session_collection+'/'+filename))
         self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
@@ -93,7 +93,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         # make a local test dir under /tmp/
         test_dir_name = 'test_ireg_dir_exclude_from'
         local_dir = os.path.join(self.testing_tmp_dir, test_dir_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # arbitrary list of files to exclude
         excluded = set(['junk0001', 'junk0002', 'junk0003'])
@@ -114,11 +114,11 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
             # run ils on subcollection
             self.admin.assert_icommand(['ils', subcollection], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.admin.run_icommand(['ils', subcollection])[1])
+            ils_out = session.ils_output_to_entries(self.admin.run_icommand(['ils', subcollection])[1])
 
             # compare irods objects with local files, minus the excluded ones
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertSetEqual(rods_files, local_files - excluded,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))

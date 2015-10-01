@@ -18,7 +18,7 @@ import time
 import tempfile
 
 import configuration
-import lib
+import session
 import resource_suite
 
 # path to server_config.py
@@ -55,7 +55,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_api_plugin(self):
         self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
-        assert 0 < lib.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
+        assert 0 < session.count_occurrences_of_string_in_log('server', 'HELLO WORLD')
 
     ###################
     # iadmin
@@ -89,7 +89,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_list_groups(self):
         group_name = 'test_group'
-        lib.mkgroup_and_add_users(group_name, [self.admin.username, self.user0.username])
+        session.mkgroup_and_add_users(group_name, [self.admin.username, self.user0.username])
         self.admin.assert_icommand('iadmin lg', 'STDOUT_SINGLELINE', group_name)
         self.admin.assert_icommand_fail('iadmin lg', 'STDOUT_SINGLELINE', 'notagroup')
         self.admin.assert_icommand('iadmin lg ' + group_name, 'STDOUT_SINGLELINE', self.user0.username)
@@ -99,7 +99,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # RESOURCES
 
     def test_resource_name_restrictions(self):
-        h = lib.get_hostname()
+        h = session.get_hostname()
         oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  # longer than NAME_LEN
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/pydevtest_%s" %
                                    ("?/=*", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
@@ -111,7 +111,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                                    (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
 
     def test_modify_resource_name(self):
-        h = lib.get_hostname()
+        h = session.get_hostname()
         # tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
                                    ("pt1", h, "pt1"), 'STDOUT_SINGLELINE', "Creating")  # passthru
@@ -178,7 +178,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc pt")
 
     def test_resource_hierarchy_manipulation(self):
-        h = lib.get_hostname()
+        h = session.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
                                    ("pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
@@ -209,8 +209,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         doubletree1 = 2 * tree1  # 10
         doubletree2 = 2 * tree2  # 16
         totaltree = doubletree1 + doubletree2  # 26
-        lib.create_directory_of_small_files(dir1, tree1)
-        lib.create_directory_of_small_files(dir2, tree2)
+        session.create_directory_of_small_files(dir1, tree1)
+        session.create_directory_of_small_files(dir2, tree2)
 
         # add files
         self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1))
@@ -488,7 +488,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # place data into the resource
         test_file = "iput_test_file"
-        lib.make_file(test_file, 10)
+        session.make_file(test_file, 10)
         num_children = 11
         for i in range(num_children):
             self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
@@ -579,7 +579,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         output = commands.getstatusoutput("hostname")
         # =-=-=-=-=-=-=-
         # STANDUP
-        h = lib.get_hostname()
+        h = session.get_hostname()
         # first tree standup
         self.admin.assert_icommand("iadmin mkresc %s passthru %s:/tmp/irods/pydevtest_%s" %
                                    ("pt", h, "pt"), 'STDOUT_SINGLELINE', "Creating")  # passthru
@@ -608,7 +608,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # place data into the resource
         test_file = "iput_test_file"
-        lib.make_file(test_file, 10)
+        session.make_file(test_file, 10)
         num_children = 11
         for i in range(num_children):
             self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
@@ -723,14 +723,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_iexecmd(self):
         test_file = "iput_test_file"
-        lib.make_file(test_file, 10)
+        session.make_file(test_file, 10)
         self.admin.assert_icommand("iput %s foo" % test_file)
         self.admin.assert_icommand(['iexecmd', '-p', self.admin.session_collection + '/foo', 'hello'], 'STDOUT_SINGLELINE', "Hello world  from irods")
         self.admin.assert_icommand("irm -f foo")
 
     def test_ibun(self):
         test_file = "ibun_test_file"
-        lib.make_file(test_file, 1000)
+        session.make_file(test_file, 1000)
         cmd = "tar cf somefile.tar " + test_file
         output = commands.getstatusoutput(cmd)
 
@@ -765,7 +765,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # place data into the resource
         test_file = "rebalance_test_file"
-        lib.make_file(test_file, 100)
+        session.make_file(test_file, 100)
         num_children = 3
         for i in range(num_children):
             self.admin.assert_icommand("iput -R repl %s foo%d" % (test_file, i))
@@ -850,7 +850,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         if os.path.isfile('/etc/irods/hosts_config.json'):
             hosts_config = '/etc/irods/hosts_config.json'
         else:
-            hosts_config = os.path.join(lib.get_irods_config_dir(), 'hosts_config.json')
+            hosts_config = os.path.join(session.get_irods_config_dir(), 'hosts_config.json')
 
         orig_file = hosts_config + '.orig'
         os.system('cp %s %s' % (hosts_config, orig_file))
@@ -864,7 +864,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         hostuser = getpass.getuser()
         temp_file = 'file_to_test_hosts_config'
-        lib.make_file(temp_file, 10)
+        session.make_file(temp_file, 10)
         self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
                                    hostuser, 'STDOUT_SINGLELINE', "jimbo")
         self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
@@ -877,7 +877,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         my_ip = socket.gethostbyname(socket.gethostname())
 
         # manipulate the core.re to enable host access control
-        corefile = lib.get_core_re_dir() + "/core.re"
+        corefile = session.get_core_re_dir() + "/core.re"
         origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
@@ -889,13 +889,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
         host_access_control = ''
         if os.path.isfile('/etc/irods/host_access_control_config.json'):
             host_access_control = '/etc/irods/host_access_control_config.json'
         else:
-            host_access_control = os.path.join(lib.get_irods_config_dir(), 'host_access_control_config.json')
+            host_access_control = os.path.join(session.get_irods_config_dir(), 'host_access_control_config.json')
 
         orig_file = host_access_control + '.orig'
         os.system('cp %s %s' % (host_access_control, orig_file))
@@ -917,7 +917,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
-        corefile = lib.get_core_re_dir() + "/core.re"
+        corefile = session.get_core_re_dir() + "/core.re"
         origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
@@ -929,7 +929,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
         self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
@@ -947,18 +947,18 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_server_config_environment_variables(self):
 
-        server_config_filename = lib.get_irods_config_dir() + "/server_config.json"
-        with lib.file_backed_up(server_config_filename):
+        server_config_filename = session.get_irods_config_dir() + "/server_config.json"
+        with session.file_backed_up(server_config_filename):
 
             # set an arbitrary environment value to find in the log
             with open(server_config_filename) as f:
                 server_config = json.load(f)
             the_value = 'THIS_IS_THE_VALUE'
             server_config['environment_variables']['foo_bar'] = the_value
-            lib.update_json_file_from_dict(server_config_filename, server_config)
+            session.update_json_file_from_dict(server_config_filename, server_config)
 
             # bounce the server to get the new env variable
-            lib.restart_irods_server()
+            session.restart_irods_server()
 
             # look for the error "unable to read session variable $userNameClient."
             env_script = tempfile.NamedTemporaryFile(mode='w', dir='../../iRODS/server/bin/cmd', delete=False)
@@ -971,7 +971,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                     'writeLine("stdout", "*out")\' null ruleExecOut'.format(os.path.basename(env_script.name)),
                 'STDOUT_SINGLELINE', the_value)
             os.unlink(env_script.name)
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     def test_set_resource_comment_to_emptystring_ticket_2434(self):
         mycomment = "notemptystring"
@@ -987,7 +987,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         collection_basename = sys._getframe().f_code.co_name
         self.admin.assert_icommand('imkdir {collection_basename}'.format(**vars()))
         file_basename = 'dummy_file_to_trigger_recursive_rm'
-        lib.make_file(file_basename, 10)
+        session.make_file(file_basename, 10)
         file_irods_path = os.path.join(collection_basename, file_basename)
         self.admin.assert_icommand('iput {file_basename} {file_irods_path}'.format(**vars()))
         a, v, u = ('attribute_' + collection_basename, 'value_' + collection_basename, 'unit_' + collection_basename)
@@ -999,18 +999,18 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand_fail('''iquest "select META_DATA_ATTR_NAME where META_DATA_ATTR_NAME = '{a}'"'''.format(**vars()), 'STDOUT_SINGLELINE', a)
 
     def test_msiset_default_resc__2712(self):
-        hostname = lib.get_hostname()
+        hostname = session.get_hostname()
         testresc1 = 'pydevtest_TestResc'
-        corefile = lib.get_core_re_dir() + "/core.re"
-        with lib.file_backed_up(corefile):
-            initial_size_of_server_log = lib.get_log_size('server')
+        corefile = session.get_core_re_dir() + "/core.re"
+        with session.file_backed_up(corefile):
+            initial_size_of_server_log = session.get_log_size('server')
             rules_to_prepend = 'acSetRescSchemeForCreate{ msiSetDefaultResc("' + testresc1 + '","forced"); }\n'
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            session.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
-            lib.make_file(trigger_file, 10)
+            session.make_file(trigger_file, 10)
             self.user0.assert_icommand(['iput', trigger_file])
             self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
 
@@ -1020,42 +1020,42 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        corefile = lib.get_core_re_dir() + "/core.re"
-        coredvm = lib.get_core_re_dir() + "/core.dvm"
-        with lib.file_backed_up(coredvm):
-            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_log_size('server')
+        corefile = session.get_core_re_dir() + "/core.re"
+        coredvm = session.get_core_re_dir() + "/core.dvm"
+        with session.file_backed_up(coredvm):
+            session.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
+            with session.file_backed_up(corefile):
+                initial_size_of_server_log = session.get_log_size('server')
                 rules_to_prepend = '''
  acSetNumThreads() {
      writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
  }
  '''
                 time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
+                session.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 trigger_file = 'file_to_trigger_acSetNumThreads'
-                lib.make_file(trigger_file, 4 * pow(10, 7))
+                session.make_file(trigger_file, 4 * pow(10, 7))
                 self.admin.assert_icommand('iput {0}'.format(trigger_file))
-                assert 1 == lib.count_occurrences_of_string_in_log(
+                assert 1 == session.count_occurrences_of_string_in_log(
                     'server', 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                assert 0 == session.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_log_size('server')
+            with session.file_backed_up(corefile):
+                initial_size_of_server_log = session.get_log_size('server')
                 rules_to_prepend = '''
 acSetNumThreads() {
     writeLine("serverLog","test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
 }
 '''
                 time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
+                session.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
-                assert 1 == lib.count_occurrences_of_string_in_log(
+                assert 1 == session.count_occurrences_of_string_in_log(
                     'server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                assert 0 == session.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 
     def test_storageadmin_role(self):
@@ -1072,45 +1072,45 @@ acSetNumThreads() {
                                    'STDOUT_SINGLELINE', '"irods_encryption_key_size": 32,', use_unsafe_shell=True)
 
     def test_imposter_resource_debug_logging(self):
-        server_config_filename = os.path.join(lib.get_irods_config_dir(), 'server_config.json')
-        with lib.file_backed_up(server_config_filename):
+        server_config_filename = os.path.join(session.get_irods_config_dir(), 'server_config.json')
+        with session.file_backed_up(server_config_filename):
             server_config_update = {
                 'environment_variables': {
                     'spLogLevel': '11'
                 }
             }
-            lib.update_json_file_from_dict(server_config_filename, server_config_update)
-            lib.restart_irods_server()
+            session.update_json_file_from_dict(server_config_filename, server_config_update)
+            session.restart_irods_server()
 
             name_of_bogus_resource = 'name_of_bogus_resource'
             name_of_missing_plugin = 'name_of_missing_plugin'
             self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_missing_plugin], 'STDOUT_SINGLELINE', name_of_missing_plugin)
 
-            initial_size_of_server_log = lib.get_log_size('server')
+            initial_size_of_server_log = session.get_log_size('server')
             self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
             debug_message = 'DEBUG: loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
-            debug_message_count = lib.count_occurrences_of_string_in_log('server', debug_message, start_index=initial_size_of_server_log)
+            debug_message_count = session.count_occurrences_of_string_in_log('server', debug_message, start_index=initial_size_of_server_log)
             assert 1 == debug_message_count, debug_message_count
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     def test_dlopen_failure_error_message(self):
-        plugin_dir = os.path.join(lib.get_irods_top_level_dir(), 'plugins', 'resources')
+        plugin_dir = os.path.join(session.get_irods_top_level_dir(), 'plugins', 'resources')
         name_of_corrupt_plugin = 'name_of_corrupt_plugin'
-        name_of_corrupt_so = 'lib' + name_of_corrupt_plugin + '.so'
+        name_of_corrupt_so = 'session' + name_of_corrupt_plugin + '.so'
         path_of_corrupt_so = os.path.join(plugin_dir, name_of_corrupt_so)
-        lib.make_file(path_of_corrupt_so, 500)
+        session.make_file(path_of_corrupt_so, 500)
 
         name_of_bogus_resource = 'name_of_bogus_resource'
         self.admin.assert_icommand(['iadmin', 'mkresc', name_of_bogus_resource, name_of_corrupt_plugin], 'STDOUT_SINGLELINE', name_of_corrupt_plugin)
 
-        initial_size_of_server_log = lib.get_log_size('server')
+        initial_size_of_server_log = session.get_log_size('server')
         self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
-        assert 0 < lib.count_occurrences_of_string_in_log('server', 'dlerror', start_index=initial_size_of_server_log)
-        assert 0 < lib.count_occurrences_of_string_in_log('server', 'PLUGIN_ERROR', start_index=initial_size_of_server_log)
+        assert 0 < session.count_occurrences_of_string_in_log('server', 'dlerror', start_index=initial_size_of_server_log)
+        assert 0 < session.count_occurrences_of_string_in_log('server', 'PLUGIN_ERROR', start_index=initial_size_of_server_log)
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         os.remove(path_of_corrupt_so)

@@ -6,7 +6,7 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-import lib
+import session
 
 
 class Test_Compatibility(ResourceBase, unittest.TestCase):
@@ -35,7 +35,7 @@ class Test_Compatibility(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('icd testColl')
         for i in range(8):
             f = 'empty{0}.txt'.format(i)
-            lib.cat(f, str(i))
+            session.cat(f, str(i))
             self.admin.assert_icommand(['iput', f])
             os.unlink(f)
         self.admin.assert_icommand('icd ..')

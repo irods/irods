@@ -9,11 +9,11 @@ else:
     import unittest2 as unittest
 
 import configuration
-import lib
+import session
 
 
 class Test_Xmsg(unittest.TestCase):
-    serverConfigFile = lib.get_irods_config_dir() + '/server_config.json'
+    serverConfigFile = session.get_irods_config_dir() + '/server_config.json'
     serverConfigFileBackup = serverConfigFile + '_orig'
     xmsgHost = 'localhost'
     xmsgPort = 1279
@@ -21,22 +21,22 @@ class Test_Xmsg(unittest.TestCase):
     def setUp(self):
         # add Xmsg settings to server_config.json
         shutil.copyfile(self.serverConfigFile, self.serverConfigFileBackup)
-        contents = lib.open_and_load_json_ascii(self.serverConfigFile)
+        contents = session.open_and_load_json_ascii(self.serverConfigFile)
         update = {
             'xmsg_host': self.xmsgHost,
             'xmsg_port': self.xmsgPort,
         }
-        lib.update_json_file_from_dict(self.serverConfigFile, update)
+        session.update_json_file_from_dict(self.serverConfigFile, update)
 
         # apparently needed by the server too...
         my_env = os.environ.copy()
         my_env['XMSG_HOST'] = self.xmsgHost
         my_env['XMSG_PORT'] = str(self.xmsgPort)
-        lib.restart_irods_server(env=my_env)
+        session.restart_irods_server(env=my_env)
 
     def tearDown(self):
         os.rename(self.serverConfigFileBackup, self.serverConfigFile)
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, "Skip for topology testing from resource server or SSL")
     def test_send_and_receive_one_xmsg(self):

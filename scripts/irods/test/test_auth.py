@@ -9,7 +9,7 @@ import time
 import json
 
 import configuration
-import lib
+import session
 import resource_suite
 
 
@@ -18,8 +18,8 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
         super(Test_OSAuth_Only, self).setUp()
-        self.auth_session = lib.mkuser_and_return_session('rodsuser', 'irods', 'temporarypasswordforci',
-                                                          lib.get_hostname())
+        self.auth_session = session.mkuser_and_return_session('rodsuser', 'irods', 'temporarypasswordforci',
+                                                          session.get_hostname())
 
     def tearDown(self):
         self.auth_session.__exit__()
@@ -31,7 +31,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         self.auth_session.environment_file_contents['irods_authentication_scheme'] = 'OSAuth'
 
         # setup the irods.key file necessary for OSAuth
-        keyfile_path = os.path.join(lib.get_irods_config_dir(), 'irods.key')
+        keyfile_path = os.path.join(session.get_irods_config_dir(), 'irods.key')
         with open(keyfile_path, 'w') as f:
             f.write('gibberish\n')
 
@@ -54,12 +54,12 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Auth, self).setUp()
-        cfg_file = os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/test_framework_configuration.json')
+        cfg_file = os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/test_framework_configuration.json')
         with open(cfg_file,'r') as f:
             cfg = json.load(f)
             auth_user = cfg['irods_authuser_name']
             auth_pass = cfg['irods_authuser_password']
-            self.auth_session = lib.mkuser_and_return_session('rodsuser', auth_user, auth_pass, lib.get_hostname())
+            self.auth_session = session.mkuser_and_return_session('rodsuser', auth_user, auth_pass, session.get_hostname())
 
     def tearDown(self):
         self.auth_session.__exit__()
@@ -68,25 +68,25 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
-        lib.run_command('openssl genrsa -out server.key')
-        lib.run_command('openssl req -batch -new -key server.key -out server.csr')
-        lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
+        session.run_command('openssl genrsa -out server.key')
+        session.run_command('openssl req -batch -new -key server.key -out server.csr')
+        session.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
+        session.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
-        with lib.file_backed_up(service_account_environment_file_path):
+        with session.file_backed_up(service_account_environment_file_path):
             server_update = {
-                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+                'irods_ssl_certificate_chain_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
                 'irods_ssl_verify_server': 'none',
             }
-            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+            session.update_json_file_from_dict(service_account_environment_file_path, server_update)
 
             client_update = {
-                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+                'irods_ssl_certificate_chain_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
                 'irods_ssl_verify_server': 'none',
                 'irods_authentication_scheme': 'PaM',
             }
@@ -96,7 +96,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             self.auth_session.environment_file_contents.update(client_update)
 
             # server reboot to pick up new irodsEnv settings
-            lib.restart_irods_server()
+            session.restart_irods_server()
 
             # do the reauth
             self.auth_session.assert_icommand(['iinit', self.auth_session.password])
@@ -109,32 +109,32 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
             # clean up
             for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
-                os.unlink(os.path.join(lib.get_irods_top_level_dir(), file))
+                os.unlink(os.path.join(session.get_irods_top_level_dir(), file))
 
         # server reboot to pick up new irodsEnv and server settings
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
-        lib.run_command('openssl genrsa -out server.key')
-        lib.run_command('openssl req -batch -new -key server.key -out server.csr')
-        lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
+        session.run_command('openssl genrsa -out server.key')
+        session.run_command('openssl req -batch -new -key server.key -out server.csr')
+        session.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
+        session.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
-        with lib.file_backed_up(service_account_environment_file_path):
+        with session.file_backed_up(service_account_environment_file_path):
             server_update = {
-                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+                'irods_ssl_certificate_chain_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
                 'irods_ssl_verify_server': 'none',
             }
-            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+            session.update_json_file_from_dict(service_account_environment_file_path, server_update)
 
             client_update = {
-                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+                'irods_ssl_certificate_chain_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
                 'irods_ssl_verify_server': 'none',
                 'irods_authentication_scheme': 'PaM',
                 'irods_client_server_policy': 'CS_NEG_REQUIRE',
@@ -143,17 +143,17 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
             auth_session_env_backup = copy.deepcopy(self.auth_session.environment_file_contents)
             self.auth_session.environment_file_contents.update(client_update)
 
-            server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
-            with lib.file_backed_up(server_config_filename):
+            server_config_filename = session.get_irods_config_dir() + '/server_config.json'
+            with session.file_backed_up(server_config_filename):
                 server_config_update = {
                     'pam_password_length': 20,
                     'pam_no_extend': False,
                     'pam_password_min_time': 121,
                     'pam_password_max_time': 1209600,
                 }
-                lib.update_json_file_from_dict(server_config_filename, server_config_update)
+                session.update_json_file_from_dict(server_config_filename, server_config_update)
 
-                lib.restart_irods_server()
+                session.restart_irods_server()
 
                 # the test
                 self.auth_session.assert_icommand(['iinit', self.auth_session.password])
@@ -162,15 +162,15 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
         self.auth_session.environment_file_contents = auth_session_env_backup
         for file in ['tests/pydevtest/server.key', 'tests/pydevtest/chain.pem', 'tests/pydevtest/dhparams.pem']:
-            os.unlink(os.path.join(lib.get_irods_top_level_dir(), file))
+            os.unlink(os.path.join(session.get_irods_top_level_dir(), file))
 
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     def test_iinit_repaving_2646(self):
         initial_contents = copy.deepcopy(self.admin.environment_file_contents)
         del self.admin.environment_file_contents['irods_zone_name']
         self.admin.run_icommand('iinit', stdin_string='{0}\n{1}\n'.format(initial_contents['irods_zone_name'], self.admin.password))
-        final_contents = lib.open_and_load_json_ascii(os.path.join(self.admin.local_session_dir, 'irods_environment.json'))
+        final_contents = session.open_and_load_json_ascii(os.path.join(self.admin.local_session_dir, 'irods_environment.json'))
         self.admin.environment_file_contents = initial_contents
         print initial_contents
         print final_contents

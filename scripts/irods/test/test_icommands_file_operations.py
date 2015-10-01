@@ -11,7 +11,7 @@ import time
 import shutil
 
 import configuration
-import lib
+import session
 import resource_suite
 
 
@@ -30,13 +30,13 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def iput_r_large_collection(self, session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
+        local_files = session.make_large_local_tmp_dir(local_dir, file_count, file_size)
         session.assert_icommand(['iput', '-r', local_dir])
-        rods_files = set(lib.ils_output_to_entries(session.run_icommand(['ils', base_name])[1]))
+        rods_files = set(session.ils_output_to_entries(session.run_icommand(['ils', base_name])[1]))
         self.assertTrue(set(local_files) == rods_files,
                         msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - set(local_files)))
-        vault_files = set(os.listdir(os.path.join(lib.get_vault_session_path(session), base_name)))
+        vault_files = set(os.listdir(os.path.join(session.get_vault_session_path(session), base_name)))
         self.assertTrue(set(local_files) == vault_files,
                         msg="Files missing from vault:\n" + str(set(local_files) - vault_files) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files - set(local_files)))
@@ -44,7 +44,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def iput_to_root_collection(self):
         filename = 'original.txt'
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         self.admin.assert_icommand('iput ' + filename + ' /nopes', 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
 
     def imkdir_to_root_collection(self):
@@ -61,7 +61,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def test_force_iput_to_diff_resc(self):
         filename = "original.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         self.admin.assert_icommand("iput " + filename)  # put file
         self.admin.assert_icommand("iput -f " + filename)  # put file
         self.admin.assert_icommand("iput -fR " + self.testresc + " " + filename, 'STDERR_SINGLELINE', 'HIERARCHY_ERROR')  # fail
@@ -69,9 +69,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
     def test_get_null_perms__2833(self):
         base_name = 'test_dir_for_perms'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_files = lib.make_large_local_tmp_dir(local_dir, 30, 10)
+        local_files = session.make_large_local_tmp_dir(local_dir, 30, 10)
         self.admin.assert_icommand(['iput', '-r', local_dir])
-        rods_files = lib.ils_output_to_entries(self.admin.run_icommand(['ils', base_name])[1])
+        rods_files = session.ils_output_to_entries(self.admin.run_icommand(['ils', base_name])[1])
 
         test_dir = 'test_get_null_perms__2833_dir'
         self.admin.assert_icommand(['ichmod','-r','null',self.admin.username,base_name])
@@ -81,7 +81,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         assert os.path.isfile(os.path.join(test_dir,'junk0029'))
 
         self.admin.assert_icommand(['ichmod','-r','own',self.admin.username,base_name])
-        lib.run_command(['rm','-rf',test_dir])
+        session.run_command(['rm','-rf',test_dir])
 
 
 
@@ -95,7 +95,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand("irm -r " + base_name, "EMPTY")
         self.user0.assert_icommand("ils " + base_name, 'STDERR_SINGLELINE', "does not exist")
 
-        vault_files_post_irm = os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irm = os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                        base_name))
         self.assertTrue(len(vault_files_post_irm) == 0,
                         msg="Files not removed from vault:\n" + str(vault_files_post_irm))
@@ -109,7 +109,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # make local nested dirs
         coll_name = "test_irm_r_nested_coll"
         local_dir = os.path.join(self.testing_tmp_dir, coll_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
@@ -119,8 +119,8 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand("ils {coll_name}".format(**locals()), 'STDERR_SINGLELINE', "does not exist")
 
         # make sure no files are left in the vault
-        user_vault_dir = os.path.join(lib.get_vault_session_path(self.user0), coll_name)
-        cmd_out = lib.run_command('find {user_vault_dir} -type f'.format(**locals()))
+        user_vault_dir = os.path.join(session.get_vault_session_path(self.user0), coll_name)
+        cmd_out = session.run_command('find {user_vault_dir} -type f'.format(**locals()))
         self.assertEqual(cmd_out[1], '')
 
     def test_imv_r(self):
@@ -132,16 +132,16 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand("imv " + base_name_source + " " + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils " + base_name_source, 'STDERR_SINGLELINE', "does not exist")
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
-        rods_files_post_imv = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_post_imv = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_post_imv,
                         msg="Files missing:\n" + str(file_names - rods_files_post_imv) + "\n\n" +
                             "Extra files:\n" + str(rods_files_post_imv - file_names))
 
-        vault_files_post_irm_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irm_source = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                   base_name_source)))
         self.assertTrue(len(vault_files_post_irm_source) == 0)
 
-        vault_files_post_irm_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irm_target = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                   base_name_target)))
         self.assertTrue(file_names == vault_files_post_irm_target,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_irm_target) + "\n\n" +
@@ -155,24 +155,24 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         base_name_target = "test_icp_r_dir_target"
         self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
-        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
 
-        rods_files_target = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_target = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_target,
                         msg="Files missing:\n" + str(file_names - rods_files_target) + "\n\n" +
                             "Extra files:\n" + str(rods_files_target - file_names))
 
-        vault_files_post_icp_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_icp_source = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                   base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_icp_source,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_icp_source) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files_post_icp_source - file_names))
 
-        vault_files_post_icp_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_icp_target = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                   base_name_target)))
         self.assertTrue(file_names == vault_files_post_icp_target,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_icp_target) + "\n\n" +
@@ -181,16 +181,16 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
     def test_irsync_r_dir_to_coll(self):
         base_name = "test_irsync_r_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        file_names = set(lib.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
+        file_names = set(session.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
 
         self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name)
-        rods_files = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name])[1]))
+        rods_files = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name])[1]))
         self.assertTrue(file_names == rods_files,
                         msg="Files missing:\n" + str(file_names - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - file_names))
 
-        vault_files_post_irsync = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irsync = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                               base_name)))
 
         self.assertTrue(file_names == vault_files_post_irsync,
@@ -205,24 +205,24 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " i:" + base_name_target, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_source)
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_target)
-        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
 
-        rods_files_target = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
+        rods_files_target = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_target])[1]))
         self.assertTrue(file_names == rods_files_target,
                         msg="Files missing:\n" + str(file_names - rods_files_target) + "\n\n" +
                             "Extra files :\n" + str(rods_files_target - file_names))
 
-        vault_files_post_irsync_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                      base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_irsync_source,
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_irsync_source) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files_post_irsync_source - file_names))
 
-        vault_files_post_irsync_target = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irsync_target = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                      base_name_target)))
 
         self.assertTrue(file_names == vault_files_post_irsync_target,
@@ -236,7 +236,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dir = os.path.join(self.testing_tmp_dir, "test_irsync_r_coll_to_dir_target")
         self.user0.assert_icommand("irsync -r i:" + base_name_source + " " + local_dir, "EMPTY")
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name_source)
-        rods_files_source = set(lib.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
+        rods_files_source = set(session.ils_output_to_entries(self.user0.run_icommand(['ils', base_name_source])[1]))
         self.assertTrue(file_names == rods_files_source,
                         msg="Files missing:\n" + str(file_names - rods_files_source) + "\n\n" +
                             "Extra files:\n" + str(rods_files_source - file_names))
@@ -246,7 +246,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                         msg="Files missing from local dir:\n" + str(file_names - local_files) + "\n\n" +
                             "Extra files in local dir:\n" + str(local_files - file_names))
 
-        vault_files_post_irsync_source = set(os.listdir(os.path.join(lib.get_vault_session_path(self.user0),
+        vault_files_post_irsync_source = set(os.listdir(os.path.join(session.get_vault_session_path(self.user0),
                                                                      base_name_source)))
 
         self.assertTrue(file_names == vault_files_post_irsync_source,
@@ -262,7 +262,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -273,17 +273,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -298,7 +298,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -309,17 +309,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -335,7 +335,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         source_base_name = "test_irsync_r_nested_coll_to_coll_source"
         dest_base_name = "test_irsync_r_nested_coll_to_coll_dest"
         local_dir = os.path.join(self.testing_tmp_dir, source_base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
@@ -350,17 +350,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on source subcollection
             self.user0.assert_icommand(['ils', source_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               source_partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -368,17 +368,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # now the same thing with dest subcollection
             self.user0.assert_icommand(['ils', dest_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               dest_partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -394,7 +394,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         source_base_name = "test_irsync_r_nested_coll_to_coll_source"
         dest_base_name = "test_irsync_r_nested_coll_to_coll_dest"
         local_dir = os.path.join(self.testing_tmp_dir, source_base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
@@ -409,17 +409,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on source subcollection
             self.user0.assert_icommand(['ils', source_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               source_partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -427,17 +427,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # now the same thing with dest subcollection
             self.user0.assert_icommand(['ils', dest_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               dest_partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -452,7 +452,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -469,17 +469,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -494,7 +494,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -511,17 +511,17 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
 
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # compare local files with files in vault
-            files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
+            files_in_vault = set(session.files_in_dir(os.path.join(session.get_vault_session_path(self.user0),
                                                               partial_path)))
             self.assertTrue(local_files == files_in_vault,
                         msg="Files missing from vault:\n" + str(local_files - files_in_vault) + "\n\n" +
@@ -531,10 +531,10 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         base_name = 'test_cancel_large_put'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         file_size = pow(2, 30)
-        file_name = lib.make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
+        file_name = session.make_large_local_tmp_dir(local_dir, file_count=1, file_size=file_size)[0]
         file_local_full_path = os.path.join(local_dir, file_name)
         iput_cmd = "iput '" + file_local_full_path + "'"
-        file_vault_full_path = os.path.join(lib.get_vault_session_path(self.user0), file_name)
+        file_vault_full_path = os.path.join(session.get_vault_session_path(self.user0), file_name)
         self.user0.interrupt_icommand(iput_cmd, file_vault_full_path, 10)
 
         # multiple threads could still be writing on the server side, so we need to wait for
@@ -551,9 +551,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand('ils -l', 'STDOUT_SINGLELINE', [file_name, str(new_size)])
 
     def test_iphymv_root(self):
-        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + lib.get_irods_top_level_dir() + '/test1',
+        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + session.get_hostname() + ':' + session.get_irods_top_level_dir() + '/test1',
                 'STDOUT_SINGLELINE', '')
-        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + lib.get_hostname() + ':' + lib.get_irods_top_level_dir() + '/test2',
+        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + session.get_hostname() + ':' + session.get_irods_top_level_dir() + '/test2',
                 'STDOUT_SINGLELINE', '')
         self.admin.assert_icommand('iphymv -S test1 -R test2 -r /', 'STDERR_SINGLELINE',
                 'ERROR: phymvUtil: \'/\' does not specify a zone; physical move only makes sense within a zone.')
@@ -564,39 +564,39 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # prepare test directory
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
-        corefile = lib.get_core_re_dir() + "/core.re"
+        corefile = session.get_core_re_dir() + "/core.re"
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
-            files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
+            files = session.make_large_local_tmp_dir(dirname, number_of_files, filesize)
             # manipulate core.re and check the server log
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_log_size('server')
+            with session.file_backed_up(corefile):
+                initial_size_of_server_log = session.get_log_size('server')
                 rules_to_prepend = '''
 acBulkPutPostProcPolicy { msiSetBulkPutPostProcPolicy("on"); }
 acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"); }
             '''
                 time.sleep(1)  # remove once file hash fix is committed #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
+                session.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is committed #2279
                 self.admin.assert_icommand(['iput', '-frb', dirname])
-                assert number_of_files == lib.count_occurrences_of_string_in_log(
+                assert number_of_files == session.count_occurrences_of_string_in_log(
                     'server', 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
                 shutil.rmtree(dirname)
 
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
         self.admin.environment_file_contents['irods_maximum_size_for_single_buffer_in_megabytes'] = 2000
         with tempfile.NamedTemporaryFile(prefix='test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880') as f:
-            lib.make_file(f.name, 800*1000*1000, contents='arbitrary')
+            session.make_file(f.name, 800*1000*1000, contents='arbitrary')
             self.admin.assert_icommand(['iput', f.name, '-v'], 'STDOUT_SINGLELINE', '0 thr')
 
     def test_ils_connection_refused_2948(self):
         @contextlib.contextmanager
         def irods_server_stopped():
-            lib.stop_irods_server()
+            session.stop_irods_server()
             try:
                 yield
             finally:
-                lib.start_irods_server()
+                session.start_irods_server()
         with irods_server_stopped():
             self.admin.assert_icommand(['ils'], 'STDERR_SINGLELINE', 'Connection refused')
             _, out, err = self.admin.assert_icommand(['ils', '-V'], 'STDERR_SINGLELINE', 'Connection refused')

@@ -4,12 +4,12 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 
-import lib
+import session
 import make_resource_tree
 import cleanup_resource_tree
 
 
-class Test_ilsresc(lib.make_sessions_mixin([('otherrods', 'pass')], []), unittest.TestCase):
+class Test_ilsresc(session.make_sessions_mixin([('otherrods', 'pass')], []), unittest.TestCase):
     width = 300
     max_depth = 100
     filename = 'resourcetree.json'

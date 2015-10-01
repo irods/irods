@@ -18,15 +18,15 @@ else:
     import unittest
 
 import configuration
-import lib
+import session
 import metaclass_unittest_test_case_generator
 import resource_suite
 
 
 def helper_irodsFs_iput_to_mv(self, filesize):
     with tempfile.NamedTemporaryFile(prefix=sys._getframe().f_code.co_name + '_0') as f:
-        lib.make_file(f.name, filesize, 'arbitrary')
-        hash0 = lib.md5_hex_file(f.name)
+        session.make_file(f.name, filesize, 'arbitrary')
+        hash0 = session.md5_hex_file(f.name)
         self.admin.assert_icommand(['iput', f.name])
     basename = os.path.basename(f.name)
     self.helper_irodsFs_stat(basename, self.mount_point, self.admin.session_collection, filesize)
@@ -34,7 +34,7 @@ def helper_irodsFs_iput_to_mv(self, filesize):
         shutil.move(os.path.join(self.mount_point, basename), f.name)
         assert basename not in os.listdir(self.mount_point)
         self.admin.assert_icommand_fail(['ils'], 'STDOUT_SINGLELINE', basename)
-        hash1 = lib.md5_hex_file(f.name)
+        hash1 = session.md5_hex_file(f.name)
         assert hash0 == hash1
 
 def helper_irodsFs_cp_to_iget(self, filesize):
@@ -72,7 +72,7 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['irodsFs', self.mount_point])
 
     def tearDown(self):
-        lib.assert_command(['fusermount', '-uz', self.mount_point])
+        session.assert_command(['fusermount', '-uz', self.mount_point])
         shutil.rmtree(self.mount_point)
         super(Test_Fuse, self).tearDown()
 
@@ -95,8 +95,8 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
 
     def helper_irodsFs_cp_into_mount_point(self, target_dir, filesize):
         with tempfile.NamedTemporaryFile(prefix=sys._getframe().f_code.co_name) as f:
-            lib.make_file(f.name, filesize, 'arbitrary')
-            hash_ = lib.md5_hex_file(f.name)
+            session.make_file(f.name, filesize, 'arbitrary')
+            hash_ = session.md5_hex_file(f.name)
             shutil.copy(f.name, target_dir)
         fullpath = os.path.join(target_dir, os.path.basename(f.name))
         assert os.stat(fullpath).st_size == filesize
@@ -106,7 +106,7 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
         basename = os.path.basename(data_object_path)
         with tempfile.NamedTemporaryFile(prefix=sys._getframe().f_code.co_name) as f:
             self.admin.assert_icommand(['iget', '-f', data_object_path, f.name])
-            hash_ = lib.md5_hex_file(f.name)
+            hash_ = session.md5_hex_file(f.name)
         return hash_
 
     def helper_irodsFs_irm_and_confirm(self, basename, parent_dir, parent_collection):
@@ -143,7 +143,7 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
         else:
             assert False, 'bonnie++ binary not found'
 
-        rc, out, err = lib.run_command([bonnie, '-r', '1', '-c', '2', '-n', '10', '-d', self.mount_point])
+        rc, out, err = session.run_command([bonnie, '-r', '1', '-c', '2', '-n', '10', '-d', self.mount_point])
 
         formatted_output = '\n'.join(['rc [{0}]'.format(rc),
                                       'stdout:\n{0}'.format(out),
@@ -159,8 +159,8 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
         with contextlib.nested(*files):
             hashes = []
             for f in files:
-                lib.make_file(f.name, pow(10,8), 'arbitrary')
-                hashes.append(lib.md5_hex_file(f.name))
+                session.make_file(f.name, pow(10,8), 'arbitrary')
+                hashes.append(session.md5_hex_file(f.name))
             proc_pool = multiprocessing.Pool(len(files))
             proc_pool_results = [proc_pool.apply_async(shutil.copyfile, (f.name, os.path.join(self.mount_point, os.path.basename(f.name))))
                                  for f in files]
@@ -170,4 +170,4 @@ class Test_Fuse(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', os.path.basename(f.name))
                 with tempfile.NamedTemporaryFile(prefix='test_fuse.test_parallel_copy_get') as fget:
                     self.admin.assert_icommand(['iget', '-f', os.path.basename(f.name), fget.name])
-                    assert lib.md5_hex_file(fget.name) == h
+                    assert session.md5_hex_file(fget.name) == h

@@ -10,7 +10,7 @@ import shutil
 
 import configuration
 from resource_suite import ResourceBase
-import lib
+import session
 import copy
 
 class Test_iRsync(ResourceBase, unittest.TestCase):
@@ -27,7 +27,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
     def test_irsync(self):
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        lib.make_file(filepath, 1)
+        session.make_file(filepath, 1)
         self.admin.assert_icommand('iput ' + filepath)
         self.admin.assert_icommand('irsync -l ' + filepath + ' i:file')
 
@@ -46,7 +46,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # make local nested dirs
         base_name = 'test_irsync_checksum_behavior'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
         self.user0.assert_icommand("irsync -r -K {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -62,7 +62,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand("irsync -v -r -K {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB ")
         self.user0.assert_icommand("irsync -v -r -K -l {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB --- a match no sync required")
 
-        lib.assert_command("rm -f {local_dir}/junk0001".format(**locals()), "EMPTY")
+        session.assert_command("rm -f {local_dir}/junk0001".format(**locals()), "EMPTY")
 
         self.user0.assert_icommand("irsync -v -r -K -l i:{base_name} {local_dir}".format(**locals()), "STDOUT_SINGLELINE", "junk0001   41943040   N")
         self.user0.assert_icommand("irsync -v -r -K i:{base_name} {local_dir}".format(**locals()), "STDOUT_SINGLELINE", "junk0001                       39.999 MB ")
@@ -79,7 +79,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
         
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -90,11 +90,11 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
             
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
@@ -108,7 +108,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
         
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -119,11 +119,11 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
             
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
@@ -138,7 +138,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         source_base_name = "test_irsync_r_nested_coll_to_coll_source"
         dest_base_name = "test_irsync_r_nested_coll_to_coll_dest"
         local_dir = os.path.join(self.testing_tmp_dir, source_base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
@@ -153,22 +153,22 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
  
             # run ils on source subcollection
             self.user0.assert_icommand(['ils', source_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
              
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # now the same thing with dest subcollection
             self.user0.assert_icommand(['ils', dest_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
              
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
@@ -183,7 +183,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         source_base_name = "test_irsync_r_nested_coll_to_coll_source"
         dest_base_name = "test_irsync_r_nested_coll_to_coll_dest"
         local_dir = os.path.join(self.testing_tmp_dir, source_base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
@@ -198,22 +198,22 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
  
             # run ils on source subcollection
             self.user0.assert_icommand(['ils', source_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', source_partial_path])[1])
              
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
             # now the same thing with dest subcollection
             self.user0.assert_icommand(['ils', dest_partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', dest_partial_path])[1])
              
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
@@ -227,7 +227,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
         
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -244,11 +244,11 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
             
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
@@ -262,7 +262,7 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
         # make local nested dirs
         base_name = "test_irsync_r_nested_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)        
-        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
         
         # sync dir to coll
         self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
@@ -279,11 +279,11 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
 
             # run ils on subcollection
             self.user0.assert_icommand(['ils', partial_path], 'STDOUT_SINGLELINE')
-            ils_out = lib.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
+            ils_out = session.ils_output_to_entries(self.user0.run_icommand(['ils', partial_path])[1])
             
             # compare local files with irods objects
             local_files = set(files)
-            rods_files = set(lib.files_in_ils_output(ils_out))
+            rods_files = set(session.files_in_ils_output(ils_out))
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))

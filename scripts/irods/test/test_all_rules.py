@@ -9,7 +9,7 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 
-import lib
+import session
 import metaclass_unittest_test_case_generator
 import resource_suite
 
@@ -20,12 +20,12 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
     rulesdir = currentdir + "/../../iRODS/clients/icommands/test/rules/"
-    conf_dir = lib.get_core_re_dir()
+    conf_dir = session.get_core_re_dir()
 
     def setUp(self):
         super(Test_AllRules, self).setUp()
 
-        self.rods_session = lib.make_session_for_existing_admin()  # some rules hardcode 'rods' and 'tempZone'
+        self.rods_session = session.make_session_for_existing_admin()  # some rules hardcode 'rods' and 'tempZone'
 
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
@@ -90,8 +90,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.assert_icommand('iqdel -a')  # remove all/any queued rules
 
         # cleanup mods in iRODS config dir
-        lib.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
-        lib.run_command('rm -f %s/*.test.re' % self.conf_dir)
+        session.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
+        session.run_command('rm -f %s/*.test.re' % self.conf_dir)
 
         self.rods_session.__exit__()
         super(Test_AllRules, self).tearDown()

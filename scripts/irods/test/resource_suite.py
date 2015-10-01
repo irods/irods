@@ -17,10 +17,10 @@ else:
     import unittest
 
 import configuration
-import lib
+import session
 
 
-class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass'), ('bobby', 'bpass')])):
+class ResourceBase(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass'), ('bobby', 'bpass')])):
 
     def setUp(self):
         super(ResourceBase, self).setUp()
@@ -34,7 +34,7 @@ class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         self.testresc = "pydevtest_TestResc"
         self.anotherresc = "pydevtest_AnotherResc"
 
-        hostname = lib.get_hostname()
+        hostname = session.get_hostname()
         hostuser = getpass.getuser()
         self.admin.assert_icommand(
             ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.testresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
@@ -57,7 +57,7 @@ class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         self.admin.run_icommand('irm -rf ../../bundle')
 
         super(ResourceBase, self).tearDown()
-        with lib.make_session_for_existing_admin() as admin_session:
+        with session.make_session_for_existing_admin() as admin_session:
             admin_session.run_icommand('irmtrash -M')
             admin_session.run_icommand(['iadmin', 'rmresc', self.testresc])
             admin_session.run_icommand(['iadmin', 'rmresc', self.anotherresc])
@@ -81,7 +81,7 @@ class ResourceSuite(ResourceBase):
     ###################
 
     def test_ibun_resource_failure_behavior(self):
-        lib.touch("file.tar")
+        session.touch("file.tar")
         resource = self.testresc
         zone = self.admin.zone_name
         self.user0.assert_icommand('iput file.tar ', 'EMPTY')
@@ -121,9 +121,9 @@ class ResourceSuite(ResourceBase):
     def test_iget_with_stale_replica(self):  # formerly known as 'dirty'
         # local setup
         filename = "original.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         updated_filename = "updated_file_with_longer_filename.txt"
-        updated_filepath = lib.create_local_testfile(updated_filename)
+        updated_filepath = session.create_local_testfile(updated_filename)
         retrievedfile = "retrievedfile.txt"
         # assertions
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
@@ -145,7 +145,7 @@ class ResourceSuite(ResourceBase):
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         # assertions
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)  # put file
@@ -235,7 +235,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', self.testfile)  # debug
 
     def test_iphymv_admin_mode(self):
-        lib.touch("file.txt")
+        session.touch("file.txt")
         for i in range(0, 100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
         self.admin.assert_icommand("iphymv -r -M -R " + self.testresc + " " + self.admin.session_collection)  # creates replica
@@ -245,19 +245,19 @@ class ResourceSuite(ResourceBase):
     ###################
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
-        lib.run_command('openssl genrsa -out server.key')
-        lib.run_command('openssl req -batch -new -key server.key -out server.csr')
-        lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
-        lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
+        session.run_command('openssl genrsa -out server.key')
+        session.run_command('openssl req -batch -new -key server.key -out server.csr')
+        session.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
+        session.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
 
         service_account_environment_file_path = os.path.expanduser('~/.irods/irods_environment.json')
-        with lib.file_backed_up(service_account_environment_file_path):
+        with session.file_backed_up(service_account_environment_file_path):
             server_update = {
-                'irods_ssl_certificate_chain_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
-                'irods_ssl_certificate_key_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
-                'irods_ssl_dh_params_file': os.path.join(lib.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
+                'irods_ssl_certificate_chain_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/chain.pem'),
+                'irods_ssl_certificate_key_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/server.key'),
+                'irods_ssl_dh_params_file': os.path.join(session.get_irods_top_level_dir(), 'tests/pydevtest/dhparams.pem'),
             }
-            lib.update_json_file_from_dict(service_account_environment_file_path, server_update)
+            session.update_json_file_from_dict(service_account_environment_file_path, server_update)
 
             client_update = {
                 'irods_client_server_policy': 'CS_NEG_REQUIRE',
@@ -268,7 +268,7 @@ class ResourceSuite(ResourceBase):
             self.admin.environment_file_contents.update(client_update)
 
             filename = 'encryptedfile.txt'
-            filepath = lib.create_local_testfile(filename)
+            filepath = session.create_local_testfile(filename)
             self.admin.assert_icommand(['iinit', self.admin.password])
             self.admin.assert_icommand(['iput', filename])
             self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', filename)
@@ -278,7 +278,7 @@ class ResourceSuite(ResourceBase):
             for f in ['server.key', 'server.csr', 'chain.pem', 'dhparams.pem']:
                 os.unlink(f)
 
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_small_and_large_files(self):
@@ -293,9 +293,9 @@ class ResourceSuite(ResourceBase):
         os.system("openssl dhparam -2 -out dhparams.pem 1024 2> /dev/null")
 
         # server side environment variables
-        os.environ['irodsSSLCertificateChainFile'] = lib.get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
-        os.environ['irodsSSLCertificateKeyFile'] = lib.get_irods_top_level_dir() + "/tests/pydevtest/server.key"
-        os.environ['irodsSSLDHParamsFile'] = lib.get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
+        os.environ['irodsSSLCertificateChainFile'] = session.get_irods_top_level_dir() + "/tests/pydevtest/chain.pem"
+        os.environ['irodsSSLCertificateKeyFile'] = session.get_irods_top_level_dir() + "/tests/pydevtest/server.key"
+        os.environ['irodsSSLDHParamsFile'] = session.get_irods_top_level_dir() + "/tests/pydevtest/dhparams.pem"
 
         # client side environment variables
         os.environ['irodsSSLVerifyServer'] = "none"
@@ -305,14 +305,14 @@ class ResourceSuite(ResourceBase):
         os.system("cp %s %sOrig" % (clientEnvFile, clientEnvFile))
         env = {}
         env['irods_client_server_policy'] = 'CS_NEG_REQUIRE'
-        lib.update_json_file_from_dict(clientEnvFile, env)
+        session.update_json_file_from_dict(clientEnvFile, env)
 
         # server reboot to pick up new irodsEnv settings
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
         # do the encrypted put
         filename = "encryptedfile.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         self.admin.assert_icommand(['iinit', self.admin.password])  # reinitialize
         # small file
         self.admin.assert_icommand("iput " + filename)  # encrypted put - small file
@@ -334,13 +334,13 @@ class ResourceSuite(ResourceBase):
         os.remove(largefilename)
 
         # restart iRODS server without altered environment
-        lib.restart_irods_server()
+        session.restart_irods_server()
 
     @unittest.skipIf(psutil.disk_usage('/').free < 20000000000, "not enough free space for 5 x 2.2GB file ( local + iput + 3 repl children )")
     def test_local_iput_with_really_big_file__ticket_1623(self):
         filename = "reallybigfile.txt"
         # file size larger than 32 bit int
-        lib.make_file(filename, pow(2, 31) + 100)
+        session.make_file(filename, pow(2, 31) + 100)
         print "file size = [" + str(os.stat(filename).st_size) + "]"
         # should not be listed
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', [filename, "does not exist"])
@@ -441,7 +441,7 @@ class ResourceSuite(ResourceBase):
         # local setup
         datafilename = 'bigfile'
         file_size = int(6 * pow(10, 8))
-        lib.make_file(datafilename, file_size)
+        session.make_file(datafilename, file_size)
         rf = 'bigrestartfile'
         iputcmd = 'iput --lfrestart {0} {1}'.format(rf, datafilename)
         if os.path.exists(rf):
@@ -479,7 +479,7 @@ class ResourceSuite(ResourceBase):
         with open(datafilename, 'w') as f:
             f.write("TESTFILE -- [" + datafilename + "]")
         # assertions
-        fullpath = lib.get_irods_top_level_dir() + "/newphysicalpath.txt"
+        fullpath = session.get_irods_top_level_dir() + "/newphysicalpath.txt"
         self.admin.assert_icommand("iput -p " + fullpath + " " + datafilename)  # should complete
         self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', datafilename)  # should be listed
         self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', fullpath)  # should be listed
@@ -528,7 +528,7 @@ class ResourceSuite(ResourceBase):
 
         # local setup
         filename = "overwritefile.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
 
         # alice tries to put
         homepath = "/home/" + self.admin.username + "/" + self.admin._session_id + "/" + self.testfile
@@ -573,7 +573,7 @@ class ResourceSuite(ResourceBase):
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
         filename = "iputwithforceanddestination.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
@@ -663,7 +663,7 @@ class ResourceSuite(ResourceBase):
     def test_irepl_invalid_input(self):
         # local setup
         filename = "somefile.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         # assertions
         # should not be listed
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")
@@ -679,7 +679,7 @@ class ResourceSuite(ResourceBase):
     def test_irepl_multithreaded(self):
         # local setup
         filename = "largefile.txt"
-        filepath = lib.create_local_largefile(filename)
+        filepath = session.create_local_largefile(filename)
         # assertions
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")     # should not be listed
         self.admin.assert_icommand("iput " + filename)                                 # put file
@@ -694,8 +694,8 @@ class ResourceSuite(ResourceBase):
     def test_irepl_update_replicas(self):
         # local setup
         filename = "updatereplicasfile.txt"
-        filepath = lib.create_local_testfile(filename)
-        hostname = lib.get_hostname()
+        filepath = session.create_local_testfile(filename)
+        hostname = session.get_hostname()
         hostuser = getpass.getuser()
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
@@ -760,7 +760,7 @@ class ResourceSuite(ResourceBase):
     def test_irepl_over_existing_second_replica__ticket_1705(self):
         # local setup
         filename = "secondreplicatest.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         # assertions
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput -R " + self.testresc + " " + filename)       # put file
@@ -779,8 +779,8 @@ class ResourceSuite(ResourceBase):
     def test_irepl_over_existing_third_replica__ticket_1705(self):
         # local setup
         filename = "thirdreplicatest.txt"
-        filepath = lib.create_local_testfile(filename)
-        hostname = lib.get_hostname()
+        filepath = session.create_local_testfile(filename)
+        hostname = session.get_hostname()
         hostuser = getpass.getuser()
         # assertions
         self.admin.assert_icommand("iadmin mkresc thirdresc unixfilesystem %s:/tmp/%s/thirdrescVault" %
@@ -807,7 +807,7 @@ class ResourceSuite(ResourceBase):
     def test_irepl_over_existing_bad_replica__ticket_1705(self):
         # local setup
         filename = "reploverwritebad.txt"
-        filepath = lib.create_local_testfile(filename)
+        filepath = session.create_local_testfile(filename)
         doublefile = "doublefile.txt"
         os.system("cat %s %s > %s" % (filename, filename, doublefile))
         doublesize = str(os.stat(doublefile).st_size)
@@ -859,7 +859,7 @@ class ResourceSuite(ResourceBase):
         output = commands.getstatusoutput('rm ' + filepath)
 
     def test_irepl_with_admin_mode(self):
-        lib.touch("file.txt")
+        session.touch("file.txt")
         for i in range(0, 100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
         homepath = "/" + self.admin.zone_name + "/home/" + \
@@ -935,7 +935,7 @@ class ResourceSuite(ResourceBase):
         # create file
         filename = "originalfile.txt"
         filepath = os.path.abspath(filename)
-        lib.make_file(filepath, 15)
+        session.make_file(filepath, 15)
         # define
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
@@ -963,7 +963,7 @@ class ResourceSuite(ResourceBase):
     ###################
 
     def test_itrim_with_admin_mode(self):
-        lib.touch("file.txt")
+        session.touch("file.txt")
         for i in range(100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
         homepath = self.user0.session_collection

@@ -9,7 +9,7 @@ else:
 
 import configuration
 from resource_suite import ResourceBase
-import lib
+import session
 
 
 class Test_iChmod(ResourceBase, unittest.TestCase):
@@ -25,6 +25,6 @@ class Test_iChmod(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('ichmod read ' + self.user0.username + ' -r sub_dir1\\\\%/')
         self.admin.assert_icommand('ichmod inherit -r sub_dir1\\\\%/')
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        lib.make_file(filepath, 1)
+        session.make_file(filepath, 1)
         self.admin.assert_icommand('iput ' + filepath + ' sub_dir1\\\\%/subdir2/')
         self.user0.assert_icommand('iget ' + self.admin.session_collection + '/sub_dir1\\\\%/subdir2/file ' + os.path.join(self.user0.local_session_dir, ''))
