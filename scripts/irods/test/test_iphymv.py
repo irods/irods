@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 import sys
@@ -8,10 +9,11 @@ else:
     import unittest
 import shutil
 
-import configuration
-from resource_suite import ResourceBase
-import session
-import copy
+from .resource_suite import ResourceBase
+from .. import lib
+from .. import test
+from . import settings
+from ..configuration import IrodsConfig
 
 class Test_iPhymv(ResourceBase, unittest.TestCase):
 
@@ -27,7 +29,7 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
 
     def test_iphymv_invalid_resource__2821(self):
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         dest_path = self.admin.session_collection + '/file'
         self.admin.assert_icommand('iput ' + filepath)
         self.admin.assert_icommand('iphymv -S invalidResc -R demoResc '+dest_path, 'STDERR_SINGLELINE', 'SYS_RESC_DOES_NOT_EXIST')
@@ -35,27 +37,28 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
 
     def test_iphymv_unable_to_unlink__2820(self):
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         dest_path = self.admin.session_collection + '/file'
         self.admin.assert_icommand('ireg '+filepath+' '+dest_path)
 
         os.chmod(filepath, 0444)
-        self.admin.assert_icommand('iphymv -S demoResc -R pydevtest_TestResc '+dest_path, 'STDERR_SINGLELINE', 'SYS_USER_NO_PERMISSION')
-        
+        self.admin.assert_icommand('iphymv -S demoResc -R TestResc '+dest_path, 'STDERR_SINGLELINE', 'SYS_USER_NO_PERMISSION')
+
         os.chmod(filepath, 0666)
-        self.admin.assert_icommand('iphymv -S demoResc -R pydevtest_TestResc '+dest_path)
+        self.admin.assert_icommand('iphymv -S demoResc -R TestResc '+dest_path)
 
     def test_iphymv_to_child_resource__2933(self):
+        irods_config = IrodsConfig()
         self.admin.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
-        self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
-                                      session.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-        self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
-                                      session.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
+                                      irods_config.top_level_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
+                                      irods_config.top_level_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
 
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         dest_path = self.admin.session_collection + '/file'
         self.admin.assert_icommand('iput -fR rrResc ' + filepath + ' ' + dest_path)
 
@@ -70,16 +73,17 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc rrResc")
 
     def test_iphymv_to_resc_hier__2933(self):
+        irods_config = IrodsConfig()
         self.admin.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
-        self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + configuration.HOSTNAME_1 + ":" +
-                                      session.get_irods_top_level_dir() + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
-        self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + configuration.HOSTNAME_2 + ":" +
-                                      session.get_irods_top_level_dir() + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
+                                      irods_config.top_level_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
+                                      irods_config.top_level_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
 
         filepath = os.path.join(self.admin.local_session_dir, 'file')
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         dest_path = self.admin.session_collection + '/file'
         self.admin.assert_icommand('iput -fR rrResc ' + filepath + ' ' + dest_path)
 

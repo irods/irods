@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 
 '''switchuser.py - A simple utility to switch irods user environment files, offsession (ie. after running iexit).
 Asssumes that such files are stored as irods_environment_username.json under ~/.irods
@@ -10,7 +11,7 @@ import shutil
 
 
 if len(sys.argv) != 2:
-    print 'Usage: switchuser.py <username>'
+    print('Usage: switchuser.py <username>')
     sys.exit(1)
 
 irods_dir = os.path.join(os.environ['HOME'], '.irods')
@@ -27,5 +28,5 @@ if 'irods_environment_' + sys.argv[1] + ".json" in os.listdir(irods_dir):
         irods_dir, 'irods_environment_' + sys.argv[1] + ".json"), os.path.join(irods_dir, 'irods_environment.json'))
 
 else:
-    print 'No irods_environment.json file found for user:', sys.argv[1]
+    print('No irods_environment.json file found for user: %s' % (sys.argv[1]))
     sys.exit(1)

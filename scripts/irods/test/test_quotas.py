@@ -1,16 +1,15 @@
 import os
 import re
 import sys
+import time
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
 
-import configuration
-import resource_suite
-import time
-import lib
+from . import resource_suite
+from .. import lib
 
 
 class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):

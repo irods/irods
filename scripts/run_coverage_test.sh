@@ -33,7 +33,7 @@ echo "DETECTED: username[$USERNAME] timestamp[$D]"
 
 # sync
 echo "----- SYNCING TEST FILES -----"
-rsync -avz /home/$USERNAME/irods/tests/pydevtest/ ./
+rsync -avz /home/$USERNAME/irods/tests/ ./
 
 # coverage baseline
 echo "----- GENERATING COVERAGE BASELINE -----"

@@ -1,28 +1,32 @@
+from __future__ import print_function
 import sys
 if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
-import commands
 import os
 import stat
 import datetime
+import filecmp
 import time
 import shutil
 import random
 import subprocess
 
-import configuration
-from resource_suite import ResourceBase
-import session
+from . import session
+from .. import test
+from . import settings
+from .resource_suite import ResourceBase
+from .. import lib
 
 
 class ChunkyDevTest(ResourceBase):
 
     def test_beginning_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -30,14 +34,14 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtest")
 
-        # test basic informational commands
+        # test basic informational icommands
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.username)
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.zone_name)
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.default_resource)
@@ -57,9 +61,9 @@ class ChunkyDevTest(ResourceBase):
 
         # put and list basic file information
         self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "home")  # debug
-        self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ichksum -f " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "performed = 1")
-        self.admin.assert_icommand("iput -kf " + progname + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -kf " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
         self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', "foo1")
@@ -88,14 +92,14 @@ class ChunkyDevTest(ResourceBase):
         # test imeta -v
         imeta_popen = subprocess.Popen(
             'echo "ls -d ' + irodshome + '/icmdtest/foo1" | imeta -v', shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        imeta_output, imeta_err = imeta_popen.communicate()
+        imeta_output = imeta_popen.communicate()[0].decode()
         assert imeta_output.find('testmeta1') > -1
         assert imeta_output.find('180') > -1
         assert imeta_output.find('cm') > -1
 
         # new file mode check
         self.admin.assert_icommand("iget -fK --rlock " + irodshome + "/icmdtest/foo2 /tmp/")
-        assert oct(stat.S_IMODE(os.stat("/tmp/foo2").st_mode)) == '0640'
+        assert stat.S_IMODE(os.stat("/tmp/foo2").st_mode) == 0o640
         os.unlink("/tmp/foo2")
 
         self.admin.assert_icommand("ils " + irodshome + "/icmdtest/foo2", 'STDOUT_SINGLELINE', "foo2")
@@ -124,8 +128,9 @@ class ChunkyDevTest(ResourceBase):
         with session.make_session_for_existing_admin() as rods_admin:
             rods_admin.assert_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -133,7 +138,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -145,10 +150,10 @@ class ChunkyDevTest(ResourceBase):
             os.mkdir(mysdir)
         for i in range(20):
             mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(progname, mysfile)
+            shutil.copyfile(test_file, mysfile)
 
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -182,7 +187,7 @@ class ChunkyDevTest(ResourceBase):
                                    irodshome + "/icmdtest " + dir_w + "/testx", 'STDOUT_SINGLELINE', "opened")
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        commands.getstatusoutput("tar -chf " + dir_w + "/testx.tar -C " + dir_w + "/testx .")
+        lib.execute_command(['tar', 'chf', os.path.join(dir_w, 'testx.tar'), '-C', os.path.join(dir_w, 'testx'), '.'])
         self.admin.assert_icommand("iput " + dir_w + "/testx.tar " + irodshome + "/icmdtestx.tar")
         self.admin.assert_icommand("ibun -x " + irodshome + "/icmdtestx.tar " + irodshome + "/icmdtestx")
         self.admin.assert_icommand("ils -lr " + irodshome + "/icmdtestx", 'STDOUT_SINGLELINE', ["foo2"])
@@ -195,11 +200,9 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile(dir_w + "/testx1.tar"):
             os.unlink(dir_w + "/testx1.tar")
         self.admin.assert_icommand("iget " + irodshome + "/icmdtestx1.tar " + dir_w + "/testx1.tar")
-        commands.getstatusoutput("tar -xvf " + dir_w + "/testx1.tar -C " + dir_w + "/testx1")
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testx " + dir_w + "/testx1/icmdtestx")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        lib.execute_command(['tar', 'xvf', os.path.join(dir_w, 'testx1.tar'), '-C', os.path.join(dir_w, 'testx1')])
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'testx1', 'icmdtestx'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
 
         # test ibun with zip
         self.admin.assert_icommand("ibun -cDzip " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestx")
@@ -207,10 +210,8 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile("icmdtestzip"):
             os.unlink("icmdtestzip")
         self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtestzip " + dir_w + "", 'STDOUT_SINGLELINE', "icmdtestzip")
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testx " + dir_w + "/icmdtestzip/icmdtestx")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'icmdtestzip', 'icmdtestx'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/icmdtestzip")
         self.admin.assert_icommand("ibun --add " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestzip")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.zip " + irodshome + "/icmdtestzip")
@@ -221,10 +222,8 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile("icmdtestgz"):
             os.unlink("icmdtestgz")
         self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtestgz " + dir_w + "", 'STDOUT_SINGLELINE', "icmdtestgz")
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testx " + dir_w + "/icmdtestgz/icmdtestx")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'icmdtestgz', 'icmdtestx'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/icmdtestgz")
         self.admin.assert_icommand("ibun --add " + irodshome + "/icmdtestx1.tar.gz " + irodshome + "/icmdtestgz")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.tar.gz " + irodshome + "/icmdtestgz")
@@ -235,10 +234,8 @@ class ChunkyDevTest(ResourceBase):
         if os.path.isfile("icmdtestbz2"):
             os.unlink("icmdtestbz2")
         self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtestbz2 " + dir_w + "", 'STDOUT_SINGLELINE', "icmdtestbz2")
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testx " + dir_w + "/icmdtestbz2/icmdtestx")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'icmdtestbz2', 'icmdtestx'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/icmdtestbz2")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.tar.bz2")
         self.admin.assert_icommand("iphybun -R " + self.anotherresc + " -Dbzip2 " + irodshome + "/icmdtestbz2")
@@ -246,10 +243,9 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("itrim -N1 -S " + irodsdefresource + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
 
         # get the name of bundle file
-        output = commands.getstatusoutput(
-            "ils -L " + irodshome + "/icmdtestbz2/icmdtestx/foo1 | tail -n1 | awk '{ print $NF }'")
-        print output[1]
-        bunfile = output[1]
+        out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestbz2', 'icmdtestx', 'foo1')])
+        bunfile = out.split()[-1]
+        print(bunfile)
         self.admin.assert_icommand("ils --bundle " + bunfile, 'STDOUT_SINGLELINE', "Subfiles")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestbz2")
         self.admin.assert_icommand("irm -f --empty " + bunfile)
@@ -267,8 +263,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_ireg_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -276,7 +273,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -288,31 +285,26 @@ class ChunkyDevTest(ResourceBase):
             os.mkdir(mysdir)
         for i in range(20):
             mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(progname, mysfile)
+            shutil.copyfile(test_file, mysfile)
 
-        commands.getstatusoutput("mv " + sfile2 + " /tmp/sfile2")
-        commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2r")
+        shutil.move(sfile2, '/tmp/sfile2')
+        shutil.copyfile('/tmp/sfile2', '/tmp/sfile2r')
         # <-- FAILING - REASON FOR SKIPPING
         self.admin.assert_icommand("ireg -KR " + self.testresc + " /tmp/sfile2 " + irodshome + "/foo5")
-        commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2r")
+        shutil.copyfile('/tmp/sfile2', '/tmp/sfile2r')
         self.admin.assert_icommand("ireg -KkR " + self.anotherresc + " --repl /tmp/sfile2r  " + irodshome + "/foo5")
         self.admin.assert_icommand("iget -fK " + irodshome + "/foo5 " + dir_w + "/foo5")
-        output = commands.getstatusoutput("diff /tmp/sfile2  " + dir_w + "/foo5")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        assert filecmp.cmp('/tmp/sfile2', os.path.join(dir_w, 'foo5')), "Files differed"
         self.admin.assert_icommand("ireg -KCR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtesta")
         if os.path.exists(dir_w + "/testa"):
             shutil.rmtree(dir_w + "/testa")
         self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtesta " + dir_w + "/testa", 'STDOUT_SINGLELINE', "testa")
-        output = commands.getstatusoutput("diff -r " + mysdir + " " + dir_w + "/testa")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testa'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/testa")
         # test ireg with normal user
         testuser2home = "/" + irodszone + "/home/" + self.user1.username
-        commands.getstatusoutput("cp /tmp/sfile2 /tmp/sfile2c")
+        shutil.copyfile('/tmp/sfile2', '/tmp/sfile2c')
         self.user1.assert_icommand("ireg -KR " + self.testresc + " /tmp/sfile2c " +
                                    testuser2home + "/foo5", 'STDERR_SINGLELINE', "PATH_REG_NOT_ALLOWED")
         self.user1.assert_icommand("iput -R " + self.testresc + " /tmp/sfile2c " + testuser2home + "/foo5")
@@ -329,8 +321,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_mcoll_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -338,7 +331,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -349,11 +342,11 @@ class ChunkyDevTest(ResourceBase):
             os.mkdir(mysdir)
         for i in range(20):
             mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(progname, mysfile)
+            shutil.copyfile(test_file, mysfile)
 
         self.admin.assert_icommand("imkdir icmdtest")
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -366,10 +359,8 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(dir_w + "/testb"):
             shutil.rmtree(dir_w + "/testb")
         self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtestb " + dir_w + "/testb", 'STDOUT_SINGLELINE', "testb")
-        output = commands.getstatusoutput("diff -r " + mysdir + " " + dir_w + "/testb")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testb'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestb")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestb")
         shutil.rmtree(dir_w + "/testb")
@@ -377,8 +368,8 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imcoll -m filesystem -R " +
                                    self.testresc + " " + mysdir + " " + irodshome + "/icmdtestm")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestm/testmm")
-        self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestm/testmm/foo1")
-        self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestm/testmm/foo11")
+        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo1")
+        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestm/testmm/foo11")
         self.admin.assert_icommand("imv " + irodshome +
                                    "/icmdtestm/testmm/foo1 " + irodshome + "/icmdtestm/testmm/foo2")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtestm/testmm " + irodshome + "/icmdtestm/testmm1")
@@ -392,10 +383,8 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(dir_w + "/testm"):
             shutil.rmtree(dir_w + "/testm")
         self.admin.assert_icommand("iget -fvrK " + irodshome + "/icmdtesta " + dir_w + "/testm", 'STDOUT_SINGLELINE', "testm")
-        output = commands.getstatusoutput("diff -r " + mysdir + " " + dir_w + "/testm")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(mysdir, os.path.join(dir_w, 'testm'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         self.admin.assert_icommand("imcoll -U " + irodshome + "/icmdtestm")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestm")
         shutil.rmtree(dir_w + "/testm")
@@ -412,12 +401,10 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iget -vr " + irodshome + "/icmdtest  " + dir_w + "/testx", 'STDOUT_SINGLELINE', "testx")
         self.admin.assert_icommand("iget -vr " + irodshome +
                                    "/icmdtestt_mcol/icmdtest  " + dir_w + "/testt", 'STDOUT_SINGLELINE', "testt")
-        output = commands.getstatusoutput("diff -r  " + dir_w + "/testx " + dir_w + "/testt")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testx'), os.path.join(dir_w, 'testt'))
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtestt_mcol/mydirtt")
-        self.admin.assert_icommand("iput " + progname + " " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt")
+        self.admin.assert_icommand("iput " + test_file + " " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtestt_mcol/mydirtt/foo1mt " +
                                    irodshome + "/icmdtestt_mcol/mydirtt/foo1mtx")
 
@@ -433,8 +420,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_large_dir_and_mcoll_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -442,7 +430,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -450,7 +438,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imkdir icmdtest")
 
         # we put foo1 in $irodsdefresource and foo2 in testresource
-        self.admin.assert_icommand("iput -K --wlock " + progname + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("icp -K -R " + self.testresc + " " +
                                    irodshome + "/icmdtest/foo1 " + irodshome + "/icmdtest/foo2")
 
@@ -463,11 +451,11 @@ class ChunkyDevTest(ResourceBase):
         # make a directory of 2 large files and 2 small files
         lfile = dir_w + "/lfile"
         lfile1 = dir_w + "/lfile1"
-        commands.getstatusoutput("echo 012345678901234567890123456789012345678901234567890123456789012 > " + lfile)
+        with open(lfile, 'wt') as f:
+            print('012345678901234567890123456789012345678901234567890123456789012', file=f)
         for i in range(6):
-            commands.getstatusoutput("cat " + lfile + " " + lfile + " " + lfile + " " + lfile +
-                                     " " + lfile + " " + lfile + " " + lfile + " " + lfile + " " + lfile + " > " + lfile1)
-            os.rename(lfile1, lfile)
+            cat_file_into_file_n_times(lfile, lfile1, 9)
+            shutil.move(lfile1, lfile)
         os.mkdir(myldir)
         for i in range(1, 3):
             mylfile = myldir + "/lfile" + str(i)
@@ -475,8 +463,8 @@ class ChunkyDevTest(ResourceBase):
             if i != 2:
                 shutil.copyfile(lfile, mylfile)
             else:
-                os.rename(lfile, mylfile)
-            shutil.copyfile(progname, mysfile)
+                shutil.move(lfile, mylfile)
+            shutil.copyfile(test_file, mysfile)
 
         # test adding a large file to a mounted collection
         self.admin.assert_icommand("iput " + myldir + "/lfile1 " + irodshome + "/icmdtestt_large/mydirtt")
@@ -498,8 +486,9 @@ class ChunkyDevTest(ResourceBase):
             rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
 
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -507,7 +496,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -519,16 +508,16 @@ class ChunkyDevTest(ResourceBase):
             os.mkdir(mysdir)
         for i in range(20):
             mysfile = mysdir + "/sfile" + str(i)
-            shutil.copyfile(progname, mysfile)
+            shutil.copyfile(test_file, mysfile)
 
         # iphybun test
         self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("iphybun -KR " + self.anotherresc + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
                                    irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
-        output = commands.getstatusoutput("ils -L " + irodshome + "/icmdtestp/sfile1 | tail -n1 | awk '{ print $NF }'")
-        print output[1]
-        bunfile = output[1]
+        out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestp', 'sfile1')])
+        bunfile = out.split()[-1]
+        print(bunfile)
         self.admin.assert_icommand("irepl --purgec -R " + self.anotherresc + " " + bunfile)
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
                                    irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
@@ -551,8 +540,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_irsync_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -560,7 +550,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -568,13 +558,13 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("imkdir icmdtest")
 
         # testing irsync
-        self.admin.assert_icommand("irsync " + progname + " i:" + irodshome + "/icmdtest/foo100")
+        self.admin.assert_icommand("irsync " + test_file + " i:" + irodshome + "/icmdtest/foo100")
         self.admin.assert_icommand("irsync i:" + irodshome + "/icmdtest/foo100 " + dir_w + "/foo100")
         self.admin.assert_icommand("irsync i:" + irodshome + "/icmdtest/foo100 i:" + irodshome + "/icmdtest/foo200")
         self.admin.assert_icommand("irm -f " + irodshome + "/icmdtest/foo100 " + irodshome + "/icmdtest/foo200")
-        self.admin.assert_icommand("iput -R " + self.testresc + " " + progname + " " + irodshome + "/icmdtest/foo100")
-        self.admin.assert_icommand("irsync " + progname + " i:" + irodshome + "/icmdtest/foo100")
-        self.admin.assert_icommand("iput -R " + self.testresc + " " + progname + " " + irodshome + "/icmdtest/foo200")
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + test_file + " " + irodshome + "/icmdtest/foo100")
+        self.admin.assert_icommand("irsync " + test_file + " i:" + irodshome + "/icmdtest/foo100")
+        self.admin.assert_icommand("iput -R " + self.testresc + " " + test_file + " " + irodshome + "/icmdtest/foo200")
         self.admin.assert_icommand("irsync i:" + irodshome + "/icmdtest/foo100 i:" + irodshome + "/icmdtest/foo200")
         os.unlink(dir_w + "/foo100")
 
@@ -583,8 +573,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_xml_protocol_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -592,7 +583,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -617,7 +608,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iqstat", 'STDOUT_SINGLELINE', "No delayed rules")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtest1")
         # make a directory of large files
-        self.admin.assert_icommand("iput -kf  " + progname + "  " + irodshome + "/icmdtest1/foo1")
+        self.admin.assert_icommand("iput -kf  " + test_file + "  " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
         self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ichmod read " + self.user0.username + " " + irodshome + "/icmdtest1/foo1")
@@ -638,7 +629,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ichksum -K " + irodshome + "/icmdtest1/foo2", 'STDOUT_SINGLELINE', "foo2")
         self.admin.assert_icommand("iget -f -K " + irodshome + "/icmdtest1/foo2 " + dir_w)
         os.unlink(dir_w + "/foo2")
-        self.admin.assert_icommand("irsync " + progname + " i:" + irodshome + "/icmdtest1/foo1")
+        self.admin.assert_icommand("irsync " + test_file + " i:" + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("irsync i:" + irodshome + "/icmdtest1/foo1 /tmp/foo1")
         self.admin.assert_icommand("irsync i:" + irodshome + "/icmdtest1/foo1 i:" + irodshome + "/icmdtest1/foo2")
         os.unlink("/tmp/foo1")
@@ -649,8 +640,9 @@ class ChunkyDevTest(ResourceBase):
 
     def test_large_files_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -658,7 +650,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -668,11 +660,11 @@ class ChunkyDevTest(ResourceBase):
         # make a directory of 2 large files and 2 small files
         lfile = dir_w + "/lfile"
         lfile1 = dir_w + "/lfile1"
-        commands.getstatusoutput("echo 012345678901234567890123456789012345678901234567890123456789012 > " + lfile)
+        with open(lfile, 'wt') as f:
+            print('012345678901234567890123456789012345678901234567890123456789012', file=f)
         for i in range(6):
-            commands.getstatusoutput("cat " + lfile + " " + lfile + " " + lfile + " " + lfile +
-                                     " " + lfile + " " + lfile + " " + lfile + " " + lfile + " " + lfile + " > " + lfile1)
-            os.rename(lfile1, lfile)
+            cat_file_into_file_n_times(lfile, lfile1, 9)
+            shutil.move(lfile1, lfile)
         os.mkdir(myldir)
         for i in range(1, 3):
             mylfile = myldir + "/lfile" + str(i)
@@ -680,8 +672,8 @@ class ChunkyDevTest(ResourceBase):
             if i != 2:
                 shutil.copyfile(lfile, mylfile)
             else:
-                os.rename(lfile, mylfile)
-            shutil.copyfile(progname, mysfile)
+                shutil.move(lfile, mylfile)
+            shutil.copyfile(test_file, mysfile)
 
         # do the large files tests
         lrsfile = dir_w + "/lrsfile"
@@ -724,20 +716,15 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testz " + myldir)
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testz'), myldir)
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         # test -N0 transfer
         self.admin.assert_icommand("iput -N0 -R " + self.testresc + " " +
                                    myldir + "/lfile1 " + irodshome + "/icmdtest/testz/lfoo100")
         if os.path.isfile(dir_w + "/lfoo100"):
             os.unlink(dir_w + "/lfoo100")
         self.admin.assert_icommand("iget -N0 " + irodshome + "/icmdtest/testz/lfoo100 " + dir_w + "/lfoo100")
-        output = commands.getstatusoutput("diff " + myldir + "/lfile1 " + dir_w + "/lfoo100")
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        assert filecmp.cmp(os.path.join(myldir, 'lfile1'), os.path.join(dir_w, 'lfoo100'))
         shutil.rmtree(dir_w + "/testz")
         os.unlink(dir_w + "/lfoo100")
         self.admin.assert_icommand("irm -vrf " + irodshome + "/icmdtest/testz")
@@ -747,11 +734,12 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
 
-    @unittest.skipIf(configuration.USE_SSL, 'RBUDP does not support encryption')
+    @unittest.skipIf(test.settings.USE_SSL, 'RBUDP does not support encryption')
     def test_large_files_with_RBUDP_from_devtest(self):
         # build expected variables with similar devtest names
-        progname = __file__
-        myssize = str(os.stat(progname).st_size)
+        test_file = os.path.join(self.admin.local_session_dir, 'test_file')
+        lib.make_file(test_file, 4000, contents='arbitrary')
+        myssize = str(os.stat(test_file).st_size)
         username = self.admin.username
         irodszone = self.admin.zone_name
         testuser1 = self.user0.username
@@ -759,7 +747,7 @@ class ChunkyDevTest(ResourceBase):
         irodsdefresource = self.admin.default_resource
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
-        commands.getstatusoutput("cat " + progname + " " + progname + " > " + sfile2)
+        cat_file_into_file_n_times(test_file, sfile2, 2)
         mysdir = "/tmp/irodssdir"
         myldir = dir_w + "/ldir"
         if os.path.exists(myldir):
@@ -769,11 +757,11 @@ class ChunkyDevTest(ResourceBase):
         # make a directory of 2 large files and 2 small files
         lfile = dir_w + "/lfile"
         lfile1 = dir_w + "/lfile1"
-        commands.getstatusoutput("echo 012345678901234567890123456789012345678901234567890123456789012 > " + lfile)
+        with open(lfile, 'wt') as f:
+            print('012345678901234567890123456789012345678901234567890123456789012', file=f)
         for i in range(6):
-            commands.getstatusoutput("cat " + lfile + " " + lfile + " " + lfile + " " + lfile +
-                                     " " + lfile + " " + lfile + " " + lfile + " " + lfile + " " + lfile + " > " + lfile1)
-            os.rename(lfile1, lfile)
+            cat_file_into_file_n_times(lfile, lfile1, 9)
+            shutil.move(lfile1, lfile)
         os.mkdir(myldir)
         for i in range(1, 3):
             mylfile = myldir + "/lfile" + str(i)
@@ -781,8 +769,8 @@ class ChunkyDevTest(ResourceBase):
             if i != 2:
                 shutil.copyfile(lfile, mylfile)
             else:
-                os.rename(lfile, mylfile)
-            shutil.copyfile(progname, mysfile)
+                shutil.move(lfile, mylfile)
+            shutil.copyfile(test_file, mysfile)
 
         # do the large files tests using RBUDP
         lrsfile = dir_w + "/lrsfile"
@@ -812,10 +800,8 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        output = commands.getstatusoutput("diff -r " + dir_w + "/testz " + myldir)
-        print "output is [" + str(output) + "]"
-        assert output[0] == 0
-        assert output[1] == "", "diff output was not empty..."
+        compare_dirs = filecmp.dircmp(os.path.join(dir_w, 'testz'), myldir)
+        assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("irm -vrf " + irodshome + "/icmdtest/testz")
         shutil.rmtree(myldir)
@@ -824,3 +810,15 @@ class ChunkyDevTest(ResourceBase):
         os.unlink(sfile2)
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
+
+def cat_file_into_file_n_times(inpath, outpath, n=1):
+    with open(outpath, 'wt') as outfile:
+        with open(inpath, 'r') as infile:
+            for i in range(0, 2):
+                infile.seek(0)
+                while True:
+                    data = infile.read(2**20)
+                    if data:
+                        print(data, file=outfile, end='')
+                    else:
+                        break

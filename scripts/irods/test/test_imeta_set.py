@@ -6,7 +6,7 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 
-from resource_suite import ResourceBase
+from .resource_suite import ResourceBase
 
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
@@ -234,7 +234,7 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
             self.admin.assert_icommand(['imeta', 'add', irods_object_option_flag, object_name, attribute, value])
 
-        rc, stdout, stderr = self.admin.run_icommand(['imeta', 'qu', irods_object_option_flag, attribute, '<=', '8', 'and', attribute, '>=', '2'])
+        stdout, stderr, rc = self.admin.run_icommand(['imeta', 'qu', irods_object_option_flag, attribute, '<=', '8', 'and', attribute, '>=', '2'])
         assert rc == 0, rc
         assert stderr == '', stderr
         all_objects = set([object_name_base + str(i) for i in range(0, 10)])

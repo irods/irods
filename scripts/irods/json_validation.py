@@ -4,9 +4,10 @@ import logging
 import pprint
 import sys
 
-import irods_six
+from . import six
 
-import irods_logging
+from . import log as irods_log
+from .exceptions import IrodsError, IrodsWarning
 
 try:
     import jsonschema
@@ -18,20 +19,13 @@ try:
 except ImportError:
     pass
 
-class ValidationError(Exception):
-    pass
-
-class ValidationWarning(Warning):
-    pass
-
 def load_and_validate(config_file, schema_uri):
     l = logging.getLogger(__name__)
     try:
         # load configuration file
-        with open(config_file, 'r') as f:
-            config_dict = json.load(f)
-    except BaseException as e:
-        irods_six.reraise(ValidationError, ValidationError('\n\t'.join([
+        config_dict = lib.open_and_load_json(config_file)
+    except (OSError, ValueError) as e:
+        six.reraise(IrodsError, IrodsError('\n\t'.join([
             'ERROR: Validation Failed for [{0}]:'.format(config_file),
             'against [{0}]'.format(schema_uri),
             '{0}: {1}'.format(e.__class__.__name__, e)])),
@@ -46,13 +40,13 @@ def validate_dict(config_dict, schema_uri, name=None):
     try:
         e = jsonschema.exceptions
     except AttributeError:
-        irods_six.reraise(ValidationWarning, ValidationWarning(
-                'WARNING: Validation Failed for {0} -- jsonschema too old v[{1}]'.format(
+        six.reraise(IrodsWarning, IrodsWarning(
+                'WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(
                     name, jsonschema.__version__)),
             sys.exc_info()[2])
     except NameError:
-        irods_six.reraise(ValidationWarning, ValidationWarning(
-                'WARNING: Validation Failed for {0} -- jsonschema not installed'.format(
+        six.reraise(IrodsWarning, IrodsWarning(
+                'WARNING: Validation failed for {0} -- jsonschema not installed'.format(
                     name)),
             sys.exc_info()[2])
 
@@ -67,16 +61,15 @@ def validate_dict(config_dict, schema_uri, name=None):
             requests.exceptions.ConnectionError,        # network connection error
             requests.exceptions.Timeout                 # timeout
     ) as e:
-        irods_six.reraise(ValidationWarning, ValidationWarning('\n\t'.join([
+        six.reraise(IrodsWarning, IrodsWarning('\n\t'.join([
                 'WARNING: Validation Failed for [{0}]:'.format(name),
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
                 sys.exc_info()[2])
-    except (jsonschema.exceptions.ValidationError,      # validation error
-            jsonschema.exceptions.SchemaError,          # schema error
-            BaseException                               # catch all
+    except (jsonschema.exceptions.ValidationError,
+            jsonschema.exceptions.SchemaError
     ) as e:
-        irods_six.reraise(ValidationError,  ValidationError('\n\t'.join([
+        six.reraise(IrodsError,  IrodsError('\n\t'.join([
                 'ERROR: Validation Failed for [{0}]:'.format(name),
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
@@ -87,7 +80,7 @@ def validate_dict(config_dict, schema_uri, name=None):
 def get_initial_schema(schema_uri):
     l = logging.getLogger(__name__)
     l.debug('Loading schema from %s', schema_uri)
-    url_scheme = irods_six.moves.urllib.parse.urlparse(schema_uri).scheme
+    url_scheme = six.moves.urllib.parse.urlparse(schema_uri).scheme
     l.debug('Parsed URL: %s', schema_uri)
     scheme_dispatch = {
         'file': get_initial_schema_from_file,
@@ -98,14 +91,14 @@ def get_initial_schema(schema_uri):
     try:
         return scheme_dispatch[url_scheme](schema_uri)
     except KeyError:
-        raise ValidationError('ERROR: Invalid schema url: {}'.format(schema_uri))
+        raise IrodsError('ERROR: Invalid schema url: {}'.format(schema_uri))
 
 def get_initial_schema_from_web(schema_uri):
     try:
         response = requests.get(schema_uri, timeout=5)
     except NameError:
-        irods_six.reraise(ValidationError, ValidationError(
-            'WARNING: Validation Failed for {0} -- requests not installed'.format(
+        six.reraise(IrodsError, IrodsError(
+            'WARNING: Validation failed for {0} -- requests not installed'.format(
                 name)),
                           sys.exc_info()[2])
 
@@ -120,28 +113,9 @@ def get_initial_schema_from_web(schema_uri):
     return schema
 
 def get_initial_schema_from_file(schema_uri):
-    with open(schema_uri[7:]) as f:
+    with open(schema_uri[7:], 'rt') as f:
         schema = json.load(f)
     return schema
 
-if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.NOTSET)
-    l = logging.getLogger(__name__)
-
-    irods_logging.register_tty_handler(sys.stdout, logging.INFO, logging.WARNING)
-    irods_logging.register_tty_handler(sys.stderr, logging.WARNING, None)
-    if len(sys.argv) != 3:
-        l.error('Usage: %s <configuration_file> <schema_url>', sys.argv[0])
-        sys.exit(1)
-
-    config_file = sys.argv[1]
-    schema_uri = sys.argv[2]
-
-    try:
-        load_and_validate(config_file, schema_uri)
-    except ValidationError as e:
-        l.error('Encounterd an error in validation.', exc_info=True)
-        sys.exit(1)
-    except ValidationWarning as e:
-        l.warning('Encountered a warning in validation.', exc_info=True)
-    sys.exit(0)
+logging.getLogger('requests.packages.urllib3.connectionpool').addFilter(irods_log.DeferInfoToDebugFilter())
+logging.getLogger('urllib3.connectionpool').addFilter(irods_log.DeferInfoToDebugFilter())

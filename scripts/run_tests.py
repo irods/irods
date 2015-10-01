@@ -1,5 +1,12 @@
+#!/usr/bin/python
 from __future__ import print_function
 
+try:
+    import importlib
+except ImportError:
+    from __builtin__ import __import__
+import itertools
+import logging
 import optparse
 import os
 import subprocess
@@ -10,6 +17,10 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+from irods.configuration import IrodsConfig
+import irods.test
+import irods.test.settings
+import irods.log
 
 def get_irods_root_directory():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -17,9 +28,6 @@ def get_irods_root_directory():
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(get_irods_root_directory(), 'iRODS', 'irodsctl')
     subprocess.check_call([irodsctl, arg])
-
-def restart_irods_server():
-    run_irodsctl_with_arg('restart')
 
 def run_devtesty():
     print('devtesty is currently disabled', file=sys.stderr)
@@ -32,27 +40,36 @@ def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
 def optparse_callback_use_ssl(*args, **kwargs):
-    import configuration
-    configuration.USE_SSL = True
+    irods.test.settings.USE_SSL = True
 
 def optparse_callback_topology_test(option, opt_str, value, parser):
-    import configuration
-    configuration.RUN_IN_TOPOLOGY = True
-    configuration.TOPOLOGY_FROM_RESOURCE_SERVER = value == 'resource'
-    configuration.HOSTNAME_1 = 'resource1.example.org'
-    configuration.HOSTNAME_2 = 'resource2.example.org'
-    configuration.HOSTNAME_3 = 'resource3.example.org'
-    configuration.ICAT_HOSTNAME = 'icat.example.org'
+    irods.test.settings.RUN_IN_TOPOLOGY = True
+    irods.test.settings.TOPOLOGY_FROM_RESOURCE_SERVER = value == 'resource'
+    irods.test.settings.HOSTNAME_1 = 'resource1.example.org'
+    irods.test.settings.HOSTNAME_2 = 'resource2.example.org'
+    irods.test.settings.HOSTNAME_3 = 'resource3.example.org'
+    irods.test.settings.ICAT_HOSTNAME = 'icat.example.org'
 
 def optparse_callback_federation(option, opt_str, value, parser):
-    import configuration
-    configuration.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
-    configuration.FEDERATION.REMOTE_ZONE = value[1]
-    configuration.FEDERATION.REMOTE_HOST = value[2]
+    irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
+    irods.test.settings.FEDERATION.REMOTE_ZONE = value[1]
+    irods.test.settings.FEDERATION.REMOTE_HOST = value[2]
 
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
-    suites = [loader.loadTestsFromName(name) for name in names]
+    for name in names:
+        package_path = name.split('.')
+        for i in range(0, len(package_path)):
+            package = '.'.join(itertools.chain(['irods', 'test'], package_path[0:i]))
+            module = ''.join(['.', package_path[i]])
+            try:
+                if 'importlib' in globals():
+                    importlib.import_module(module, package=package)
+                else:
+                    __import__(''.join([package, module]))
+            except ImportError:
+                break
+    suites = [loader.loadTestsFromName(name, module=irods.test) for name in names]
     super_suite = unittest.TestSuite(suites)
     if xml_output:
         import xmlrunner
@@ -73,6 +90,12 @@ class RegisteredTestResult(unittest.TextTestResult):
         unittest.TestResult.startTest(self, test)
 
 if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.NOTSET)
+    l = logging.getLogger(__name__)
+
+    irods.log.register_tty_handler(sys.stderr, logging.WARNING, None)
+    irods.log.register_file_handler(IrodsConfig().test_log_path)
+
     parser = optparse.OptionParser()
     parser.add_option('--run_specific_test', metavar='dotted name')
     parser.add_option('--run_python_suite', action='store_true')

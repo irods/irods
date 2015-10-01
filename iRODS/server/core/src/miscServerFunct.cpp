@@ -3297,9 +3297,7 @@ irods::error get_script_output_single_line(
     std::stringstream exec;
     exec << script_language
          << " " << irods::IRODS_HOME_DIRECTORY
-         << "/iRODS/scripts/"
-         << script_language
-         << "/" << script_name;
+         << "/scripts/" << script_name;
     for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
         exec << " " << args[i];
     }

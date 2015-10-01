@@ -1,9 +1,10 @@
+#!/usr/bin/python
 from __future__ import print_function
 
+from functools import reduce
 import sys
-import os
-import json
 
+from irods.configuration import IrodsConfig
 
 def usage():
     print('Usage: get_irods_version.py ["string"|"integer"|"major"|"minor"|"patchlevel"]')
@@ -13,25 +14,20 @@ if len(sys.argv) != 2:
     usage()
     sys.exit(1)
 
-# read version from VERSION.json
-irods_top_level = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-with open(os.path.join(irods_top_level, 'VERSION.json')) as fh:
-    data = json.load(fh)
-version_string = data['irods_version']
-(major, minor, patchlevel) = version_string.split('.')
+operations = {}
+operations['string'] = lambda x: x
+operations['integer'] = lambda x: reduce(lambda y, z: y*1000 + int(z), x.split('.'), 0)
+operations['major'] = lambda x: int(x.split('.')[0])
+operations['minor'] = lambda x: int(x.split('.')[1])
+operations['patchlevel'] = lambda x: int(x.split('.')[2])
 
-# print it out
-if sys.argv[1] == 'string':
-    print(version_string)
-elif sys.argv[1] == 'integer':
-    print(int(major) * 1000000 + int(minor) * 1000 + int(patchlevel))
-elif sys.argv[1] == 'major':
-    print(major)
-elif sys.argv[1] == 'minor':
-    print(minor)
-elif sys.argv[1] == 'patchlevel':
-    print(patchlevel)
-else:
+# read version from VERSION.json
+version_string = IrodsConfig().version['irods_version']
+try :
+    value = operations[sys.argv[1]](version_string)
+except KeyError:
     print('ERROR: unknown format [%s] requested' % sys.argv[1], file=sys.stderr)
     usage()
     sys.exit(1)
+
+print(value)

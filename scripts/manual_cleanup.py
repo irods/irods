@@ -1,28 +1,31 @@
 #!/usr/bin/env python
 
-import sys
-import irods.test.session
-import configuration
 import shutil
 
+from irods import lib
+from irods.test import session
+from irods.configuration import IrodsConfig
+from irods import test
+import test.settings
+
 test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper', 'admin']
-test_resc_list = ['pydevtest_AnotherResc', 'pydevtest_TestResc', 'pt', 'leaf']
+test_resc_list = ['AnotherResc', 'TestResc', 'pt', 'leaf']
 
 # make admin session
-service_env = irods.test.session.get_service_account_environment_file_contents()
-admin_name = service_env['irods_user_name']
-zone_name = service_env['irods_zone_name']
-env_dict = irods.test.session.make_environment_dict(admin_name, configuration.ICAT_HOSTNAME, zone_name)
-sess = irods.test.session.IrodsSession(env_dict, configuration.PREEXISTING_ADMIN_PASSWORD, False)
+irods_config = IrodsConfig()
+admin_name = irods_config.client_environment['irods_user_name']
+zone_name = irods_config.client_environment['irods_zone_name']
+env_dict = lib.make_environment_dict(admin_name, test.settings.ICAT_HOSTNAME, zone_name, use_ssl=test.settings.USE_SSL)
+sess = session.IrodsSession(env_dict, test.settings.PREEXISTING_ADMIN_PASSWORD, False)
 
 # remove test stuff
 for user_name in test_user_list:
     # get permission on user's collection
     sess.run_icommand('ichmod -rM own {admin_name} /{zone_name}/home/{user_name}'.format(**locals()))
-    
+
     # remove test data in user's home collection
-    res = sess.run_icommand('ils /{zone_name}/home/{user_name}'.format(**locals()))
-    entries = res[1].split()
+    out, _, _ = sess.run_icommand('ils /{zone_name}/home/{user_name}'.format(**locals()))
+    entries = out.split()
     if len(entries) > 1:
         for entry in entries[1:]:
             # collection
@@ -44,4 +47,3 @@ for resource in test_resc_list:
 
 # remove local files
 shutil.rmtree('/tmp/federation_test_stuff', ignore_errors=True)
-

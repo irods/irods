@@ -97,7 +97,7 @@ sub load_database_config {
     $DATABASE_HOST = $data->{'db_host'};
     $DB_NAME = $data->{'db_name'};
     $DATABASE_PORT = $data->{'db_port'};
-    $DATABASE_ADMIN_NAME = $data->{'db_user'};
+    $DATABASE_ADMIN_NAME = $data->{'db_username'};
     $DATABASE_ADMIN_PASSWORD = $data->{'db_password'};
     # return
     return 1;

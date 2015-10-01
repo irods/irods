@@ -8,8 +8,8 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-import configuration
-import session
+from .. import lib
+from . import session
 
 
 SessionsMixin = session.make_sessions_mixin([('otherrods', 'apass')], [('alice', 'password'), ('anonymous', None)])
@@ -32,7 +32,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_iticket_get(self):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         collection = self.admin.session_collection + '/dir'
         data_obj = collection + '/' + filename
 
@@ -47,7 +47,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_iticket_put(self):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
-        session.make_file(filepath, 1)
+        lib.make_file(filepath, 1)
         collection = self.admin.session_collection + '/dir'
         data_obj = collection + '/' + filename
 
@@ -213,7 +213,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand('iticket mod ' + ticket + ' remove user ' + self.user.username)
 
     def ticket_host_get(self, ticket, data_obj):
-        host = session.get_hostname()
+        host = lib.get_hostname()
         not_host = '0.0.0.0'
         self.admin.assert_icommand('iticket mod ' + ticket + ' add host ' + not_host)
         self.ticket_get_fail(ticket, data_obj)
@@ -224,7 +224,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand('iticket mod ' + ticket + ' remove host ' + host)
 
     def ticket_host_put(self, ticket, data_obj, filepath):
-        host = session.get_hostname()
+        host = lib.get_hostname()
         not_host = '0.0.0.0'
         self.admin.assert_icommand('iticket mod ' + ticket + ' add host ' + not_host)
         self.ticket_put_fail(ticket, data_obj, filepath)
@@ -255,7 +255,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.ticket_put(ticket, data_obj, filepath)
 
     def ticket_bytes_put(self, ticket, data_obj, filepath):
-        session.make_file(filepath, 2)
+        lib.make_file(filepath, 2)
         self.admin.assert_icommand('iticket mod ' + ticket + ' write-byte 6')
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj)
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj)

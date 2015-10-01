@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import socket
 import shutil
@@ -9,9 +10,11 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 
-import session
-import metaclass_unittest_test_case_generator
-import resource_suite
+from .. import lib
+from ..configuration import IrodsConfig
+from . import metaclass_unittest_test_case_generator
+from . import resource_suite
+from . import session
 
 
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
@@ -19,8 +22,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
-    rulesdir = currentdir + "/../../iRODS/clients/icommands/test/rules/"
-    conf_dir = session.get_core_re_dir()
+    rulesdir = os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'clients', 'icommands', 'test', 'rules')
+    conf_dir = IrodsConfig().core_re_directory
 
     def setUp(self):
         super(Test_AllRules, self).setUp()
@@ -30,11 +33,11 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
         progname = __file__
-        dir_w = rulesdir + ".."
+        dir_w = os.path.normpath(os.path.join(rulesdir, '..'))
         self.rods_session.assert_icommand('icd')  # to get into the home directory (for testallrules assumption)
         self.rods_session.assert_icommand('iadmin mkuser devtestuser rodsuser')
         self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' +
-                                          hostuser + '/pydevtest_testallrulesResc', 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                          hostuser + '/testallrulesResc', 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.rods_session.assert_icommand('imkdir sub1')
         self.rods_session.assert_icommand('imkdir sub3')
         self.rods_session.assert_icommand('imkdir forphymv')
@@ -74,7 +77,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         # setup for rulemsiAdmChangeCoreRE and the likes
         empty_core_file_name = 'empty.test.re'
         new_core_file_name = 'new.test.re'
-        with open(self.conf_dir + '/' + empty_core_file_name, 'w'):
+        with open(self.conf_dir + '/' + empty_core_file_name, 'wt'):
             pass
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/core.re.bckp")           # back up core.re
         shutil.copy(self.conf_dir + "/core.re", self.conf_dir + "/" + new_core_file_name)   # copy core.re
@@ -90,8 +93,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.assert_icommand('iqdel -a')  # remove all/any queued rules
 
         # cleanup mods in iRODS config dir
-        session.run_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir, self.conf_dir))
-        session.run_command('rm -f %s/*.test.re' % self.conf_dir)
+        lib.execute_command('mv -f {0}/core.re.bckp {0}/core.re'.format(self.conf_dir))
+        lib.execute_command('rm -f {0}/*.test.re'.format(self.conf_dir))
 
         self.rods_session.__exit__()
         super(Test_AllRules, self).tearDown()
@@ -108,7 +111,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- RE"
+                    # print("skipping " + rulefile + " ----- RE")
                     return False
 
             # skip rules that fail by design
@@ -117,12 +120,12 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- failbydesign"
+                    # print("skipping " + rulefile + " ----- failbydesign")
                     return False
 
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- failbydesign"
+                    # print("skipping " + rulefile + " ----- failbydesign")
                     return False
 
             # skip if an action (run in the core.re), not enough input/output for irule
@@ -169,7 +172,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- input/output"
+                    # print("skipping " + rulefile + " ----- input/output")
                     return False
 
             # skip rules we are not yet supporting
@@ -178,7 +181,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- msiobj"
+                    # print("skipping " + rulefile + " ----- msiobj")
                     return False
 
             # ERA
@@ -194,7 +197,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- ERA"
+                    # print("skipping " + rulefile + " ----- ERA")
                     return False
 
             # XMSG
@@ -210,7 +213,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- XMSG"
+                    # print("skipping " + rulefile + " ----- XMSG")
                     return False
 
             # FTP
@@ -220,7 +223,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- FTP"
+                    # print("skipping " + rulefile + " ----- FTP")
                     return False
 
             # webservices
@@ -233,7 +236,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- webservices"
+                    # print("skipping " + rulefile + " ----- webservices")
                     return False
 
             # XML
@@ -244,7 +247,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- XML"
+                    # print("skipping " + rulefile + " ----- XML")
                     return False
 
             # transition to core microservices only
@@ -292,7 +295,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- transition to core"
+                    # print("skipping " + rulefile + " ----- transition to core")
                     return False
 
             # skipping rules requiring additional .re files in community code
@@ -308,36 +311,36 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             ]
             for n in names_to_skip:
                 if n in rulefile:
-                    # print "skipping " + rulefile + " ----- community"
+                    # print("skipping " + rulefile + " ----- community")
                     return False
 
             # skipping for now, not sure why it's throwing a stacktrace at the moment
             if "rulemsiPropertiesToString" in rulefile:
-                # print "skipping " + rulefile + " ----- b/c of stacktrace"
+                # print("skipping " + rulefile + " ----- b/c of stacktrace")
                 return False
 
             # misc / other
             if "ruleintegrity" in rulefile:
-                # print "skipping " + rulefile + " ----- integrityChecks"
+                # print("skipping " + rulefile + " ----- integrityChecks")
                 return False
             if "z3950" in rulefile:
-                # print "skipping " + rulefile + " ----- z3950"
+                # print("skipping " + rulefile + " ----- z3950")
                 return False
             if "rulemsiImage" in rulefile:
-                # print "skipping " + rulefile + " ----- image"
+                # print("skipping " + rulefile + " ----- image")
                 return False
             if "rulemsiRda" in rulefile:
-                # print "skipping " + rulefile + " ----- RDA"
+                # print("skipping " + rulefile + " ----- RDA")
                 return False
             if "rulemsiCollRepl" in rulefile:
-                # print "skipping " + rulefile + " ----- deprecated"
+                # print("skipping " + rulefile + " ----- deprecated")
                 return False
             if "rulemsiTarFileExtract" in rulefile:
-                # print "skipping " + rulefile + " ----- CAT_NO_ROWS_FOUND - failed in
+                # print("skipping " + rulefile + " ----- CAT_NO_ROWS_FOUND - failed in)
                 # call to getDataObjInfoIncSpecColl"
                 return False
             if "rulemsiDataObjRsync" in rulefile:
-                # print "skipping " + rulefile + " ----- tested separately"
+                # print("skipping " + rulefile + " ----- tested separately")
                 return False
 
             return True
@@ -346,7 +349,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             def make_test(rulefile):
                 def test(self):
                     self.rods_session.assert_icommand("icd")
-                    self.rods_session.assert_icommand("irule -vF " + rulesdir + rulefile,
+                    self.rods_session.assert_icommand("irule -vF " + os.path.join(rulesdir, rulefile),
                                                       'STDOUT_SINGLELINE', "completed successfully")
                 return test
 
@@ -366,25 +369,25 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.run_icommand(['imkdir', test_coll])
 
         # create source test file
-        with open(src_file, 'a') as f:
-            f.write('blah\n')
+        with open(src_file, 'at') as f:
+            print('blah\n', file=f, end='')
 
         # upload source test file
         self.rods_session.run_icommand(['iput', src_file, test_coll])
 
         # first rsync rule test
-        self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
+        self.rods_session.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDOUT_SINGLELINE', "status = 99999992")
 
         # modify the source and try again
         for i in range(1, 5):
-            with open(src_file, 'a') as f:
-                f.write('blah_' + str(i) + '\n')
+            with open(src_file, 'at') as f:
+                print('blah_' + str(i) + '\n', file=f, end='')
 
             # force upload source
             self.rods_session.run_icommand(['iput', '-f', src_file, test_coll])
 
             # sync test
-            self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE', "status = 99999992")
+            self.rods_session.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDOUT_SINGLELINE', "status = 99999992")
 
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', test_coll])
@@ -394,15 +397,15 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         rulefile = 'rulemsiPhyBundleColl.r'
 
         # rule test
-        self.rods_session.assert_icommand("irule -F " + rulesdir + rulefile, 'STDOUT_SINGLELINE',
+        self.rods_session.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDOUT_SINGLELINE',
                                           "Create tar file of collection /tempZone/home/rods/test on resource testallrulesResc")
 
         # look for the bundle
         bundle_path = '/tempZone/bundle/home/' + self.rods_session.username
-        output = self.rods_session.run_icommand(['ils', '-L', bundle_path])
+        out, _, _ = self.rods_session.run_icommand(['ils', '-L', bundle_path])
 
         # last token in stdout should be the bundle file's full physical path
-        bundlefile = output[1].split()[-1]
+        bundlefile = out.split()[-1]
 
         # check on the bundle file's name
         assert bundlefile.find('test.') >= 0
@@ -411,7 +414,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         assert os.path.isfile(bundlefile)
 
         # now try as a normal user (expect err msg)
-        self.user0.assert_icommand("irule -F " + rulesdir + rulefile, 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
+        self.user0.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
 
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', bundle_path])

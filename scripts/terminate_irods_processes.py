@@ -1,6 +1,9 @@
+#!/usr/bin/python
 from __future__ import print_function
-from irods_control import IrodsController
+
 import sys
+
+from irods.controller import IrodsController
 
 #
 # This script finds iRODS processes owned by the current user,
@@ -10,8 +13,8 @@ import sys
 
 if __name__ == '__main__':
     try:
-        irods_controller = IrodsController()
-        irods_controller.stop()
+        control = IrodsController()
+        control.stop()
     except BaseException as e:
         print(e, file=sys.stderr)
         sys.exit(1)

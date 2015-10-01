@@ -51,21 +51,7 @@ The following command will run specific tests
   python run_tests.py --run_specific_test <module name [.class name [.method name]]>
 
 
-The run_tests.py requires Python 2.6 or Python 2.7
-
-
-Clean up this directory
-=======================
-
-The following script deletes generated coverage directories, .pyc files, and anything else left around by the test suite:
-
-  ./cleanup.sh
-
-
-
-
-
-
+The run_tests.py script  is loacted in the top-level 'scripts' directory and requires Python 2.6 or above
 
 
 For profiling... still a work in progress

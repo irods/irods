@@ -1,3 +1,4 @@
+from __future__ import print_function
 import shutil
 import sys
 import os
@@ -8,12 +9,15 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 
-import configuration
-import session
+from .. import test
+from . import settings
+from .. import lib
+from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 
 class Test_Xmsg(unittest.TestCase):
-    serverConfigFile = session.get_irods_config_dir() + '/server_config.json'
+    serverConfigFile = IrodsConfig().server_config_path
     serverConfigFileBackup = serverConfigFile + '_orig'
     xmsgHost = 'localhost'
     xmsgPort = 1279
@@ -21,24 +25,25 @@ class Test_Xmsg(unittest.TestCase):
     def setUp(self):
         # add Xmsg settings to server_config.json
         shutil.copyfile(self.serverConfigFile, self.serverConfigFileBackup)
-        contents = session.open_and_load_json_ascii(self.serverConfigFile)
+        contents = IrodsConfig().server_config
         update = {
             'xmsg_host': self.xmsgHost,
             'xmsg_port': self.xmsgPort,
         }
-        session.update_json_file_from_dict(self.serverConfigFile, update)
+        lib.update_json_file_from_dict(self.serverConfigFile, update)
 
         # apparently needed by the server too...
         my_env = os.environ.copy()
         my_env['XMSG_HOST'] = self.xmsgHost
         my_env['XMSG_PORT'] = str(self.xmsgPort)
-        session.restart_irods_server(env=my_env)
+
+        IrodsController(IrodsConfig(injected_environment=my_env)).restart()
 
     def tearDown(self):
-        os.rename(self.serverConfigFileBackup, self.serverConfigFile)
-        session.restart_irods_server()
+        shutil.move(self.serverConfigFileBackup, self.serverConfigFile)
+        IrodsController().restart()
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, "Skip for topology testing from resource server or SSL")
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, "Skip for topology testing from resource server or SSL")
     def test_send_and_receive_one_xmsg(self):
         message = 'Hello World!'
 
@@ -56,5 +61,5 @@ class Test_Xmsg(unittest.TestCase):
         res = subprocess.Popen(args, env=my_env, stdout=subprocess.PIPE).communicate()
 
         # assertion
-        print 'looking for "{0}" in "{1}"'.format(message, res[0].rstrip())
-        assert res[0].find(message) >= 0
+        print('looking for "{0}" in "{1}"'.format(message, res[0].rstrip()))
+        assert res[0].decode().find(message) >= 0

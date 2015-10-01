@@ -5,8 +5,8 @@ if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
-from resource_suite import ResourceBase
-import session
+from .resource_suite import ResourceBase
+from .. import lib
 
 
 class Test_Compatibility(ResourceBase, unittest.TestCase):
@@ -35,12 +35,14 @@ class Test_Compatibility(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('icd testColl')
         for i in range(8):
             f = 'empty{0}.txt'.format(i)
-            session.cat(f, str(i))
+            lib.cat(f, str(i))
             self.admin.assert_icommand(['iput', f])
             os.unlink(f)
         self.admin.assert_icommand('icd ..')
         self.admin.assert_icommand('iphybun -N3 -SdemoResc -RdemoResc testColl')
-        coll_dir = self.admin.run_icommand('ils /' + self.admin.zone_name + '/bundle/home/' + self.admin.username)[1].split('\n')[-2].lstrip(string.printable.translate(None, '/'))
-        after = self.admin.run_icommand(['ils', coll_dir])[1].split('\n')
+        out, _, _ = self.admin.run_icommand('ils /' + self.admin.zone_name + '/bundle/home/' + self.admin.username)
+        coll_dir = out.split('\n')[-2].lstrip(string.printable.translate(None, '/'))
+        out, _, _ = self.admin.run_icommand(['ils', coll_dir])
+        after = out.split('\n')
         assert len(after) == 2 + 3
         self.admin.assert_icommand('irm -rf testColl')

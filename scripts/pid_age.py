@@ -1,6 +1,9 @@
+#!/usr/bin/python
+from __future__ import print_function
 import sys
 import psutil
 import time
+
 pid = int(sys.argv[1])
 p = psutil.Process(pid)
-print time.time() - p.create_time
+print(time.time() - p.create_time)

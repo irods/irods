@@ -286,7 +286,7 @@ f 644 root root ${IRODS_HOME_DIR}/tests/test_framework_configuration.json ./test
 f 644 root root ${IRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
 f 755 root root ${IRODS_HOME_DIR}/tests/coverage-pre.sh ./tests/coverage-pre.sh
 f 755 root root ${IRODS_HOME_DIR}/tests/coverage-post.sh ./tests/coverage-post.sh
-f 755 root root ${IRODS_HOME_DIR}/scripts/run_pydevtest_coverage.sh ./scripts/run_pydevtest_coverage.sh
+f 755 root root ${IRODS_HOME_DIR}/scripts/run_coverage_test.sh ./scripts/run_coverage_test.sh
 %endif
 
 d 755 root root ${IRODS_HOME_DIR}/packaging -

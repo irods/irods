@@ -22,16 +22,9 @@ $version{"irods_setup.pl"} = "Feb 2015";
 $scriptfullpath = abs_path(__FILE__);
 $scripttoplevel = dirname(dirname(dirname(dirname($scriptfullpath))));
 
-# =-=-=-=-=-=-=-
-# for testing later...
-# set flag determining if this is an automated cloud resource server
-$cloudResourceInstall = 0;
-if( scalar(@ARGV) == 1) {
-        $cloudResourceInstall = 1;
-}
 # set flag to determine if this is an iCAT installation or not
 $icatInstall = 0;
-if( scalar(@ARGV) > 1 ) {
+if( scalar(@ARGV) > 0 ) {
         $icatInstall = 1;
 }
 
@@ -39,10 +32,9 @@ if( scalar(@ARGV) > 1 ) {
 #
 # Confirm execution from the top-level iRODS directory.
 #
-$IRODS_HOME = cwd( );   # Might not be actual iRODS home.  Fixed below.
 
-my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
-my $pythonScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "python" );
+my $perlScriptsDir = File::Spec->catdir( $scripttoplevel, "iRODS", "scripts", "perl" );
+my $pythonScriptsDir = File::Spec->catdir( $scripttoplevel, "scripts" );
 
 # iRODS configuration directory
 $configDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
@@ -50,30 +42,6 @@ $configDir = ( -e "$scripttoplevel/packaging/binary_installation.flag" ) ?
     File::Spec->catdir( "$scripttoplevel", "iRODS", "config" );
 
 
-if ( ! -d $configDir )
-{
-        # Configuration directory does not exist.  Perhaps this
-        # script was run from the scripts or scripts/perl subdirectories.
-        # Look up one directory.
-        $IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
-        if ( ! -d $configDir )
-        {
-                $IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
-                $configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
-                if ( ! -d $configDir )
-                {
-                        # Nope.  Complain.
-                        print( "Usage error:\n" );
-                        print( "    Please run this script from the top-level directory\n" );
-                        print( "    of the iRODS distribution.\n" );
-                        exit( 1 );
-                }
-        }
-}
-
-# Make the $IRODS_HOME path absolute.
-$IRODS_HOME = abs_path( $IRODS_HOME );
-$configDir  = abs_path( $configDir );
 $userIrodsDir = File::Spec->catfile( $ENV{"HOME"}, ".irods" );
 $userIrodsFile = File::Spec->catfile( $userIrodsDir, "irods_environment.json" );
 
@@ -111,8 +79,7 @@ my $thisHost   = `hostname -f`;
 $thisHost =~ s/^\s+|\s+$//g;
 
 # Name a log file.
-$logDir = File::Spec->catdir( $IRODS_HOME, "installLogs" );
-my $logFile = File::Spec->catfile( $logDir, "irods_setup.log" );
+my $logFile = File::Spec->catfile( $scripttoplevel, "log", "setup_log.txt" );
 
 # iRODS Server names (don't change these names without also changing
 # code later in this file that depends upon them).
@@ -166,16 +133,6 @@ else
     }
 }
 
-
-# Make sure the home directory is set and valid.  If not, the installation
-# is probably being run out of order or a prior stage failed.
-if ( $IRODS_HOME eq "" || ! -e $IRODS_HOME )
-{
-        printError( "Usage error:\n" );
-        printError( "    The IRODS_HOME setting is empty or incorrect.\n" );
-        exit( 1 );
-}
-
 ########################################################################
 #
 # Open and initialize the setup log file.
@@ -223,17 +180,7 @@ foreach $ver (keys %version)
 
 # =-=-=-=-=-=-=-
 # JMC :: if arguments are 0, we assume this is a RESOURCE installation.
-if( 1 == $icatInstall )
-{
-        $DATABASE_TYPE           = $ARGV[0];
-        $DATABASE_HOST           = $ARGV[1];
-        $DATABASE_PORT           = $ARGV[2];
-        $DATABASE_ADMIN_NAME     = $ARGV[3];
-        $DATABASE_ADMIN_PASSWORD = $ARGV[4];
-}
-# =-=-=-=-=-=-=-
-# TGR :: for a resource server, prompt for icat admin password
-else
+if( 0 == $icatInstall )
 {
     if ( 1 == $cloudResourceInstall )
     {
@@ -576,7 +523,7 @@ sub createDatabaseAndTables
                 foreach $sqlfile (@sqlfiles)
                 {
                         printLog( "    $sqlfile...\n" );
-                        my $sqlPath = File::Spec->catfile( "./server/icat/src/", $sqlfile );
+                        my $sqlPath = File::Spec->catfile( $scripttoplevel, "iRODS", "server", "icat", "src", $sqlfile );
                         ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
                         if ( $status != 0 )
                         {
@@ -662,7 +609,7 @@ sub testDatabase()
         printStatus( "Testing database communications...\n" );
         printLog( "\nTesting database communications with test_cll...\n" );
 
-        my $test_cll = File::Spec->catfile( "./server/test/bin/", "test_cll" );
+        my $test_cll = File::Spec->catfile( $scripttoplevel, "iRODS", "server", "test", "bin", "test_cll" );
 
         my $output = `$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD' 2>&1`;
 

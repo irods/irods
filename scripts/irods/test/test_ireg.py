@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import shutil
 import os
@@ -9,23 +10,20 @@ import os
 import datetime
 import socket
 
-import configuration
-import session
-import resource_suite
+from .. import test
+from . import settings
+from .. import lib
+from . import resource_suite
+from ..configuration import IrodsConfig
 
 
-RODSHOME = session.get_irods_top_level_dir() + "/iRODS/"
-ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
-RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
-
-@unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Registers files on remote resources')
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Registers files on remote resources')
 class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Ireg, self).setUp()
-        shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file0')
-        shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file1')
-        shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file2')
-        shutil.copy2(ABSPATHTESTDIR + '/test_ireg.py', ABSPATHTESTDIR + '/file3')
+        self.filepaths = [os.path.join(self.admin.local_session_dir, 'file' + str(i)) for i in range(0,4)]
+        for p in self.filepaths:
+            lib.make_file(p, 200, 'arbitrary')
 
         self.admin.assert_icommand('iadmin mkresc r_resc passthru', 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand('iadmin mkresc m_resc passthru', 'STDOUT_SINGLELINE', "Creating")
@@ -44,10 +42,6 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         # remove local test dir
         shutil.rmtree(self.testing_tmp_dir)
 
-        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file0')
-        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file1')
-        self.admin.run_icommand('irm -f ' + self.admin.home_collection + '/file3')
-
         self.admin.assert_icommand("irmtrash -M")
         self.admin.assert_icommand("iadmin rmchildfromresc m_resc l_resc")
         self.admin.assert_icommand("iadmin rmchildfromresc r_resc m_resc")
@@ -56,27 +50,30 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc m_resc")
         self.admin.assert_icommand("iadmin rmresc l_resc")
 
-        os.remove(ABSPATHTESTDIR + '/file2')
 
         super(Test_Ireg, self).tearDown()
 
     def test_ireg_files(self):
-        self.admin.assert_icommand("ireg -R l_resc " + ABSPATHTESTDIR + '/file0 ' + self.admin.home_collection + '/file0')
-        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file0', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
+        self.admin.assert_icommand("ireg -R l_resc " + self.filepaths[0] + ' ' + self.admin.session_collection + '/file0')
+        self.admin.assert_icommand('ils -l ' + self.admin.session_collection + '/file0', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
 
-        self.admin.assert_icommand("ireg -R l_resc " + ABSPATHTESTDIR + '/file1 ' + self.admin.home_collection + '/file1')
-        self.admin.assert_icommand('ils -l ' + self.admin.home_collection + '/file1', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
+        self.admin.assert_icommand("ireg -R l_resc " + self.filepaths[1] + ' ' + self.admin.session_collection + '/file1')
+        self.admin.assert_icommand('ils -l ' + self.admin.session_collection + '/file1', 'STDOUT_SINGLELINE', "r_resc;m_resc;l_resc")
 
-        self.admin.assert_icommand("ireg -R m_resc " + ABSPATHTESTDIR +
-                                   '/file2 ' + self.admin.home_collection + '/file2', 'STDERR_SINGLELINE', 'ERROR: regUtil: reg error for')
+        self.admin.assert_icommand("ireg -R m_resc " + self.filepaths[2] +
+                                   ' ' + self.admin.session_collection + '/file2', 'STDERR_SINGLELINE', 'ERROR: regUtil: reg error for')
 
-        self.admin.assert_icommand("ireg -R demoResc " + ABSPATHTESTDIR + '/file3 ' + self.admin.home_collection + '/file3')
+        self.admin.assert_icommand("ireg -R demoResc " + self.filepaths[3] + ' ' + self.admin.session_collection + '/file3')
+
+        self.admin.assert_icommand('irm ' + self.admin.session_collection + '/file0')
+        self.admin.assert_icommand('irm ' + self.admin.session_collection + '/file1')
+        self.admin.assert_icommand('irm ' + self.admin.session_collection + '/file3')
 
     def test_ireg_new_replica__2847(self):
         filename = 'regfile.txt'
         filename2 = filename+'2'
         os.system('rm -f {0} {1}'.format(filename, filename2))
-        session.make_file(filename, 234)
+        lib.make_file(filename, 234)
         os.system('cp {0} {1}'.format(filename, filename2))
         self.admin.assert_icommand('ireg -Kk -R {0} {1} {2}'.format(self.testresc, os.path.abspath(filename), self.admin.session_collection+'/'+filename))
         self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
@@ -93,38 +90,35 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         # make a local test dir under /tmp/
         test_dir_name = 'test_ireg_dir_exclude_from'
         local_dir = os.path.join(self.testing_tmp_dir, test_dir_name)
-        local_dirs = session.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+        local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # arbitrary list of files to exclude
         excluded = set(['junk0001', 'junk0002', 'junk0003'])
 
         # make exclusion file
         exclude_file_path = os.path.join(self.testing_tmp_dir, 'exclude.txt')
-        with open(exclude_file_path, 'w') as exclude_file:
+        with open(exclude_file_path, 'wt') as exclude_file:
             for filename in excluded:
-                print >>exclude_file, filename
+                print(filename, file=exclude_file)
 
         # register local dir
-        target_collection = self.admin.home_collection + '/' + test_dir_name
+        target_collection = self.admin.session_collection + '/' + test_dir_name
         self.admin.assert_icommand("ireg --exclude-from {exclude_file_path} -C {local_dir} {target_collection}".format(**locals()), "EMPTY")
 
         # compare files at each level
-        for dir, files in local_dirs.iteritems():
+        for dir, files in local_dirs.items():
             subcollection = dir.replace(local_dir, target_collection, 1)
 
             # run ils on subcollection
             self.admin.assert_icommand(['ils', subcollection], 'STDOUT_SINGLELINE')
-            ils_out = session.ils_output_to_entries(self.admin.run_icommand(['ils', subcollection])[1])
+            ils_out = self.admin.get_entries_in_collection(subcollection)
 
             # compare irods objects with local files, minus the excluded ones
             local_files = set(files)
-            rods_files = set(session.files_in_ils_output(ils_out))
+            rods_files = set(lib.get_object_names_from_entries(ils_out))
             self.assertSetEqual(rods_files, local_files - excluded,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
-
-        # unregister collection
-        self.admin.assert_icommand("irm -rfU {target_collection}".format(**locals()))
 
         # remove local test dir and exclusion file
         os.remove(exclude_file_path)
