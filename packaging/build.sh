@@ -250,7 +250,7 @@ fi
 # read iRODS Version from JSON
 IRODSVERSION=`python -c "from __future__ import print_function; import json; d = json.loads(open('VERSION.json').read()); print(d['irods_version'])"`
 echo "IRODSVERSION=$IRODSVERSION" > VERSION.tmp # needed for Makefiles
-IRODSVERSIONINT=`python iRODS/scripts/python/get_irods_version.py integer`
+IRODSVERSIONINT=`python scripts/get_irods_version.py integer`
 echo "Detected iRODS Version to Build [$IRODSVERSION]"
 echo "Detected iRODS Version Integer [$IRODSVERSIONINT]"
 # detect operating system
@@ -387,7 +387,6 @@ rename_generated_packages() {
     SUFFIX=""
     if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         EXTENSION="rpm"
-        SUFFIX="-centos5"
         if [ "$epmosversion" == "CENTOS6" ] ; then
             SUFFIX="-centos6"
         fi
@@ -625,7 +624,7 @@ if [ "$1" == "docs" ] ; then
     if [ "$?" != "0" ] ; then
         PYPREFLIGHT="$PYPREFLIGHT roman"
     else
-        ROMANLOCATION=`python -c "import roman; print (roman.__file__)"` # expecting ".../roman.pyc"
+        ROMANLOCATION=`python -c "from __future__ import print_function; import roman; print(roman.__file__)"` # expecting ".../roman.pyc"
         echo "Detected python module 'roman' [$ROMANLOCATION]"
     fi
     confirm_preflight_prerequisites
@@ -1185,7 +1184,7 @@ cd $BUILDDIR
 # legacy rodsVersion.h.template
 LEGACY_VERSION_H_FILE=./iRODS/lib/core/include/rodsVersion.h
 cp $LEGACY_VERSION_H_FILE.template $LEGACY_VERSION_H_FILE
-TEMPLATE_RODS_RELEASE_VERSION=`python iRODS/scripts/python/get_irods_version.py string`
+TEMPLATE_RODS_RELEASE_VERSION=`python scripts/get_irods_version.py string`
 TEMPLATE_RODS_RELEASE_DATE=`date +"%b %Y"`
 set_tmpfile
 sed -e "s,TEMPLATE_RODS_RELEASE_VERSION,$TEMPLATE_RODS_RELEASE_VERSION," $LEGACY_VERSION_H_FILE > $TMPFILE
@@ -1193,9 +1192,9 @@ rsync -c $TMPFILE $LEGACY_VERSION_H_FILE
 sed -e "s,TEMPLATE_RODS_RELEASE_DATE,$TEMPLATE_RODS_RELEASE_DATE," $LEGACY_VERSION_H_FILE > $TMPFILE
 rsync -c $TMPFILE $LEGACY_VERSION_H_FILE
 # irods_version.h.template
-TEMPLATE_IRODS_VERSION_MAJOR=`python iRODS/scripts/python/get_irods_version.py major`
-TEMPLATE_IRODS_VERSION_MINOR=`python iRODS/scripts/python/get_irods_version.py minor`
-TEMPLATE_IRODS_VERSION_PATCHLEVEL=`python iRODS/scripts/python/get_irods_version.py patchlevel`
+TEMPLATE_IRODS_VERSION_MAJOR=`python scripts/get_irods_version.py major`
+TEMPLATE_IRODS_VERSION_MINOR=`python scripts/get_irods_version.py minor`
+TEMPLATE_IRODS_VERSION_PATCHLEVEL=`python scripts/get_irods_version.py patchlevel`
 TEMPLATE_IRODS_BUILD_DATE_STRING=`date +"%Y%m%d"`
 set_tmpfile
 IRODS_VERSION_H_FILE=./iRODS/lib/core/include/irods_version.h
@@ -1635,7 +1634,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        if [ "12" == `python -c 'import platform; print platform.linux_distribution()[1].split(".")[0]'` ] ; then
+        if [ "12" == `python -c 'from __future__ import print_function; import platform; print(platform.linux_distribution()[1].split(".")[0])'` ] ; then
             UBUNTU12=true
         fi
     fi

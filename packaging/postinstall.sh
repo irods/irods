@@ -113,8 +113,8 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     # update the database schema if an icat server
     if [ "$SERVER_TYPE" == "icat" ] ; then
         # =-=-=-=-=-=-=-
-        # run update_catalog_schema.py
-        su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/packaging/update_catalog_schema.py"
+        # update the catalog schema
+        su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME_DIR/iRODS/scripts/python/setup_irods.py update_catalog_schema"
     fi
     # re-start server
     su - $IRODS_SERVICE_ACCOUNT_NAME -c "$IRODS_HOME_DIR/iRODS/irodsctl start"

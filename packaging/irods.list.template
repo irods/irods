@@ -279,19 +279,14 @@ f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json
 d 755 root root ${IRODS_HOME_DIR}/log -
 
 d 755 root root ${IRODS_HOME_DIR}/tests -
-d 755 root root ${IRODS_HOME_DIR}/tests/pydevtest -
-f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
-f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.r
-f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.json
-f 755 root root ${IRODS_HOME_DIR}/tests/pydevtest/rulebase_fastswap_test_2276.sh ./tests/pydevtest/rulebase_fastswap_test_2276.sh
-f 644 root root ${IRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
-f 755 root root ${IRODS_HOME_DIR}/tests/zombiereaper.sh ./tests/zombiereaper.sh
+f 644 root root ${IRODS_HOME_DIR}/tests/test_framework_configuration.json ./tests/test_framework_configuration.json
+
 
 %if COVERAGE
 f 644 root root ${IRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
 f 755 root root ${IRODS_HOME_DIR}/tests/coverage-pre.sh ./tests/coverage-pre.sh
 f 755 root root ${IRODS_HOME_DIR}/tests/coverage-post.sh ./tests/coverage-post.sh
-f 755 root root ${IRODS_HOME_DIR}/tests/pydevtest/run_pydevtest_coverage.sh ./tests/pydevtest/run_pydevtest_coverage.sh
+f 755 root root ${IRODS_HOME_DIR}/scripts/run_pydevtest_coverage.sh ./scripts/run_pydevtest_coverage.sh
 %endif
 
 d 755 root root ${IRODS_HOME_DIR}/packaging -
@@ -303,11 +298,9 @@ f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_service_account.sh ./pac
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_configuration.sh ./packaging/setup_irods_configuration.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/update_json.py ./packaging/update_json.py
 f 755 root root ${IRODS_HOME_DIR}/packaging/convert_configuration_to_json.py ./packaging/convert_configuration_to_json.py
-f 755 root root ${IRODS_HOME_DIR}/packaging/update_configuration_schema.py ./packaging/update_configuration_schema.py
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_icat.txt ./packaging/user_icat.txt
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
-f 644 root root ${IRODS_HOME_DIR}/packaging/server_config.py ./packaging/server_config.py
 
 f 644 root root ${IRODS_HOME_DIR}/packaging/core.re.template ./packaging/core.re.template
 f 644 root root ${IRODS_HOME_DIR}/packaging/core.dvm.template ./packaging/core.dvm.template
@@ -356,24 +349,25 @@ d 755 root root /etc/irods -
 
 d 755 root root ${IRODS_HOME}/installLogs -
 
-d 755 root root ${IRODS_HOME}/scripts -
+d 755 root root ${IRODS_HOME_DIR}/scripts -
+f 744 root root ${IRODS_HOME_DIR}/scripts ./scripts/*.py
+
+f 744 root root ${IRODS_HOME_DIR}/scripts/rulebase_fastswap_test_2276.sh ./scripts/rulebase_fastswap_test_2276.sh
+
+d 755 root root ${IRODS_HOME_DIR}/scripts/irods -
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods ./scripts/irods/*.py
+
+d 755 root root ${IRODS_HOME_DIR}/scripts/irods/test -
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/test ./scripts/irods/test/*.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/test/README ./scripts/irods/test/README
+
+
 f 755 root root ${IRODS_HOME}/scripts/find_irods_home.sh ./iRODS/scripts/find_irods_home.sh
 f 755 root root ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
 d 755 root root ${IRODS_HOME}/scripts/notify -
 f 644 root root ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
 f 755 root root ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl
 f 644 root root ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
-d 755 root root ${IRODS_HOME}/scripts/python -
-f 755 root root ${IRODS_HOME}/scripts/python/switchuser.py ./iRODS/scripts/python/switchuser.py
-f 644 root root ${IRODS_HOME}/scripts/python/system_identification.py ./iRODS/scripts/python/system_identification.py
-f 644 root root ${IRODS_HOME}/scripts/python/pid_age.py ./iRODS/scripts/python/pid_age.py
-f 644 root root ${IRODS_HOME}/scripts/python/get_db_schema_version.py ./iRODS/scripts/python/get_db_schema_version.py
-f 644 root root ${IRODS_HOME}/scripts/python/validate_json.py ./iRODS/scripts/python/validate_json.py
-f 644 root root ${IRODS_HOME}/scripts/python/kill_pid.py ./iRODS/scripts/python/kill_pid.py
-f 644 root root ${IRODS_HOME}/scripts/python/terminate_irods_processes.py ./iRODS/scripts/python/terminate_irods_processes.py
-f 644 root root ${IRODS_HOME}/scripts/python/irods_control.py ./iRODS/scripts/python/irods_control.py
-f 644 root root ${IRODS_HOME}/scripts/python/irods_logging.py ./iRODS/scripts/python/irods_logging.py
-f 644 root root ${IRODS_HOME}/scripts/python/irods_six.py ./iRODS/scripts/python/irods_six.py
 d 755 root root ${IRODS_HOME}/scripts/perl -
 f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
 f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
@@ -740,3 +734,5 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/devtestuser-account-AC
 f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/load-metadata.txt ./iRODS/clients/icommands/test/misc/load-metadata.txt
 f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/load-usermods.txt ./iRODS/clients/icommands/test/misc/load-usermods.txt
 f 755 root root ${IRODS_HOME}/clients/icommands/test/testiCommands.pl ./iRODS/clients/icommands/test/testiCommands.pl
+
+%include ./external/pyodbc-include.list
