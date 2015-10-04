@@ -145,7 +145,7 @@ If the user's credentials will be exclusively authenticated with PAM, a password
 For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of Native, or Kerberos) via an `irods_environment.json` property:
 
 ~~~
-'irods_authentication_scheme': 'PAM',
+"irods_authentication_scheme": "PAM",
 ~~~
 
 Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the `iinit` session.
@@ -262,9 +262,9 @@ Put the dhparams.pem, server.key and chain.pem files somewhere that the iRODS se
 The server expects to have the following irods service account's `irods_environment.json` properties set on startup:
 
 ~~~
-'irods_ssl_certificate_chain_file': '/etc/irods/chain.pem',
-'irods_ssl_certificate_key_file': '/etc/irods/server.key',
-'irods_ssl_dh_params_file': '/etc/irods/dhparams.pem',
+"irods_ssl_certificate_chain_file": "/etc/irods/chain.pem",
+"irods_ssl_certificate_key_file": "/etc/irods/server.key",
+"irods_ssl_dh_params_file": "/etc/irods/dhparams.pem",
 ~~~
 
 #### Restart iRODS
@@ -318,14 +318,14 @@ Server verification can be turned off using the irods_ssl_verify_server `irods_e
 It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irods_ssl_ca_certificate_file `irods_environment.json` property to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following property in your `irods_environment.json`:
 
 ~~~
-'irods_ssl_ca_certificate_file': '/etc/irods/chain.pem'
+"irods_ssl_ca_certificate_file": "/etc/irods/chain.pem"
 ~~~
 
 
 Or this file could just contain the root CA certificate for a CA-signed server certificate. Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irods_host' property. If this situation cannot be corrected on the server side, the client can set:
 
 ~~~
-'irods_ssl_verify_server': 'cert'
+"irods_ssl_verify_server": "cert"
 ~~~
 
 Then, the client library will only require certificate validation, but will not check that the hostname of the iRODS server matches the hostname(s) embedded within the certificate.
