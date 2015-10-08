@@ -54,13 +54,12 @@ def setup_catalog(db_type, irods_config):
         odbc_drivers = irods.database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
         if odbc_drivers:
             db_config['db_odbc_driver'] = default_prompt(
-                'ODBC driver for %s', db_config['catalog_database_type'],
-                default=odbc_drivers)
+                    'ODBC driver for %s', db_config['catalog_database_type'],
+                    default=odbc_drivers)
         else:
             db_config['db_odbc_driver'] = default_prompt(
-                'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
-                default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type'],
-                    oracle_home=os.getenv('ORACLE_HOME', None)))
+                    'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
+                    default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type']))
 
         if db_config['catalog_database_type'] == 'oracle':
             oracle_home = ''

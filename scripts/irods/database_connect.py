@@ -54,7 +54,7 @@ def get_odbc_entry(db_config):
 
     odbc_entry['Database'] = db_config['db_name']
     odbc_entry['Server'] = db_config['db_host']
-    odbc_entry['Password'] = db_config['db_password']
+    odbc_entry['Servername'] = db_config['db_host']
     odbc_entry['Port'] = str(db_config['db_port'])
     return odbc_entry
 
@@ -68,7 +68,7 @@ def get_odbc_template(db_type):
             'CommLog': '0',
             'TraceFile': '',
             'Database': None,
-            'Server': None,
+            'Servername': None,
             'Port': None,
             'ReadOnly': 'No',
             'Ksqo': '0',
@@ -81,8 +81,7 @@ def get_odbc_template(db_type):
     elif db_type == 'mysql':
         return {
             'Description': 'iRODS catalog',
-            'Trace': 'No',
-            'TraceFile': '',
+            'Option': '2',
             'Driver': None,
             'Server': None,
             'Port': None,
@@ -96,21 +95,28 @@ def get_odbc_template(db_type):
     else:
         raise IrodsError('No odbc template exists for %s' % (db_type))
 
+def get_installed_odbc_drivers():
+    out, _, code = lib.execute_command_permissive(['odbcinst', '-q', '-d'])
+    return [] if code else [s[1:-1] for s in out.splitlines() if s]
+
+def get_odbc_drivers_for_db_type(db_type):
+    return [d for d in get_installed_odbc_drivers() if db_type in d.lower()]
+
 def get_odbc_driver_paths(db_type):
     if db_type == 'postgres':
         return sorted(unique_list(itertools.chain(
-                lib.find_shared_object('psqlodbc.so'),
-                lib.find_shared_object('psqlodbca.so'),
-                lib.find_shared_object('libodbcpsql.so'),
+                #lib.find_shared_object('psqlodbc.so'),
+                #lib.find_shared_object('psqlodbca.so'),
                 lib.find_shared_object('psqlodbcw.so'),
+                lib.find_shared_object('libodbcpsql.so'),
                 lib.find_shared_object('psqlodbc.*\.so', regex=True))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'mysql':
         return sorted(unique_list(itertools.chain(
-                    lib.find_shared_object('mysqlodbc.so'),
-                    lib.find_shared_object('mysqlodbc5.so'),
-                    lib.find_shared_object('mysqlodbc3.so'),
-                    lib.find_shared_object('mysqlodbc.*\.so', regex=True))),
+                    lib.find_shared_object('libmyodbc.so'),
+                    lib.find_shared_object('libmyodbc5.so'),
+                    lib.find_shared_object('libmyodbc3.so'),
+                    lib.find_shared_object('libmyodbc.*\.so', regex=True))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'oracle':
         return sorted(unique_list(itertools.chain(
@@ -160,7 +166,12 @@ def get_connection_string(db_config):
     odbc_dict['Username'] = db_config['db_username']
     odbc_dict['User'] = db_config['db_username']
     odbc_dict['UID'] = db_config['db_username']
-    return ';'.join(['%s=%s' % (key, value.replace('=', '==')) for key, value in odbc_dict.items()])
+    #The 'Driver' keyword must be first
+    keys = [k for k in odbc_dict.keys()]
+    keys[keys.index('Driver')] = keys[0]
+    keys[0] = 'Driver'
+
+    return ';'.join(['%s=%s' % (k, odbc_dict[k]) for k in keys])
 
 def get_connection(db_config):
     l = logging.getLogger(__name__)

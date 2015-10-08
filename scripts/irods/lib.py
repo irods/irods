@@ -152,14 +152,14 @@ def find_shared_object(so_name, regex=False):
 
     if 'LD_PRELOAD' in os.environ:
         for path in os.environ['LD_PRELOAD'].split(':'):
-            if path not in paths and (
+            if path not in paths and os.path.exists(path) and (
                     (regex and so_regex.match(os.path.basename(path))) or
                     (not regex and os.path.basename(path) == so_name)):
                 paths.append(path)
 
     if 'LD_LIBRARY_PATH' in os.environ:
         for directory in os.environ['LD_LIBRARY_PATH'].split(':'):
-            if regex:
+            if regex and os.path.exists(directory):
                 for name in os.listdir(directory):
                     if so_regex.match(name) and os.path.join(directory, name) not in paths:
                         paths.append(os.path.join(directory, name))
@@ -170,7 +170,7 @@ def find_shared_object(so_name, regex=False):
     env['PATH'] = ':'.join([env['PATH'], '/sbin'])
     out, _ = execute_command(['ldconfig', '-vNX'], env=env)
     for directory in [d.rstrip(':') for d in out.splitlines() if d and d[0] == '/']:
-        if regex:
+        if regex and os.path.exists(directory):
             for name in os.listdir(directory):
                 if so_regex.match(name) and os.path.join(directory, name) not in paths:
                     paths.append(os.path.join(directory, name))

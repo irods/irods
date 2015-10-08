@@ -6,6 +6,7 @@ import sys
 
 from . import six
 
+from . import lib
 from . import log as irods_log
 from .exceptions import IrodsError, IrodsWarning
 
