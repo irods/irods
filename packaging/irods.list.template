@@ -734,5 +734,3 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/devtestuser-account-AC
 f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/load-metadata.txt ./iRODS/clients/icommands/test/misc/load-metadata.txt
 f 644 root root ${IRODS_HOME}/clients/icommands/test/misc/load-usermods.txt ./iRODS/clients/icommands/test/misc/load-usermods.txt
 f 755 root root ${IRODS_HOME}/clients/icommands/test/testiCommands.pl ./iRODS/clients/icommands/test/testiCommands.pl
-
-%include ./external/pyodbc-include.list

@@ -7,10 +7,7 @@ import os
 import sys
 
 from . import six
-try:
-    from . import pyodbc
-except:
-    pyodbc = None
+from . import pypyodbc
 
 from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
@@ -378,15 +375,13 @@ class IrodsConfig(object):
                     return self.get_schema_version_in_database(cursor)
         else:
             l = logging.getLogger(__name__)
-            if pyodbc is None:
-                raise IrodsError('pyodbc is not available, no connection can be opened.')
             query = "select option_value from R_GRID_CONFIGURATION where namespace='database' and option_name='schema_version';"
             try :
                 l.debug('Executing query: %s' % (query))
                 rows = cursor.execute(query).fetchall()
-            except pyodbc.ProgrammingError:
+            except pypyodbc.Error:
                 six.reraise(IrodsError,
-                        IrodsError('pyodbc encountered an error executing '
+                        IrodsError('pypyodbc encountered an error executing '
                             'the query:\n\t%s' % (query)),
                         sys.exc_info()[2])
             if len(rows) == 0:

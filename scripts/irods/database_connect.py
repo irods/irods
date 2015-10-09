@@ -7,10 +7,7 @@ import os
 import pprint
 import sys
 
-try:
-    from . import pyodbc
-except ImportError:
-    pyodbc = None
+from . import pypyodbc
 
 from . import six
 
@@ -167,14 +164,25 @@ def get_connection_string(db_config):
 
 def get_connection(db_config):
     l = logging.getLogger(__name__)
-    if pyodbc is None:
-        raise IrodsError('pyodbc is not available, no connection can be opened.')
     if db_config['catalog_database_type'] == 'oracle':
         os.environ['TWO_TASK'] = get_two_task_for_oracle(db_config)
         l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
 
-    return pyodbc.connect(get_connection_string(db_config))
+    connection_string = get_connection_string(db_config)
+    l.info("Connecting with connection string:\n%s", connection_string)
+    sync_odbc_ini(db_config)
+    return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
 
+def sync_odbc_ini(db_config):
+    odbc_dict = get_odbc_entry(db_config)
+
+    #The 'Driver' keyword must be first
+    keys = [k for k in odbc_dict.keys()]
+    keys[keys.index('Driver')] = keys[0]
+    keys[0] = 'Driver'
+
+    template = '\n'.join(itertools.chain(['[iRODS Catalog]'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
+    lib.execute_command(['odbcinst', '-i', '-s', '-h', '-r'], input=template)
 
 def get_odbc_ini_path():
     if 'ODBCINI' in os.environ:

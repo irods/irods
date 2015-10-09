@@ -13,7 +13,7 @@ import sys
 import tempfile
 
 from irods import six
-from irods import pyodbc
+from irods import pypyodbc
 
 import irods_control
 import irods.database_connect
@@ -157,7 +157,7 @@ def update_catalog_schema(irods_config, cursor=None):
                         cursor.execute(statement)
                     l.debug('Committing...')
                     cursor.commit()
-                except pyodbc.ProgrammingError as e:
+                except pypyodbc.Error as e:
                     six.reraise(IrodsError,
                             IrodsError('Updating database schema version failed while running %s' % (f.name)),
                             sys.exc_info()[2])

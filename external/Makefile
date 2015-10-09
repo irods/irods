@@ -17,7 +17,7 @@ ifndef IRODS_FTP_BUILD
 IRODS_FTP_BUILD=$(RENCI_FTP_BUILD)
 endif
 
-.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost boost-build hdf5 netcdf epm lib_mysqludf_preg libs3 pyodbc
+.PHONY : default build_database_for_macosx retrieve build generate clean cmake check libarchive jansson boost boost-build hdf5 netcdf epm lib_mysqludf_preg libs3
 
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
@@ -56,10 +56,6 @@ ZEROMQVERSIONCONFIGURE=$(ZEROMQVERSION)/configure
 ZEROMQVERSIONMAKE=$(ZEROMQVERSION)/Makefile
 CPPZMQVERSIONARCHIVE=$(CPPZMQVERSION).tar.gz
 CPPZMQVERSIONMAKE=$(CPPZMQVERSION)/Makefile
-PYODBCVERSIONARCHIVE=$(PYODBCVERSION).tar.gz
-PYODBCVERSIONMAKE=$(PYODBCVERSION)/setup.py
-PYODBCBUILD=$(PYODBCVERSION)/build
-PYODBCLIST=pyodbc-include.list
 
 
 LIBARCHIVESEDCMD="/^\#ifdef HAVE_LINUX_FIEMAP_H/i \#ifdef HAVE_LINUX_TYPES_H\x0a\#include \<linux/types.h\>\x0a\#endif"
@@ -104,9 +100,9 @@ build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
 		$(MAKE) distclean;
 
 ifeq ($(OS_platform), osx_platform)
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx pyodbc
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
 else
-build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq pyodbc
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq
 endif
 
 generate : build
@@ -295,22 +291,6 @@ $(CPPZMQVERSIONMAKE) : $(CPPZMQVERSIONARCHIVE)
 cppzmq : $(CPPZMQVERSIONMAKE) $(ZEROMQVERSIONMAKE)
 	@rsync $(CPPZMQVERSION)/zmq.hpp $(ZEROMQVERSION)/include/
 
-$(PYODBCVERSIONARCHIVE) :
-	@wget $(IRODS_FTP_EXTERNAL)/$(PYODBCVERSIONARCHIVE) 2>&1
-
-$(PYODBCVERSIONMAKE) : $(PYODBCVERSIONARCHIVE)
-	@tar zxf $(PYODBCVERSIONARCHIVE)
-
-$(PYODBCBUILD) : $(PYODBCVERSIONMAKE)
-	@cd $(PYODBCVERSION); \
-		rm -rf build; \
-		python setup.py build
-
-pyodbc : $(PYODBCBUILD) $(PYODBCLIST)
-
-$(PYODBCLIST) : $(PYODBCBUILD)
-	@find -name 'pyodbc*.so' | sed 's/^\.\(.*\)/f 744 root root $${IRODS_HOME_DIR}\/scripts\/irods\/pyodbc.so .\/external\1/' > $(PYODBCLIST)
-
 $(EPMVERSIONARCHIVE) :
 	@wget $(IRODS_FTP_EXTERNAL)/$(EPMVERSIONARCHIVE) 2>&1
 
@@ -366,9 +346,6 @@ clean :
 	@echo "Cleaning cppzmq..."
 	@rm -rf $(CPPZMQVERSION)
 	@rm -f $(CPPZMQVERSIONARCHIVE)
-	@echo "Cleaning pyodbc..."
-	@rm -rf $(PYODBCVERSION)
-	@rm -rf $(PYODBCVERSIONARCHIVE)
 	@echo "Cleaning epm..."
 	@rm -rf epm
 	@rm -f $(EPMVERSIONARCHIVE)
