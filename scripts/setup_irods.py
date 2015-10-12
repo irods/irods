@@ -288,9 +288,9 @@ def main():
     try:
         operations_dict[operation]()
     except IrodsError as e:
-        l.debug('Error encountered running setup_irods %s.', operation, exc_info=True)
-        l.error(e)
-        l.error('Exiting...')
+        l.error('Error encountered running setup_irods %s:\n'
+                % (operation), exc_info=True)
+        l.info('Exiting...')
         return 1
     return 0
 

@@ -128,7 +128,7 @@ def main():
     try:
         irods_controller.check_config()
     except IrodsError as e:
-        l.debug('Exception:', exc_info=True)
+        l.error('Exception:', exc_info=True)
         l.error('%s\n'
                 'Configuration files are missing or broken.\n'
                 'Exiting...' % (
@@ -138,12 +138,9 @@ def main():
     try:
         operations_dict[operation]()
     except IrodsError as e:
-        l.debug('Exception:', exc_info=True)
-        l.error('%s\n'
-                'Error encountered running irods_control %s.\n'
-                'Exiting...' % (
-                    str(e),
-                    operation))
+        l.error('Error encountered running irods_control %s:\n'
+                % (operation), exc_info=True)
+        l.info('Exiting...')
         return 1
     return 0
 

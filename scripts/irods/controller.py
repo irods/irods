@@ -57,7 +57,10 @@ class IrodsController(object):
                         self.config.server_log_directory)),
                     sys.exc_info()[2])
 
-        self.config.validate_configuration()
+        try:
+            self.config.validate_configuration()
+        except IrodsWarning:
+            l.warn('Warning encountered in validation:', exc_info=True)
 
         if self.config.database_config:
             if not self.check_database_schema_version():
