@@ -259,6 +259,7 @@ getSpecCollCache( rsComm_t *rsComm, char *objPath,
 
     status = querySpecColl( rsComm, objPath, &genQueryOut );
     if ( status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
         return status;
     }
 
@@ -738,4 +739,3 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
     }
     return linkCnt;
 }
-
