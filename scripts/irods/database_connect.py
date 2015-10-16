@@ -61,7 +61,7 @@ def get_odbc_entry(db_config):
 def get_odbc_template(db_type):
     if db_type == 'postgres':
         return {
-            'Description': 'iRODS catalog',
+            'Description': 'iRODS Catalog',
             'Driver': None,
             'Trace': 'No',
             'Debug': '0',
@@ -158,20 +158,18 @@ def get_two_task_for_oracle(db_config):
             db_config['db_name'])
 
 def get_connection_string(db_config):
-    odbc_dict = get_odbc_entry(db_config)
-    odbc_dict['Database'] = db_config['db_name']
-    odbc_dict['Driver'] = db_config['db_odbc_driver']
+    odbc_dict = {}
+    #odbc_dict['Driver'] = db_config['db_odbc_driver']
     odbc_dict['Password'] = db_config['db_password']
     odbc_dict['PWD'] = db_config['db_password']
     odbc_dict['Username'] = db_config['db_username']
     odbc_dict['User'] = db_config['db_username']
     odbc_dict['UID'] = db_config['db_username']
-    #The 'Driver' keyword must be first
     keys = [k for k in odbc_dict.keys()]
-    keys[keys.index('Driver')] = keys[0]
-    keys[0] = 'Driver'
+    #keys[keys.index('Driver')] = keys[0]
+    #keys[0] = 'Driver'
 
-    return ';'.join(['%s=%s' % (k, odbc_dict[k]) for k in keys])
+    return ';'.join(itertools.chain(['DSN=iRODS Catalog'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
 
 def get_connection(db_config):
     l = logging.getLogger(__name__)

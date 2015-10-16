@@ -83,6 +83,9 @@ class IrodsController(object):
                             sys.exc_info()[2])
             l.debug('Socket %s bound and released successfully.')
 
+            l.debug('Syncing .odbc.ini file...')
+            database_connect.sync_odbc_ini(self.config.database_config)
+
             l.info('Starting iRODS server...')
             lib.execute_command(
                 [self.config.server_executable],

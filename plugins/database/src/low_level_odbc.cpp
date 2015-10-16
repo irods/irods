@@ -163,7 +163,7 @@ cllConnect( icatSessionStruct *icss ) {
     }
 
     // =-=-=-=-=-=-=-
-    // ODBC Entry is defined by the DB type or an env variable
+    // ODBC Entry is defined as "iRODS Catalog" or an env variable
     char odbcEntryName[ DB_TYPENAME_LEN ];
     char* odbc_env = getenv( "irodsOdbcDSN" );
     if ( odbc_env ) {
@@ -171,7 +171,7 @@ cllConnect( icatSessionStruct *icss ) {
         snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", odbc_env );
     }
     else {
-        snprintf( odbcEntryName, sizeof( odbcEntryName ), "%s", icss->database_plugin_type );
+        snprintf( odbcEntryName, sizeof( odbcEntryName ), "iRODS Catalog" );
     }
 
     // =-=-=-=-=-=-=-
