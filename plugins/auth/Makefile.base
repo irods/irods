@@ -8,15 +8,40 @@ OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
 include $(IRODSDIR)/config/config.mk
 include $(IRODSDIR)/config/platform.mk
+include $(IRODSDIR)/../packaging/irods_externals_locations.mk
 
-GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
+GCC = $(CC) -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../../packaging/compiler_check.sh 4 2`
 
-INC = -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
-      -I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
-      -I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I$(IRODSDIR)/lib/rbudp/include -I../../../external/jansson-2.7/src/ 
-LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
+INC = -I$(IRODSDIR)/lib/core/include/ \
+	  -I$(IRODSDIR)/lib/api/include/ \
+	  -I$(IRODSDIR)/lib/hasher/include \
+      -I$(IRODSDIR)/server/core/include/ \
+	  -I$(IRODSDIR)/server/icat/include/ \
+	  -I$(IRODSDIR)/server/re/include/ \
+      -I$(IRODSDIR)/server/drivers/include/ \
+      -I$(IRODSDIR)/lib/rbudp/include 
+
+EXTERNALINC = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include
+INC += $(EXTERNALINC)
+
+EXTRNALLIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib \
+             -lboost_system \
+             -lboost_filesystem \
+             -lboost_regex \
+             -lboost_thread \
+             -lboost_chrono \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib \
+             -larchive \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib \
+             -ljansson \
+             -L/usr/lib/ -lz -lbz2
+
+RPATH = "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib"
 
 MY_CFLAG += $(INC)
 
@@ -46,7 +71,7 @@ clean:
 $(FULLTARGET): $(OBJS)
 	@echo "Building Auth Plugins"
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	$(V_at)$(GCC) $(MY_CFLAG) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) ../../../iRODS/lib/api/obj/rcAuthCheck.o
+	$(V_at)$(GCC) $(MY_CFLAG) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTERNALLIBS) $(RPATH) $(EXTRALIBS) ../../../iRODS/lib/api/obj/rcAuthCheck.o
 
 $(OBJDIR)/%.o: %.cpp
 	$(V_at)$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<

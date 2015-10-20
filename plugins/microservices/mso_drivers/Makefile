@@ -12,7 +12,7 @@ BASEDIRS = \
 include ../../../iRODS/config/platform.mk
 include ../../../iRODS/config/config.mk
 
-GCC = g++ -DRODS_SERVER 
+GCC = $(CC) -DRODS_SERVER 
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov

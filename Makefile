@@ -1,57 +1,43 @@
 include VERSION.tmp
 
-include ./iRODS/config/external_versions.txt
-
 MAKEFLAGS += --no-print-directory
 
-.PHONY : default all epm mkdocs squeaky_clean clean libs plugins-nodb code-generation irods external docs doxygen icat icat-package icommands icommands-package resource resource-package resource postgres mysql oracle
+.PHONY : default all epm mkdocs squeaky_clean clean libs plugins-nodb irods docs doxygen icat icat-package icommands icommands-package resource resource-package resource postgres mysql oracle
 
-default : external libs plugins-nodb
+default : libs plugins-nodb
 
-all : external libs plugins-nodb docs epm
+all : libs plugins-nodb docs epm
 
-icat : external libs plugins-nodb
+icat : libs plugins-nodb
 
-icat-package : external libs plugins-nodb
+icat-package : libs plugins-nodb
 
-icommands : external libs clients
+icommands : libs clients
 
-icommands-package : external libs clients
+icommands-package : libs clients
 
-resource : external libs plugins-nodb
+resource : libs plugins-nodb
 
-resource-package : external libs plugins-nodb
+resource-package : libs plugins-nodb
 
-
-external :
-	@$(MAKE) -C external default
-
-libs : code-generation external
+libs : 
 	@$(MAKE) -C iRODS libs
 
 clients : libs
 	@$(MAKE) -C iRODS clients
 	@$(MAKE) -C plugins auth network
 
-plugins-nodb : libs external irods
+plugins-nodb : libs irods
 	@$(MAKE) -C plugins nodb
 
-postgres : libs external
+postgres : libs 
 	@$(MAKE) -C postgres
 
-mysql : libs external
+mysql : libs 
 	@$(MAKE) -C mysql
 
-oracle : libs external
+oracle : libs 
 	@$(MAKE) -C oracle
-
-code-generation : external
-	@# generate the json derived code for the new api
-	@./external/$(AVROVERSION)/build/avrogencpp \
-		-n irods \
-		-o ./iRODS/lib/core/include/server_control_plane_command.hpp \
-		-i ./irods_schema_messaging/v1/server_control_plane_command.json
-
 
 irods : libs
 	@$(MAKE) -C iRODS

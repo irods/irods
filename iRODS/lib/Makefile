@@ -18,12 +18,9 @@ include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
+include $(buildDir)/../packaging/irods_externals_locations.mk
 
 CFLAGS += `../../packaging/compiler_check.sh 4 2`
-
-# jansson support
-CFLAGS += -I../../external/jansson-2.7/src/
-LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 
 #
 # Source files
@@ -149,11 +146,8 @@ OBJS =  $(LIB_CORE_OBJS) \
 		$(LIB_RBUDP_OBJS) \
 		$(LIB_HASHER_OBJS)
 
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a \
-             $(BOOST_DIR)/stage/lib/libboost_chrono.a
+BOOST_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include 
+JANSSON_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include 
 
 # Server configuration
 CONFIG =	$(svrConfigDir)/irodsHost
@@ -161,7 +155,7 @@ CONFIG =	$(svrConfigDir)/irodsHost
 
 # Compilation flags
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
-CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES)
+CFLAGS = $(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES) $(BOOST_INCLUDES) $(JANSSON_INCLUDES)
 
 ifdef SYSLOG_FACILITY_CODE
 CFLAGS_OPTIONS += -D SYSLOG_FACILITY_CODE=$(SYSLOG_FACILITY_CODE)
@@ -185,7 +179,7 @@ lib:	libs
 libs:	$(CONFIG) $(LIBRARY) $(LIB_CLIENT_EXEC_OBJS)
 	@true
 
-$(LIBRARY): $(OBJS) $(BOOST_LIBS)
+$(LIBRARY): $(OBJS)
 #	@rm -f $(LIBRARY)
 #	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS)
 	@echo "Building lib$(LIBRARY_NAME).a"
@@ -212,12 +206,12 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile core `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build API
-$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
+$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile api `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 

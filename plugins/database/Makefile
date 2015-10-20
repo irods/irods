@@ -10,7 +10,7 @@ MAKEFLAGS += --no-print-directory
 include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
-GCC = g++ -Wno-write-strings -DRODS_SERVER
+GCC = $(CC) -Wno-write-strings -DRODS_SERVER
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov

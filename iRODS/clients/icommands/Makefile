@@ -19,6 +19,7 @@ include $(buildDir)/config/directories.mk
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
 include $(buildDir)/config/common.mk
+include $(buildDir)/../packaging/irods_externals_locations.mk
 
 CFLAGS += `../../../packaging/compiler_check.sh 4 2`
 #
@@ -150,32 +151,40 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
 LDFLAGS +=	$(LIBRARY) $(LIB_CLIENT_EXEC) $(MODULE_LDFLAGS) $(CL_LDADD) 
 
+BOOST_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include 
+BOOST_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib \
+    -lboost_system \
+	-lboost_filesystem \
+	-lboost_regex \
+	-lboost_thread \
+	-lboost_chrono \
+	-lboost_program_options
 
-LDFLAGS += $(BOOST_LIBS)
+JANSSON_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include 
+JANSSON_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib -ljansson
 
-# include jansson for zonereport
-CFLAGS += -I../../../external/$(JANSSONVERSION)/src/
-LDFLAGS += ../../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
+AVRO_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_AVRO)/include 
+AVRO_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_AVRO)/lib  -lavrocpp
 
-# include for control plane
-CFLAGS += -I../../../external/$(ZEROMQVERSION)/include/
-LDFLAGS += ../../../external/$(ZEROMQVERSION)/src/.libs/libzmq.a
+ZMQ_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ZMQ)/include 
+ZMQ_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ZMQ)/lib  -lzmq
 
-CFLAGS += -I../../../external/$(AVROVERSION)
-LDFLAGS += ../../../external/$(AVROVERSION)/build/libavrocpp_s.a
+CPPZMQ_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_CPPZMQ)/include 
 
-LDFLAGS += -lz
+CFLAGS += $(BOOST_INCLUDES) $(JANSSON_INCLUDES) $(AVRO_INCLUDES) $(ZMQ_INCLUDES) $(CPPZMQ_INCLUDES)
+LDFLAGS += $(BOOST_LIBS) $(JANSSON_LIBS) $(AVRO_LIBS) $(ZMQ_LIBS)
+
+RPATH = "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_AVRO)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ZMQ)/lib" \
+
+LDFLAGS += -lz $(RPATH)
 
 ifneq (${OS_platform}, osx_platform)
 LDFLAGS += -lrt
 endif
 
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a \
-             $(BOOST_DIR)/stage/lib/libboost_chrono.a \
-             $(BOOST_DIR)/stage/lib/libboost_program_options.a
 #
 # Principal Targets
 #
@@ -186,14 +195,14 @@ all:	icommands
 clients: icommands
 	@true
 
-icommands:	$(OBJS) $(BINS) $(BOOST_LIBS)
+icommands:	$(OBJS) $(BINS)
 	@true
 
-$(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY) $(BOOST_LIBS)
+$(objDir)/%.o:	$(srcDir)/%.cpp $(LIBRARY)
 	@echo "Compile icommand `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
 
-$(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
+$(binDir)/%:	$(objDir)/%.o
 	@echo "Link icommand `basename $@`..."
 	$(V_at)$(LDR) -o $@ $< $(LDFLAGS)
 

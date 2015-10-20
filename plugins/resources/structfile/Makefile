@@ -1,12 +1,12 @@
+IRODSDIR = ../$(IRODSTOPDIR)
+include $(IRODSDIR)/../packaging/irods_externals_locations.mk
+
 TARGET = libstructfile.so
 
 SRCS = libstructfile.cpp
 
 HEADERS = 
 
-EXTRALIBS = $(LIBARCHIVE_DIR)/libarchive/libarchive.a \
-            $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-            $(BOOST_DIR)/stage/lib/libboost_system.a \
-            -L /usr/lib -lz -lbz2
+EXTRALIBS = 
 
 include ../Makefile.base

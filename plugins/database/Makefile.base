@@ -8,6 +8,7 @@ OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
 include $(IRODSDIR)/config/platform.mk
 include $(IRODSDIR)/config/config.mk
+include $(IRODSDIR)/../packaging/irods_externals_locations.mk
 
 LIBRARY=$(IRODSDIR)/lib/core/obj/libRodsAPIs.a
 LIB_CLIENT_EXEC=$(IRODSDIR)/lib/client_exec/obj/irods_client_rule_execution_manager_factory.o
@@ -24,12 +25,40 @@ CHL_OBJS=$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines.o  \
 DB_PLUGIN_SRC = $(IRODSDIR)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(OBJDIR)/irods_database_plugin_with_no_re.o 
 
-GCC = g++ -Wno-write-strings -DRODS_SERVER
+GCC = $(CC) -Wno-write-strings -DRODS_SERVER
 
-INC = -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
-      -I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
-      -I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I/usr/include/openssl -I$(IRODSDIR)/../plugins/database/include
+INC = -I$(IRODSDIR)/lib/core/include/ \
+	  -I$(IRODSDIR)/lib/api/include/ \
+	  -I$(IRODSDIR)/lib/hasher/include \
+      -I$(IRODSDIR)/server/core/include/ \
+	  -I$(IRODSDIR)/server/icat/include/ \
+	  -I$(IRODSDIR)/server/re/include/ \
+      -I$(IRODSDIR)/server/drivers/include/ \
+      -I/usr/include/openssl \
+	  -I$(IRODSDIR)/../plugins/database/include
+
+EXTERNALINC = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include
+INC += $(EXTERNALINC)
+
+EXTERNALLIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib \
+             -lboost_system \
+             -lboost_filesystem \
+             -lboost_regex \
+             -lboost_thread \
+             -lboost_chrono \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib \
+             -larchive \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib \
+             -ljansson \
+             -L/usr/lib/ -lz -lbz2
+
+RPATH = "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib"
+
+LDFLAGS += -lz $(RPATH)
 
 ifeq ($(OS_platform), osx_platform)
 LDADD += "-Wl,-undefined,dynamic_lookup"
@@ -47,14 +76,9 @@ endif
 
 .PHONY: clean
 
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a \
-             $(BOOST_DIR)/stage/lib/libboost_chrono.a
-# temp include jansson for gridreport
-INC += -I../../../external/jansson-2.7/src/
-LDFLAGS += ../../../external/jansson-2.7/src/.libs/libjansson.a
+EXTRALIBS += ../../../iRODS/server/re/obj/irods_operation_rule_execution_manager.o
+
+EXTRA_LDRFLAGS += $(EXTERNALLIBS) $(RPATH)
 
 default: tests $(FULLTARGET)
 
@@ -76,16 +100,16 @@ $(OBJDIR)/%.o: ../src/%.cpp
 
 $(DB_PLUGIN_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
 	@echo "Compile Without RE `basename $@`..."
-	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(EXTRA_CFLAGS) $(INC) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
+	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(INC) $(EXTRA_CFLAGS) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
 
-$(SODIR)/test_cll: $(OBJDIR)/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
-	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(BOOST_LIBS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
-
-$(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY) $(BOOST_LIBS)
+$(SODIR)/test_cll: $(OBJDIR)/test_cll.o $(CLL_OBJS) $(LIBRARY)
 	@echo "Link server test `basename $@`..."
 	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
-$(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY) $(BOOST_LIBS)
+$(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY)
+	@echo "Link server test `basename $@`..."
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+
+$(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY)
 	@echo "Link server test `basename $@`..."
 	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
