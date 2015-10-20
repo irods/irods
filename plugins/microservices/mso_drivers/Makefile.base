@@ -8,17 +8,24 @@ OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
 include $(IRODSDIR)/config/config.mk
 include $(IRODSDIR)/config/platform.mk
+include $(IRODSDIR)/../packaging/irods_externals_locations.mk
 
-GCC = g++ -DRODS_SERVER 
+GCC = $(CC) -DRODS_SERVER 
 
-INC = -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
-      -I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
-      -I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-	  -I$(IRODSDIR)/lib/rbudp/include -I$(IRODSDIR)/../external/jansson-2.7/src/
-
+JANSSON_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include 
+BOOST_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include
+INC = -I$(IRODSDIR)/lib/core/include/ \
+	  -I$(IRODSDIR)/lib/api/include/ \
+	  -I$(IRODSDIR)/lib/hasher/include \
+      -I$(IRODSDIR)/server/core/include/ \
+	  -I$(IRODSDIR)/server/icat/include/ \
+	  -I$(IRODSDIR)/server/re/include/ \
+      -I$(IRODSDIR)/server/drivers/include/ \
+	  -I$(IRODSDIR)/lib/rbudp/include \
+	  $(JANSSON_INCLUDES) \
+	  $(BOOST_INCLUDES)
 
 MY_CFLAG += $(INC)
-
 
 ifeq ($(OS_platform), osx_platform)
 LDADD += "-Wl,-undefined,dynamic_lookup"

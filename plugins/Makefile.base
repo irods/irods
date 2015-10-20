@@ -18,7 +18,7 @@ DEPFILE = .depends
 DEPS = $(patsubst $(SRCDIR)/%.cpp, $(DEPDIR)/%.d, $(SRCS))
 
 ifndef $(GCC)
-GCC=g++
+GCC=$(CC)
 endif
 
 ifeq ($(OS_platform), osx_platform)
@@ -37,13 +37,6 @@ CFLAGS+= -fprofile-arcs -ftest-coverage -lgcov
 endif
 
 SERVER_CFLAGS+= -DRODS_SERVER
-
-
-# temp include jansson for gridreport
-CFLAGS += -I../../external/jansson-2.7/src/
-LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
-
-
 
 INC = -I$(INCDIR) $(EXTRAINCS)
 
@@ -83,7 +76,7 @@ $(DEPFILE): $(DEPS)
 	cat $$dep >> $(DEPFILE); \
 	done
 
-$(DEPS): $(DEPDIR)/%.d : $(SRCDIR)/%.cpp $(HEADERS)
+$(DEPS): $(DEPDIR)/%.d : $(SRCDIR)/%.cpp
 	@-mkdir -p $(DEPDIR) > /dev/null 2>&1
 	$(V_at)$(GCC) $(CFLAGS) $(INC) -MM $< -MT $(patsubst $(DEPDIR)/%.d, $(SODIR)/lib%.so, $@) -MF $@
 

@@ -8,7 +8,7 @@ BASEDIRS = osauth \
 include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
-GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
+GCC = $(CC) -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
 GCC += `../../packaging/compiler_check.sh 4 2`
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)

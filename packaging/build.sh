@@ -18,8 +18,13 @@ PYPREFLIGHT=""
 PREFLIGHTEXIT="1"
 IRODSPACKAGEDIR="./build"
 FAST="0"
-USAGE="
+IRODS_EXTERNALS_PACKAGE_ROOT="/opt/irods/externals"
 
+source "$SCRIPTPATH/irods_externals_locations.mk"
+#echo "SCRIPTPATH=[$SCRIPTPATH]"
+#echo "BUILD_SUBDIRECTORY_AVRO=[$BUILD_SUBDIRECTORY_AVRO]"
+
+USAGE="
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
 Usage: $SCRIPTNAME docs
 Usage: $SCRIPTNAME clean
@@ -81,9 +86,10 @@ date
 echo "${text_reset}"
 
 # translate long options to short
-for arg
+for (( idx=1; idx<=$#; idx++ ))
 do
     delim=""
+    arg=${@:$idx:1}
     case "$arg" in
         --coverage) args="${args}-c ";;
         --help) args="${args}-h ";;
@@ -94,7 +100,11 @@ do
         --skip) args="${args}-s ";;
         --portable) args="${args}-p ";;
         --verbose) args="${args}-v ";;
-        --run-in-place) args="${args}-z ";;
+        --run-in-place)
+            args="${args}-z "
+            idx=$idx+1
+            IRODS_EXTERNALS_ROOT=${@:$idx:1}
+            ;;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
         args="${args}${delim}${arg}${delim} ";;
@@ -236,7 +246,8 @@ echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
 echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
-EPMCMD="external/epm/epm"
+
+
 echo "Build Directory set to [$BUILDDIR]"
 # populate VERSION.json from VERSION.json.dist with current information
 cd $BUILDDIR
@@ -265,8 +276,62 @@ cd $BUILDDIR/iRODS
 
 
 ############################################################
+# new build hijinks
+if [ "$RUNINPLACE" == "1" ] ; then
+    if [ "$IRODS_EXTERNALS_ROOT" == "" ]; then
+        if [ -e $IRODS_EXTERNALS_PACKAGE_ROOT ]; then
+            echo "Setting IRODS_EXTERNALS_ROOT to installed packages: $IRODS_EXTERNALS_PACKAGE_ROOT"
+            IRODS_EXTERNALS_ROOT=$IRODS_EXTERNALS_PACKAGE_ROOT
+        else
+            echo "irods-externals package not detected, IRODS_EXTERNALS_ROOT must point to the fully-qualified path to the location of the externals"
+        fi
+    fi
+else
+    IRODS_EXTERNALS_ROOT="/opt/irods-externals/"
+fi
+
+EPMCMD=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_EPM/bin/epm
+    
+echo "Detected iRODS Externals Directory [$IRODS_EXTERNALS_ROOT]"
+
+EPMCMD=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_EPM/bin/epm
+    
+echo "Detected iRODS Externals Directory [$IRODS_EXTERNALS_ROOT]"
+
+############################################################
 # FUNCTIONS
 ############################################################
+verify_externals_installed() {
+    DEPS=(
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_CLANG
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_BOOST
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_JANSSON
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_AVRO
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_ZMQ
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_CPPZMQ
+        $IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_ARCHIVE
+    )
+
+    for pkg in ${DEPS[@]}; do
+        if [ ! -e ${pkg} ]; then
+            echo "Build Dependency Missing: ${pkg}"
+            exit 1;
+        fi
+    done
+}
+
+generate_avro_code() {
+    echo ""
+    echo "${text_green}${text_bold}Generating Avro C++ Code...${text_reset}"
+    
+    cd $BUILDDIR
+    
+    # generate the json derived code for the new api
+    AVROGENCPP="$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_AVRO/bin/avrogencpp"
+    ${AVROGENCPP} -n irods \
+        -o ./iRODS/lib/core/include/server_control_plane_command.hpp \
+        -i ./irods_schema_messaging/v1/server_control_plane_command.json
+}
 
 # script footer for successful completion
 print_script_finish_box() {
@@ -309,6 +374,9 @@ detect_number_of_cpus_and_set_makejcmd() {
     else
         VERBOSITYOPTION="--no-print-directory"
     fi
+
+    export IRODS_EXTERNALS_ROOT=$IRODS_EXTERNALS_ROOT
+    export PATH=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_CLANG/bin/:$PATH
     MAKEJCMD="make $VERBOSITYOPTION -j $CPUCOUNT"
 
     # print out CPU information
@@ -531,6 +599,8 @@ rename_generated_packages() {
 #if [ -d ".git/hooks" ] ; then
 #    cp ./packaging/pre-commit ./.git/hooks/pre-commit
 #fi
+
+verify_externals_installed
 
 MANDIR=man
 # check for clean
@@ -1361,6 +1431,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
     rsync -c $TMPFILE ./lib/core/include/irods_plugin_home_directory.hpp
     rm -f $TMPFILE
 
+
+    ###########################################
+    # generate avro datastructures for c++
+    generate_avro_code
+
+
     ###########################################
     # single 'make' time on an 8 core machine
     ###########################################
@@ -1384,6 +1460,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     #        time make -j 4      1m52.533s
     #        time make -j 5      1m48.611s
     ###########################################
+    echo "${text_green}${text_bold}Building iRODS...${text_reset}"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         # build icat package
         $MAKEJCMD -C $BUILDDIR icat-package

@@ -19,6 +19,7 @@ include $(buildDir)/config/directories.mk
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
 include $(buildDir)/config/common.mk
+include $(buildDir)/../packaging/irods_externals_locations.mk
 
 #
 # Directories
@@ -107,11 +108,24 @@ endif
 
 LDFLAGS +=	$(LIBRARY)  $(LIB_CLIENT_EXEC)  -ldl
 
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a \
-             $(BOOST_DIR)/stage/lib/libboost_chrono.a
+
+BOOST_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include 
+BOOST_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib \
+    -lboost_system \
+	-lboost_filesystem \
+	-lboost_regex \
+	-lboost_thread \
+	-lboost_chrono \
+	-lboost_program_options
+
+JANSSON_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include 
+JANSSON_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib \
+			  -ljansson
+
+RPATH = "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib"
+
+LDFLAGS += -lz $(RPATH)
 
 ifdef USE_SSL
 LDFLAGS        += -lssl -lcrypto
@@ -119,10 +133,8 @@ endif
 
 CFLAGS:=$(filter-out -DUSE_BOOST,$(CFLAGS))
 
-# include jansson for zonereport
-CFLAGS += -I../../../external/$(JANSSONVERSION)/src/
-LDFLAGS += ../../../external/$(JANSSONVERSION)/src/.libs/libjansson.a
-
+CFLAGS += $(BOOST_INCLUDES) $(JANSSON_INCLUDES)
+LDFLAGS += $(BOOST_LIBS) $(JANSSON_LIBS)
 
 #
 # Principal Targets

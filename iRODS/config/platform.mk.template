@@ -10,11 +10,10 @@
 #
 # Commands as found by the 'configure' script during iRODS installation
 #
-CC=g++
+CC=clang++
 CC_IS_GCC=0
 CCFLAGS= -std=c++0x
-#-Wno-deprecated
-LDR=g++
+LDR=clang++
 LDRFLAGS=
 AR=ar
 
@@ -43,7 +42,7 @@ endif
 # JMC :: BOOST Include & Linking
 # use our locally built Boost on the include line
 CCFLAGS+= -DBOOST_SYSTEM_NO_DEPRECATED
-CCFLAGS+= -I$(BOOST_DIR)
+#CCFLAGS+= -I$(BOOST_DIR)
 
 # =-=-=-=-=-=-=-
 

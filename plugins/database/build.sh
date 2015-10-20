@@ -8,6 +8,8 @@ FULLPATHSCRIPTNAME=$SCRIPTPATH/$SCRIPTNAME
 BUILDDIR=$( cd $SCRIPTPATH/../../ ; pwd -P )
 cd $SCRIPTPATH
 
+source "$BUILDDIR/packaging/irods_externals_locations.mk"
+
 # =-=-=-=-=-=-=-
 # check input
 USAGE="
@@ -252,7 +254,23 @@ else
 fi
 
 cd $SCRIPTPATH
-EPMCMD="$BUILDDIR/external/epm/epm"
+
+############################################################
+# new build hijinks
+if [ "$RUNINPLACE" == "1" ] ; then
+    if [ "$IRODS_EXTERNALS_ROOT" == "" ]; then
+        if [ -e $IRODS_EXTERNALS_PACKAGE_ROOT ]; then
+            echo "Setting IRODS_EXTERNALS_ROOT to installed packages: $IRODS_EXTERNALS_PACKAGE_ROOT"
+            IRODS_EXTERNALS_ROOT=$IRODS_EXTERNALS_PACKAGE_ROOT
+        else
+            echo "irods-externals package not detected, IRODS_EXTERNALS_ROOT must point to the fully-qualified path to the location of the externals"
+        fi
+    fi
+else
+    IRODS_EXTERNALS_ROOT="/opt/irods-externals"
+fi
+
+EPMCMD=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_EPM/bin/epm
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="REDHATRPM"

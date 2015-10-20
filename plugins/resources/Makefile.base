@@ -8,8 +8,9 @@ OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
 include $(IRODSDIR)/config/config.mk
 include $(IRODSDIR)/config/platform.mk
+include $(IRODSDIR)/../packaging/irods_externals_locations.mk
 
-GCC = g++ -std=c++0x -DRODS_SERVER
+GCC = $(CC) $(CCFLAGS) -DRODS_SERVER 
 
 INC = -I$(IRODSDIR)/lib/core/include/ \
       -I$(IRODSDIR)/lib/api/include/ \
@@ -19,26 +20,42 @@ INC = -I$(IRODSDIR)/lib/core/include/ \
       -I$(IRODSDIR)/server/re/include/ \
       -I$(IRODSDIR)/server/drivers/include/ \
       -I$(IRODSDIR)/lib/rbudp/include \
-      -I$(IRODSDIR)/../plugins/api/include \
-      -I$(LIBARCHIVE_DIR)/libarchive/ \
-      -I../../../external/jansson-2.7/src/ \
-      -I$(BOOST_DIR) 
+      -I$(IRODSDIR)/../plugins/api/include 
+
+EXTERNALINC = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include \
+          -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include
+INC += $(EXTERNALINC)
+
+EXTRNALLIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib \
+             -lboost_system \
+             -lboost_filesystem \
+             -lboost_regex \
+             -lboost_thread \
+             -lboost_chrono \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib \
+             -larchive \
+             -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib \
+             -ljansson \
+             -L/usr/lib/ -lz -lbz2
+
+RPATH = "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib" \
+        "-Wl,-rpath,$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_ARCHIVE)/lib"
 
 MY_CFLAG += $(INC)
 
 ifeq ($(OS_platform), osx_platform)
-LDADD += "-Wl,-undefined,dynamic_lookup"
+RPATH += "-Wl,-undefined,dynamic_lookup"
 else
-LDADD += "-Wl,-E"
+RPATH += "-Wl,-E"
 endif
-
-LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 %.o: %.cpp
-	$(GCC) $(CFLAGS) $(INC) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	$(GCC) $(CFLAGS) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
 endif
 
 .PHONY: clean
@@ -52,7 +69,7 @@ clean:
 
 $(FULLTARGET): $(OBJS)
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	$(V_at)$(GCC) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS)
+	$(V_at)$(GCC) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRNALLIBS) $(RPATH) $(EXTRALIBS)
 
 $(OBJDIR)/%.o: %.cpp
-	$(V_at)$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	$(V_at)$(GCC) $(MY_CFLAG) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
