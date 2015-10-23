@@ -29,6 +29,10 @@
 
 irods::error validate_logical_path(const std::string&);
     
+irods::error resolve_hierarchy_for_resc_from_cond_input(
+    rsComm_t*,
+    const std::string&,
+    std::string& );
 int
 getDataObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput );

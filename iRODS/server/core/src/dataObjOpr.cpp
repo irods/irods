@@ -22,12 +22,14 @@
 #include "miscUtil.h"
 #include "rodsClient.h"
 #include "rsIcatOpr.hpp"
+#include "getHierarchyForResc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 #include <boost/filesystem/operations.hpp>
@@ -1794,4 +1796,78 @@ int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
 
     return status;
 }
+
+irods::error resolve_hierarchy_for_resc_from_cond_input(
+    rsComm_t*          _comm,
+    const std::string& _resc,
+    std::string&       _hier ) {
+    // =-=-=-=-=-=-=-
+    // we need to start with the last resource in the hierarchy
+    irods::hierarchy_parser parser;
+    parser.set_string( _resc );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    // =-=-=-=-=-=-=-
+    // see if it has a parent or a child
+    irods::resource_ptr resc;
+    irods::error ret = resc_mgr.resolve( last_resc, resc );
+    if ( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get parent
+    irods::resource_ptr parent_resc;
+    ret = resc->get_parent( parent_resc );
+    bool has_parent = ret.ok();
+
+    // =-=-=-=-=-=-=-
+    // get child
+    bool has_child = ( resc->num_children() > 0 );
+
+    // =-=-=-=-=-=-=-
+    // if the resc is mid-tier this is a Bad Thing
+    if ( has_parent && has_child ) {
+        return ERROR(
+                HIERARCHY_ERROR,
+                "resource is mid-tier" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // this is a leaf node situation
+    else if ( has_parent && !has_child ) {
+        // =-=-=-=-=-=-=-
+        // get the path from our parent resource
+        // to this given leaf resource - this our hier
+        getHierarchyForRescOut_t* get_hier_out = 0;
+        getHierarchyForRescInp_t  get_hier_inp;
+        snprintf(
+            get_hier_inp.resc_name_,
+            sizeof( get_hier_inp.resc_name_ ),
+            "%s", last_resc.c_str() );
+        int status = rsGetHierarchyForResc(
+                        _comm,
+                        &get_hier_inp,
+                        &get_hier_out );
+        if ( status < 0 ) {
+            free( get_hier_out );
+            return ERROR(
+                       status,
+                       "failed to get resc hier" );
+        }
+
+        _hier = get_hier_out->resc_hier_;
+        
+    } else if ( !has_parent && !has_child ) {
+        _hier = last_resc;
+
+    }
+    
+    return SUCCESS();
+
+} // resolve_hierarchy_for_cond_input
+
+
 

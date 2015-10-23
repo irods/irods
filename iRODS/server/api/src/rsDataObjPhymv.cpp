@@ -149,20 +149,36 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     char* dest_resc = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
     if ( dest_resc ) {
-        irods::resource_ptr resc;
-        irods::error ret = resc_mgr.resolve( dest_resc, resc );
-        if ( !ret.ok() ) {
-            return SYS_RESC_DOES_NOT_EXIST;
+        std::string dest_hier; 
+        irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
+                               rsComm,
+                               dest_resc,
+                               dest_hier );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
         }
+        addKeyVal(
+            &dataObjInp->condInput,
+            DEST_RESC_HIER_STR_KW,
+            dest_hier.c_str() );
     }
 
     char* src_resc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW );
     if ( src_resc ) {
-        irods::resource_ptr resc;
-        irods::error ret = resc_mgr.resolve( src_resc, resc );
-        if ( !ret.ok() ) {
-            return SYS_RESC_DOES_NOT_EXIST;
+        std::string src_hier; 
+        irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
+                               rsComm,
+                               src_resc,
+                               src_hier );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
         }
+        addKeyVal(
+            &dataObjInp->condInput,
+            RESC_HIER_STR_KW,
+            src_hier.c_str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -194,8 +210,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     } // if keyword
 
-
-
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
     memset( *transStat, 0, sizeof( transferStat_t ) );
 
@@ -217,7 +231,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if( status < 0 ) {
         return status;
     }
-
     initReiWithDataObjInp(
 	    &rei,
 		rsComm,
@@ -273,7 +286,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return status;
         }
     }
-
     status = _rsDataObjPhymv(
 	             rsComm,
 				 dataObjInp,
