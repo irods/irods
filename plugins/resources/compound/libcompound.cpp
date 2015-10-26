@@ -1368,6 +1368,16 @@ extern "C" {
                 return PASS( ret );
             }
 
+            const keyValPair_t& cond_input = f_ptr->cond_input( );
+            char* unlink_op = getValByKey(
+                                  &cond_input,
+                                  irods::UNLINK_OPERATION.c_str() );
+            if( unlink_op ) {
+                ( *_out_parser ) = arch_check_parser;
+                ( *_out_vote )   = arch_check_vote;
+                return SUCCESS();
+            }
+
             // =-=-=-=-=-=-=-
             // repave the resc hier with the archive hier which guarantees that
             // we are in the hier for the repl to do its magic. this is a hack,
