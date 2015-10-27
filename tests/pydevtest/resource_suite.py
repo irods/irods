@@ -872,7 +872,7 @@ class ResourceSuite(ResourceBase):
     def test_irm(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irm " + self.testfile)  # remove from grid
-        self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be deleted
+        self.admin.assert_icommand("ils -L " + self.testfile, 'STDERR_SINGLELINE', self.testfile)  # should be deleted
         trashpath = "/" + self.admin.zone_name + "/trash/home/" + self.admin.username + \
             "/" + self.admin._session_id
         # should be in trash
