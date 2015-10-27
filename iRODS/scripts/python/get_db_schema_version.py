@@ -25,11 +25,11 @@ def print_error(*args, **kwargs):
 
 def format_cmd_result(result):
     return '''
-return code: [{}]
+return code: [{0}]
 stdout:
-{}
+{1}
 stderr:
-{}'''.format(result[0], result[1].decode('utf-8'), result[2].decode('utf-8'))
+{2}'''.format(result[0], result[1].decode('utf-8'), result[2].decode('utf-8'))
 
 def get_current_schema_version(cfg):
     dbtype = cfg.get('catalog_database_type')
