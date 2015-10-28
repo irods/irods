@@ -78,7 +78,17 @@ remoteFileClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
 int _rsFileClose(
     rsComm_t*       _comm,
     fileCloseInp_t* _close_inp ) {
-    // =-=-=-=-=-=-=-
+    //Bounds-check the input descriptor index
+    if ( _close_inp->fileInx < 0 || _close_inp->fileInx >= sizeof( FileDesc ) ) {
+        std::stringstream msg;
+        msg << "L3 descriptor index (into FileDesc) ";
+        msg << _close_inp->fileInx;
+        msg << " is out of range.";
+        irods::error err = ERROR( BAD_INPUT_DESC_INDEX, msg.str() );
+        irods::log(err);
+        return err.code();
+    }
+
     // trap bound stream case and close directly
     // this is a weird case from rsExecCmd using
     // the FD table
@@ -88,7 +98,6 @@ int _rsFileClose(
         return close( FileDesc[ _close_inp->fileInx ].fd );
     }
 
-    // =-=-=-=-=-=-=-
     // call the resource plugin close operation
     irods::file_object_ptr file_obj(
         new irods::file_object(
@@ -101,24 +110,15 @@ int _rsFileClose(
     file_obj->in_pdmo( _close_inp->in_pdmo );
 
     irods::error close_err = fileClose( _comm, file_obj );
-    // =-=-=-=-=-=-=-
     // log an error, if any
     if ( !close_err.ok() ) {
         std::stringstream msg;
         msg << "fileClose failed for [";
         msg << _close_inp->fileInx;
         msg << "]";
-        irods::error err = PASSMSG( msg.str(), close_err );
+        irods::log(PASSMSG( msg.str(), close_err ));
     }
 
     return close_err.code();
 
 } // _rsFileClose
-
-
-
-
-
-
-
-
