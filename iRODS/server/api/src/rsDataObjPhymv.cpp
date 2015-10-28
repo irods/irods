@@ -164,6 +164,34 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             dest_hier.c_str() );
     }
 
+    // =-=-=-=-=-=-=-
+    // determine hierarchy string
+	char* dest_hier_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+    if ( NULL == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
+        std::string       hier;
+        irods::error ret = irods::resolve_resource_hierarchy(
+		                       irods::CREATE_OPERATION,
+							   rsComm,
+                               dataObjInp,
+							   hier );
+        if ( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in irods::resolve_resource_hierarchy for [";
+            msg << dataObjInp->objPath << "]";
+            irods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal(
+		    &dataObjInp->condInput,
+			DEST_RESC_HIER_STR_KW,
+			hier.c_str() );
+    } // if keyword
+
     char* src_resc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW );
     if ( src_resc ) {
         std::string src_hier; 
@@ -184,7 +212,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // determine hierarchy string
 	char* resc_hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    if ( NULL == resc_hier_kw ) {
+    if ( NULL == resc_hier_kw || 0 == strlen(resc_hier_kw) ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy(
 		                       irods::OPEN_OPERATION,
@@ -207,7 +235,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 		    &dataObjInp->condInput,
 			RESC_HIER_STR_KW,
 			hier.c_str() );
-
     } // if keyword
 
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
