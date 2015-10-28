@@ -5,6 +5,8 @@
 #include "irods_operation_wrapper.hpp"
 #include "irods_auth_types.hpp"
 #include "irods_auth_plugin_context.hpp"
+#include "irods_load_plugin.hpp"
+#include "dlfcn.h"
 
 namespace irods {
 
@@ -16,22 +18,123 @@ namespace irods {
      */
     class auth : public plugin_base {
         public:
-            /// @brief Constructor
+
             auth(
-                const std::string& _name, // instance name
-                const std::string& _ctx   // context
-            );
+                const std::string& _inst,
+                const std::string& _ctx ) :
+                plugin_base( _inst, _ctx ),
+                start_operation_( default_start_operation ),
+                stop_operation_( default_stop_operation ) {
 
-            /// @brief Copy ctor
-            auth( const auth& _rhs );
+            }
 
-            virtual ~auth();
+            virtual ~auth() {
+            }
 
-            /// @brief Assignment operator
-            auth& operator=( const auth& _rhs );
+            auth(
+                const auth& _rhs ) :
+                plugin_base( _rhs ) {
+                start_operation_ = _rhs.start_operation_;
+                stop_operation_ = _rhs.stop_operation_;
+                operations_ = _rhs.operations_;
+                ops_for_delay_load_ = _rhs.ops_for_delay_load_;
 
-            /// @brief Load operations from the plugin - overrides plugin base
-            virtual error delay_load( void* _handle );
+                if ( properties_.size() > 0 ) {
+                    std::cout << "[!]\tauth cctor - properties map is not empty." << __FILE__ << ":" << __LINE__ << std::endl;
+                }
+
+                properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers
+            }
+
+            auth& operator=(
+                const auth& _rhs ) {
+                if ( &_rhs == this ) {
+                    return *this;
+                }
+
+                plugin_base::operator=( _rhs );
+
+                operations_ = _rhs.operations_;
+                ops_for_delay_load_ = _rhs.ops_for_delay_load_;
+
+                if ( properties_.size() > 0 ) {
+                    std::cout << "[!]\tauth assignment operator - properties map is not empty."
+                              << __FILE__ << ":" << __LINE__ << std::endl;
+                }
+
+                properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers
+
+                return *this;
+            }
+
+            virtual error delay_load(
+                void* _handle ) {
+                error result = SUCCESS();
+                if ( ( result = ASSERT_ERROR( _handle != NULL, SYS_INVALID_INPUT_PARAM, "Void handle pointer." ) ).ok() ) {
+
+                    if ( ( result = ASSERT_ERROR( !ops_for_delay_load_.empty(), SYS_INVALID_INPUT_PARAM, "Empty operations list." ) ).ok() ) {
+
+                        // Check if we need to load a start function
+                        if ( !start_opr_name_.empty() ) {
+                            dlerror();
+                            auth_maintenance_operation start_op = reinterpret_cast<auth_maintenance_operation>( dlsym( _handle, start_opr_name_.c_str() ) );
+                            if ( ( result = ASSERT_ERROR( start_op, SYS_INVALID_INPUT_PARAM, "Failed to load start function: \"%s\" - %s.",
+                                                          start_opr_name_.c_str(), dlerror() ) ).ok() ) {
+                                start_operation_ = start_op;
+                            }
+                        }
+
+                        // Check if we need to load a stop function
+                        if ( result.ok() && !stop_opr_name_.empty() ) {
+                            dlerror();
+                            auth_maintenance_operation stop_op = reinterpret_cast<auth_maintenance_operation>( dlsym( _handle, stop_opr_name_.c_str() ) );
+                            if ( ( result = ASSERT_ERROR( stop_op, SYS_INVALID_INPUT_PARAM, "Failed to load stop function: \"%s\" - %s.",
+                                                          stop_opr_name_.c_str(), dlerror() ) ).ok() ) {
+                                stop_operation_ = stop_op;
+                            }
+                        }
+
+                        // Iterate over the list of operation names, load the functions and add it to the map via the wrapper function
+                        std::vector<std::pair<std::string, std::string> >::iterator itr = ops_for_delay_load_.begin();
+                        for ( ; result.ok() && itr != ops_for_delay_load_.end(); ++itr ) {
+
+                            std::string key = itr->first;
+                            std::string fcn = itr->second;
+
+                            // load the function
+                            dlerror();  // reset error messages
+                            plugin_operation res_op_ptr = reinterpret_cast<plugin_operation>( dlsym( _handle, fcn.c_str() ) );
+                            if ( ( result = ASSERT_ERROR( res_op_ptr, SYS_INVALID_INPUT_PARAM, "Failed to load function: \"%s\" for operation: \"%s\" - %s.",
+                                                          fcn.c_str(), key.c_str(), dlerror() ) ).ok() ) {
+                                #ifdef RODS_SERVER
+                                oper_rule_exec_mgr_ptr rex_mgr(
+                                    new operation_rule_execution_manager( instance_name_, key ) );
+                                #else
+                                oper_rule_exec_mgr_ptr rex_mgr(
+                                    new operation_rule_execution_manager_no_op( instance_name_, key ) );
+                                #endif
+                                // Add the operation via a wrapper to the operation map
+                                operations_[key] = operation_wrapper( rex_mgr, instance_name_, key, res_op_ptr );
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+
+            error set_start_operation(
+                const std::string& _name ) {
+                error result = SUCCESS();
+                start_opr_name_ = _name;
+                return result;
+            }
+
+            error set_stop_operation(
+                const std::string& _name ) {
+                error result = SUCCESS();
+                stop_opr_name_ = _name;
+                return result;
+            }
 
             /// @brief get a property from the map if it exists.
             template< typename T >
@@ -46,12 +149,6 @@ namespace irods {
                 error ret = properties_.set< T >( _key, _val );
                 return ASSERT_PASS( ret, "Failed to set property in the auth plugin." );
             } // set_property
-
-            /// @brief Interface to set the start function
-            error set_start_operation( const std::string& _name );
-
-            /// @brief Interface to set the stop function
-            error set_stop_operation( const std::string& _name );
 
             /// @brief interface to call start / stop functions
             error start_operation( void ) {
@@ -237,13 +334,6 @@ namespace irods {
             lookup_table< operation_wrapper > operations_;
 
     };
-
-/// @brief Given the name of an auth , try to load the shared object
-    error load_auth_plugin(
-        auth_ptr&,              // plugin
-        const std::string&,     // plugin name
-        const std::string&,     // instance name
-        const std::string& );   // context string
 
 }; // namespace irods
 

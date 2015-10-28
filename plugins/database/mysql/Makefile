@@ -11,8 +11,6 @@ SRCS = db_plugin.cpp                \
 
 HEADERS = 
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
-
 # works for linux
 # does not work on macosx - look at postgres/Makefile for .dylib information
 EXTRA_LDRFLAGS = -lodbc

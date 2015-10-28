@@ -42,24 +42,48 @@ namespace irods {
         public:
             // =-=-=-=-=-=-=-
             /// @brief constructors
-            operation_wrapper( );
+            operation_wrapper( ) : operation_( 0 ) {
+            } // default ctor
+
+            // =-=-=-=-=-=-=-
+            // public - ctor with opreation
             operation_wrapper(
-                oper_rule_exec_mgr_ptr, // rule exec mgr
-                const std::string&,     // instance name
-                const std::string&,     // operation name
-                plugin_operation );     // fcn ptr to loaded operation
+                    oper_rule_exec_mgr_ptr _rule_exec,
+                    const std::string&     _inst_name,
+                    const std::string&     _op_name,
+                    plugin_operation _op ) :
+                rule_exec_mgr_( _rule_exec ),
+                instance_name_( _inst_name ),
+                operation_name_( _op_name ),
+                operation_( _op ) {
+                } // ctor
 
             // =-=-=-=-=-=-=-
             /// @brief destructor
-            virtual ~operation_wrapper();
+            virtual ~operation_wrapper( ) {
+            } // dtor
 
+    
             // =-=-=-=-=-=-=-
             /// @brief copy constructor - necessary for stl containers
-            operation_wrapper( const operation_wrapper& _rhs );
+            operation_wrapper(
+                    const operation_wrapper& _rhs ) {
+                rule_exec_mgr_  = _rhs.rule_exec_mgr_;
+                operation_      = _rhs.operation_;
+                instance_name_  = _rhs.instance_name_;
+                operation_name_ = _rhs.operation_name_;
+            } // cctor
 
             // =-=-=-=-=-=-=-
             /// @brief assignment operator - necessary for stl containers
-            operation_wrapper& operator=( const operation_wrapper& _rhs );
+            operation_wrapper& operator=(
+                    const operation_wrapper& _rhs ) {
+                rule_exec_mgr_  = _rhs.rule_exec_mgr_;
+                instance_name_  = _rhs.instance_name_;
+                operation_name_ = _rhs.operation_name_;
+                operation_      = _rhs.operation_;
+                return *this;
+            } // operator=
 
             // =-=-=-=-=-=-=-
             // operator call that will git 'er done. this clearly must match the

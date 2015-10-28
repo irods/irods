@@ -14,8 +14,6 @@ ORACLE_HOME_LIB=`../packaging/find_oracle_lib.sh`
 
 HEADERS =
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o
-
 CLL_OBJS = \
 	$(OBJDIR)/low_level_oracle.o
 

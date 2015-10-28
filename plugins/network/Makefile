@@ -30,7 +30,7 @@ default: $(SUBS)
 $(SUBS):
 	@-mkdir -p $@/$(OBJDIR) > /dev/null 2>&1
 	@echo "Compile network plugin `basename $@`..."
-	@$(MAKE) -C $@
+	$(MAKE) -C $@
 
 clean:
 	@-for dir in $(SUBS); do \

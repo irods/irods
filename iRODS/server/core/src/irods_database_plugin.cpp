@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 // My Includes
+#include "irods_operation_wrapper.hpp"
 #include "irods_database_plugin.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_stacktrace.hpp"
@@ -218,32 +219,23 @@ namespace irods {
         const std::string& _plugin_name,
         const std::string& _inst_name,
         const std::string& _context ) {
-        // =-=-=-=-=-=-=-
-        // resolve plugin directory
-        std::string plugin_home;
-        error ret = resolve_plugin_path( PLUGIN_TYPE_DATABASE, plugin_home );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
 
         // =-=-=-=-=-=-=-
         // call generic plugin loader
         database* db = 0;
-        ret = load_plugin< database >(
-                  db,
-                  _plugin_name,
-                  plugin_home,
-                  _inst_name,
-                  _context );
+        error ret = load_plugin< database >(
+                        db,
+                        _plugin_name,
+                        PLUGIN_TYPE_DATABASE,
+                        _inst_name,
+                        _context );
         if ( ret.ok() && db ) {
             _plugin.reset( db );
             return SUCCESS();
 
         }
-        else {
-            return PASS( ret );
 
-        }
+        return PASS( ret );
 
     } // load_database_plugin
 

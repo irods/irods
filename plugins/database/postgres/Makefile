@@ -13,8 +13,6 @@ SRCS = db_plugin.cpp                \
 
 HEADERS = 
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o 
-
 ifeq ($(OS_platform), osx_platform)
     EXTRA_LDRFLAGS = \
 		../../../external/postgresql-9.3.4/pgsql/lib/libodbc.dylib

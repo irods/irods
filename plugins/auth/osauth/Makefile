@@ -4,7 +4,7 @@ SRCS = libosauth.cpp
 
 HEADERS = 
 
-EXTRALIBS = ../../../iRODS/lib/core/obj/irods_plugin_base.o \
+EXTRALIBS = \
             ../../../iRODS/lib/core/obj/osauth.o \
             ../../../iRODS/lib/api/obj/rcAuthPluginRequest.o
 

@@ -25,7 +25,7 @@ rm dummy
 
 # =-=-=-=-=-=-=-
 # archive all client objects
-ar qs $ar_file $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_plugin_base.o ! -name irods_*_object.o )
+ar qs $ar_file $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o  ! -name irods_*_manager.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -40,8 +40,7 @@ CLIENT_VERSION_RELEASE=0
 CLIENT_SONAME="libirods_client_core.so.${CLIENT_VERSION_MAJOR}"
 CLIENT_REAL_NAME="${CLIENT_SONAME}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_SONAME}${LD_ADD}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_plugin_base.o ! -name irods_*_object.o )
-
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_SONAME}${LD_ADD}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o  ! -name irods_*_manager.o)
 
 # =-=-=-=-=-=-=-
 # Build Client API Library
@@ -97,7 +96,7 @@ rm dummy
 # Archive all Client Objects
 ar qS $ar_file $(find iRODS/lib -name irods_*_object.o)
 ar qS $ar_file $(find iRODS/lib -name irods_*_plugin.o)
-ar qS $ar_file $(find iRODS/lib -name irods_plugin_base.o)
+ar qS $ar_file $(find iRODS/lib -name irods_*_manager.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -113,8 +112,7 @@ CLIENT_API_VERSION_RELEASE=0
 CLIENT_API_SONAME="libirods_client_plugins.so.${CLIENT_API_VERSION_MAJOR}"
 CLIENT_API_REAL_NAME="${CLIENT_API_SONAME}.${CLIENT_API_VERSION_MINOR}.${CLIENT_API_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_*_plugin.o) $(find iRODS/lib -name irods_plugin_base.o)
-
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_*_manager.o) $(find iRODS/lib -name irods_*_plugin.o)
 
 #################################
 # LEGACY CLIENT LIBRARIES

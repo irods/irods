@@ -48,7 +48,7 @@ LDFLAGS += ../../external/jansson-2.7/src/.libs/libjansson.a
 
 INC = -I$(INCDIR) $(EXTRAINCS)
 
-EXTRALIBS += ../../iRODS/lib/core/obj/irods_plugin_base.o
+EXTRALIBS += ../../iRODS/server/re/obj/irods_operation_rule_execution_manager.o
 
 .PHONY: default-base default clean-base agnostic-base api-base client-base server-base
 

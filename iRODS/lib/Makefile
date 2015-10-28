@@ -73,10 +73,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/sslSockComm.o \
 		$(libCoreObjDir)/irods_serialization.o \
 		$(libCoreObjDir)/irods_auth_factory.o \
-		$(libCoreObjDir)/irods_operation_wrapper.o \
 		$(libCoreObjDir)/irods_string_tokenize.o \
-		$(libCoreObjDir)/irods_plugin_base.o \
-		$(libCoreObjDir)/irods_resource_plugin.o \
 		$(libCoreObjDir)/irods_error.o  \
 		$(libCoreObjDir)/irods_log.o \
 		$(libCoreObjDir)/irods_children_parser.o \
@@ -86,7 +83,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_plugin_name_generator.o \
 		$(libCoreObjDir)/irods_client_negotiation.o \
 		$(libCoreObjDir)/irods_network_object.o \
-		$(libCoreObjDir)/irods_network_plugin.o \
 		$(libCoreObjDir)/irods_ssl_object.o \
 		$(libCoreObjDir)/irods_tcp_object.o \
 		$(libCoreObjDir)/irods_network_factory.o \
@@ -95,7 +91,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/irods_auth_object.o \
 		$(libCoreObjDir)/irods_gsi_object.o \
 		$(libCoreObjDir)/irods_krb_object.o \
-		$(libCoreObjDir)/irods_auth_plugin.o \
 		$(libCoreObjDir)/irods_auth_manager.o \
 		$(libCoreObjDir)/irods_virtual_path.o \
 		$(libCoreObjDir)/irods_native_auth_object.o \
