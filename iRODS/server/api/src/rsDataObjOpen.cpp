@@ -457,7 +457,7 @@ _l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags ) {
         &fileOpenInp.condInput );
 
     l3descInx = rsFileOpen( rsComm, &fileOpenInp );
-
+    clearKeyVal( &fileOpenInp.condInput );
     return l3descInx;
 }
 

@@ -361,7 +361,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     int i;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
+    boost::shared_ptr<boost::thread> tid[MAX_NUM_CONFIG_TRAN_THR];
     int oprType;
     int flags = 0;
     int retVal = 0;
@@ -401,7 +401,6 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     }
 
     memset( myInput, 0, sizeof( myInput ) );
-    memset( tid, 0, sizeof( tid ) );
 
     size0 = dataOprInp->dataSize / numThreads;
 
@@ -482,7 +481,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
                                        portalFd, l3descInx, 0,
                                        dataOprInp->destRescTypeInx,
                                        i, mySize, myOffset, flags );
-                tid[i] = new boost::thread( partialDataPut, &myInput[i] );
+                tid[i].reset( new boost::thread( partialDataPut, &myInput[i] ) );
 
             }
             else {	/* a get */
@@ -490,17 +489,17 @@ svrPortalPutGet( rsComm_t *rsComm ) {
                 fillPortalTransferInp( &myInput[i], rsComm,
                                        l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
                                        i, mySize, myOffset, flags );
-                tid[i] = new boost::thread( partialDataGet, &myInput[i] );
+                tid[i].reset( new boost::thread( partialDataGet, &myInput[i] ) );
             }
         } // for i
 
         /* spawn the first thread. do this last so the file will not be
         * closed */
         if ( oprType == PUT_OPR ) {
-            tid[0] = new boost::thread( partialDataPut, &myInput[0] );
+            tid[0].reset( new boost::thread( partialDataPut, &myInput[0] ) );
         }
         else {
-            tid[0] = new boost::thread( partialDataGet, &myInput[0] );
+            tid[0].reset( new boost::thread( partialDataGet, &myInput[0] ) );
         }
 
         for ( i = 0; i < numThreads; i++ ) {
