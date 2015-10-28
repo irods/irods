@@ -1293,6 +1293,7 @@ genCollResInColl( queryHandle_t *queryHandle, collHandle_t *collHandle ) {
                  "genCollResInColl: query collection error for %s. status = %d",
                  collHandle->dataObjInp.objPath, status );
     }
+    freeGenQueryOut( &genQueryOut );
     return status;
 }
 
@@ -1341,6 +1342,7 @@ genDataResInColl( queryHandle_t *queryHandle, collHandle_t *collHandle ) {
                  "genDataResInColl: query dataObj error for %s. status = %d",
                  collHandle->dataObjInp.objPath, status );
     }
+    freeGenQueryOut( &genQueryOut );
     return status;
 }
 
