@@ -44,6 +44,12 @@ const std::string CACHE_CONTEXT_TYPE( "cache" );
 /// @ brief constant to index the archive child resource
 const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
+/// @brief constant indicating the automatic replication policy
+const std::string AUTO_REPL_POLICY( "auto_repl" );
+
+/// @brief constant indicating the replication policy is enabled
+const std::string AUTO_REPL_POLICY_ENABLED( "on" );
+
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
@@ -1017,6 +1023,20 @@ extern "C" {
 
     } // compound_file_unregistered
 
+    static bool auto_replication_is_disabled(
+        irods::resource_plugin_context& _ctx ) {
+        std::string auto_repl;
+        irods::error ret = _ctx.prop_map().get<std::string>(
+                               AUTO_REPL_POLICY,
+                               auto_repl );
+        if( ret.ok() ) {
+            if( AUTO_REPL_POLICY_ENABLED != auto_repl ) {
+                return true;
+            }
+        }
+        return false;
+    } // auto_replication_is_disabled
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification - this happens
     ///        after the close operation and the icat should be up to date
@@ -1027,24 +1047,25 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        irods::error ret = compound_check_param< irods::file_object >( _ctx );
-        if ( ( result = ASSERT_PASS( ret, "Invalid resource context." ) ).ok() ) {
-            std::string operation;
-            ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
-            if ( ret.ok() ) {
-                std::string name;
-                ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, name );
-                if ( ( result = ASSERT_PASS( ret, "Failed to get the resource name." ) ).ok() ) {
-                    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-                    irods::hierarchy_parser sub_parser;
-                    sub_parser.set_string( file_obj->in_pdmo() );
-                    if ( !sub_parser.resc_in_hier( name ) ) {
-                        result = repl_object( _ctx, SYNC_OBJ_KW );
+        if( !auto_replication_is_disabled( _ctx ) ) {
+            irods::error ret = compound_check_param< irods::file_object >( _ctx );
+            if ( ( result = ASSERT_PASS( ret, "Invalid resource context." ) ).ok() ) {
+                std::string operation;
+                ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE, operation );
+                if ( ret.ok() ) {
+                    std::string name;
+                    ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, name );
+                    if ( ( result = ASSERT_PASS( ret, "Failed to get the resource name." ) ).ok() ) {
+                        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+                        irods::hierarchy_parser sub_parser;
+                        sub_parser.set_string( file_obj->in_pdmo() );
+                        if ( !sub_parser.resc_in_hier( name ) ) {
+                            result = repl_object( _ctx, SYNC_OBJ_KW );
+                        }
                     }
                 }
             }
         }
-
         return result;
 
     } // compound_file_modified
@@ -1604,6 +1625,23 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // set the start operation to identify the cache and archive children
                 set_start_operation( "compound_start_operation" );
+
+                // =-=-=-=-=-=-=-
+                // parse context string into property pairs assuming a ; as a separator
+                std::vector< std::string > props;
+                irods::kvp_map_t kvp;
+                irods::parse_kvp_string(
+                    _context,
+                    kvp );
+
+                // =-=-=-=-=-=-=-
+                // copy the properties from the context to the prop map
+                irods::kvp_map_t::iterator itr = kvp.begin();
+                for( ; itr != kvp.end(); ++itr ) {
+                    properties_.set< std::string >(
+                        itr->first,
+                        itr->second );
+                } // for itr
             }
 
             // =-=-=-=-=-=-
