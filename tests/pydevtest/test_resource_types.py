@@ -1561,6 +1561,25 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(lib.get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree("rm -rf " + lib.get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
+    def test_auto_repl_off__2941(self):
+        self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
+
+        filename = "auto_repl_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput " + filename)
+
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
+
+    def test_auto_repl_on__2941(self):
+        self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=on\"" )
+
+        filename = "auto_repl_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput " + filename)
+
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
 
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
