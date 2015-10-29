@@ -19,7 +19,7 @@ The database plugin must be upgraded first when installing RPMs.
 $ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.7-ubuntu14-x86_64.deb
 ~~~
 
-The database plugin should be upgraded first or at the same time.  Listing them on the same line will allow dpkg to satisfy its depdendencies.
+The database plugin should be upgraded first or at the same time.  Listing them on the same line will allow dpkg to satisfy its dependencies.
 
 ## From iRODS 3.3.x
 
