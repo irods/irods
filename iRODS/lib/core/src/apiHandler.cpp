@@ -197,7 +197,7 @@ namespace irods {
                 error ret = load_plugin< api_entry >(
                                 entry,
                                 name,
-                                plugin_home,
+                                PLUGIN_TYPE_API,
                                 "inst", "ctx" );
                 if ( ret.ok() && entry ) {
                     // =-=-=-=-=-=-=-

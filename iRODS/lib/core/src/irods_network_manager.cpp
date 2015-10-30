@@ -51,6 +51,32 @@ namespace irods {
 
     } // resolve
 
+    static error load_network_plugin(
+        network_ptr&       _plugin,
+        const std::string& _plugin_name,
+        const std::string& _inst_name,
+        const std::string& _context ) {
+        // =-=-=-=-=-=-=-
+        // call generic plugin loader
+        network* net = 0;
+        error ret = load_plugin< network >(
+                        net,
+                        _plugin_name,
+                        PLUGIN_TYPE_NETWORK,
+                        _inst_name,
+                        _context );
+        if ( ret.ok() && net ) {
+            _plugin.reset( net );
+            return SUCCESS();
+
+        }
+        else {
+            return PASS( ret );
+
+        }
+
+    } // load_network_plugin
+
 // =-=-=-=-=-=-=-
 // public - given a type, load up a network plugin
     error network_manager::init_from_type(

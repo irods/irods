@@ -6,21 +6,21 @@ MAKEFLAGS += --no-print-directory
 
 .PHONY : default all epm mkdocs squeaky_clean clean libs plugins-nodb code-generation irods external docs doxygen icat icat-package icommands icommands-package resource resource-package resource postgres mysql oracle
 
-default : external libs plugins-nodb irods
+default : external libs plugins-nodb
 
-all : external libs plugins-nodb irods docs epm
+all : external libs plugins-nodb docs epm
 
-icat : external libs plugins-nodb irods
+icat : external libs plugins-nodb
 
-icat-package : external libs plugins-nodb irods
+icat-package : external libs plugins-nodb
 
 icommands : external libs clients
 
 icommands-package : external libs clients
 
-resource : external libs plugins-nodb irods
+resource : external libs plugins-nodb
 
-resource-package : external libs plugins-nodb irods
+resource-package : external libs plugins-nodb
 
 
 external :
@@ -33,7 +33,7 @@ clients : libs
 	@$(MAKE) -C iRODS clients
 	@$(MAKE) -C plugins auth network
 
-plugins-nodb : libs external
+plugins-nodb : libs external irods
 	@$(MAKE) -C plugins nodb
 
 postgres : libs external

@@ -96,16 +96,12 @@ namespace irods {
 // given the name of a microservice, try to load the shared object
 // and then register that ms with the table
     error load_microservice_plugin( ms_table& _table, const std::string _ms ) {
-        // =-=-=-=-=-=-=-
-        // resolve plugin directory
-        std::string plugin_home;
-        error ret = resolve_plugin_path( PLUGIN_TYPE_MICROSERVICE, plugin_home );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
         ms_table_entry* entry = 0;
-        error load_err = load_plugin< ms_table_entry >( entry, _ms, plugin_home, "msvc", "ctx" );
+        error load_err = load_plugin< ms_table_entry >(
+                             entry,
+                             _ms,
+                             PLUGIN_TYPE_MICROSERVICE,
+                             "msvc", "ctx" );
         if ( load_err.ok() && entry ) {
             _table[ _ms ] = entry;
             return SUCCESS();

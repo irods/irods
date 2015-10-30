@@ -377,12 +377,6 @@ static int ssl_post_connection_check(
 
 extern "C" {
     // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double PLUGIN_INTERFACE_VERSION = 1.0;
-
-    // =-=-=-=-=-=-=-
     // local function to read a buffer from a socket
     irods::error ssl_socket_read(
         int             _socket,

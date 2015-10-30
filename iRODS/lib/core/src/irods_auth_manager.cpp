@@ -34,6 +34,34 @@ namespace irods {
         return result;
     }
 
+    // =-=-=-=-=-=-=-
+    // function to load and return an initialized auth plugin
+    static error load_auth_plugin(
+            auth_ptr&       _plugin,
+            const std::string& _plugin_name,
+            const std::string& _inst_name,
+            const std::string& _context ) {
+        error result = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // call generic plugin loader
+        auth* ath = 0;
+        error ret = load_plugin< auth >(
+                        ath,
+                        _plugin_name,
+                        PLUGIN_TYPE_AUTHENTICATION,
+                        _inst_name,
+                        _context );
+        if ( ( result = ASSERT_PASS( ret, "Failed to load plugin: \"%s\".", _plugin_name.c_str() ) ).ok() ) {
+            if ( ( result = ASSERT_ERROR( ath, SYS_INVALID_INPUT_PARAM, "Invalid auth plugin." ) ).ok() ) {
+                _plugin.reset( ath );
+            }
+        }
+
+        return result;
+
+    } // load_auth_plugin
+
     error auth_manager::init_from_type(
         const std::string& _type,
         const std::string& _key,

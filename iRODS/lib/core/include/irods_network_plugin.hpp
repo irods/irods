@@ -5,6 +5,8 @@
 #include "irods_plugin_context.hpp"
 #include "irods_network_types.hpp"
 #include "irods_operation_wrapper.hpp"
+#include "irods_load_plugin.hpp"
+#include <dlfcn.h>
 
 #include <iostream>
 
@@ -19,25 +21,194 @@ namespace irods {
     class network : public plugin_base {
         public:
             // =-=-=-=-=-=-=-
-            /// @brief Constructors
-            network( const std::string&,   // instance name
-                     const std::string& ); // context
+            // public - ctor
+            network(
+                    const std::string& _inst,
+                    const std::string& _ctx ) :
+                plugin_base(
+                        _inst,
+                        _ctx ),
+                start_operation_( default_start_operation ),
+                stop_operation_( default_stop_operation ) {
+                } // ctor
 
             // =-=-=-=-=-=-=-
-            /// @brief Destructor
-            virtual ~network();
+            // public - dtor
+            virtual ~network( ) {
+
+            } // dtor
 
             // =-=-=-=-=-=-=-
-            /// @brief copy ctor
-            network( const network& _rhs );
+            // public - cctor
+            network(
+                    const network& _rhs ) :
+                plugin_base( _rhs ) {
+                    start_operation_    = _rhs.start_operation_;
+                    stop_operation_     = _rhs.stop_operation_;
+                    operations_         = _rhs.operations_;
+                    ops_for_delay_load_ = _rhs.ops_for_delay_load_;
+
+                    if ( properties_.size() > 0 ) {
+                        std::cout << "[!]\tnetwork cctor - properties map is not empty."
+                            << __FILE__ << ":" << __LINE__ << std::endl;
+                    }
+                    properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
+                } // cctor
 
             // =-=-=-=-=-=-=-
-            /// @brief Assignment Operator - necessary for stl containers
-            network& operator=( const network& _rhs );
+            // public - assignment
+            network& operator=(
+                    const network& _rhs ) {
+                if ( &_rhs == this ) {
+                    return *this;
+                }
+
+                plugin_base::operator=( _rhs );
+
+                operations_         = _rhs.operations_;
+                ops_for_delay_load_ = _rhs.ops_for_delay_load_;
+
+                if ( properties_.size() > 0 ) {
+                    std::cout << "[!]\tnetwork cctor - properties map is not empty."
+                        << __FILE__ << ":" << __LINE__ << std::endl;
+                }
+
+                properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
+
+                return *this;
+
+            } // operator=
 
             // =-=-=-=-=-=-=-
-            /// @brief override from parent plugin_base
-            virtual error delay_load( void* _h );
+            // public - function which pulls all of the symbols out of the shared object and
+            //          associates them with their keys in the operations table
+            virtual error delay_load(
+                    void* _handle ) {
+                // =-=-=-=-=-=-=-
+                // check params
+                if ( ! _handle ) {
+                    return ERROR( SYS_INVALID_INPUT_PARAM, "void handle pointer" );
+                }
+
+                if ( ops_for_delay_load_.empty() ) {
+                    return ERROR( SYS_INVALID_INPUT_PARAM, "empty operations list" );
+                }
+
+                // =-=-=-=-=-=-=-
+                // check if we need to load a start function
+                if ( !start_opr_name_.empty() ) {
+                    dlerror();
+                    network_maintenance_operation start_op = reinterpret_cast< network_maintenance_operation >(
+                            dlsym( _handle, start_opr_name_.c_str() ) );
+                    if ( !start_op ) {
+                        std::stringstream msg;
+                        msg  << "failed to load start function ["
+                            << start_opr_name_ << "]";
+                        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+                    }
+                    else {
+                        start_operation_ = start_op;
+                    }
+                } // if load start
+
+
+                // =-=-=-=-=-=-=-
+                // check if we need to load a stop function
+                if ( !stop_opr_name_.empty() ) {
+                    dlerror();
+                    network_maintenance_operation stop_op = reinterpret_cast< network_maintenance_operation >(
+                            dlsym( _handle, stop_opr_name_.c_str() ) );
+                    if ( !stop_op ) {
+                        std::stringstream msg;
+                        msg << "failed to load stop function ["
+                            << stop_opr_name_ << "]";
+                        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+                    }
+                    else {
+                        stop_operation_ = stop_op;
+                    }
+                } // if load stop
+
+
+                // =-=-=-=-=-=-=-
+                // iterate over list and load function. then add it to the map via wrapper functor
+                std::vector< std::pair< std::string, std::string > >::iterator itr = ops_for_delay_load_.begin();
+                for ( ; itr != ops_for_delay_load_.end(); ++itr ) {
+                    // =-=-=-=-=-=-=-
+                    // cache values in obvious variables
+                    std::string& key = itr->first;
+                    std::string& fcn = itr->second;
+
+                    // =-=-=-=-=-=-=-
+                    // check key and fcn name before trying to load
+                    if ( key.empty() ) {
+                        std::cout << "[!]\tirods::network::delay_load - empty op key for ["
+                            << fcn << "], skipping." << std::endl;
+                        continue;
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // check key and fcn name before trying to load
+                    if ( fcn.empty() ) {
+                        std::cout << "[!]\tirods::network::delay_load - empty function name for ["
+                            << key << "], skipping." << std::endl;
+                        continue;
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // call dlsym to load and check results
+                    dlerror();
+                    plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
+                    if ( !res_op_ptr ) {
+                        std::cout << "[!]\tirods::network::delay_load - failed to load ["
+                            << fcn << "].  error - " << dlerror() << std::endl;
+                        continue;
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // add the operation via a wrapper to the operation map
+                    #ifdef RODS_SERVER
+                    oper_rule_exec_mgr_ptr rex_mgr(
+                            new operation_rule_execution_manager(
+                                instance_name_, key ) );
+                    #else
+                    oper_rule_exec_mgr_ptr rex_mgr(
+                            new operation_rule_execution_manager_no_op(
+                                instance_name_, key ) );
+                    #endif
+                    // =-=-=-=-=-=-=-
+                    // add the operation via a wrapper to the operation map
+                    operations_[ key ] = operation_wrapper(
+                            rex_mgr,
+                            instance_name_,
+                            key,
+                            res_op_ptr );
+                } // for itr
+
+
+                // =-=-=-=-=-=-=-
+                // see if we loaded anything at all
+                if ( operations_.size() < 0 ) {
+                    return ERROR( SYS_INVALID_INPUT_PARAM, "operations map is emtpy" );
+                }
+
+                return SUCCESS();
+
+            } // delay_load
+
+            // =-=-=-=-=-=-=-
+            // public - set a name for the developer provided start op
+            void set_start_operation(
+                    const std::string& _op ) {
+                start_opr_name_ = _op;
+            } // set_start_operation
+
+            // =-=-=-=-=-=-=-
+            // public - set a name for the developer provided stop op
+            void set_stop_operation(
+                    const std::string& _op ) {
+                stop_opr_name_ = _op;
+            } // set_stop_operation
 
             // =-=-=-=-=-=-=-
             /// @brief get a property from the map if it exists.  catch the exception in the case where
@@ -55,11 +226,6 @@ namespace irods {
                 error ret = properties_.set< T >( _key, _val );
                 return PASS( ret );
             } // set_property
-
-            // =-=-=-=-=-=-=-
-            /// @brief interface to set start / stop functions
-            void set_start_operation( const std::string& );
-            void set_stop_operation( const std::string& );
 
             // =-=-=-=-=-=-=-
             /// @brief interface to call start / stop functions
@@ -241,14 +407,6 @@ namespace irods {
             lookup_table< operation_wrapper > operations_;
 
     }; // class network
-
-// =-=-=-=-=-=-=-
-// given the name of a network, try to load the shared object
-    error load_network_plugin(
-        network_ptr&,         // plugin
-        const std::string&,   // plugin name
-        const std::string&,   // instance name
-        const std::string& ); // context string
 
 }; // namespace irods
 

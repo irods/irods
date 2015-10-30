@@ -274,21 +274,13 @@ namespace irods {
                                 const std::string _plugin_name,
                                 const std::string _inst_name,
                                 const std::string _context ) {
-        // =-=-=-=-=-=-=-
-        // resolve plugin directory
-        std::string plugin_home;
-        error ret = resolve_plugin_path( PLUGIN_TYPE_RESOURCE, plugin_home );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
         resource* resc = 0;
-        ret = load_plugin< resource >(
-                  resc,
-                  _plugin_name,
-                  plugin_home,
-                  _inst_name,
-                  _context );
+        error ret = load_plugin< resource >(
+                        resc,
+                        _plugin_name,
+                        PLUGIN_TYPE_RESOURCE,
+                        _inst_name,
+                        _context );
         if ( ret.ok() && resc ) {
             _plugin.reset( resc );
         }

@@ -21,7 +21,6 @@ namespace irods {
         return !std::isalnum( _c ) && !( '_' == _c ) && !( '-' == _c );
     } // not_allowed_char
 
-
     plugin_name_generator::plugin_name_generator() {
         // TODO - stub
     }

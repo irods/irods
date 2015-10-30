@@ -55,6 +55,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_resource_backport.o \
 		$(svrCoreObjDir)/irods_resource_redirect.o \
 		$(svrCoreObjDir)/irods_server_negotiation.o \
+		$(svrCoreObjDir)/irods_resource_plugin.o \
+		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
 		$(svrCoreObjDir)/irods_collection_object.o \
 		$(svrCoreObjDir)/irods_data_object.o \
 		$(svrCoreObjDir)/irods_structured_object.o \
@@ -68,7 +70,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/irods_oracle_object.o  \
 		$(svrCoreObjDir)/irods_server_api_table.o  \
 		$(svrCoreObjDir)/irods_get_l1desc.o  \
-		$(svrCoreObjDir)/irods_resource_plugin_impostor.o  \
 		$(svrCoreObjDir)/readServerConfig.o \
 		$(svrCoreObjDir)/irods_server_control_plane.o \
 		$(svrCoreObjDir)/irods_server_state.o
