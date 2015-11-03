@@ -346,8 +346,8 @@ cllCheckPending( const char *sql, int option, int dbType ) {
                 max = pendingIx;
             }
             for ( int i = 1; i < max && skip == 1; i++ ) {
-                if ( strncmp( ( char * )&pBuffer[i * pendingRecordSize],
-                              "SET SESSION", 11 ) != 0 ) {
+                if (    (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET SESSION",   11) !=0)
+                     && (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET character", 13) !=0)) {
                     skip = 0;
                 }
             }
@@ -374,7 +374,7 @@ cllCheckPending( const char *sql, int option, int dbType ) {
     if ( pendingAudits > 0 ) {
         rodsLog( LOG_NOTICE,
                  "Notice, pending Auditing SQL committed at cllDisconnect" );
-        return ( 1 ); /* tell caller (cllDisconect) to do a commit */
+        return 1; /* tell caller (cllDisconect) to do a commit */
     }
     return 0;
 }
