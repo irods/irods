@@ -54,7 +54,7 @@ int myWrite( int sock, void *buf, int len, int *bytesWritten );
 int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
 int connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
                              int timeoutFlag );
-int connectToRhostWithTout( int sock, struct sockaddr *sin );
+int connectToRhostWithTout( struct sockaddr *sin );
 int rodsSleep( int sec, int microSec );
 int setConnAddr( rcComm_t *conn );
 int setRemoteAddr( int sock, struct sockaddr_in *remoteAddr );
