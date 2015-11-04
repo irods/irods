@@ -23,9 +23,10 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
-#include "rodsClient.h"
 #include "readServerConfig.hpp"
 #include "reFuncDefs.hpp"
+#include "phyBundleColl.h"
+#include "collCreate.h"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>

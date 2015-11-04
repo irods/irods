@@ -15,7 +15,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "reSysDataObjOpr.hpp"
 #include "miscUtil.h"
-#include "rodsClient.h"
+#include "ruleExecMod.h"
 #include "rsIcatOpr.hpp"
 #include "resource.hpp"
 #include "reFuncDefs.hpp"

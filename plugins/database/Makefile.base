@@ -10,6 +10,7 @@ include $(IRODSDIR)/config/platform.mk
 include $(IRODSDIR)/config/config.mk
 
 LIBRARY=$(IRODSDIR)/lib/core/obj/libRodsAPIs.a
+LIB_CLIENT_EXEC=$(IRODSDIR)/lib/client_exec/obj/irods_client_rule_execution_manager_factory.o
 CHL_OBJS=$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines.o  \
 	     $(IRODSDIR)/server/core/obj/irods_database_factory.o \
    	 	 $(IRODSDIR)/server/core/obj/irods_database_manager.o \
@@ -82,12 +83,12 @@ $(DB_PLUGIN_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
 
 $(SODIR)/test_cll: $(OBJDIR)/test_cll.o $(CLL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(BOOST_LIBS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(BOOST_LIBS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 $(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
 $(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
+	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto

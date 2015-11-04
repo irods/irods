@@ -14,7 +14,7 @@
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
-#include "rodsClient.h"
+#include "modAVUMetadata.h"
 #include "rsIcatOpr.hpp"
 
 // =-=-=-=-=-=-

@@ -26,6 +26,7 @@ export libCoreSrcDir	= $(buildDir)/lib/core/src
 export libRbudpSrcDir	= $(buildDir)/lib/rbudp/src
 export libApiSrcDir	= $(buildDir)/lib/api/src
 export libHasherSrcDir  = $(buildDir)/lib/hasher/src
+export libClientExecSrcDir  = $(buildDir)/lib/client_exec/src
 
 #
 # Include directories
@@ -41,6 +42,7 @@ export libCoreIncDir	= $(buildDir)/lib/core/include
 export libRbudpIncDir	= $(buildDir)/lib/rbudp/include
 export libApiIncDir	= $(buildDir)/lib/api/include
 export libHasherIncDir	= $(buildDir)/lib/hasher/include
+export libClientExecIncDir	= $(buildDir)/lib/client_exec/include
 
 #
 # Object directories
@@ -57,6 +59,7 @@ export libCoreObjDir	= $(buildDir)/lib/core/obj
 export libRbudpObjDir	= $(buildDir)/lib/rbudp/obj
 export libApiObjDir	= $(buildDir)/lib/api/obj
 export libHasherObjDir  = $(buildDir)/lib/hasher/obj
+export libClientExecObjDir  = $(buildDir)/lib/client_exec/obj
 
 #
 # Binary directories

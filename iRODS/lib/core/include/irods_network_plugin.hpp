@@ -10,8 +10,14 @@
 
 #include <iostream>
 
+extern "C"
+void* operation_rule_execution_manager_factory(
+        const char* _plugin_name,
+        const char* _operation_name );
+
 namespace irods {
     typedef error( *network_maintenance_operation )( plugin_property_map& );
+
 // =-=-=-=-=-=-=-
     /**
      * \author Jason M. Coposky
@@ -158,7 +164,10 @@ namespace irods {
                     // =-=-=-=-=-=-=-
                     // call dlsym to load and check results
                     dlerror();
-                    plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
+                    plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >(
+                                                      dlsym(
+                                                          _handle,
+                                                          fcn.c_str() ) );
                     if ( !res_op_ptr ) {
                         std::cout << "[!]\tirods::network::delay_load - failed to load ["
                             << fcn << "].  error - " << dlerror() << std::endl;
@@ -167,15 +176,13 @@ namespace irods {
 
                     // =-=-=-=-=-=-=-
                     // add the operation via a wrapper to the operation map
-                    #ifdef RODS_SERVER
-                    oper_rule_exec_mgr_ptr rex_mgr(
-                            new operation_rule_execution_manager(
-                                instance_name_, key ) );
-                    #else
-                    oper_rule_exec_mgr_ptr rex_mgr(
-                            new operation_rule_execution_manager_no_op(
-                                instance_name_, key ) );
-                    #endif
+                    oper_rule_exec_mgr_ptr rex_mgr;
+                    rex_mgr.reset(
+                            reinterpret_cast<operation_rule_execution_manager_base*>(
+                                operation_rule_execution_manager_factory(
+                                    instance_name_.c_str(),
+                                    key.c_str() ) ) );
+
                     // =-=-=-=-=-=-=-
                     // add the operation via a wrapper to the operation map
                     operations_[ key ] = operation_wrapper(

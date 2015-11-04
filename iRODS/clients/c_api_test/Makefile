@@ -29,7 +29,7 @@ BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
 	$(BOOST_DIR)/stage/lib/libboost_chrono.a \
 	$(BOOST_DIR)/stage/lib/libboost_program_options.a
 
-LDFLAGS = ../../lib/core/obj/libRodsAPIs.a $(BOOST_LIBS)
+LDFLAGS = $(LIBRARY) $(LIB_CLIENT_EXEC) $(BOOST_LIBS)
 
 # include jansson for zonereport
 CFLAGS += -I../../../external/$(JANSSONVERSION)/src/

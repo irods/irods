@@ -23,6 +23,8 @@ typedef struct TransferProgress {
 extern "C" {
 #endif
 void init_client_api_table();
+void* operation_rule_execution_manager_factory(
+        const char*, const char*);
 #ifdef __cplusplus
 }
 #endif

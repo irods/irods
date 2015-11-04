@@ -38,6 +38,8 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
 
+#include "irods_server_rule_execution_manager_factory.hpp"
+
 int getAgentProcCnt() {
     return 0;
 }
