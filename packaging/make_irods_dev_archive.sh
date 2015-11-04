@@ -25,7 +25,7 @@ rm dummy
 
 # =-=-=-=-=-=-=-
 # archive all client objects
-ar qs $ar_file $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
+ar qs $ar_file $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/api/*.o' ! -path 'iRODS/lib/client_exec' ! -name irods_parse_command_line_options.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o  ! -name irods_*_manager.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -59,7 +59,7 @@ rm dummy
 
 # =-=-=-=-=-=-=-
 # archive all client objects
-ar qs $ar_file $(find iRODS/lib/ -name rc*.o ! -path "iRODS/lib/core/obj/rc*.o") $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o)
+ar qs $ar_file $(find iRODS/lib/ -name rc*.o ! -path "iRODS/lib/core/obj/rc*.o" ! -path 'iRODS/lib/client_exec' ) $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -97,6 +97,7 @@ rm dummy
 ar qS $ar_file $(find iRODS/lib -name irods_*_object.o)
 ar qS $ar_file $(find iRODS/lib -name irods_*_plugin.o)
 ar qS $ar_file $(find iRODS/lib -name irods_*_manager.o)
+ar qS $ar_file $(find iRODS/lib/client_exec -name *.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -112,7 +113,7 @@ CLIENT_API_VERSION_RELEASE=0
 CLIENT_API_SONAME="libirods_client_plugins.so.${CLIENT_API_VERSION_MAJOR}"
 CLIENT_API_REAL_NAME="${CLIENT_API_SONAME}.${CLIENT_API_VERSION_MINOR}.${CLIENT_API_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_*_manager.o) $(find iRODS/lib -name irods_*_plugin.o)
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib/client_exec -name *.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_*_manager.o) $(find iRODS/lib -name irods_*_plugin.o)
 
 #################################
 # LEGACY CLIENT LIBRARIES
@@ -149,7 +150,7 @@ CLIENT_VERSION_RELEASE=0
 CLIENT_SONAME="libirods_client.so.${CLIENT_VERSION_MAJOR}"
 CLIENT_REAL_NAME="${CLIENT_SONAME}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_SONAME}${LD_ADD}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_SONAME}${LD_ADD}" -o ${CLIENT_REAL_NAME} $(find iRODS/lib -name \*.o ! -path 'iRODS/lib/client_exec' ! -name irods_pack_table.o ! -name irods_client_api_table.o ! -name irods_*_plugin.o ! -name irods_*_object.o )
 
 
 
@@ -174,6 +175,7 @@ ar qS $ar_file $(find iRODS/lib -name irods_pack_table.o)
 ar qS $ar_file $(find iRODS/lib -name irods_client_api_table.o)
 ar qS $ar_file $(find iRODS/lib -name irods_*_object.o)
 ar qS $ar_file $(find iRODS/lib -name irods_*_plugin.o)
+ar qS $ar_file $(find iRODS/lib/client_exec -name *.o)
 
 # =-=-=-=-=-=-=-
 # Generate index
@@ -189,7 +191,7 @@ CLIENT_API_VERSION_RELEASE=0
 CLIENT_API_SONAME="libirods_client_api.so.${CLIENT_API_VERSION_MAJOR}"
 CLIENT_API_REAL_NAME="${CLIENT_API_SONAME}.${CLIENT_API_VERSION_MINOR}.${CLIENT_API_VERSION_RELEASE}"
 
-g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o)
+g++ -fPIC -shared -rdynamic "-Wl,-soname,${CLIENT_API_SONAME}${LD_ADD}" -o ${CLIENT_API_REAL_NAME} $(find iRODS/lib -name irods_pack_table.o) $(find iRODS/lib -name irods_client_api_table.o) $(find iRODS/lib -name irods_*_object.o) $(find iRODS/lib -name irods_network_plugin.o) $(find iRODS/lib -name irods_auth_plugin.o) $(find iRODS/lib/client_exec -name *.o)
 
 
 
