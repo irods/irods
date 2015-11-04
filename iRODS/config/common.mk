@@ -9,6 +9,8 @@ LIBRARY_NAME =	RodsAPIs
 
 LIBRARY =	$(libCoreObjDir)/lib$(LIBRARY_NAME).a
 
+LIB_CLIENT_EXEC = $(libClientExecObjDir)/irods_client_rule_execution_manager_factory.o
+
 # All library includes
 LIB_INCLUDES =	-I$(libCoreIncDir) -I$(libApiIncDir)
 

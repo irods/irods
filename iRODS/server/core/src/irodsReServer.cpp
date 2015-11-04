@@ -21,12 +21,10 @@
 #include "readServerConfig.hpp"
 #include "filesystem.hpp"
 
-
-//#include "irods_server_control_plane.hpp"
-
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_server_rule_execution_manager_factory.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>

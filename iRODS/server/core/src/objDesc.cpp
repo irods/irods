@@ -20,7 +20,6 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
-#include "rodsClient.h"
 #include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-

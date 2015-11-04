@@ -30,6 +30,7 @@
 #include "irods_network_factory.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_control_plane.hpp"
+#include "irods_server_rule_execution_manager_factory.hpp"
 #include "readServerConfig.hpp"
 #include "initServer.hpp"
 #include "procLog.h"

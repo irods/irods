@@ -7,7 +7,9 @@
 #include "collection.hpp"
 #include "resource.hpp"
 #include "genQuery.h"
-#include "rodsClient.h"
+#include "modColl.h"
+#include "icatDefines.h"
+#include "dataObjClose.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

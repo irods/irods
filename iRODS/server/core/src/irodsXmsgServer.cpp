@@ -2,19 +2,19 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /* irodsXmsgServer.cpp - The irods xmsg server */
-
 #include "reconstants.hpp"
 #include "irodsXmsgServer.hpp"
 #include "xmsgLib.hpp"
 #include "rsGlobal.hpp"
-#include "initServer.hpp"
-#include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_signal.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "initServer.hpp"
+#include "miscServerFunct.hpp"
+#include "readServerConfig.hpp"
+#include "irods_server_rule_execution_manager_factory.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitely */
 

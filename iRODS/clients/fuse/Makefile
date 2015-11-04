@@ -105,7 +105,7 @@ endif
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
 
-LDFLAGS +=	$(LIBRARY) -ldl
+LDFLAGS +=	$(LIBRARY)  $(LIB_CLIENT_EXEC)  -ldl
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \

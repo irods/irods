@@ -5,7 +5,11 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "genQuery.h"
-#include "rodsClient.h"
+#include "specificQuery.h"
+#include "dataObjRename.h"
+#include "readCollection.h"
+#include "closeCollection.h"
+#include "collCreate.h"
 
 #include "irods_virtual_path.hpp"
 

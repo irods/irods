@@ -117,6 +117,12 @@ ifdef RELEASE_FLAG
 CFLAGS +=       -DRELEASE_FLAG
 endif
 
+# client_exec
+LIB_CLIENT_EXEC_OBJS = \
+		$(libClientExecObjDir)/irods_client_rule_execution_manager_factory.o 
+INCLUDES +=	-I$(libClientExecIncDir)
+
+
 # Hasher
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
@@ -175,7 +181,7 @@ all:	libs
 lib:	libs
 	@true
 
-libs:	$(CONFIG) $(LIBRARY)
+libs:	$(CONFIG) $(LIBRARY) $(LIB_CLIENT_EXEC_OBJS)
 	@true
 
 $(LIBRARY): $(OBJS) $(BOOST_LIBS)
@@ -218,6 +224,11 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.cpp $(DEPEND) $(BOOST_L
 $(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile Hasher `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+
+$(LIB_CLIENT_EXEC_OBJS): $(libClientExecObjDir)/%.o: $(libClientExecSrcDir)/%.cpp $(configMk) $(platformMk)
+	@echo "Compile client_exec `basename $@`..."
+	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+
 
 $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.cpp $(configMk) $(platformMk)
 	@echo "Compile rbudp `basename $@`..."
