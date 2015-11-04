@@ -921,43 +921,49 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
 } // connectToRhost
 
+
 int
-connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
-                         int timeoutFlag ) {
-    int sock;
-    int status;
-
-    sock = socket( AF_INET, SOCK_STREAM, 0 );
-
+try_twice_to_create_socket(void) {
+    int sock = socket( AF_INET, SOCK_STREAM, 0 );
     if ( sock < 0 ) {  /* the ol' one-two */
         sock = socket( AF_INET, SOCK_STREAM, 0 );
     }
-
     if ( sock < 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "connectToRhostWithRaddr() - socket() failed: errno=%d",
+        rodsLog( LOG_ERROR,
+                 "try_twice_to_create_socket() - socket() failed: errno=%d",
                  errno );
         return USER_SOCK_OPEN_ERR - errno;
     }
+    return sock;
+}
 
-    if ( timeoutFlag > 0 ) {
-        status = connectToRhostWithTout( sock, ( struct sockaddr * ) remoteAddr );
-    }
-    else {
-        status = connect( sock, ( struct sockaddr * ) remoteAddr,
-                          sizeof( struct sockaddr ) );
-    }
-
-    if ( status < 0 ) {
-        if ( status == -1 ) {
-            status = USER_SOCK_CONNECT_ERR - errno;
+int
+connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
+                         int timeoutFlag ) {
+    int sock = -1;
+    if (timeoutFlag > 0) {
+        sock = connectToRhostWithTout( ( struct sockaddr * ) remoteAddr );
+        if (sock < 0) {
+            return sock;
         }
+    } else {
+        sock = try_twice_to_create_socket();
+        if (sock < 0) {
+            return sock;
+        }
+        const int status = connect( sock, ( struct sockaddr * ) remoteAddr,
+                                    sizeof( struct sockaddr ) );
+        if ( status < 0 ) {
 #ifdef _WIN32
-        closesocket( sock );
+            closesocket( sock );
 #else
-        close( sock );
+            close( sock );
 #endif /* WIN32 */
-        return status;
+            if ( status == -1 ) {
+                return USER_SOCK_CONNECT_ERR - errno;
+            }
+            return status;
+        }
     }
 
     rodsSetSockOpt( sock, windowSize );
@@ -970,23 +976,19 @@ connectToRhostWithRaddr( struct sockaddr_in *remoteAddr, int windowSize,
 #endif
 
     return sock;
-
 }
 
 #ifdef _WIN32
-void CALLBACK my_timeout_handler( UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2 ) {
-    win_connect_timeout = 1;
-}
-#endif
-
 int
-connectToRhostWithTout( int sock, struct sockaddr *sin ) {
-    int timeoutCnt = 0;
-
-#ifdef _WIN32
+connectToRhostWithTout(struct sockaddr *sin ) {
     // A Windows console app has very limited timeout functionality.
     // An pseudo timeout is implemented.
+    int timeoutCnt = 0;
     int status = 0;
+    const int sock = try_twice_to_create_socket();
+    if (sock < 0) {
+        return sock;
+    }
 
     while ( ( timeoutCnt < MAX_CONN_RETRY_CNT ) && ( !win_connect_timeout ) ) {
         if ( ( status = connect( sock, sin, sizeof( struct sockaddr ) ) ) < 0 ) {
@@ -1002,25 +1004,41 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     }
 
     return 0;
-
+}
 #else
-    /* redo the timeout using select */
-    /* Set non-blocking */
-    long arg = fcntl( sock, F_GETFL, NULL );
-    if ( arg < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "connectToRhostWithTout: fcntl F_GETFL error, errno = %d", errno );
-        return USER_SOCK_CONNECT_ERR;
+int
+create_nonblocking_socket(void) {
+    const int sock = try_twice_to_create_socket();
+    if (sock < 0) {
+        return sock;
     }
-    arg |= O_NONBLOCK;
-    if ( fcntl( sock, F_SETFL, arg ) < 0 ) {
+    long flags = fcntl( sock, F_GETFL, NULL );
+    if ( flags < 0 ) {
+        close( sock );
         rodsLog( LOG_ERROR,
-                 "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno );
-        return USER_SOCK_CONNECT_ERR;
+                 "create_nonblocking_socket: fcntl F_GETFL error, errno = %d", errno );
+        return USER_SOCK_CONNECT_ERR - errno;
     }
+    flags |= O_NONBLOCK;
+    if ( fcntl( sock, F_SETFL, flags ) < 0 ) {
+        close( sock );
+        rodsLog( LOG_ERROR,
+                 "create_nonblocking_socket: fcntl F_SETFL error, errno = %d", errno );
+        return USER_SOCK_CONNECT_ERR - errno;
+    }
+    return sock;
+}
 
+int
+connectToRhostWithTout(struct sockaddr *sin ) {
+    int timeoutCnt = 0;
     int status = 0;
+    int sock = -1;
     while ( timeoutCnt < MAX_CONN_RETRY_CNT ) {
+        sock = create_nonblocking_socket();
+        if (sock < 0) {
+            return sock;
+        }
         status = connect( sock, sin, sizeof( struct sockaddr ) );
         if ( status >= 0 ) {
             break;
@@ -1059,6 +1077,7 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
                     rodsLog( LOG_ERROR,
                              "connectToRhostWithTout: getsockopt error, errno = %d",
                              errno );
+                    close( sock );
                     return USER_SOCK_CONNECT_ERR - errno;
                 }
                 /* Check the returned value */
@@ -1090,8 +1109,9 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     }
 
     if ( status < 0 ) {
+            close( sock );
         if ( status == -1 ) {
-            return USER_SOCK_CONNECT_ERR;
+            return USER_SOCK_CONNECT_ERR - errno;
         }
         else {
             return status;
@@ -1099,22 +1119,25 @@ connectToRhostWithTout( int sock, struct sockaddr *sin ) {
     }
 
     /* Set to blocking again */
-    if ( ( arg = fcntl( sock, F_GETFL, NULL ) ) < 0 ) {
+    int socket_flags = fcntl( sock, F_GETFL, NULL );
+    if ( socket_flags < 0 ) {
+        close( sock );
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_GETFL error, errno = %d", errno );
-        return USER_SOCK_CONNECT_ERR;
+        return USER_SOCK_CONNECT_ERR - errno;
     }
 
-    arg &= ( ~O_NONBLOCK );
-    if ( fcntl( sock, F_SETFL, arg ) < 0 ) {
+    socket_flags &= ( ~O_NONBLOCK );
+    if ( fcntl( sock, F_SETFL, socket_flags ) < 0 ) {
+        close( sock );
         rodsLog( LOG_ERROR,
                  "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno );
-        return USER_SOCK_CONNECT_ERR;
+        return USER_SOCK_CONNECT_ERR - errno;
     }
-    return status;
+    return sock;
+}
 
 #endif
-}
 
 int
 setConnAddr( rcComm_t *conn ) {
