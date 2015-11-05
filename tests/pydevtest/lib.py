@@ -585,27 +585,13 @@ class IrodsSession(object):
         kwargs['env']['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
 
     def _log_run_icommand(self, arg):
-        valid_icommands = ['iadmin', 'iapitest', 'ibun', 'icd',
-                            'ichksum', 'ichmod', 'icp', 'ienv',
-                            'ierror', 'iexecmd', 'iexit', 'ifsck',
-                            'iget', 'ihelp', 'iinit', 'ils',
-                            'ilsresc', 'imcoll', 'imeta',
-                            'imiscsvrinfo', 'imkdir', 'imv',
-                            'iphybun', 'iphymv', 'ips', 'iput',
-                            'ipwd', 'iqdel', 'iqstat', 'iquest',
-                            'ireg', 'irepl', 'irm', 'irmtrash',
-                            'irodsFs', 'irods-grid', 'irsync',
-                            'irule', 'iscan', 'isysmeta', 'iticket',
-                            'itrim', 'iuserinfo', 'ixmsg',
-                            'izonereport' ]
-
         if isinstance(arg, basestring):
             icommand = shlex.split(arg)[0]
             log_string = arg
         else:
             icommand = arg[0]
             log_string = ' '.join(arg)
-        assert icommand in valid_icommands, icommand
+        
         message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(
             self.username, log_string)
         write_to_log('server', message)
