@@ -3,6 +3,8 @@ if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
+import contextlib
+import errno
 import os
 import tempfile
 import time
@@ -586,3 +588,18 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
         with tempfile.NamedTemporaryFile(prefix='test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880') as f:
             lib.make_file(f.name, 800*1000*1000, contents='arbitrary')
             self.admin.assert_icommand(['iput', f.name, '-v'], 'STDOUT_SINGLELINE', '0 thr')
+
+    def test_ils_connection_refused_2948(self):
+        @contextlib.contextmanager
+        def irods_server_stopped():
+            lib.stop_irods_server()
+            try:
+                yield
+            finally:
+                lib.start_irods_server()
+        with irods_server_stopped():
+            self.admin.assert_icommand(['ils'], 'STDERR_SINGLELINE', 'Connection refused')
+            _, out, err = self.admin.assert_icommand(['ils', '-V'], 'STDERR_SINGLELINE', 'Connection refused')
+            assert 'errno = {0}'.format(errno.ECONNREFUSED) in out, 'missing ECONNREFUSED errno in\n' + out
+            assert 'errno = {0}'.format(errno.ECONNABORTED) not in out, 'found ECONNABORTED errno in\n' + out
+            assert 'errno = {0}'.format(errno.EINVAL) not in out, 'found EINVAL errno in\n' + out
