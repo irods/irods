@@ -4,6 +4,7 @@ import contextlib
 import copy
 import errno
 import hashlib
+import itertools
 import json
 import logging
 import mmap
@@ -145,7 +146,7 @@ def kill_pid(pid):
     p.terminate()
     p.kill()
 
-def find_shared_object(so_name, regex=False):
+def find_shared_object(so_name, regex=False, additional_directories=[]):
     paths = []
     if regex:
         so_regex = re.compile(so_name)
@@ -177,14 +178,13 @@ def find_shared_object(so_name, regex=False):
         elif os.path.exists(os.path.join(directory, so_name)) and os.path.join(directory, so_name) not in paths:
             paths.append(os.path.join(directory, so_name))
 
-    for (directory, _, names) in os.walk('/usr/lib'):
+    for (directory, _, names) in itertools.chain(*[os.walk(d) for d in itertools.chain(additional_directories, ['/usr/lib/'])]):
         if regex:
             for name in names:
                 if so_regex.match(os.path.basename(name)) and os.path.join(directory, name) not in paths:
                     paths.append(os.path.join(directory, name))
         elif os.path.exists(os.path.join(directory, so_name)) and os.path.join(directory, so_name) not in paths:
             paths.append(os.path.join(directory, so_name))
-
 
     return paths
 

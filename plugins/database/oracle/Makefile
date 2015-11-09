@@ -33,7 +33,14 @@ EXTRA_CFLAGS = \
 	-I${ORACLE_HOME_INCLUDE} \
 	-I${ORACLE_HOME_INCLUDE}/rdbms/public/
 
-EXTRA_LDRFLAGS = \
+ifeq ($(OS_platform), osx_platform)
+	EXTRA_LDRFLAGS = \
+		../../../external/postgresql-9.3.4/pgsql/lib/libodbc.dylib
+else
+	EXTRA_LDRFLAGS = -lodbc
+endif
+
+EXTRA_LDRFLAGS += \
 	-L${ORACLE_HOME_LIB}/lib/ \
 	-lclntsh -locci -lnnz11
 

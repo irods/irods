@@ -49,27 +49,17 @@ def dump_odbc_ini(odbc_dict, f):
         print('', file=f)
 
 def get_odbc_entry(db_config):
-    odbc_entry = get_odbc_template(db_config['catalog_database_type'])
-    odbc_entry['Driver'] = db_config['db_odbc_driver']
-
-    odbc_entry['Database'] = db_config['db_name']
-    odbc_entry['Server'] = db_config['db_host']
-    odbc_entry['Servername'] = db_config['db_host']
-    odbc_entry['Port'] = str(db_config['db_port'])
-    return odbc_entry
-
-def get_odbc_template(db_type):
-    if db_type == 'postgres':
+    if db_config['catalog_database_type'] == 'postgres':
         return {
             'Description': 'iRODS Catalog',
-            'Driver': None,
+            'Driver': db_config['db_odbc_driver'],
             'Trace': 'No',
             'Debug': '0',
             'CommLog': '0',
             'TraceFile': '',
-            'Database': None,
-            'Servername': None,
-            'Port': None,
+            'Database': db_config['db_name'],
+            'Servername': db_config['db_host'],
+            'Port': str(db_config['db_port']),
             'ReadOnly': 'No',
             'Ksqo': '0',
             'RowVersioning': 'No',
@@ -78,22 +68,22 @@ def get_odbc_template(db_type):
             'FakeOidIndex': 'No',
             'ConnSettings': ''
         }
-    elif db_type == 'mysql':
+    elif db_config['catalog_database_type'] == 'mysql':
         return {
             'Description': 'iRODS catalog',
             'Option': '2',
-            'Driver': None,
-            'Server': None,
-            'Port': None,
-            'Database': None
+            'Driver': db_config['db_odbc_driver'],
+            'Server': db_config['db_host'],
+            'Port': str(db_config['db_port']),
+            'Database': db_config['db_name']
         }
-    elif db_type == 'oracle':
+    elif db_config['catalog_database_type'] == 'oracle':
         return {
             'Description': 'iRODS catalog',
-            'Driver': None,
+            'Driver': db_config['db_odbc_driver']
         }
     else:
-        raise IrodsError('No odbc template exists for %s' % (db_type))
+        raise IrodsError('No odbc template exists for %s' % (db_config['catalog_database_type']))
 
 def get_installed_odbc_drivers():
     out, _, code = lib.execute_command_permissive(['odbcinst', '-q', '-d'])
@@ -102,7 +92,7 @@ def get_installed_odbc_drivers():
 def get_odbc_drivers_for_db_type(db_type):
     return [d for d in get_installed_odbc_drivers() if db_type in d.lower()]
 
-def get_odbc_driver_paths(db_type):
+def get_odbc_driver_paths(db_type, oracle_home=None):
     if db_type == 'postgres':
         return sorted(unique_list(itertools.chain(
                 #lib.find_shared_object('psqlodbc.so'),
@@ -120,7 +110,7 @@ def get_odbc_driver_paths(db_type):
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     elif db_type == 'oracle':
         return sorted(unique_list(itertools.chain(
-                    lib.find_shared_object('libsqora\.so.*', regex=True))),
+                    lib.find_shared_object('libsqora\.so.*', regex=True, additional_directories=[d for d in [oracle_home] if d]))),
             key = lambda p: 0 if is_64_bit_ELF(p) else 1)
     else:
         raise IrodsError('No default ODBC driver paths for %s' % (db_type))

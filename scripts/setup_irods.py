@@ -51,16 +51,6 @@ def setup_catalog(db_type, irods_config):
 
     db_config['catalog_database_type'] = db_type
     while True:
-        odbc_drivers = irods.database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
-        if odbc_drivers:
-            db_config['db_odbc_driver'] = default_prompt(
-                    'ODBC driver for %s', db_config['catalog_database_type'],
-                    default=odbc_drivers)
-        else:
-            db_config['db_odbc_driver'] = default_prompt(
-                    'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
-                    default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type']))
-
         if db_config['catalog_database_type'] == 'oracle':
             oracle_home = ''
             if 'environment_variables' not in server_config:
@@ -70,6 +60,17 @@ def setup_catalog(db_type, irods_config):
             elif 'ORACLE_HOME' in os.environ:
                 oracle_home = os.environ['ORACLE_HOME']
             server_config['environment_variables']['ORACLE_HOME'] = default_prompt('$ORACLE_HOME', default=[oracle_home])
+
+        odbc_drivers = irods.database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
+        if odbc_drivers:
+            db_config['db_odbc_driver'] = default_prompt(
+                    'ODBC driver for %s', db_config['catalog_database_type'],
+                    default=odbc_drivers)
+        else:
+            db_config['db_odbc_driver'] = default_prompt(
+                    'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
+                    default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type'],
+                        oracle_home=server_config['environment_variables']['ORACLE_HOME'] if db_config['catalog_database_type'] == 'oracle' else None))
 
         db_config['db_host'] = default_prompt(
                 'Database server\'s hostname or IP address',
@@ -100,8 +101,8 @@ def setup_catalog(db_type, irods_config):
         confirmation_message = ''.join([
                 '-------------------------------------------\n'
                 'Database Type: %s\n',
-                'ODBC Driver:   %s\n',
                 '$ORACLE_HOME:  %s\n' if db_config['catalog_database_type'] == 'oracle' else '%s',
+                'ODBC Driver:   %s\n',
                 'Database Host: %s\n'
                 'Database Port: %d\n',
                 'Database Name: %s\n' if db_config['catalog_database_type'] != 'oracle' else 'Service Name:  %s\n',
@@ -109,8 +110,8 @@ def setup_catalog(db_type, irods_config):
                 '-------------------------------------------\n\n'
                 'Please confirm']) % (
                     db_config['catalog_database_type'],
-                    db_config['db_odbc_driver'],
                     server_config['environment_variables']['ORACLE_HOME'] if db_config['catalog_database_type'] == 'oracle' else '',
+                    db_config['db_odbc_driver'],
                     db_config['db_host'],
                     db_config['db_port'],
                     db_config['db_name'],

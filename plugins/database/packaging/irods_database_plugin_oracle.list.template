@@ -20,19 +20,23 @@
 # =-=-=-=-=-=-=-
 
 %if DEB
+%requires unixodbc
 
 %elseif REDHATRPM
 $REDHAT=true
 $RPM=true
+%requires unixODBC
 
 %elseif SUSERPM
 $SUSE=true
 $RPM=true
+%requires unixODBC
 
 %endif
 
 %if CENTOS6
-
+%requires unixODBC
+%requires unixODBC-devel
 %endif
 
 %if DEB

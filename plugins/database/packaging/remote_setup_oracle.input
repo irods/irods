@@ -14,6 +14,11 @@
 rods
 
 /usr/lib/oracle/11.2/client64
-irods@ICAT
+
+default-cloud-hostname-oracle.example.org
+1521
+ICAT.example.org
+irods
+
 irodsgres
 
