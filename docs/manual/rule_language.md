@@ -271,7 +271,9 @@ writeLine("stdout", "This is a string." like regex "This.*string[.]");
 **Substring**: `substr()`
 
 ~~~c
-writeLine("stdout", substr("This is a string.", 5, 4));
+writeLine("stdout", substr("This is a string.", 5, 9));
+# or
+writeLine("stdout", substr("This is a string.", 5, 5+4));
 # Output: is a
 ~~~
 
