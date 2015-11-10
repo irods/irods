@@ -1,9 +1,9 @@
-
 // A Haiku for C
 // This test keeps C++ out
 // Or it breaks the build
 
 #include "rods.h"
+#include "rodsErrorTable.h"
 #include "rodsType.h"
 #include "rodsClient.h"
 #include "miscUtil.h"
@@ -28,6 +28,12 @@ int main () {
     rErrMsg_t errMsg;
 
     rcComm_t* conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName, myEnv.rodsZone, 1, &errMsg );
+
+    /* Test that irods errors are compile time constants in c */
+    switch (0) {
+    case SYS_NO_HANDLER_REPLY_MSG: break;
+    default: break;
+    }
 
     if ( ! conn ) {
         printf( "rcConnect failed\n");
