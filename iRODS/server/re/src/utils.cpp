@@ -759,37 +759,6 @@ Env* globalEnv( Env *env ) {
     return global;
 }
 
-
-
-int appendToByteBufNew( bytesBuf_t *bytesBuf, char *str ) {
-    int i, j;
-    char *tBuf;
-
-    i = strlen( str );
-    j = 0;
-    if ( bytesBuf->buf == NULL ) {
-        bytesBuf->buf = malloc( i + 1 + MAX_NAME_LEN * 5 );
-        memset( bytesBuf->buf, 0, i + 1 + MAX_NAME_LEN * 5 );
-        strcpy( ( char * )bytesBuf->buf, str );
-        bytesBuf->len = i + 1 + MAX_NAME_LEN * 5; /* allocated length */
-    }
-    else {
-        j = strlen( ( char * )bytesBuf->buf );
-        if ( ( i + j ) < bytesBuf->len ) {
-            strcat( ( char * )bytesBuf->buf, str );
-        }
-        else { /* needs more space */
-            tBuf = ( char * ) malloc( j + i + 1 + ( MAX_NAME_LEN * 5 ) );
-            strcpy( tBuf, ( char * )bytesBuf->buf );
-            strcat( tBuf, str );
-            free( bytesBuf->buf );
-            bytesBuf->len = j + i + 1 + ( MAX_NAME_LEN * 5 );
-            bytesBuf->buf = tBuf;
-        }
-    }
-    return 0;
-}
-
 void logErrMsg( rError_t *errmsg, rError_t *system ) {
     char errbuf[ERR_MSG_LEN * 16];
     errMsgToString( errmsg, errbuf, ERR_MSG_LEN * 16 );
@@ -1073,4 +1042,3 @@ void keyBuf( unsigned char *buf, int size, char *keyBuf ) {
 #include "restruct.templates.hpp"
 #include "end.instance.hpp"
 #endif
-
