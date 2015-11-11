@@ -1874,7 +1874,7 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
         snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s", params[2]->text, params[3]->text );
     }
     addKeyVal( &execMyRuleInp.condInput, "execCondition", params[1]->text );
-    
+
     rei->msParamArray = newMsParamArray();
     int ret = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
     if ( ret != 0 ) {
@@ -1979,10 +1979,10 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
     }
 
     if ( writeId && !strcmp( writeId, "stdout" ) ) {
-        appendToByteBufNew( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
+        appendToByteBuf( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
     }
     else if ( writeId && !strcmp( writeId, "stderr" ) ) {
-        appendToByteBufNew( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
+        appendToByteBuf( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
     }
     return 0;
 }

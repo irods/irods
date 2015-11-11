@@ -84,7 +84,6 @@ void listRemove( List *list, ListNode *node );
 void listAppendNoRegion( List *list, void *value );
 void listRemoveNoRegion( List *list, ListNode *node );
 
-int appendToByteBufNew( bytesBuf_t *bytesBuf, char *str );
 void logErrMsg( rError_t *errmsg, rError_t *system );
 char *errMsgToString( rError_t *errmsg, char *buf, int buflen );
 

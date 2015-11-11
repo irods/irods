@@ -3160,34 +3160,30 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
 
 int
 appendToByteBuf( bytesBuf_t * bytesBuf, char * str ) {
-    int i, j;
-    char *tBuf;
-
-    i = strlen( str );
-    j = 0;
+    const int i = strlen( str );
+    const int num_new_bytes = i + 1 + MAX_NAME_LEN * 5;
     if ( bytesBuf->buf == NULL ) {
-        bytesBuf->buf = malloc( i + 1 + MAX_NAME_LEN * 5 );
+        bytesBuf->buf = malloc( num_new_bytes );
+        memset( bytesBuf->buf, 0, num_new_bytes );
         strcpy( ( char * )bytesBuf->buf, str );
-        bytesBuf->len = i + 1 + MAX_NAME_LEN * 5; /* allocated length */
+        bytesBuf->len = num_new_bytes;
     }
     else {
-        j = strlen( ( char * )bytesBuf->buf );
+        const int j = strlen( ( char * )bytesBuf->buf );
         if ( ( i + j ) < bytesBuf->len ) {
             strcat( ( char * )bytesBuf->buf, str );
         }
         else { /* needs more space */
-            tBuf = ( char * ) malloc( j + i + 1 + ( MAX_NAME_LEN * 5 ) );
-            strcpy( tBuf, ( char * )bytesBuf->buf );
+            const int num_total_bytes = j + num_new_bytes;
+            char *tBuf = (char*)malloc( num_total_bytes );
+            memset( tBuf, 0, num_total_bytes );
+            strcpy( tBuf, (char*)bytesBuf->buf );
             strcat( tBuf, str );
             free( bytesBuf->buf );
-            bytesBuf->len = j + i + 1 + ( MAX_NAME_LEN * 5 );
+            bytesBuf->len = num_total_bytes;
             bytesBuf->buf = tBuf;
         }
     }
-    /*
-        printf("bytesBuf->len=%d  oldbufLen=%d  strlen=%d\n",bytesBuf->len,j,i);
-        printf("bytesBuf->buf:%s\n",bytesBuf->buf);
-     */
     return 0;
 }
 
