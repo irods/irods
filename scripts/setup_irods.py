@@ -133,10 +133,53 @@ def setup_catalog(db_type, irods_config):
     with contextlib.closing(irods.database_connect.get_connection(irods_config.database_config)) as connection:
         connection.autocommit = False
         cursor = connection.cursor()
-        tables = cursor.tables().fetchall()
-        l.debug('Tables in the database:\n%s', pprint.pformat(tables))
+        create_database_tables(irods_config, cursor)
+        update_catalog_schema(irods_config, cursor)
 
     #update the catalog yeeeeeah
+
+def list_database_tables(irods_config, cursor=None):
+    if cursor is None:
+        with contextlib.closing(irods.database_connect.get_connection(irods_config.database_config)) as connection:
+            connection.autocommit = False
+            with contextlib.closing(connection.cursor()) as cursor:
+                return list_database_tables(irods_config, cursor)
+    else:
+        l = logging.getLogger(__name__)
+        l.info('Listing database tables...')
+        tables = cursor.tables().fetchall()
+        table_names = [row.table_name for row in tables]
+        l.debug('List of tables:\n%s', pprint.pformat(table_names))
+        return table_names
+
+
+def create_database_tables(irods_config, cursor=None):
+    if cursor is None:
+        with contextlib.closing(irods.database_connect.get_connection(irods_config.database_config)) as connection:
+            connection.autocommit = False
+            with contextlib.closing(connection.cursor()) as cursor:
+                create_database_tables(irods_config, cursor)
+    else:
+        l = logging.getLogger(__name__)
+        table_names = list_database_tables(irods_config, cursor)
+        irods_table_names = [t for t in table_names if t.lower().startswith('r_')]
+        if irods_table_names:
+            l.info('The following tables already exist in the database, table creation will be skipped:\n%s', pprint.pformat(irods_table_names))
+        else:
+            l.info('Creating database tables...')
+            sql_files = [os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
+                    os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysInserts.sql'),
+                    os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSetupValues.sql')
+                ]
+            for sql_file in sql_files:
+                try:
+                    irods.database_connect.execute_sql_file(sql_file, cursor)
+                except pypyodbc.Error as e:
+                    six.reraise(IrodsError,
+                            IrodsError('Database setup failed while running %s' % (sql_file)),
+                            sys.exc_info()[2])
+
+
 
 def update_catalog_schema(irods_config, cursor=None):
     if cursor is None:
@@ -148,18 +191,14 @@ def update_catalog_schema(irods_config, cursor=None):
         l = logging.getLogger(__name__)
         l.info('Updating schema version...')
         while irods_config.get_schema_version_in_database(cursor) != irods_config.version['catalog_schema_version']:
-            with open(irods_config.get_next_schema_update_path(), 'r') as f:
-                l.info('Running update to schema version %d...', int(os.path.basename(f.name).partition('.')[0]))
-                try:
-                    for statement in f:
-                        l.debug('Executing statement: %s', statement)
-                        cursor.execute(statement)
-                    l.debug('Committing...')
-                    cursor.commit()
-                except pypyodbc.Error as e:
-                    six.reraise(IrodsError,
-                            IrodsError('Updating database schema version failed while running %s' % (f.name)),
-                            sys.exc_info()[2])
+            schema_update_path = irods_config.get_next_schema_update_path()
+            l.info('Running update to schema version %d...', int(os.path.basename(schema_update_path).partition('.')[0]))
+            try:
+                irods.database_connect.execute_sql_file(schema_update_path, cursor)
+            except pypyodbc.Error as e:
+                six.reraise(IrodsError,
+                        IrodsError('Updating database schema version failed while running %s' % (schema_update_path)),
+                        sys.exc_info()[2])
 
 def default_prompt(*args, **kwargs):
     l = logging.getLogger(__name__)

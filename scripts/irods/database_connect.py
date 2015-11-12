@@ -198,6 +198,14 @@ def get_odbc_ini_path():
         return os.environ['ODBCINI']
     return os.path.join(os.path.expanduser('~'), '.odbc.ini')
 
+def execute_sql_file(filepath, cursor):
+    l = logging.getLogger(__name__)
+    l.debug('Executing SQL in %s', filepath)
+    with open(filepath, 'r') as f:
+        cursor.execute(f.read())
+    l.debug('Committing...')
+    cursor.commit()
+
 #def main():
 #    l = logging.getLogger(__name__)
 #    logging.getLogger().setLevel(logging.NOTSET)
