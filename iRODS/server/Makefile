@@ -209,13 +209,6 @@ TEST_BINS =	\
 		$(svrTestBinDir)/test_chl
 endif
 
-# reTest only works on Solaris
-#TEST_OBJS +=	$(svrTestObjDir)/reTest.o
-#TEST_BINS +=	$(svrTestBinDir)/reTest
-
-
-
-
 # All objects (except tests)
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
 		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBR_OBJS)
@@ -424,11 +417,6 @@ $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile server test `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
-
-# reTest
-$(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST_LIBS)
-	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
 
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(BOOST_LIBS) $(DB_IFACE_OBJS)

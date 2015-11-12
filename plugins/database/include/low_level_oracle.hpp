@@ -34,6 +34,5 @@ extern "C" int cllTest( const char *userArg, const char *pwArg );
 int cllCurrentValueString( const char *itemName, char *outString, int maxSize );
 int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
 
-int cllConnectRda( icatSessionStruct *icss );
 int cllGetLastErrorMessage( char *msg, int maxChars );
 #endif	/* CLL_ORA_H */

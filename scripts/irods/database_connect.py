@@ -95,8 +95,6 @@ def get_odbc_drivers_for_db_type(db_type):
 def get_odbc_driver_paths(db_type, oracle_home=None):
     if db_type == 'postgres':
         return sorted(unique_list(itertools.chain(
-                #lib.find_shared_object('psqlodbc.so'),
-                #lib.find_shared_object('psqlodbca.so'),
                 lib.find_shared_object('psqlodbcw.so'),
                 lib.find_shared_object('libodbcpsql.so'),
                 lib.find_shared_object('psqlodbc.*\.so', regex=True))),
@@ -149,15 +147,12 @@ def get_two_task_for_oracle(db_config):
 
 def get_connection_string(db_config):
     odbc_dict = {}
-    #odbc_dict['Driver'] = db_config['db_odbc_driver']
     odbc_dict['Password'] = db_config['db_password']
     odbc_dict['PWD'] = db_config['db_password']
     odbc_dict['Username'] = db_config['db_username']
     odbc_dict['User'] = db_config['db_username']
     odbc_dict['UID'] = db_config['db_username']
     keys = [k for k in odbc_dict.keys()]
-    #keys[keys.index('Driver')] = keys[0]
-    #keys[0] = 'Driver'
 
     return ';'.join(itertools.chain(['DSN=iRODS Catalog'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
 

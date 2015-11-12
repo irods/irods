@@ -496,7 +496,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiPropertiesFrom
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiFlagDataObjwithAVU.r ./iRODS/clients/icommands/test/rules/rulemsiFlagDataObjwithAVU.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiConvertCurrency.r ./iRODS/clients/icommands/test/rules/rulemsiConvertCurrency.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiAdmShowIRB.r ./iRODS/clients/icommands/test/rules/rulemsiAdmShowIRB.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRdaNoResults.r ./iRODS/clients/icommands/test/rules/rulemsiRdaNoResults.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiIsData.r ./iRODS/clients/icommands/test/rules/rulemsiIsData.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulewriteKeyValPairs.r ./iRODS/clients/icommands/test/rules/rulewriteKeyValPairs.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiGetDiffTime.r ./iRODS/clients/icommands/test/rules/rulemsiGetDiffTime.r
@@ -508,7 +507,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiHumanToSystemT
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/ruleintegrityFileOwner.r ./iRODS/clients/icommands/test/rules/ruleintegrityFileOwner.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiDeleteUser.r ./iRODS/clients/icommands/test/rules/rulemsiDeleteUser.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiWriteRodsLog.r ./iRODS/clients/icommands/test/rules/rulemsiWriteRodsLog.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRdaToStdout.r ./iRODS/clients/icommands/test/rules/rulemsiRdaToStdout.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiobjput_http.r ./iRODS/clients/icommands/test/rules/rulemsiobjput_http.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiCollRsync.r ./iRODS/clients/icommands/test/rules/rulemsiCollRsync.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiobjput_z3950.r ./iRODS/clients/icommands/test/rules/rulemsiobjput_z3950.r
@@ -548,9 +546,7 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiImageConvert.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiobjput_test.r ./iRODS/clients/icommands/test/rules/rulemsiobjput_test.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiGetTaggedValueFromString.r ./iRODS/clients/icommands/test/rules/rulemsiGetTaggedValueFromString.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiobjget_z3950.r ./iRODS/clients/icommands/test/rules/rulemsiobjget_z3950.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRdaRollback.r ./iRODS/clients/icommands/test/rules/rulemsiRdaRollback.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiImageGetProperties.r ./iRODS/clients/icommands/test/rules/rulemsiImageGetProperties.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRdaCommit.r ./iRODS/clients/icommands/test/rules/rulemsiRdaCommit.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiCreateUser.r ./iRODS/clients/icommands/test/rules/rulemsiCreateUser.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiSetGraftPathScheme.r ./iRODS/clients/icommands/test/rules/rulemsiSetGraftPathScheme.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/ruleintegrityACL.r ./iRODS/clients/icommands/test/rules/ruleintegrityACL.r
@@ -636,7 +632,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiCreateCollByAd
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiStrToBytesBuf.r ./iRODS/clients/icommands/test/rules/rulemsiStrToBytesBuf.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiAdmAppendToTopOfCoreIRB.r ./iRODS/clients/icommands/test/rules/rulemsiAdmAppendToTopOfCoreIRB.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiCheckOwner.r ./iRODS/clients/icommands/test/rules/rulemsiCheckOwner.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRdaToDataObj.r ./iRODS/clients/icommands/test/rules/rulemsiRdaToDataObj.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiExit.r ./iRODS/clients/icommands/test/rules/rulemsiExit.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiAdmShowCoreRE.r ./iRODS/clients/icommands/test/rules/rulemsiAdmShowCoreRE.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiDeleteDisallowed.r ./iRODS/clients/icommands/test/rules/rulemsiDeleteDisallowed.r
@@ -663,7 +658,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiGetDataObjAVUs
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiSetACL.r ./iRODS/clients/icommands/test/rules/rulemsiSetACL.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulewriteString.r ./iRODS/clients/icommands/test/rules/rulewriteString.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiGetContInxFromGenQueryOut.r ./iRODS/clients/icommands/test/rules/rulemsiGetContInxFromGenQueryOut.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRegisterData.r ./iRODS/clients/icommands/test/rules/rulemsiRegisterData.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiSetDataObjAvoidResc.r ./iRODS/clients/icommands/test/rules/rulemsiSetDataObjAvoidResc.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiAdmAddAppRuleStruct.r ./iRODS/clients/icommands/test/rules/rulemsiAdmAddAppRuleStruct.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiGetSystemTime.r ./iRODS/clients/icommands/test/rules/rulemsiGetSystemTime.r

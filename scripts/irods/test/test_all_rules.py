@@ -329,9 +329,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
             if "rulemsiImage" in rulefile:
                 # print("skipping " + rulefile + " ----- image")
                 return False
-            if "rulemsiRda" in rulefile:
-                # print("skipping " + rulefile + " ----- RDA")
-                return False
             if "rulemsiCollRepl" in rulefile:
                 # print("skipping " + rulefile + " ----- deprecated")
                 return False

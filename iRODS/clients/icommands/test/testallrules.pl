@@ -342,8 +342,6 @@ foreach $rulefile (@rules)
     if ($rulefile =~ /rulereadXMsg/) { print "----- skipping XMsg -- $rulefile\n"; next; }
     if ($rulefile =~ /rulewriteXMsg/) { print "----- skipping XMsg -- $rulefile\n"; next; }
 
-    if ($rulefile =~ /rulemsiRda/) { print "----- skipping RDA -- $rulefile\n"; next; }
-
     if ($rulefile =~ /rulemsiCollRepl/) { print "----- skipping deprecated -- $rulefile\n"; next; }
 
 

@@ -5,8 +5,8 @@
   which is for Postgres or MySQL.
  */
 
-#ifndef CLL_PSQ_HPP
-#define CLL_PSQ_HPP
+#ifndef CLL_ODBC_HPP
+#define CLL_ODBC_HPP
 
 #include "sql.h"
 #include "sqlext.h"
@@ -22,13 +22,9 @@
 extern int cllBindVarCount;
 extern const char *cllBindVars[MAX_BIND_VARS];
 
-/* The name in the various 'odbc.ini' files for the RDA: */
-#define RDA_ODBC_ENTRY_NAME "iRODS_RDA"
-
 int cllOpenEnv( icatSessionStruct *icss );
 int cllCloseEnv( icatSessionStruct *icss );
 int cllConnect( icatSessionStruct *icss );
-int cllConnectRda( icatSessionStruct *icss );
 int cllDisconnect( icatSessionStruct *icss );
 int cllExecSqlNoResult( icatSessionStruct *icss, const char *sql );
 int cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql );
@@ -43,4 +39,4 @@ int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
 int cllCheckPending( const char *sql, int option, int dbType );
 int cllGetLastErrorMessage( char *msg, int maxChars );
 
-#endif	/* CLL_PSQ_H */
+#endif	/* CLL_ODBC_HPP */
