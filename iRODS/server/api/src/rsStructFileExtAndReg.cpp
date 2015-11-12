@@ -148,11 +148,11 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
 
     /* open the structured file */
     addKeyVal( &dataObjInp.condInput, NO_OPEN_FLAG_KW, "" );
-    l1descInx = _rsDataObjOpen( rsComm, &dataObjInp );
+    l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
 
     if ( l1descInx < 0 ) {
         rodsLog( LOG_ERROR,
-                 "rsStructFileExtAndReg: _rsDataObjOpen of %s error. status = %d",
+                 "rsStructFileExtAndReg: rsDataObjOpen of %s error. status = %d",
                  dataObjInp.objPath, l1descInx );
         return l1descInx;
     }

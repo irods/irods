@@ -137,15 +137,8 @@ namespace irods {
 // factory function which will take a dataObjInfo pointer and create a file_object
     error file_object_factory( rsComm_t*,         // server network connection
                                dataObjInp_t*,     // incoming data object request struct
-                               file_object_ptr ); // out var for file object
-// =-=-=-=-=-=-=-
-// function which will inform irods as to which server to select for a given operation
-    error resource_redirect( const std::string&,   // operation in question
-                             rsComm_t*,            // server network connection
-                             dataObjInp_t*,        // incoming data object request struct
-                             std::string&,         // chosen resource hierarchy string
-                             rodsServerHost_t*&,   // svr2svr conn if redirecting
-                             int& );               // local / remote flag
+                               file_object_ptr,   // out var for file object
+							   dataObjInfo_t** );
 
 }; // namespace irods
 

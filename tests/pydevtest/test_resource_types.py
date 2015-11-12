@@ -1816,6 +1816,21 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
 
+    def test_stage_to_cache(self):
+        self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=on\"" )
+
+        filename = "test_stage_to_cache_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput " + filename)
+
+        self.admin.assert_icommand("itrim -N 1 -n 0 " + filename)
+
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc' )
+
+        self.admin.assert_icommand("iget -f " + filename)
+
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
+
     def test_auto_repl_on__2941(self):
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=on\"" )
 

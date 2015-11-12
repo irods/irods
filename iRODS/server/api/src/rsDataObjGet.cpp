@@ -45,14 +45,19 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return remoteFlag;
     }
     else if ( remoteFlag == LOCAL_HOST ) {
+        // dataObjInfo_t linked list
+        dataObjInfo_t *dataObjInfoHead = NULL;
+
+        // resource hierarchy
+        std::string hier;
+
         // =-=-=-=-=-=-=-
         // working on the "home zone", determine if we need to redirect to a different
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
         if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            std::string       hier;
             irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                               dataObjInp, hier );
+                               dataObjInp, hier, &dataObjInfoHead );
             if ( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "rsDataObjGet :: failed in irods::resolve_resource_hierarchy for [";
@@ -66,9 +71,20 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             // api calls, etc.
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-        } // if keyword
+        }
+        else {
+            // file object for file_object_factory
+            irods::file_object_ptr file_obj( new irods::file_object() );
 
-        status = _rsDataObjGet( rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG );
+            // get resource hierarchy from condInput
+            hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+
+            // get replicas vector populated
+            irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
+
+        }// if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL )
+
+        status = _rsDataObjGet( rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG, dataObjInfoHead );
 
     }
     else {
@@ -106,8 +122,13 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 
 int
-_rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-               portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag ) {
+_rsDataObjGet( rsComm_t *rsComm,
+        dataObjInp_t *dataObjInp,
+        portalOprOut_t **portalOprOut,
+        bytesBuf_t *dataObjOutBBuf,
+        int handlerFlag,
+        dataObjInfo_t *dataObjInfoHead ) {
+
     int status;
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
@@ -117,7 +138,7 @@ _rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
     addKeyVal( &dataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "" );
-    l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
+    l1descInx = _rsDataObjOpen( rsComm, dataObjInp, dataObjInfoHead );
 
     if ( l1descInx < 0 ) {
         return l1descInx;

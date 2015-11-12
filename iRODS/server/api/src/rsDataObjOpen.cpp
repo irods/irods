@@ -62,26 +62,43 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return l1descInx;
     }
     else {
+        // dataObjInfo_t linked list
+        dataObjInfo_t *dataObjInfoHead = NULL;
+
+        // resource hierarchy
+        std::string hier;
+
         // =-=-=-=-=-=-=-
         // determine the resource hierarchy if one is not provided
         if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            std::string       hier;
+
             irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::OPEN_OPERATION,
                                    rsComm,
                                    dataObjInp,
-                                   hier );
-            if ( ret.ok() ) {
-				// =-=-=-=-=-=-=-
-				// we resolved the redirect and have a host, set the hier str for subsequent
-				// api calls, etc.
-				addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+                                   hier,
+                                   &dataObjInfoHead );
+            if (ret.ok()) {
+                // =-=-=-=-=-=-=-
+                // we resolved the redirect and have a host, set the hier str for subsequent
+                // api calls, etc.
+                addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+            }
 
-			}
+        }
+        else {
+            // file object for file_object_factory
+            irods::file_object_ptr file_obj( new irods::file_object() );
 
-        } // if keyword
+            // get resource hierarchy from condInput
+            hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
 
-        l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
+            // get replicas vector populated
+            irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
+
+        }// if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL )
+
+        l1descInx = _rsDataObjOpen( rsComm, dataObjInp, dataObjInfoHead );
 
     }
 
@@ -93,8 +110,8 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
  */
 
 int
-_rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
-
+_rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead ) {
+    int status;
     int phyOpenFlag = DO_PHYOPEN;
     if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != NULL ) {
         phyOpenFlag = DO_NOT_PHYOPEN;
@@ -127,14 +144,10 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
     }
 
-    // =-=-=-=-=-=-=-
-    /* query rcat for dataObjInfo and sort it */
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    int status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, &dataObjInfoHead );
-
     int writeFlag = getWriteFlag( dataObjInp->openFlags );
 
-    if ( status < 0 ) {
+    // check earlier attempt at resolving resource hierarchy
+    if (!getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW)) {
         int l1descInx = 0;
         if ( dataObjInp->openFlags & O_CREAT && writeFlag > 0 ) {
             l1descInx = rsDataObjCreate( rsComm, dataObjInp );
@@ -163,6 +176,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
     else {
+//////
         /* screen out any stale copies */
         status = sortObjInfoForOpen( &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
         if ( status < 0 ) { // JMC - backport 4604
@@ -186,7 +200,7 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             irods::log( ERROR( status, msg.str() ) );
             return status;
         }
-
+//////
         status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
         if ( status < 0 ) { // JMC - backport 4604
             if ( lockFd > 0 ) {

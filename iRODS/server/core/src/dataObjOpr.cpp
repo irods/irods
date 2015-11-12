@@ -31,6 +31,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_random.hpp"
+#include "irods_file_object.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -551,7 +552,7 @@ sortObjInfo(
 /* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
  * If RESC_HIER_STR_KW is set matching resc obj is first.
  * If it is for read (writeFlag == 0), discard old copies, then cache first,
- * archval second.
+ * archival second.
  * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
  * then current cache, current archival, old cache and old archival.
  */
@@ -615,6 +616,83 @@ int sortObjInfoForOpen(
     }
     return result;
 
+}
+
+int create_and_sort_data_obj_info_for_open(
+		const std::string& resc_hier,
+		const irods::file_object_ptr file_obj,
+		dataObjInfo_t **data_obj_info_head) {
+
+	// checks
+    if (resc_hier.empty()) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty input resource hierarchy.";
+        irods::log( ERROR( SYS_INVALID_INPUT_PARAM, msg.str() ) );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+	// initialize output list
+	*data_obj_info_head = NULL;
+
+// check C++11 support
+#if __cplusplus > 199711L
+	// iterate over replicas
+	for (auto& replica : file_obj->replicas()) {
+
+#else
+	// iterate over replicas
+	std::vector< irods::physical_object >::iterator itr;
+	for (itr = file_obj->replicas().begin(); itr != file_obj->replicas().end(); ++itr) {
+		irods::physical_object replica = *itr;
+#endif
+
+		// look for replica with matching resource hierarchy
+		if (replica.resc_hier() == resc_hier) {
+
+			// initialize object info
+			dataObjInfo_t *data_obj_info = (dataObjInfo_t*)malloc(sizeof(dataObjInfo_t));
+	        memset(data_obj_info, 0, sizeof(dataObjInfo_t));
+
+	        // copy values from physical object
+	        data_obj_info->replStatus = replica.is_dirty();
+	        data_obj_info->replNum = replica.repl_num();
+	        data_obj_info->dataMapId = replica.map_id();
+	        data_obj_info->dataSize = replica.size();
+	        data_obj_info->dataId = replica.id();
+	        data_obj_info->collId = replica.coll_id();
+	        snprintf(data_obj_info->objPath, MAX_NAME_LEN, "%s", replica.name().c_str());
+	        snprintf(data_obj_info->version, NAME_LEN, "%s", replica.version().c_str());
+	        snprintf(data_obj_info->dataType, NAME_LEN, "%s", replica.type_name().c_str());
+	        snprintf(data_obj_info->rescName, NAME_LEN, "%s", replica.resc_name().c_str());
+	        snprintf(data_obj_info->filePath, MAX_NAME_LEN, "%s", replica.path().c_str());
+	        snprintf(data_obj_info->dataOwnerName, NAME_LEN, "%s", replica.owner_name().c_str());
+	        snprintf(data_obj_info->dataOwnerZone, NAME_LEN, "%s", replica.owner_zone().c_str());
+	        snprintf(data_obj_info->statusString, NAME_LEN, "%s", replica.status().c_str());
+	        snprintf(data_obj_info->chksum, NAME_LEN, "%s", replica.checksum().c_str());
+	        snprintf(data_obj_info->dataExpiry, TIME_LEN, "%s", replica.expiry_ts().c_str());
+	        snprintf(data_obj_info->dataMode, SHORT_STR_LEN, "%s", replica.mode().c_str());
+	        snprintf(data_obj_info->dataComments, LONG_NAME_LEN, "%s", replica.r_comment().c_str());
+	        snprintf(data_obj_info->dataCreate, TIME_LEN, "%s", replica.create_ts().c_str());
+	        snprintf(data_obj_info->dataModify, TIME_LEN, "%s", replica.modify_ts().c_str());
+	        snprintf(data_obj_info->rescHier, MAX_NAME_LEN, "%s", replica.resc_hier().c_str());
+
+	        // make data_obj_info the head of our list
+	        *data_obj_info_head = data_obj_info;
+
+	        // done
+			return 0;
+		}
+	} // iterate over replicas
+
+	// no "good" replica was found
+	std::stringstream msg;
+	msg << __FUNCTION__;
+	msg << " - No replica found with input resource hierarchy: \"";
+	msg << resc_hier;
+	msg << "\"";
+	irods::log( ERROR( HIERARCHY_ERROR, msg.str() ) );
+	return HIERARCHY_ERROR;
 }
 
 int

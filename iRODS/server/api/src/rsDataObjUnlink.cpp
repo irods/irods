@@ -55,6 +55,18 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         return status;
     }
 
+    if ( getValByKey(
+                &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW ) != NULL ||
+            getValByKey(
+                &dataObjUnlinkInp->condInput, RMTRASH_KW ) != NULL ) {
+        if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
+            return SYS_INVALID_FILE_PATH;
+        }
+        rmTrashFlag = 1;
+    }
+
+    dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
+
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
@@ -65,7 +77,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::UNLINK_OPERATION,
-                           rsComm, dataObjUnlinkInp, hier );
+                           rsComm, dataObjUnlinkInp, hier, &dataObjInfoHead );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "failed in irods::resolve_resource_hierarchy for [";
@@ -79,21 +91,16 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         // api calls, etc.
         addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-    } // if keyword
-
-    if ( getValByKey(
-                &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW ) != NULL ||
-            getValByKey(
-                &dataObjUnlinkInp->condInput, RMTRASH_KW ) != NULL ) {
-        if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
-            return SYS_INVALID_FILE_PATH;
-        }
-        rmTrashFlag = 1;
+    }
+    else {
+        status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp,
+                                        &dataObjInfoHead );
     }
 
-    dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
-    status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp,
-                                        &dataObjInfoHead );
+//    ///
+//    status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp,
+//                                            &dataObjInfoHead );
+//    /////
 
     if ( status < 0 ) {
         char* sys_error = NULL;

@@ -26,7 +26,7 @@ int
 _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                            int phyOpenFlag, dataObjInfo_t *dataObjInfo ); // JMC - backport 4537
 int
-_rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
+_rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead );
 int
 dataOpen( rsComm_t *rsComm, int l1descInx );
 int

@@ -9,7 +9,7 @@ OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 include $(IRODSDIR)/config/config.mk
 include $(IRODSDIR)/config/platform.mk
 
-GCC = g++ -DRODS_SERVER 
+GCC = g++ -std=c++0x -DRODS_SERVER
 
 INC = -I$(IRODSDIR)/lib/core/include/ \
       -I$(IRODSDIR)/lib/api/include/ \

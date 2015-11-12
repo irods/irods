@@ -201,6 +201,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         else {
             // =-=-=-=-=-=-=-
             // no resc is specificied, request a hierarchy given the default resource
+            irods::file_object_ptr file_obj( new irods::file_object() );
             irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::CREATE_OPERATION,
                                    rsComm,
@@ -824,7 +825,7 @@ int mountFileDir( rsComm_t*     rsComm,
     /* try to mod the coll first */
     status = rsModColl( rsComm, &collCreateInp );
 
-    if ( status < 0 ) {	/* try to create it */
+    if ( status < 0 ) {    /* try to create it */
         rodsLog( LOG_NOTICE, "mountFileDir rsModColl < 0." );
         status = rsRegColl( rsComm, &collCreateInp );
     }

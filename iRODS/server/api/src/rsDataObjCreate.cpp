@@ -236,7 +236,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             parser.set_string( hier );
             parser.first_resc( top_resc );
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, top_resc.c_str() );
-            l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
+            l1descInx = rsDataObjOpen( rsComm, dataObjInp );
 
         }
         else {

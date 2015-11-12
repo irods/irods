@@ -16,6 +16,7 @@
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 #include "reIn2p3SysRule.hpp"
+#include "irods_file_object.hpp"
 
 /* definition for return value of resolveSingleReplCopy */
 #define NO_GOOD_COPY    0
@@ -48,6 +49,10 @@ sortObjInfoForRepl( dataObjInfo_t **dataObjInfoHead,
 int
 sortObjInfoForOpen( dataObjInfo_t **dataObjInfoHead,
                     keyValPair_t *condInput, int writeFlag );
+int create_and_sort_data_obj_info_for_open(
+		const std::string& resc_hier,
+		const irods::file_object_ptr file_obj,
+		dataObjInfo_t **data_obj_info_head);
 int
 sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead );
 int

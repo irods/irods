@@ -239,17 +239,18 @@ namespace irods {
     } // get_re_vars
 
 // =-=-=-=-=-=-=-
-// static factory to create file_object from dataobjinfo linked list
+// static factory to create file_object from dataObjInfo linked list
     error file_object_factory( rsComm_t*        _comm,
                                dataObjInp_t*    _data_obj_inp,
-                               file_object_ptr  _file_obj ) {
+                               file_object_ptr  _file_obj,
+                               dataObjInfo_t**  _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // if a repl is requested, cache that fact
         char* repl_num_ptr = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
         std::string repl_num;
         if ( repl_num_ptr ) {
             repl_num = repl_num_ptr;
-            rmKeyVal( &_data_obj_inp->condInput, REPL_NUM_KW );
+            //rmKeyVal( &_data_obj_inp->condInput, REPL_NUM_KW );
         }
 
         // =-=-=-=-=-=-=-
@@ -257,9 +258,9 @@ namespace irods {
         dataObjInfo_t* head_ptr = 0;
 
         int status = getDataObjInfoIncSpecColl( _comm, _data_obj_inp, &head_ptr );
-        if ( status < 0 ) {
-            status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
-        }
+//        if ( status < 0 ) {
+//            status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
+//        }
         if ( 0 == head_ptr || status < 0 ) {
             if ( head_ptr ) {
                 freeAllDataObjInfo( head_ptr );
@@ -279,12 +280,12 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // replace the keyword
-        if ( !repl_num.empty() ) {
-            addKeyVal(
-                &_data_obj_inp->condInput,
-                REPL_NUM_KW,
-                repl_num.c_str() );
-        }
+//        if ( !repl_num.empty() ) {
+//            addKeyVal(
+//                &_data_obj_inp->condInput,
+//                REPL_NUM_KW,
+//                repl_num.c_str() );
+//        }
 
         // =-=-=-=-=-=-=-
         // start populating file_object
@@ -344,7 +345,10 @@ namespace irods {
 
         //delete head_ptr->rescInfo;
         //free( head_ptr );
-        freeAllDataObjInfo( head_ptr );
+        //freeAllDataObjInfo( head_ptr );
+        if (_data_obj_info) {
+            *_data_obj_info = head_ptr;
+        }
         return SUCCESS();
 
     } // file_object_factory

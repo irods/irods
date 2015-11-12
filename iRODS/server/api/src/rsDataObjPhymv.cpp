@@ -170,10 +170,10 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( NULL == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy(
-		                       irods::CREATE_OPERATION,
-							   rsComm,
-                               dataObjInp,
-							   hier );
+			irods::CREATE_OPERATION,
+			rsComm,
+			dataObjInp,
+			hier );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;

@@ -5,6 +5,7 @@
 #include "dataObjCreate.h"
 #include "specColl.hpp"
 #include "collection.hpp"
+#include "dataObjOpr.hpp"
 
 // =-=-=-=-=-=-=
 #include "irods_resource_redirect.hpp"
@@ -21,7 +22,7 @@ namespace irods {
         rsComm_t*                _comm,
         const std::string&       _oper,
         const std::string&       _resc_name,
-        irods::file_object_ptr  _file_obj,
+        file_object_ptr          _file_obj,
         std::string&             _out_hier,
         float&                   _out_vote ) {
         // =-=-=-=-=-=-=-
@@ -417,6 +418,23 @@ namespace irods {
 
     } // determine_force_write_to_new_resource
 
+    // iterate over the linked list and look for a given resource hierarchy
+    bool is_hier_in_obj_info_list(
+            const std::string&    _hier,
+            dataObjInfo_t*        _data_obj_info_head) {
+
+        dataObjInfo_t* data_obj_info = _data_obj_info_head;
+
+        while (data_obj_info) {
+            if (!strcmp(_hier.c_str(), data_obj_info->rescHier)) {
+                return true;
+            }
+            data_obj_info = data_obj_info->next;
+        }
+        return false;
+    }
+
+
 /// =-=-=-=-=-=-=-
 /// @brief function to query resource for chosen server to which to redirect
 ///       for a given operation
@@ -424,7 +442,8 @@ namespace irods {
         const std::string&   _oper,
         rsComm_t*            _comm,
         dataObjInp_t*        _data_obj_inp,
-        std::string&         _out_hier ) {
+        std::string&         _out_hier,
+        dataObjInfo_t**      _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // validate incoming parameters
         if ( !_comm ) {
@@ -446,6 +465,8 @@ namespace irods {
         // if this is a put operation then we do not have a first class object
         file_object_ptr file_obj(
             new file_object( ) );
+
+
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
         // pass that along and bail as it is not a data object, or if
@@ -496,8 +517,8 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
-        // call factory for given obj inp, get a file_object
-        error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
+        // call factory for given dataObjInp, get a file_object
+        error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj, _data_obj_info );
 
         // =-=-=-=-=-=-=-
         // determine if this is an invalid write
@@ -542,6 +563,52 @@ namespace irods {
                             key_word,
                             oper,
                             _out_hier );
+
+            // make sure the desired hierarchy is in the linked list
+            // otherwise get data object info list again,
+            // in case object was just staged to cache by above function
+            if (_data_obj_info && !is_hier_in_obj_info_list(_out_hier, *_data_obj_info)) {
+
+                // free current list
+                freeAllDataObjInfo(*_data_obj_info);
+                *_data_obj_info = NULL;
+
+                // get updated list
+                int status = getDataObjInfoIncSpecColl(
+                        _comm,
+                        _data_obj_inp,
+                        _data_obj_info);
+
+                // error checks
+                if ( status < 0 ) {
+                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, 0, 0 );
+                }
+                if ( 0 == *_data_obj_info || status < 0 ) {
+                    if ( *_data_obj_info ) {
+                        freeAllDataObjInfo( *_data_obj_info );
+                    }
+                    std::stringstream msg;
+                    msg << "Failed to retrieve data object info list for ["
+                        << _data_obj_inp->objPath
+                        << "]";
+                    return ERROR( HIERARCHY_ERROR, msg.str() );
+                }
+
+                // check that we have found the correct hierarchy this time
+                if (!is_hier_in_obj_info_list(_out_hier, *_data_obj_info)) {
+                    std::stringstream msg;
+                    msg << "Failed to find resource hierarchy ["
+                        << _out_hier
+                        << "for ["
+                        << _data_obj_inp->objPath
+                        << "]";
+                    return ERROR( HIERARCHY_ERROR, msg.str() );
+                }
+            }
+            /////////////////////////
+            /////////////////////////
+
+
             return ret;
 
         }
@@ -577,6 +644,50 @@ namespace irods {
                           _out_hier );
             }
 
+            // make sure the desired hierarchy is in the linked list
+            // otherwise get data object info list again,
+            // in case object was just staged to cache by above function
+            if (_data_obj_info && !is_hier_in_obj_info_list(_out_hier, *_data_obj_info)) {
+
+                // free current list
+                freeAllDataObjInfo(*_data_obj_info);
+                *_data_obj_info = NULL;
+
+                // get updated list
+                int status = getDataObjInfoIncSpecColl(
+                        _comm,
+                        _data_obj_inp,
+                        _data_obj_info);
+
+                // error checks
+                if ( status < 0 ) {
+                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, 0, 0 );
+                }
+                if ( 0 == *_data_obj_info || status < 0 ) {
+                    if ( *_data_obj_info ) {
+                        freeAllDataObjInfo( *_data_obj_info );
+                    }
+                    std::stringstream msg;
+                    msg << "Failed to retrieve data object info list for ["
+                        << _data_obj_inp->objPath
+                        << "]";
+                    return ERROR( HIERARCHY_ERROR, msg.str() );
+                }
+
+                // check that we have found the correct hierarchy this time
+                if (!is_hier_in_obj_info_list(_out_hier, *_data_obj_info)) {
+                    std::stringstream msg;
+                    msg << "Failed to find resource hierarchy ["
+                        << _out_hier
+                        << "for ["
+                        << _data_obj_inp->objPath
+                        << "]";
+                    return ERROR( HIERARCHY_ERROR, msg.str() );
+                }
+            }
+            /////////////////////////
+            /////////////////////////
+
             return ret;
 
         } // else
@@ -592,26 +703,28 @@ namespace irods {
     } // resolve_resource_hierarchy
 
 // =-=-=-=-=-=-=-
-// static function to query resource for chosen server to which to redirect
+// @brief function to query resource for chosen server to which to redirect
 // for a given operation
     error resource_redirect( const std::string&   _oper,
                              rsComm_t*            _comm,
                              dataObjInp_t*        _data_obj_inp,
                              std::string&         _out_hier,
                              rodsServerHost_t*&   _out_host,
-                             int&                 _out_flag ) {
+                             int&                 _out_flag,
+                             dataObjInfo_t**      _data_obj_info ) {
         // =-=-=-=-=-=-=-
         // default to local host if there is a failure
         _out_flag = LOCAL_HOST;
 
         // =-=-=-=-=-=-=-
-        // resolve the resource hierarchy for this given operation and dataobjinp
+        // resolve the resource hierarchy for this given operation and dataObjInp
         std::string resc_hier;
         error res_err = resolve_resource_hierarchy(
                             _oper,
                             _comm,
                             _data_obj_inp,
-                            resc_hier );
+                            resc_hier,
+                            _data_obj_info );
         if ( !res_err.ok() ) {
             std::stringstream msg;
             msg << "resource_redirect - failed to resolve resource hierarchy for [";
