@@ -15,7 +15,10 @@
 #include "low_level_oracle.hpp"
 #include "packStruct.h"
 #include "irods_log.hpp"
+#include "irods_error.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
 
 #include <vector>
 #include <string>
@@ -949,115 +952,86 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
   A few tests to verify basic functionality (including talking with
   the database via ODBC).
 */
-int cllTest( const char *userArg, const char *pwArg ) {
+int cllTest() {
     int i;
-    int j, k;
-    int OK;
-    int stmt;
-    int numOfCols;
-    char userName[500];
-    int numRows;
 
-    struct passwd *ppasswd;
     icatSessionStruct icss;
-
     icss.stmtPtr[0] = 0;
     rodsLogSqlReq( 1 );
-    OK = 1;
-    i = cllOpenEnv( &icss );
-    if ( i != 0 ) {
-        OK = 0;
-    }
+    int OK = !cllOpenEnv( &icss );
 
-    if ( userArg == 0 || *userArg == '\0' ) {
-        ppasswd = getpwuid( getuid() );  /* get user passwd entry             */
-        strcpy( userName, ppasswd->pw_name ); /* get user name                  */
+    // =-=-=-=-=-=-=-
+    // cache db creds
+    irods::server_properties& props = irods::server_properties::getInstance();
+    std::string prop;
+    irods::error ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+
+    }
+    snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
+
+    ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+    }
+    snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
+
+    ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+    }
+    snprintf( icss.database_plugin_type, DB_TYPENAME_LEN, "%s", prop.c_str() );
+
+    if ( strcmp( icss.database_plugin_type, "postgres" ) == 0 ) {
+        icss.databaseType = DB_TYPE_POSTGRES;
+    }
+    else if ( strcmp( icss.database_plugin_type, "mysql" ) == 0 ) {
+        icss.databaseType = DB_TYPE_MYSQL;
+    }
+    else if ( strcmp( icss.database_plugin_type, "oracle" ) == 0 ) {
+        icss.databaseType = DB_TYPE_ORACLE;
     }
     else {
-        strncpy( userName, userArg, 500 );
-    }
-    printf( "userName=%s\n", userName );
-    printf( "password=%s\n", pwArg );
-
-    strncpy( icss.databaseUsername, userName, DB_USERNAME_LEN );
-    if ( pwArg == 0 || *pwArg == '\0' ) {
-        strcpy( icss.databasePassword, "" );
-    }
-    else {
-        strncpy( icss.databasePassword, pwArg, DB_PASSWORD_LEN );
+        printf( "Unrecognized database type %s", icss.database_plugin_type );
+        return -1;
     }
 
-    i = cllConnect( &icss );
-    if ( i != 0 ) {
-        exit( -1 );
+    if ( int status = cllConnect( &icss ) ) {
+        printf( "cllConnect failed with error %d.\n", status );
+        return status;
     }
 
-    i = cllExecSqlNoResult( &icss, "drop table test" );
+    int status = cllExecSqlNoResult( &icss, "create table test (i integer, a2345678901234567890123456789j integer, a varchar(50) )" );
+    OK &= (!status || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
+    OK &= !cllExecSqlNoResult( &icss, "insert into test values ('1', '2', 'asdfas')" );
+    OK &= !cllExecSqlNoResult( &icss, "commit" );
+    OK &= !cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
+    OK &= !cllExecSqlNoResult( &icss, "commit" );
+    OK &= !!cllExecSqlNoResult( &icss, "bad sql" );
+    status = cllExecSqlNoResult( &icss, "delete from test where i = '1'" );
+    OK &= (!status || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
+    OK &= !cllExecSqlNoResult( &icss, "commit" );
+    int stmt;
+    OK &= !cllExecSqlWithResult( &icss, &stmt, "select * from test where a = 'a'" );
 
-    i = cllExecSqlNoResult( &icss, "create table test (i integer, a2345678901234567890123456789j integer, a varchar(50) )" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss,
-                            "insert into test values ('1', '2', 'asdfas')" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "insert into test values (2, 3, 'a')" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "bad sql" );
-    if ( i == 0 ) {
-        OK = 0;    /* should fail, if not it's not OK */
-    }
-
-    i = cllExecSqlNoResult( &icss, "delete from test where i = '1'" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlWithResult( &icss, &stmt, "select * from test where a = 'a'" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    if ( i == 0 ) {
-        numOfCols = 1;
-        for ( j = 0; j < 10 && numOfCols > 0; j++ ) {
-            i = cllGetRow( &icss, stmt );
-            if ( i != 0 ) {
-                OK = 0;
+    if ( OK ) {
+        int numOfCols = 1;
+        for ( int i = 0; i < 10 && numOfCols > 0; i++ ) {
+            OK &= !cllGetRow( &icss, stmt );
+            if ( !OK ) {
                 break;
             }
             else {
                 numOfCols = icss.stmtPtr[stmt]->numOfCols;
                 if ( numOfCols == 0 ) {
                     printf( "No more rows returned\n" );
-                    i = cllFreeStatement( &icss, stmt );
+                    cllFreeStatement( &icss, stmt );
                 }
                 else {
-                    for ( k = 0; k < numOfCols || k < icss.stmtPtr[stmt]->numOfCols; k++ ) {
-                        printf( "resultValue[%d]=%s\n", k,
-                                icss.stmtPtr[stmt]->resultValue[k] );
+                    for ( int j = 0; j < numOfCols || j < icss.stmtPtr[stmt]->numOfCols; j++ ) {
+                        printf( "resultValue[%d]=%s\n", j,
+                                icss.stmtPtr[stmt]->resultValue[j] );
                     }
                 }
             }
@@ -1065,31 +1039,27 @@ int cllTest( const char *userArg, const char *pwArg ) {
     }
 
     cllBindVars[cllBindVarCount++] = "a";
-    i = cllExecSqlWithResult( &icss, &stmt,
-                              "select * from test where a = ?" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
+    OK &= !cllExecSqlWithResult( &icss, &stmt, "select * from test where a = ?" );
 
-    numRows = 0;
-    if ( i == 0 ) {
-        numOfCols = 1;
-        for ( j = 0; j < 10 && numOfCols > 0; j++ ) {
-            i = cllGetRow( &icss, stmt );
-            if ( i != 0 ) {
-                OK = 0;
+    int numRows = 0;
+    if ( OK ) {
+        int numOfCols = 1;
+        for ( int i = 0; i < 10 && numOfCols > 0; i++ ) {
+            OK &= !cllGetRow( &icss, stmt );
+            if ( !OK ) {
+                break;
             }
             else {
                 numOfCols = icss.stmtPtr[stmt]->numOfCols;
                 if ( numOfCols == 0 ) {
                     printf( "No more rows returned\n" );
-                    i = cllFreeStatement( &icss, stmt );
+                    cllFreeStatement( &icss, stmt );
                 }
                 else {
                     numRows++;
-                    for ( k = 0; k < numOfCols || k < icss.stmtPtr[stmt]->numOfCols; k++ ) {
-                        printf( "resultValue[%d]=%s\n", k,
-                                icss.stmtPtr[stmt]->resultValue[k] );
+                    for ( int j = 0; j < numOfCols || j < icss.stmtPtr[stmt]->numOfCols; j++ ) {
+                        printf( "resultValue[%d]=%s\n", j,
+                                icss.stmtPtr[stmt]->resultValue[j] );
                     }
                 }
             }
@@ -1101,25 +1071,11 @@ int cllTest( const char *userArg, const char *pwArg ) {
         OK = 0;
     }
 
-    i = cllExecSqlNoResult( &icss, "drop table test" );
-    if ( i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        OK = 0;
-    }
-
-    i = cllExecSqlNoResult( &icss, "commit" );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllDisconnect( &icss );
-    if ( i != 0 ) {
-        OK = 0;
-    }
-
-    i = cllCloseEnv( &icss );
-    if ( i != 0 ) {
-        OK = 0;
-    }
+    status = cllExecSqlNoResult( &icss, "drop table test" );
+    OK &= (!status || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
+    OK &= !cllExecSqlNoResult( &icss, "commit" );
+    OK &= !cllDisconnect( &icss );
+    OK &= !cllCloseEnv( &icss );
 
     if ( OK ) {
         printf( "The tests all completed normally\n" );

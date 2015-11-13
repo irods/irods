@@ -301,11 +301,8 @@ sub testDatabase()
 
         my $test_cll = File::Spec->catfile( $scripttoplevel, "iRODS", "server", "test", "bin", "test_cll" );
 
-        my $output = `$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD' 2>&1`;
+        my $output = `$test_cll 2>&1`;
 
-        # scrub the password before logging and displaying
-        $output =~ s/(.*,pass=)(.*)/$1XXXXX/;
-        $output =~ s/(.*password=)(.*)/$1XXXXX/;
         printLog( "    ", $output );
 
         if ( $output !~ /The tests all completed normally/i )

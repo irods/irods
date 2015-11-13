@@ -20,12 +20,12 @@
 #include <algorithm>
 
 
-extern "C" int cllTest( char*, char* );
+extern "C" int cllTest();
 /*int ProcessType=CLIENT_PT; */
 
 int
-main( int argc, char **argv ) {
-    return cllTest( argv[1], argv[2] );
+main() {
+    return cllTest();
 }
 
 /* This is a dummy version of icatApplyRule for this test program so

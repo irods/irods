@@ -31,7 +31,12 @@
 #include "low_level_odbc.hpp"
 
 #include "irods_log.hpp"
+#include "irods_error.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_server_properties.hpp"
+#include "readServerConfig.hpp"
+
+#include <string>
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
 
@@ -966,39 +971,52 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
   A few tests to verify basic functionality (including talking with
   the database via ODBC).
 */
-extern "C" int cllTest( const char *userArg, const char *pwArg ) {
+extern "C" int cllTest() {
 
     icatSessionStruct icss;
     icss.stmtPtr[0] = 0;
-    strncpy( icss.database_plugin_type, "postgres", DB_TYPENAME_LEN );
-    icss.databaseType = DB_TYPE_POSTGRES; // JMC - backport 4712
-#ifdef MY_ICAT
-    icss.databaseType = DB_TYPE_MYSQL;
-    strncpy( icss.database_plugin_type, "mysql", DB_TYPENAME_LEN );
-#endif
-
     rodsLogSqlReq( 1 );
     int OK = !cllOpenEnv( &icss );
 
-    char userName[500];
-    if ( userArg == 0 || *userArg == '\0' ) {
-        struct passwd *ppasswd;
-        ppasswd = getpwuid( getuid() );  // get user passwd entry
-        snprintf( userName, sizeof( userName ), "%s", ppasswd->pw_name ); // get user name
+    // =-=-=-=-=-=-=-
+    // cache db creds
+    irods::server_properties& props = irods::server_properties::getInstance();
+    std::string prop;
+
+    irods::error ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+
+    }
+    snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
+    printf( "Username: \"%s\"\n", icss.databaseUsername );
+
+    ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+    }
+    snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
+    printf( "Password: \"%s\"\n", icss.databasePassword );
+
+    ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+    if ( !ret.ok() ) {
+        ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+    }
+    snprintf( icss.database_plugin_type, DB_TYPENAME_LEN, "%s", prop.c_str() );
+    printf( "Type: \"%s\"\n", icss.database_plugin_type );
+
+    if ( strcmp( icss.database_plugin_type, "postgres" ) == 0 ) {
+        icss.databaseType = DB_TYPE_POSTGRES;
+    }
+    else if ( strcmp( icss.database_plugin_type, "mysql" ) == 0 ) {
+        icss.databaseType = DB_TYPE_MYSQL;
+    }
+    else if ( strcmp( icss.database_plugin_type, "oracle" ) == 0 ) {
+        icss.databaseType = DB_TYPE_ORACLE;
     }
     else {
-        snprintf( userName, sizeof( userName ), "%s", userArg );
-    }
-    printf( "userName=%s\n", userName );
-    printf( "password=%s\n", pwArg );
-
-    snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", userName );
-
-    if ( pwArg == 0 || *pwArg == '\0' ) {
-        icss.databasePassword[0] = '\0';
-    }
-    else {
-        snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", pwArg );
+        printf( "Unrecognized database type %s\n", icss.database_plugin_type );
+        return -1;
     }
 
     int status = cllConnect( &icss );
@@ -1014,7 +1032,7 @@ extern "C" int cllTest( const char *userArg, const char *pwArg ) {
     OK &= !!cllExecSqlNoResult( &icss, "bad sql" ); /* should fail, if not it's not OK */
     OK &= !cllExecSqlNoResult( &icss, "rollback" ); /* close the bad transaction*/
     status = cllExecSqlNoResult( &icss, "delete from test where i = 1" );
-    OK &= ( status == 0 || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
+    OK &= ( !status || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
     OK &= !cllExecSqlNoResult( &icss, "commit" );
 
     int stmt;
@@ -1071,7 +1089,7 @@ extern "C" int cllTest( const char *userArg, const char *pwArg ) {
     }
 
     status = cllExecSqlNoResult( &icss, "drop table test;" );
-    OK &= ( status == 0 || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
+    OK &= ( !status || status == CAT_SUCCESS_BUT_WITH_NO_INFO );
     OK &= !cllExecSqlNoResult( &icss, "commit" );
     OK &= !cllDisconnect( &icss );
     OK &= !cllCloseEnv( &icss );
