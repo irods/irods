@@ -117,7 +117,7 @@ $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 
 $(LIB_MYSQLUDF_PREG_MAKE) : $(LIB_MYSQLUDF_PREG_ARCHIVE)
 	@tar xf $(LIB_MYSQLUDF_PREG_ARCHIVE)
-	@+cd lib_mysqludf_preg ; ./configure
+	@+cd lib_mysqludf_preg ; autoreconf -if ; ./configure
 
 $(LIB_MYSQLUDF_PREG) : $(LIB_MYSQLUDF_PREG_MAKE)
 	@$(MAKE) -C $(LIB_MYSQLUDF_PREG)
@@ -155,6 +155,7 @@ $(CHECKVERSIONARCHIVE) :
 $(CHECKVERSIONMAKE) : $(CHECKVERSIONARCHIVE)
 	@tar zxf $(CHECKVERSIONARCHIVE)
 	@cd $(CHECKVERSION) ; \
+		autoreconf -if ; \
 		./configure --with-pic
 
 check : $(CHECKVERSIONMAKE)
@@ -166,6 +167,7 @@ $(JANSSONVERSIONARCHIVE) :
 $(JANSSONVERSIONMAKE) : $(JANSSONVERSIONARCHIVE)
 	@tar zxf $(JANSSONVERSIONARCHIVE)
 	@cd $(JANSSONVERSION) ; \
+		autoreconf -if ; \
 		./configure --with-pic
 
 jansson : $(JANSSONVERSIONMAKE)
@@ -211,6 +213,7 @@ $(HDF5VERSIONARCHIVE) :
 $(HDF5VERSIONMAKE) : $(HDF5VERSIONARCHIVE)
 	@tar zxf $(HDF5VERSIONARCHIVE)
 	@cd $(HDF5VERSION) ; \
+		autoreconf -if ; \
 		CXXFLAGS="-fPIC" ./configure
 
 hdf5 : $(HDF5VERSIONMAKE)
@@ -223,6 +226,7 @@ $(NETCDFVERSIONMAKE) : $(NETCDFVERSIONARCHIVE) hdf5
 	@tar zxf $(NETCDFVERSIONARCHIVE)
 	@EXTERNALS_DIR=`echo $$PWD | sed "s/\([^-A-Za-z0-9._/]\)/\\\\\\\\\1/g"`; \
 		cd $(NETCDFVERSION) ; \
+		autoreconf -if ; \
 		CC="gcc" LDFLAGS="-L$$EXTERNALS_DIR/$(HDF5VERSION)/src/.libs/ -L$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src/.libs/" CPPFLAGS="-fPIC -I$$EXTERNALS_DIR/$(HDF5VERSION)/src -I$$EXTERNALS_DIR/$(HDF5VERSION)/hl/src" ./configure
 
 netcdf : $(NETCDFVERSIONMAKE)
@@ -237,6 +241,7 @@ $(AVROVERSIONMAKE) : $(AVROVERSIONARCHIVE) boost cmake
 		rsync -c /tmp/CMakeLists.txt.tmp $(AVROVERSION)/CMakeLists.txt; \
 		rm -f /tmp/CMakeLists.txt.tmp
 	@cd $(AVROVERSION) ; \
+		autoreconf -if ; \
 		mkdir -p build; cd build; \
 		BOOST_ROOT=../$(BOOSTVERSION) ../../$(CMAKEVERSION)/bin/cmake -G "Unix Makefiles" ..
 
@@ -251,6 +256,7 @@ $(ZEROMQVERSIONARCHIVE) :
 $(ZEROMQVERSIONCONFIGURE) : $(ZEROMQVERSIONARCHIVE)
 	@tar -zxf $(ZEROMQVERSIONARCHIVE)
 	@cd $(ZEROMQVERSION); \
+		autoreconf -if ; \
 		./autogen.sh
 
 $(ZEROMQVERSIONMAKE) : $(ZEROMQVERSIONCONFIGURE)

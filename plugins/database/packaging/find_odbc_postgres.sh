@@ -11,7 +11,7 @@ ODBC=`find $SEARCHPATH -name "libodbcpsql.so" 2> /dev/null`
 
 # Ubuntu (and CentOS 6.2+, via postgresql-odbc package)
 if [ "$ODBC" == "" ]; then
-    ODBC=`find /usr -name "psqlodbc*.so" 2> /dev/null | grep -v "w"`
+    ODBC=`find /usr -name "psqlodbc*.so" 2> /dev/null | grep -v "w\.so"`
 fi
 # CentOS / SuSE
 if [ "$ODBC" == "" ]; then
