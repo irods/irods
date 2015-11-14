@@ -1859,15 +1859,12 @@ irods::error resolve_hierarchy_for_resc_from_cond_input(
         }
 
         _hier = get_hier_out->resc_hier_;
-        
+        free( get_hier_out );
     } else if ( !has_parent && !has_child ) {
         _hier = last_resc;
 
     }
-    
+
     return SUCCESS();
 
 } // resolve_hierarchy_for_cond_input
-
-
-
