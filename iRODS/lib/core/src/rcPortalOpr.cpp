@@ -826,9 +826,6 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 int
 getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                    char *locFilePath, char *objPath, rodsLong_t dataSize ) {
-    portList_t *myPortList;
-    int i, sock, out_fd;
-    int numThreads;
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
@@ -839,16 +836,15 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         return SYS_INVALID_PORTAL_OPR;
     }
 
-    numThreads = portalOprOut->numThreads;
-
-    myPortList = &portalOprOut->portList;
+    const int numThreads = portalOprOut->numThreads;
+    portList_t *myPortList = &portalOprOut->portList;
 
     if ( portalOprOut->numThreads > MAX_NUM_CONFIG_TRAN_THR ) {
         /* drain the connection or it will be stuck */
-        for ( i = 0; i < numThreads; i++ ) {
-            sock = connectToRhostPortal( myPortList->hostAddr,
+        for ( int i = 0; i < numThreads; i++ ) {
+            const int sock = connectToRhostPortal( myPortList->hostAddr,
                                          myPortList->portNum, myPortList->cookie, myPortList->windowSize );
-            if ( sock > 0 ) {
+            if ( sock >= 0 ) {
                 close( sock );
             }
         }
@@ -864,20 +860,21 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                      portalOprOut->numThreads );
 
     if ( numThreads == 1 ) {
-        sock = connectToRhostPortal( myPortList->hostAddr,
+        const int sock = connectToRhostPortal( myPortList->hostAddr,
                                      myPortList->portNum, myPortList->cookie, myPortList->windowSize );
         if ( sock < 0 ) {
             return sock;
         }
 #ifdef windows_platform
-        out_fd = iRODSNt_bopen( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
+        const int out_fd = iRODSNt_bopen( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
 #else
-        out_fd = open( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
+        const int out_fd = open( locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640 );
 #endif
         if ( out_fd < 0 ) { /* error */
             retVal = UNIX_FILE_OPEN_ERR - errno;
             rodsLogError( LOG_ERROR, retVal,
                           "cannot open file %s", locFilePath, retVal );
+            close( sock );
             return retVal;
         }
         fillRcPortalTransferInp( conn, &myInput[0], out_fd, sock, 0640 );
@@ -900,9 +897,10 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     else {
         rodsLong_t totalWritten = 0;
 
-        for ( i = 0; i < numThreads; i++ ) {
-            sock = connectToRhostPortal( myPortList->hostAddr,
+        for ( int i = 0; i < numThreads; i++ ) {
+            const int sock = connectToRhostPortal( myPortList->hostAddr,
                                          myPortList->portNum, myPortList->cookie, myPortList->windowSize );
+            int out_fd = -1;
             if ( sock < 0 ) {
                 return sock;
             }
@@ -933,7 +931,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             return retVal;
         }
 
-        for ( i = 0; i < numThreads; i++ ) {
+        for ( int i = 0; i < numThreads; i++ ) {
             if ( tid[i] != 0 ) {
                 try {
                     tid[i]->join();
