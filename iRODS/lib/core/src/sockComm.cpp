@@ -1063,6 +1063,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
                              errno );
                     timeoutCnt++;
                 }
+                close( sock );
                 continue;
             }
             else if ( status > 0 ) {
@@ -1083,10 +1084,11 @@ connectToRhostWithTout(struct sockaddr *sin ) {
                 /* Check the returned value */
                 if ( myval ) {
                     rodsLog( LOG_NOTICE,
-                             "connectToRhostWithTout: connect error, errno = %d",
+                             "connectToRhostWithTout: myval error, errno = %d",
                              myval );
                     timeoutCnt++;
                     status = USER_SOCK_CONNECT_ERR - myval;
+                    close( sock );
                     continue;
                 }
                 else {
@@ -1096,6 +1098,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
             else {
                 /* timed out */
                 status = USER_SOCK_CONNECT_TIMEDOUT;
+                close( sock );
                 break;
             }
         }
@@ -1104,12 +1107,12 @@ connectToRhostWithTout(struct sockaddr *sin ) {
                      "connectToRhostWithTout: connect error, errno = %d", errno );
             timeoutCnt++;
             status = USER_SOCK_CONNECT_ERR - errno;
+            close( sock );
             continue;
         }
     }
 
     if ( status < 0 ) {
-            close( sock );
         if ( status == -1 ) {
             return USER_SOCK_CONNECT_ERR - errno;
         }
