@@ -3444,7 +3444,10 @@ void applyACLFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
             modAccessControlInp.accessLevel = strdup( ( *iter )[0].c_str() );
             modAccessControlInp.userName = ( char * )malloc( sizeof( char ) * NAME_LEN );
             modAccessControlInp.zone = ( char * )malloc( sizeof( char ) * NAME_LEN );
-            parseUserName( ( *iter )[1].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+            const int status_parseUserName = parseUserName( ( *iter )[1].c_str(), modAccessControlInp.userName, modAccessControlInp.zone );
+            if ( status_parseUserName < 0 ) {
+                THROW( status_parseUserName, "parseUserName failed" );
+            }
             modAccessControlInp.path = strdup( dataObjInp->objPath );
             int status = rsModAccessControl( rsComm, &modAccessControlInp );
             clearModAccessControlInp( &modAccessControlInp );
