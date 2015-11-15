@@ -2,7 +2,7 @@
 
 ## 4.1.7
 
-Release Date: 2015-11-13
+Release Date: 2015-11-18
 
  - Fix for irods-grid --hosts option [#2765]
 
