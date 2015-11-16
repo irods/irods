@@ -41,8 +41,6 @@ OBJS = $(patsubst %.cpp, %.o, $(SRCS))
 	$(GCC) $(CFLAGS) $(INC) -D$(OS_platform) -fPIC -c -g -o $@ $<
 endif
 
-EXTRALIBS += ../../../iRODS/server/re/obj/irods_operation_rule_execution_manager.o
-
 .PHONY: clean
 
 default: $(FULLTARGET)
