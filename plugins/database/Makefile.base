@@ -45,8 +45,6 @@ ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
-EXTRALIBS += ../../../iRODS/server/re/obj/irods_operation_rule_execution_manager.o
-
 .PHONY: clean
 
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
