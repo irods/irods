@@ -62,16 +62,14 @@ irods::error get_hash_and_policy(
                    "comm is null" );
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    props.capture_if_needed();
-    irods::error ret = props.get_property<std::string>(
+    irods::error ret = irods::get_server_property<std::string>(
                            DEFAULT_HASH_SCHEME_KW,
                            _hash );
     if ( _hash.empty() ) {
         _hash = "SHA256";
     }
 
-    ret = props.get_property<std::string>(
+    ret = irods::get_server_property<std::string>(
               MATCH_HASH_POLICY_KW,
               _policy );
     if ( _policy.empty() ) {

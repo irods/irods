@@ -9,6 +9,7 @@
 
 #include "rodsClient.h"
 #include "readServerConfig.hpp"
+#include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 
 #include "icatHighLevelRoutines.hpp"
@@ -963,7 +964,13 @@ main( int argc, char **argv ) {
         }
 
         // capture server properties
-        irods::server_properties::getInstance().capture();
+        try {
+            irods::server_properties::instance().capture_if_needed();
+        }
+        catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, e.what() );
+            return e.code();
+        }
 
         if ( ( status = chlOpen() ) != 0 ) {
 

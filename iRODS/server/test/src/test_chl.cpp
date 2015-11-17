@@ -7,10 +7,11 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "readServerConfig.hpp"
-#include "irods_server_properties.hpp"
 #include "checksum.hpp"
 
 #include "rodsUser.h"
+#include "irods_exception.hpp"
+#include "irods_server_properties.hpp"
 
 #include "icatHighLevelRoutines.hpp"
 //#include "icatMidLevelRoutines.hpp"
@@ -866,13 +867,6 @@ testVersionFnmBase( rsComm_t *rsComm, char *arg1 ) {
 
 int
 main( int argc, char **argv ) {
-    int status;
-    rsComm_t *Comm;
-    int didOne;
-
-
-    Comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
-    memset( Comm, 0, sizeof( rsComm_t ) );
 
     rodsLogLevel( LOG_NOTICE );
 
@@ -884,7 +878,7 @@ main( int argc, char **argv ) {
     }
 
     rodsEnv myEnv;
-    status = getRodsEnv( &myEnv );
+    int status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
                  status );
@@ -896,6 +890,8 @@ main( int argc, char **argv ) {
     }
 
 
+    rsComm_t *Comm = ( rsComm_t* )malloc( sizeof( rsComm_t ) );
+    memset( Comm, 0, sizeof( rsComm_t ) );
     snprintf( Comm->clientUser.userName, sizeof( Comm->clientUser.userName ),
               "%s", myEnv.rodsUserName );
 
@@ -913,7 +909,13 @@ main( int argc, char **argv ) {
 
 
     // capture server properties
-    irods::server_properties::getInstance().capture();
+    try {
+        irods::server_properties::instance().capture_if_needed();
+    }
+    catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
+    }
 
     if ( ( status = chlOpen() ) != 0 ) {
 
@@ -924,7 +926,7 @@ main( int argc, char **argv ) {
         return status;
     }
 
-    didOne = 0;
+    int didOne = 0;
     if ( strcmp( argv[1], "reg" ) == 0 ) {
         status = testRegDataObj( Comm, argv[2], argv[3], argv[4] );
         didOne = 1;

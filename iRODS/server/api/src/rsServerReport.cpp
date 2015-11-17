@@ -236,8 +236,6 @@ irods::error convert_server_config(
 
     // =-=-=-=-=-=-=-
     // otherwise, convert the old properties
-    irods::server_properties& props = irods::server_properties::getInstance();
-    props.capture_if_needed();
 
     _svr_cfg = json_object();
     if ( !_svr_cfg ) {
@@ -247,18 +245,18 @@ irods::error convert_server_config(
     }
 
     std::string s_val;
-    ret = props.get_property< std::string >( "icatHost", s_val );
+    ret = irods::get_server_property< std::string >( "icatHost", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "icat_host", json_string( s_val.c_str() ) );
     }
 
-    ret = props.get_property< std::string >( "KerberosName", s_val );
+    ret = irods::get_server_property< std::string >( "KerberosName", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "kerberos_name", json_string( s_val.c_str() ) );
     }
 
     bool b_val = false;
-    ret = props.get_property< bool >( "pam_no_extend", b_val );
+    ret = irods::get_server_property< bool >( "pam_no_extend", b_val );
     if ( ret.ok() ) {
         if ( b_val ) {
             json_object_set( _svr_cfg, "pam_no_extend", json_string( "true" ) );
@@ -268,54 +266,54 @@ irods::error convert_server_config(
         }
     }
 
-    ret = props.get_property< std::string >( "pam_password_min_time", s_val );
+    ret = irods::get_server_property< std::string >( "pam_password_min_time", s_val );
     if ( ret.ok() ) {
         int min_time = boost::lexical_cast< int >( s_val );
         json_object_set( _svr_cfg, "pam_password_min_time", json_integer( min_time ) );
     }
 
-    ret = props.get_property< std::string >( "pam_password_max_time", s_val );
+    ret = irods::get_server_property< std::string >( "pam_password_max_time", s_val );
     if ( ret.ok() ) {
         int max_time = boost::lexical_cast< int >( s_val );
         json_object_set( _svr_cfg, "pam_password_max_time", json_integer( max_time ) );
     }
 
     size_t st_val = 0;
-    ret = props.get_property< size_t>( "pam_password_length", st_val );
+    ret = irods::get_server_property< size_t>( "pam_password_length", st_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "pam_password_length", json_integer( st_val ) );
     }
 
 
     int i_val = 0;
-    ret = props.get_property< int >( "default_dir_mode", i_val );
+    ret = irods::get_server_property< int >( "default_dir_mode", i_val );
     if ( ret.ok() ) {
         std::string mode = boost::lexical_cast< std::string >( i_val );
         json_object_set( _svr_cfg, "default_dir_mode", json_string( mode.c_str() ) );
     }
 
-    ret = props.get_property< int >( "default_file_mode", i_val );
+    ret = irods::get_server_property< int >( "default_file_mode", i_val );
     if ( ret.ok() ) {
         std::string mode = boost::lexical_cast< std::string >( i_val );
         json_object_set( _svr_cfg, "default_file_mode", json_string( mode.c_str() ) );
     }
 
-    ret = props.get_property< std::string >( "default_hash_scheme", s_val );
+    ret = irods::get_server_property< std::string >( "default_hash_scheme", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "default_hash_scheme", json_string( s_val.c_str() ) );
     }
 
-    ret = props.get_property< std::string >( "LocalZoneSID", s_val );
+    ret = irods::get_server_property< std::string >( "LocalZoneSID", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "zone_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
     }
 
-    ret = props.get_property< std::string >( "agent_key", s_val );
+    ret = irods::get_server_property< std::string >( "agent_key", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
     }
 
-    ret = props.get_property< std::string >( "match_hash_policy", s_val );
+    ret = irods::get_server_property< std::string >( "match_hash_policy", s_val );
     if ( ret.ok() ) {
         json_object_set( _svr_cfg, "match_hash_policy", json_string( s_val.c_str() ) );
     }
@@ -323,7 +321,7 @@ irods::error convert_server_config(
         json_object_set( _svr_cfg, "match_hash_policy", json_string( "" ) );
     }
 
-    ret = props.get_property< std::string >( "reRuleSet", s_val );
+    ret = irods::get_server_property< std::string >( "reRuleSet", s_val );
     if ( ret.ok() ) {
         json_t* arr = 0;
         ret = make_file_set( s_val, arr );
@@ -332,7 +330,7 @@ irods::error convert_server_config(
         }
     }
 
-    ret = props.get_property< std::string >( "reFuncMapSet", s_val );
+    ret = irods::get_server_property< std::string >( "reFuncMapSet", s_val );
     if ( ret.ok() ) {
         json_t* arr = 0;
         ret = make_file_set( s_val, arr );
@@ -341,7 +339,7 @@ irods::error convert_server_config(
         }
     }
 
-    ret = props.get_property< std::string >( "reVariableMapSet", s_val );
+    ret = irods::get_server_property< std::string >( "reVariableMapSet", s_val );
     if ( ret.ok() ) {
         json_t* arr = 0;
         ret = make_file_set( s_val, arr );
@@ -351,7 +349,7 @@ irods::error convert_server_config(
     }
 
     std::vector< std::string > rem_sids;
-    ret = props.get_property< std::vector< std::string > >( "RemoteZoneSID", rem_sids );
+    ret = irods::get_server_property< std::vector< std::string > >( "RemoteZoneSID", rem_sids );
     if ( ret.ok() ) {
         json_t* arr = 0;
         ret = make_federation_set( rem_sids, arr );
@@ -1043,9 +1041,6 @@ irods::error get_database_config(
         }
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    props.capture_if_needed();
-
     _db_cfg = json_object();
     if ( !_db_cfg ) {
         return ERROR(
@@ -1054,7 +1049,7 @@ irods::error get_database_config(
     }
 
     std::string s_val;
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               "catalog_database_type",
               s_val );
     if ( ret.ok() ) {
@@ -1064,7 +1059,7 @@ irods::error get_database_config(
             json_string( s_val.c_str() ) );
     }
 
-    ret = props.get_property< std::string >( "DBUsername", s_val );
+    ret = irods::get_server_property< std::string >( "DBUsername", s_val );
     if ( ret.ok() ) {
         json_object_set( _db_cfg, "db_username", json_string( s_val.c_str() ) );
     }

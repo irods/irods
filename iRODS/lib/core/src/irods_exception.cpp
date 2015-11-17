@@ -50,15 +50,13 @@ namespace irods {
         }
 
         std::stringstream what_ss;
-        what_ss << "=-=-=-=-=-=-=-" << std::endl
-                << "iRODS Exception:" << std::endl
+        what_ss << "iRODS Exception:" << std::endl
                 << "    code: " << code_ << std::endl
                 << "    message:" << std::endl
                 << message
                 << "stack trace:" << std::endl
                 << "--------------" << std::endl
-                << stack_trace_
-                << "=-=-=-=-=-=-=-" << std::endl;
+                << stack_trace_ << std::endl;
 
         what_ = what_ss.str();
 

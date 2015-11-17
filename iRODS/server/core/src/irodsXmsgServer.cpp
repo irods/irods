@@ -6,6 +6,7 @@
 #include "irodsXmsgServer.hpp"
 #include "xmsgLib.hpp"
 #include "rsGlobal.hpp"
+#include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
@@ -41,9 +42,12 @@ main( int argc, char **argv ) {
     ProcessType = XMSG_SERVER_PT;
 
     // capture server properties
-    irods::error result = irods::server_properties::getInstance().capture();
-    if ( !result.ok() ) {
-        irods::log( PASSMSG( "failed to read server configuration", result ) );
+    try {
+        irods::server_properties::instance().capture_if_needed();
+    }
+    catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
 
 #ifndef _WIN32
@@ -194,15 +198,8 @@ xmsgServerMain() {
 
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     int xmsg_port = 0;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           int > (
               irods::CFG_XMSG_PORT,
               xmsg_port );

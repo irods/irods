@@ -808,7 +808,7 @@ extern "C" {
                     if ( *myPtr == '"' ) {
                         nextPtr = myPtr + 1;
                         if ( *nextPtr == ' ' || *nextPtr == '\n'  || *nextPtr == '\0' ) {
-                            /* imbedded "s are OK */
+                            /* embedded "s are OK */
                             *myPtr = '\0';
                             return savePtr;
                         }

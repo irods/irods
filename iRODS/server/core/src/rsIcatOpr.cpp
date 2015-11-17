@@ -11,7 +11,6 @@
 #include "rsGlobalExtern.hpp"
 #include "readServerConfig.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "irods_server_properties.hpp"
 
 #ifdef RODS_CAT
 int
@@ -32,12 +31,6 @@ connectRcat() {
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
                 tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
-
-                // capture server properties
-                irods::error result = irods::server_properties::getInstance().capture_if_needed();
-                if ( !result.ok() ) {
-                    irods::log( PASSMSG( "failed to read server configuration", result ) );
-                }
 
                 status = chlOpen();
 

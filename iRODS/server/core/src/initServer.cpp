@@ -51,15 +51,8 @@ int
 initServerInfo( rsComm_t *rsComm ) {
     int status = 0;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -70,7 +63,7 @@ initServerInfo( rsComm_t *rsComm ) {
     }
 
     int zone_port = 0;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           int > (
               irods::CFG_ZONE_PORT,
               zone_port );
@@ -193,15 +186,8 @@ initRcatServerHostByFile() {
     typedef irods::configuration_parser::object_t object_t;
     typedef irods::configuration_parser::array_t  array_t;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     array_t prop_arr;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_RULEBASE_SET_KW,
               prop_arr );
@@ -236,7 +222,7 @@ initRcatServerHostByFile() {
     }
     else {
         std::string prop_str;
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   RE_RULESET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -254,7 +240,7 @@ initRcatServerHostByFile() {
 
     }
 
-    ret = props.get_property <
+    ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
               prop_arr );
@@ -286,7 +272,7 @@ initRcatServerHostByFile() {
 
     }
     else {
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   RE_FUNCMAPSET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -303,7 +289,7 @@ initRcatServerHostByFile() {
         }
     }
 
-    ret = props.get_property <
+    ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
               prop_arr );
@@ -335,7 +321,7 @@ initRcatServerHostByFile() {
 
     }
     else {
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   RE_VARIABLEMAPSET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -352,7 +338,7 @@ initRcatServerHostByFile() {
         }
     }
 
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               KERBEROS_NAME_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -364,7 +350,7 @@ initRcatServerHostByFile() {
 
     }
 
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               ICAT_HOST_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -396,7 +382,7 @@ initRcatServerHostByFile() {
 
     // re host
     // xmsg host
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               irods::CFG_IRODS_XMSG_HOST_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -423,14 +409,14 @@ initRcatServerHostByFile() {
 
     // slave icat host
 
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               irods::CFG_ZONE_KEY_KW,
               prop_str );
     if ( ret.ok() ) {
         snprintf( localSID, sizeof( localSID ), "%s", prop_str.c_str() );
     }
     else {
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   LOCAL_ZONE_SID_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -444,7 +430,7 @@ initRcatServerHostByFile() {
 
     // try for new federation config
     std::string neg_key;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_NEGOTIATION_KEY_KW,
               neg_key );
@@ -453,7 +439,7 @@ initRcatServerHostByFile() {
         return ret.code();
     }
     array_t fed_arr;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           array_t > (
               irods::CFG_FEDERATION_KW,
               fed_arr );
@@ -484,7 +470,7 @@ initRcatServerHostByFile() {
     else {
         // try the old remote sid config
         std::vector< std::string > rem_sids;
-        ret = props.get_property <
+        ret = irods::get_server_property<
               std::vector< std::string > > (
                   REMOTE_ZONE_SID_KW,
                   rem_sids );
@@ -521,15 +507,8 @@ initZone( rsComm_t *rsComm ) {
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
     char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -670,6 +649,8 @@ initAgent( int processType, rsComm_t *rsComm ) {
     ruleExecInfo_t rei;
 
     initProcLog();
+
+    irods::server_properties::instance().capture_if_needed();
 
     status = initServerInfo( rsComm );
     if ( status < 0 ) {
@@ -967,15 +948,8 @@ initRsComm( rsComm_t *rsComm ) {
         return status;
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -986,7 +960,7 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     std::string zone_user;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_USER,
               zone_user );
@@ -997,7 +971,7 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     std::string zone_auth_scheme;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_AUTH_SCHEME,
               zone_auth_scheme );
@@ -1405,15 +1379,8 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
 
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm ) {
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -1424,7 +1391,7 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
     }
 
     std::string zone_user;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_USER,
               zone_user );

@@ -77,7 +77,7 @@ unsigned char *prepareNonServerSharedMemory() {
 
 irods::error getSharedMemoryName( std::string &shared_memory_name ) {
     std::string shared_memory_name_salt;
-    irods::error ret = irods::server_properties::getInstance().get_property<std::string>( RE_CACHE_SALT_KW, shared_memory_name_salt );
+    irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, shared_memory_name_salt );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "getSharedMemoryName: failed to retrieve re cache salt from server_properties\n%s", ret.result().c_str() );
         return PASS( ret );

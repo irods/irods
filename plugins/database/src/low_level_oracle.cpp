@@ -960,26 +960,34 @@ int cllTest() {
     rodsLogSqlReq( 1 );
     int OK = !cllOpenEnv( &icss );
 
+    // capture server properties
+    try {
+        irods::server_properties::instance.capture_if_needed();
+    }
+    catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
+    }
+
     // =-=-=-=-=-=-=-
     // cache db creds
-    irods::server_properties& props = irods::server_properties::getInstance();
     std::string prop;
-    irods::error ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+    irods::error ret = irods::get_server_property<std::string>( DB_USERNAME_KW, prop );
     if ( !ret.ok() ) {
-        ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+        ret = irods::get_server_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
 
     }
     snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
 
-    ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+    ret = irods::get_server_property<std::string>( DB_PASSWORD_KW, prop );
     if ( !ret.ok() ) {
-        ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+        ret = irods::get_server_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
     }
     snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
 
-    ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+    ret = irods::get_server_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
     if ( !ret.ok() ) {
-        ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+        ret = irods::get_server_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
     }
     snprintf( icss.database_plugin_type, DB_TYPENAME_LEN, "%s", prop.c_str() );
 

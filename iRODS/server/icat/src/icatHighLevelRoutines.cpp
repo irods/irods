@@ -96,8 +96,8 @@ int chlOpen() {
 
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.get_property< std::string >(
+
+    irods::error ret = irods::get_server_property< std::string >(
                            "catalog_database_type",
                            database_plugin_type );
     if ( !ret.ok() ) {

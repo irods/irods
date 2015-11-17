@@ -56,7 +56,7 @@ void resetMutex() {
 
 irods::error getMutexName( std::string &mutex_name ) {
     std::string mutex_name_salt;
-    irods::error ret = irods::server_properties::getInstance().get_property<std::string>( RE_CACHE_SALT_KW, mutex_name_salt );
+    irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, mutex_name_salt );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "getMutexName: failed to retrieve re cache salt from server_properties\n%s", ret.result().c_str() );
         return PASS( ret );

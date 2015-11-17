@@ -60,6 +60,15 @@ main( int argc, char **argv ) {
 
     ProcessType = RE_SERVER_PT;
 
+    //capture server properties
+    try {
+        irods::server_properties::instance().capture_if_needed();
+    }
+    catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
+    }
+
 #ifndef _WIN32
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
@@ -262,15 +271,9 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 int
 reSvrSleep( rsComm_t *rsComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
 
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -311,11 +314,8 @@ irods::error capture_rulesets(
     std::string& _dvm ) {
     typedef irods::configuration_parser::array_t  array_t;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture();
-
     array_t prop_arr;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_RULEBASE_SET_KW,
               prop_arr );
@@ -342,7 +342,7 @@ irods::error capture_rulesets(
 
     }
 
-    ret = props.get_property <
+    ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
               prop_arr );
@@ -367,7 +367,7 @@ irods::error capture_rulesets(
 
     }
 
-    ret = props.get_property <
+    ret = irods::get_server_property<
           array_t > (
               irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
               prop_arr );

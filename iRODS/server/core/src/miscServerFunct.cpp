@@ -45,6 +45,7 @@ char *__loc1;
 #include "irods_client_server_negotiation.hpp"
 #include "irods_exception.hpp"
 #include "irods_serialization.hpp"
+#include "irods_server_properties.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_home_directory.hpp"
 #include "irods_threads.hpp"
@@ -422,6 +423,8 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != NULL ) {
         flags |= STREAMING_FLAG;
     }
+
+    irods::server_properties::instance().capture_if_needed();
 
     numThreads = dataOprInp->numThreads;
 
@@ -3264,9 +3267,8 @@ irods::error update_resource_object_count(
 
 irods::error setRECacheSaltFromEnv() {
     // Should only ever set the cache salt once
-    irods::server_properties &server_properties = irods::server_properties::getInstance();
     std::string existing_name;
-    irods::error ret = server_properties.get_property<std::string>( RE_CACHE_SALT_KW, existing_name );
+    irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, existing_name );
     if ( ret.ok() ) {
         rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
         return ERROR( SYS_ALREADY_INITIALIZED, "setRECacheSaltFromEnv: mutex name already set" );
@@ -3278,7 +3280,7 @@ irods::error setRECacheSaltFromEnv() {
         return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
     }
 
-    ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
+    ret = irods::set_server_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
         return PASS( ret );
@@ -3342,14 +3344,8 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
     irods::error ret = SUCCESS();
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error result = props.capture_if_needed();
-    if ( !result.ok() ) {
-        irods::log( PASSMSG( "failed to read server configuration", result ) );
-    }
-
     std::string client_name;
-    props.get_property< std::string >(
+    irods::get_server_property< std::string >(
         irods::CLIENT_USER_NAME_KW,
         client_name );
     addKeyVal(
@@ -3358,7 +3354,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
         client_name.c_str() );
 
     std::string client_zone;
-    props.get_property< std::string >(
+    irods::get_server_property< std::string >(
         irods::CLIENT_USER_ZONE_KW,
         client_zone );
     addKeyVal(
@@ -3367,7 +3363,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
         client_zone.c_str() );
 
     int client_priv = 0;
-    props.get_property< int >(
+    irods::get_server_property< int >(
         irods::CLIENT_USER_PRIV_KW,
         client_priv );
     std::string client_priv_str( "0" );
@@ -3391,7 +3387,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
 
     std::string proxy_name;
-    props.get_property< std::string >(
+    irods::get_server_property< std::string >(
         irods::PROXY_USER_NAME_KW,
         proxy_name );
     addKeyVal(
@@ -3400,7 +3396,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
         proxy_name.c_str() );
 
     std::string proxy_zone;
-    props.get_property< std::string >(
+    irods::get_server_property< std::string >(
         irods::PROXY_USER_ZONE_KW,
         proxy_zone );
     addKeyVal(
@@ -3409,7 +3405,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
         proxy_zone.c_str() );
 
     int proxy_priv = 0;
-    props.get_property< int >(
+    irods::get_server_property< int >(
         irods::PROXY_USER_PRIV_KW,
         proxy_priv );
     std::string proxy_priv_str( "0" );

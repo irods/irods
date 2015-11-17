@@ -48,6 +48,6 @@ namespace irods {
 }; // namespace irods
 
 #define THROW( _code, _msg ) ( throw irods::exception( _code, _msg, __FILE__, __LINE__, __FUNCTION__ ) )
-#define RE_THROW( _msg, _excep ) ( _excp.add_message( _msg ); throw;
+#define RE_THROW( _msg, _excp ) _excp.add_message( _msg ); throw _excp;
 
 #endif // IRODS_EXCEPTION_HPP

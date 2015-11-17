@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_buffer_encryption.hpp"
@@ -29,15 +30,13 @@ namespace irods {
 /// @brief given a property map and the target host name decide between a federated key and a local key
     error determine_negotiation_key(
         const std::string& _host_name,
-        server_properties& _props,
         std::string&       _neg_key ) {
         typedef irods::configuration_parser::object_t object_t;
         typedef irods::configuration_parser::array_t  array_t;
 
         // search the federation map for the host name
         array_t fed_arr;
-        error ret = _props.get_property <
-                    array_t > (
+        error ret = get_server_property< array_t > (
                         irods::CFG_FEDERATION_KW,
                         fed_arr );
         if ( ret.ok() ) {
@@ -67,7 +66,7 @@ namespace irods {
         }
 
         // if not, it must be in our zone
-        return _props.get_property <
+        return get_server_property<
                std::string > (
                    CFG_NEGOTIATION_KEY_KW,
                    _neg_key );
@@ -335,18 +334,15 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // if we cannot read a server config file, punt
         // as this must be a client-side situation
-        server_properties& props = server_properties::getInstance();
-        err = props.capture_if_needed();
         if ( err.ok() ) {
             // =-=-=-=-=-=-=-
             // get our local zone SID
             std::string sid;
-            err = props.get_property< std::string >(
+            err = get_server_property< std::string >(
                       irods::CFG_ZONE_KEY_KW,
                       sid );
             if ( !err.ok() ) {
-                err = props.get_property <
-                      std::string > (
+                err = get_server_property< std::string > (
                           LOCAL_ZONE_SID_KW,
                           sid );
                 if ( !err.ok() ) {
@@ -358,7 +354,6 @@ namespace irods {
                 std::string neg_key;
                 err = determine_negotiation_key(
                           _host_name,
-                          props,
                           neg_key );
                 if ( err.ok() ) {
                     // =-=-=-=-=-=-=-

@@ -1177,16 +1177,11 @@ chkOrphanFile(
     // query in order to avoid orphaning another users physical data.
     addKeyVal( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW, "disable" );
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error get_err;
-    irods::error err = props.capture_if_needed();
-    if ( err.ok() ) {
-        std::string svr_sid;
-        get_err = props.get_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-        if ( !get_err.ok() ) {
-            std::string tmp( "StrictACLOverride" );
-            props.set_property< std::string >( irods::AGENT_CONN_KW, tmp );
-        }
+    std::string svr_sid;
+    irods::error get_err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
+    if ( !get_err.ok() ) {
+        std::string tmp( "StrictACLOverride" );
+        irods::set_server_property< std::string >( irods::AGENT_CONN_KW, tmp );
     }
 
     // =-=-=-=-=-=-=-
@@ -1196,13 +1191,13 @@ chkOrphanFile(
     // =-=-=-=-=-=-=-
     // remove the agent-agent conn flag
     if ( !get_err.ok() ) {
-        props.delete_property( irods::AGENT_CONN_KW );
+        irods::delete_server_property( irods::AGENT_CONN_KW );
     }
 
     clearGenQueryInp( &genQueryInp );
     if ( status < 0 ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
-			freeGenQueryOut( &genQueryOut );
+            freeGenQueryOut( &genQueryOut );
             rsComm->perfStat.orphanCnt ++;
             return 1;
         }

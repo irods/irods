@@ -1139,7 +1139,10 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
     // =-=-=-=-=-=-=-
     // PostgreSQL
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-    irods::catalog_properties::getInstance().get_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
+    irods::error ret = irods::get_catalog_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, ret.result().c_str() );
+    }
 
     // =-=-=-=-=-=-=-
     // Regex will look in r_data_main.resc_hier
@@ -1202,8 +1205,10 @@ static int _modRescInChildren( const std::string& old_resc, const std::string& n
 
 
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-    irods::catalog_properties::getInstance().get_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
-
+    irods::error ret = irods::get_catalog_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, ret.result().c_str() );
+    }
 
     // Regex will look in r_resc_main.resc_children
     // for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
@@ -2211,25 +2216,24 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cache db creds
-        irods::server_properties& props = irods::server_properties::getInstance();
-        ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+        ret = irods::get_server_property<std::string>( DB_USERNAME_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
 
         }
         snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
 
-        ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+        ret = irods::get_server_property<std::string>( DB_PASSWORD_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
         }
         snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
 
-        ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+        ret = irods::get_server_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
         }
-        snprintf( icss.database_plugin_type, NAME_LEN, "%s", prop.c_str() );
+        snprintf( icss.database_plugin_type, DB_TYPENAME_LEN, "%s", prop.c_str() );
 
         // =-=-=-=-=-=-=-
         // call open in mid level
@@ -2246,28 +2250,32 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Capture ICAT properties
-        irods::catalog_properties::getInstance().capture( &icss );
+#if MY_ICAT
+#elif ORA_ICAT
+#else
+        irods::catalog_properties::instance().capture_if_needed( &icss );
+#endif
 
         // =-=-=-=-=-=-=-
         // set pam properties
         bool no_ex = false;
-        ret = irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, no_ex );
+        ret = irods::get_server_property<bool>( PAM_NO_EXTEND_KW, no_ex );
         if ( ret.ok() ) {
             irods_pam_auth_no_extend = no_ex;
         }
 
         size_t pw_len = 0;
-        ret = irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
+        ret = irods::get_server_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
         if ( ret.ok() ) {
             irods_pam_password_len = pw_len;
         }
 
-        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
+        ret = irods::get_server_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
         if ( ret.ok() ) {
             snprintf( irods_pam_password_min_time, NAME_LEN, "%s", prop.c_str() );
         }
 
-        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
+        ret = irods::get_server_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
         if ( ret.ok() ) {
             snprintf( irods_pam_password_max_time, NAME_LEN, "%s", prop.c_str() );
         }

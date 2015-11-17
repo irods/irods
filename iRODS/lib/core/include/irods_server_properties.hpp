@@ -12,69 +12,71 @@
 #include "irods_lookup_table.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_exception.hpp"
 
 namespace irods {
 
 /// @brief kw for server property map storing strict acl configuration
-    static const std::string STRICT_ACL_KW( "strict_acls" );
+    const std::string STRICT_ACL_KW( "strict_acls" );
 
 /// @brief kw for server property map stating this is an agent-agent conn
-    static const std::string AGENT_CONN_KW( "agent_conn" );
+    const std::string AGENT_CONN_KW( "agent_conn" );
 
 /// @brief kw for server property map for encryption key
-    static const std::string AGENT_KEY_KW( "agent_key" );
+    const std::string AGENT_KEY_KW( "agent_key" );
 
 /// @brief kw for storing the process id of the rule engine server
-    static const std::string RE_PID_KW( "rule_engine_process_id" );
+    const std::string RE_PID_KW( "rule_engine_process_id" );
 
 /// @brief kw for storing the process id of the xmessage server
-    static const std::string XMSG_PID_KW( "x_message_process_id" );
+    const std::string XMSG_PID_KW( "x_message_process_id" );
 
 /// @brief kw for storing client user name
-    static const std::string CLIENT_USER_NAME_KW( "client_user_name" );
+    const std::string CLIENT_USER_NAME_KW( "client_user_name" );
 
 /// @brief kw for storing client user  zone
-    static const std::string CLIENT_USER_ZONE_KW( "client_user_zone" );
+    const std::string CLIENT_USER_ZONE_KW( "client_user_zone" );
 
 /// @brief kw for storing client user priv
-    static const std::string CLIENT_USER_PRIV_KW( "client_user_priv" );
+    const std::string CLIENT_USER_PRIV_KW( "client_user_priv" );
 
 /// @brief kw for storing proxy user name
-    static const std::string PROXY_USER_NAME_KW( "proxy_user_name" );
+    const std::string PROXY_USER_NAME_KW( "proxy_user_name" );
 
 /// @brief kw for storing proxy user  zone
-    static const std::string PROXY_USER_ZONE_KW( "proxy_user_zone" );
+    const std::string PROXY_USER_ZONE_KW( "proxy_user_zone" );
 
 /// @brief kw for storing proxy user priv
-    static const std::string PROXY_USER_PRIV_KW( "proxy_user_priv" );
+    const std::string PROXY_USER_PRIV_KW( "proxy_user_priv" );
 
     class server_properties {
-
         public:
+
             /**
-             * @brief Access method for the singleton
-             */
-            static server_properties& getInstance();
+            * @brief The singleton
+            */
+            static server_properties& instance();
 
             /**
              * @brief Read server configuration and fill server_properties::properties
              */
-            error capture( );
+            void capture();
 
             /**
              * @brief capture the legacy version: server.config
              */
-            error capture_legacy();
+            void capture_legacy();
+
+
+            /**
+             * @brief Read server configuration if it has not been read already.
+             */
+            void capture_if_needed();
 
             /**
              * @brief capture the new json version: server_config.json
              */
-            error capture_json( const std::string& );
-
-            /**
-             * @brief Read server configuration if it has not been read already.
-             **/
-            error capture_if_needed();
+            void capture_json( const std::string& );
 
             /**
              * @brief Get a property from the map if it exists.  catch the exception in the case where
@@ -82,11 +84,16 @@ namespace irods {
              */
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
+                try {
+                    capture_if_needed();
+                } catch ( const exception& e ) {
+                    return ERROR( e.code(), e.what() );
+                }
+
                 error ret = config_props_.get< T >( _key, _val );
                 if ( !ret.ok() ) {
                     if ( key_map_.has_entry( _key ) ) {
                         ret = config_props_.get< T >( key_map_[ _key ], _val );
-
                     }
                 }
                 return PASS( ret );
@@ -94,6 +101,12 @@ namespace irods {
 
             template< typename T >
             error set_property( const std::string& _key, const T& _val ) {
+                try {
+                    capture_if_needed();
+                } catch ( const exception& e ) {
+                    return ERROR( e.code(), e.what() );
+                }
+
                 error ret = config_props_.set< T >( _key, _val );
                 if ( !ret.ok() ) {
                     ret = config_props_.set< T >( key_map_[ _key ], _val );
@@ -102,6 +115,12 @@ namespace irods {
             }
 
             error delete_property( const std::string& _key ) {
+                try {
+                    capture_if_needed();
+                } catch ( const exception& e ) {
+                    return ERROR( e.code(), e.what() );
+                }
+
                 size_t n = config_props_.erase( _key );
                 if ( n != 1 ) {
                     std::string msg( "failed to erase key: " );
@@ -134,18 +153,11 @@ namespace irods {
     error get_server_property(
         const std::string& _prop,
         T&                 _val ) {
-        irods::server_properties& props =
-            irods::server_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-        ret = props.get_property< T > (
+        error ret = server_properties::instance().get_property< T > (
                   _prop,
                   _val );
         if ( !ret.ok() ) {
             return PASS( ret );
-
         }
 
         return SUCCESS();
@@ -153,19 +165,39 @@ namespace irods {
     } // get_server_property
 
     template< typename T >
-    error get_advanced_setting(
+    error set_server_property(
         const std::string& _prop,
-        T&                 _val ) {
-        typedef irods::configuration_parser::object_t object_t;
-        irods::server_properties& props =
-            irods::server_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
+        const T&           _val ) {
+        error ret = server_properties::instance().set_property< T > (
+                  _prop,
+                  _val );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
 
-        object_t adv_set;
-        ret = props.get_property< object_t > (
+        return SUCCESS();
+
+    } // set_server_property
+
+    static error delete_server_property(
+        const std::string& _prop ) {
+        error ret = server_properties::instance().delete_property(
+                  _prop );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        return SUCCESS();
+
+    } // delete_server_property
+
+    template< typename T >
+    error get_advanced_setting(
+        const std::string& _prop,
+        T&                 _val ) {
+
+        lookup_table<boost::any> adv_set;
+        error ret = get_server_property< lookup_table<boost::any> > (
                   CFG_ADVANCED_SETTINGS_KW,
                   adv_set );
         if ( !ret.ok() ) {
@@ -173,19 +205,14 @@ namespace irods {
 
         }
 
-        if ( !adv_set.has_entry( _prop ) ) {
-            std::string msg( "missing [" );
-            msg += _prop;
-            msg += "]";
-            return ERROR(
-                       KEY_NOT_FOUND,
-                       msg );
-
-        }
-
-        return adv_set.get<T>(
+        ret = adv_set.get<T>(
                    _prop,
                    _val );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        return SUCCESS();
 
     } // get_advanced_setting
 

@@ -13,6 +13,9 @@
 
 #include "icatStructs.hpp"
 #include "irods_lookup_table.hpp"
+#include "rodsErrorTable.h"
+#include <map>
+#include <sstream>
 
 
 namespace irods {
@@ -24,44 +27,82 @@ namespace irods {
 
 
     class catalog_properties {
-
         public:
-            // =-=-=-=-=-=-=-
-            // Access singleton through its getInstance() method
-            static catalog_properties& getInstance();
 
-            // =-=-=-=-=-=-=-
-            // Query for iCAT settings and fill catalog_properties::properties
-            error capture( icatSessionStruct* );
+            /**
+             * @brief The singleton
+             */
+            static catalog_properties& instance();
 
-            // =-=-=-=-=-=-=-
-            /// @brief get a property from the map if it exists.  catch the exception in the case where
-            // the template types may not match and return success/fail
+            /*
+             * @brief Query for iCAT settings and fill catalog_properties::instance
+             */
+            void capture( icatSessionStruct* );
+
+            /*
+             * @brief Query for iCAT settings if it has not already been queried
+             */
+            void capture_if_needed( icatSessionStruct* );
+
+            /**
+             * @brief get a property from the map if it exists.  catch the exception in the case where
+             * the template types may not match and return success/fail
+             */
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
-                error ret = properties.get< T >( _key, _val );
-                return PASSMSG( "catalog_properties::get_property", ret );
+                if ( !captured_ ) {
+                    return ERROR( SYS_INTERNAL_ERR, "'capture' must be called on the catalog_properties instance before properties may be accessed." );
+                }
+                std::map<std::string, boost::any>::iterator it = properties.find( _key );
+                if ( it == properties.end() ) {
+                    std::stringstream msg;
+                    msg << "Catalog properties map does not contain the key \"" << _key << "\".";
+                    return ERROR( SYS_INTERNAL_ERR, msg.str() );
+                }
+                try {
+                    _val = boost::any_cast<T>( it->second );
+                } catch( const boost::bad_any_cast& e ) {
+                    std::stringstream msg;
+                    msg << "The value in the catalog properties map at \"" << _key << "\" is not of the appropriate type.";
+                    return ERROR( SYS_INTERNAL_ERR, msg.str() );
+                }
+
+                return SUCCESS();
             } // get_property
 
 
+            std::map<std::string, boost::any> properties;
         private:
             // =-=-=-=-=-=-=-
             // Disable constructors
-            catalog_properties() {};
+            catalog_properties() : captured_( false ) {};
             catalog_properties( catalog_properties const& );
             void operator=( catalog_properties const& );
 
             // =-=-=-=-=-=-=-
             // properties
-            lookup_table<boost::any> properties;
+            bool captured_;
 
     }; // class catalog_properties
+
+
+    template< typename T >
+    error get_catalog_property(
+        const std::string& _key,
+        T&                 _val ) {
+        irods::error ret = irods::catalog_properties::instance().get_property<T>(
+                _key,
+                _val );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        return SUCCESS();
+
+    } // get_catalog_property
 
 
 } // namespace irods
 
 
-#endif /* CATALOG_PROPERTIES_H_ */
-
-
-
+#endif /* CATALOG_PROPERTIES_HPP_ */
