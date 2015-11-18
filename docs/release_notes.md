@@ -14,7 +14,7 @@ Release Date: 2015-11-18
 
  - Fix for python2.6 compatibility [#2940]
 
- - Refactoring of development libraries [#2945]
+ - Refactoring of development libraries [#2945] [#2959]
 
  - Fix for documentation [#2947]
 
