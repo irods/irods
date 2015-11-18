@@ -208,21 +208,12 @@ my $currentStep = 0;
 # happens just before configuring the iRODS server.
 my $databaseRestartNeeded = 0;
 
-#This will and should be false if we are installing just the icommands
+#This will be true if we are installing a server (not just the icommands)
 if ( $IRODS_ADMIN_NAME ne "" )
 {
     if ( stopIrods() == 0 )
     {
         cleanAndExit( 1 );
-    }
-
-    if ( $DATABASE_TYPE ne "" )
-    {
-            # Ignore the iCAT host name, if any, if we
-            # are using a database.
-            $IRODS_ICAT_HOST = "";
-
-            testDatabase();
     }
 
     $totalSteps  = 2;
@@ -284,38 +275,6 @@ sub prepare()
 }
 
 #
-# @brief        Test database communications.
-#
-# After setting up the database, make sure we can talk to it.
-#
-# Output error messages and exit on problems.
-#
-sub testDatabase()
-{
-        # Make sure communications are working.
-        #       This simple test issues a few SQL statements
-        #       to the database, testing that the connection
-        #       works.  iRODS is uninvolved at this point.
-        printStatus( "Testing database communications...\n" );
-        printLog( "\nTesting database communications with test_cll...\n" );
-
-        my $test_cll = File::Spec->catfile( $scripttoplevel, "iRODS", "server", "test", "bin", "test_cll" );
-
-        my $output = `$test_cll 2>&1`;
-
-        printLog( "    ", $output );
-
-        if ( $output !~ /The tests all completed normally/i )
-        {
-                printError( "\nConfiguration problem:\n" );
-                printError( "    Communications with the database failed.\n" );
-                printError( "        ", $output );
-                printLog( "\nTests failed.\n" );
-                cleanAndExit( 1 );
-        }
-}
-
-#
 # @brief        Configure iRODS.
 #
 # Update the iRODS server_config.json file.
@@ -341,6 +300,10 @@ sub configureIrodsServer
         #       little point in checking for this first.  Just
         #       overwrite it with the correct values.
 
+        if ( $DATABASE_TYPE ne "" )
+        {
+            $IRODS_ICAT_HOST = "";
+        }
         my $host = ($IRODS_ICAT_HOST eq "") ? "localhost" : $IRODS_ICAT_HOST;
 
         # binary installation

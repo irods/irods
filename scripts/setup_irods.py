@@ -137,7 +137,14 @@ def setup_catalog(db_type, irods_config):
         create_database_tables(irods_config, cursor)
         update_catalog_schema(irods_config, cursor)
 
-    #update the catalog yeeeeeah
+    l.info('Testing database communications...');
+
+    # Make sure communications are working.
+    #       This simple test issues a few SQL statements
+    #       to the database, testing that the connection
+    #       works.  iRODS is uninvolved at this point.
+
+    irods.lib.execute_command([os.path.join(irods_config.server_test_directory, 'test_cll')])
 
 def list_database_tables(irods_config, cursor=None):
     if cursor is None:
