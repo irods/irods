@@ -13,6 +13,7 @@ from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
 from . import lib
 from . import json_validation
+from .password_obfuscation import encode, decode
 
 class IrodsConfig(object):
     def __init__(self,

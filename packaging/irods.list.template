@@ -355,7 +355,22 @@ f 744 root root ${IRODS_HOME_DIR}/scripts ./scripts/*.py
 f 744 root root ${IRODS_HOME_DIR}/scripts/rulebase_fastswap_test_2276.sh ./scripts/rulebase_fastswap_test_2276.sh
 
 d 755 root root ${IRODS_HOME_DIR}/scripts/irods -
-f 644 root root ${IRODS_HOME_DIR}/scripts/irods ./scripts/irods/*.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/__init__.py             scripts/irods/__init__.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/configuration.py        scripts/irods/configuration.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/controller.py           scripts/irods/controller.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/exceptions.py           scripts/irods/exceptions.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/json_validation.py      scripts/irods/json_validation.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/lib.py                  scripts/irods/lib.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/log.py                  scripts/irods/log.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/pypyodbc.py             scripts/irods/pypyodbc.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/password_obfuscation.py scripts/irods/password_obfuscation.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/six.py                  scripts/irods/six.py
+
+%if ICAT
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/database_connect.py     scripts/irods/database_connect.py
+%else
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/database_connect.py     /dev/null
+%endif
 
 d 755 root root ${IRODS_HOME_DIR}/scripts/irods/test -
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/test ./scripts/irods/test/*.py
