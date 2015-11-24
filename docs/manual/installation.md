@@ -50,7 +50,7 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 Installation of the iCAT DEB and PostgreSQL plugin DEB:
 
 ~~~
-$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.6-ubuntu14-x86_64.deb
+$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.7-ubuntu14-x86_64.deb
 $ (sudo) apt-get -f install
 ~~~
 
