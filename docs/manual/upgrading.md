@@ -7,7 +7,7 @@ All servers in a Zone must be running the same version of iRODS.  First, upgrade
 ## RPM based systems
 
 ~~~
-$ (sudo) rpm -U irods-database-plugin-postgres-1.7-opensuse13-x86_64.rpm
+$ (sudo) rpm -U irods-database-plugin-postgres-2.0-opensuse13-x86_64.rpm
 $ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-opensuse13-x86_64.rpm
 ~~~
 
@@ -16,7 +16,7 @@ The database plugin must be upgraded first when installing RPMs.
 ## DEB based systems
 
 ~~~
-$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.7-ubuntu14-x86_64.deb
+$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-2.0-ubuntu14-x86_64.deb
 ~~~
 
 The database plugin should be upgraded first or at the same time.  Listing them on the same line will allow dpkg to satisfy its dependencies.
