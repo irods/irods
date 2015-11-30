@@ -1023,7 +1023,7 @@ extern "C" {
 
     } // compound_file_unregistered
 
-    static bool auto_replication_is_disabled(
+    static bool auto_replication_is_enabled(
         irods::resource_plugin_context& _ctx ) {
         std::string auto_repl;
         irods::error ret = _ctx.prop_map().get<std::string>(
@@ -1031,11 +1031,11 @@ extern "C" {
                                auto_repl );
         if( ret.ok() ) {
             if( AUTO_REPL_POLICY_ENABLED != auto_repl ) {
-                return true;
+                return false;
             }
         }
-        return false;
-    } // auto_replication_is_disabled
+        return true;
+    } // auto_replication_is_enabled
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification - this happens
@@ -1047,7 +1047,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        if( !auto_replication_is_disabled( _ctx ) ) {
+        if( auto_replication_is_enabled( _ctx ) ) {
             irods::error ret = compound_check_param< irods::file_object >( _ctx );
             if ( ( result = ASSERT_PASS( ret, "Invalid resource context." ) ).ok() ) {
                 std::string operation;
