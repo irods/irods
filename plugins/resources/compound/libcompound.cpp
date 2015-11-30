@@ -32,16 +32,16 @@
 #include <boost/any.hpp>
 
 /// =-=-=-=-=-=-=-
-/// @ brief constant to reference the operation type for
+/// @brief constant to reference the operation type for
 ///         file modification
 const std::string OPERATION_TYPE( "operation_type" );
 
 /// =-=-=-=-=-=-=-
-/// @ brief constant to index the cache child resource
+/// @brief constant to index the cache child resource
 const std::string CACHE_CONTEXT_TYPE( "cache" );
 
 /// =-=-=-=-=-=-=-
-/// @ brief constant to index the archive child resource
+/// @brief constant to index the archive child resource
 const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
 /// @brief constant indicating the automatic replication policy
@@ -535,8 +535,8 @@ extern "C" {
 
     } // compound_file_create
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX Open
+    /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX Open
     irods::error compound_file_open(
         irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
@@ -877,7 +877,7 @@ extern "C" {
     } // compound_file_rename
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX rename
+    /// @brief interface for POSIX truncate
     irods::error compound_file_truncate(
         irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
@@ -931,7 +931,7 @@ extern "C" {
 
 
     /// =-=-=-=-=-=-=-
-    /// @brief Move data from a the archive leaf node to a local cache leaf node
+    /// @brief Move data from the archive leaf node to a local cache leaf node
     ///        This routine is not supported from a coordinating node's perspective
     ///        the coordinating node would be calling this on a leaf when necessary
     irods::error compound_file_stage_to_cache(
@@ -961,7 +961,7 @@ extern "C" {
     } // compound_file_stage_to_cache
 
     /// =-=-=-=-=-=-=-
-    /// @brief Move data from a cache leaf node to a local archive leaf node
+    /// @brief Move data from a local cache leaf node to the archive leaf node
     ///        This routine is not supported from a coordinating node's perspective
     ///        the coordinating node would be calling this on a leaf when necessary
     irods::error compound_file_sync_to_arch(
@@ -1108,12 +1108,12 @@ extern "C" {
     } // compound_file_notify
 
     // =-=-=-=-=-=-=-
-    // redirect_get - code to determine redirection for get operation
+    /// @brief - code to determine redirection for get operation
     irods::error compound_file_redirect_create(
         irods::resource_plugin_context& _ctx,
         const std::string&               _operation,
         const std::string*               _curr_host,
-        irods::hierarchy_parser*        _out_parser,
+        irods::hierarchy_parser*         _out_parser,
         float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down
@@ -1419,7 +1419,7 @@ extern "C" {
             f_ptr->repl_requested( repl_requested );
 
             // =-=-=-=-=-=-=-
-            // now that the repl happend, we will assume that the
+            // now that the repl happened, we will assume that the
             // object is in the cache as to not hit the DB again
             ( *_out_parser ) = cache_check_parser;
             ( *_out_vote ) = arch_check_vote;
@@ -1439,11 +1439,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief - code to determine redirection for the open operation
     ///          determine the user set policy for staging to cache
-    ///          otherwise the default is to compare checsum
+    ///          otherwise the default is to compare checksum
     irods::error compound_file_redirect_open(
         irods::resource_plugin_context& _ctx,
         const std::string*               _curr_host,
-        irods::hierarchy_parser*        _out_parser,
+        irods::hierarchy_parser*         _out_parser,
         float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
@@ -1502,9 +1502,9 @@ extern "C" {
 
     } // compound_file_redirect_open
 
-    // =-=-=-=-=-=-=-
-    // used to allow the resource to determine which host
-    // should provide the requested operation
+    /// =-=-=-=-=-=-=-
+    /// @brief - used to allow the resource to determine which host
+    ///          should provide the requested operation
     irods::error compound_file_redirect(
         irods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
@@ -1583,8 +1583,8 @@ extern "C" {
 
     } // compound_file_redirect
 
-    // =-=-=-=-=-=-=-
-    // compound_file_rebalance - code which would rebalance the subtree
+    /// =-=-=-=-=-=-=-
+    /// @brief - code which would rebalance the subtree
     irods::error compound_file_rebalance(
         irods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
@@ -1665,7 +1665,7 @@ extern "C" {
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
     //    as used by the irods facing interface defined in
-    //    server/drivers/src/fileDriver.c
+    //    server/drivers/src/fileDriver.cpp
     irods::resource* plugin_factory( const std::string& _inst_name,
                                      const std::string& _context ) {
         // =-=-=-=-=-=-=-
@@ -1676,31 +1676,31 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( irods::RESOURCE_OP_CREATE,       "compound_file_create" );
-        resc->add_operation( irods::RESOURCE_OP_OPEN,         "compound_file_open" );
-        resc->add_operation( irods::RESOURCE_OP_READ,         "compound_file_read" );
-        resc->add_operation( irods::RESOURCE_OP_WRITE,        "compound_file_write" );
-        resc->add_operation( irods::RESOURCE_OP_CLOSE,        "compound_file_close" );
-        resc->add_operation( irods::RESOURCE_OP_UNLINK,       "compound_file_unlink" );
-        resc->add_operation( irods::RESOURCE_OP_STAT,         "compound_file_stat" );
-        resc->add_operation( irods::RESOURCE_OP_MKDIR,        "compound_file_mkdir" );
-        resc->add_operation( irods::RESOURCE_OP_OPENDIR,      "compound_file_opendir" );
-        resc->add_operation( irods::RESOURCE_OP_READDIR,      "compound_file_readdir" );
-        resc->add_operation( irods::RESOURCE_OP_RENAME,       "compound_file_rename" );
-        resc->add_operation( irods::RESOURCE_OP_FREESPACE,    "compound_file_getfs_freespace" );
-        resc->add_operation( irods::RESOURCE_OP_LSEEK,        "compound_file_lseek" );
-        resc->add_operation( irods::RESOURCE_OP_RMDIR,        "compound_file_rmdir" );
-        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,     "compound_file_closedir" );
-        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE, "compound_file_stage_to_cache" );
-        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,   "compound_file_sync_to_arch" );
-        resc->add_operation( irods::RESOURCE_OP_REGISTERED,   "compound_file_registered" );
-        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED, "compound_file_unregistered" );
-        resc->add_operation( irods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
-        resc->add_operation( irods::RESOURCE_OP_NOTIFY,       "compound_file_notify" );
-        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate" );
+        resc->add_operation( irods::RESOURCE_OP_CREATE,             "compound_file_create" );
+        resc->add_operation( irods::RESOURCE_OP_OPEN,               "compound_file_open" );
+        resc->add_operation( irods::RESOURCE_OP_READ,               "compound_file_read" );
+        resc->add_operation( irods::RESOURCE_OP_WRITE,              "compound_file_write" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSE,              "compound_file_close" );
+        resc->add_operation( irods::RESOURCE_OP_UNLINK,             "compound_file_unlink" );
+        resc->add_operation( irods::RESOURCE_OP_STAT,               "compound_file_stat" );
+        resc->add_operation( irods::RESOURCE_OP_MKDIR,              "compound_file_mkdir" );
+        resc->add_operation( irods::RESOURCE_OP_OPENDIR,            "compound_file_opendir" );
+        resc->add_operation( irods::RESOURCE_OP_READDIR,            "compound_file_readdir" );
+        resc->add_operation( irods::RESOURCE_OP_RENAME,             "compound_file_rename" );
+        resc->add_operation( irods::RESOURCE_OP_FREESPACE,          "compound_file_getfs_freespace" );
+        resc->add_operation( irods::RESOURCE_OP_LSEEK,              "compound_file_lseek" );
+        resc->add_operation( irods::RESOURCE_OP_RMDIR,              "compound_file_rmdir" );
+        resc->add_operation( irods::RESOURCE_OP_CLOSEDIR,           "compound_file_closedir" );
+        resc->add_operation( irods::RESOURCE_OP_STAGETOCACHE,       "compound_file_stage_to_cache" );
+        resc->add_operation( irods::RESOURCE_OP_SYNCTOARCH,         "compound_file_sync_to_arch" );
+        resc->add_operation( irods::RESOURCE_OP_REGISTERED,         "compound_file_registered" );
+        resc->add_operation( irods::RESOURCE_OP_UNREGISTERED,       "compound_file_unregistered" );
+        resc->add_operation( irods::RESOURCE_OP_MODIFIED,           "compound_file_modified" );
+        resc->add_operation( irods::RESOURCE_OP_NOTIFY,             "compound_file_notify" );
+        resc->add_operation( irods::RESOURCE_OP_TRUNCATE,           "compound_file_truncate" );
 
-        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
-        resc->add_operation( irods::RESOURCE_OP_REBALANCE,             "compound_file_rebalance" );
+        resc->add_operation( irods::RESOURCE_OP_RESOLVE_RESC_HIER,  "compound_file_redirect" );
+        resc->add_operation( irods::RESOURCE_OP_REBALANCE,          "compound_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
