@@ -7,10 +7,12 @@
 #include <boost/pointer_cast.hpp>
 
 // =-=-=-=-=-=-=-
-#include "irods_plugin_base.hpp"
+#include "rodsErrorTable.h"
+#include "irods_lookup_table.hpp"
 #include "irods_first_class_object.hpp"
 
 namespace irods {
+
 // =-=-=-=-=-=-=-
 // base context class for communicating to plugins
     class plugin_context {
@@ -18,7 +20,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // ctor
             plugin_context(
-                plugin_property_map&   _prop_map,
+                irods::plugin_property_map&   _prop_map,
                 first_class_object_ptr _fco,
                 const std::string&     _results )  :
                 comm_( 0 ),
@@ -32,7 +34,7 @@ namespace irods {
             // ctor
             plugin_context(
                 rsComm_t*              _comm,
-                plugin_property_map&   _prop_map,
+                irods::plugin_property_map&   _prop_map,
                 first_class_object_ptr _fco,
                 const std::string&     _results )  :
                 comm_( _comm ),
@@ -72,7 +74,7 @@ namespace irods {
                 return comm_;
             }
 
-            virtual plugin_property_map&   prop_map()     {
+            virtual irods::plugin_property_map&   prop_map()     {
                 return prop_map_;
             }
             virtual first_class_object_ptr fco()          {
@@ -96,7 +98,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // attributes
             rsComm_t*              comm_;      // server connection handle
-            plugin_property_map&   prop_map_;  // resource property map
+            irods::plugin_property_map&   prop_map_;  // resource property map
             first_class_object_ptr fco_;       // first class object in question
             std::string            results_;   // results from the pre op rule call
 

@@ -5,6 +5,7 @@
 #include "irods_osauth_auth_object.hpp"
 #include "irods_gsi_object.hpp"
 #include "irods_krb_object.hpp"
+#include "rodsErrorTable.h"
 #include <boost/algorithm/string.hpp>
 
 namespace irods {

@@ -2121,11 +2121,11 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
    Called with user == NULL to set the controlFlag, else with the
    user info.
  */
-extern "C"
+
 int chl_gen_query_access_control_setup_impl(
-    char *user,
-    char *zone,
-    char *host,
+    const char *user,
+    const char *zone,
+    const char *host,
     int priv,
     int controlFlag ) {
     if ( user != NULL ) {
@@ -2157,9 +2157,9 @@ int chl_gen_query_access_control_setup_impl(
     return old_flag;
 }
 
-extern "C" int chl_gen_query_ticket_setup_impl(
-    char* ticket,
-    char* clientAddr ) {
+ int chl_gen_query_ticket_setup_impl(
+    const char* ticket,
+    const char* clientAddr ) {
     if ( !rstrcpy( sessionTicket, ticket, sizeof( sessionTicket ) ) ) {
         return USER_STRLEN_TOOLONG;
     }
@@ -2172,7 +2172,7 @@ extern "C" int chl_gen_query_ticket_setup_impl(
 
 
 /* General Query */
-extern "C" int chl_gen_query_impl(
+ int chl_gen_query_impl(
     genQueryInp_t  genQueryInp,
     genQueryOut_t* result ) {
     int i, j, k;

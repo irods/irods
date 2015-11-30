@@ -136,7 +136,7 @@ changeToUser( uid_t uid );
 int
 dropRootPrivilege();
 int
-checkModArgType( char *arg );
+checkModArgType( const char *arg );
 
 #ifdef __cplusplus
 #include "irods_error.hpp"

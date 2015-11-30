@@ -234,20 +234,20 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // Here is where we decide how to load the plugins based on the version...
         if ( 1.0 == plugin_version ) {
-            // =-=-=-=-=-=-=-
-            // call the delayed loader to load any other symbols this plugin may need.
-            ret = _plugin->delay_load( handle );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "failed on delayed load for [" << _plugin_name << "]";
-                dlclose( handle );
-                return ERROR( PLUGIN_ERROR, msg.str() );
-            }
         }
         else {
             // do something else even more interesting here
         }
-
+       
+        // =-=-=-=-=-=-=-
+        // call the delayed loader to load any other symbols this plugin may need.
+        ret = _plugin->delay_load( handle );
+        if ( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "failed on delayed load for [" << _plugin_name << "]";
+            dlclose( handle );
+            return PASSMSG( msg.str(), ret );
+        }
 
         return SUCCESS();
 

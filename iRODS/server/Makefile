@@ -88,6 +88,10 @@ DB_PLUGIN_OBJ = $(svrCoreObjDir)/irods_database_plugin.o
 DB_PLUGIN_SRC = $(buildDir)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(svrCoreObjDir)/irods_database_plugin_with_no_re.o
 
+ICAT_HLR_SRC = $(buildDir)/server/icat/src/icatHighLevelRoutines.cpp
+ICAT_HLR_OBJ_WITH_NO_RE = $(svrCoreObjDir)/icatHighLevelRoutines_with_no_re.o
+
+
 
 INCLUDES +=	-I$(svrCoreIncDir) -I$(libHasherIncDir)
 
@@ -338,9 +342,10 @@ db_plugin_with_re: $(DB_PLUGIN_SRC)
 	@echo "Compile With RE `basename $@`..."
 	$(V_at)$(CC) -c $(CFLAGS) $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ)
 
-db_plugin_with_no_re: $(DB_PLUGIN_SRC)
+db_plugin_with_no_re: $(DB_PLUGIN_SRC) $(ICAT_HLR_SRC)
 	@echo "Compile Without RE `basename $@`..."
 	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(CFLAGS) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
+	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(CFLAGS) -c $(ICAT_HLR_SRC) -o $(ICAT_HLR_OBJ_WITH_NO_RE)
 
 # Compilation Targets
 #
@@ -429,7 +434,7 @@ $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 #
 $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile server test `basename $@`..."
-	$(V_at)$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -DLINK_NO_OP_RE_MGR -o $@ $<
 
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
@@ -439,7 +444,7 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	$(V_at)$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(LIB_CLIENT_EXEC) $(SVR_ICAT_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(LDFLAGS)
+	$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(LIB_CLIENT_EXEC) $(ICAT_HLR_OBJ_WITH_NO_RE) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(LDFLAGS)
 
 #
 # Rule Admin Targets

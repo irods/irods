@@ -3,12 +3,13 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_plugin_context.hpp"
+#include "irods_resource_types.hpp"
+
 #include <boost/pointer_cast.hpp>
 
 namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief typedef for resource child map
-    class resource;
     typedef lookup_table< std::pair< std::string, resource_ptr > > resource_child_map;
 
 // =-=-=-=-=-=-=-

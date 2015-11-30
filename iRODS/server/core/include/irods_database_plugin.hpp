@@ -6,8 +6,13 @@
 #include "irods_plugin_context.hpp"
 #include "irods_database_types.hpp"
 #include "irods_operation_wrapper.hpp"
+#ifndef LINK_NO_OP_RE_MGR
+#include "irods_operation_rule_execution_manager_base.hpp"
+#endif
 
 #include <iostream>
+#include <utility>
+#include <boost/any.hpp>
 
 namespace irods {
     typedef error( *database_maintenance_operation )( plugin_property_map& );
@@ -85,225 +90,136 @@ namespace irods {
                 return SUCCESS();
             };
 
+            /// =-=-=-=-=-=-=-
+            /// @brief interface to add operations - key, function object
+            error add_operation(
+                    const std::string& _op,
+                    std::function<error(plugin_context&)> _f ) {
+                // =-=-=-=-=-=-=-
+                // check params
+                if ( _op.empty() ) {
+                    std::stringstream msg;
+                    msg << "empty operation [" << _op << "]";
+                    return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+                }
+                operations_[_op] = _f;
+                return SUCCESS();
+
+            }
+
+            /// =-=-=-=-=-=-=-
+            /// @brief interface to add operations - key, function object
+            template<typename... types_t>
+            error add_operation(
+                    const std::string& _op,
+                    std::function<error(plugin_context&, types_t...)> _f ) {
+                // =-=-=-=-=-=-=-
+                // check params
+                if ( _op.empty() ) {
+                    std::stringstream msg;
+                    msg << "empty operation [" << _op << "]";
+                    return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+                }
+                operations_[_op] = _f;
+                return SUCCESS();
+
+            }
+
             // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
+            /// @brief delegate the call to the operation in question to the operation wrapper
             error call(
                 rsComm_t* _comm,
                 const std::string& _op,
                 irods::first_class_object_ptr _obj ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call( ctx );
+                
+                try {
+                    typedef std::function<error(plugin_context&)> fcn_t;
+                    fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _op ] );
+                    plugin_context ctx( _comm, properties_, _obj, "" );
+#ifndef LINK_NO_OP_RE_MGR
+                    oper_rule_exec_mgr_ptr rex_mgr(
+                            new operation_rule_execution_manager(
+                                instance_name_, _op ) );
 
-            } // call -
+                    keyValPair_t kvp;
+                    bzero( &kvp, sizeof( kvp ) );
+                    ctx.fco()->get_re_vars( kvp );
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
-            template< typename T1 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1 >( ctx, _t1 );
+                    std::string pre_results;
+                    error ret = rex_mgr->exec_pre_op( ctx.comm(), kvp, pre_results );
+                    if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                        return PASS( ret );
+                    }
+                    ctx.rule_results( pre_results );
+#endif
+                    error op_err = fcn( ctx );
 
-            } // call - T1
+#ifndef LINK_NO_OP_RE_MGR
+                    std::string rule_results =  ctx.rule_results();
+                    rex_mgr->exec_post_op( ctx.comm(), kvp, rule_results );
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
-            template< typename T1, typename T2 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2 >(
-                           ctx, _t1, _t2 );
+                    clearKeyVal( &kvp );
+#endif
 
-            } // call - T1, T2
+                    return op_err;
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
-            template< typename T1, typename T2, typename T3 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3 >(
-                           ctx, _t1, _t2, _t3 );
-
-            } // call - T1, T2, T3
+                } catch ( const boost::bad_any_cast& ) {
+                    std::string msg( "failed for call - " );
+                    msg += _op;
+                    return ERROR(
+                            INVALID_ANY_CAST,
+                            msg );
+                }
+            }
 
             // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
-            template< typename T1, typename T2, typename T3, typename T4 >
+            /// @brief delegate the call to the operation in question to the operation wrapper
+            template< typename... types_t >
             error call(
-                rsComm_t* _comm,
-                const std::string& _op,
+                rsComm_t*                     _comm,
+                const std::string&            _op,
                 irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return  operations_[ _op ].call< T1, T2, T3, T4 >(
-                            ctx, _t1, _t2, _t3, _t4 );
+                types_t...                    _t ) {
 
-            } // call - T1, T2, T3, T4
+                try {
+                    typedef std::function<error(plugin_context&,types_t...)> fcn_t;
+                    fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _op ] );
+                    plugin_context ctx( _comm, properties_, _obj, "" );
+#ifndef LINK_NO_OP_RE_MGR
+                    oper_rule_exec_mgr_ptr rex_mgr(
+                            new operation_rule_execution_manager(
+                                instance_name_, _op ) );
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5 );
+                    keyValPair_t kvp;
+                    bzero( &kvp, sizeof( kvp ) );
+                    ctx.fco()->get_re_vars( kvp );
 
-            } // call - T1, T2, T3, T4, T5
+                    std::string pre_results;
+                    error ret = rex_mgr->exec_pre_op( ctx.comm(), kvp, pre_results );
+                    if ( !ret.ok() && ret.code() != SYS_RULE_NOT_FOUND ) {
+                        return PASS( ret );
+                    }
+                    ctx.rule_results( pre_results );
+#endif
+                    error op_err = fcn( ctx, std::forward<types_t>(_t)... );
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
+#ifndef LINK_NO_OP_RE_MGR
+                    std::string rule_results =  ctx.rule_results();
+                    rex_mgr->exec_post_op( ctx.comm(), kvp, rule_results );
 
-            } // call - T1, T2, T3, T4, T5, T6
+                    clearKeyVal( &kvp );
+#endif
 
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6,
-                T7 _t7 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
+                    return op_err;
 
-            } // call - T1, T2, T3, T4, T5, T6, T7
-
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6,
-                T7 _t7,
-                T8 _t8 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
-
-            } // call - T1, T2, T3, T4, T5, T6, T7, T8
-
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 9 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6,
-                T7 _t7,
-                T8 _t8,
-                T9 _t9 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9 );
-
-            } // call - T1, T2, T3, T4, T5, T6, T7, T8, T9
-
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 10 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6,
-                T7 _t7,
-                T8 _t8,
-                T9 _t9,
-                T10 _t10 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10 );
-
-            } // call - T1, T2, T3, T4, T5, T6, T7, T8, T9, T10
-
-            // =-=-=-=-=-=-=-
-            /// @brief delegate the call to the operation in question to the operation wrapper, with 11 params
-            template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10, typename T11 >
-            error call(
-                rsComm_t* _comm,
-                const std::string& _op,
-                irods::first_class_object_ptr _obj,
-                T1 _t1,
-                T2 _t2,
-                T3 _t3,
-                T4 _t4,
-                T5 _t5,
-                T6 _t6,
-                T7 _t7,
-                T8 _t8,
-                T9 _t9,
-                T10 _t10,
-                T11 _t11 ) {
-                plugin_context ctx( _comm, properties_, _obj, "" );
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 >(
-                           ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8, _t9, _t10, _t11 );
-
-            } // call - T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11
-
+                } catch ( const boost::bad_any_cast& ) {
+                    std::string msg( "failed for call - " );
+                    msg += _op;
+                    return ERROR(
+                            INVALID_ANY_CAST,
+                            msg );
+                }
+            }
 
         protected:
 
@@ -315,10 +231,6 @@ namespace irods {
 
             std::string stop_opr_name_;
             database_maintenance_operation stop_operation_;
-
-            // =-=-=-=-=-=-=-
-            /// @brief operations to be loaded from the plugin
-            lookup_table< operation_wrapper > operations_;
 
     }; // class database
 

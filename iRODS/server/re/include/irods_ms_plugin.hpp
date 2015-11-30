@@ -67,6 +67,12 @@ namespace irods {
             // Lazy Loader for MS Fcn Ptr
             error delay_load( void* _h );
 
+            void add_operation(
+                    const std::string& _op,
+                    const std::string& _fn ) {
+                ops_for_delay_load_.push_back( std::make_pair( _op, _fn ) );
+            }
+
     }; // class ms_table_entry
 
 // =-=-=-=-=-=-=-

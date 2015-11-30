@@ -3,8 +3,6 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
-#include "irods_resource_types.hpp"
-#include "irods_network_types.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -15,8 +13,11 @@
 #include <boost/shared_ptr.hpp>
 
 namespace irods {
-// =-=-=-=-=-=-=-
-// base class for all object types
+
+    class plugin_base;
+    typedef boost::shared_ptr<plugin_base> plugin_ptr;
+    // =-=-=-=-=-=-=-
+    // base class for all object types
     class first_class_object {
         public:
             // =-=-=-=-=-=-=-
@@ -39,8 +40,8 @@ namespace irods {
 
     }; // class first_class_object
 
-/// =-=-=-=-=-=-=-
-/// @brief shared pointer to first_class_object
+    /// =-=-=-=-=-=-=-
+    /// @brief shared pointer to first_class_object
     typedef boost::shared_ptr< first_class_object > first_class_object_ptr;
 
 }; // namespace irods

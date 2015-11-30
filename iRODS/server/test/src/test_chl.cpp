@@ -266,8 +266,8 @@ int testCheckAuth( rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 
     strncpy( userNameAndZone, testAdminUser, sizeof userNameAndZone );
     userNameAndZone[ sizeof( userNameAndZone ) - 1 ] = '\0'; // JMC cppcheck - dangerous use of strncpy
-    strncat( userNameAndZone, "#", sizeof userNameAndZone - strlen( userNameAndZone ) );
-    strncat( userNameAndZone, testUserZone, sizeof userNameAndZone - strlen( userNameAndZone ) );
+    strncat( userNameAndZone, "#", sizeof( userNameAndZone ) - strlen( userNameAndZone ) - 1 );
+    strncat( userNameAndZone, testUserZone, sizeof( userNameAndZone ) - strlen( userNameAndZone ) - 1 );
 
     status = chlCheckAuth( rsComm, 0, challenge, response,
                            userNameAndZone,

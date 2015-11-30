@@ -189,6 +189,8 @@ namespace irods {
             } // set_property
 
     }; // class lookup_table
+    
+    typedef lookup_table<boost::any> plugin_property_map;
 
 }; // namespace irods
 

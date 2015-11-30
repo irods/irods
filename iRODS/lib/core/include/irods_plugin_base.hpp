@@ -1,5 +1,5 @@
-#ifndef __IRODS_PLUGIN_BASE_HPP__
-#define __IRODS_PLUGIN_BASE_HPP__
+#ifndef IRODS_PLUGIN_BASE_HPP
+#define IRODS_PLUGIN_BASE_HPP
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -16,15 +16,16 @@
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"
 #include "irods_lookup_table.hpp"
+#include "irods_plugin_context.hpp"
 
-static double PLUGIN_INTERFACE_VERSION = 1.0;
+static double PLUGIN_INTERFACE_VERSION = 2.0;
 
 namespace irods {
-/// =-=-=-=-=-=-=-
-/// @brief abstraction for post disconnect functor - plugins can bind
-///        functors, free functions or member functions as necessary
+
+    /// =-=-=-=-=-=-=-
+    /// @brief abstraction for post disconnect functor - plugins can bind
+    ///        functors, free functions or member functions as necessary
     typedef boost::function< irods::error( rcComm_t* ) > pdmo_type;
-    typedef lookup_table<boost::any>                     plugin_property_map;
 
     /**
      * \brief  Abstract Base Class for iRODS Plugins
@@ -81,32 +82,6 @@ namespace irods {
             }
 
             /// =-=-=-=-=-=-=-
-            /// @brief interface to add operations - key, function name
-            virtual error add_operation( std::string _op,
-                    std::string _fcn_name ) {
-                // =-=-=-=-=-=-=-
-                // check params
-                if ( _op.empty() ) {
-                    std::stringstream msg;
-                    msg << "empty operation [" << _op << "]";
-                    return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-                }
-
-                if ( _fcn_name.empty() ) {
-                    std::stringstream msg;
-                    msg << "empty function name [" << _fcn_name << "]";
-                    return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-                }
-
-                // =-=-=-=-=-=-=-
-                // add operation string to the vector
-                ops_for_delay_load_.push_back( std::pair< std::string, std::string >( _op, _fcn_name ) );
-
-                return SUCCESS();
-
-            }
-
-            /// =-=-=-=-=-=-=-
             /// @brief list all of the operations in the plugin
             error enumerate_operations( std::vector< std::string >& _ops ) {
                 for ( size_t i = 0; i < ops_for_delay_load_.size(); ++i ) {
@@ -139,15 +114,19 @@ namespace irods {
             /// @brief Map holding resource operations
             std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
 
+            // =-=-=-=-=-=-=-
+            /// @brief operations to be loaded from the plugin
+            lookup_table< boost::any > operations_;
+
     }; // class plugin_base
 
-// =-=-=-=-=-=-=-
-// helpful typedef for sock comm interface & factory
-    typedef boost::shared_ptr< plugin_base > plugin_ptr;
+    // =-=-=-=-=-=-=-
+    // helpful typedef for sock comm interface & factory
+    typedef boost::shared_ptr<plugin_base> plugin_ptr;
 
 }; // namespace irods
 
-#endif // __IRODS_PLUGIN_BASE_HPP__
+#endif // IRODS_PLUGIN_BASE_HPP
 
 
 

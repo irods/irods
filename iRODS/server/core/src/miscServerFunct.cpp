@@ -3047,7 +3047,7 @@ dropRootPrivilege() {
   check a chlModAVUMetadata argument; returning the type.
 */
 int
-checkModArgType( char *arg ) {
+checkModArgType( const char *arg ) {
     if ( arg == NULL || strlen( arg ) == 0 ) {
         return CAT_INVALID_ARGUMENT;
     }
