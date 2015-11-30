@@ -10,7 +10,7 @@
 #
 # Commands as found by the 'configure' script during iRODS installation
 #
-CC=clang++
+CC=clang++ -std=c++11
 CC_IS_GCC=0
 CCFLAGS= -std=c++0x
 LDR=clang++

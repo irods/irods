@@ -304,7 +304,7 @@ int chlGetLocalZone(
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
     ret = db->call <
-          const std::string* > ( 0,
+          std::string* > ( 0,
                                  irods::DATABASE_OP_GET_LOCAL_ZONE,
                                  ptr,
                                  &_zone );
@@ -1951,7 +1951,7 @@ int chlCheckAuth(
 // specified user, and the caller must be a local admin.
 int chlMakeTempPw(
     rsComm_t*   _comm,
-    const char* _pw_value_to_hash,
+    char*       _pw_value_to_hash,
     const char* _other_user ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -1988,7 +1988,7 @@ int chlMakeTempPw(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          const char*,
+          char*,
           const char* > (
               _comm,
               irods::DATABASE_OP_MAKE_TEMP_PW,
@@ -2003,8 +2003,8 @@ int chlMakeTempPw(
 int
 chlMakeLimitedPw(
     rsComm_t* _comm,
-    int         _ttl,
-    const char* _pw_value_to_hash ) {
+    int       _ttl,
+    char*     _pw_value_to_hash ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
@@ -2041,7 +2041,7 @@ chlMakeLimitedPw(
     // call the operation on the plugin
     ret = db->call <
           int,
-          const char* > (
+          char* > (
               _comm,
               irods::DATABASE_OP_MAKE_LIMITED_PW,
               ptr,
@@ -2219,6 +2219,7 @@ int chlModGroup(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
+          const char*,
           const char*,
           const char*,
           const char* > (

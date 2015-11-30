@@ -12,7 +12,7 @@ include $(IRODSDIR)/../packaging/irods_externals_locations.mk
 
 LIBRARY=$(IRODSDIR)/lib/core/obj/libRodsAPIs.a
 LIB_CLIENT_EXEC=$(IRODSDIR)/lib/client_exec/obj/irods_client_rule_execution_manager_factory.o
-CHL_OBJS=$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines.o  \
+CHL_OBJS=\
 	     $(IRODSDIR)/server/core/obj/irods_database_factory.o \
    	 	 $(IRODSDIR)/server/core/obj/irods_database_manager.o \
    	 	 $(IRODSDIR)/server/core/obj/irods_database_object.o  \
@@ -24,6 +24,9 @@ CHL_OBJS=$(IRODSDIR)/server/icat/obj/icatHighLevelRoutines.o  \
 
 DB_PLUGIN_SRC = $(IRODSDIR)/server/core/src/irods_database_plugin.cpp
 DB_PLUGIN_OBJ_WITH_NO_RE = $(OBJDIR)/irods_database_plugin_with_no_re.o 
+
+ICAT_HLR_SRC = $(buildDir)/server/icat/src/icatHighLevelRoutines.cpp
+ICAT_HLR_OBJ_WITH_NO_RE = $(IRODSDIR)/server/core/obj/icatHighLevelRoutines_with_no_re.o
 
 GCC = $(CC) -Wno-write-strings -DRODS_SERVER
 
@@ -98,6 +101,9 @@ $(FULLTARGET): $(OBJS)
 $(OBJDIR)/%.o: ../src/%.cpp
 	$(V_at)$(GCC) $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
 
+$(ICAT_HLR_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
+	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(CFLAGS) -c $(ICAT_HLR_SRC) -o $(ICAT_HLR_OBJ_WITH_NO_RE)
+
 $(DB_PLUGIN_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
 	@echo "Compile Without RE `basename $@`..."
 	$(V_at)$(CC) -DLINK_NO_OP_RE_MGR $(INC) $(EXTRA_CFLAGS) -c $(DB_PLUGIN_SRC) -o $(DB_PLUGIN_OBJ_WITH_NO_RE)
@@ -106,10 +112,10 @@ $(SODIR)/test_cll: $(OBJDIR)/test_cll.o $(CLL_OBJS) $(LIBRARY)
 	@echo "Link server test `basename $@`..."
 	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
-$(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY)
+$(SODIR)/test_genq: $(OBJDIR)/test_genq.o  $(ICAT_HLR_OBJ_WITH_NO_RE) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(CLL_OBJS) $(GENQ_OBJS) $(CHL_OBJS) $(LIBRARY)
 	@echo "Link server test `basename $@`..."
 	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto
 
-$(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY)
+$(SODIR)/test_genu: $(OBJDIR)/test_genu.o $(GENU_OBJS) $(CHL_OBJS) $(CLL_OBJS) $(ICAT_HLR_OBJ_WITH_NO_RE) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(LIBRARY)
 	@echo "Link server test `basename $@`..."
 	$(V_at)$(LDR) -o $@ $^ $(LIBRARY) $(LIB_CLIENT_EXEC) $(LDFLAGS) $(DBMS_LIB) $(LDRFLAGS) $(EXTRA_LDRFLAGS) -fPIC -rdynamic -ldl -lpthread -lssl -lcrypto

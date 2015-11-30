@@ -1,6 +1,5 @@
 // =-=-=-=-=-=-=-
 // My Includes
-#include "irods_operation_wrapper.hpp"
 #include "irods_database_plugin.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_stacktrace.hpp"
@@ -89,10 +88,6 @@ namespace irods {
             return ERROR( SYS_INVALID_INPUT_PARAM, "void handle pointer" );
         }
 
-        if ( ops_for_delay_load_.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty operations list" );
-        }
-
         // =-=-=-=-=-=-=-
         // check if we need to load a start function
         if ( !start_opr_name_.empty() ) {
@@ -127,7 +122,6 @@ namespace irods {
                 stop_operation_ = stop_op;
             }
         } // if load stop
-
 
         // =-=-=-=-=-=-=-
         // iterate over list and load function. then add it to the map via wrapper functor
@@ -177,19 +171,12 @@ namespace irods {
 #endif
             // =-=-=-=-=-=-=-
             // add the operation via a wrapper to the operation map
-            operations_[ key ] = operation_wrapper(
+            operations_[ key ] = operation_wrapper<void>(
                                      rex_mgr,
                                      instance_name_,
                                      key,
                                      res_op_ptr );
         } // for itr
-
-
-        // =-=-=-=-=-=-=-
-        // see if we loaded anything at all
-        if ( operations_.size() < 0 ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "operations map is emtpy" );
-        }
 
         return SUCCESS();
 
