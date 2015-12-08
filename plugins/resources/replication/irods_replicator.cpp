@@ -12,7 +12,7 @@ namespace irods {
     }
 
     error replicator::replicate(
-        resource_plugin_context& _ctx,
+        plugin_context& _ctx,
         const child_list_t& _siblings,
         object_list_t& _opers ) {
         error result = SUCCESS();

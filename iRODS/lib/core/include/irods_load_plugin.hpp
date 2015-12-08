@@ -81,37 +81,6 @@ namespace irods {
 
     } // resolve_plugin_path
 
-// =-=-=-=-=-=-=-
-// machinery using SFINAE to determine if PluginType supports delay_load
-// yes / no types
-    typedef char small_type;
-    struct large_type {
-        small_type dummy[2];
-    };
-
-    template<typename T>
-    struct class_has_delay_load {
-        // =-=-=-=-=-=-=-
-        // tester to determine if delay load function exists -
-        // bool (*)( void* ) signature.
-        template<error( T::* )( void* )> struct tester;
-
-        // =-=-=-=-=-=-=-
-        // matching specialization of the determination function
-        template<typename U>
-        static small_type has_matching_member( tester<&U::delay_load>* );
-
-        // =-=-=-=-=-=-=-
-        // SFINAE fall through if it doesnt match
-        template<typename U>
-        static large_type has_matching_member( ... );
-
-        // =-=-=-=-=-=-=-
-        // flag variable for result on which to assert - small_type == yes
-        static const bool value = ( sizeof( has_matching_member<T>( 0 ) ) == sizeof( small_type ) );
-
-    }; // class_has_delay_load
-
     /**
      * \fn PluginType* load_plugin( PluginType*& _plugin, const std::string& _plugin_name, const std::string& _interface, const std::string& _instance_name, const std::string& _context );
      *
@@ -145,9 +114,8 @@ namespace irods {
                        const std::string& _interface,
                        const std::string& _instance_name,
                        const std::string& _context ) {
-
         namespace fs = boost::filesystem;
-        BOOST_STATIC_ASSERT( class_has_delay_load< PluginType >::value );
+
         // resolve the plugin path
         std::string plugin_home;
         error ret = resolve_plugin_path( _interface, plugin_home ); 
@@ -239,16 +207,6 @@ namespace irods {
             // do something else even more interesting here
         }
        
-        // =-=-=-=-=-=-=-
-        // call the delayed loader to load any other symbols this plugin may need.
-        ret = _plugin->delay_load( handle );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "failed on delayed load for [" << _plugin_name << "]";
-            dlclose( handle );
-            return PASSMSG( msg.str(), ret );
-        }
-
         return SUCCESS();
 
     } // load_plugin

@@ -87,18 +87,23 @@ const std::string READ_WEIGHT_KW( "read" );
 // =-=-=-=-=-=-=-
 /// @brief Returns the first child resource of the specified resource
 irods::error passthru_get_first_child_resc(
-    irods::resource_child_map& _cmap,
-    irods::resource_ptr& _resc ) {
+    irods::plugin_property_map& _props,
+    irods::resource_ptr&        _resc ) {
+
+    irods::resource_child_map* cmap_ref;
+    _props.get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
 
     irods::error result = SUCCESS();
     std::pair<std::string, irods::resource_ptr> child_pair;
-    if ( _cmap.size() != 1 ) {
+    if ( cmap_ref->size() != 1 ) {
         std::stringstream msg;
-        msg << "passthru_get_first_child_resc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap.size();
+        msg << "passthru_get_first_child_resc - Passthru resource can have 1 and only 1 child. This resource has " << cmap_ref->size();
         result = ERROR( -1, msg.str() );
     }
     else {
-        child_pair = _cmap.begin()->second;
+        child_pair = cmap_ref->begin()->second;
         _resc = child_pair.second;
     }
     return result;
@@ -108,7 +113,7 @@ irods::error passthru_get_first_child_resc(
 // =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
 irods::error passthru_check_params(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid
     irods::error ret = _ctx.valid();
@@ -125,7 +130,7 @@ irods::error passthru_check_params(
 // =-=-=-=-=-=-=-
 // interface for POSIX create
 irods::error passthru_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     ret = passthru_check_params( _ctx );
@@ -134,7 +139,7 @@ irods::error passthru_file_create(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -151,7 +156,7 @@ irods::error passthru_file_create(
 // =-=-=-=-=-=-=-
 // interface for POSIX Open
 irods::error passthru_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -161,7 +166,7 @@ irods::error passthru_file_open(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -176,7 +181,7 @@ irods::error passthru_file_open(
 // =-=-=-=-=-=-=-
 // interface for POSIX Read
 irods::error passthru_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     irods::error result = SUCCESS();
@@ -188,7 +193,7 @@ irods::error passthru_file_read(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -203,7 +208,7 @@ irods::error passthru_file_read(
 // =-=-=-=-=-=-=-
 // interface for POSIX Write
 irods::error passthru_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     irods::error result = SUCCESS();
@@ -215,7 +220,7 @@ irods::error passthru_file_write(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -230,7 +235,7 @@ irods::error passthru_file_write(
 // =-=-=-=-=-=-=-
 // interface for POSIX Close
 irods::error passthru_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -240,7 +245,7 @@ irods::error passthru_file_close(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_close_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -256,7 +261,7 @@ irods::error passthru_file_close(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error passthru_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -266,7 +271,7 @@ irods::error passthru_file_unlink(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_unlink_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -281,7 +286,7 @@ irods::error passthru_file_unlink(
 // =-=-=-=-=-=-=-
 // interface for POSIX Stat
 irods::error passthru_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                        _statbuf ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -292,7 +297,7 @@ irods::error passthru_file_stat(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_stat_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -307,7 +312,7 @@ irods::error passthru_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX lseek
 irods::error passthru_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long                        _offset,
     int                              _whence ) {
     irods::error result = SUCCESS();
@@ -319,7 +324,7 @@ irods::error passthru_file_lseek(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_lseek_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -334,7 +339,7 @@ irods::error passthru_file_lseek(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error passthru_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -344,7 +349,7 @@ irods::error passthru_file_mkdir(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_mkdir_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -359,7 +364,7 @@ irods::error passthru_file_mkdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error passthru_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -369,7 +374,7 @@ irods::error passthru_file_rmdir(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_rmdir_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -384,7 +389,7 @@ irods::error passthru_file_rmdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX opendir
 irods::error passthru_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -394,7 +399,7 @@ irods::error passthru_file_opendir(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_opendir_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -409,7 +414,7 @@ irods::error passthru_file_opendir(
 // =-=-=-=-=-=-=-
 // interface for POSIX closedir
 irods::error passthru_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -419,7 +424,7 @@ irods::error passthru_file_closedir(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_closedir_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -434,7 +439,7 @@ irods::error passthru_file_closedir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error passthru_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent**                 _dirent_ptr ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -445,7 +450,7 @@ irods::error passthru_file_readdir(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_readdir_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -460,7 +465,7 @@ irods::error passthru_file_readdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error passthru_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _new_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -471,7 +476,7 @@ irods::error passthru_file_rename(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_rename_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -486,7 +491,7 @@ irods::error passthru_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX truncate
 irods::error passthru_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     irods::error result = SUCCESS();
     irods::error ret;
@@ -497,7 +502,7 @@ irods::error passthru_file_truncate(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_truncate_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -512,7 +517,7 @@ irods::error passthru_file_truncate(
 // =-=-=-=-=-=-=-
 // interface to determine free space on a device given a path
 irods::error passthru_file_getfs_freespace(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -522,7 +527,7 @@ irods::error passthru_file_getfs_freespace(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_getfs_freespace_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -539,7 +544,7 @@ irods::error passthru_file_getfs_freespace(
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
 irods::error passthru_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _cache_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -550,7 +555,7 @@ irods::error passthru_file_stage_to_cache(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_stage_to_cache_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -567,7 +572,7 @@ irods::error passthru_file_stage_to_cache(
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
 irods::error passthru_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _cache_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -578,7 +583,7 @@ irods::error passthru_file_sync_to_arch(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "passthru_file_sync_to_arch_plugin - failed getting the first child resource pointer.", ret );
         }
@@ -594,7 +599,7 @@ irods::error passthru_file_sync_to_arch(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
 irods::error passthru_file_registered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -604,7 +609,7 @@ irods::error passthru_file_registered(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -620,7 +625,7 @@ irods::error passthru_file_registered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
 irods::error passthru_file_unregistered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -630,7 +635,7 @@ irods::error passthru_file_unregistered(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -646,7 +651,7 @@ irods::error passthru_file_unregistered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
 irods::error passthru_file_modified(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -656,7 +661,7 @@ irods::error passthru_file_modified(
     }
     else {
         irods::resource_ptr resc;
-        ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+        ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
         if ( !ret.ok() ) {
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
@@ -673,7 +678,7 @@ irods::error passthru_file_modified(
 // unixRedirectPlugin - used to allow the resource to determine which host
 //                      should provide the requested operation
 irods::error passthru_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -713,7 +718,7 @@ irods::error passthru_file_resolve_hierarchy(
     _out_parser->add_child( resc_name );
 
     irods::resource_ptr resc;
-    ret = passthru_get_first_child_resc( _ctx.child_map(), resc );
+    ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
     if ( !ret.ok() ) {
         return PASSMSG( "passthru_file_resolve_hierarchy - failed getting the first child resource pointer.", ret );
     }
@@ -778,12 +783,17 @@ irods::error passthru_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // passthru_file_rebalance - code which would rebalance the subtree
 irods::error passthru_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // forward request for rebalance to children
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     irods::error result = SUCCESS();
-    irods::resource_child_map::iterator itr = _ctx.child_map().begin();
-    for ( ; itr != _ctx.child_map().end(); ++itr ) {
+    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    for ( ; itr != cmap_ref->end(); ++itr ) {
         irods::error ret = itr->second.second->call(
                                _ctx.comm(),
                                irods::RESOURCE_OP_REBALANCE,
@@ -807,13 +817,19 @@ irods::error passthru_file_rebalance(
 // =-=-=-=-=-=-=-
 // passthru_file_rebalance - code which would notify the subtree of a change
 irods::error passthru_file_notify(
-    irods::resource_plugin_context& _ctx,
-    const std::string*               _opr ) {
+    irods::plugin_context& _ctx,
+    const std::string*     _opr ) {
+
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     // =-=-=-=-=-=-=-
     // forward request for notify to children
     irods::error result = SUCCESS();
-    irods::resource_child_map::iterator itr = _ctx.child_map().begin();
-    for ( ; itr != _ctx.child_map().end(); ++itr ) {
+    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    for ( ; itr != cmap_ref->end(); ++itr ) {
         irods::error ret = itr->second.second->call(
                                _ctx.comm(),
                                irods::RESOURCE_OP_NOTIFY,
@@ -915,123 +931,123 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     using namespace std;
     resc->add_operation(
         RESOURCE_OP_CREATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_create ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPEN,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_open ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::resource_plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,int)>(
                 passthru_file_read ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(resource_plugin_context&,void*,int)>(
+        function<error(plugin_context&,void*,int)>(
             passthru_file_write ) );
 
     resc->add_operation(
         RESOURCE_OP_CLOSE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_close ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_unlink ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             passthru_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_mkdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPENDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_opendir ) );
 
     resc->add_operation<struct rodsDirent**>(
         irods::RESOURCE_OP_READDIR,
-        function<error(resource_plugin_context&,struct rodsDirent**)>(
+        function<error(plugin_context&,struct rodsDirent**)>(
             passthru_file_readdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             passthru_file_rename ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_FREESPACE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_getfs_freespace ) );
 
     resc->add_operation<long long, int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(resource_plugin_context&, long long, int)>(
+        function<error(plugin_context&, long long, int)>(
             passthru_file_lseek ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_RMDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_rmdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_CLOSEDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_closedir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             passthru_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             passthru_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_registered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNREGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_unregistered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MODIFIED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_modified ) );
 
     resc->add_operation<const std::string*>(
         irods::RESOURCE_OP_NOTIFY,
-        function<error(resource_plugin_context&, const std::string*)>(
+        function<error(plugin_context&, const std::string*)>(
             passthru_file_notify ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             passthru_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             passthru_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

@@ -53,7 +53,7 @@ const int requireServerAuth = 0;
 // establish context - take the auth request results and massage them
 // for the auth response call
 irods::error pam_auth_client_start(
-    irods::auth_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     rcComm_t*                    _comm,
     const char*                  _context ) {
     irods::error result = SUCCESS();
@@ -151,7 +151,7 @@ irods::error pam_auth_client_start(
 // =-=-=-=-=-=-=-
 // handle an agent-side auth request call
 irods::error pam_auth_client_request(
-    irods::auth_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     rcComm_t*                    _comm ) {
     // =-=-=-=-=-=-=-
     // validate incoming parameters
@@ -315,7 +315,7 @@ int run_pam_auth_check(
 // =-=-=-=-=-=-=-
 // handle an agent-side auth request call
 irods::error pam_auth_agent_request(
-    irods::auth_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // validate incoming parameters
     if ( !_ctx.valid< irods::pam_auth_object >().ok() ) {
@@ -447,7 +447,7 @@ irods::error pam_auth_agent_request(
 // establish context - take the auth request results and massage them
 // for the auth response call
 irods::error pam_auth_establish_context(
-    irods::auth_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // validate incoming parameters
     if ( !_ctx.valid< irods::pam_auth_object >().ok() ) {
@@ -465,26 +465,26 @@ irods::error pam_auth_establish_context(
 // stub for ops that the native plug does
 // not need to support
 irods::error pam_auth_agent_start(
-    irods::auth_plugin_context&,
+    irods::plugin_context&,
     const char*) {
     return SUCCESS();
 
 } // native_auth_success_stub
 
 irods::error pam_auth_client_response(
-    irods::auth_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     rcComm_t*                    _comm ) {
     return SUCCESS();
 }
 
 irods::error pam_auth_agent_response(
-    irods::auth_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     authResponseInp_t*           _resp ) {
     return SUCCESS();
 }
 
 irods::error pam_auth_agent_verify(
-    irods::auth_plugin_context& ,
+    irods::plugin_context& ,
     const char* ,
     const char* ,
     const char* ) {
@@ -530,37 +530,36 @@ irods::auth* plugin_factory(
     using namespace std;
     pam->add_operation<rcComm_t*,const char*>(
         AUTH_CLIENT_START,
-        function<error(auth_plugin_context&,rcComm_t*,const char*)>(
+        function<error(plugin_context&,rcComm_t*,const char*)>(
             pam_auth_client_start ) );
     pam->add_operation<const char*>(
         AUTH_AGENT_START,
-        function<error(auth_plugin_context&,const char*)>(
+        function<error(plugin_context&,const char*)>(
             pam_auth_agent_start ) );
     pam->add_operation(
         AUTH_ESTABLISH_CONTEXT,
-        function<error(auth_plugin_context&)>(
+        function<error(plugin_context&)>(
             pam_auth_establish_context ) );
     pam->add_operation<rcComm_t*>(
         AUTH_CLIENT_AUTH_REQUEST,
-        function<error(auth_plugin_context&,rcComm_t*)>(
+        function<error(plugin_context&,rcComm_t*)>(
             pam_auth_client_request ) );
     pam->add_operation(
         AUTH_AGENT_AUTH_REQUEST,
-        function<error(auth_plugin_context&)>(
+        function<error(plugin_context&)>(
             pam_auth_agent_request )  );
     pam->add_operation<rcComm_t*>(
         AUTH_CLIENT_AUTH_RESPONSE,
-        function<error(auth_plugin_context&,rcComm_t*)>(
+        function<error(plugin_context&,rcComm_t*)>(
             pam_auth_client_response ) );
     pam->add_operation<authResponseInp_t*>(
         AUTH_AGENT_AUTH_RESPONSE,
-        function<error(auth_plugin_context&,authResponseInp_t*)>(
+        function<error(plugin_context&,authResponseInp_t*)>(
             pam_auth_agent_response ) );
     pam->add_operation<const char*,const char*,const char*>(
         AUTH_AGENT_AUTH_VERIFY,
-        function<error(auth_plugin_context&,const char*,const char*,const char*)>(
+        function<error(plugin_context&,const char*,const char*,const char*)>(
             pam_auth_agent_verify ) );
-
 
     irods::auth* auth = dynamic_cast< irods::auth* >( pam );
 

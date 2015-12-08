@@ -2,6 +2,9 @@
 #include "irods_ssl_object.hpp"
 #include "irods_network_manager.hpp"
 
+#include "rodsKeyWdDef.h"
+#include "rcMisc.h"
+
 namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor

@@ -78,7 +78,7 @@
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
 irods::error replCheckParams(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid
@@ -114,7 +114,7 @@ const int DEFAULT_LIMIT = 500;
  */
 irods::error replGetNextRescInHier(
     const irods::hierarchy_parser& _parser,
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     irods::resource_ptr& _ret_resc ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -136,7 +136,11 @@ irods::error replGetNextRescInHier(
             result = ERROR( -1, msg.str() );
         }
         else {
-            _ret_resc = ( _ctx.child_map() )[child].second;
+            irods::resource_child_map* cmap_ref;
+            _ctx.prop_map().get< irods::resource_child_map* >(
+                irods::RESC_CHILD_MAP_PROP,
+                cmap_ref );
+            _ret_resc = ( *cmap_ref )[child].second;
         }
     }
     return result;
@@ -161,7 +165,7 @@ bool replObjectInList(
 
 /// @brief Updates the fields in the resources properties for the object
 irods::error replUpdateObjectAndOperProperties(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string& _oper ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -216,7 +220,7 @@ irods::error replUpdateObjectAndOperProperties(
 }
 
 irods::error get_selected_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     std::string& _hier_string,
     std::string& _root_resc ) {
     irods::error result = SUCCESS();
@@ -251,7 +255,7 @@ irods::error get_selected_hierarchy(
 }
 
 irods::error replReplicateCreateWrite(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     // get the list of objects that need to be replicated
@@ -317,7 +321,7 @@ irods::error replReplicateCreateWrite(
 }
 
 irods::error replReplicateUnlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -396,7 +400,7 @@ irods::error replReplicateUnlink(
 
 // Called after a new file is registered with the ICAT
 irods::error repl_file_registered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     ret = replCheckParams< irods::file_object >( _ctx );
@@ -417,7 +421,7 @@ irods::error repl_file_registered(
 
 // Called when a file is unregistered from the ICAT
 irods::error repl_file_unregistered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     ret = replCheckParams< irods::file_object >( _ctx );
@@ -454,7 +458,7 @@ irods::error repl_file_unregistered(
 
 // Called when a files entry is modified in the ICAT
 irods::error repl_file_modified(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     ret = replCheckParams< irods::file_object >( _ctx );
@@ -500,7 +504,7 @@ irods::error repl_file_modified(
 // =-=-=-=-=-=-=-
 // interface for POSIX create
 irods::error repl_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -540,7 +544,7 @@ irods::error repl_file_create(
 // =-=-=-=-=-=-=-
 // interface for POSIX Open
 irods::error repl_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -579,7 +583,7 @@ irods::error repl_file_open(
 // =-=-=-=-=-=-=-
 // interface for POSIX Read
 irods::error repl_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                          _buf,
     int                            _len ) {
     irods::error result = SUCCESS();
@@ -624,7 +628,7 @@ irods::error repl_file_read(
 // =-=-=-=-=-=-=-
 // interface for POSIX Write
 irods::error repl_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                          _buf,
     int                            _len ) {
     irods::error result = SUCCESS();
@@ -672,7 +676,7 @@ irods::error repl_file_write(
 // =-=-=-=-=-=-=-
 // interface for POSIX Close
 irods::error repl_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
     // get the list of objects that need to be replicated
@@ -700,7 +704,7 @@ irods::error repl_file_close(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error repl_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -743,7 +747,7 @@ irods::error repl_file_unlink(
 // =-=-=-=-=-=-=-
 // interface for POSIX Stat
 irods::error repl_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                   _statbuf ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -786,7 +790,7 @@ irods::error repl_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX lseek
 irods::error repl_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long                       _offset,
     int                             _whence ) {
     irods::error result = SUCCESS();
@@ -830,7 +834,7 @@ irods::error repl_file_lseek(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error repl_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -872,7 +876,7 @@ irods::error repl_file_mkdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error repl_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -914,7 +918,7 @@ irods::error repl_file_rmdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX opendir
 irods::error repl_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -956,7 +960,7 @@ irods::error repl_file_opendir(
 // =-=-=-=-=-=-=-
 // interface for POSIX closedir
 irods::error repl_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -998,7 +1002,7 @@ irods::error repl_file_closedir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error repl_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent**            _dirent_ptr ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1041,7 +1045,7 @@ irods::error repl_file_readdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error repl_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                    _new_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1084,7 +1088,7 @@ irods::error repl_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX truncate
 irods::error repl_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1127,7 +1131,7 @@ irods::error repl_file_truncate(
 // =-=-=-=-=-=-=-
 // interface to determine free space on a device given a path
 irods::error repl_file_getfs_freespace(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -1171,7 +1175,7 @@ irods::error repl_file_getfs_freespace(
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
 irods::error repl_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _cache_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1217,7 +1221,7 @@ irods::error repl_file_stage_to_cache(
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
 irods::error repl_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                    _cache_file_name ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1259,7 +1263,7 @@ irods::error repl_file_sync_to_arch(
 
 /// @brief Adds the current resource to the specified resource hierarchy
 irods::error replAddSelfToHierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     irods::hierarchy_parser& _parser ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -1285,7 +1289,7 @@ irods::error replAddSelfToHierarchy(
 
 /// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
 irods::error replRedirectToChildren(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*             _operation,
     const std::string*             _curr_host,
     irods::hierarchy_parser&      _parser,
@@ -1294,7 +1298,13 @@ irods::error replRedirectToChildren(
     irods::error ret;
     irods::resource_child_map::iterator it;
     float out_vote;
-    for ( it = _ctx.child_map().begin(); result.ok() && it != _ctx.child_map().end(); ++it ) {
+
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
+    for ( it = cmap_ref->begin(); result.ok() && it != cmap_ref->end(); ++it ) {
         irods::hierarchy_parser parser( _parser );
         irods::resource_ptr child = it->second.second;
         ret = child->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
@@ -1315,7 +1325,7 @@ irods::error replRedirectToChildren(
 /// @brief Creates a list of hierarchies to which this operation must be replicated, all children except the one on which we are
 /// operating.
 irods::error replCreateChildReplList(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const redirect_map_t& _redirect_map,
     const std::string     _child_list_prop ) {
     irods::error result = SUCCESS();
@@ -1354,7 +1364,7 @@ irods::error replCreateChildReplList(
 
 /// @brief Selects a child from the vector of parsers based on host access
 irods::error replSelectChild(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const redirect_map_t&           _redirect_map,
     const std::string&              _child_list_prop,
     const std::string&              _hierarchy_prop,
@@ -1400,7 +1410,7 @@ irods::error replSelectChild(
 
 /// @brief Make sure the requested operation on the requested file object is valid
 irods::error replValidOperation(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     // cast the first class object to a file object
     try {
@@ -1439,7 +1449,7 @@ irods::error replValidOperation(
 
 /// @brief Determines which child should be used for the specified operation
 irods::error repl_redirect_impl(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*              _operation,
     const std::string*              _curr_host,
     const std::string&              _child_list_prop,
@@ -1493,7 +1503,7 @@ irods::error repl_redirect_impl(
 } // repl_redirect_impl
 
 irods::error repl_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*             _operation,
     const std::string*             _curr_host,
     irods::hierarchy_parser*       _inout_parser,
@@ -1556,13 +1566,19 @@ irods::error repl_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // repl_file_rebalance - code which would rebalance the subtree
 irods::error repl_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // forward request for rebalance to children first, then
     // rebalance ourselves.
+
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     irods::error result = SUCCESS();
-    irods::resource_child_map::iterator itr = _ctx.child_map().begin();
-    for ( ; itr != _ctx.child_map().end(); ++itr ) {
+    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    for ( ; itr != cmap_ref->end(); ++itr ) {
         irods::error ret = itr->second.second->call(
                                _ctx.comm(),
                                irods::RESOURCE_OP_REBALANCE,
@@ -1638,10 +1654,11 @@ irods::error repl_file_rebalance(
     // =-=-=-=-=-=-=-
     // iterate over the children, if one does not have a matching
     // distinct count then we need to rebalance
+
     irods::resource_child_map::iterator c_itr;
-    for ( c_itr  = _ctx.child_map().begin();
-            c_itr != _ctx.child_map().end();
-            ++c_itr ) {
+    for ( c_itr  = cmap_ref->begin();
+          c_itr != cmap_ref->end();
+          ++c_itr ) {
         // =-=-=-=-=-=-=-
         // get list of distinct missing data ids or dirty repls, iterate
         // until query fails - no more repls necessary for child
@@ -1684,7 +1701,7 @@ irods::error repl_file_rebalance(
 
 // Called when a files entry is modified in the ICAT
 irods::error repl_file_notify(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*               _opr ) {
     irods::error result = SUCCESS();
     if ( irods::CREATE_OPERATION == ( *_opr ) ||
@@ -1776,123 +1793,123 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     using namespace std;
     resc->add_operation(
         RESOURCE_OP_CREATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_create ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPEN,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_open ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::resource_plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,int)>(
                 repl_file_read ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(resource_plugin_context&,void*,int)>(
+        function<error(plugin_context&,void*,int)>(
             repl_file_write ) );
 
     resc->add_operation(
         RESOURCE_OP_CLOSE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_close ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_unlink ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             repl_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_mkdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPENDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_opendir ) );
 
     resc->add_operation<struct rodsDirent**>(
         irods::RESOURCE_OP_READDIR,
-        function<error(resource_plugin_context&,struct rodsDirent**)>(
+        function<error(plugin_context&,struct rodsDirent**)>(
             repl_file_readdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             repl_file_rename ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_FREESPACE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_getfs_freespace ) );
 
     resc->add_operation<long long, int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(resource_plugin_context&, long long, int)>(
+        function<error(plugin_context&, long long, int)>(
             repl_file_lseek ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_RMDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_rmdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_CLOSEDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_closedir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             repl_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             repl_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_registered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNREGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_unregistered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MODIFIED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_modified ) );
 
     resc->add_operation<const std::string*>(
         irods::RESOURCE_OP_NOTIFY,
-        function<error(resource_plugin_context&, const std::string*)>(
+        function<error(plugin_context&, const std::string*)>(
             repl_file_notify ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             repl_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             repl_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

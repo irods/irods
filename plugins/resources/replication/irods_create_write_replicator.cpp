@@ -19,7 +19,7 @@ namespace irods {
     }
 
     error create_write_replicator::replicate(
-        resource_plugin_context& _ctx,
+        plugin_context& _ctx,
         const child_list_t& _siblings,
         const object_oper& _object_oper ) {
 

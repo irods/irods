@@ -4,7 +4,7 @@
 #include "irods_resource_constants.hpp"
 #include "irods_object_oper.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_resource_plugin_context.hpp"
+#include "irods_plugin_context.hpp"
 #include "irods_resource_redirect.hpp"
 
 #include <vector>
